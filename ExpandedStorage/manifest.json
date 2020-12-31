@@ -1,3 +1,22 @@
 ﻿{
-
+  "Name": "Expanded Storage",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Mod whichs allows Content Packs to add custom storage.",
+  "UniqueID": "furyx639.ExpandedStorage",
+  "EntryDll": "ExpandedStorage.dll",
+  "MinimumApiVersion": "3.8.1",
+  "UpdateKeys": [ "Nexus:7431" ],
+  "Dependencies": [
+    {
+      "UniqueID": "spacechase0.JsonAssets",
+      "MinimumVersion": "1.7.1",
+      "IsRequired": true
+    },
+    {
+      "UniqueID": "bcmpinc.StardewHack",
+      "MinimumVersion": "3.0",
+      "IsRequired": true
+    }
+  ]
 }

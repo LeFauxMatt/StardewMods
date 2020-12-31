@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
-            Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -12,9 +11,11 @@
         <AssemblyName>ExpandedStorage</AssemblyName>
         <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
+        <EnableHarmony>true</EnableHarmony>
+        <LangVersion>8</LangVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <PlatformTarget>AnyCPU</PlatformTarget>
+        <PlatformTarget>x86</PlatformTarget>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
         <Optimize>false</Optimize>
@@ -24,7 +25,7 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <PlatformTarget>AnyCPU</PlatformTarget>
+        <PlatformTarget>x86</PlatformTarget>
         <DebugType>pdbonly</DebugType>
         <Optimize>true</Optimize>
         <OutputPath>bin\Release\</OutputPath>
@@ -33,16 +34,46 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="System"/>
-        <Reference Include="System.Core"/>
-        <Reference Include="System.Data"/>
-        <Reference Include="System.Xml"/>
+        <Reference Include="Microsoft.Build" />
+        <Reference Include="Microsoft.Build.Framework" />
+        <Reference Include="Microsoft.Build.Utilities.v4.0" />
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Data" />
+        <Reference Include="System.IO.Compression" />
+        <Reference Include="System.Web.Extensions" />
+        <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Class1.cs"/>
-        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Framework\ChestPatches.cs" />
+        <Compile Include="Framework\DataLoader.cs" />
+        <Compile Include="Framework\ItemExtensions.cs" />
+        <Compile Include="Framework\Models\ContentPackData.cs" />
+        <Compile Include="Framework\Models\ExpandedStorageData.cs" />
+        <Compile Include="IJsonAssetsApi.cs" />
+        <Compile Include="ModEntry.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
-    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <ItemGroup>
+      <Content Include="manifest.json" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\StardewHack\StardewHack\StardewHack.csproj">
+        <Project>{c5d70a18-9d2c-4397-91bf-fbd6c0b0df18}</Project>
+        <Name>StardewHack</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+      <PropertyGroup>
+        <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+      </PropertyGroup>
+      <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
+    </Target>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">

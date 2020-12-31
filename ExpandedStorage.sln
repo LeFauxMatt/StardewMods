@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpandedStorage", "ExpandedStorage\ExpandedStorage.csproj", "{E753C461-CCB2-4CF7-8CCC-C75C161BA73B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StardewHack", "..\StardewHack\StardewHack\StardewHack.csproj", "{C5D70A18-9D2C-4397-91BF-FBD6C0B0DF18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{E753C461-CCB2-4CF7-8CCC-C75C161BA73B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E753C461-CCB2-4CF7-8CCC-C75C161BA73B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E753C461-CCB2-4CF7-8CCC-C75C161BA73B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E753C461-CCB2-4CF7-8CCC-C75C161BA73B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{C5D70A18-9D2C-4397-91BF-FBD6C0B0DF18}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C5D70A18-9D2C-4397-91BF-FBD6C0B0DF18}.Release|Any CPU.ActiveCfg = Release|x86
+		{C5D70A18-9D2C-4397-91BF-FBD6C0B0DF18}.Release|Any CPU.Build.0 = Release|x86
 	EndGlobalSection
 EndGlobal

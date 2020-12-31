@@ -1,7 +1,9 @@
-﻿namespace ExpandedStorage.Framework.Models
+﻿using System.Collections.Generic;
+
+namespace ExpandedStorage.Framework.Models
 {
-    public class ExpandedStorageContent
+    public class ContentPackData
     {
-        public string 
+        public IList<ExpandedStorageData> ExpandedStorage = new List<ExpandedStorageData>();
     }
 }
