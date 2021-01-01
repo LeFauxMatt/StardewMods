@@ -21,7 +21,11 @@ namespace ExpandedStorage.Framework
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
-
+        /// <summary>
+        /// Loads Expanded Storage content pack data.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private static void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             _jsonAssetsApi = _helper.ModRegistry.GetApi<IJsonAssetsApi>("spacechase0.JsonAssets");
@@ -40,7 +44,11 @@ namespace ExpandedStorage.Framework
                 ExpandedStorage.AddRange(contentData.ExpandedStorage.Where(s => !string.IsNullOrWhiteSpace(s.StorageName)));
             }
         }
-
+        /// <summary>
+        /// Gets ParentSheetIndex for Expanded Storages from Json Assets API.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private static void OnIdsAssigned(object sender, EventArgs e)
         {
             _monitor.Log("Loading Expanded Storage IDs", LogLevel.Info);
