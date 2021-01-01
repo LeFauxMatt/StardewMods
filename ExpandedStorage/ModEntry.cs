@@ -22,15 +22,18 @@ namespace ExpandedStorage
             get => _scrollTop.Value;
             set => _scrollTop.Value = value;
         }
-        private static Chest OpenStorage
-        {
-            get => _openStorage.Value;
-            set => _openStorage.Value = value;
-        }
         private static readonly PerScreen<int> _scrollTop = new PerScreen<int>();
-        private static readonly PerScreen<Chest> _openStorage = new PerScreen<Chest>();
-        public static int GetScrollTop(IList<Item> inventory, int capacity) =>
-            ScrollTop <= 12 * Math.Ceiling(inventory.Count / 12f) - capacity ? ScrollTop : 0;
+        
+        /// <summary>
+        /// Returns the amount to offset the InventoryMenu by depending on if there is an overflow of items to display.
+        /// </summary>
+        /// <param name="inventoryMenu">The Inventory Menu to base scrolling on.</param>
+        /// <returns>The number of slot items to offset inventory by.</returns>
+        public static int GetScrollTop(InventoryMenu inventoryMenu) =>
+            ScrollTop <= 12 * Math.Ceiling(inventoryMenu.actualInventory.Count / 12f) - inventoryMenu.capacity
+                ? ScrollTop
+                : 0;
+        
         public override void HackEntry(IModHelper helper)
         {
             DataLoader.Init(helper, Monitor);
@@ -69,6 +72,8 @@ namespace ExpandedStorage
         /// <summary>
         /// Converts vanilla chests to expanded, if necessary.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private static void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             if (!Context.IsWorldReady)
@@ -91,27 +96,23 @@ namespace ExpandedStorage
         /// <summary>
         /// Resets scrolling when storage is closed or a different one is accessed.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private static void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (e.OldMenu is ItemGrabMenu && e.NewMenu is null)
-            {
-                OpenStorage = null;
                 ScrollTop = 0;
-            }
-            else if (e.NewMenu is ItemGrabMenu {context: Chest chest})
-            {
-                _openStorage.Value = chest;
-            }
         }
         /// <summary>
         /// Scrolls inventory menu when there is an overflow of items.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private static void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (!(Game1.activeClickableMenu is ItemGrabMenu {ItemsToGrabMenu: { } inventoryMenu}) || OpenStorage == null)
+            if (!(Game1.activeClickableMenu is ItemGrabMenu {ItemsToGrabMenu: { } inventoryMenu}))
                 return;
-            
-            if (e.Delta < 0 && ScrollTop < OpenStorage.items.Count - inventoryMenu.capacity)
+            if (e.Delta < 0 && ScrollTop < inventoryMenu.actualInventory.Count - inventoryMenu.capacity)
                 ScrollTop += inventoryMenu.capacity / inventoryMenu.rows;
             else if (e.Delta > 0 && ScrollTop > 0)
                 ScrollTop -= inventoryMenu.capacity / inventoryMenu.rows;
@@ -119,6 +120,8 @@ namespace ExpandedStorage
         /// <summary>
         /// Ensures storage retain modded capacity when added to inventory.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
             if (!e.IsLocalPlayer || e.Added.Count() != 1)
@@ -135,6 +138,8 @@ namespace ExpandedStorage
         /// <summary>
         /// Ensures storage retain modded capacity when added to chests.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
         {
             if (e.Added.Count() != 1)
@@ -151,6 +156,8 @@ namespace ExpandedStorage
         /// <summary>
         /// Ensures storage retain modded capacity when dropped.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnDebrisListChanged(object sender, DebrisListChangedEventArgs e)
         {
             if (e.Added.Count() != 1)
@@ -166,6 +173,8 @@ namespace ExpandedStorage
         /// <summary>
         /// Ensures storage retain modded capacity when added to world.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
         {
             if (e.Added.Count() != 1)
@@ -217,10 +226,7 @@ namespace ExpandedStorage
                 Instructions.Call(typeof(Convert), nameof(Convert.ToInt32), typeof(string))
             ).Append(
                 Instructions.Ldarg_0(),
-                Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory)),
-                Instructions.Ldarg_0(),
-                Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.capacity)),
-                Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(IList<Item>), typeof(int)),
+                Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(InventoryMenu)),
                 Instructions.Add()
             );
         }
@@ -235,10 +241,7 @@ namespace ExpandedStorage
             );
             code.Append(
                 Instructions.Ldarg_0(),
-                Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory)),
-                Instructions.Ldarg_0(),
-                Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.capacity)),
-                Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(IList<Item>), typeof(int)),
+                Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(InventoryMenu)),
                 Instructions.Sub()
             );
             
@@ -251,10 +254,7 @@ namespace ExpandedStorage
                 );
                 code.Append(
                     Instructions.Ldarg_0(),
-                    Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory)),
-                    Instructions.Ldarg_0(),
-                    Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.capacity)),
-                    Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(IList<Item>), typeof(int)),
+                    Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(InventoryMenu)),
                     Instructions.Add()
                 );
             }
