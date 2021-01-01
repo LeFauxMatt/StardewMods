@@ -50,6 +50,7 @@
         <Compile Include="Framework\ItemExtensions.cs" />
         <Compile Include="Framework\Models\ContentPackData.cs" />
         <Compile Include="Framework\Models\ExpandedStorageData.cs" />
+        <Compile Include="Framework\UI\ChestOverlay.cs" />
         <Compile Include="IJsonAssetsApi.cs" />
         <Compile Include="ModConfig.cs" />
         <Compile Include="ModEntry.cs" />
@@ -66,9 +67,6 @@
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Framework\UI" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
