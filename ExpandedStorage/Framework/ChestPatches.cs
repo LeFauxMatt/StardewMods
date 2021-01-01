@@ -11,6 +11,9 @@ namespace ExpandedStorage.Framework
         {
             Monitor = monitor;
         }
+        /// <summary>
+        /// Returns modded capacity for storage.
+        /// </summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             try
