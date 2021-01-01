@@ -41,9 +41,6 @@ namespace ExpandedStorage
 
             // Events
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
-            helper.Events.Player.InventoryChanged += OnInventoryChanged;
-            helper.Events.World.ChestInventoryChanged += OnChestInventoryChanged;
-            helper.Events.World.DebrisListChanged += OnDebrisListChanged;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
             
             // Patches
@@ -118,60 +115,7 @@ namespace ExpandedStorage
                 ScrollTop -= inventoryMenu.capacity / inventoryMenu.rows;
         }
         /// <summary>
-        /// Ensures storage retain modded capacity when added to inventory.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
-        {
-            if (!e.IsLocalPlayer || e.Added.Count() != 1)
-                return;
-
-            var addedItem = e.Added.Single();
-            if (!addedItem.ShouldBeExpandedStorage() || addedItem is Chest)
-                return;
-
-            var index = Game1.player.Items.IndexOf(addedItem);
-            Monitor.VerboseLog($"OnInventoryChanged: Converting Expanded Storage Chest at {index}");
-            Game1.player.Items[index] = addedItem.ToExpandedStorage();
-        }
-        /// <summary>
-        /// Ensures storage retain modded capacity when added to chests.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
-        {
-            if (e.Added.Count() != 1)
-                return;
-
-            var addedItem = e.Added.Single();
-            if (!addedItem.ShouldBeExpandedStorage() || addedItem is Chest)
-                return;
-
-            var index = e.Chest.items.IndexOf(addedItem);
-            Monitor.VerboseLog($"OnChestInventoryChanged: Converting Expanded Storage Chest at {index}");
-            e.Chest.items[index] = addedItem.ToExpandedStorage();
-        }
-        /// <summary>
-        /// Ensures storage retain modded capacity when dropped.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnDebrisListChanged(object sender, DebrisListChangedEventArgs e)
-        {
-            if (e.Added.Count() != 1)
-                return;
-
-            var debris = e.Added.Single();
-            if (!debris.item.ShouldBeExpandedStorage() || debris.item is Chest)
-                return;
-            
-            Monitor.VerboseLog($"OnDebrisListChanged: Converting Expanded Storage Chest");
-            debris.item = debris.item.ToExpandedStorage();
-        }
-        /// <summary>
-        /// Ensures storage retain modded capacity when added to world.
+        /// Converts objects to modded storage when placed in the world.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -184,7 +128,7 @@ namespace ExpandedStorage
             var pos = itemPosition.Key;
             var obj = itemPosition.Value;
 
-            if (!obj.ShouldBeExpandedStorage() || obj is Chest)
+            if (!obj.ShouldBeExpandedStorage() || obj.IsExpandedStorage())
                 return;
             
             Monitor.VerboseLog($"OnObjectListChanged: Converting to Expanded Storage Chest");
