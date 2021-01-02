@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
+﻿using System.Linq;
 using ExpandedStorage.Framework;
+using ExpandedStorage.Framework.UI;
 using Harmony;
-using StardewHack;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -15,57 +12,34 @@ using SDVObject = StardewValley.Object;
 
 namespace ExpandedStorage
 {
-    internal class ModEntry : HackWithConfig<ModEntry, ModConfig>
+    internal class ModEntry : Mod
     {
-        private static int ScrollTop
+        private readonly PerScreen<ChestOverlay> _chestOverlay = new PerScreen<ChestOverlay>();
+        private DataLoader _dataLoader;
+        private ModConfig _config;
+
+        public override void Entry(IModHelper helper)
         {
-            get => _scrollTop.Value;
-            set => _scrollTop.Value = value;
-        }
-        private static readonly PerScreen<int> _scrollTop = new PerScreen<int>();
-        
-        /// <summary>
-        /// Returns the amount to offset the InventoryMenu by depending on if there is an overflow of items to display.
-        /// </summary>
-        /// <param name="inventoryMenu">The Inventory Menu to base scrolling on.</param>
-        /// <returns>The number of slot items to offset inventory by.</returns>
-        public static int GetScrollTop(InventoryMenu inventoryMenu) =>
-            ScrollTop <= 12 * Math.Ceiling(inventoryMenu.actualInventory.Count / 12f) - inventoryMenu.capacity
-                ? ScrollTop
-                : 0;
-        
-        public override void HackEntry(IModHelper helper)
-        {
-            DataLoader.Init(helper, Monitor);
-            ChestPatches.init(Monitor);
+            _dataLoader = new DataLoader(helper, Monitor);
+            _config = helper.ReadConfig<ModConfig>();
 
             // Events
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
             
             // Patches
-            if (!config.AllowModdedCapacity)
+            if (!_config.AllowModdedCapacity)
                 return;
             
             helper.Events.Display.MenuChanged += OnMenuChanged;
-            helper.Events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
+
+            var harmony = HarmonyInstance.Create(ModManifest.UniqueID);
             
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                prefix: new HarmonyMethod(typeof(ChestPatches), nameof(ChestPatches.GetActualCapacity_Prefix)));
-            
-            Patch(() => new ItemGrabMenu(null, false, false, null, null, null, null, false, false, false, false, false,
-                    0, null, 0, null),
-                ItemGrabMenu_ctor);
-            Patch((InventoryMenu im) => im.leftClick(0,0,null,false),
-                InventoryMenu_leftClick);
-            Patch((InventoryMenu im) => im.rightClick(0, 0, null, false, false),
-                InventoryMenu_rightClick);
-            Patch((InventoryMenu im) => im.hover(0, 0, null),
-                InventoryMenu_hover);
-            Patch((InventoryMenu im) => im.draw(null, 0, 0, 0),
-                InventoryMenu_draw);
+            ChestPatches.PatchAll(Monitor, harmony);
+            ItemGrabMenuPatches.PatchAll(Monitor, harmony);
+            InventoryMenuPatches.PatchAll(Monitor, harmony);
         }
+
         /// <summary>
         /// Converts vanilla chests to expanded, if necessary.
         /// </summary>
@@ -91,29 +65,31 @@ namespace ExpandedStorage
             });
         }
         /// <summary>
-        /// Resets scrolling when storage is closed or a different one is accessed.
+        /// Resets scrolling/overlay when chest menu exits or context changes.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private static void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
+            // Remove overlay when menu is exited.
             if (e.OldMenu is ItemGrabMenu && e.NewMenu is null)
-                ScrollTop = 0;
-        }
-        /// <summary>
-        /// Scrolls inventory menu when there is an overflow of items.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private static void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
-        {
-            if (!(Game1.activeClickableMenu is ItemGrabMenu {ItemsToGrabMenu: { } inventoryMenu}))
+                _chestOverlay.Value?.Dispose();
+            
+            // Menu is not a relevant context or context is unchanged.
+            if (!(e.NewMenu is ItemGrabMenu menu) || menu.context == _chestOverlay.Value?.Menu.context)
                 return;
-            if (e.Delta < 0 && ScrollTop < inventoryMenu.actualInventory.Count - inventoryMenu.capacity)
-                ScrollTop += inventoryMenu.capacity / inventoryMenu.rows;
-            else if (e.Delta > 0 && ScrollTop > 0)
-                ScrollTop -= inventoryMenu.capacity / inventoryMenu.rows;
+            
+            // Remove old overlay
+            if (_chestOverlay.Value != null)
+            {
+                _chestOverlay.Value?.Dispose();
+                _chestOverlay.Value = null;
+            }
+            
+            // Add new overlay
+            _chestOverlay.Value = new ChestOverlay(menu, Helper.Events, Helper.Input);
         }
+        
         /// <summary>
         /// Converts objects to modded storage when placed in the world.
         /// </summary>
@@ -133,75 +109,6 @@ namespace ExpandedStorage
             
             Monitor.VerboseLog($"OnObjectListChanged: Converting to Expanded Storage Chest");
             e.Location.objects[pos] = obj.ToExpandedStorage();
-        }
-        /// <summary>
-        /// Loads default chest InventoryMenu when storage has modded capacity.
-        /// </summary>
-        private void ItemGrabMenu_ctor()
-        {
-            var code = FindCode(
-                Instructions.Isinst(typeof(Chest)),
-                Instructions.Callvirt(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                Instructions.Ldc_I4_S(36)
-            );
-            var pos = code.Follow(3);
-            code[3] = Instructions.Bge(AttachLabel(pos[0]));
-        }
-        /// <summary>
-        /// Offsets displayed slots by the scrolled amount.
-        /// </summary>
-        private void InventoryMenu_leftClick()
-        {
-            OffsetSlotNumber();
-        }
-        private void InventoryMenu_rightClick()
-        {
-            OffsetSlotNumber();
-        }
-        private void InventoryMenu_hover()
-        {
-            OffsetSlotNumber();
-        }
-        private void OffsetSlotNumber()
-        {
-            // Convert.ToInt32(c.name) => Convert.ToInt32(c.name) + ModEntry.ScrollTop
-            FindCode(
-                Instructions.Ldfld(typeof(ClickableComponent), nameof(ClickableComponent.name)),
-                Instructions.Call(typeof(Convert), nameof(Convert.ToInt32), typeof(string))
-            ).Append(
-                Instructions.Ldarg_0(),
-                Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(InventoryMenu)),
-                Instructions.Add()
-            );
-        }
-        /// <summary>
-        /// Displays the correct item when InventoryMenu is scrolled.
-        /// </summary>
-        private void InventoryMenu_draw()
-        {
-            var code = FindCode(
-                Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory)),
-                Instructions.Callvirt_get(typeof(ICollection<Item>), nameof(ICollection<Item>.Count))
-            );
-            code.Append(
-                Instructions.Ldarg_0(),
-                Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(InventoryMenu)),
-                Instructions.Sub()
-            );
-            
-            var k = generator.DeclareLocal(typeof(int));
-            for (var i = 0; i < 7; i++)
-            {
-                code = code.FindNext(
-                    Instructions.Ldfld(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory)),
-                    OpCodes.Ldloc_S
-                );
-                code.Append(
-                    Instructions.Ldarg_0(),
-                    Instructions.Call(typeof(ModEntry), nameof(GetScrollTop), typeof(InventoryMenu)),
-                    Instructions.Add()
-                );
-            }
         }
     }
 }

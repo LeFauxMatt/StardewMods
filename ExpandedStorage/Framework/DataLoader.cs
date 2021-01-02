@@ -9,11 +9,11 @@ namespace ExpandedStorage.Framework
 {
     internal class DataLoader
     {
-        private static IModHelper _helper;
-        private static IMonitor _monitor;
-        private static IJsonAssetsApi _jsonAssetsApi;
-        private static readonly List<ExpandedStorageData> ExpandedStorage = new List<ExpandedStorageData>();
-        public static void Init(IModHelper helper, IMonitor monitor)
+        private readonly IModHelper _helper;
+        private readonly IMonitor _monitor;
+        private IJsonAssetsApi _jsonAssetsApi;
+        private readonly List<ExpandedStorageData> _expandedStorage = new List<ExpandedStorageData>();
+        internal DataLoader(IModHelper helper, IMonitor monitor)
         {
             _helper = helper;
             _monitor = monitor;
@@ -21,12 +21,13 @@ namespace ExpandedStorage.Framework
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
+        
         /// <summary>
         /// Loads Expanded Storage content pack data.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private static void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             _jsonAssetsApi = _helper.ModRegistry.GetApi<IJsonAssetsApi>("spacechase0.JsonAssets");
             _jsonAssetsApi.IdsAssigned += OnIdsAssigned;
@@ -36,12 +37,12 @@ namespace ExpandedStorage.Framework
             {
                 if (!contentPack.HasFile("expandedStorage.json"))
                 {
-                    _monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.Manifest.Description}", LogLevel.Warn);
+                    _monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
                     continue;
                 }
-                _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.Manifest.Description}", LogLevel.Info);
+                _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
                 var contentData = contentPack.ReadJsonFile<ContentPackData>("expandedStorage.json");
-                ExpandedStorage.AddRange(contentData.ExpandedStorage.Where(s => !string.IsNullOrWhiteSpace(s.StorageName)));
+                _expandedStorage.AddRange(contentData.ExpandedStorage.Where(s => !string.IsNullOrWhiteSpace(s.StorageName)));
             }
         }
         /// <summary>
@@ -49,11 +50,11 @@ namespace ExpandedStorage.Framework
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private static void OnIdsAssigned(object sender, EventArgs e)
+        private void OnIdsAssigned(object sender, EventArgs e)
         {
             _monitor.Log("Loading Expanded Storage IDs", LogLevel.Info);
             var ids = _jsonAssetsApi.GetAllBigCraftableIds();
-            foreach (var expandedStorage in ExpandedStorage)
+            foreach (var expandedStorage in _expandedStorage)
             {
                 if (ids.TryGetValue(expandedStorage.StorageName, out var id))
                 {
@@ -62,10 +63,10 @@ namespace ExpandedStorage.Framework
                 else
                 {
                     _monitor.Log($"Cannot convert {expandedStorage.StorageName} into Expanded Storage. Object is not loaded!", LogLevel.Warn);
-                    ExpandedStorage.Remove(expandedStorage);
+                    _expandedStorage.Remove(expandedStorage);
                 }
             }
-            ItemExtensions.Init(ExpandedStorage);
+            ItemExtensions.Init(_expandedStorage);
         }
     }
 }

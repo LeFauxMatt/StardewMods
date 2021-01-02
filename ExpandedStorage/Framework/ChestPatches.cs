@@ -1,19 +1,23 @@
 ﻿using System;
+using Harmony;
 using StardewModdingAPI;
 using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework
 {
-    public class ChestPatches
+    internal class ChestPatches
     {
-        private static IMonitor Monitor;
-        public static void init(IMonitor monitor)
+        private static IMonitor _monitor;
+        internal static void PatchAll(IMonitor monitor, HarmonyInstance harmony)
         {
-            Monitor = monitor;
+            _monitor = monitor;
+            
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                prefix: new HarmonyMethod(typeof(ChestPatches), nameof(GetActualCapacity_Prefix)));
         }
-        /// <summary>
-        /// Returns modded capacity for storage.
-        /// </summary>
+        
+        /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             try
@@ -26,7 +30,7 @@ namespace ExpandedStorage.Framework
             }
             catch (Exception ex)
             {
-                Monitor.Log($"Failed in {nameof(GetActualCapacity_Prefix)}:\n{ex}", LogLevel.Error);
+                _monitor.Log($"Failed in {nameof(GetActualCapacity_Prefix)}:\n{ex}", LogLevel.Error);
                 return true;
             }
         }
