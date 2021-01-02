@@ -26,18 +26,15 @@ namespace ExpandedStorage
             // Events
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
-            
-            // Patches
-            if (!_config.AllowModdedCapacity)
-                return;
-            
-            helper.Events.Display.MenuChanged += OnMenuChanged;
+            if (_config.AllowModdedCapacity)
+                helper.Events.Display.MenuChanged += OnMenuChanged;
 
+            // Patches
             var harmony = HarmonyInstance.Create(ModManifest.UniqueID);
             
-            ChestPatches.PatchAll(Monitor, harmony);
-            ItemGrabMenuPatches.PatchAll(Monitor, harmony);
-            InventoryMenuPatches.PatchAll(Monitor, harmony);
+            ChestPatches.PatchAll(_config, Monitor, harmony);
+            ItemGrabMenuPatches.PatchAll(_config, Monitor, harmony);
+            InventoryMenuPatches.PatchAll(_config, Monitor, harmony);
         }
 
         /// <summary>

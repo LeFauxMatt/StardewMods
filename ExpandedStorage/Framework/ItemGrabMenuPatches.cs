@@ -15,35 +15,41 @@ namespace ExpandedStorage.Framework
     {
         private static IMonitor _monitor;
         
-        internal static void PatchAll(IMonitor monitor, HarmonyInstance harmony)
+        internal static void PatchAll(ModConfig config, IMonitor monitor, HarmonyInstance harmony)
         {
             _monitor = monitor;
 
-            harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu),
-                new[] {
-                    typeof(IList<Item>),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(InventoryMenu.highlightThisItem),
-                    typeof(ItemGrabMenu.behaviorOnItemSelect),
-                    typeof(string),
-                    typeof(ItemGrabMenu.behaviorOnItemSelect),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(int),
-                    typeof(Item),
-                    typeof(int),
-                    typeof(object)
-                }),
-                transpiler: new HarmonyMethod(typeof(ItemGrabMenuPatches), nameof(ItemGrabMenu_ctor)));
-            
-            harmony.Patch(
-                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
-                transpiler: new HarmonyMethod(typeof(ItemGrabMenuPatches), nameof(ItemGrabMenu_draw)));
+            if (config.AllowModdedCapacity)
+            {
+                harmony.Patch(
+                    original: AccessTools.Constructor(typeof(ItemGrabMenu),
+                        new[] {
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object)
+                        }),
+                    transpiler: new HarmonyMethod(typeof(ItemGrabMenuPatches), nameof(ItemGrabMenu_ctor)));
+            }
+
+            if (config.ShowOverlayArrows)
+            {
+                harmony.Patch(
+                    original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
+                    transpiler: new HarmonyMethod(typeof(ItemGrabMenuPatches), nameof(ItemGrabMenu_draw)));
+            }
         }
 
         /// <summary>Loads default chest InventoryMenu when storage has modded capacity.</summary>

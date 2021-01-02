@@ -8,9 +8,12 @@ namespace ExpandedStorage.Framework
     internal class ChestPatches
     {
         private static IMonitor _monitor;
-        internal static void PatchAll(IMonitor monitor, HarmonyInstance harmony)
+        internal static void PatchAll(ModConfig config, IMonitor monitor, HarmonyInstance harmony)
         {
             _monitor = monitor;
+
+            if (!config.AllowModdedCapacity)
+                return;
             
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
