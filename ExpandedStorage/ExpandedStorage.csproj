@@ -47,7 +47,9 @@
     <ItemGroup>
         <Compile Include="Framework\ChestPatches.cs" />
         <Compile Include="Framework\DataLoader.cs" />
+        <Compile Include="Framework\InventoryMenuPatches.cs" />
         <Compile Include="Framework\ItemExtensions.cs" />
+        <Compile Include="Framework\ItemGrabMenuPatches.cs" />
         <Compile Include="Framework\Models\ContentPackData.cs" />
         <Compile Include="Framework\Models\ExpandedStorageData.cs" />
         <Compile Include="Framework\UI\ChestOverlay.cs" />
@@ -57,6 +59,8 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
+      <Content Include="Framework\UI\LICENSE" />
+      <Content Include="Framework\UI\README.md" />
       <Content Include="manifest.json" />
     </ItemGroup>
     <ItemGroup>
@@ -76,6 +80,7 @@
       </PropertyGroup>
       <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
     </Target>
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">

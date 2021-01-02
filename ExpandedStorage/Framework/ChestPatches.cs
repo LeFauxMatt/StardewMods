@@ -8,7 +8,7 @@ namespace ExpandedStorage.Framework
     internal class ChestPatches
     {
         private static IMonitor _monitor;
-        internal static void Init(IMonitor monitor, HarmonyInstance harmony)
+        internal static void PatchAll(IMonitor monitor, HarmonyInstance harmony)
         {
             _monitor = monitor;
             
@@ -17,9 +17,7 @@ namespace ExpandedStorage.Framework
                 prefix: new HarmonyMethod(typeof(ChestPatches), nameof(GetActualCapacity_Prefix)));
         }
         
-        /// <summary>
-        /// Returns modded capacity for storage.
-        /// </summary>
+        /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             try

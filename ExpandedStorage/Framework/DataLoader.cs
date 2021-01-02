@@ -37,10 +37,10 @@ namespace ExpandedStorage.Framework
             {
                 if (!contentPack.HasFile("expandedStorage.json"))
                 {
-                    _monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.Manifest.Description}", LogLevel.Warn);
+                    _monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
                     continue;
                 }
-                _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.Manifest.Description}", LogLevel.Info);
+                _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
                 var contentData = contentPack.ReadJsonFile<ContentPackData>("expandedStorage.json");
                 _expandedStorage.AddRange(contentData.ExpandedStorage.Where(s => !string.IsNullOrWhiteSpace(s.StorageName)));
             }
