@@ -3,7 +3,7 @@ using Harmony;
 using StardewModdingAPI;
 using StardewValley.Objects;
 
-namespace ExpandedStorage.Framework
+namespace ExpandedStorage.Framework.Patches
 {
     internal class ChestPatches
     {
@@ -23,19 +23,15 @@ namespace ExpandedStorage.Framework
         /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
-            try
-            {
-                if (!__instance.modData.TryGetValue("ImJustMatt.ExpandedStorage/actual-capacity",
-                    out var actualCapacity))
-                    return true;
-                __result = Convert.ToInt32(actualCapacity);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _monitor.Log($"Failed in {nameof(GetActualCapacity_Prefix)}:\n{ex}", LogLevel.Error);
+            if (!ExpandedStorage.Objects.TryGetValue(__instance.ParentSheetIndex, out var data))
                 return true;
-            }
+            __result = data.Capacity switch
+            {
+                -1 => int.MaxValue,
+                0 => 36,
+                _ => data.Capacity
+            };
+            return false;
         }
     }
 }

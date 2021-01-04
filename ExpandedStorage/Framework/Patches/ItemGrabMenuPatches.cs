@@ -9,7 +9,7 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-namespace ExpandedStorage.Framework
+namespace ExpandedStorage.Framework.Patches
 {
     internal class ItemGrabMenuPatches
     {

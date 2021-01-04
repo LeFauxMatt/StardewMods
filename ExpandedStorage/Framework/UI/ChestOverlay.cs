@@ -53,7 +53,7 @@ namespace ExpandedStorage.Framework.UI
         private bool IsInitialized => _drawCount > 1;
         
         /// <summary>The Chest Menu to overlay on to.</summary>
-        internal ItemGrabMenu Menu { get; }
+        internal ItemGrabMenu Menu { get; private set; }
         
         /// <summary>The Chest Inventory that is currently being accessed.</summary>
         private readonly IList<Item> _items;
@@ -71,6 +71,7 @@ namespace ExpandedStorage.Framework.UI
         public void Dispose()
         {
             Instance.Value = null;
+            Menu = null;
             _events.GameLoop.UpdateTicked -= OnUpdateTicked;
             _events.Display.Rendered -= OnRendered;
             _events.Input.ButtonPressed -= OnButtonPressed;
@@ -116,30 +117,20 @@ namespace ExpandedStorage.Framework.UI
                 new Rectangle(421, 472, 11, 12),
                 Game1.pixelZoom);
         }
-        
-        internal bool CanScrollUp => _offset > 0;
-        internal bool CanScrollDown => _offset < _items.Count - _capacity;
+
+        private bool CanScrollUp => _offset > 0;
+        private bool CanScrollDown => _offset < _items.Count - _capacity;
         
         /// <summary>Attempts to scroll offset by one row of slots relative to the inventory menu.</summary>
         /// <param name="direction">The direction which to scroll to.</param>
         /// <returns>True if the value of offset changed.</returns>
-        internal bool Scroll(int direction)
+        private bool Scroll(int direction)
         {
             if (direction > 0 && _offset > 0)
                 _offset -= _cols;
             else if (direction < 0 && _offset < _items.Count - _capacity)
                 _offset += _cols;
             else
-                return false;
-            return true;
-        }
-
-        /// <summary>The method invoked when the player presses a button.</summary>
-        /// <param name="input">The button that was pressed.</param>
-        /// <returns>Whether the event has been handled and shouldn't be propagated further.</returns>
-        private bool ReceiveButtonPress(SButton input)
-        {
-            if (!IsInitialized)
                 return false;
             return true;
         }
@@ -206,8 +197,6 @@ namespace ExpandedStorage.Framework.UI
                     Game1.playSound("shwip");
                 }
             }
-            else
-                handled = ReceiveButtonPress(e.Button);
 
             if (handled)
                 _inputHelper.Suppress(e.Button);

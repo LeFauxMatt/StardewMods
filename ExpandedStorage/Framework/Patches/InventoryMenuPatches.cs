@@ -9,7 +9,7 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 
-namespace ExpandedStorage.Framework
+namespace ExpandedStorage.Framework.Patches
 {
     internal class InventoryMenuPatches
     {

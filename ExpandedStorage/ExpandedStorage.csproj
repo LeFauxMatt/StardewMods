@@ -45,29 +45,23 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Framework\ChestPatches.cs" />
-        <Compile Include="Framework\DataLoader.cs" />
-        <Compile Include="Framework\InventoryMenuPatches.cs" />
-        <Compile Include="Framework\ItemExtensions.cs" />
-        <Compile Include="Framework\ItemGrabMenuPatches.cs" />
         <Compile Include="Framework\Models\ContentPackData.cs" />
         <Compile Include="Framework\Models\ExpandedStorageData.cs" />
+        <Compile Include="Framework\Patches\ChestPatches.cs" />
+        <Compile Include="Framework\Patches\InventoryMenuPatches.cs" />
+        <Compile Include="Framework\Patches\ItemGrabMenuPatches.cs" />
+        <Compile Include="Framework\Patches\ItemPatches.cs" />
+        <Compile Include="Framework\Patches\ObjectPatches.cs" />
         <Compile Include="Framework\UI\ChestOverlay.cs" />
         <Compile Include="IJsonAssetsApi.cs" />
         <Compile Include="ModConfig.cs" />
-        <Compile Include="ModEntry.cs" />
+        <Compile Include="ExpandedStorage.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
       <Content Include="Framework\UI\LICENSE" />
       <Content Include="Framework\UI\README.md" />
       <Content Include="manifest.json" />
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\..\StardewHack\StardewHack\StardewHack.csproj">
-        <Project>{c5d70a18-9d2c-4397-91bf-fbd6c0b0df18}</Project>
-        <Name>StardewHack</Name>
-      </ProjectReference>
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />

@@ -5,6 +5,9 @@
         /// <summary>Whether to allow modded storage to have capacity other than 36 slots.</summary>
         public bool AllowModdedCapacity { get; set; } = true;
 
+        /// <summary>Whether to allow chests to be carried and moved.</summary>
+        public bool AllowCarryingChests { get; set; } = true;
+
         /// <summary>Expands Vanilla Chests to hold double their inventory (72 slots).</summary>
         public bool ExpandVanillaChests { get; set; } = true;
         
