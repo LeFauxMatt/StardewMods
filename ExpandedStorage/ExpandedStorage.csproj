@@ -59,8 +59,6 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="Framework\UI\LICENSE" />
-      <Content Include="Framework\UI\README.md" />
       <Content Include="manifest.json" />
     </ItemGroup>
     <ItemGroup>
