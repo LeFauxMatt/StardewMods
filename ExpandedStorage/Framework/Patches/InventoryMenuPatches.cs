@@ -222,13 +222,13 @@ namespace ExpandedStorage.Framework.Patches
                                 instruction.operand.Equals(AccessTools.Field(
                                     typeof(InventoryMenu),
                                     nameof(InventoryMenu.actualInventory))):
-                        matched = 1;
+                        ++matched;
                         break;
                     case 1 when instruction.opcode == OpCodes.Callvirt &&
                                 instruction.operand.Equals(AccessTools.Property(
                                     typeof(ICollection<Item>), nameof(ICollection<Item>.Count)).GetGetMethod()):
-                        reset = matched = 2;
-                        patches++;
+                        reset = ++matched;
+                        ++patches;
                         yield return instruction;
                         yield return new CodeInstruction(OpCodes.Ldarg_0);
                         yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(
@@ -241,7 +241,7 @@ namespace ExpandedStorage.Framework.Patches
                                 instruction.operand.Equals(AccessTools.Field(
                                     typeof(InventoryMenu),
                                     nameof(InventoryMenu.actualInventory))):
-                        matched = 3;
+                        ++matched;
                         break;
                     case 3 when instruction.opcode == OpCodes.Ldloc_S:
                         matched = reset;

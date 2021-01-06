@@ -58,35 +58,89 @@ namespace ExpandedStorage.Framework.Patches
             IEnumerable<CodeInstruction> instructions)
         {
             var matched = 0;
+            var reset = 0;
+            var patches = 0;
             foreach (var instruction in instructions)
             {
                 switch (matched)
                 {
-                    case 0 when instruction.opcode == OpCodes.Isinst && instruction.operand.Equals(typeof(Chest)):
-                        matched = 1;
+                    case 0 when instruction.opcode == OpCodes.Ldarg_S:
+                        ++matched;
                         break;
-                    case 1 when instruction.opcode == OpCodes.Callvirt &&
+                    case 1 when instruction.opcode == OpCodes.Ldc_I4_1:
+                        ++matched;
+                        break;
+                    case 2 when instruction.opcode == OpCodes.Ldc_I4_1:
+                        ++matched;
+                        break;
+                    case 3 when instruction.opcode == OpCodes.Ldc_I4_0:
+                        ++matched;
+                        break;
+                    case 4 when instruction.opcode == OpCodes.Ldc_I4_0:
+                        reset = ++matched;
+                        patches++;
+                        _monitor.Log("Setting inventory y-offset to 192.", LogLevel.Debug);
+                        yield return new CodeInstruction(OpCodes.Ldc_I4, 192);
+                        continue;
+                    case 5 when instruction.opcode == OpCodes.Isinst && instruction.operand.Equals(typeof(Chest)):
+                        ++matched;
+                        break;
+                    case 6 when instruction.opcode == OpCodes.Callvirt &&
                                 instruction.operand.Equals(AccessTools.Method(typeof(Chest),
                                     nameof(Chest.GetActualCapacity))):
-                        matched = 2;
+                        ++matched;
                         break;
-                    case 2 when instruction.opcode == OpCodes.Ldc_I4_S:
-                        matched = 3;
+                    case 7 when instruction.opcode == OpCodes.Ldc_I4_S:
+                        ++matched;
                         break;
-                    case 3 when instruction.opcode == OpCodes.Beq:
-                        matched = 4;
+                    case 8 when instruction.opcode == OpCodes.Beq:
+                        reset = ++matched;
+                        ++patches;
                         yield return new CodeInstruction(OpCodes.Bge, (Label)instruction.operand);
                         continue;
-                    case 4:
+                    case 9 when instruction.opcode == OpCodes.Newobj &&
+                                instruction.operand.Equals(AccessTools.Constructor(typeof(InventoryMenu), new []
+                                {
+                                    typeof(int),
+                                    typeof(int),
+                                    typeof(bool),
+                                    typeof(IList<Item>),
+                                    typeof(InventoryMenu.highlightThisItem),
+                                    typeof(int),
+                                    typeof(int),
+                                    typeof(int),
+                                    typeof(int),
+                                    typeof(bool)
+                                })):
+                        ++matched;
+                        _monitor.Log("Found constructor of InventoryMenu.", LogLevel.Debug);
+                        break;
+                    case 10 when instruction.opcode == OpCodes.Stfld &&
+                                instruction.operand.Equals(AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))):
+                        reset = ++matched;
+                        _monitor.Log("Found first instantiation of ItemsToGrabMenu.", LogLevel.Debug);
+                        break;
+                    case 11 when instruction.opcode == OpCodes.Ldc_I4_M1:
+                        ++matched;
+                        ++patches;
+                        _monitor.Log("Change capacity from -1 to 72 and rows from 3 to 6.", LogLevel.Debug);
+                        yield return new CodeInstruction(OpCodes.Ldc_I4_S, 72);
+                        yield return new CodeInstruction(OpCodes.Ldc_I4_6);
+                        continue;
+                    case 12:
+                        ++matched;
+                        // Skip duplicate row arg
+                        continue;
+                    case 13:
                         break;
                     default:
-                        matched = 0;
+                        matched = reset;
                         break;
                         
                 }
                 yield return instruction;
             }
-            if (matched == 4)
+            if (patches == 3)
                 _monitor.Log($"Applied patches in {nameof(ItemGrabMenu_ctor)}", LogLevel.Debug);
             else
                 _monitor.Log($"Failed to apply patches in {nameof(ItemGrabMenu_ctor)}", LogLevel.Warn);
