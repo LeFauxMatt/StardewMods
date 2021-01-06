@@ -10,5 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatternPatches.cs" />
   </ItemGroup>
 </Project>
