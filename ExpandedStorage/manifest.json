@@ -10,7 +10,7 @@
   "Dependencies": [
     {
       "UniqueID": "spacechase0.JsonAssets",
-      "MinimumVersion": "1.7.1",
+      "MinimumVersion": "1.7.2",
       "IsRequired": true
     }
   ]
