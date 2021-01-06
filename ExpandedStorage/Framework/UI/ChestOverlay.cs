@@ -124,7 +124,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Attempts to scroll offset by one row of slots relative to the inventory menu.</summary>
         /// <param name="direction">The direction which to scroll to.</param>
         /// <returns>True if the value of offset changed.</returns>
-        private bool Scroll(int direction)
+        internal bool Scroll(int direction)
         {
             if (direction > 0 && _offset > 0)
                 _offset -= _cols;

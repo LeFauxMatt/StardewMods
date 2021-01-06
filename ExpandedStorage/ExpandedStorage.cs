@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
@@ -36,6 +37,11 @@ namespace ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
+            
+            // Disable unready features
+            _config.ExpandInventoryMenu = false;
+            _config.ExpandVanillaChests = false;
+            _config.ShowSearchBar = false;
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
@@ -46,11 +52,11 @@ namespace ExpandedStorage
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
+            helper.Events.Input.ButtonPressed += OnButtonPressed;
             
             if (_config.AllowCarryingChests)
             {
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
-                helper.Events.Input.ButtonPressed += OnButtonPressed;
             }
             
             if (_config.AllowModdedCapacity)
@@ -123,17 +129,36 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsPlayerFree || e.Button != SButton.MouseLeft || Game1.player.CurrentItem != null)
+            // Button Controls
+            if (_chestOverlay.Value != null)
+            {
+                if (e.Button == _config.Controls.GetScrollDown)
+                {
+                    _chestOverlay.Value.Scroll(-1);
+                    Helper.Input.Suppress(e.Button);
+                }
+                else if (e.Button == _config.Controls.GetScrollUp)
+                {
+                    _chestOverlay.Value.Scroll(1);
+                    Helper.Input.Suppress(e.Button);
+                }
+            }
+            
+            if (!Context.IsPlayerFree)
                 return;
             
-            var location = Game1.currentLocation;
-            var pos = e.Cursor.Tile;
-            if (!location.objects.TryGetValue(pos, out var obj) ||
-                !(obj is Chest && (!Objects.TryGetValue(obj.ParentSheetIndex, out var data) || data.CanCarry)) ||
-                !Game1.player.addItemToInventoryBool(obj, true))
-                return;
-            location.objects.Remove(pos);
-            Helper.Input.Suppress(e.Button);
+            // Carry Chests
+            if (_config.AllowCarryingChests && (e.Button == SButton.MouseLeft && Game1.player.CurrentItem == null))
+            {
+                var location = Game1.currentLocation;
+                var pos = e.Cursor.Tile;
+                if (!location.objects.TryGetValue(pos, out var obj) ||
+                    !(obj is Chest && (!Objects.TryGetValue(obj.ParentSheetIndex, out var data) || data.CanCarry)) ||
+                    !Game1.player.addItemToInventoryBool(obj, true))
+                    return;
+                location.objects.Remove(pos);
+                Helper.Input.Suppress(e.Button);
+            }
         }
         
         /// <summary>
