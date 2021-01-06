@@ -1,4 +1,4 @@
-﻿namespace ExpandedStorage
+﻿namespace ExpandedStorage.Framework
 {
     internal class ModConfig
     {
@@ -19,5 +19,8 @@
 
         /// <summary>Allows filtering Inventory Menu by searching for the the item name.</summary>
         public bool ShowSearchBar { get; set; } = true;
+
+        /// <summary>Control scheme for Expanded Storage features.</summary>
+        public ModConfigControls Controls { get; set; } = new ModConfigControls();
     }
 }

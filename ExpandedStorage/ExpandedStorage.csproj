@@ -45,6 +45,8 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Framework\ModConfig.cs" />
+        <Compile Include="Framework\ModConfigControls.cs" />
         <Compile Include="Framework\Models\ContentPackData.cs" />
         <Compile Include="Framework\Models\ExpandedStorageData.cs" />
         <Compile Include="Framework\Patches\ChestPatches.cs" />
@@ -54,7 +56,6 @@
         <Compile Include="Framework\Patches\ObjectPatches.cs" />
         <Compile Include="Framework\UI\ChestOverlay.cs" />
         <Compile Include="IJsonAssetsApi.cs" />
-        <Compile Include="ModConfig.cs" />
         <Compile Include="ExpandedStorage.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>

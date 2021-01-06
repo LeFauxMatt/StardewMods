@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using Common;
 using ExpandedStorage.Framework.UI;
 using Harmony;
 using Microsoft.Xna.Framework.Graphics;
@@ -75,195 +76,147 @@ namespace ExpandedStorage.Framework.Patches
                 transpiler: new HarmonyMethod(typeof(InventoryMenuPatches), nameof(InventoryMenu_draw)));
         }
 
-        static IEnumerable<CodeInstruction> InventoryMenu_leftClick(
-            MethodBase original,
-            IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> InventoryMenu_leftClick(IEnumerable<CodeInstruction> instructions)
         {
-            var matched = 0;
-            foreach (var instruction in instructions)
-            {
-                switch (matched)
+            // ReSharper disable once PossibleMultipleEnumeration
+            var patternPatches = new PatternPatches(instructions, _monitor);
+
+            patternPatches
+                .Find(new[]
                 {
-                    case 0 when instruction.opcode == OpCodes.Ldfld &&
-                                instruction.operand.Equals(AccessTools.Field(
-                                    typeof(ClickableComponent),
-                                    nameof(ClickableComponent.name))):
-                        matched = 1;
-                        break;
-                    case 1 when instruction.opcode == OpCodes.Call &&
-                                instruction.operand.Equals(AccessTools.Method(
-                                    typeof(Convert),
-                                    nameof(Convert.ToInt32),
-                                    new []{ typeof(string) })):
-                        matched = 2;
-                        yield return instruction;
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return new CodeInstruction(OpCodes.Call,
-                            AccessTools.Method(
-                                typeof(ChestOverlay),
-                                nameof(ChestOverlay.Offset),
-                                new []{ typeof(InventoryMenu) }));
-                        yield return new CodeInstruction(OpCodes.Add);
-                        continue;
-                    case 2:
-                        break;
-                    default:
-                        matched = 0;
-                        break;
-                }
-                yield return instruction;
-            }
-            if (matched == 2)
-                _monitor.Log($"Applied patches in {nameof(InventoryMenu_rightClick)}", LogLevel.Debug);
-            else
-                _monitor.Log($"Failed to apply patches in {nameof(InventoryMenu_rightClick)}", LogLevel.Warn);
+                    new CodeInstruction(OpCodes.Ldfld,
+                        AccessTools.Field(typeof(ClickableComponent), nameof(ClickableComponent.name))),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(Convert), nameof(Convert.ToInt32), new[] {typeof(string)}))
+                })
+                .Log("Offset InventoryMenu.leftClick slots by scrolled amount.")
+                .Patch(instruction => new[]
+                {
+                    instruction,
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(ChestOverlay), nameof(ChestOverlay.Offset),
+                            new[] {typeof(InventoryMenu)})),
+                    new CodeInstruction(OpCodes.Add)
+                });
+            
+            foreach (var patternPatch in patternPatches)
+                yield return patternPatch;
+            
+            if (!patternPatches.Done)
+                _monitor.Log($"Failed to apply all patches in {nameof(InventoryMenu_leftClick)}", LogLevel.Warn);
         }
         
-        static IEnumerable<CodeInstruction> InventoryMenu_rightClick(
-            MethodBase original,
-            IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> InventoryMenu_rightClick(IEnumerable<CodeInstruction> instructions)
         {
-            var matched = 0;
-            foreach (var instruction in instructions)
-            {
-                switch (matched)
+            // ReSharper disable once PossibleMultipleEnumeration
+            var patternPatches = new PatternPatches(instructions, _monitor);
+
+            patternPatches
+                .Find(new[]
                 {
-                    case 0 when instruction.opcode == OpCodes.Ldfld &&
-                                instruction.operand.Equals(AccessTools.Field(
-                                    typeof(ClickableComponent),
-                                    nameof(ClickableComponent.name))):
-                        matched = 1;
-                        break;
-                    case 1 when instruction.opcode == OpCodes.Call &&
-                                instruction.operand.Equals(AccessTools.Method(
-                                    typeof(Convert),
-                                    nameof(Convert.ToInt32),
-                                    new []{ typeof(string) })):
-                        matched = 2;
-                        yield return instruction;
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return new CodeInstruction(OpCodes.Call,
-                            AccessTools.Method(
-                                typeof(ChestOverlay),
-                                nameof(ChestOverlay.Offset),
-                                new []{ typeof(InventoryMenu) }));
-                        yield return new CodeInstruction(OpCodes.Add);
-                        continue;
-                    case 2:
-                        break;
-                    default:
-                        matched = 0;
-                        break;
-                }
-                yield return instruction;
-            }
-            if (matched == 2)
-                _monitor.Log($"Applied patches in {nameof(InventoryMenu_rightClick)}", LogLevel.Debug);
-            else
-                _monitor.Log($"Failed to apply patches in {nameof(InventoryMenu_rightClick)}", LogLevel.Warn);
+                    new CodeInstruction(OpCodes.Ldfld,
+                        AccessTools.Field(typeof(ClickableComponent), nameof(ClickableComponent.name))),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(Convert), nameof(Convert.ToInt32), new[] {typeof(string)}))
+                })
+                .Log("Offset InventoryMenu.rightClick slots by scrolled amount.")
+                .Patch(instruction => new[]
+                {
+                    instruction,
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(ChestOverlay), nameof(ChestOverlay.Offset),
+                            new[] {typeof(InventoryMenu)})),
+                    new CodeInstruction(OpCodes.Add)
+                });
+            
+            foreach (var patternPatch in patternPatches)
+                yield return patternPatch;
+            
+            if (!patternPatches.Done)
+                _monitor.Log($"Failed to apply all patches in {nameof(InventoryMenu_rightClick)}", LogLevel.Warn);
         }
         
-        static IEnumerable<CodeInstruction> InventoryMenu_hover(
-            MethodBase original,
-            IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> InventoryMenu_hover(IEnumerable<CodeInstruction> instructions)
         {
-            var matched = 0;
-            foreach (var instruction in instructions)
-            {
-                switch (matched)
+            // ReSharper disable once PossibleMultipleEnumeration
+            var patternPatches = new PatternPatches(instructions, _monitor);
+
+            patternPatches
+                .Find(new[]
                 {
-                    case 0 when instruction.opcode == OpCodes.Ldfld &&
-                                instruction.operand.Equals(AccessTools.Field(
-                                    typeof(ClickableComponent),
-                                    nameof(ClickableComponent.name))):
-                        matched = 1;
-                        break;
-                    case 1 when instruction.opcode == OpCodes.Call &&
-                                instruction.operand.Equals(AccessTools.Method(
-                                    typeof(Convert),
-                                    nameof(Convert.ToInt32),
-                                    new []{ typeof(string) })):
-                        matched = 2;
-                        yield return instruction;
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return new CodeInstruction(OpCodes.Call,
-                            AccessTools.Method(
-                                typeof(ChestOverlay),
-                                nameof(ChestOverlay.Offset),
-                                new []{ typeof(InventoryMenu) }));
-                        yield return new CodeInstruction(OpCodes.Add);
-                        continue;
-                    case 2:
-                        break;
-                    default:
-                        matched = 0;
-                        break;
-                }
-                yield return instruction;
-            }
-            if (matched == 2)
-                _monitor.Log($"Applied patches in {nameof(InventoryMenu_hover)}", LogLevel.Debug);
-            else
-                _monitor.Log($"Failed to apply patches in {nameof(InventoryMenu_hover)}", LogLevel.Warn);
+                    new CodeInstruction(OpCodes.Ldfld,
+                        AccessTools.Field(typeof(ClickableComponent), nameof(ClickableComponent.name))),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(Convert), nameof(Convert.ToInt32), new[] {typeof(string)}))
+                })
+                .Log("Offset InventoryMenu.hover slots by scrolled amount.")
+                .Patch(instruction => new[]
+                {
+                    instruction,
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(ChestOverlay), nameof(ChestOverlay.Offset),
+                            new[] {typeof(InventoryMenu)})),
+                    new CodeInstruction(OpCodes.Add)
+                });
+            
+            foreach (var patternPatch in patternPatches)
+                yield return patternPatch;
+            
+            if (!patternPatches.Done)
+                _monitor.Log($"Failed to apply all patches in {nameof(InventoryMenu_hover)}", LogLevel.Warn);
         }
         
-        static IEnumerable<CodeInstruction> InventoryMenu_draw(
-            MethodBase original,
-            IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> InventoryMenu_draw(IEnumerable<CodeInstruction> instructions)
         {
-            var matched = 0;
-            var reset = 0;
-            var patches = 0;
-            foreach (var instruction in instructions)
-            {
-                switch (matched)
+            // ReSharper disable once PossibleMultipleEnumeration
+            var patternPatches = new PatternPatches(instructions, _monitor);
+
+            patternPatches
+                .Find(new[]
                 {
-                    case 0 when instruction.opcode == OpCodes.Ldfld &&
-                                instruction.operand.Equals(AccessTools.Field(
-                                    typeof(InventoryMenu),
-                                    nameof(InventoryMenu.actualInventory))):
-                        matched = 1;
-                        break;
-                    case 1 when instruction.opcode == OpCodes.Callvirt &&
-                                instruction.operand.Equals(AccessTools.Property(
-                                    typeof(ICollection<Item>), nameof(ICollection<Item>.Count)).GetGetMethod()):
-                        reset = matched = 2;
-                        patches++;
-                        yield return instruction;
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(
-                            typeof(ChestOverlay),
-                            nameof(ChestOverlay.Offset),
-                            new[] {typeof(InventoryMenu)}));
-                        yield return new CodeInstruction(OpCodes.Sub);
-                        continue;
-                    case 2 when instruction.opcode == OpCodes.Ldfld &&
-                                instruction.operand.Equals(AccessTools.Field(
-                                    typeof(InventoryMenu),
-                                    nameof(InventoryMenu.actualInventory))):
-                        matched = 3;
-                        break;
-                    case 3 when instruction.opcode == OpCodes.Ldloc_S:
-                        matched = reset;
-                        patches++;
-                        yield return instruction;
-                        yield return new CodeInstruction(OpCodes.Ldarg_0);
-                        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(
-                            typeof(ChestOverlay),
-                            nameof(ChestOverlay.Offset),
-                            new[] {typeof(InventoryMenu)}));
-                        yield return new CodeInstruction(OpCodes.Add);
-                        continue;
-                    default:
-                        matched = reset;
-                        break;
-                }
-                yield return instruction;
-            }
-            if (patches >= 8)
-                _monitor.Log($"Applied patches in {nameof(InventoryMenu_draw)}", LogLevel.Debug);
-            else
-                _monitor.Log($"Failed to apply patches in {nameof(InventoryMenu_draw)}", LogLevel.Warn);
+                    new CodeInstruction(OpCodes.Ldfld,
+                        AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
+                    new CodeInstruction(OpCodes.Callvirt,
+                        AccessTools.Property(typeof(ICollection<Item>), nameof(ICollection<Item>.Count)).GetGetMethod())
+                })
+                .Log("Offset InventoryMenu.draw Count by scrolled amount.")
+                .Patch(instruction => new[]
+                {
+                    instruction,
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(ChestOverlay), nameof(ChestOverlay.Offset),
+                            new[] {typeof(InventoryMenu)})),
+                    new CodeInstruction(OpCodes.Sub)
+                });
+
+            patternPatches
+                .Find(new[]
+                {
+                    new CodeInstruction(OpCodes.Ldfld,
+                        AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
+                    new CodeInstruction(OpCodes.Ldloc_S)
+                })
+                .Log("Offset InventoryMenu.draw slots by scrolled amount.")
+                .Patch(instruction => new[]
+                {
+                    instruction,
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(ChestOverlay), nameof(ChestOverlay.Offset),
+                            new[] {typeof(InventoryMenu)})),
+                    new CodeInstruction(OpCodes.Add)
+                })
+                .Repeat(-1);
+            
+            foreach (var patternPatch in patternPatches)
+                yield return patternPatch;
+            
+            if (!patternPatches.Done)
+                _monitor.Log($"Failed to apply all patches in {nameof(InventoryMenu_draw)}", LogLevel.Warn);
         }
     }
 }
