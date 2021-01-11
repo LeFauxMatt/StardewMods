@@ -22,5 +22,7 @@
 
         /// <summary>Control scheme for Expanded Storage features.</summary>
         public ModConfigControls Controls { get; set; } = new ModConfigControls();
+        
+        
     }
 }

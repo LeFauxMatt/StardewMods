@@ -1,6 +1,6 @@
 ﻿namespace ExpandedStorage.Framework.Models
 {
-    public class ExpandedStorageData
+    public class ExpandedStorageConfig
     {
         /// <summary>Storage Name must match the name from Json Assets.</summary>
         public string StorageName { get; set; }
@@ -11,7 +11,7 @@
         /// <summary>Allows storage to be picked up by the player.</summary>
         public bool CanCarry { get; set; } = true;
         
-        /// <summary>The ParentSheetIndex as provided by Json Assets.</summary>
-        internal int ParentSheetIndex { get; set; }
+        /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
+        internal string ModUniqueId { get; set; }
     }
 }

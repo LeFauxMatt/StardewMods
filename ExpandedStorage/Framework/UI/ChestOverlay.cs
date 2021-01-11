@@ -12,7 +12,7 @@ using StardewValley.Menus;
 
 namespace ExpandedStorage.Framework.UI
 {
-    internal class ChestOverlay : IDisposable
+    internal class ChestOverlay
     {
         /// <summary>Currently active ChestOverlay instances.</summary>
         private static readonly PerScreen<ChestOverlay> Instance = new PerScreen<ChestOverlay>();
@@ -68,19 +68,25 @@ namespace ExpandedStorage.Framework.UI
         private ClickableTextureComponent _downArrow;
 
         /// <summary>Unregister Event Handling</summary>
-        public void Dispose()
+        private void UnregisterEvents()
         {
-            Instance.Value = null;
-            Menu = null;
             _events.GameLoop.UpdateTicked -= OnUpdateTicked;
             _events.Display.Rendered -= OnRendered;
             _events.Input.ButtonPressed -= OnButtonPressed;
             _events.Input.CursorMoved -= OnCursorMoved;
             _events.Input.MouseWheelScrolled -= OnMouseWheelScrolled;
         }
+        
         public ChestOverlay(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper)
         {
+            if (Instance.Value != null)
+            {
+                Instance.Value.UnregisterEvents();
+                if (ReferenceEquals(menu.context, Instance.Value.Menu.context))
+                    _offset = Instance.Value._offset;
+            }
             Instance.Value = this;
+            
             Menu = menu;
             _events = events;
             _inputHelper = inputHelper;
@@ -142,7 +148,7 @@ namespace ExpandedStorage.Framework.UI
         {
             if (!Context.HasScreenId(_screenId) || !(Game1.activeClickableMenu is ItemGrabMenu))
             {
-                Dispose();
+                UnregisterEvents();
                 return;
             }
             
