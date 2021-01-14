@@ -219,7 +219,7 @@ namespace ExpandedStorage
 
             var itemPos = e.Added
                 .LastOrDefault(p =>
-                    p.Value is Chest || p.Value.bigCraftable.Value && ExpandedStorageConfigs.ContainsKey(p.Value.name));
+                    p.Value is Chest || p.Value.bigCraftable.Value && ExpandedStorageConfigs.ContainsKey(p.Value.DisplayName));
             
             var obj = itemPos.Value;
             var pos = itemPos.Key;
