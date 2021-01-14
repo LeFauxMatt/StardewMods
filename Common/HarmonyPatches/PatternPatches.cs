@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Harmony;
 using StardewModdingAPI;
 
-namespace Common
+namespace Common.HarmonyPatches
 {
     public class PatternPatches : IEnumerable<CodeInstruction>
     {
@@ -16,9 +17,18 @@ namespace Common
             _instructions = instructions;
             _monitor = monitor;
         }
-        public PatternPatch Find(IList<CodeInstruction> pattern)
+        public PatternPatch Find(params CodeInstruction[] pattern)
         {
             var operation = new PatternPatch(pattern);
+            _patternPatches.Enqueue(operation);
+            return operation;
+        }
+        public PatternPatch Prepend(params CodeInstruction[] patch)
+        {
+            if (_patternPatches.Count != 0)
+                throw new InvalidOperationException("Cannot prepend to an existing Queue.");
+            var operation = new PatternPatch(null);
+            operation.Patch(patch);
             _patternPatches.Enqueue(operation);
             return operation;
         }

@@ -6,27 +6,27 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    public class ItemPatches
+    internal class ItemPatch : HarmonyPatch
     {
-        private static IMonitor _monitor;
+        private readonly Type _itemType = typeof(Item);
+        internal ItemPatch(IMonitor monitor, ModConfig config)
+            : base(monitor, config) { }
         
-        internal static void PatchAll(ModConfig config, IMonitor monitor, HarmonyInstance harmony)
+        protected internal override void Apply(HarmonyInstance harmony)
         {
-            _monitor = monitor;
-
-            if (!config.AllowCarryingChests)
+            if (!Config.AllowCarryingChests)
                 return;
             
             harmony.Patch(
-                original: AccessTools.Method(typeof(Item), nameof(Item.canStackWith), new []{typeof(ISalable)}),
-                prefix: new HarmonyMethod(typeof(ItemPatches), nameof(canStackWith_Prefix)));
+                original: AccessTools.Method(_itemType, nameof(Item.canStackWith), new []{typeof(ISalable)}),
+                prefix: new HarmonyMethod(GetType(), nameof(canStackWith_Prefix)));
         }
 
         /// <summary>Disallow chests containing items to be stacked.</summary>
         public static bool canStackWith_Prefix(Item __instance, ISalable other, ref bool __result)
         {
-            if (__instance.ParentSheetIndex != 130 &&
-                !ExpandedStorage.Objects.ContainsKey(__instance.ParentSheetIndex))
+            
+            if (__instance.ParentSheetIndex != 130 && !ExpandedStorage.HasConfig(__instance.Name))
                 return true;
             if ((!(__instance is Chest chest) || chest.items.Count == 0) &&
                 (!(other is Chest otherChest) || otherChest.items.Count == 0))

@@ -47,15 +47,18 @@
     <ItemGroup>
         <Compile Include="Framework\ModConfig.cs" />
         <Compile Include="Framework\ModConfigControls.cs" />
-        <Compile Include="Framework\Models\ContentPackData.cs" />
-        <Compile Include="Framework\Models\ExpandedStorageData.cs" />
-        <Compile Include="Framework\Patches\ChestPatches.cs" />
-        <Compile Include="Framework\Patches\InventoryMenuPatches.cs" />
-        <Compile Include="Framework\Patches\ItemGrabMenuPatches.cs" />
-        <Compile Include="Framework\Patches\ItemPatches.cs" />
-        <Compile Include="Framework\Patches\ObjectPatches.cs" />
+        <Compile Include="Framework\ModConfigControlsRaw.cs" />
+        <Compile Include="Framework\Models\ContentData.cs" />
+        <Compile Include="Framework\Models\ExpandedStorageConfig.cs" />
+        <Compile Include="Framework\Patcher.cs" />
+        <Compile Include="Framework\Patches\ChestPatch.cs" />
+        <Compile Include="Framework\Patches\HarmonyPatch.cs" />
+        <Compile Include="Framework\Patches\InventoryMenuPatch.cs" />
+        <Compile Include="Framework\Patches\MenuWithInventoryPatch.cs" />
+        <Compile Include="Framework\Patches\ItemGrabMenuPatch.cs" />
+        <Compile Include="Framework\Patches\ItemPatch.cs" />
+        <Compile Include="Framework\Patches\ObjectPatch.cs" />
         <Compile Include="Framework\UI\ChestOverlay.cs" />
-        <Compile Include="IJsonAssetsApi.cs" />
         <Compile Include="ExpandedStorage.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
