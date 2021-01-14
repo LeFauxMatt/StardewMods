@@ -29,6 +29,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             internal static readonly Type Bool = typeof(bool);
             internal static readonly Type Int = typeof(int);
+            internal static readonly Type Float = typeof(float);
             internal static readonly Type String = typeof(string);
             internal static readonly Type Object = typeof(object);
         }

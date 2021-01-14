@@ -96,7 +96,7 @@ namespace ExpandedStorage
             new Patcher(ModManifest.UniqueID).ApplyAll(
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
-                new ChestPatches(Monitor, _config),
+                new ChestPatches(Monitor, _config, helper.Reflection),
                 new ItemGrabMenuPatch(Monitor, _config),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config));
