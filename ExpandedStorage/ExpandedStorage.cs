@@ -23,6 +23,9 @@ namespace ExpandedStorage
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
+        /// <summary>Control scheme.</summary>
+        private ModConfigControls _controls;
+
         /// <summary>Overlays ItemGrabMenu with UI elements provided by ExpandedStorage.</summary>
         private readonly PerScreen<ChestOverlay> _chestOverlay = new PerScreen<ChestOverlay>();
         
@@ -65,6 +68,7 @@ namespace ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
+            _controls = new ModConfigControls(_config.ControlsRaw);
 #if !DEBUG
             // Disable unready features in release
             _config.ShowSearchBar = false;
@@ -153,12 +157,12 @@ namespace ExpandedStorage
             // Button Controls
             if (_chestOverlay.Value != null)
             {
-                if (e.Button == _config.Controls.GetScrollDown)
+                if (e.Button == _controls.ScrollDown)
                 {
                     _chestOverlay.Value.Scroll(-1);
                     Helper.Input.Suppress(e.Button);
                 }
-                else if (e.Button == _config.Controls.GetScrollUp)
+                else if (e.Button == _controls.ScrollUp)
                 {
                     _chestOverlay.Value.Scroll(1);
                     Helper.Input.Suppress(e.Button);
@@ -169,7 +173,7 @@ namespace ExpandedStorage
                 return;
             
             // Carry Chests
-            if (_config.AllowCarryingChests && (e.Button == SButton.MouseLeft && Game1.player.CurrentItem == null))
+            if (_config.AllowCarryingChests && (e.Button == SButton.MouseLeft || e.Button == _controls.CarryChest) && Game1.player.CurrentItem == null)
             {
                 var location = Game1.currentLocation;
                 var pos = e.Cursor.Tile;

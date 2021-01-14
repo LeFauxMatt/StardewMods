@@ -47,6 +47,7 @@
     <ItemGroup>
         <Compile Include="Framework\ModConfig.cs" />
         <Compile Include="Framework\ModConfigControls.cs" />
+        <Compile Include="Framework\ModConfigControlsRaw.cs" />
         <Compile Include="Framework\Models\ContentData.cs" />
         <Compile Include="Framework\Models\ExpandedStorageConfig.cs" />
         <Compile Include="Framework\Patcher.cs" />

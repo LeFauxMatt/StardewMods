@@ -1,6 +1,6 @@
 ﻿namespace ExpandedStorage.Framework
 {
-    internal class ModConfig
+    public class ModConfig
     {
         /// <summary>Whether to allow modded storage to have capacity other than 36 slots.</summary>
         public bool AllowModdedCapacity { get; set; } = true;
@@ -21,8 +21,6 @@
         public bool ShowSearchBar { get; set; } = true;
 
         /// <summary>Control scheme for Expanded Storage features.</summary>
-        public ModConfigControls Controls { get; set; } = new ModConfigControls();
-        
-        
+        public ModConfigControlsRaw ControlsRaw { get; set; } = new ModConfigControlsRaw();
     }
 }
