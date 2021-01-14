@@ -8,9 +8,6 @@
         /// <summary>Whether to allow chests to be carried and moved.</summary>
         public bool AllowCarryingChests { get; set; } = true;
 
-        /// <summary>Expands Vanilla Chests to hold double their inventory (72 slots).</summary>
-        public bool ExpandVanillaChests { get; set; } = true;
-        
         /// <summary>Adds three extra rows to the Inventory Menu.</summary>
         public bool ExpandInventoryMenu { get; set; } = true;
         

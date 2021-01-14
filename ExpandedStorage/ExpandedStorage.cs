@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -17,8 +19,16 @@ namespace ExpandedStorage
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod
     {
-        /// <summary>Dictionary list of objects which are Expanded Storage, </summary>
+        /// <summary>Dictionary list of objects which are Expanded Storage</summary>
         private static readonly IDictionary<string, ExpandedStorageConfig> ExpandedStorageConfigs = new Dictionary<string, ExpandedStorageConfig>();
+
+        /// <summary>List of vanilla storages Display Names</summary>
+        private static readonly IList<string> VanillaStorages = new List<string>()
+        {
+            "Chest",
+            "Stone Chest",
+            "Mini-Fridge"
+        };
         
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
@@ -41,29 +51,39 @@ namespace ExpandedStorage
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
         public static bool HasConfig(string storageName) =>
             ExpandedStorageConfigs.ContainsKey(storageName);
-
-        /// <summary>Returns Y-Offset to lower menu for valid contexts.</summary>
-        public static int Offset(object context) =>
-            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None}
-                ? 192
-                : 0;
         
+        /// <summary>Returns true if item is a Vanilla Storage.</summary>
+        public static bool IsVanilla(string storageName) =>
+            VanillaStorages.Contains(storageName);
+
         /// <summary>Returns Y-Offset to lower menu for valid instances.</summary>
         public static int Offset(MenuWithInventory menu) =>
             menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None}}
-                ? 192
+                ? 64 * (Rows(menu) - 3)
+                : 0;
+        
+        /// <summary>Returns Y-Offset to lower menu for valid contexts.</summary>
+        public static int Offset(object context) =>
+            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None}
+                ? 64 * (Rows(context) - 3)
                 : 0;
         
         /// <summary>Returns Display Capacity of MenuWithInventory.</summary>
         public static int Capacity(MenuWithInventory menu) =>
-            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None}}
-                ? 72
+            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest}
+                ? (int) MathHelper.Clamp(chest.GetActualCapacity(), 36, 72)
                 : Chest.capacity;
         
         /// <summary>Returns Display Rows of MenuWithInventory.</summary>
         public static int Rows(MenuWithInventory menu) =>
-            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None}}
-                ? 6
+            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest}
+                ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m),3, 6)
+                : 3;
+        
+        /// <summary>Returns Display Rows of MenuWithInventory.</summary>
+        public static int Rows(object context) =>
+            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest
+                ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m),3, 6)
                 : 3;
         public override void Entry(IModHelper helper)
         {
@@ -124,7 +144,7 @@ namespace ExpandedStorage
                 foreach (var expandedStorage in contentData.ExpandedStorage
                     .Where(s => !string.IsNullOrWhiteSpace(s.StorageName)))
                 {
-                    if (ExpandedStorageConfigs.ContainsKey(expandedStorage.StorageName))
+                    if (HasConfig(expandedStorage.StorageName))
                     {
                         Monitor.Log(
                             $"Cannot load {expandedStorage.StorageName} from {contentPack.Manifest.Name} {contentPack.Manifest.Version}: a storage with that name is already loaded",
@@ -219,7 +239,7 @@ namespace ExpandedStorage
 
             var itemPos = e.Added
                 .LastOrDefault(p =>
-                    p.Value is Chest || p.Value.bigCraftable.Value && ExpandedStorageConfigs.ContainsKey(p.Value.DisplayName));
+                    p.Value is Chest || p.Value.bigCraftable.Value && HasConfig(p.Value.DisplayName));
             
             var obj = itemPos.Value;
             var pos = itemPos.Key;

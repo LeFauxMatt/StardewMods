@@ -14,7 +14,6 @@ namespace ExpandedStorage.Framework.Patches
     internal class ChestPatches : HarmonyPatch
     {
         private readonly Type _chestType = typeof(Chest);
-        private static int _vanillaCapacity;
 
         private static IReflectionHelper Reflection;
 
@@ -22,7 +21,6 @@ namespace ExpandedStorage.Framework.Patches
             : base(monitor, config)
         {
             Reflection = reflection;
-            _vanillaCapacity = Config.ExpandVanillaChests ? 72 : Chest.capacity;
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
@@ -46,7 +44,7 @@ namespace ExpandedStorage.Framework.Patches
         public static bool draw_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
             var config = ExpandedStorage.GetConfig(__instance.DisplayName);
-            if (config == null || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
+            if (config == null || ExpandedStorage.IsVanilla(__instance.DisplayName) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
             
             var playerChoiceColor = __instance.playerChoiceColor.Value;
@@ -78,7 +76,7 @@ namespace ExpandedStorage.Framework.Patches
             // Draw Brace Layer (Non Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                 Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 12, 16, 32),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
                 Color.White * alpha,
                 0f,
                 Vector2.Zero,
@@ -89,7 +87,7 @@ namespace ExpandedStorage.Framework.Patches
             // Draw Lid Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                 Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 6, 16, 32),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 5, 16, 32),
                 playerChoiceColor * alpha * alpha,
                 0f,
                 Vector2.Zero,
@@ -103,15 +101,9 @@ namespace ExpandedStorage.Framework.Patches
         public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
         {
             var config = ExpandedStorage.GetConfig(__instance.DisplayName);
-            if (config == null || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
+            if (!local || config == null || ExpandedStorage.IsVanilla(__instance.DisplayName) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
-            
-            if (!local)
-            {
-                draw_Prefix(__instance, spriteBatch, x, y, alpha);
-                return false;
-            }
-            
+
             var playerChoiceColor = __instance.playerChoiceColor.Value;
             var parentSheetIndex = __instance.ParentSheetIndex;
             
@@ -146,16 +138,16 @@ namespace ExpandedStorage.Framework.Patches
             var config = ExpandedStorage.GetConfig(__instance.DisplayName);
             if (config == null)
             {
-                if (!Config.ExpandVanillaChests || __instance.SpecialChestType != Chest.SpecialChestTypes.None)
+                if (__instance.SpecialChestType != Chest.SpecialChestTypes.None)
                     return true;
-                __result = _vanillaCapacity;
+                __result = Chest.capacity;
                 return false;
             }
 
             __result = config.Capacity switch
             {
                 -1 => int.MaxValue,
-                0 => _vanillaCapacity,
+                0 => Chest.capacity,
                 _ => config.Capacity
             };
             return false;
