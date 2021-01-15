@@ -1,88 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{E753C461-CCB2-4CF7-8CCC-C75C161BA73B}</ProjectGuid>
-        <OutputType>Library</OutputType>
-        <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>ExpandedStorage</RootNamespace>
         <AssemblyName>ExpandedStorage</AssemblyName>
-        <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-        <FileAlignment>512</FileAlignment>
+        <RootNamespace>ExpandedStorage</RootNamespace>
+        <Version>1.2.0</Version>
+        <TargetFramework>net452</TargetFramework>
+        <Platforms>x86</Platforms>
+        <PlatformTarget>x86</PlatformTarget>
         <EnableHarmony>true</EnableHarmony>
         <LangVersion>8</LangVersion>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <PlatformTarget>x86</PlatformTarget>
-        <DebugSymbols>true</DebugSymbols>
-        <DebugType>full</DebugType>
-        <Optimize>false</Optimize>
-        <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <PlatformTarget>x86</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
-        <Optimize>true</Optimize>
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
+        <Authors>furyx639</Authors>
+        <Title>ExpandedStorage</Title>
+        <Description>Mod which allows Content Packs to add custom storage.</Description>
+        <PackageLicenseUrl>https://github.com/ImJustMatt/ExpandedStorage/blob/master/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/ImJustMatt/ExpandedStorage</RepositoryUrl>
+        <PackageId>furyx639.ExpandedStorage</PackageId>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="Microsoft.Build" />
-        <Reference Include="Microsoft.Build.Framework" />
-        <Reference Include="Microsoft.Build.Utilities.v4.0" />
-        <Reference Include="System" />
-        <Reference Include="System.Core" />
-        <Reference Include="System.Data" />
-        <Reference Include="System.IO.Compression" />
-        <Reference Include="System.Web.Extensions" />
-        <Reference Include="System.Xml" />
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.2.2" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Framework\ModConfig.cs" />
-        <Compile Include="Framework\ModConfigControls.cs" />
-        <Compile Include="Framework\ModConfigControlsRaw.cs" />
-        <Compile Include="Framework\Models\ContentData.cs" />
-        <Compile Include="Framework\Models\ExpandedStorageConfig.cs" />
-        <Compile Include="Framework\Patcher.cs" />
-        <Compile Include="Framework\Patches\ChestPatch.cs" />
-        <Compile Include="Framework\Patches\HarmonyPatch.cs" />
-        <Compile Include="Framework\Patches\InventoryMenuPatch.cs" />
-        <Compile Include="Framework\Patches\MenuWithInventoryPatch.cs" />
-        <Compile Include="Framework\Patches\ItemGrabMenuPatch.cs" />
-        <Compile Include="Framework\Patches\ItemPatch.cs" />
-        <Compile Include="Framework\Patches\ObjectPatch.cs" />
-        <Compile Include="Framework\UI\ChestOverlay.cs" />
-        <Compile Include="ExpandedStorage.cs" />
-        <Compile Include="Properties\AssemblyInfo.cs" />
+      <Folder Include="Properties" />
     </ItemGroup>
-    <ItemGroup>
-      <Content Include="manifest.json" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Include="packages.config" />
-    </ItemGroup>
-    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-    <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
-    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-      <PropertyGroup>
-        <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
-      </PropertyGroup>
-      <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.3.2.2\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
-    </Target>
     <Import Project="..\Common\Common.projitems" Label="Shared" />
-    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
-    </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
-
 </Project>

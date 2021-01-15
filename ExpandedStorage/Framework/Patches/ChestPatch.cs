@@ -43,8 +43,8 @@ namespace ExpandedStorage.Framework.Patches
         /// <summary>Draw chest with playerChoiceColor.</summary>
         public static bool draw_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
-            var config = ExpandedStorage.GetConfig(__instance.DisplayName);
-            if (config == null || ExpandedStorage.IsVanilla(__instance.DisplayName) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null || ExpandedStorage.IsVanilla(__instance) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
             
             var playerChoiceColor = __instance.playerChoiceColor.Value;
@@ -100,8 +100,8 @@ namespace ExpandedStorage.Framework.Patches
 
         public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
         {
-            var config = ExpandedStorage.GetConfig(__instance.DisplayName);
-            if (!local || config == null || ExpandedStorage.IsVanilla(__instance.DisplayName) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (!local || config == null || ExpandedStorage.IsVanilla(__instance) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
 
             var playerChoiceColor = __instance.playerChoiceColor.Value;
@@ -135,14 +135,9 @@ namespace ExpandedStorage.Framework.Patches
         /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
-            var config = ExpandedStorage.GetConfig(__instance.DisplayName);
+            var config = ExpandedStorage.GetConfig(__instance);
             if (config == null)
-            {
-                if (__instance.SpecialChestType != Chest.SpecialChestTypes.None)
-                    return true;
-                __result = Chest.capacity;
-                return false;
-            }
+                return true;
 
             __result = config.Capacity switch
             {

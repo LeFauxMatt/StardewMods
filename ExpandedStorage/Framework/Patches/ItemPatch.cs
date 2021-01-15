@@ -26,7 +26,7 @@ namespace ExpandedStorage.Framework.Patches
         public static bool canStackWith_Prefix(Item __instance, ISalable other, ref bool __result)
         {
             
-            if (__instance.ParentSheetIndex != 130 && !ExpandedStorage.HasConfig(__instance.Name))
+            if (!ExpandedStorage.HasConfig(__instance))
                 return true;
             if ((!(__instance is Chest chest) || chest.items.Count == 0) &&
                 (!(other is Chest otherChest) || otherChest.items.Count == 0))

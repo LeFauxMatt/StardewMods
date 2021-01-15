@@ -43,18 +43,16 @@ namespace ExpandedStorage
         private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
         
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static ExpandedStorageConfig GetConfig(string storageName) =>
-            ExpandedStorageConfigs.TryGetValue(storageName, out var config)
-                ? config
-                : null;
-        
+        public static ExpandedStorageConfig GetConfig(Item item) =>
+            ExpandedStorageConfigs.TryGetValue(item.Name, out var config) ? config : null;
+
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(string storageName) =>
-            ExpandedStorageConfigs.ContainsKey(storageName);
+        public static bool HasConfig(Item item) =>
+            item is StardewValley.Object && ExpandedStorageConfigs.ContainsKey(item.Name);
         
         /// <summary>Returns true if item is a Vanilla Storage.</summary>
-        public static bool IsVanilla(string storageName) =>
-            VanillaStorages.Contains(storageName);
+        public static bool IsVanilla(Item item) =>
+            item is Chest && VanillaStorages.Contains(item.Name);
 
         /// <summary>Returns Y-Offset to lower menu for valid instances.</summary>
         public static int Offset(MenuWithInventory menu) =>
@@ -101,6 +99,7 @@ namespace ExpandedStorage
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
             helper.Events.Input.ButtonPressed += OnButtonPressed;
             
@@ -123,7 +122,7 @@ namespace ExpandedStorage
         }
 
         /// <summary>
-        /// Load Json Assets Api and wait for IDs to be assigned.
+        /// Load Expanded Storage content packs
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -144,7 +143,7 @@ namespace ExpandedStorage
                 foreach (var expandedStorage in contentData.ExpandedStorage
                     .Where(s => !string.IsNullOrWhiteSpace(s.StorageName)))
                 {
-                    if (HasConfig(expandedStorage.StorageName))
+                    if (ExpandedStorageConfigs.ContainsKey(expandedStorage.StorageName))
                     {
                         Monitor.Log(
                             $"Cannot load {expandedStorage.StorageName} from {contentPack.Manifest.Name} {contentPack.Manifest.Version}: a storage with that name is already loaded",
@@ -157,6 +156,37 @@ namespace ExpandedStorage
                     }
                 }
             }
+        }
+        
+        /// <summary>
+        /// Fix any placed objects that require a name correction
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private static void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            var chestNames = new Dictionary<int, string>();
+            Utility.ForAllLocations(location =>
+            {
+                var chests = location.Objects.Pairs
+                    .Where(c => c.Value is Chest);
+
+                foreach (var chest in chests)
+                {
+                    var parentSheetIndex = chest.Value.ParentSheetIndex;
+                    if (!chestNames.TryGetValue(parentSheetIndex, out var chestName))
+                    {
+                        Game1.bigCraftablesInformation.TryGetValue(parentSheetIndex, out var chestInfo);
+                        if (!string.IsNullOrEmpty(chestInfo))
+                        {
+                            chestName = chestInfo.Split('/')[0];
+                            chestNames.Add(parentSheetIndex, chestName);
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(chestName) && chest.Value.Name != chestName)
+                        chest.Value.Name = chestName;
+                }
+            });
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -198,7 +228,8 @@ namespace ExpandedStorage
                 var location = Game1.currentLocation;
                 var pos = e.Cursor.Tile;
                 if (!location.objects.TryGetValue(pos, out var obj) ||
-                    !(obj is Chest && (!ExpandedStorageConfigs.TryGetValue(obj.name, out var data) || data.CanCarry)) ||
+                    !ExpandedStorageConfigs.TryGetValue(obj.name, out var data) ||
+                    !data.CanCarry ||
                     !Game1.player.addItemToInventoryBool(obj, true))
                     return;
                 location.objects.Remove(pos);
@@ -239,7 +270,7 @@ namespace ExpandedStorage
 
             var itemPos = e.Added
                 .LastOrDefault(p =>
-                    p.Value is Chest || p.Value.bigCraftable.Value && HasConfig(p.Value.DisplayName));
+                    p.Value is Chest || p.Value.bigCraftable.Value && HasConfig(p.Value));
             
             var obj = itemPos.Value;
             var pos = itemPos.Key;
