@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -39,13 +42,29 @@ namespace ExpandedStorage.Framework.UI
         public static int Skipped(InventoryMenu inventoryMenu) =>
             MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu) ? MenuHandler.Skipped : 0;
 
+        /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
+        public static IList<Item> Filtered(InventoryMenu inventoryMenu) =>
+            MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu)
+                ? MenuHandler.Items.Skip(MenuHandler.Skipped).ToList()
+                : inventoryMenu.actualInventory;
+
         /// <summary>Injected function to draw above chest menu but below tooltips</summary>
         /// <param name="b">The SpriteBatch to draw to</param>
         public static void Draw(SpriteBatch b)
         {
             MenuHandler?.Draw(b);
         }
+        
+        /// <summary>Injected function to draw below chest menu</summary>
+        /// <param name="b">The SpriteBatch to draw to</param>
+        public static void DrawUnder(SpriteBatch b)
+        {
+            MenuHandler?.DrawUnder(b);
+        }
 
+        public static bool ContextMatches(InventoryMenu inventoryMenu) =>
+            MenuHandler?.ContextMatches(inventoryMenu) ?? false;
+        
         private static MenuHandler MenuHandler
         {
             get => PerScreenMenuHandler.Value;

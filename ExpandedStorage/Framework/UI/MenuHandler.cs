@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common;
+using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -23,12 +25,19 @@ namespace ExpandedStorage.Framework.UI
         private readonly int _capacity;
         private readonly int _cols;
         private int _skipped;
+        private ExpandedStorageTab _currentTab;
 
         public int Skipped
         {
             get => (int) MathHelper.Clamp(_skipped, 0, _items.Count.RoundUp(_cols) - _capacity);
             set => _skipped = value;
         }
+
+        public IList<Item> Items => _items
+            .Where(i => _currentTab == null || !_currentTab.AllowList.Any() || _currentTab.AllowList.Contains(i.Category))
+            .Where(i => _currentTab == null || !_currentTab.BlockList.Any() || !_currentTab.BlockList.Contains(i.Category))
+            .ToList();
+
         private bool ContextMatches(MenuHandler handler) =>
             ReferenceEquals(_context, handler._context);
         public bool ContextMatches(InventoryMenu inventoryMenu) =>
@@ -37,24 +46,30 @@ namespace ExpandedStorage.Framework.UI
         internal MenuHandler(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper, ModConfigControls controls, MenuHandler menuHandler = null)
         {
             var inventoryMenu = menu.ItemsToGrabMenu;
-            
-            _overlay = new MenuOverlay(inventoryMenu, events.GameLoop,
+            var config = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
+            var tabs = config != null
+                ? config.Tabs.Select(t => ExpandedStorage.GetTab($"{config.ModUniqueId}/{t}")).ToList()
+                : new List<ExpandedStorageTab>();
+            _overlay = new MenuOverlay(inventoryMenu, tabs, events.GameLoop,
                 () => _skipped > 0,
                 () => _skipped < _items.Count - _capacity,
-                () => Scroll(1),
-                () => Scroll(-1));
+                Scroll,
+                SetTab);
             _inputEvents = events.Input;
             _inputHelper = inputHelper;
             _controls = controls;
-
+            
             _context = menu.context;
             _items = inventoryMenu.actualInventory;
             _capacity = inventoryMenu.capacity;
             _cols = inventoryMenu.capacity / inventoryMenu.rows;
 
             if (menuHandler != null && ContextMatches(menuHandler))
-                _skipped = menuHandler.Skipped;
-            
+            {
+                _skipped = menuHandler._skipped;
+                _currentTab = menuHandler._currentTab;
+            }
+
             // Events
             _inputEvents.ButtonPressed += OnButtonPressed;
             _inputEvents.CursorMoved += OnCursorMoved;
@@ -73,10 +88,15 @@ namespace ExpandedStorage.Framework.UI
             _overlay.Draw(b);
         }
         
+        internal void DrawUnder(SpriteBatch b)
+        {
+            _overlay.DrawUnder(b);
+        }
+        
         /// <summary>Attempts to scroll offset by one row of slots relative to the inventory menu.</summary>
         /// <param name="direction">The direction which to scroll to.</param>
         /// <returns>True if the value of offset changed.</returns>
-        internal bool Scroll(int direction)
+        private bool Scroll(int direction)
         {
             if (direction > 0 && Skipped > 0)
                 Skipped -= _cols;
@@ -85,6 +105,11 @@ namespace ExpandedStorage.Framework.UI
             else
                 return false;
             return true;
+        }
+
+        private void SetTab(ExpandedStorageTab tab)
+        {
+            _currentTab = tab;
         }
         
         /// <summary>Track toolbar changes before user input.</summary>

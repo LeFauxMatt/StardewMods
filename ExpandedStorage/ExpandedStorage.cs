@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -17,6 +19,9 @@ namespace ExpandedStorage
     {
         /// <summary>Dictionary list of objects which are Expanded Storage</summary>
         private static readonly IDictionary<string, ExpandedStorageConfig> ExpandedStorageConfigs = new Dictionary<string, ExpandedStorageConfig>();
+
+        /// <summary>Dictionary list of Expanded Storage tabs</summary>
+        private static readonly IDictionary<string, ExpandedStorageTab> ExpandedStorageTabs = new Dictionary<string, ExpandedStorageTab>();
 
         /// <summary>List of vanilla storages Display Names</summary>
         private static readonly IList<string> VanillaStorages = new List<string>()
@@ -46,6 +51,11 @@ namespace ExpandedStorage
         /// <summary>Returns true if item is a Vanilla Storage.</summary>
         public static bool IsVanilla(Item item) =>
             item is Chest && VanillaStorages.Contains(item.Name);
+        
+        /// <summary>Returns ExpandedStorageTab by tab name.</summary>
+        public static ExpandedStorageTab GetTab(string tabName) =>
+            ExpandedStorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
+        
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
@@ -107,19 +117,40 @@ namespace ExpandedStorage
                 
                 Monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
                 var contentData = contentPack.ReadJsonFile<ContentData>("expandedStorage.json");
+                
+                // Load expanded storage objects
                 foreach (var expandedStorage in contentData.ExpandedStorage
                     .Where(s => !string.IsNullOrWhiteSpace(s.StorageName)))
                 {
                     if (ExpandedStorageConfigs.ContainsKey(expandedStorage.StorageName))
                     {
-                        Monitor.Log(
-                            $"Cannot load {expandedStorage.StorageName} from {contentPack.Manifest.Name} {contentPack.Manifest.Version}: a storage with that name is already loaded",
-                            LogLevel.Warn);
+                        Monitor.Log($"Duplicate storage {expandedStorage.StorageName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
                     }
                     else
                     {
                         expandedStorage.ModUniqueId = contentPack.Manifest.UniqueID;
                         ExpandedStorageConfigs.Add(expandedStorage.StorageName, expandedStorage);
+                    }
+                }
+                
+                // Load expanded storage tabs
+                foreach (var storageTab in contentData.StorageTabs
+                    .Where(t => !string.IsNullOrWhiteSpace(t.TabName) && !string.IsNullOrWhiteSpace(t.TabImage)))
+                {
+                    var tabName = $"{contentPack.Manifest.UniqueID}/{storageTab.TabName}";
+                    var assetName = $"assets/{storageTab.TabImage}";
+                    if (ExpandedStorageTabs.ContainsKey(tabName))
+                    {
+                        Monitor.Log($"Duplicate tab {storageTab.TabName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
+                    }
+                    else
+                    {
+                        if (contentPack.HasFile(assetName))
+                            storageTab.Texture = contentPack.LoadAsset<Texture2D>(assetName);
+                        else
+                            storageTab.Texture = Helper.Content.Load<Texture2D>(assetName);
+                        storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
+                        ExpandedStorageTabs.Add(tabName, storageTab);
                     }
                 }
             }

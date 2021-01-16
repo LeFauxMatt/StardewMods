@@ -26,7 +26,7 @@ namespace ExpandedStorage.Framework.Patches
                     transpiler: new HarmonyMethod(GetType(), nameof(ItemGrabMenu_ctor)));
             }
 
-            if (Config.ShowOverlayArrows)
+            if (Config.ShowOverlayArrows || Config.ShowTabs)
             {
                 harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
                     transpiler: new HarmonyMethod(GetType(), nameof(ItemGrabMenu_draw)));
@@ -43,21 +43,17 @@ namespace ExpandedStorage.Framework.Patches
                 patternPatches
                     .Find(IL.Ldarg_S((byte) 4), OC.Ldc_I4_1, OC.Ldc_I4_1, OC.Ldc_I4_0, OC.Ldc_I4_0)
                     .Log("Setting yOffset of base MenuWithInventory")
-                    .Patch(instruction => new[]
-                    {
-                        IL.Ldarg_S((byte) 16),
-                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(object))
-                    });
+                    .Patch(BaseYOffsetPatch);
             }
 
             if (Config.AllowModdedCapacity)
             {
                 patternPatches
                     .Find(IL.Isinst(typeof(Chest)), IL.Callvirt(typeof(Chest), nameof(Chest.GetActualCapacity)), OC.Ldc_I4_S, OC.Beq)
-                    .Log("Changing jump condition to Bge.")
-                    .Patch(instruction => new[] { IL.Bge((Label) instruction.operand) });
+                    .Log("Changing jump condition to Bge 12.")
+                    .Patch(JumpCapacityPatch);
             }
-
+            
             if (Config.ExpandInventoryMenu)
             {
                 patternPatches
@@ -65,13 +61,7 @@ namespace ExpandedStorage.Framework.Patches
                         IL.Stfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu)))
                     .Find(OC.Ldc_I4_M1)
                     .Log("Overriding default values for capacity and rows.")
-                    .Patch(instruction => new[]
-                    {
-                        IL.Ldarg_S((byte) 16),
-                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Capacity), typeof(object)),
-                        IL.Ldarg_S((byte) 16),
-                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Rows), typeof(object))
-                    })
+                    .Patch(CapacityRowsPatch)
                     .Skip(1);
             }
 
@@ -87,6 +77,14 @@ namespace ExpandedStorage.Framework.Patches
         {
             var patternPatches = new PatternPatches(instructions, Monitor);
 
+            if (Config.ShowTabs)
+            {
+                patternPatches
+                    .Find(IL.Callvirt(typeof(SpriteBatch), nameof(SpriteBatch.Draw)))
+                    .Log("Adding Overlay DrawUnder method to ItemGrabMenu.")
+                    .Patch(UnderlayPatch);
+            }
+
             // Offset backpack icon
             if (Config.ExpandInventoryMenu)
             {
@@ -94,13 +92,7 @@ namespace ExpandedStorage.Framework.Patches
                     .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu)))
                     .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))
                     .Log("Adding Offset to yPositionOnScreen.")
-                    .Patch(instruction => new[]
-                    {
-                        instruction,
-                        OC.Ldarg_0,
-                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)),
-                        OC.Add
-                    })
+                    .Patch(AddOffsetPatch)
                     .Repeat(3);
             }
             
@@ -111,13 +103,8 @@ namespace ExpandedStorage.Framework.Patches
                     .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeButton)),
                         OC.Ldarg_1,
                         IL.Callvirt(typeof(ClickableTextureComponent), nameof(ClickableTextureComponent.draw), typeof(SpriteBatch)))
-                    .Log("Adding DrawArrows method to ItemGrabMenu.")
-                    .Patch(instruction => new[]
-                    {
-                        instruction,
-                        OC.Ldarg_1,
-                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Draw), typeof(SpriteBatch))
-                    });
+                    .Log("Adding Overlay Draw method to ItemGrabMenu.")
+                    .Patch(OverlayPatch);
             }
             
             foreach (var patternPatch in patternPatches)
@@ -125,6 +112,62 @@ namespace ExpandedStorage.Framework.Patches
             
             if (!patternPatches.Done)
                 Monitor.Log($"Failed to apply all patches in {nameof(ItemGrabMenu_draw)}", LogLevel.Warn);
+        }
+        
+        /// <summary>Replaces 0 yOffset with ExpandedMenu.Offset</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void BaseYOffsetPatch(LinkedList<CodeInstruction> instructions)
+        {
+            instructions.RemoveLast();
+            instructions.AddLast(IL.Ldarg_S((byte) 16));
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(object)));
+        }
+        
+        /// <summary>Replaces jump condition for Inventory Menu to >= 12</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void JumpCapacityPatch(LinkedList<CodeInstruction> instructions)
+        {
+            var instruction = instructions.Last.Value;
+            instructions.RemoveLast();
+            instructions.RemoveLast();
+            instructions.AddLast(IL.Ldc_I4_S((byte) 12));
+            instructions.AddLast(IL.Bge(instruction.operand));
+        }
+        
+        /// <summary>Replaced capacity and rows to ExpandedMenu.Capacity and ExpandedMenu.Rows</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void CapacityRowsPatch(LinkedList<CodeInstruction> instructions)
+        {
+            instructions.RemoveLast();
+            instructions.AddLast(IL.Ldarg_S((byte) 16));
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Capacity), typeof(object)));
+            instructions.AddLast(IL.Ldarg_S((byte) 16));
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Rows), typeof(object)));
+        }
+        
+        /// <summary>Adds a call to ExpandedMenu.DrawUnder for Overlay</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void UnderlayPatch(LinkedList<CodeInstruction> instructions)
+        {
+            instructions.AddLast(OC.Ldarg_1);
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.DrawUnder), typeof(SpriteBatch)));
+        }
+        
+        /// <summary>Adds a call to ExpandedMenu.Draw for Overlay</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void OverlayPatch(LinkedList<CodeInstruction> instructions)
+        {
+            instructions.AddLast(OC.Ldarg_1);
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Draw), typeof(SpriteBatch)));
+        }
+        
+        /// <summary>Adds the value of ExpandedMenu.Offset to the stack</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void AddOffsetPatch(LinkedList<CodeInstruction> instructions)
+        {
+            instructions.AddLast(OC.Ldarg_0);
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)));
+            instructions.AddLast(OC.Add);
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -15,8 +17,8 @@ namespace ExpandedStorage.Framework.UI
         private readonly IGameLoopEvents _gameLoopEvents;
         private readonly Func<bool> _canScrollUp;
         private readonly Func<bool> _canScrollDown;
-        private readonly Action _scrollUp;
-        private readonly Action _scrollDown;
+        private readonly Func<int, bool> _scroll;
+        private readonly Action<ExpandedStorageTab> _setTab;
         
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
         private readonly int _screenId;
@@ -36,15 +38,35 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Scrolls inventory menu down one row.</summary>
         private ClickableTextureComponent _downArrow;
         
-        public MenuOverlay(InventoryMenu menu, IGameLoopEvents gameLoopGameLoopEvents, Func<bool> canScrollUp, Func<bool> canScrollDown, Action scrollUp, Action scrollDown)
+        /// <summary>Chest menu tab components.</summary>
+        private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
+        
+        /// <summary>Tabs configured for Chest Menu</summary>
+        private readonly IList<ExpandedStorageTab> _tabConfigs;
+
+        /// <summary>Currently selected tab.</summary>
+        private string _currentTab;
+        
+        /// <summary>Y-Position for tabs when not selected.</summary>
+        private int _tabY;
+
+        /// <summary>Draw hoverText over chest menu.</summary>
+        private string _hoverText;
+        
+        public MenuOverlay(InventoryMenu menu, IList<ExpandedStorageTab> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents,
+            Func<bool> canScrollUp,
+            Func<bool> canScrollDown,
+            Func<int, bool> scroll,
+            Action<ExpandedStorageTab> setTab)
         {
             _menu = menu;
+            _tabConfigs = tabConfigs;
             _gameLoopEvents = gameLoopGameLoopEvents;
             _canScrollUp = canScrollUp;
             _canScrollDown = canScrollDown;
-            _scrollUp = scrollUp;
-            _scrollDown = scrollDown;
-            
+            _scroll = scroll;
+            _setTab = setTab;
+
             _screenId = Context.ScreenId;
             _lastViewport = new Rectangle(Game1.uiViewport.X, Game1.uiViewport.Y, Game1.uiViewport.Width, Game1.uiViewport.Height);
             
@@ -74,6 +96,23 @@ namespace ExpandedStorage.Framework.UI
                 Game1.mouseCursors,
                 new Rectangle(421, 472, 11, 12),
                 Game1.pixelZoom);
+
+            _tabs.Clear();
+            var xPosition = bounds.Left;
+            _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
+            foreach (var tabConfig in _tabConfigs)
+            {
+                var tab = new ClickableTextureComponent(
+                    new Rectangle(xPosition, _tabY, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                    tabConfig.Texture,
+                    Rectangle.Empty,
+                    Game1.pixelZoom)
+                {
+                    name = tabConfig.TabName
+                };
+                _tabs.Add(tab);
+                xPosition += tab.bounds.Width;
+            }
         }
 
         /// <summary>Raised after the game state is updated (≈60 times per second).</summary>
@@ -115,8 +154,29 @@ namespace ExpandedStorage.Framework.UI
                 _upArrow.draw(b);
             if (_canScrollDown.Invoke())
                 _downArrow.draw(b);
+
+            if (_hoverText != null)
+                IClickableMenu.drawHoverText(b, _hoverText, Game1.smallFont);
         }
-        
+
+        /// <summary>Draws overlay to screen</summary>
+        /// <param name="b">The SpriteBatch to draw to</param>
+        internal void DrawUnder(SpriteBatch b)
+        {
+            if (Context.ScreenId != _screenId)
+                return;
+            
+            if (_drawCount == 0)
+                InitComponents();
+            _drawCount++;
+            
+            foreach (var tab in _tabs)
+            {
+                tab.bounds.Y = _tabY + (tab.name == _currentTab ? 1 * Game1.pixelZoom : 0);
+                tab.draw(b);
+            }
+        }
+
         /// <summary>Handles Left-Click interaction with overlay elements</summary>
         /// <param name="x">x-coordinate of left-click</param>
         /// <param name="y">Y-Coordinate of left-click</param>
@@ -129,7 +189,7 @@ namespace ExpandedStorage.Framework.UI
             
             if (_upArrow.containsPoint(x, y))
             {
-                _scrollUp.Invoke();
+                _scroll.Invoke(1);
                 if (playSound)
                     Game1.playSound("shwip");
                 return true;
@@ -137,9 +197,20 @@ namespace ExpandedStorage.Framework.UI
             
             if (_downArrow.containsPoint(x, y))
             {
-                _scrollDown.Invoke();
+                _scroll.Invoke(-1);
                 if (playSound)
                     Game1.playSound("shwip");
+                return true;
+            }
+            
+            var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
+            if (tab != null)
+            {
+                _currentTab = _currentTab == tab.name ? null : tab.name;
+                var tabConfig = _tabConfigs.FirstOrDefault(t => t.TabName.Equals(_currentTab, StringComparison.OrdinalIgnoreCase));
+                _setTab.Invoke(tabConfig);
+                if (playSound)
+                    Game1.playSound("smallSelect");
                 return true;
             }
 
@@ -156,6 +227,9 @@ namespace ExpandedStorage.Framework.UI
             
             _upArrow.tryHover(x, y, 0.25f);
             _downArrow.tryHover(x, y, 0.25f);
+
+            var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
+            _hoverText = tab?.name;
         }
     }
 }

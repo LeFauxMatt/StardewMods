@@ -35,8 +35,10 @@ namespace Common.HarmonyPatches
         public IEnumerator<CodeInstruction> GetEnumerator()
         {
             var currentOperation = _patternPatches.Dequeue();
+            var rawStack = new LinkedList<CodeInstruction>();
             var skipped = 0;
             var done = false;
+
             foreach (var instruction in _instructions)
             {
                 // Skipped instructions
@@ -49,18 +51,20 @@ namespace Common.HarmonyPatches
                 // Pattern does not match or done matching patterns
                 if (done || !currentOperation.Matches(instruction))
                 {
-                    yield return instruction;
+                    rawStack.AddLast(instruction);
                     continue;
                 }
                 
                 // Return patched code
                 if (currentOperation.Text != null)
                     _monitor.Log(currentOperation.Text);
-                var patches = currentOperation.Patches(instruction);
-                foreach (var patch in patches)
+                rawStack.AddLast(instruction);
+                currentOperation.Patches(rawStack);
+                foreach (var patch in rawStack)
                 {
                     yield return patch;
                 }
+                rawStack.Clear();
                 skipped = currentOperation.Skipped;
                 
                 // Repeat
@@ -72,6 +76,11 @@ namespace Common.HarmonyPatches
                     currentOperation = _patternPatches.Dequeue();
                 else
                     done = true;
+            }
+
+            foreach (var instruction in rawStack)
+            {
+                yield return instruction;
             }
         }
         
