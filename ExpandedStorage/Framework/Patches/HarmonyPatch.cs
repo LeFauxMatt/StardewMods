@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Harmony;
@@ -51,6 +50,8 @@ namespace ExpandedStorage.Framework.Patches
                 new CodeInstruction(OpCodes.Brtrue_S, operand);
             internal static CodeInstruction Call(Type type, string method = null, params Type[] parameters) =>
                 new CodeInstruction(OpCodes.Call, AccessTools.Method(type, method, parameters));
+            internal static CodeInstruction Call_Get(Type type, string method = null) =>
+                new CodeInstruction(OpCodes.Call, AccessTools.Property(type, method).GetGetMethod());
             internal static CodeInstruction Callvirt(Type type, string method = null, params Type[] parameters) =>
                 new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(type, method, parameters));
             internal static CodeInstruction Callvirt_Get(Type type, string method = null) =>

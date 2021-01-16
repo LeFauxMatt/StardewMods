@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using Common.HarmonyPatches;
 using ExpandedStorage.Framework.UI;
 using Harmony;
@@ -55,7 +54,7 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     instruction,
                     OC.Ldarg_0,
-                    IL.Call(typeof(ChestOverlay), nameof(ChestOverlay.Offset), typeof(InventoryMenu)),
+                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Skipped), typeof(InventoryMenu)),
                     OC.Add
                 });
             
@@ -78,7 +77,7 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     instruction,
                     OC.Ldarg_0,
-                    IL.Call(typeof(ChestOverlay), nameof(ChestOverlay.Offset), typeof(InventoryMenu)),
+                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Skipped), typeof(InventoryMenu)),
                     OC.Add
                 });
             
@@ -101,7 +100,7 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     instruction,
                     OC.Ldarg_0,
-                    IL.Call(typeof(ChestOverlay), nameof(ChestOverlay.Offset), typeof(InventoryMenu)),
+                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Skipped), typeof(InventoryMenu)),
                     OC.Add
                 });
             
@@ -124,7 +123,7 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     instruction,
                     OC.Ldarg_0,
-                    IL.Call(typeof(ChestOverlay), nameof(ChestOverlay.Offset), typeof(InventoryMenu)),
+                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Skipped), typeof(InventoryMenu)),
                     OC.Sub
                 });
 
@@ -136,7 +135,7 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     instruction,
                     OC.Ldarg_0,
-                    IL.Call(typeof(ChestOverlay), nameof(ChestOverlay.Offset), typeof(InventoryMenu)),
+                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Skipped), typeof(InventoryMenu)),
                     OC.Add
                 })
                 .Repeat(-1);

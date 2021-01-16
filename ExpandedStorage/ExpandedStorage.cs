@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Menus;
 using StardewValley.Objects;
-using SDVObject = StardewValley.Object;
 
 namespace ExpandedStorage
 {
@@ -36,53 +32,20 @@ namespace ExpandedStorage
         /// <summary>Control scheme.</summary>
         private ModConfigControls _controls;
 
-        /// <summary>Overlays ItemGrabMenu with UI elements provided by ExpandedStorage.</summary>
-        private readonly PerScreen<ChestOverlay> _chestOverlay = new PerScreen<ChestOverlay>();
-        
         /// <summary>Tracks previously held chest before placing into world.</summary>
         private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
-        
+
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
         public static ExpandedStorageConfig GetConfig(Item item) =>
             ExpandedStorageConfigs.TryGetValue(item.Name, out var config) ? config : null;
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
         public static bool HasConfig(Item item) =>
-            item is StardewValley.Object && ExpandedStorageConfigs.ContainsKey(item.Name);
+            item is Object && ExpandedStorageConfigs.ContainsKey(item.Name);
         
         /// <summary>Returns true if item is a Vanilla Storage.</summary>
         public static bool IsVanilla(Item item) =>
             item is Chest && VanillaStorages.Contains(item.Name);
-
-        /// <summary>Returns Y-Offset to lower menu for valid instances.</summary>
-        public static int Offset(MenuWithInventory menu) =>
-            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None}}
-                ? 64 * (Rows(menu) - 3)
-                : 0;
-        
-        /// <summary>Returns Y-Offset to lower menu for valid contexts.</summary>
-        public static int Offset(object context) =>
-            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None}
-                ? 64 * (Rows(context) - 3)
-                : 0;
-        
-        /// <summary>Returns Display Capacity of MenuWithInventory.</summary>
-        public static int Capacity(MenuWithInventory menu) =>
-            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest}
-                ? (int) MathHelper.Clamp(chest.GetActualCapacity(), 36, 72)
-                : Chest.capacity;
-        
-        /// <summary>Returns Display Rows of MenuWithInventory.</summary>
-        public static int Rows(MenuWithInventory menu) =>
-            menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest}
-                ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m),3, 6)
-                : 3;
-        
-        /// <summary>Returns Display Rows of MenuWithInventory.</summary>
-        public static int Rows(object context) =>
-            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest
-                ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m),3, 6)
-                : 3;
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
@@ -91,25 +54,29 @@ namespace ExpandedStorage
             // Disable unready features in release
             _config.ShowSearchBar = false;
 #endif
+
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
                 Monitor.Log("Expanded Storage should not be run alongside Carry Chest", LogLevel.Warn);
                 _config.AllowCarryingChests = false;
             }
 
+            ExpandedMenu.Init(helper.Events, helper.Input, _config, _controls);
+
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
-            helper.Events.Input.ButtonPressed += OnButtonPressed;
-            
+
             if (_config.AllowCarryingChests)
             {
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
+                helper.Events.Input.ButtonPressed += OnButtonPressed;
             }
             
-            if (_config.AllowModdedCapacity)
-                helper.Events.Display.MenuChanged += OnMenuChanged;
+            helper.Events.GameLoop.SaveLoaded += delegate
+            {
+                helper.Events.GameLoop.UpdateTicking += OnUpdateTickingOnce;
+            };
 
             // Harmony Patches
             new Patcher(ModManifest.UniqueID).ApplyAll(
@@ -157,14 +124,25 @@ namespace ExpandedStorage
                 }
             }
         }
-        
-        /// <summary>
-        /// Fix any placed objects that require a name correction
-        /// </summary>
+
+        /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private static void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
         {
+            if (!Context.IsPlayerFree)
+                return;
+            _previousHeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
+        }
+        
+        /// <summary>Fix any placed objects that require a name correction.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnUpdateTickingOnce(object sender, UpdateTickingEventArgs e)
+        {
+            if (!Context.IsPlayerFree)
+                return;
+            Helper.Events.GameLoop.UpdateTicking -= OnUpdateTickingOnce;
             var chestNames = new Dictionary<int, string>();
             Utility.ForAllLocations(location =>
             {
@@ -183,20 +161,14 @@ namespace ExpandedStorage
                             chestNames.Add(parentSheetIndex, chestName);
                         }
                     }
-                    if (!string.IsNullOrEmpty(chestName) && chest.Value.Name != chestName)
-                        chest.Value.Name = chestName;
+
+                    if (string.IsNullOrEmpty(chestName) || chest.Value.name == chestName)
+                        continue;
+                    
+                    Monitor.Log($"Updating storage in {location.Name} at {chest.Key.X},{chest.Key.Y} to {chestName}");
+                    chest.Value.name = chestName;
                 }
             });
-        }
-
-        /// <summary>Track toolbar changes before user input.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
-        {
-            if (!Context.IsPlayerFree)
-                return;
-            _previousHeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
         }
         
         /// <summary>Track toolbar changes before user input.</summary>
@@ -204,60 +176,20 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            // Button Controls
-            if (_chestOverlay.Value != null)
-            {
-                if (e.Button == _controls.ScrollDown)
-                {
-                    _chestOverlay.Value.Scroll(-1);
-                    Helper.Input.Suppress(e.Button);
-                }
-                else if (e.Button == _controls.ScrollUp)
-                {
-                    _chestOverlay.Value.Scroll(1);
-                    Helper.Input.Suppress(e.Button);
-                }
-            }
-            
-            if (!Context.IsPlayerFree)
+            if (!Context.IsPlayerFree || e.Button != SButton.MouseLeft && e.Button != _controls.CarryChest || Game1.player.CurrentItem != null)
                 return;
             
-            // Carry Chests
-            if (_config.AllowCarryingChests && (e.Button == SButton.MouseLeft || e.Button == _controls.CarryChest) && Game1.player.CurrentItem == null)
-            {
-                var location = Game1.currentLocation;
-                var pos = e.Cursor.Tile;
-                if (!location.objects.TryGetValue(pos, out var obj) ||
-                    !ExpandedStorageConfigs.TryGetValue(obj.name, out var data) ||
-                    !data.CanCarry ||
-                    !Game1.player.addItemToInventoryBool(obj, true))
-                    return;
-                location.objects.Remove(pos);
-                Helper.Input.Suppress(e.Button);
-            }
+            var location = Game1.currentLocation;
+            var pos = e.Cursor.Tile;
+            if (!location.objects.TryGetValue(pos, out var obj) ||
+                !ExpandedStorageConfigs.TryGetValue(obj.name, out var data) ||
+                !data.CanCarry ||
+                !Game1.player.addItemToInventoryBool(obj, true))
+                return;
+            location.objects.Remove(pos);
+            Helper.Input.Suppress(e.Button);
         }
-        
-        /// <summary>
-        /// Resets scrolling/overlay when chest menu exits or context changes.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
-        {
-            // Menu is exited or context has changed
-            if (e.NewMenu is null ||
-                e.NewMenu is ItemGrabMenu newMenu &&
-                _chestOverlay.Value != null &&
-                !ReferenceEquals(newMenu.context, _chestOverlay.Value.Menu?.context))
-            {
-                _chestOverlay.Value = null;
-            }
-            
-            // Add new overlay
-            if (e.NewMenu is ItemGrabMenu menu)
-                _chestOverlay.Value = new ChestOverlay(menu, Helper.Events, Helper.Input);
-        }
-        
+
         /// <summary>
         /// Converts objects to modded storage when placed in the world.
         /// </summary>

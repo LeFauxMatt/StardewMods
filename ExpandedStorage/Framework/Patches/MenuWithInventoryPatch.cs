@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection.Emit;
 using Common.HarmonyPatches;
 using ExpandedStorage.Framework.UI;
 using Harmony;
@@ -27,12 +26,12 @@ namespace ExpandedStorage.Framework.Patches
             
             patternPatches
                 .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))
-                .Log("Shifting yPosition down by ChestOverlay.YOffset.")
+                .Log("Adding Offset to yPositionOnScreen.")
                 .Patch(instruction => new[]
                 {
                     instruction,
                     OC.Ldarg_0,
-                    IL.Call(typeof(ExpandedStorage), nameof(ExpandedStorage.Offset), typeof(MenuWithInventory)),
+                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)),
                     OC.Add
                 })
                 .Repeat(-1);

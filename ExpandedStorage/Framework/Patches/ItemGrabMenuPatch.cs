@@ -34,7 +34,7 @@ namespace ExpandedStorage.Framework.Patches
         }
 
         /// <summary>Loads default chest InventoryMenu when storage has modded capacity.</summary>
-        static IEnumerable<CodeInstruction> ItemGrabMenu_ctor(ILGenerator generator, IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> ItemGrabMenu_ctor(IEnumerable<CodeInstruction> instructions)
         {
             var patternPatches = new PatternPatches(instructions, Monitor);
 
@@ -46,7 +46,7 @@ namespace ExpandedStorage.Framework.Patches
                     .Patch(instruction => new[]
                     {
                         IL.Ldarg_S((byte) 16),
-                        IL.Call(typeof(ExpandedStorage), nameof(ExpandedStorage.Offset), typeof(object))
+                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(object))
                     });
             }
 
@@ -67,8 +67,10 @@ namespace ExpandedStorage.Framework.Patches
                     .Log("Overriding default values for capacity and rows.")
                     .Patch(instruction => new[]
                     {
-                        OC.Ldarg_0, IL.Call(typeof(ExpandedStorage), nameof(ExpandedStorage.Capacity), typeof(MenuWithInventory)),
-                        OC.Ldarg_0, IL.Call(typeof(ExpandedStorage), nameof(ExpandedStorage.Rows), typeof(MenuWithInventory))
+                        IL.Ldarg_S((byte) 16),
+                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Capacity), typeof(object)),
+                        IL.Ldarg_S((byte) 16),
+                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Rows), typeof(object))
                     })
                     .Skip(1);
             }
@@ -91,12 +93,12 @@ namespace ExpandedStorage.Framework.Patches
                 patternPatches
                     .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu)))
                     .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))
-                    .Log("Adding Offset to yPositionOnScreen")
+                    .Log("Adding Offset to yPositionOnScreen.")
                     .Patch(instruction => new[]
                     {
                         instruction,
                         OC.Ldarg_0,
-                        IL.Call(typeof(ExpandedStorage), nameof(ExpandedStorage.Offset), typeof(MenuWithInventory)),
+                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)),
                         OC.Add
                     })
                     .Repeat(3);
@@ -114,7 +116,7 @@ namespace ExpandedStorage.Framework.Patches
                     {
                         instruction,
                         OC.Ldarg_1,
-                        IL.Call(typeof(ChestOverlay), nameof(ChestOverlay.DrawArrows), typeof(SpriteBatch))
+                        IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Draw), typeof(SpriteBatch))
                     });
             }
             
