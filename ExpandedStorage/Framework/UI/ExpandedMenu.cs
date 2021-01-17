@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -35,9 +37,11 @@ namespace ExpandedStorage.Framework.UI
                 ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
                 : 3;
 
-        /// <summary>Returns the number of skipped slots in the InventoryMenu.</summary>
-        public static int Skipped(InventoryMenu inventoryMenu) =>
-            MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu) ? MenuHandler.Skipped : 0;
+        /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
+        public static IList<Item> Filtered(InventoryMenu inventoryMenu) =>
+            MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu)
+                ? MenuHandler.Items
+                : inventoryMenu.actualInventory;
 
         /// <summary>Injected function to draw above chest menu but below tooltips</summary>
         /// <param name="b">The SpriteBatch to draw to</param>
@@ -45,7 +49,17 @@ namespace ExpandedStorage.Framework.UI
         {
             MenuHandler?.Draw(b);
         }
+        
+        /// <summary>Injected function to draw below chest menu</summary>
+        /// <param name="b">The SpriteBatch to draw to</param>
+        public static void DrawUnder(SpriteBatch b)
+        {
+            MenuHandler?.DrawUnder(b);
+        }
 
+        public static bool ContextMatches(InventoryMenu inventoryMenu) =>
+            MenuHandler?.ContextMatches(inventoryMenu) ?? false;
+        
         private static MenuHandler MenuHandler
         {
             get => PerScreenMenuHandler.Value;

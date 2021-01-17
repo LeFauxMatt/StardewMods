@@ -27,13 +27,7 @@ namespace ExpandedStorage.Framework.Patches
             patternPatches
                 .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))
                 .Log("Adding Offset to yPositionOnScreen.")
-                .Patch(instruction => new[]
-                {
-                    instruction,
-                    OC.Ldarg_0,
-                    IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)),
-                    OC.Add
-                })
+                .Patch(AddOffsetPatch)
                 .Repeat(-1);
             
             foreach (var patternPatch in patternPatches)
@@ -41,6 +35,15 @@ namespace ExpandedStorage.Framework.Patches
             
             if (!patternPatches.Done)
                 Monitor.Log($"Failed to apply all patches in {nameof(MenuWithInventory_draw)}", LogLevel.Warn);
+        }
+        
+        /// <summary>Adds the value of ExpandedMenu.Offset to the stack</summary>
+        /// <param name="instructions">List of instructions preceding patch</param>
+        private static void AddOffsetPatch(LinkedList<CodeInstruction> instructions)
+        {
+            instructions.AddLast(OC.Ldarg_0);
+            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)));
+            instructions.AddLast(OC.Add);
         }
     }
 }

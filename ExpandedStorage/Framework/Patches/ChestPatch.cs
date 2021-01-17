@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,19 +26,47 @@ namespace ExpandedStorage.Framework.Patches
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(
-                AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
-                prefix: new HarmonyMethod(GetType(), nameof(draw_Prefix)));
+            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
+                new HarmonyMethod(GetType(), nameof(draw_Prefix)));
             
-            harmony.Patch(
-                AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float, T.Bool}),
-                prefix: new HarmonyMethod(GetType(), nameof(drawLocal_Prefix)));
+            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float, T.Bool}),
+                new HarmonyMethod(GetType(), nameof(drawLocal_Prefix)));
 
-            if (!Config.AllowModdedCapacity)
-                return;
+            if (Config.AllowRestrictedStorage)
+            {
+                harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.addItem), new[] {typeof(Item)}),
+                    new HarmonyMethod(GetType(), nameof(addItem_Prefix)));
+            }
+
+            if (Config.AllowModdedCapacity)
+            {
+                harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.GetActualCapacity)),
+                    new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix)));
+            }
+        }
+
+        /// <summary>Prevent adding item if filtered.</summary>
+        public static bool addItem_Prefix(Chest __instance, Item item, ref Item __result)
+        {
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null || !config.AllowList.Any() && !config.BlockList.Any())
+                return true;
             
-            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.GetActualCapacity)),
-                prefix: new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix)));
+            // Non-empty allow list and item category not present
+            if (config.AllowList.Any() && !config.AllowList.Contains(item.Category))
+            {
+                __result = item;
+                return false;
+            }
+
+            // Non-empty block list and item category is present
+            if (config.BlockList.Any() && config.BlockList.Contains(item.Category))
+            {
+                __result = item;
+                return false;
+            }
+            
+            return true;
         }
 
         /// <summary>Draw chest with playerChoiceColor.</summary>

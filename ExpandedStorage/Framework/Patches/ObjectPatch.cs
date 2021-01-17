@@ -15,12 +15,11 @@ namespace ExpandedStorage.Framework.Patches
         
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            if (!Config.AllowCarryingChests)
-                return;
-            
-            harmony.Patch(
-                original: AccessTools.Method(_objectType, nameof(StardewValley.Object.getDescription)),
-                postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix)));
+            if (Config.AllowCarryingChests)
+            {
+                harmony.Patch(AccessTools.Method(_objectType, nameof(StardewValley.Object.getDescription)),
+                    postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix)));
+            }
         }
 
         /// <summary>Adds count of chests contents to its description.</summary>

@@ -17,7 +17,7 @@ namespace Common.HarmonyPatches
 
         private readonly List<CodeInstruction> _patterns = new List<CodeInstruction>();
         private readonly Queue<int> _patternIndex = new Queue<int>();
-        private Func<CodeInstruction, CodeInstruction[]> _patch;
+        private Action<LinkedList<CodeInstruction>> _patch;
         private readonly PatchType _patchType;
         private int _startIndex = 0;
         private int _endIndex = 0;
@@ -41,7 +41,7 @@ namespace Common.HarmonyPatches
             _patternIndex.Enqueue(_patterns.Count);
             return this;
         }
-        public PatternPatch Patch(Func<CodeInstruction, CodeInstruction[]> patch)
+        public PatternPatch Patch(Action<LinkedList<CodeInstruction>> patch)
         {
             _patch = patch;
             return this;
@@ -110,12 +110,9 @@ namespace Common.HarmonyPatches
             return false;
         }
 
-        public IEnumerable<CodeInstruction> Patches(CodeInstruction instruction) =>
-            _patchType switch
-            {
-                PatchType.Replace => _patch?.Invoke(instruction) ?? new[] {instruction},
-                PatchType.Prepend => _patterns,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+        public void Patches(LinkedList<CodeInstruction> rawStack)
+        {
+            _patch?.Invoke(rawStack);
+        }
     }
 }

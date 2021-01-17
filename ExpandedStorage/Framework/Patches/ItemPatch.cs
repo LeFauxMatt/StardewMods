@@ -14,12 +14,11 @@ namespace ExpandedStorage.Framework.Patches
         
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            if (!Config.AllowCarryingChests)
-                return;
-            
-            harmony.Patch(
-                original: AccessTools.Method(_itemType, nameof(Item.canStackWith), new []{typeof(ISalable)}),
-                prefix: new HarmonyMethod(GetType(), nameof(canStackWith_Prefix)));
+            if (Config.AllowCarryingChests)
+            {
+                harmony.Patch(AccessTools.Method(_itemType, nameof(Item.canStackWith), new []{typeof(ISalable)}),
+                    new HarmonyMethod(GetType(), nameof(canStackWith_Prefix)));
+            }
         }
 
         /// <summary>Disallow chests containing items to be stacked.</summary>
