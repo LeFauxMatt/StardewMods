@@ -23,5 +23,11 @@
       <Folder Include="assets" />
       <Folder Include="Properties" />
     </ItemGroup>
+    <ItemGroup>
+      <Reference Include="Automate, Version=1.20.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>g:\steam\steamapps\common\Stardew Valley\Mods\Automate\Automate.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
     <Import Project="..\Common\Common.projitems" Label="Shared" />
 </Project>

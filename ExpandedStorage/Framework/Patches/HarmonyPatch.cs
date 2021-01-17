@@ -6,7 +6,7 @@ using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    internal abstract class HarmonyPatch
+    public abstract class HarmonyPatch
     {
         internal static IMonitor Monitor;
         internal static ModConfig Config;

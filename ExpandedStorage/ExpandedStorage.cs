@@ -70,6 +70,8 @@ namespace ExpandedStorage
                 _config.AllowCarryingChests = false;
             }
 
+            var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
+
             ExpandedMenu.Init(helper.Events, helper.Input, _config, _controls);
 
             // Events
@@ -94,7 +96,8 @@ namespace ExpandedStorage
                 new ChestPatches(Monitor, _config, helper.Reflection),
                 new ItemGrabMenuPatch(Monitor, _config),
                 new InventoryMenuPatch(Monitor, _config),
-                new MenuWithInventoryPatch(Monitor, _config));
+                new MenuWithInventoryPatch(Monitor, _config),
+                new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
         }
 
         /// <summary>

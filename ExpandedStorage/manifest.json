@@ -7,5 +7,10 @@
   "EntryDll": "ExpandedStorage.dll",
   "MinimumApiVersion": "3.8.0",
   "UpdateKeys": [ "Nexus:7431" ],
-  "Dependencies": []
+  "Dependencies": [
+    {
+      "UniqueID": "Pathoschild.Automate",
+      "IsRequired": false
+    }
+  ]
 }
