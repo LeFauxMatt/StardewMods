@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
@@ -174,7 +173,6 @@ namespace ExpandedStorage
             if (!Context.IsPlayerFree)
                 return;
             Helper.Events.GameLoop.UpdateTicking -= OnUpdateTickingOnce;
-            var chestNames = new Dictionary<int, string>();
             Utility.ForAllLocations(location =>
             {
                 var chests = location.Objects.Pairs
@@ -182,19 +180,10 @@ namespace ExpandedStorage
 
                 foreach (var chest in chests)
                 {
-                    var parentSheetIndex = chest.Value.ParentSheetIndex;
-                    if (!chestNames.TryGetValue(parentSheetIndex, out var chestName))
-                    {
-                        Game1.bigCraftablesInformation.TryGetValue(parentSheetIndex, out var chestInfo);
-                        if (!string.IsNullOrEmpty(chestInfo))
-                        {
-                            chestName = chestInfo.Split('/')[0];
-                            chestNames.Add(parentSheetIndex, chestName);
-                        }
-                    }
-
-                    if (string.IsNullOrEmpty(chestName) || chest.Value.name == chestName)
+                    if (!Game1.bigCraftablesInformation.TryGetValue(chest.Value.ParentSheetIndex, out var chestInfo))
                         continue;
+                    
+                    var chestName = chestInfo.Split('/')[0];
                     
                     Monitor.Log($"Updating storage in {location.Name} at {chest.Key.X},{chest.Key.Y} to {chestName}");
                     chest.Value.name = chestName;

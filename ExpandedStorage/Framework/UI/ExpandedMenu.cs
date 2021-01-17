@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -38,14 +37,10 @@ namespace ExpandedStorage.Framework.UI
                 ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
                 : 3;
 
-        /// <summary>Returns the number of skipped slots in the InventoryMenu.</summary>
-        public static int Skipped(InventoryMenu inventoryMenu) =>
-            MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu) ? MenuHandler.Skipped : 0;
-
         /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
         public static IList<Item> Filtered(InventoryMenu inventoryMenu) =>
             MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu)
-                ? MenuHandler.Items.Skip(MenuHandler.Skipped).ToList()
+                ? MenuHandler.Items
                 : inventoryMenu.actualInventory;
 
         /// <summary>Injected function to draw above chest menu but below tooltips</summary>

@@ -22,22 +22,29 @@ namespace ExpandedStorage.Framework.UI
 
         private readonly object _context;
         private readonly IList<Item> _items;
+        private readonly List<Item> _filteredItems = new List<Item>();
         private readonly int _capacity;
         private readonly int _cols;
         private int _skipped;
         private ExpandedStorageTab _currentTab;
-
-        public int Skipped
+        
+        public IList<Item> Items
         {
-            get => (int) MathHelper.Clamp(_skipped, 0, _items.Count.RoundUp(_cols) - _capacity);
-            set => _skipped = value;
+            get
+            {
+                if (_currentTab == null)
+                    return _items.Skip(_skipped).ToList();
+                _filteredItems.Clear();
+                _filteredItems.AddRange(_items.Where(item => Allowed(item.Category) && !Blocked(item.Category)));
+                _skipped = (int) MathHelper.Clamp(_skipped, 0, _filteredItems.Count().RoundUp(_cols) - _capacity);
+                return _filteredItems.Skip(_skipped).ToList();
+            }
         }
 
-        public IList<Item> Items => _items
-            .Where(i => _currentTab == null || !_currentTab.AllowList.Any() || _currentTab.AllowList.Contains(i.Category))
-            .Where(i => _currentTab == null || !_currentTab.BlockList.Any() || !_currentTab.BlockList.Contains(i.Category))
-            .ToList();
-
+        private bool Allowed(int category) =>
+            !_currentTab.AllowList.Any() || _currentTab.AllowList.Contains(category);
+        private bool Blocked(int category) =>
+            _currentTab.BlockList.Any() && _currentTab.AllowList.Contains(category);
         private bool ContextMatches(MenuHandler handler) =>
             ReferenceEquals(_context, handler._context);
         public bool ContextMatches(InventoryMenu inventoryMenu) =>
@@ -50,11 +57,7 @@ namespace ExpandedStorage.Framework.UI
             var tabs = config != null
                 ? config.Tabs.Select(t => ExpandedStorage.GetTab($"{config.ModUniqueId}/{t}")).ToList()
                 : new List<ExpandedStorageTab>();
-            _overlay = new MenuOverlay(inventoryMenu, tabs, events.GameLoop,
-                () => _skipped > 0,
-                () => _skipped < _items.Count - _capacity,
-                Scroll,
-                SetTab);
+            
             _inputEvents = events.Input;
             _inputHelper = inputHelper;
             _controls = controls;
@@ -63,12 +66,19 @@ namespace ExpandedStorage.Framework.UI
             _items = inventoryMenu.actualInventory;
             _capacity = inventoryMenu.capacity;
             _cols = inventoryMenu.capacity / inventoryMenu.rows;
-
+            
             if (menuHandler != null && ContextMatches(menuHandler))
             {
                 _skipped = menuHandler._skipped;
                 _currentTab = menuHandler._currentTab;
             }
+            
+            _overlay = new MenuOverlay(inventoryMenu, tabs, events.GameLoop,
+                () => _skipped > 0,
+                () => _skipped < Items.Count - _capacity,
+                Scroll,
+                SetTab,
+                _currentTab?.TabName);
 
             // Events
             _inputEvents.ButtonPressed += OnButtonPressed;
@@ -98,10 +108,10 @@ namespace ExpandedStorage.Framework.UI
         /// <returns>True if the value of offset changed.</returns>
         private bool Scroll(int direction)
         {
-            if (direction > 0 && Skipped > 0)
-                Skipped -= _cols;
-            else if (direction < 0 && Skipped < _items.Count - _capacity)
-                Skipped += _cols;
+            if (direction > 0 && _skipped > 0)
+                _skipped -= _cols;
+            else if (direction < 0 && _skipped < Items.Count - _capacity)
+                _skipped += _cols;
             else
                 return false;
             return true;
@@ -110,6 +120,7 @@ namespace ExpandedStorage.Framework.UI
         private void SetTab(ExpandedStorageTab tab)
         {
             _currentTab = tab;
+            _skipped = 0;
         }
         
         /// <summary>Track toolbar changes before user input.</summary>

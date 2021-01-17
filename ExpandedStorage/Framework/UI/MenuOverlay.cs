@@ -57,7 +57,8 @@ namespace ExpandedStorage.Framework.UI
             Func<bool> canScrollUp,
             Func<bool> canScrollDown,
             Func<int, bool> scroll,
-            Action<ExpandedStorageTab> setTab)
+            Action<ExpandedStorageTab> setTab,
+            string currentTab = null)
         {
             _menu = menu;
             _tabConfigs = tabConfigs;
@@ -66,6 +67,7 @@ namespace ExpandedStorage.Framework.UI
             _canScrollDown = canScrollDown;
             _scroll = scroll;
             _setTab = setTab;
+            _currentTab = currentTab;
 
             _screenId = Context.ScreenId;
             _lastViewport = new Rectangle(Game1.uiViewport.X, Game1.uiViewport.Y, Game1.uiViewport.Width, Game1.uiViewport.Height);

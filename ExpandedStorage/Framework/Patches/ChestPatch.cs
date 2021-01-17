@@ -27,21 +27,21 @@ namespace ExpandedStorage.Framework.Patches
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
-                prefix: new HarmonyMethod(GetType(), nameof(draw_Prefix)));
+                new HarmonyMethod(GetType(), nameof(draw_Prefix)));
             
             harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float, T.Bool}),
-                prefix: new HarmonyMethod(GetType(), nameof(drawLocal_Prefix)));
+                new HarmonyMethod(GetType(), nameof(drawLocal_Prefix)));
 
             if (Config.AllowRestrictedStorage)
             {
                 harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.addItem), new[] {typeof(Item)}),
-                    prefix: new HarmonyMethod(GetType(), nameof(addItem_Prefix)));
+                    new HarmonyMethod(GetType(), nameof(addItem_Prefix)));
             }
 
             if (Config.AllowModdedCapacity)
             {
                 harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.GetActualCapacity)),
-                    prefix: new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix)));
+                    new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix)));
             }
         }
 
