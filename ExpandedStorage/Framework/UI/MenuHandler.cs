@@ -16,7 +16,7 @@ namespace ExpandedStorage.Framework.UI
     internal class MenuHandler : IDisposable
     {
         private readonly MenuOverlay _overlay;
-        private readonly IInputEvents _inputEvents;
+        private readonly IModEvents _events;
         private readonly IInputHelper _inputHelper;
         private readonly ModConfigControls _controls;
 
@@ -58,7 +58,7 @@ namespace ExpandedStorage.Framework.UI
                 ? config.Tabs.Select(t => ExpandedStorage.GetTab($"{config.ModUniqueId}/{t}")).ToList()
                 : new List<ExpandedStorageTab>();
             
-            _inputEvents = events.Input;
+            _events = events;
             _inputHelper = inputHelper;
             _controls = controls;
             
@@ -81,16 +81,22 @@ namespace ExpandedStorage.Framework.UI
                 _currentTab?.TabName);
 
             // Events
-            _inputEvents.ButtonPressed += OnButtonPressed;
-            _inputEvents.CursorMoved += OnCursorMoved;
-            _inputEvents.MouseWheelScrolled += OnMouseWheelScrolled;
+            _events.Input.ButtonPressed += OnButtonPressed;
+            _events.Input.CursorMoved += OnCursorMoved;
+            _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
         }
 
         public void Dispose()
         {
-            _inputEvents.ButtonPressed -= OnButtonPressed;
-            _inputEvents.CursorMoved -= OnCursorMoved;
-            _inputEvents.MouseWheelScrolled -= OnMouseWheelScrolled;
+            _overlay.Dispose();
+            UnregisterEvents();
+        }
+
+        public void UnregisterEvents()
+        {
+            _events.Input.ButtonPressed -= OnButtonPressed;
+            _events.Input.CursorMoved -= OnCursorMoved;
+            _events.Input.MouseWheelScrolled -= OnMouseWheelScrolled;
         }
 
         internal void Draw(SpriteBatch b)
@@ -122,8 +128,8 @@ namespace ExpandedStorage.Framework.UI
             _currentTab = tab;
             _skipped = 0;
         }
-        
-        /// <summary>Track toolbar changes before user input.</summary>
+
+        /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)

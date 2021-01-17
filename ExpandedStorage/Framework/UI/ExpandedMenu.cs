@@ -94,8 +94,11 @@ namespace ExpandedStorage.Framework.UI
         private static void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (!(e.NewMenu is ItemGrabMenu menu))
+            {
+                MenuHandler?.UnregisterEvents();
                 return;
-            
+            }
+
             var menuHandler = new MenuHandler(menu, _events, _inputHelper, _controls, MenuHandler);
             MenuHandler?.Dispose();
             MenuHandler = menuHandler;
