@@ -13,16 +13,16 @@ namespace ExpandedStorage.Framework.UI
 {
     public static class ExpandedMenu
     {
-        /// <summary>Returns Y-Offset to lower menu for valid instances.</summary>
+        /// <summary>Returns Offset to lower menu for expanded menus.</summary>
         public static int Offset(MenuWithInventory menu) =>
-            menu is ItemGrabMenu itemGrabMenu
-                ? Offset(itemGrabMenu.context)
+            _config.ExpandInventoryMenu && menu is ItemGrabMenu {context: Chest _} itemGrabMenu
+                ? 64 * (Rows(itemGrabMenu.context) - 3)
                 : 0;
 
-        /// <summary>Returns Y-Offset to lower menu for valid contexts.</summary>
-        public static int Offset(object context) =>
-            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None}
-                ? 64 * (Rows(context) - 3)
+        /// <summary>Returns Padding to top menu for search box.</summary>
+        public static int Padding(MenuWithInventory menu) =>
+            _config.ShowSearchBar && menu is ItemGrabMenu itemGrabMenu
+                ? 24
                 : 0;
 
         /// <summary>Returns Display Capacity of MenuWithInventory.</summary>
@@ -68,14 +68,16 @@ namespace ExpandedStorage.Framework.UI
         private static IModEvents _events;
         private static IInputHelper _inputHelper;
         private static ModConfigControls _controls;
+        private static ModConfig _config;
 
         internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config, ModConfigControls controls)
         {
             _events = events;
             _inputHelper = inputHelper;
             _controls = controls;
+            _config = config;
             
-            if (!config.AllowModdedCapacity)
+            if (!_config.AllowModdedCapacity)
                 return;
 
             // Events

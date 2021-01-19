@@ -85,10 +85,12 @@ namespace ExpandedStorage.Framework.Patches
             internal static CodeInstruction Ldarg_1 => new CodeInstruction(OpCodes.Ldarg_1);
             internal static CodeInstruction Ldc_I4_0 => new CodeInstruction(OpCodes.Ldc_I4_0);
             internal static CodeInstruction Ldc_I4_1 => new CodeInstruction(OpCodes.Ldc_I4_1);
+            internal static CodeInstruction Ldc_I4_2 => new CodeInstruction(OpCodes.Ldc_I4_2);
             internal static CodeInstruction Ldc_I4_6 => new CodeInstruction(OpCodes.Ldc_I4_6);
             internal static CodeInstruction Ldc_I4_M1 => new CodeInstruction(OpCodes.Ldc_I4_M1);
             internal static CodeInstruction Ldc_I4_S => new CodeInstruction(OpCodes.Ldc_I4_S);
             internal static CodeInstruction Ldloc_S => new CodeInstruction(OpCodes.Ldloc_S);
+            internal static CodeInstruction Mul => new CodeInstruction(OpCodes.Mul);
             internal static CodeInstruction Sub => new CodeInstruction(OpCodes.Sub);
         }
     }

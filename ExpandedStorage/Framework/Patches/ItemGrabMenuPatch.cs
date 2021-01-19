@@ -19,72 +19,73 @@ namespace ExpandedStorage.Framework.Patches
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            if (Config.AllowModdedCapacity || Config.ExpandInventoryMenu)
+            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu)
             {
                 harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
-                    transpiler: new HarmonyMethod(GetType(), nameof(ItemGrabMenu_ctor)));
+                    transpiler: new HarmonyMethod(GetType(), nameof(CapacityPatches)));
+            }
+            
+            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
+            {
                 harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
                     postfix: new HarmonyMethod(GetType(), nameof(OffsetDown)));
             }
-            // Patch Height
-            if (Config.ShowOverlayArrows || Config.ShowTabs)
+            
+            if (Config.ExpandInventoryMenu || Config.ShowOverlayArrows || Config.ShowTabs || Config.ShowSearchBar)
             {
                 harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
-                    transpiler: new HarmonyMethod(GetType(), nameof(ItemGrabMenu_draw)));
+                    transpiler: new HarmonyMethod(GetType(), nameof(DrawPatches)));
             }
         }
 
         /// <summary>Loads default chest InventoryMenu when storage has modded capacity.</summary>
-        static IEnumerable<CodeInstruction> ItemGrabMenu_ctor(IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> CapacityPatches(IEnumerable<CodeInstruction> instructions)
         {
             var patternPatches = new PatternPatches(instructions, Monitor);
-
-            if (false && Config.ExpandInventoryMenu)
-            {
-                patternPatches
-                    .Find(IL.Ldarg_S((byte) 4), OC.Ldc_I4_1, OC.Ldc_I4_1, OC.Ldc_I4_0, OC.Ldc_I4_0)
-                    .Log("Setting yOffset of base MenuWithInventory")
-                    .Patch(BaseYOffsetPatch);
-            }
-
-            if (Config.AllowModdedCapacity)
-            {
-                patternPatches
-                    .Find(IL.Isinst(typeof(Chest)), IL.Callvirt(typeof(Chest), nameof(Chest.GetActualCapacity)), OC.Ldc_I4_S, OC.Beq)
-                    .Log("Changing jump condition to Bge 12.")
-                    .Patch(JumpCapacityPatch);
-            }
             
-            if (Config.ExpandInventoryMenu)
-            {
-                patternPatches
-                    .Find(IL.Newobj(typeof(InventoryMenu), T.Int, T.Int, T.Bool, typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), T.Int, T.Int, T.Int, T.Int, T.Bool),
-                        IL.Stfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu)))
-                    .Find(OC.Ldc_I4_M1)
-                    .Log("Overriding default values for capacity and rows.")
-                    .Patch(CapacityRowsPatch)
-                    .Skip(1);
-            }
+            patternPatches
+                .Find(IL.Isinst(typeof(Chest)), IL.Callvirt(typeof(Chest), nameof(Chest.GetActualCapacity)), OC.Ldc_I4_S, OC.Beq)
+                .Log("Changing jump condition to Bge 12.")
+                .Patch(JumpCapacityPatch);
+
+            patternPatches
+                .Find(IL.Newobj(typeof(InventoryMenu), T.Int, T.Int, T.Bool, typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), T.Int, T.Int, T.Int, T.Int, T.Bool),
+                    IL.Stfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu)))
+                .Find(OC.Ldc_I4_M1)
+                .Log("Overriding default values for capacity and rows.")
+                .Patch(CapacityRowsPatch)
+                .Skip(1);
 
             foreach (var patternPatch in patternPatches)
                 yield return patternPatch;
 
             if (!patternPatches.Done)
-                Monitor.Log($"Failed to apply all patches in {nameof(ItemGrabMenu_ctor)}", LogLevel.Warn);
+                Monitor.Log($"Failed to apply all patches in {nameof(CapacityPatches)}", LogLevel.Warn);
         }
 
         static void OffsetDown(ItemGrabMenu __instance)
         {
-            var offset = ExpandedMenu.Offset(__instance);
-            __instance.height += offset;
-            __instance.inventory.movePosition(0, offset);
-            __instance.okButton.bounds.Y += offset;
-            __instance.trashCan.bounds.Y += offset;
-            __instance.dropItemInvisibleButton.bounds.Y += offset;
+            if (Config.ShowSearchBar)
+            {
+                var padding = ExpandedMenu.Padding(__instance);
+                __instance.yPositionOnScreen -= padding;
+                __instance.height += padding;
+                __instance.chestColorPicker.yPositionOnScreen -= padding;
+            }
+
+            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu)
+            {
+                var offset = ExpandedMenu.Offset(__instance);
+                __instance.height += offset;
+                __instance.inventory.movePosition(0, offset);
+                __instance.okButton.bounds.Y += offset;
+                __instance.trashCan.bounds.Y += offset;
+                __instance.dropItemInvisibleButton.bounds.Y += offset;
+            }
         }
         
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>
-        static IEnumerable<CodeInstruction> ItemGrabMenu_draw(IEnumerable<CodeInstruction> instructions)
+        static IEnumerable<CodeInstruction> DrawPatches(IEnumerable<CodeInstruction> instructions)
         {
             var patternPatches = new PatternPatches(instructions, Monitor);
 
@@ -93,7 +94,7 @@ namespace ExpandedStorage.Framework.Patches
                 patternPatches
                     .Find(IL.Callvirt(typeof(SpriteBatch), nameof(SpriteBatch.Draw)))
                     .Log("Adding Overlay DrawUnder method to ItemGrabMenu.")
-                    .Patch(UnderlayPatch);
+                    .Patch(OverlayPatch(typeof(ExpandedMenu), nameof(ExpandedMenu.DrawUnder)));
             }
 
             // Offset backpack icon
@@ -102,38 +103,55 @@ namespace ExpandedStorage.Framework.Patches
                 patternPatches
                     .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu)))
                     .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))
-                    .Log("Adding Offset to yPositionOnScreen.")
-                    .Patch(AddOffsetPatch)
+                    .Log("Adding Offset to yPositionOnScreen for Backpack sprite.")
+                    .Patch(AddOffsetPatch(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset)))
                     .Repeat(3);
+            }
+
+            // Add top padding
+            if (Config.ShowSearchBar)
+            {
+                patternPatches
+                    .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu)),
+                        IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)),
+                        IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth)),
+                        OC.Sub,
+                        IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder)),
+                        OC.Sub)
+                    .Log("Adding top padding offset to drawDialogueBox.y.")
+                    .Patch(AddOffsetPatch(typeof(ExpandedMenu), nameof(ExpandedMenu.Padding), Operation.Sub));
+                
+                patternPatches
+                    .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu)),
+                        IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.height)),
+                        IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder)),
+                        OC.Add,
+                        IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth)),
+                        OC.Ldc_I4_2,
+                        OC.Mul,
+                        OC.Add)
+                    .Log("Adding top padding offset to drawDialogueBox.height.")
+                    .Patch(AddOffsetPatch(typeof(ExpandedMenu), nameof(ExpandedMenu.Padding)));
             }
             
             // Draw arrows under hover text
-            if (Config.ShowOverlayArrows)
+            if (Config.ShowOverlayArrows || Config.ShowSearchBar)
             {
                 patternPatches
                     .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeButton)),
                         OC.Ldarg_1,
                         IL.Callvirt(typeof(ClickableTextureComponent), nameof(ClickableTextureComponent.draw), typeof(SpriteBatch)))
                     .Log("Adding Overlay Draw method to ItemGrabMenu.")
-                    .Patch(OverlayPatch);
+                    .Patch(OverlayPatch(typeof(ExpandedMenu), nameof(ExpandedMenu.Draw)));
             }
             
             foreach (var patternPatch in patternPatches)
                 yield return patternPatch;
             
             if (!patternPatches.Done)
-                Monitor.Log($"Failed to apply all patches in {nameof(ItemGrabMenu_draw)}", LogLevel.Warn);
+                Monitor.Log($"Failed to apply all patches in {nameof(DrawPatches)}", LogLevel.Warn);
         }
-        
-        /// <summary>Replaces 0 yOffset with ExpandedMenu.Offset</summary>
-        /// <param name="instructions">List of instructions preceding patch</param>
-        private static void BaseYOffsetPatch(LinkedList<CodeInstruction> instructions)
-        {
-            instructions.RemoveLast();
-            instructions.AddLast(IL.Ldarg_S((byte) 16));
-            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(object)));
-        }
-        
+
         /// <summary>Replaces jump condition for Inventory Menu to >= 12</summary>
         /// <param name="instructions">List of instructions preceding patch</param>
         private static void JumpCapacityPatch(LinkedList<CodeInstruction> instructions)
@@ -156,29 +174,32 @@ namespace ExpandedStorage.Framework.Patches
             instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Rows), typeof(object)));
         }
         
-        /// <summary>Adds a call to ExpandedMenu.DrawUnder for Overlay</summary>
-        /// <param name="instructions">List of instructions preceding patch</param>
-        private static void UnderlayPatch(LinkedList<CodeInstruction> instructions)
+        /// <summary>Adds a call to a draw function accepting SpriteBatch</summary>
+        /// <param name="type">Class which the function belongs to</param>
+        /// <param name="method">Method name of the draw function</param>
+        private static Action<LinkedList<CodeInstruction>> OverlayPatch(Type type, string method) =>
+            instructions =>
+            {
+                instructions.AddLast(OC.Ldarg_1);
+                instructions.AddLast(IL.Call(type, method, typeof(SpriteBatch)));
+            };
+
+        private enum Operation
         {
-            instructions.AddLast(OC.Ldarg_1);
-            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.DrawUnder), typeof(SpriteBatch)));
+            Add,
+            Sub
         }
         
-        /// <summary>Adds a call to ExpandedMenu.Draw for Overlay</summary>
-        /// <param name="instructions">List of instructions preceding patch</param>
-        private static void OverlayPatch(LinkedList<CodeInstruction> instructions)
-        {
-            instructions.AddLast(OC.Ldarg_1);
-            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Draw), typeof(SpriteBatch)));
-        }
-        
-        /// <summary>Adds the value of ExpandedMenu.Offset to the stack</summary>
-        /// <param name="instructions">List of instructions preceding patch</param>
-        private static void AddOffsetPatch(LinkedList<CodeInstruction> instructions)
-        {
-            instructions.AddLast(OC.Ldarg_0);
-            instructions.AddLast(IL.Call(typeof(ExpandedMenu), nameof(ExpandedMenu.Offset), typeof(MenuWithInventory)));
-            instructions.AddLast(OC.Add);
-        }
+        /// <summary>Adds a value to the end of the stack</summary>
+        /// <param name="type">Class which the function belongs to</param>
+        /// <param name="method">Method name of the draw function</param>
+        /// <param name="operation">Whether to add or subtract the value.</param>
+        private static Action<LinkedList<CodeInstruction>> AddOffsetPatch(Type type, string method, Operation operation = Operation.Add) =>
+            instructions =>
+            {
+                instructions.AddLast(OC.Ldarg_0);
+                instructions.AddLast(IL.Call(type, method, typeof(MenuWithInventory)));
+                instructions.AddLast(operation == Operation.Sub ? OC.Sub : OC.Add);
+            };
     }
 }

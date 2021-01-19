@@ -59,10 +59,6 @@ namespace ExpandedStorage
         {
             _config = helper.ReadConfig<ModConfig>();
             _controls = new ModConfigControls(_config.Controls);
-#if !DEBUG
-            // Disable unready features in release
-            _config.ShowSearchBar = false;
-#endif
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
