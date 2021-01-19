@@ -9,7 +9,6 @@ namespace ExpandedStorage.Framework
         internal SButton ScrollDown;
         internal SButton PreviousTab;
         internal SButton NextTab;
-        internal SButton CarryChest;
 
         internal ModConfigControls(ModConfigControlsRaw controlsRaw)
         {
@@ -21,8 +20,6 @@ namespace ExpandedStorage.Framework
                 PreviousTab = previousTab;
             if (Enum.TryParse(controlsRaw.NextTab, out SButton nextTab))
                 NextTab = nextTab;
-            if (Enum.TryParse(controlsRaw.CarryChest, out SButton carryChest))
-                CarryChest = carryChest;
         }
     }
 }

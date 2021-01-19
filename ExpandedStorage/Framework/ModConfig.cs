@@ -2,9 +2,12 @@
 {
     public class ModConfig
     {
-        /// <summary>Whether to allow chests to be carried and moved.</summary>
-        public bool AllowCarryingChests { get; set; } = true;
+        /// <summary>Allow carried chests to be accessed while in inventory.</summary>
+        public bool AllowAccessCarriedChest { get; set; } = true;
         
+        /// <summary>Allow chests to be picked up and placed with items.</summary>
+        public bool AllowCarryingChests { get; set; } = true;
+
         /// <summary>Whether to allow modded storage to have capacity other than 36 slots.</summary>
         public bool AllowModdedCapacity { get; set; } = true;
 

@@ -199,18 +199,31 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsPlayerFree || e.Button != SButton.MouseLeft && e.Button != _controls.CarryChest || Game1.player.CurrentItem != null)
+            if (!Context.IsPlayerFree)
                 return;
+
+            var handled = false;
             
-            var location = Game1.currentLocation;
-            var pos = e.Cursor.Tile;
-            if (!location.objects.TryGetValue(pos, out var obj) ||
-                !ExpandedStorageConfigs.TryGetValue(obj.name, out var data) ||
-                !data.CanCarry ||
-                !Game1.player.addItemToInventoryBool(obj, true))
-                return;
-            location.objects.Remove(pos);
-            Helper.Input.Suppress(e.Button);
+            if (Game1.player.CurrentItem == null && (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton()))
+            {
+                var location = Game1.currentLocation;
+                var pos = e.Cursor.Tile;
+                if (!location.objects.TryGetValue(pos, out var obj) ||
+                    !ExpandedStorageConfigs.TryGetValue(obj.name, out var data) ||
+                    !data.CanCarry ||
+                    !Game1.player.addItemToInventoryBool(obj, true))
+                    return;
+                location.objects.Remove(pos);
+                handled = true;
+            }
+            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && (e.Button == SButton.MouseRight || e.Button.IsActionButton()))
+            {
+                _previousHeldChest.Value.ShowMenu();
+                handled = true;
+            }
+
+            if (handled)
+                Helper.Input.Suppress(e.Button);
         }
 
         /// <summary>
