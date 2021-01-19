@@ -48,6 +48,8 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Icon to display next to search box.</summary>
         private ClickableTextureComponent _searchIcon;
+        
+        private string _searchText;
 
         /// <summary>Chest menu tab components.</summary>
         private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
@@ -115,6 +117,7 @@ namespace ExpandedStorage.Framework.UI
                 X = bounds.X,
                 Y = bounds.Y - 14 * Game1.pixelZoom,
                 Width = bounds.Width,
+                Text = _searchText,
                 Selected = false
             };
 
@@ -155,12 +158,17 @@ namespace ExpandedStorage.Framework.UI
                 Dispose();
                 return;
             }
+
+            if (_searchField != null && _searchText != _searchField.Text)
+            {
+                _searchText = _searchField.Text;
+                _search.Invoke(_searchText);
+            }
             
             if (Context.ScreenId != _screenId)
                 return;
             
-            if (Game1.uiViewport.Width == _lastViewport.Width &&
-                Game1.uiViewport.Height == _lastViewport.Height)
+            if (Game1.uiViewport.Width == _lastViewport.Width && Game1.uiViewport.Height == _lastViewport.Height)
                 return;
             
             // Resize Event
@@ -219,7 +227,6 @@ namespace ExpandedStorage.Framework.UI
             {
                 if (button == SButton.Escape)
                     _searchField.Selected = false;
-                _search.Invoke(_searchField.Text);
                 return true;
             }
 
@@ -236,6 +243,10 @@ namespace ExpandedStorage.Framework.UI
             if (Context.ScreenId != _screenId || !IsInitialized)
                 return false;
             
+            _searchField.Selected = _searchArea.containsPoint(x, y);
+            if (_searchField.Selected)
+                return true;
+            
             if (_upArrow.containsPoint(x, y))
             {
                 _scroll.Invoke(1);
@@ -250,14 +261,6 @@ namespace ExpandedStorage.Framework.UI
                 if (playSound)
                     Game1.playSound("shwip");
                 return true;
-            }
-
-            if (_searchArea.containsPoint(x, y))
-            {
-                if (_searchField.Selected)
-                    _searchField.Selected = false;
-                else
-                    _searchField.SelectMe();
             }
 
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
