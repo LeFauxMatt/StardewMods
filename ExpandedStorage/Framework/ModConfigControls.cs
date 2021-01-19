@@ -7,15 +7,21 @@ namespace ExpandedStorage.Framework
     {
         internal SButton ScrollUp;
         internal SButton ScrollDown;
+        internal SButton PreviousTab;
+        internal SButton NextTab;
         internal SButton CarryChest;
 
-        internal ModConfigControls(ModConfigControlsRaw modConfigControls)
+        internal ModConfigControls(ModConfigControlsRaw controlsRaw)
         {
-            if (Enum.TryParse(modConfigControls.ScrollUp, out SButton scrollUp))
+            if (Enum.TryParse(controlsRaw.ScrollUp, out SButton scrollUp))
                 ScrollUp = scrollUp;
-            if (Enum.TryParse(modConfigControls.ScrollDown, out SButton scrollDown))
+            if (Enum.TryParse(controlsRaw.ScrollDown, out SButton scrollDown))
                 ScrollDown = scrollDown;
-            if (Enum.TryParse(modConfigControls.CarryChest, out SButton carryChest))
+            if (Enum.TryParse(controlsRaw.PreviousTab, out SButton previousTab))
+                PreviousTab = previousTab;
+            if (Enum.TryParse(controlsRaw.NextTab, out SButton nextTab))
+                NextTab = nextTab;
+            if (Enum.TryParse(controlsRaw.CarryChest, out SButton carryChest))
                 CarryChest = carryChest;
         }
     }

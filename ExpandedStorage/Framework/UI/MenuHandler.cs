@@ -30,6 +30,7 @@ namespace ExpandedStorage.Framework.UI
         private readonly int _cols;
         private int _skipped;
         private ExpandedStorageTab _currentTab;
+        private IList<ExpandedStorageTab> _tabConfigs;
         
         public IList<Item> Items =>
             _skipped == 0
@@ -40,7 +41,7 @@ namespace ExpandedStorage.Framework.UI
         {
             var inventoryMenu = menu.ItemsToGrabMenu;
             var config = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
-            var tabs = config != null
+            _tabConfigs = config != null
                 ? config.Tabs.Select(t => ExpandedStorage.GetTab($"{config.ModUniqueId}/{t}")).Where(t => t != null).ToList()
                 : new List<ExpandedStorageTab>();
             
@@ -53,20 +54,20 @@ namespace ExpandedStorage.Framework.UI
             _capacity = inventoryMenu.capacity;
             _cols = inventoryMenu.capacity / inventoryMenu.rows;
 
+            _overlay = new MenuOverlay(inventoryMenu, _tabConfigs, events.GameLoop,
+                () => CanScrollUp,
+                () => CanScrollDown,
+                Scroll,
+                SetTab);
+            
             if (menuHandler != null && ContextMatches(menuHandler))
             {
                 _skipped = menuHandler._skipped;
                 _currentTab = menuHandler._currentTab;
+                _overlay.CurrentTab = _currentTab;
             }
             
             RefreshList();
-            
-            _overlay = new MenuOverlay(inventoryMenu, tabs, events.GameLoop,
-                () => CanScrollUp,
-                () => CanScrollDown,
-                Scroll,
-                SetTab,
-                _currentTab?.TabName);
 
             // Events
             _events.Input.ButtonPressed += OnButtonPressed;
@@ -139,11 +140,21 @@ namespace ExpandedStorage.Framework.UI
             return true;
         }
 
-        private void SetTab(ExpandedStorageTab tab)
+        private void SetTab(ExpandedStorageTab tabConfig)
         {
-            _currentTab = tab;
+            _currentTab = tabConfig;
             _skipped = 0;
             RefreshList();
+        }
+
+        private bool SetTab(int direction = 0)
+        {
+            var i = _tabConfigs.IndexOf(_currentTab) + direction;
+            var tabConfig = i == -1 || i == _tabConfigs.Count
+                ? null
+                : _tabConfigs[i - 1];
+            SetTab(tabConfig);
+            return true;
         }
 
         /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
@@ -154,11 +165,15 @@ namespace ExpandedStorage.Framework.UI
             var handled = false;
             var x = Game1.getMouseX(Game1.uiMode);
             var y = Game1.getMouseY(Game1.uiMode);
-
-            if (e.Button == _controls.ScrollDown && Scroll(-1))
-                handled = true;
-            else if (e.Button == _controls.ScrollUp && Scroll(1))
-                handled = true;
+            
+            if (e.Button == _controls.ScrollDown)
+                handled = Scroll(-1);
+            else if (e.Button == _controls.ScrollUp)
+                handled = Scroll(1);
+            else if (e.Button == _controls.PreviousTab)
+                handled = SetTab(-1);
+            else if (e.Button == _controls.NextTab)
+                handled = SetTab(1);
             else if (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton())
                 handled = _overlay.LeftClick(x, y);
             

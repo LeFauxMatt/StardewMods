@@ -24,6 +24,6 @@
         public bool ShowTabs { get; set; } = true;
 
         /// <summary>Control scheme for Expanded Storage features.</summary>
-        public ModConfigControlsRaw ControlsRaw { get; set; } = new ModConfigControlsRaw();
+        public ModConfigControlsRaw Controls { get; set; } = new ModConfigControlsRaw();
     }
 }

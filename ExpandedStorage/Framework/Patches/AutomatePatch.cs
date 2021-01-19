@@ -39,7 +39,7 @@ namespace ExpandedStorage.Framework.Patches
         public static bool Store_Prefix(object __instance, ITrackedStack stack)
         {
             var reflectedChest = Reflection.GetField<Chest>(__instance, "Chest");
-            var reflectedSample = Reflection.GetField<Item>(stack, "Sample");
+            var reflectedSample = Reflection.GetProperty<Item>(stack, "Sample");
             var config = ExpandedStorage.GetConfig(reflectedChest.GetValue());
             return config == null || config.IsAllowed(reflectedSample.GetValue()) && !config.IsBlocked(reflectedSample.GetValue());
         }

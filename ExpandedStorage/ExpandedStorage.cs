@@ -58,7 +58,7 @@ namespace ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
-            _controls = new ModConfigControls(_config.ControlsRaw);
+            _controls = new ModConfigControls(_config.Controls);
 #if !DEBUG
             // Disable unready features in release
             _config.ShowSearchBar = false;

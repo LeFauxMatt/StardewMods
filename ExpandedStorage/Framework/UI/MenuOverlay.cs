@@ -45,8 +45,8 @@ namespace ExpandedStorage.Framework.UI
         private readonly IList<ExpandedStorageTab> _tabConfigs;
 
         /// <summary>Currently selected tab.</summary>
-        private string _currentTab;
-        
+        internal ExpandedStorageTab CurrentTab { get; set; }
+
         /// <summary>Y-Position for tabs when not selected.</summary>
         private int _tabY;
 
@@ -57,8 +57,7 @@ namespace ExpandedStorage.Framework.UI
             Func<bool> canScrollUp,
             Func<bool> canScrollDown,
             Func<int, bool> scroll,
-            Action<ExpandedStorageTab> setTab,
-            string currentTab = null)
+            Action<ExpandedStorageTab> setTab)
         {
             _menu = menu;
             _tabConfigs = tabConfigs;
@@ -67,7 +66,6 @@ namespace ExpandedStorage.Framework.UI
             _canScrollDown = canScrollDown;
             _scroll = scroll;
             _setTab = setTab;
-            _currentTab = currentTab;
 
             _screenId = Context.ScreenId;
             _lastViewport = new Rectangle(Game1.uiViewport.X, Game1.uiViewport.Y, Game1.uiViewport.Width, Game1.uiViewport.Height);
@@ -102,15 +100,16 @@ namespace ExpandedStorage.Framework.UI
             _tabs.Clear();
             var xPosition = bounds.Left;
             _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
-            foreach (var tabConfig in _tabConfigs)
+            for (var i = 0; i < _tabConfigs.Count; i++)
             {
                 var tab = new ClickableTextureComponent(
                     new Rectangle(xPosition, _tabY, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    tabConfig.Texture,
+                    _tabConfigs[i].Texture,
                     Rectangle.Empty,
                     Game1.pixelZoom)
                 {
-                    name = tabConfig.TabName
+                    name = i.ToString(),
+                    hoverText = _tabConfigs[i].TabName
                 };
                 _tabs.Add(tab);
                 xPosition += tab.bounds.Width;
@@ -171,11 +170,11 @@ namespace ExpandedStorage.Framework.UI
             if (_drawCount == 0)
                 InitComponents();
             _drawCount++;
-            
-            foreach (var tab in _tabs)
+
+            for (var i = 0; i < _tabConfigs.Count; i++)
             {
-                tab.bounds.Y = _tabY + (tab.name == _currentTab ? 1 * Game1.pixelZoom : 0);
-                tab.draw(b);
+                _tabs[i].bounds.Y = _tabY + (ReferenceEquals(CurrentTab, _tabConfigs[i]) ? Game1.pixelZoom : 0);
+                _tabs[i].draw(b);
             }
         }
 
@@ -206,17 +205,16 @@ namespace ExpandedStorage.Framework.UI
             }
             
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
-            if (tab != null)
-            {
-                _currentTab = _currentTab == tab.name ? null : tab.name;
-                var tabConfig = _tabConfigs.FirstOrDefault(t => t.TabName.Equals(_currentTab, StringComparison.OrdinalIgnoreCase));
-                _setTab.Invoke(tabConfig);
-                if (playSound)
-                    Game1.playSound("smallSelect");
-                return true;
-            }
+            if (tab == null)
+                return false;
+            
+            var i = Convert.ToInt32(tab.name);
+            CurrentTab = ReferenceEquals(CurrentTab, _tabConfigs[i]) ? null : _tabConfigs[i];
+            _setTab.Invoke(CurrentTab);
+            if (playSound)
+                Game1.playSound("smallSelect");
+            return true;
 
-            return false;
         }
 
         /// <summary>Handles Hover interaction with overlay elements</summary>
@@ -231,7 +229,7 @@ namespace ExpandedStorage.Framework.UI
             _downArrow.tryHover(x, y, 0.25f);
 
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
-            _hoverText = tab?.name;
+            _hoverText = tab?.hoverText;
         }
     }
 }
