@@ -120,21 +120,6 @@ namespace ExpandedStorage
                 Monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
                 var contentData = contentPack.ReadJsonFile<ContentData>("expandedStorage.json");
                 
-                // Load expanded storage objects
-                foreach (var expandedStorage in contentData.ExpandedStorage
-                    .Where(s => !string.IsNullOrWhiteSpace(s.StorageName)))
-                {
-                    if (ExpandedStorageConfigs.ContainsKey(expandedStorage.StorageName))
-                    {
-                        Monitor.Log($"Duplicate storage {expandedStorage.StorageName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
-                    }
-                    else
-                    {
-                        expandedStorage.ModUniqueId = contentPack.Manifest.UniqueID;
-                        ExpandedStorageConfigs.Add(expandedStorage.StorageName, expandedStorage);
-                    }
-                }
-                
                 // Load expanded storage tabs
                 foreach (var storageTab in contentData.StorageTabs
                     .Where(t => !string.IsNullOrWhiteSpace(t.TabName) && !string.IsNullOrWhiteSpace(t.TabImage)))
@@ -153,6 +138,21 @@ namespace ExpandedStorage
                             storageTab.Texture = Helper.Content.Load<Texture2D>(assetName);
                         storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
                         ExpandedStorageTabs.Add(tabName, storageTab);
+                    }
+                }
+                
+                // Load expanded storage objects
+                foreach (var expandedStorage in contentData.ExpandedStorage
+                    .Where(s => !string.IsNullOrWhiteSpace(s.StorageName)))
+                {
+                    if (ExpandedStorageConfigs.ContainsKey(expandedStorage.StorageName))
+                    {
+                        Monitor.Log($"Duplicate storage {expandedStorage.StorageName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
+                    }
+                    else
+                    {
+                        expandedStorage.ModUniqueId = contentPack.Manifest.UniqueID;
+                        ExpandedStorageConfigs.Add(expandedStorage.StorageName, expandedStorage);
                     }
                 }
             }

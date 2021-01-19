@@ -49,24 +49,11 @@ namespace ExpandedStorage.Framework.Patches
         public static bool addItem_Prefix(Chest __instance, Item item, ref Item __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || !config.AllowList.Any() && !config.BlockList.Any())
+            if (config == null || config.IsAllowed(item) && !config.IsBlocked(item))
                 return true;
             
-            // Non-empty allow list and item category not present
-            if (config.AllowList.Any() && !config.AllowList.Contains(item.Category))
-            {
-                __result = item;
-                return false;
-            }
-
-            // Non-empty block list and item category is present
-            if (config.BlockList.Any() && config.BlockList.Contains(item.Category))
-            {
-                __result = item;
-                return false;
-            }
-            
-            return true;
+            __result = item;
+            return false;
         }
 
         /// <summary>Draw chest with playerChoiceColor.</summary>

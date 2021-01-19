@@ -62,8 +62,12 @@ namespace ExpandedStorage.Framework.Patches
                 new CodeInstruction(OpCodes.Ldarg_S, operand);
             internal static CodeInstruction Ldc_I4_S(object operand = null) =>
                 new CodeInstruction(OpCodes.Ldc_I4_S, operand);
+            internal static CodeInstruction Ldc_I4(object operand = null) =>
+                new CodeInstruction(OpCodes.Ldc_I4, operand);
             internal static CodeInstruction Ldfld(Type type, string field) =>
                 new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(type, field));
+            internal static CodeInstruction Ldsfld(Type type, string field) =>
+                new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(type, field));
             internal static CodeInstruction Newobj(Type type, params Type[] parameters) =>
                 new CodeInstruction(OpCodes.Newobj, AccessTools.Constructor(type, parameters));
             internal static CodeInstruction Stfld(Type type, string field = null) =>

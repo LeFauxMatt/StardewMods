@@ -1,9 +1,10 @@
-﻿// ReSharper disable UnassignedField.Global
+﻿using System.Collections.Generic;
+using System.Linq;
+using StardewValley;
+// ReSharper disable CollectionNeverUpdated.Global
+// ReSharper disable UnassignedField.Global
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable ConvertToConstant.Global
-
-using System.Collections.Generic;
-
 namespace ExpandedStorage.Framework.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
@@ -18,16 +19,19 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>Allows storage to be picked up by the player.</summary>
         public bool CanCarry = true;
 
-        /// <summary>When specified, storage may only hold the listed item/category IDs.</summary>
-        public IList<int> AllowList = new List<int>();
+        /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
+        public IList<string> AllowList = new List<string>();
 
-        /// <summary>When specified, storage may hold all/allowed items except for listed item/category IDs.</summary>
-        public IList<int> BlockList = new List<int>();
+        /// <summary>When specified, storage may hold allowed items except for those with blocked context tags.</summary>
+        public IList<string> BlockList = new List<string>();
 
         /// <summary>List of tabs to show on chest menu.</summary>
         public IList<string> Tabs = new List<string>();
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
+
+        public bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
+        public bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
     }
 }

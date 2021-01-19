@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Harmony;
-using Pathoschild.Stardew.Automate;
 using StardewModdingAPI;
+using StardewValley;
 using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
@@ -31,7 +31,7 @@ namespace ExpandedStorage.Framework.Patches
             {
                 Monitor.Log("Patching Automate");
                 var methodInfo = AccessTools.GetDeclaredMethods(_type)
-                    .Find(m => m.GetParameters().Any(p => p.ParameterType == typeof(ITrackedStack)));
+                    .Find(m => m.Name.Equals("Store", StringComparison.OrdinalIgnoreCase));
                 harmony.Patch(methodInfo, new HarmonyMethod(GetType(), nameof(Store_Prefix)));
             }
         }
@@ -39,14 +39,9 @@ namespace ExpandedStorage.Framework.Patches
         public static bool Store_Prefix(object __instance, ITrackedStack stack)
         {
             var reflectedChest = Reflection.GetField<Chest>(__instance, "Chest");
+            var reflectedSample = Reflection.GetField<Item>(stack, "Sample");
             var config = ExpandedStorage.GetConfig(reflectedChest.GetValue());
-            if (config == null)
-                return true;
-            if (config.AllowList.Any() && !config.AllowList.Contains(stack.Sample.Category))
-                return false;
-            if (config.BlockList.Any() && config.BlockList.Contains(stack.Sample.Category))
-                return false;
-            return true;
+            return config == null || config.IsAllowed(reflectedSample.GetValue()) && !config.IsBlocked(reflectedSample.GetValue());
         }
     }
 }

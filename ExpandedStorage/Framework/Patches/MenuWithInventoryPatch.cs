@@ -23,13 +23,28 @@ namespace ExpandedStorage.Framework.Patches
         static IEnumerable<CodeInstruction> MenuWithInventory_draw(IEnumerable<CodeInstruction> instructions)
         {
             var patternPatches = new PatternPatches(instructions, Monitor);
+
+            patternPatches
+                .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)),
+                    IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth)),
+                    OC.Add,
+                    IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder)),
+                    OC.Add,
+                    OC.Ldc_I4_S,
+                    OC.Add)
+                .Log("Adding Offset to drawDialogueBox.y.")
+                .Patch(AddOffsetPatch);
             
             patternPatches
-                .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))
-                .Log("Adding Offset to yPositionOnScreen.")
-                .Patch(AddOffsetPatch)
-                .Repeat(-1);
-            
+                .Find(IL.Ldfld(typeof(IClickableMenu), nameof(IClickableMenu.height)),
+                    IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth)),
+                    IL.Ldsfld(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder)),
+                    OC.Add,
+                    IL.Ldc_I4(192),
+                    OC.Add)
+                .Log("Subtracting Y-Offset from drawDialogueBox.height")
+                .Patch(AddOffsetPatch);
+
             foreach (var patternPatch in patternPatches)
                 yield return patternPatch;
             

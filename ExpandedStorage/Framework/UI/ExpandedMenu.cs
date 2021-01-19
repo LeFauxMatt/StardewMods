@@ -45,17 +45,13 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Injected function to draw above chest menu but below tooltips</summary>
         /// <param name="b">The SpriteBatch to draw to</param>
-        public static void Draw(SpriteBatch b)
-        {
+        public static void Draw(SpriteBatch b) =>
             MenuHandler?.Draw(b);
-        }
         
         /// <summary>Injected function to draw below chest menu</summary>
         /// <param name="b">The SpriteBatch to draw to</param>
-        public static void DrawUnder(SpriteBatch b)
-        {
+        public static void DrawUnder(SpriteBatch b) =>
             MenuHandler?.DrawUnder(b);
-        }
 
         public static bool ContextMatches(InventoryMenu inventoryMenu) =>
             MenuHandler?.ContextMatches(inventoryMenu) ?? false;

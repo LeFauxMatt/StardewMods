@@ -23,8 +23,10 @@ namespace ExpandedStorage.Framework.Patches
             {
                 harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
                     transpiler: new HarmonyMethod(GetType(), nameof(ItemGrabMenu_ctor)));
+                harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
+                    postfix: new HarmonyMethod(GetType(), nameof(OffsetDown)));
             }
-
+            // Patch Height
             if (Config.ShowOverlayArrows || Config.ShowTabs)
             {
                 harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
@@ -37,7 +39,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             var patternPatches = new PatternPatches(instructions, Monitor);
 
-            if (Config.ExpandInventoryMenu)
+            if (false && Config.ExpandInventoryMenu)
             {
                 patternPatches
                     .Find(IL.Ldarg_S((byte) 4), OC.Ldc_I4_1, OC.Ldc_I4_1, OC.Ldc_I4_0, OC.Ldc_I4_0)
@@ -69,6 +71,16 @@ namespace ExpandedStorage.Framework.Patches
 
             if (!patternPatches.Done)
                 Monitor.Log($"Failed to apply all patches in {nameof(ItemGrabMenu_ctor)}", LogLevel.Warn);
+        }
+
+        static void OffsetDown(ItemGrabMenu __instance)
+        {
+            var offset = ExpandedMenu.Offset(__instance);
+            __instance.height += offset;
+            __instance.inventory.movePosition(0, offset);
+            __instance.okButton.bounds.Y += offset;
+            __instance.trashCan.bounds.Y += offset;
+            __instance.dropItemInvisibleButton.bounds.Y += offset;
         }
         
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>
