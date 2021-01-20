@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Common;
 using ExpandedStorage.Framework.Models;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Netcode;
@@ -23,39 +22,44 @@ namespace ExpandedStorage.Framework.UI
         private readonly IInputHelper _inputHelper;
         private readonly ModConfigControls _controls;
 
+        private readonly InventoryMenu _menu;
         private readonly object _context;
         private readonly IList<Item> _items;
         private IList<Item> _filteredItems;
         private readonly int _capacity;
         private readonly int _cols;
+
+        private readonly ExpandedStorageConfig _storageConfig;
         private int _skipped;
         private ExpandedStorageTab _currentTab;
         private readonly IList<ExpandedStorageTab> _tabConfigs;
         private string _searchText;
         
-        public IList<Item> Items =>
-            _skipped == 0
-                ? _filteredItems
-                : _filteredItems.Skip(_skipped).ToList();
+        public IList<Item> Items => _storageConfig == null ? _items : _filteredItems.Skip(_skipped).ToList();
         
-        internal MenuHandler(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper, ModConfigControls controls, MenuHandler menuHandler = null)
+        internal MenuHandler(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper, ModConfig config, ModConfigControls controls, MenuHandler menuHandler = null)
         {
-            var inventoryMenu = menu.ItemsToGrabMenu;
-            var config = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
-            _tabConfigs = config != null
-                ? config.Tabs.Select(t => ExpandedStorage.GetTab($"{config.ModUniqueId}/{t}")).Where(t => t != null).ToList()
-                : new List<ExpandedStorageTab>();
-            
+            _menu = menu.ItemsToGrabMenu;
             _events = events;
             _inputHelper = inputHelper;
             _controls = controls;
             
             _context = menu.context;
-            _items = inventoryMenu.actualInventory;
-            _capacity = inventoryMenu.capacity;
-            _cols = inventoryMenu.capacity / inventoryMenu.rows;
+            _items = _menu.actualInventory;
+            _capacity = _menu.capacity;
+            _cols = _menu.capacity / _menu.rows;
+            
+            _storageConfig = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
+            
+            if (_storageConfig == null)
+                return;
 
-            _overlay = new MenuOverlay(inventoryMenu, _tabConfigs, events.GameLoop,
+            _tabConfigs = _storageConfig.Tabs
+                    .Select(t => ExpandedStorage.GetTab($"{_storageConfig.ModUniqueId}/{t}"))
+                    .Where(t => t != null)
+                    .ToList();
+            
+            _overlay = new MenuOverlay(_menu, _tabConfigs, events.GameLoop, config,
                 () => CanScrollUp,
                 () => CanScrollDown,
                 Scroll,
@@ -70,7 +74,7 @@ namespace ExpandedStorage.Framework.UI
             }
             
             RefreshList();
-
+            
             // Events
             _events.Input.ButtonPressed += OnButtonPressed;
             _events.Input.CursorMoved += OnCursorMoved;
@@ -81,21 +85,21 @@ namespace ExpandedStorage.Framework.UI
                 case Chest chest:
                     chest.items.OnElementChanged += ItemsOnElementChanged;
                     break;
+                case JunimoHut junimoHut:
+                    junimoHut.output.Value.items.OnElementChanged += ItemsOnElementChanged;
+                    break;
                 case GameLocation location:
-                    var farm =(location as Farm ?? Game1.getFarm());
+                    var farm = location as Farm ?? Game1.getFarm();
                     var shippingBin = farm.getShippingBin(Game1.player);
                     shippingBin.OnValueAdded += ShippingBinOnValueChanged;
                     shippingBin.OnValueRemoved += ShippingBinOnValueChanged;
-                    break;
-                case JunimoHut junimoHut:
-                    junimoHut.output.Value.items.OnElementChanged += ItemsOnElementChanged;
                     break;
             }
         }
         
         public void Dispose()
         {
-            _overlay.Dispose();
+            _overlay?.Dispose();
             UnregisterEvents();
             switch (_context)
             {
@@ -103,7 +107,7 @@ namespace ExpandedStorage.Framework.UI
                     chest.items.OnElementChanged -= ItemsOnElementChanged;
                     break;
                 case GameLocation location:
-                    var farm =(location as Farm ?? Game1.getFarm());
+                    var farm = location as Farm ?? Game1.getFarm();
                     var shippingBin = farm.getShippingBin(Game1.player);
                     shippingBin.OnValueAdded -= ShippingBinOnValueChanged;
                     shippingBin.OnValueRemoved -= ShippingBinOnValueChanged;
@@ -122,10 +126,10 @@ namespace ExpandedStorage.Framework.UI
         }
 
         internal void Draw(SpriteBatch b) =>
-            _overlay.Draw(b);
+            _overlay?.Draw(b);
         
         internal void DrawUnder(SpriteBatch b) =>
-            _overlay.DrawUnder(b);
+            _overlay?.DrawUnder(b);
         
         /// <summary>Attempts to scroll offset by one row of slots relative to the inventory menu.</summary>
         /// <param name="direction">The direction which to scroll to.</param>
@@ -173,9 +177,8 @@ namespace ExpandedStorage.Framework.UI
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             bool handled;
-            var x = Game1.getMouseX(Game1.uiMode);
-            var y = Game1.getMouseY(Game1.uiMode);
-            
+            var x = Game1.getMouseX(true);
+            var y = Game1.getMouseY(true);
             if (e.Button == _controls.ScrollDown)
                 handled = Scroll(-1);
             else if (e.Button == _controls.ScrollUp)
@@ -184,13 +187,14 @@ namespace ExpandedStorage.Framework.UI
                 handled = SetTab(-1);
             else if (e.Button == _controls.NextTab)
                 handled = SetTab(1);
+            else if (_overlay == null)
+                handled = false;
             else if (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton())
                 handled = _overlay.LeftClick(x, y);
             else if (e.Button == SButton.MouseRight || e.Button.IsActionButton())
                 handled = _overlay.RightClick(x, y);
             else
                 handled = _overlay.ReceiveKeyPress(e.Button);
-            
             if (handled)
                 _inputHelper.Suppress(e.Button);
         }
@@ -200,10 +204,9 @@ namespace ExpandedStorage.Framework.UI
         /// <param name="e">The event arguments.</param>
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
-            var x = Game1.getMouseX(Game1.uiMode);
-            var y = Game1.getMouseY(Game1.uiMode);
-            
-            _overlay.Hover(x, y);
+            var x = Game1.getMouseX(true);
+            var y = Game1.getMouseY(true);
+            _overlay?.Hover(x, y);
         }
         
         /// <summary>Raised after the player scrolls the mouse wheel.</summary>
@@ -216,14 +219,14 @@ namespace ExpandedStorage.Framework.UI
             
             var cur = Game1.oldMouseState;
             Game1.oldMouseState = new MouseState(
-                x: cur.X,
-                y: cur.Y,
-                scrollWheel: e.NewValue,
-                leftButton: cur.LeftButton,
-                middleButton: cur.MiddleButton,
-                rightButton: cur.RightButton,
-                xButton1: cur.XButton1,
-                xButton2: cur.XButton2
+                cur.X,
+                cur.Y,
+                e.NewValue,
+                cur.LeftButton,
+                cur.MiddleButton,
+                cur.RightButton,
+                cur.XButton1,
+                cur.XButton2
             );
         }
         private bool ContextMatches(MenuHandler handler) =>
@@ -239,11 +242,19 @@ namespace ExpandedStorage.Framework.UI
 
             if (!string.IsNullOrWhiteSpace(_searchText))
                 filteredItems = filteredItems.Where(SearchMatches);
-
+            
             _filteredItems = filteredItems.ToList();
             _skipped = _skipped <= 0
                 ? 0
                 : Math.Min(_skipped, _filteredItems.Count.RoundUp(_cols) - _capacity);
+            
+            for (var i = 0; i < _menu.inventory.Count; i++)
+            {
+                var item = _filteredItems.ElementAtOrDefault(i + _skipped);
+                _menu.inventory[i].name = item != null
+                    ? _menu.actualInventory.IndexOf(item).ToString()
+                    : _menu.actualInventory.Count.ToString();
+            }
         }
 
         private bool SearchMatches(Item item)

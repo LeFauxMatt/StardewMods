@@ -10,7 +10,7 @@ namespace Common.HarmonyPatches
         {
             Replace,
             Prepend
-        };
+        }
         public string Text { get; private set; }
         public int Skipped { get; private set; }
         public bool Loop => _patchType == PatchType.Replace && _loop == -1 || --_loop > 0;
@@ -19,8 +19,8 @@ namespace Common.HarmonyPatches
         private readonly Queue<int> _patternIndex = new Queue<int>();
         private readonly IList<Action<LinkedList<CodeInstruction>>> _patches = new List<Action<LinkedList<CodeInstruction>>>();
         private readonly PatchType _patchType;
-        private int _startIndex = 0;
-        private int _endIndex = 0;
+        private int _startIndex;
+        private int _endIndex;
         private int _index;
         private int _loop;
         public PatternPatch(ICollection<CodeInstruction> pattern)
@@ -46,6 +46,7 @@ namespace Common.HarmonyPatches
             _patches.Add(patch);
             return this;
         }
+        // ReSharper disable once UnusedMethodReturnValue.Global
         public PatternPatch Patch(params CodeInstruction[] patches)
         {
             _patterns.AddRange(patches);
@@ -58,12 +59,14 @@ namespace Common.HarmonyPatches
             return this;
         }
 
+        // ReSharper disable once UnusedMethodReturnValue.Global
         public PatternPatch Skip(int skip)
         {
             Skipped = skip;
             return this;
         }
 
+        // ReSharper disable once UnusedMethodReturnValue.Global
         public PatternPatch Repeat(int loop)
         {
             _loop = loop;

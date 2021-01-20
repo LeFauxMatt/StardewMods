@@ -23,7 +23,7 @@ namespace ExpandedStorage
         private static readonly IDictionary<string, ExpandedStorageTab> ExpandedStorageTabs = new Dictionary<string, ExpandedStorageTab>();
 
         /// <summary>List of vanilla storages Display Names</summary>
-        private static readonly IList<string> VanillaStorages = new List<string>()
+        private static readonly IList<string> VanillaStorages = new List<string>
         {
             "Chest",
             "Stone Chest",
@@ -90,7 +90,7 @@ namespace ExpandedStorage
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
                 new ChestPatches(Monitor, _config, helper.Reflection),
-                new ItemGrabMenuPatch(Monitor, _config),
+                new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
@@ -103,7 +103,7 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            Monitor.Log($"Loading Expanded Storage Content", LogLevel.Info);
+            Monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
             ExpandedStorageConfigs.Clear();
             foreach (var contentPack in Helper.ContentPacks.GetOwned())
             {
@@ -128,10 +128,9 @@ namespace ExpandedStorage
                     }
                     else
                     {
-                        if (contentPack.HasFile(assetName))
-                            storageTab.Texture = contentPack.LoadAsset<Texture2D>(assetName);
-                        else
-                            storageTab.Texture = Helper.Content.Load<Texture2D>(assetName);
+                        storageTab.Texture = contentPack.HasFile(assetName)
+                            ? contentPack.LoadAsset<Texture2D>(assetName)
+                            : Helper.Content.Load<Texture2D>(assetName);
                         storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
                         ExpandedStorageTabs.Add(tabName, storageTab);
                     }

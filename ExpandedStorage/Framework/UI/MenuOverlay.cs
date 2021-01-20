@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -35,25 +34,25 @@ namespace ExpandedStorage.Framework.UI
         private bool IsInitialized => _drawCount > 1;
 
         /// <summary>Scrolls inventory menu up one row.</summary>
-        private ClickableTextureComponent _upArrow;
+        private readonly ClickableTextureComponent _upArrow;
         
         /// <summary>Scrolls inventory menu down one row.</summary>
-        private ClickableTextureComponent _downArrow;
+        private readonly ClickableTextureComponent _downArrow;
 
         /// <summary>Input to filter items by name or context tags.</summary>
-        private TextBox _searchField;
+        private readonly TextBox _searchField;
 
         /// <summary>Corresponds to the bounds of the searchField.</summary>
-        private ClickableComponent _searchArea;
+        private readonly ClickableComponent _searchArea;
 
         /// <summary>Icon to display next to search box.</summary>
-        private ClickableTextureComponent _searchIcon;
+        private readonly ClickableTextureComponent _searchIcon;
         
         private string _searchText;
 
         /// <summary>Chest menu tab components.</summary>
         private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
-        
+
         /// <summary>Tabs configured for Chest Menu</summary>
         private readonly IList<ExpandedStorageTab> _tabConfigs;
 
@@ -66,7 +65,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Draw hoverText over chest menu.</summary>
         private string _hoverText;
         
-        public MenuOverlay(InventoryMenu menu, IList<ExpandedStorageTab> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents,
+        public MenuOverlay(InventoryMenu menu, IList<ExpandedStorageTab> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents, ModConfig config,
             Func<bool> canScrollUp,
             Func<bool> canScrollDown,
             Func<int, bool> scroll,
@@ -84,6 +83,63 @@ namespace ExpandedStorage.Framework.UI
 
             _screenId = Context.ScreenId;
             _lastViewport = new Rectangle(Game1.uiViewport.X, Game1.uiViewport.Y, Game1.uiViewport.Width, Game1.uiViewport.Height);
+            var bounds = new Rectangle(_menu.xPositionOnScreen, _menu.yPositionOnScreen, _menu.width, _menu.height);
+            
+            if (config.ShowOverlayArrows)
+            {
+                _upArrow = new ClickableTextureComponent(
+                    new Rectangle(bounds.Right + 8, bounds.Y - 40, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
+                    Game1.mouseCursors,
+                    new Rectangle(421, 459, 11, 12),
+                    Game1.pixelZoom);
+            
+                _downArrow = new ClickableTextureComponent(
+                    new Rectangle(_upArrow.bounds.X, bounds.Bottom - 36, _upArrow.bounds.Width, _upArrow.bounds.Height),
+                    Game1.mouseCursors,
+                    new Rectangle(421, 472, 11, 12),
+                    Game1.pixelZoom);
+            }
+
+            if (config.ShowSearchBar)
+            {
+                _searchField = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
+                {
+                    X = bounds.X,
+                    Y = bounds.Y - 14 * Game1.pixelZoom,
+                    Width = bounds.Width,
+                    Text = _searchText,
+                    Selected = false
+                };
+
+                _searchArea = new ClickableComponent(new Rectangle(_searchField.X, _searchField.Y, _searchField.Width, _searchField.Height), "");
+
+                _searchIcon = new ClickableTextureComponent(
+                    new Rectangle(bounds.Right - 38, bounds.Y - 14 * Game1.pixelZoom + 6, 32, 32),
+                    Game1.mouseCursors,
+                    new Rectangle(80, 0, 13, 13),
+                    2.5f);
+            }
+
+            if (config.ShowTabs)
+            {
+                _tabs.Clear();
+                var xPosition = bounds.Left;
+                _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
+                for (var i = 0; i < _tabConfigs.Count; i++)
+                {
+                    var tab = new ClickableTextureComponent(
+                        new Rectangle(xPosition, _tabY, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                        _tabConfigs[i].Texture,
+                        Rectangle.Empty,
+                        Game1.pixelZoom)
+                    {
+                        name = i.ToString(),
+                        hoverText = _tabConfigs[i].TabName
+                    };
+                    _tabs.Add(tab);
+                    xPosition += tab.bounds.Width;
+                }
+            }
             
             // Events
             _gameLoopEvents.UpdateTicked += OnUpdateTicked;
@@ -99,51 +155,35 @@ namespace ExpandedStorage.Framework.UI
         private void InitComponents()
         {
             var bounds = new Rectangle(_menu.xPositionOnScreen, _menu.yPositionOnScreen, _menu.width, _menu.height);
-            
-            _upArrow = new ClickableTextureComponent(
-                new Rectangle(bounds.Right + 8, bounds.Y - 40, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
-                Game1.mouseCursors,
-                new Rectangle(421, 459, 11, 12),
-                Game1.pixelZoom);
-            
-            _downArrow = new ClickableTextureComponent(
-                new Rectangle(_upArrow.bounds.X, bounds.Bottom - 36, _upArrow.bounds.Width, _upArrow.bounds.Height),
-                Game1.mouseCursors,
-                new Rectangle(421, 472, 11, 12),
-                Game1.pixelZoom);
-            
-            _searchField = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
+
+            if (_upArrow != null)
             {
-                X = bounds.X,
-                Y = bounds.Y - 14 * Game1.pixelZoom,
-                Width = bounds.Width,
-                Text = _searchText,
-                Selected = false
-            };
+                _upArrow.bounds.X = bounds.Right + 8;
+                _upArrow.bounds.Y = bounds.Y - 40;
+            }
 
-            _searchArea = new ClickableComponent(new Rectangle(_searchField.X, _searchField.Y, _searchField.Width, _searchField.Height), "");
+            if (_downArrow != null)
+            {
+                _downArrow.bounds.X = bounds.Right + 8;
+                _downArrow.bounds.Y = bounds.Bottom - 36;
+            }
 
-            _searchIcon = new ClickableTextureComponent(
-                new Rectangle(bounds.Right - 38, bounds.Y - 14 * Game1.pixelZoom + 6, 32, 32),
-                Game1.mouseCursors,
-                new Rectangle(80, 0, 13, 13),
-                2.5f);
-            
-            _tabs.Clear();
-            var xPosition = bounds.Left;
+            if (_searchField != null)
+            {
+                _searchField.X = bounds.X;
+                _searchField.Y = bounds.Y - 14 * Game1.pixelZoom;
+                _searchArea.bounds.X = _searchField.X;
+                _searchArea.bounds.Y = _searchField.Y;
+                _searchIcon.bounds.X = bounds.Right - 38;
+                _searchIcon.bounds.Y = bounds.Y - 14 * Game1.pixelZoom + 6;
+            }
+
             _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
-            for (var i = 0; i < _tabConfigs.Count; i++)
+            var xPosition = bounds.Left;
+            foreach (var tab in _tabs)
             {
-                var tab = new ClickableTextureComponent(
-                    new Rectangle(xPosition, _tabY, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    _tabConfigs[i].Texture,
-                    Rectangle.Empty,
-                    Game1.pixelZoom)
-                {
-                    name = i.ToString(),
-                    hoverText = _tabConfigs[i].TabName
-                };
-                _tabs.Add(tab);
+                tab.bounds.X = xPosition;
+                tab.bounds.Y = _tabY;
                 xPosition += tab.bounds.Width;
             }
         }
@@ -189,12 +229,12 @@ namespace ExpandedStorage.Framework.UI
             _drawCount++;
             
             if (_canScrollUp.Invoke())
-                _upArrow.draw(b);
+                _upArrow?.draw(b);
             if (_canScrollDown.Invoke())
-                _downArrow.draw(b);
+                _downArrow?.draw(b);
             
-            _searchField.Draw(b, false);
-            _searchIcon.draw(b);
+            _searchField?.Draw(b, false);
+            _searchIcon?.draw(b);
 
             if (_hoverText != null)
                 IClickableMenu.drawHoverText(b, _hoverText, Game1.smallFont);
@@ -221,17 +261,8 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Handles key presses</summary>
         /// <param name="button">The button that was pressed</param>
         /// /// <returns>True when an interaction occurs</returns>
-        internal bool ReceiveKeyPress(SButton button)
-        {
-            if (_searchField.Selected)
-            {
-                if (button == SButton.Escape)
-                    _searchField.Selected = false;
-                return true;
-            }
-
-            return false;
-        }
+        internal bool ReceiveKeyPress(SButton button) =>
+            _searchField != null && _searchField.Selected && button != SButton.Escape;
 
         /// <summary>Handles Left-Click interaction with overlay elements</summary>
         /// <param name="x">x-coordinate of left-click</param>
@@ -242,12 +273,15 @@ namespace ExpandedStorage.Framework.UI
         {
             if (Context.ScreenId != _screenId || !IsInitialized)
                 return false;
-            
-            _searchField.Selected = _searchArea.containsPoint(x, y);
-            if (_searchField.Selected)
-                return true;
-            
-            if (_upArrow.containsPoint(x, y))
+
+            if (_searchField != null)
+            {
+                _searchField.Selected = _searchArea.containsPoint(x, y);
+                if (_searchField.Selected)
+                    return true;
+            }
+
+            if (_upArrow != null && _upArrow.containsPoint(x, y))
             {
                 _scroll.Invoke(1);
                 if (playSound)
@@ -255,7 +289,7 @@ namespace ExpandedStorage.Framework.UI
                 return true;
             }
             
-            if (_downArrow.containsPoint(x, y))
+            if (_downArrow != null && _downArrow.containsPoint(x, y))
             {
                 _scroll.Invoke(-1);
                 if (playSound)
@@ -280,12 +314,14 @@ namespace ExpandedStorage.Framework.UI
         /// <param name="y">Y-Coordinate of left-click</param>
         /// <param name="playSound">Whether sound should be enabled for click</param>
         /// <returns>True when an interaction occurs</returns>
+        // ReSharper disable once UnusedParameter.Global
         internal bool RightClick(int x, int y, bool playSound = true)
         {
             if (Context.ScreenId != _screenId || !IsInitialized)
                 return false;
 
-            if (_searchArea.containsPoint(x, y))
+            // ReSharper disable once InvertIf
+            if (_searchArea != null && _searchArea.containsPoint(x, y))
             {
                 _searchField.Text = "";
                 _search.Invoke(_searchField.Text);
@@ -303,9 +339,9 @@ namespace ExpandedStorage.Framework.UI
             if (Context.ScreenId != _screenId || !IsInitialized)
                 return;
             
-            _upArrow.tryHover(x, y, 0.25f);
-            _downArrow.tryHover(x, y, 0.25f);
-            _searchField.Hover(x, y);
+            _upArrow?.tryHover(x, y, 0.25f);
+            _downArrow?.tryHover(x, y, 0.25f);
+            _searchField?.Hover(x, y);
 
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
             _hoverText = tab?.hoverText;

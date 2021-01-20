@@ -15,31 +15,37 @@ namespace ExpandedStorage.Framework.UI
     {
         /// <summary>Returns Offset to lower menu for expanded menus.</summary>
         public static int Offset(MenuWithInventory menu) =>
-            _config.ExpandInventoryMenu && menu is ItemGrabMenu {context: Chest _} itemGrabMenu
+            _config.ExpandInventoryMenu
+            && menu is ItemGrabMenu itemGrabMenu
                 ? 64 * (Rows(itemGrabMenu.context) - 3)
                 : 0;
 
         /// <summary>Returns Padding to top menu for search box.</summary>
         public static int Padding(MenuWithInventory menu) =>
-            _config.ShowSearchBar && menu is ItemGrabMenu itemGrabMenu
+            _config.ShowSearchBar
+            && menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest}
+            && ExpandedStorage.HasConfig(chest)
                 ? 24
                 : 0;
 
         /// <summary>Returns Display Capacity of MenuWithInventory.</summary>
         public static int Capacity(object context) =>
-            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None}
+            _config.AllowModdedCapacity
                 ? Rows(context) * 12
                 : Chest.capacity;
 
         /// <summary>Returns Displayed Rows of MenuWithInventory.</summary>
         public static int Rows(object context) =>
-            context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest
+            _config.ExpandInventoryMenu 
+            && context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest 
+            && ExpandedStorage.HasConfig(chest)
                 ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
                 : 3;
 
         /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
         public static IList<Item> Filtered(InventoryMenu inventoryMenu) =>
-            MenuHandler != null && MenuHandler.ContextMatches(inventoryMenu)
+            MenuHandler != null
+            && MenuHandler.ContextMatches(inventoryMenu)
                 ? MenuHandler.Items
                 : inventoryMenu.actualInventory;
 
@@ -96,8 +102,7 @@ namespace ExpandedStorage.Framework.UI
                 MenuHandler?.UnregisterEvents();
                 return;
             }
-
-            var menuHandler = new MenuHandler(menu, _events, _inputHelper, _controls, MenuHandler);
+            var menuHandler = new MenuHandler(menu, _events, _inputHelper, _config, _controls, MenuHandler);
             MenuHandler?.Dispose();
             MenuHandler = menuHandler;
         }

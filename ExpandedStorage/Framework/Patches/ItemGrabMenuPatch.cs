@@ -14,12 +14,17 @@ namespace ExpandedStorage.Framework.Patches
     internal class ItemGrabMenuPatch : HarmonyPatch
     {
         private readonly Type _itemGrabMenuType = typeof(ItemGrabMenu);
-        internal ItemGrabMenuPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
+        private static IReflectionHelper Reflection;
+
+        internal ItemGrabMenuPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
+            : base(monitor, config)
+        {
+            Reflection = reflection;
+        }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu)
+            if (Config.AllowModdedCapacity)
             {
                 harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
                     transpiler: new HarmonyMethod(GetType(), nameof(CapacityPatches)));
@@ -65,12 +70,14 @@ namespace ExpandedStorage.Framework.Patches
 
         static void OffsetDown(ItemGrabMenu __instance)
         {
+            var sourceItemReflected = Reflection.GetField<Item>(__instance, "sourceItem");
             if (Config.ShowSearchBar)
             {
                 var padding = ExpandedMenu.Padding(__instance);
                 __instance.yPositionOnScreen -= padding;
                 __instance.height += padding;
-                __instance.chestColorPicker.yPositionOnScreen -= padding;
+                if (sourceItemReflected.GetValue() != null)
+                    __instance.chestColorPicker.yPositionOnScreen -= padding;
             }
 
             if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu)
@@ -78,9 +85,12 @@ namespace ExpandedStorage.Framework.Patches
                 var offset = ExpandedMenu.Offset(__instance);
                 __instance.height += offset;
                 __instance.inventory.movePosition(0, offset);
-                __instance.okButton.bounds.Y += offset;
-                __instance.trashCan.bounds.Y += offset;
-                __instance.dropItemInvisibleButton.bounds.Y += offset;
+                if (sourceItemReflected.GetValue() != null)
+                {
+                    __instance.okButton.bounds.Y += offset;
+                    __instance.trashCan.bounds.Y += offset;
+                    __instance.dropItemInvisibleButton.bounds.Y += offset;
+                }
             }
         }
         
@@ -135,7 +145,7 @@ namespace ExpandedStorage.Framework.Patches
             }
             
             // Draw arrows under hover text
-            if (Config.ShowOverlayArrows || Config.ShowSearchBar)
+            if (Config.ShowOverlayArrows || Config.ShowSearchBar || Config.ShowTabs)
             {
                 patternPatches
                     .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeButton)),
