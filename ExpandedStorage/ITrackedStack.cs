@@ -1,5 +1,5 @@
 ﻿using StardewValley;
-
+// ReSharper disable All
 namespace ExpandedStorage
 {
     internal interface ITrackedStack

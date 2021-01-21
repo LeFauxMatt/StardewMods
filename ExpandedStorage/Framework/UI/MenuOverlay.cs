@@ -18,7 +18,7 @@ namespace ExpandedStorage.Framework.UI
         private readonly Func<bool> _canScrollUp;
         private readonly Func<bool> _canScrollDown;
         private readonly Func<int, bool> _scroll;
-        private readonly Action<ExpandedStorageTab> _setTab;
+        private readonly Action<TabContentData> _setTab;
         private readonly Action<string> _search;
         
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
@@ -54,10 +54,10 @@ namespace ExpandedStorage.Framework.UI
         private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
 
         /// <summary>Tabs configured for Chest Menu</summary>
-        private readonly IList<ExpandedStorageTab> _tabConfigs;
+        private readonly IList<TabContentData> _tabConfigs;
 
         /// <summary>Currently selected tab.</summary>
-        internal ExpandedStorageTab CurrentTab { get; set; }
+        internal TabContentData CurrentTab { get; set; }
 
         /// <summary>Y-Position for tabs when not selected.</summary>
         private int _tabY;
@@ -65,11 +65,11 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Draw hoverText over chest menu.</summary>
         private string _hoverText;
         
-        public MenuOverlay(InventoryMenu menu, IList<ExpandedStorageTab> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents, ModConfig config,
+        public MenuOverlay(InventoryMenu menu, IList<TabContentData> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents, ModConfig config,
             Func<bool> canScrollUp,
             Func<bool> canScrollDown,
             Func<int, bool> scroll,
-            Action<ExpandedStorageTab> setTab,
+            Action<TabContentData> setTab,
             Action<string> search)
         {
             _menu = menu;

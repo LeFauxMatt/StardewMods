@@ -1,5 +1,8 @@
-﻿namespace ExpandedStorage.Framework
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace ExpandedStorage.Framework
 {
+    [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
     public class ModConfig
     {
         /// <summary>Allow carried chests to be accessed while in inventory.</summary>

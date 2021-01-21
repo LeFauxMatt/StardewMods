@@ -6,6 +6,7 @@ using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework.Patches
 {
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public abstract class HarmonyPatch
     {
         internal static IMonitor Monitor;

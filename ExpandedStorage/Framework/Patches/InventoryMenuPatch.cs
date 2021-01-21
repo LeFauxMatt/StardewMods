@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Common.HarmonyPatches;
 using ExpandedStorage.Framework.UI;
 using Harmony;
@@ -9,6 +10,7 @@ using StardewValley.Menus;
 
 namespace ExpandedStorage.Framework.Patches
 {
+    [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class InventoryMenuPatch : HarmonyPatch
     {
         private readonly Type _type = typeof(InventoryMenu);

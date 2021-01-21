@@ -4,30 +4,33 @@ using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 namespace ExpandedStorage
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod
     {
-        /// <summary>Dictionary list of objects which are Expanded Storage</summary>
-        private static readonly IDictionary<string, ExpandedStorageConfig> ExpandedStorageConfigs = new Dictionary<string, ExpandedStorageConfig>();
+        /// <summary>Dictionary of Expanded Storage object data</summary>
+        private static readonly IDictionary<int, string> StorageObjects = new Dictionary<int, string>();
+        
+        /// <summary>Dictionary of Expanded Storage configs</summary>
+        private static readonly IDictionary<string, StorageContentData> StorageContent = new Dictionary<string, StorageContentData>();
 
-        /// <summary>Dictionary list of Expanded Storage tabs</summary>
-        private static readonly IDictionary<string, ExpandedStorageTab> ExpandedStorageTabs = new Dictionary<string, ExpandedStorageTab>();
+        /// <summary>Dictionary of Expanded Storage tabs</summary>
+        private static readonly IDictionary<string, TabContentData> StorageTabs = new Dictionary<string, TabContentData>();
 
         /// <summary>List of vanilla storages Display Names</summary>
-        private static readonly IList<string> VanillaStorages = new List<string>
+        private static readonly IDictionary<int, string> VanillaStorages = new Dictionary<int, string>
         {
-            "Chest",
-            "Stone Chest",
-            "Mini-Fridge"
+            { 130, "Chest" },
+            { 232, "Stone Chest" },
+            { 216, "Mini-Fridge" }
         };
         
         /// <summary>The mod configuration.</summary>
@@ -40,20 +43,27 @@ namespace ExpandedStorage
         private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static ExpandedStorageConfig GetConfig(Item item) =>
-            ExpandedStorageConfigs.TryGetValue(item.Name, out var config) ? config : null;
-
+        public static StorageContentData GetConfig(Item item) =>
+            item is Object obj
+            && obj.bigCraftable.Value
+            && StorageObjects.TryGetValue(obj.ParentSheetIndex, out var storageName)
+            && StorageContent.TryGetValue(storageName, out var config)
+                ? config : null;
+        
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
         public static bool HasConfig(Item item) =>
-            item is Object && ExpandedStorageConfigs.ContainsKey(item.Name);
+            item is Object obj
+            && obj.bigCraftable.Value
+            && StorageObjects.ContainsKey(item.ParentSheetIndex);
         
         /// <summary>Returns true if item is a Vanilla Storage.</summary>
         public static bool IsVanilla(Item item) =>
-            item is Chest && VanillaStorages.Contains(item.Name);
+            item is Chest
+            && VanillaStorages.ContainsKey(item.ParentSheetIndex);
         
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
-        public static ExpandedStorageTab GetTab(string tabName) =>
-            ExpandedStorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
+        public static TabContentData GetTab(string tabName) =>
+            StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
         
         public override void Entry(IModHelper helper)
         {
@@ -65,25 +75,20 @@ namespace ExpandedStorage
                 Monitor.Log("Expanded Storage should not be run alongside Carry Chest", LogLevel.Warn);
                 _config.AllowCarryingChests = false;
             }
-
+            
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
 
             ExpandedMenu.Init(helper.Events, helper.Input, _config, _controls);
 
             // Events
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
+            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
 
             if (_config.AllowCarryingChests)
             {
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
                 helper.Events.Input.ButtonPressed += OnButtonPressed;
             }
-            
-            helper.Events.GameLoop.SaveLoaded += delegate
-            {
-                helper.Events.GameLoop.UpdateTicking += OnUpdateTickingOnce;
-            };
 
             // Harmony Patches
             new Patcher(ModManifest.UniqueID).ApplyAll(
@@ -95,61 +100,35 @@ namespace ExpandedStorage
                 new MenuWithInventoryPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
         }
-
-        /// <summary>
-        /// Load Expanded Storage content packs
-        /// </summary>
+        
+        /// <summary>Load content packs.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            Monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
-            ExpandedStorageConfigs.Clear();
-            foreach (var contentPack in Helper.ContentPacks.GetOwned())
+            LoadContentPacks();
+            
+            var jsonAssetsApi = Helper.ModRegistry.GetApi<IJsonAssetsApi>("spacechase0.JsonAssets");
+            if (jsonAssetsApi == null)
+                return;
+            
+            jsonAssetsApi.IdsAssigned += delegate
             {
-                if (!contentPack.HasFile("expandedStorage.json"))
+                foreach (var jsonAssetsId in jsonAssetsApi.GetAllBigCraftableIds()
+                    .Where(obj => StorageContent.ContainsKey(obj.Key)))
                 {
-                    Monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
-                    continue;
+                    StorageObjects.Add(jsonAssetsId.Value, jsonAssetsId.Key);
                 }
-                
-                Monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
-                var contentData = contentPack.ReadJsonFile<ContentData>("expandedStorage.json");
-                
-                // Load expanded storage tabs
-                foreach (var storageTab in contentData.StorageTabs
-                    .Where(t => !string.IsNullOrWhiteSpace(t.TabName) && !string.IsNullOrWhiteSpace(t.TabImage)))
-                {
-                    var tabName = $"{contentPack.Manifest.UniqueID}/{storageTab.TabName}";
-                    var assetName = $"assets/{storageTab.TabImage}";
-                    if (ExpandedStorageTabs.ContainsKey(tabName))
-                    {
-                        Monitor.Log($"Duplicate tab {storageTab.TabName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
-                    }
-                    else
-                    {
-                        storageTab.Texture = contentPack.HasFile(assetName)
-                            ? contentPack.LoadAsset<Texture2D>(assetName)
-                            : Helper.Content.Load<Texture2D>(assetName);
-                        storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
-                        ExpandedStorageTabs.Add(tabName, storageTab);
-                    }
-                }
-                
-                // Load expanded storage objects
-                foreach (var expandedStorage in contentData.ExpandedStorage
-                    .Where(s => !string.IsNullOrWhiteSpace(s.StorageName)))
-                {
-                    if (ExpandedStorageConfigs.ContainsKey(expandedStorage.StorageName))
-                    {
-                        Monitor.Log($"Duplicate storage {expandedStorage.StorageName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
-                    }
-                    else
-                    {
-                        expandedStorage.ModUniqueId = contentPack.Manifest.UniqueID;
-                        ExpandedStorageConfigs.Add(expandedStorage.StorageName, expandedStorage);
-                    }
-                }
+            };
+        }
+        private void LoadContentPacks()
+        {
+            var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
+            var contentLoader = new ContentLoader(Monitor, Helper.Content, Helper.ContentPacks.GetOwned());
+            contentLoader.LoadAll(modConfigApi, StorageContent, StorageTabs);
+            foreach (var item in VanillaStorages.Where(item => StorageContent.ContainsKey(item.Value)))
+            {
+                StorageObjects.Add(item.Key, item.Value);
             }
         }
 
@@ -162,33 +141,7 @@ namespace ExpandedStorage
                 return;
             _previousHeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
         }
-        
-        /// <summary>Fix any placed objects that require a name correction.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnUpdateTickingOnce(object sender, UpdateTickingEventArgs e)
-        {
-            if (!Context.IsPlayerFree)
-                return;
-            Helper.Events.GameLoop.UpdateTicking -= OnUpdateTickingOnce;
-            Utility.ForAllLocations(location =>
-            {
-                var chests = location.Objects.Pairs
-                    .Where(c => c.Value is Chest);
 
-                foreach (var chest in chests)
-                {
-                    if (!Game1.bigCraftablesInformation.TryGetValue(chest.Value.ParentSheetIndex, out var chestInfo))
-                        continue;
-                    
-                    var chestName = chestInfo.Split('/')[0];
-                    
-                    Monitor.Log($"Updating storage in {location.Name} at {chest.Key.X},{chest.Key.Y} to {chestName}");
-                    chest.Value.name = chestName;
-                }
-            });
-        }
-        
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -199,14 +152,14 @@ namespace ExpandedStorage
 
             var handled = false;
             
-            if (Game1.player.CurrentItem == null && (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton()))
+            if (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton())
             {
                 var location = Game1.currentLocation;
                 var pos = e.Cursor.Tile;
-                if (!location.objects.TryGetValue(pos, out var obj) ||
-                    !ExpandedStorageConfigs.TryGetValue(obj.name, out var data) ||
-                    !data.CanCarry ||
-                    !Game1.player.addItemToInventoryBool(obj, true))
+                if (!location.objects.TryGetValue(pos, out var obj)
+                    || !HasConfig(obj)
+                    || !StorageContent[StorageObjects[obj.ParentSheetIndex]].CanCarry
+                    || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
                 location.objects.Remove(pos);
                 handled = true;

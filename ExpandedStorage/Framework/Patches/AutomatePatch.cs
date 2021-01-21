@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Harmony;
 using StardewModdingAPI;
@@ -7,15 +8,17 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
+    [SuppressMessage("ReSharper", "InvertIf")]
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class AutomatePatch : HarmonyPatch
     {
         private readonly Type _type;
         private readonly bool _isAutomateLoaded;
-        private static IReflectionHelper Reflection;
+        private static IReflectionHelper _reflection;
         internal AutomatePatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection, bool isAutomateLoaded)
             : base(monitor, config)
         {
-            Reflection = reflection;
+            _reflection = reflection;
             _isAutomateLoaded = isAutomateLoaded;
             
             if (!isAutomateLoaded)
@@ -38,8 +41,8 @@ namespace ExpandedStorage.Framework.Patches
 
         public static bool Store_Prefix(object __instance, ITrackedStack stack)
         {
-            var reflectedChest = Reflection.GetField<Chest>(__instance, "Chest");
-            var reflectedSample = Reflection.GetProperty<Item>(stack, "Sample");
+            var reflectedChest = _reflection.GetField<Chest>(__instance, "Chest");
+            var reflectedSample = _reflection.GetProperty<Item>(stack, "Sample");
             var config = ExpandedStorage.GetConfig(reflectedChest.GetValue());
             return config == null || config.IsAllowed(reflectedSample.GetValue()) && !config.IsBlocked(reflectedSample.GetValue());
         }

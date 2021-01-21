@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Common.HarmonyPatches;
 using ExpandedStorage.Framework.UI;
 using Harmony;
@@ -11,15 +12,18 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "InvertIf")]
+    [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class ItemGrabMenuPatch : HarmonyPatch
     {
         private readonly Type _itemGrabMenuType = typeof(ItemGrabMenu);
-        private static IReflectionHelper Reflection;
+        private static IReflectionHelper _reflection;
 
         internal ItemGrabMenuPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
             : base(monitor, config)
         {
-            Reflection = reflection;
+            _reflection = reflection;
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
@@ -70,13 +74,13 @@ namespace ExpandedStorage.Framework.Patches
 
         static void OffsetDown(ItemGrabMenu __instance)
         {
-            var sourceItemReflected = Reflection.GetField<Item>(__instance, "sourceItem");
+            var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
             if (Config.ShowSearchBar)
             {
                 var padding = ExpandedMenu.Padding(__instance);
                 __instance.yPositionOnScreen -= padding;
                 __instance.height += padding;
-                if (sourceItemReflected.GetValue() != null)
+                if (sourceItemReflected.GetValue() != null && __instance.chestColorPicker != null)
                     __instance.chestColorPicker.yPositionOnScreen -= padding;
             }
 

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Harmony;
 
 namespace Common.HarmonyPatches
 {
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class PatternPatch
     {
         private enum PatchType

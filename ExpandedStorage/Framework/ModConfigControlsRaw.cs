@@ -1,7 +1,9 @@
-﻿using StardewModdingAPI;
+﻿using System.Diagnostics.CodeAnalysis;
+using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework
 {
+    [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
     public class ModConfigControlsRaw
     {
         public string ScrollUp { get; set; } = $"{SButton.DPadUp}";

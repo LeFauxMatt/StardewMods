@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework
 {
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     internal class ModConfigControls
     {
         internal SButton ScrollUp;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Harmony;
 using StardewModdingAPI;
 using StardewValley;
@@ -6,6 +7,7 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ItemPatch : HarmonyPatch
     {
         private readonly Type _itemType = typeof(Item);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
 using ExpandedStorage.Framework.Models;
@@ -15,6 +16,7 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.UI
 {
+    [SuppressMessage("ReSharper", "IdentifierTypo")]
     internal class MenuHandler : IDisposable
     {
         private readonly MenuOverlay _overlay;
@@ -29,10 +31,10 @@ namespace ExpandedStorage.Framework.UI
         private readonly int _capacity;
         private readonly int _cols;
 
-        private readonly ExpandedStorageConfig _storageConfig;
+        private readonly StorageContentData _storageConfig;
         private int _skipped;
-        private ExpandedStorageTab _currentTab;
-        private readonly IList<ExpandedStorageTab> _tabConfigs;
+        private TabContentData _currentTab;
+        private readonly IList<TabContentData> _tabConfigs;
         private string _searchText;
         
         public IList<Item> Items => _storageConfig == null ? _items : _filteredItems.Skip(_skipped).ToList();
@@ -146,9 +148,9 @@ namespace ExpandedStorage.Framework.UI
             return true;
         }
 
-        private void SetTab(ExpandedStorageTab tabConfig)
+        private void SetTab(TabContentData tabContentDataConfig)
         {
-            _currentTab = tabConfig;
+            _currentTab = tabContentDataConfig;
             _skipped = 0;
             RefreshList();
         }
@@ -233,6 +235,7 @@ namespace ExpandedStorage.Framework.UI
             ReferenceEquals(_context, handler._context);
         public bool ContextMatches(InventoryMenu inventoryMenu) =>
             ReferenceEquals(_items, inventoryMenu.actualInventory);
+        
         private void RefreshList()
         {
             var filteredItems = _items.Where(item => item != null);
@@ -242,15 +245,16 @@ namespace ExpandedStorage.Framework.UI
 
             if (!string.IsNullOrWhiteSpace(_searchText))
                 filteredItems = filteredItems.Where(SearchMatches);
+            var filteredItemsList = filteredItems.ToList();
             
-            _filteredItems = filteredItems.ToList();
             _skipped = _skipped <= 0
                 ? 0
-                : Math.Min(_skipped, _filteredItems.Count.RoundUp(_cols) - _capacity);
+                : Math.Min(_skipped, filteredItemsList.Count.RoundUp(_cols) - _capacity);
+            _filteredItems = filteredItemsList.Skip(_skipped).ToList();
             
             for (var i = 0; i < _menu.inventory.Count; i++)
             {
-                var item = _filteredItems.ElementAtOrDefault(i + _skipped);
+                var item = _filteredItems.ElementAtOrDefault(i);
                 _menu.inventory[i].name = item != null
                     ? _menu.actualInventory.IndexOf(item).ToString()
                     : _menu.actualInventory.Count.ToString();

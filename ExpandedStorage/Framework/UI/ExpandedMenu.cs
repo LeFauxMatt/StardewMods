@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -11,6 +12,7 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.UI
 {
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static class ExpandedMenu
     {
         /// <summary>Returns Offset to lower menu for expanded menus.</summary>
@@ -44,8 +46,7 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
         public static IList<Item> Filtered(InventoryMenu inventoryMenu) =>
-            MenuHandler != null
-            && MenuHandler.ContextMatches(inventoryMenu)
+            MenuHandler?.ContextMatches(inventoryMenu) ?? false
                 ? MenuHandler.Items
                 : inventoryMenu.actualInventory;
 
@@ -59,9 +60,6 @@ namespace ExpandedStorage.Framework.UI
         public static void DrawUnder(SpriteBatch b) =>
             MenuHandler?.DrawUnder(b);
 
-        public static bool ContextMatches(InventoryMenu inventoryMenu) =>
-            MenuHandler?.ContextMatches(inventoryMenu) ?? false;
-        
         private static MenuHandler MenuHandler
         {
             get => PerScreenMenuHandler.Value;
