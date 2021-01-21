@@ -31,13 +31,12 @@ namespace ExpandedStorage.Framework.UI
         private readonly int _capacity;
         private readonly int _cols;
 
-        private readonly StorageContentData _storageConfig;
         private int _skipped;
         private TabContentData _currentTab;
         private readonly IList<TabContentData> _tabConfigs;
         private string _searchText;
-        
-        public IList<Item> Items => _storageConfig == null ? _items : _filteredItems.Skip(_skipped).ToList();
+
+        public IList<Item> Items => _filteredItems ?? _items;
         
         internal MenuHandler(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper, ModConfig config, ModConfigControls controls, MenuHandler menuHandler = null)
         {
@@ -51,13 +50,13 @@ namespace ExpandedStorage.Framework.UI
             _capacity = _menu.capacity;
             _cols = _menu.capacity / _menu.rows;
             
-            _storageConfig = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
+            var storageConfig = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
             
-            if (_storageConfig == null)
+            if (storageConfig == null)
                 return;
 
-            _tabConfigs = _storageConfig.Tabs
-                    .Select(t => ExpandedStorage.GetTab($"{_storageConfig.ModUniqueId}/{t}"))
+            _tabConfigs = storageConfig.Tabs
+                    .Select(t => ExpandedStorage.GetTab($"{storageConfig.ModUniqueId}/{t}"))
                     .Where(t => t != null)
                     .ToList();
             
@@ -288,9 +287,7 @@ namespace ExpandedStorage.Framework.UI
             RefreshList();
         private void ShippingBinOnValueChanged(Item value) =>
             RefreshList();
-        private bool CanScrollUp =>
-            _skipped > 0;
-        private bool CanScrollDown =>
-            _skipped + _cols <= _filteredItems.Count.RoundUp(_cols) - _capacity;
+        private bool CanScrollUp => _skipped > 0;
+        private bool CanScrollDown => _cols <= _filteredItems.Count.RoundUp(_cols) - _capacity;
     }
 }
