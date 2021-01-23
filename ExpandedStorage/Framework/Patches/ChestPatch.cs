@@ -48,9 +48,9 @@ namespace ExpandedStorage.Framework.Patches
         public static bool addItem_Prefix(Chest __instance, Item item, ref Item __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.IsAllowed(item) && !config.IsBlocked(item))
+            if (!ReferenceEquals(__instance, item) && (config == null || config.IsAllowed(item) && !config.IsBlocked(item)))
                 return true;
-            
+
             __result = item;
             return false;
         }
