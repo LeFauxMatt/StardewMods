@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
@@ -14,7 +15,7 @@ using Object = StardewValley.Object;
 namespace ExpandedStorage
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class ExpandedStorage : Mod
+    internal class ExpandedStorage : Mod, IAssetEditor
     {
         /// <summary>Dictionary of Expanded Storage object data</summary>
         private static readonly IDictionary<int, string> StorageObjects = new Dictionary<int, string>();
@@ -26,21 +27,15 @@ namespace ExpandedStorage
         private static readonly IDictionary<string, TabContentData> StorageTabs = new Dictionary<string, TabContentData>();
 
         /// <summary>List of vanilla storages Display Names</summary>
-        private static readonly IDictionary<int, string> VanillaStorages = new Dictionary<int, string>
-        {
-            { 130, "Chest" },
-            { 232, "Stone Chest" },
-            { 216, "Mini-Fridge" }
-        };
-        
+        private static IDictionary<int, string> VanillaStorages;
+
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
-        /// <summary>Control scheme.</summary>
-        private ModConfigControls _controls;
-
         /// <summary>Tracks previously held chest before placing into world.</summary>
         private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
+
+        private ContentLoader _contentLoader;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
         public static StorageContentData GetConfig(Item item) =>
@@ -68,7 +63,6 @@ namespace ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
-            _controls = new ModConfigControls(_config.Controls);
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
@@ -78,7 +72,7 @@ namespace ExpandedStorage
             
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
 
-            ExpandedMenu.Init(helper.Events, helper.Input, _config, _controls);
+            ExpandedMenu.Init(helper.Events, helper.Input, _config);
 
             // Events
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
@@ -101,12 +95,29 @@ namespace ExpandedStorage
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
         }
         
+        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public bool CanEdit<T>(IAssetInfo asset)
+        {
+            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
+            {
+                Helper.Events.GameLoop.UpdateTicked += LoadContentPacks;
+            }
+            return false;
+        }
+
+        /// <summary>Load a matched asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public void Edit<T>(IAssetData asset) { }
+        
         /// <summary>Load content packs.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            LoadContentPacks();
+            var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
+            _contentLoader = new ContentLoader(Monitor, Helper.Content, Helper.ContentPacks.GetOwned());
+            _contentLoader.LoadOwnedStorages(modConfigApi, StorageContent, StorageTabs);
             
             var jsonAssetsApi = Helper.ModRegistry.GetApi<IJsonAssetsApi>("spacechase0.JsonAssets");
             if (jsonAssetsApi == null)
@@ -121,15 +132,15 @@ namespace ExpandedStorage
                 }
             };
         }
-        private void LoadContentPacks()
+        /// <summary>Track toolbar changes before user input.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void LoadContentPacks(object sender, UpdateTickedEventArgs e)
         {
-            var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
-            var contentLoader = new ContentLoader(Monitor, Helper.Content, Helper.ContentPacks.GetOwned());
-            contentLoader.LoadAll(modConfigApi, StorageContent, StorageTabs);
-            foreach (var item in VanillaStorages.Where(item => StorageContent.ContainsKey(item.Value)))
-            {
-                StorageObjects.Add(item.Key, item.Value);
-            }
+            if (!_contentLoader.IsOwnedLoaded)
+                return;
+            Helper.Events.GameLoop.UpdateTicked -= LoadContentPacks;
+            VanillaStorages = _contentLoader.LoadVanillaStorages(StorageContent, StorageObjects);
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -149,29 +160,24 @@ namespace ExpandedStorage
         {
             if (!Context.IsPlayerFree)
                 return;
-
-            var handled = false;
             
-            if (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton())
+            if (e.Button.IsUseToolButton())
             {
                 var location = Game1.currentLocation;
-                var pos = e.Cursor.Tile;
+                var pos = Game1.player.GetToolLocation();
                 if (!location.objects.TryGetValue(pos, out var obj)
                     || !HasConfig(obj)
                     || !StorageContent[StorageObjects[obj.ParentSheetIndex]].CanCarry
                     || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
                 location.objects.Remove(pos);
-                handled = true;
+                Helper.Input.Suppress(e.Button);
             }
-            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && (e.Button == SButton.MouseRight || e.Button.IsActionButton()))
+            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && e.Button.IsActionButton())
             {
                 _previousHeldChest.Value.ShowMenu();
-                handled = true;
-            }
-
-            if (handled)
                 Helper.Input.Suppress(e.Button);
+            }
         }
 
         /// <summary>

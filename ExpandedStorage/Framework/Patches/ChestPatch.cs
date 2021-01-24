@@ -151,15 +151,12 @@ namespace ExpandedStorage.Framework.Patches
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null)
+            if (config == null || config.Capacity == 0)
                 return true;
 
-            __result = config.Capacity switch
-            {
-                -1 => int.MaxValue,
-                0 => Chest.capacity,
-                _ => config.Capacity
-            };
+            __result = config.Capacity == -1
+                ? int.MaxValue
+                : config.Capacity;
             return false;
         }
         private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue) =>

@@ -45,6 +45,12 @@ namespace ExpandedStorage.Framework.Patches
                 harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
                     transpiler: new HarmonyMethod(GetType(), nameof(DrawPatches)));
             }
+
+            if (Config.ShowSearchBar)
+            {
+                harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.readyToClose)),
+                    new HarmonyMethod(GetType(), nameof(readyToClose)));
+            }
         }
 
         /// <summary>Loads default chest InventoryMenu when storage has modded capacity.</summary>
@@ -96,6 +102,14 @@ namespace ExpandedStorage.Framework.Patches
                     __instance.dropItemInvisibleButton.bounds.Y += offset;
                 }
             }
+        }
+
+        static bool readyToClose(ItemGrabMenu __instance, bool __result)
+        {
+            if (!ExpandedMenu.SearchFocused(__instance))
+                return true;
+            __result = false;
+            return false;
         }
         
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>

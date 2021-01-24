@@ -4,6 +4,8 @@ using System.Linq;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewValley;
+using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework
 {
@@ -12,15 +14,19 @@ namespace ExpandedStorage.Framework
         private readonly IMonitor _monitor;
         private readonly IContentHelper _contentHelper;
         private readonly IEnumerable<IContentPack> _contentPacks;
-        internal ContentLoader(IMonitor monitor, IContentHelper contentHelper, IEnumerable<IContentPack> contentPacks)
+        public bool IsOwnedLoaded;
+        internal ContentLoader(
+            IMonitor monitor,
+            IContentHelper contentHelper,
+            IEnumerable<IContentPack> contentPacks)
         {
             _monitor = monitor;
             _contentHelper = contentHelper;
             _contentPacks = contentPacks;
         }
-        
+
         /// <summary>Load Expanded Storage content packs</summary>
-        internal void LoadAll(
+        internal void LoadOwnedStorages(
             IGenericModConfigMenuAPI modConfigApi,
             IDictionary<string, StorageContentData> storageConfigs,
             IDictionary<string, TabContentData> tabConfigs)
@@ -91,8 +97,39 @@ namespace ExpandedStorage.Framework
                     }
                 }
             }
+
+            IsOwnedLoaded = true;
         }
 
+        internal IDictionary<int, string> LoadVanillaStorages(IDictionary<string, StorageContentData> storageConfigs, IDictionary<int, string> storageObjects)
+        {
+            var vanillaStorages = new Dictionary<int, string>();
+            var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge"};
+            var chestObjects = Game1.bigCraftablesInformation
+                .Select(obj => new KeyValuePair<int, string[]>(obj.Key, obj.Value.Split('/')))
+                .Where(obj => vanillaNames.Contains(obj.Value[0]) || vanillaNames.Contains(obj.Value[8]));
+            
+            foreach (var obj in chestObjects)
+            {
+                // Default Config for Non-Recognized Storages
+                if (!storageConfigs.ContainsKey(obj.Value[0]))
+                    storageConfigs.Add(obj.Value[0], new StorageContentData()
+                    {
+                        StorageName = obj.Value[0],
+                        Capacity = Chest.capacity,
+                        CanCarry = true
+                    });
+                
+                if (storageObjects.ContainsKey(obj.Key))
+                    continue;
+                
+                storageObjects.Add(obj.Key, obj.Value[0]);
+                vanillaStorages.Add(obj.Key, obj.Value[0]);
+            }
+            
+            return vanillaStorages;
+        }
+        
         private static Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs, List<StorageConfig> defaultConfigData) =>
             () =>
             {

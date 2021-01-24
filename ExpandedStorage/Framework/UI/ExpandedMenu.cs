@@ -39,7 +39,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Returns Displayed Rows of MenuWithInventory.</summary>
         public static int Rows(object context) =>
             _config.ExpandInventoryMenu 
-            && context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest 
+            && context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest
             && ExpandedStorage.HasConfig(chest)
                 ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
                 : 3;
@@ -60,6 +60,9 @@ namespace ExpandedStorage.Framework.UI
         public static void DrawUnder(SpriteBatch b) =>
             MenuHandler?.DrawUnder(b);
 
+        public static bool SearchFocused(ItemGrabMenu menu) =>
+            MenuHandler != null && MenuHandler.ContextMatches(menu.ItemsToGrabMenu) && MenuHandler.SearchFocused;
+
         private static MenuHandler MenuHandler
         {
             get => PerScreenMenuHandler.Value;
@@ -71,14 +74,12 @@ namespace ExpandedStorage.Framework.UI
 
         private static IModEvents _events;
         private static IInputHelper _inputHelper;
-        private static ModConfigControls _controls;
         private static ModConfig _config;
 
-        internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config, ModConfigControls controls)
+        internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config)
         {
             _events = events;
             _inputHelper = inputHelper;
-            _controls = controls;
             _config = config;
             
             if (!_config.AllowModdedCapacity)
@@ -100,7 +101,7 @@ namespace ExpandedStorage.Framework.UI
                 MenuHandler?.UnregisterEvents();
                 return;
             }
-            var menuHandler = new MenuHandler(menu, _events, _inputHelper, _config, _controls, MenuHandler);
+            var menuHandler = new MenuHandler(menu, _events, _inputHelper, _config, MenuHandler);
             MenuHandler?.Dispose();
             MenuHandler = menuHandler;
         }

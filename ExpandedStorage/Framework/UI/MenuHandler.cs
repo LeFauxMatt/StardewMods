@@ -22,7 +22,7 @@ namespace ExpandedStorage.Framework.UI
         private readonly MenuOverlay _overlay;
         private readonly IModEvents _events;
         private readonly IInputHelper _inputHelper;
-        private readonly ModConfigControls _controls;
+        private readonly ModConfigKeys _keys;
 
         private readonly InventoryMenu _menu;
         private readonly object _context;
@@ -32,18 +32,19 @@ namespace ExpandedStorage.Framework.UI
         private readonly int _cols;
 
         private int _skipped;
-        private TabContentData _currentTab;
         private readonly IList<TabContentData> _tabConfigs;
         private string _searchText;
 
         public IList<Item> Items => _filteredItems ?? _items;
+
+        public bool SearchFocused => _overlay != null && _overlay.SearchFocused;
         
-        internal MenuHandler(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper, ModConfig config, ModConfigControls controls, MenuHandler menuHandler = null)
+        internal MenuHandler(ItemGrabMenu menu, IModEvents events, IInputHelper inputHelper, ModConfig config, MenuHandler menuHandler = null)
         {
             _menu = menu.ItemsToGrabMenu;
             _events = events;
             _inputHelper = inputHelper;
-            _controls = controls;
+            _keys = config.Keys;
             
             _context = menu.context;
             _items = _menu.actualInventory;
@@ -70,13 +71,13 @@ namespace ExpandedStorage.Framework.UI
             if (menuHandler != null && ContextMatches(menuHandler))
             {
                 _skipped = menuHandler._skipped;
-                _currentTab = menuHandler._currentTab;
-                _overlay.CurrentTab = _currentTab;
+                _overlay.CurrentTab = menuHandler._overlay.CurrentTab;
             }
             
             RefreshList();
             
             // Events
+            _events.Input.ButtonsChanged += OnButtonsChanged;
             _events.Input.ButtonPressed += OnButtonPressed;
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
@@ -97,7 +98,7 @@ namespace ExpandedStorage.Framework.UI
                     break;
             }
         }
-        
+
         public void Dispose()
         {
             _overlay?.Dispose();
@@ -121,6 +122,7 @@ namespace ExpandedStorage.Framework.UI
         
         public void UnregisterEvents()
         {
+            _events.Input.ButtonsChanged -= OnButtonsChanged;
             _events.Input.ButtonPressed -= OnButtonPressed;
             _events.Input.CursorMoved -= OnCursorMoved;
             _events.Input.MouseWheelScrolled -= OnMouseWheelScrolled;
@@ -131,35 +133,53 @@ namespace ExpandedStorage.Framework.UI
         
         internal void DrawUnder(SpriteBatch b) =>
             _overlay?.DrawUnder(b);
-        
+
         /// <summary>Attempts to scroll offset by one row of slots relative to the inventory menu.</summary>
         /// <param name="direction">The direction which to scroll to.</param>
         /// <returns>True if the value of offset changed.</returns>
         private bool Scroll(int direction)
         {
-            if (direction > 0 && CanScrollUp)
-                _skipped -= _cols;
-            else if (direction < 0 && CanScrollDown)
-                _skipped += _cols;
-            else
-                return false;
+            switch (direction)
+            {
+                case > 0 when CanScrollUp:
+                    _skipped -= _cols;
+                    break;
+                case < 0 when CanScrollDown:
+                    _skipped += _cols;
+                    break;
+                default:
+                    return false;
+            }
             RefreshList();
             return true;
         }
 
-        private void SetTab(TabContentData tabContentDataConfig)
+        private void SetTab(TabContentData tabConfig)
         {
-            _currentTab = tabContentDataConfig;
+            _overlay.CurrentTab = tabConfig;
             _skipped = 0;
             RefreshList();
         }
 
         private bool SetTab(int direction = 0)
         {
-            var i = _tabConfigs.IndexOf(_currentTab) + direction;
-            var tabConfig = i == -1 || i == _tabConfigs.Count
-                ? null
-                : _tabConfigs[i];
+            var index = _tabConfigs.IndexOf(_overlay.CurrentTab);
+            switch (direction)
+            {
+                case > 0 when index + 1 == _tabConfigs.Count:
+                    index = -1;
+                    break;
+                case < 0 when index == 0:
+                    index = -1;
+                    break;
+                case < 0 when index == -1:
+                    index = _tabConfigs.Count - 1;
+                    break;
+                default:
+                    index += direction;
+                    break;
+            }
+            var tabConfig = _tabConfigs.ElementAtOrDefault(index);
             SetTab(tabConfig);
             return true;
         }
@@ -171,32 +191,40 @@ namespace ExpandedStorage.Framework.UI
             _searchText = searchText;
             RefreshList();
         }
+        
+        /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+        {
+            if (_overlay == null)
+                return;
+            if (_keys.ScrollDown.JustPressed() && Scroll(-1))
+                _inputHelper.SuppressActiveKeybinds(_keys.ScrollDown);
+            else if (_keys.ScrollUp.JustPressed() && Scroll(1))
+                _inputHelper.SuppressActiveKeybinds(_keys.ScrollUp);
+            else if (_keys.PreviousTab.JustPressed() && SetTab(-1))
+                _inputHelper.SuppressActiveKeybinds(_keys.PreviousTab);
+            else if (_keys.NextTab.JustPressed() && SetTab(1))
+                _inputHelper.SuppressActiveKeybinds(_keys.NextTab);
+        }
 
         /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            bool handled;
+            if (_overlay == null)
+                return;
+            
             var x = Game1.getMouseX(true);
             var y = Game1.getMouseY(true);
-            if (e.Button == _controls.ScrollDown)
-                handled = Scroll(-1);
-            else if (e.Button == _controls.ScrollUp)
-                handled = Scroll(1);
-            else if (e.Button == _controls.PreviousTab)
-                handled = SetTab(-1);
-            else if (e.Button == _controls.NextTab)
-                handled = SetTab(1);
-            else if (_overlay == null)
-                handled = false;
-            else if (e.Button == SButton.MouseLeft || e.Button.IsUseToolButton())
-                handled = _overlay.LeftClick(x, y);
-            else if (e.Button == SButton.MouseRight || e.Button.IsActionButton())
-                handled = _overlay.RightClick(x, y);
-            else
-                handled = _overlay.ReceiveKeyPress(e.Button);
-            if (handled)
+            
+            if ((e.Button == SButton.MouseLeft || e.Button.IsUseToolButton()) && _overlay.LeftClick(x, y))
+                _inputHelper.Suppress(e.Button);
+            else if ((e.Button == SButton.MouseRight || e.Button.IsActionButton()) && _overlay.RightClick(x, y))
+                _inputHelper.Suppress(e.Button);
+            else if (_overlay.ReceiveKeyPress(e.Button))
                 _inputHelper.Suppress(e.Button);
         }
         
@@ -239,8 +267,8 @@ namespace ExpandedStorage.Framework.UI
         {
             var filteredItems = _items.Where(item => item != null);
             
-            if (_currentTab != null)
-                filteredItems = filteredItems.Where(item => _currentTab.IsAllowed(item) && !_currentTab.IsBlocked(item));
+            if (_overlay.CurrentTab != null)
+                filteredItems = filteredItems.Where(item => _overlay.CurrentTab.IsAllowed(item) && !_overlay.CurrentTab.IsBlocked(item));
 
             if (!string.IsNullOrWhiteSpace(_searchText))
                 filteredItems = filteredItems.Where(SearchMatches);

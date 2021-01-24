@@ -5,7 +5,7 @@
   "Description": "Mod which allows Content Packs to add custom storage.",
   "UniqueID": "furyx639.ExpandedStorage",
   "EntryDll": "ExpandedStorage.dll",
-  "MinimumApiVersion": "3.8.0",
+  "MinimumApiVersion": "3.9.0",
   "UpdateKeys": [ "Nexus:7431" ],
   "Dependencies": [
     {
@@ -18,6 +18,10 @@
     },
     {
       "UniqueID": "spacechase0.JsonAssets",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "aedenthorn.CustomChestTypes",
       "IsRequired": false
     }
   ]

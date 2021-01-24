@@ -64,6 +64,8 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Draw hoverText over chest menu.</summary>
         private string _hoverText;
+
+        public bool SearchFocused => _searchField != null && _searchField.Selected;
         
         public MenuOverlay(InventoryMenu menu, IList<TabContentData> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents, ModConfig config,
             Func<bool> canScrollUp,
@@ -258,11 +260,15 @@ namespace ExpandedStorage.Framework.UI
             }
         }
 
-        /// <summary>Handles key presses</summary>
+        /// <summary>Suppress input when search field is selected.</summary>
         /// <param name="button">The button that was pressed</param>
-        /// /// <returns>True when an interaction occurs</returns>
-        internal bool ReceiveKeyPress(SButton button) =>
-            _searchField != null && _searchField.Selected && button != SButton.Escape;
+        /// <returns>True when an interaction occurs</returns>
+        internal bool ReceiveKeyPress(SButton button)
+        {
+            if (button == SButton.Escape && _searchField.Selected)
+                _searchField.Selected = false;
+            return _searchField != null && _searchField.Selected;
+        }
 
         /// <summary>Handles Left-Click interaction with overlay elements</summary>
         /// <param name="x">x-coordinate of left-click</param>
