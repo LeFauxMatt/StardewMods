@@ -133,6 +133,24 @@ namespace ExpandedStorage
                     StorageObjectsById.Add(jsonAssetsId.Value, jsonAssetsId.Key);
                 }
             };
+
+            if (modConfigApi == null)
+                return;
+            
+            modConfigApi.RegisterModConfig(ModManifest, () => _config.Controls = new ModConfigKeys(), () => Helper.WriteConfig(_config));
+            modConfigApi.RegisterLabel(ModManifest, "Controls", "Controller/Keyboard controls");
+            modConfigApi.RegisterSimpleOption(ModManifest, "Scroll Up", $"Button for scrolling up",
+                () => _config.Controls.ScrollUp.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
+                value => _config.Controls.ScrollUp = KeybindList.ForSingle(value));
+            modConfigApi.RegisterSimpleOption(ModManifest, "Scroll Down", $"Button for scrolling down",
+                () => _config.Controls.ScrollDown.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
+                value => _config.Controls.ScrollDown = KeybindList.ForSingle(value));
+            modConfigApi.RegisterSimpleOption(ModManifest, "Previous Tab", $"Button for switching to the previous tab",
+                () => _config.Controls.PreviousTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
+                value => _config.Controls.PreviousTab = KeybindList.ForSingle(value));
+            modConfigApi.RegisterSimpleOption(ModManifest, "Next Tab", $"Button for switching to the next tab",
+                () => _config.Controls.NextTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
+                value => _config.Controls.NextTab = KeybindList.ForSingle(value));
         }
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>

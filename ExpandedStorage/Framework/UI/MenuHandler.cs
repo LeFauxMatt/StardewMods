@@ -44,7 +44,7 @@ namespace ExpandedStorage.Framework.UI
             _menu = menu.ItemsToGrabMenu;
             _events = events;
             _inputHelper = inputHelper;
-            _keys = config.Keys;
+            _keys = config.Controls;
             
             _context = menu.context;
             _items = _menu.actualInventory;

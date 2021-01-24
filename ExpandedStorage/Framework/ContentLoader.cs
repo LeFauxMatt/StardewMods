@@ -27,7 +27,7 @@ namespace ExpandedStorage.Framework
 
         /// <summary>Load Expanded Storage content packs</summary>
         internal void LoadOwnedStorages(
-            IGenericModConfigMenuAPI modConfigApi,
+            IGenericModConfigMenuAPI api,
             IDictionary<string, StorageContentData> storageConfigs,
             IDictionary<string, TabContentData> tabConfigs)
         {
@@ -52,7 +52,7 @@ namespace ExpandedStorage.Framework
                 if (!contentPack.HasFile("config.json"))
                     contentPack.WriteJsonFile("config.json", configData);
 
-                modConfigApi?.RegisterModConfig(contentPack.Manifest, RevertToDefault(contentPack, storageConfigs, defaultConfigData), SaveToFile(contentPack, storageConfigs));
+                api?.RegisterModConfig(contentPack.Manifest, RevertToDefault(contentPack, storageConfigs, defaultConfigData), SaveToFile(contentPack, storageConfigs));
                 
                 // Load expanded storage objects
                 foreach (var content in contentData.ExpandedStorage)
@@ -71,10 +71,10 @@ namespace ExpandedStorage.Framework
                     content.ModUniqueId = contentPack.Manifest.UniqueID;
                     storageConfigs.Add(content.StorageName, content);
                     
-                    if (modConfigApi == null)
+                    if (api == null)
                         continue;
 
-                    RegisterConfig(modConfigApi, contentPack.Manifest, content);
+                    RegisterConfig(api, contentPack.Manifest, content);
                 }
                 
                 // Load expanded storage tabs

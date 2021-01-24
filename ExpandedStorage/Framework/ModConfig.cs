@@ -30,6 +30,6 @@ namespace ExpandedStorage.Framework
         public bool ShowTabs { get; set; } = true;
 
         /// <summary>Control scheme for Expanded Storage features.</summary>
-        public ModConfigKeys Keys { get; set; } = new();
+        public ModConfigKeys Controls { get; set; } = new();
     }
 }
