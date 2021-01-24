@@ -143,15 +143,28 @@ namespace ExpandedStorage.Framework.Patches
         public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (!local
-                || config == null
-                || ExpandedStorage.IsVanilla(__instance)
-                || !__instance.playerChest.Value
-                || __instance.playerChoiceColor.Value.Equals(Color.Black))
-                return true;
-
             var playerChoiceColor = __instance.playerChoiceColor.Value;
             var parentSheetIndex = __instance.ParentSheetIndex;
+            
+            if (config == null
+                || ExpandedStorage.IsVanilla(__instance)
+                || !__instance.playerChest.Value
+                || !local)
+                return true;
+
+            if (playerChoiceColor.Equals(Color.Black))
+            {
+                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                    new Vector2(x, y - 64),
+                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex, 16, 32),
+                    __instance.Tint * alpha,
+                    0f,
+                    Vector2.Zero,
+                    4f,
+                    SpriteEffects.None,
+                    0.89f);
+                return false;
+            }
             
             // Draw Colorized Chest
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
@@ -162,7 +175,7 @@ namespace ExpandedStorage.Framework.Patches
                 Vector2.Zero,
                 4f,
                 SpriteEffects.None,
-                (y * 64 + 4) / 10000f);
+                0.9f);
             
             // Draw Braces
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
@@ -173,7 +186,7 @@ namespace ExpandedStorage.Framework.Patches
                 Vector2.Zero,
                 4f,
                 SpriteEffects.None,
-                (y * 64 + 5) / 10000f);
+                0.91f);
             
             return false;
         }

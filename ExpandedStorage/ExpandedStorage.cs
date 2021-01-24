@@ -101,10 +101,9 @@ namespace ExpandedStorage
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
         public bool CanEdit<T>(IAssetInfo asset)
         {
+            // Load bigCraftable on next tick for vanilla storages
             if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-            {
                 Helper.Events.GameLoop.UpdateTicked += LoadContentPacks;
-            }
             return false;
         }
 

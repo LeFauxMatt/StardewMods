@@ -36,6 +36,7 @@ namespace ExpandedStorage.Framework.Patches
             foreach (var modData in item.modData)
                 chest.modData.CopyFrom(modData);
             
+            // Find first stackable slot
             for (var j = 0; j < __instance.MaxItems; j++)
             {
                 if (j >= __instance.Items.Count
@@ -54,6 +55,8 @@ namespace ExpandedStorage.Framework.Patches
                 }
                 chest.Stack = stackLeft;
             }
+            
+            // Find first empty slot
             for (var i = 0; i < __instance.MaxItems; i++)
             {
                 if (i > __instance.Items.Count || __instance.Items[i] != null)

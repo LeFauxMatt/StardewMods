@@ -31,6 +31,8 @@ namespace ExpandedStorage.Framework.Patches
         public static bool PlacementAction(StardewValley.Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
         {
             var config = ExpandedStorage.GetConfig(__instance);
+            
+            // Disallow non-placeable storages
             if (config != null && !config.IsPlaceable)
             {
                 __result = false;
@@ -56,6 +58,8 @@ namespace ExpandedStorage.Framework.Patches
                     name = __instance.Name,
                     shakeTimer = 50
                 };
+            else
+                chest.TileLocation = pos;
             chest.resetLidFrame();
             foreach (var modData in __instance.modData)
                 chest.modData.CopyFrom(modData);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -107,27 +108,37 @@ namespace ExpandedStorage.Framework
         {
             var vanillaStorages = new Dictionary<int, string>();
             var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge"};
-            var chestObjects = Game1.bigCraftablesInformation
-                .Select(obj => new KeyValuePair<int, string[]>(obj.Key, obj.Value.Split('/')))
-                .Where(obj => vanillaNames.Contains(obj.Value[0]) || obj.Value[8] == "Chest");
             
-            foreach (var obj in chestObjects)
+            foreach (var obj in Game1.bigCraftablesInformation)
             {
-                // Default Config for Non-Recognized Storages
-                if (!storageConfigs.ContainsKey(obj.Value[0]))
-                    storageConfigs.Add(obj.Value[0], new StorageContentData
+                var objData = obj.Value.Split('/').ToList();
+                var storageName = objData.ElementAtOrDefault(0);
+                var displayName = objData.ElementAtOrDefault(8);
+                if (storageName == null
+                    || displayName != "Chest"
+                    && !vanillaNames.Contains(storageName))
+                    continue;
+                
+                // Generate default config for non-recognized storages
+                if (!storageConfigs.ContainsKey(storageName))
+                {
+                    _monitor.Log($"Generating default config for {storageName}.");
+                    storageConfigs.Add(objData.ElementAt(0), new StorageContentData
                     {
-                        StorageName = obj.Value[0],
+                        StorageName = storageName,
                         Capacity = Chest.capacity,
                         CanCarry = true,
                         IsPlaceable = true
                     });
+                }
+                
+                _monitor.Log($"Loading {storageName} as a vanilla storage object.");
+                vanillaStorages.Add(obj.Key, storageName);
                 
                 if (storageObjects.ContainsKey(obj.Key))
                     continue;
                 
-                storageObjects.Add(obj.Key, obj.Value[0]);
-                vanillaStorages.Add(obj.Key, obj.Value[0]);
+                storageObjects.Add(obj.Key, storageName);
             }
             
             return vanillaStorages;
