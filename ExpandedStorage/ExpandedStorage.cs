@@ -161,10 +161,12 @@ namespace ExpandedStorage
             if (!Context.IsPlayerFree)
                 return;
             
-            if (e.Button.IsUseToolButton())
+            if (e.Button.IsUseToolButton() && _previousHeldChest.Value == null)
             {
                 var location = Game1.currentLocation;
-                var pos = Game1.player.GetToolLocation();
+                var pos = Game1.player.GetToolLocation() / 64f;
+                pos.X = (int) pos.X;
+                pos.Y = (int) pos.Y;
                 if (!location.objects.TryGetValue(pos, out var obj)
                     || !HasConfig(obj)
                     || !StorageContent[StorageObjects[obj.ParentSheetIndex]].CanCarry
@@ -196,17 +198,8 @@ namespace ExpandedStorage
             
             var obj = itemPos.Value;
             var pos = itemPos.Key;
-            if (obj == null)
+            if (obj is not Chest chest)
                 return;
-
-            // Convert Chest to Expanded Storage
-            if (!(obj is Chest chest))
-            {
-                chest = new Chest(true, obj.TileLocation, obj.ParentSheetIndex)
-                {
-                    name = obj.name
-                };
-            }
 
             // Copy properties from previously held chest
             var previousHeldChest = _previousHeldChest.Value;

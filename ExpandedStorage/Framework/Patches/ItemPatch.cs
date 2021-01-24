@@ -29,8 +29,7 @@ namespace ExpandedStorage.Framework.Patches
             
             if (!ExpandedStorage.HasConfig(__instance))
                 return true;
-            if ((!(__instance is Chest chest) || chest.items.Count == 0) &&
-                (!(other is Chest otherChest) || otherChest.items.Count == 0))
+            if (__instance is not Chest chest || other is not Chest otherChest || chest.items.Count == 0 && otherChest.items.Count == 0)
                 return true;
             __result = false;
             return false;

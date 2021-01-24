@@ -25,6 +25,9 @@ namespace ExpandedStorage.Framework.Patches
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
+            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.checkForAction)),
+                new HarmonyMethod(GetType(), nameof(checkForAction_Prefix)));
+            
             harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
                 new HarmonyMethod(GetType(), nameof(draw_Prefix)));
             
@@ -44,8 +47,29 @@ namespace ExpandedStorage.Framework.Patches
             }
         }
 
+        public static bool checkForAction_Prefix(Chest __instance, ref bool __result, Farmer who, bool justCheckingForActivity)
+        {
+            if (justCheckingForActivity
+                || !__instance.playerChest.Value
+                || !Game1.didPlayerJustRightClick(true))
+                return true;
+
+            var config = ExpandedStorage.GetConfig(__instance); 
+            if (config == null || ExpandedStorage.IsVanilla(__instance))
+                return true;
+            __instance.GetMutex().RequestLock(delegate
+            {
+                __instance.frameCounter.Value = 5;
+                Game1.playSound(config.OpenSound);
+                Game1.player.Halt();
+                Game1.player.freezePause = 1000;
+            });
+            __result = true;
+            return false;
+        }
+
         /// <summary>Prevent adding item if filtered.</summary>
-        public static bool addItem_Prefix(Chest __instance, Item item, ref Item __result)
+        public static bool addItem_Prefix(Chest __instance, ref Item __result, Item item)
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (!ReferenceEquals(__instance, item) && (config == null || config.IsAllowed(item) && !config.IsBlocked(item)))

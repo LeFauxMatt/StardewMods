@@ -92,6 +92,8 @@ namespace ExpandedStorage.Framework
                         storageTab.Texture = contentPack.HasFile(assetName)
                             ? contentPack.LoadAsset<Texture2D>(assetName)
                             : _contentHelper.Load<Texture2D>(assetName);
+                        var tabNameLocale = contentPack.Translation.Get(storageTab.TabName).Default(storageTab.TabName);
+                        storageTab.TabName = tabNameLocale;
                         storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
                         tabConfigs.Add(tabName, storageTab);
                     }

@@ -104,7 +104,7 @@ namespace ExpandedStorage.Framework.Patches
             }
         }
 
-        static bool readyToClose(ItemGrabMenu __instance, bool __result)
+        static bool readyToClose(ItemGrabMenu __instance, ref bool __result)
         {
             if (!ExpandedMenu.SearchFocused(__instance))
                 return true;
