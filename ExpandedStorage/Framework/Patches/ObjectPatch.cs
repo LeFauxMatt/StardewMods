@@ -27,7 +27,7 @@ namespace ExpandedStorage.Framework.Patches
                     postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix)));
             }
         }
-
+        
         public static bool PlacementAction(StardewValley.Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
         {
             var config = ExpandedStorage.GetConfig(__instance);
