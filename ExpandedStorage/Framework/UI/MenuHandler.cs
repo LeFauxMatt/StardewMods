@@ -277,7 +277,7 @@ namespace ExpandedStorage.Framework.UI
             _skipped = _skipped <= 0
                 ? 0
                 : Math.Min(_skipped, filteredItemsList.Count.RoundUp(_cols) - _capacity);
-            _filteredItems = filteredItemsList.Skip(_skipped).ToList();
+            _filteredItems = filteredItemsList.Skip(_skipped).Take(_capacity).ToList();
             
             for (var i = 0; i < _menu.inventory.Count; i++)
             {

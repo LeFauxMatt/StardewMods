@@ -83,7 +83,10 @@ namespace ExpandedStorage.Framework.Patches
         public static bool draw_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || ExpandedStorage.IsVanilla(__instance) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
+            if (config == null
+                || ExpandedStorage.IsVanilla(__instance)
+                || !__instance.playerChest.Value
+                || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
             
             var playerChoiceColor = __instance.playerChoiceColor.Value;
@@ -140,7 +143,11 @@ namespace ExpandedStorage.Framework.Patches
         public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (!local || config == null || ExpandedStorage.IsVanilla(__instance) || !__instance.playerChest.Value || __instance.playerChoiceColor.Value.Equals(Color.Black))
+            if (!local
+                || config == null
+                || ExpandedStorage.IsVanilla(__instance)
+                || !__instance.playerChest.Value
+                || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
 
             var playerChoiceColor = __instance.playerChoiceColor.Value;

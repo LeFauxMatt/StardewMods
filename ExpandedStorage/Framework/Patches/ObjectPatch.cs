@@ -30,8 +30,16 @@ namespace ExpandedStorage.Framework.Patches
 
         public static bool PlacementAction(StardewValley.Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
         {
-            if (!ExpandedStorage.HasConfig(__instance) || ExpandedStorage.IsVanilla(__instance))
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config != null && !config.IsPlaceable)
+            {
+                __result = false;
+                return false;
+            }
+            
+            if (config == null || ExpandedStorage.IsVanilla(__instance))
                 return true;
+            
 
             var pos = new Vector2(x, y) / 64f;
             pos.X = (int) pos.X;
@@ -42,11 +50,17 @@ namespace ExpandedStorage.Framework.Patches
             __instance.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
             
             // Place Expanded Storage Chest
-            location.objects.Add(pos, new Chest(true, pos, __instance.ParentSheetIndex)
-            {
-                shakeTimer = 50
-            });
+            if (__instance is not Chest chest)
+                chest = new Chest(true, pos, __instance.ParentSheetIndex)
+                {
+                    name = __instance.Name,
+                    shakeTimer = 50
+                };
+            chest.resetLidFrame();
+            foreach (var modData in __instance.modData)
+                chest.modData.CopyFrom(modData);
             
+            location.objects.Add(pos, chest);
             location.playSound("hammer");
             __result = true;
             return false;
@@ -55,7 +69,7 @@ namespace ExpandedStorage.Framework.Patches
         /// <summary>Adds count of chests contents to its description.</summary>
         public static void getDescription_Postfix(StardewValley.Object __instance, ref string __result)
         {
-            if (!(__instance is Chest chest) || !ExpandedStorage.HasConfig(__instance))
+            if (__instance is not Chest chest || !ExpandedStorage.HasConfig(__instance))
                 return;
             if (chest.items?.Count > 0)
                 __result += "\n" + $"Contains {chest.items.Count} items.";

@@ -7,7 +7,7 @@ namespace ExpandedStorage.Framework.Models
     internal class StorageContentData : StorageConfig
     {
         public string OpenSound { get; set; } = "openChest";
-        
+
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
         
@@ -17,6 +17,7 @@ namespace ExpandedStorage.Framework.Models
         {
             Capacity = config.Capacity;
             CanCarry = config.CanCarry;
+            IsPlaceable = config.IsPlaceable;
             AllowList = config.AllowList;
             BlockList = config.BlockList;
             Tabs = config.Tabs;

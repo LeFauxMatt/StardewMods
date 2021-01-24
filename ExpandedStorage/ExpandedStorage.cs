@@ -5,6 +5,7 @@ using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -18,7 +19,7 @@ namespace ExpandedStorage
     internal class ExpandedStorage : Mod, IAssetEditor
     {
         /// <summary>Dictionary of Expanded Storage object data</summary>
-        private static readonly IDictionary<int, string> StorageObjects = new Dictionary<int, string>();
+        private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
         
         /// <summary>Dictionary of Expanded Storage configs</summary>
         private static readonly IDictionary<string, StorageContentData> StorageContent = new Dictionary<string, StorageContentData>();
@@ -27,7 +28,7 @@ namespace ExpandedStorage
         private static readonly IDictionary<string, TabContentData> StorageTabs = new Dictionary<string, TabContentData>();
 
         /// <summary>List of vanilla storages Display Names</summary>
-        private static IDictionary<int, string> VanillaStorages;
+        private static IDictionary<int, string> _vanillaStorages;
 
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
@@ -41,7 +42,7 @@ namespace ExpandedStorage
         public static StorageContentData GetConfig(Item item) =>
             item is Object obj
             && obj.bigCraftable.Value
-            && StorageObjects.TryGetValue(obj.ParentSheetIndex, out var storageName)
+            && StorageObjectsById.TryGetValue(obj.ParentSheetIndex, out var storageName)
             && StorageContent.TryGetValue(storageName, out var config)
                 ? config : null;
         
@@ -49,12 +50,12 @@ namespace ExpandedStorage
         public static bool HasConfig(Item item) =>
             item is Object obj
             && obj.bigCraftable.Value
-            && StorageObjects.ContainsKey(item.ParentSheetIndex);
+            && StorageObjectsById.ContainsKey(item.ParentSheetIndex);
         
         /// <summary>Returns true if item is a Vanilla Storage.</summary>
         public static bool IsVanilla(Item item) =>
             item is Chest
-            && VanillaStorages.ContainsKey(item.ParentSheetIndex);
+            && _vanillaStorages.ContainsKey(item.ParentSheetIndex);
         
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static TabContentData GetTab(string tabName) =>
@@ -75,8 +76,8 @@ namespace ExpandedStorage
             ExpandedMenu.Init(helper.Events, helper.Input, _config);
 
             // Events
-            helper.Events.World.ObjectListChanged += OnObjectListChanged;
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
             if (_config.AllowCarryingChests)
             {
@@ -86,6 +87,7 @@ namespace ExpandedStorage
 
             // Harmony Patches
             new Patcher(ModManifest.UniqueID).ApplyAll(
+                new FarmerPatches(Monitor, _config),
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
                 new ChestPatches(Monitor, _config, helper.Reflection),
@@ -94,7 +96,7 @@ namespace ExpandedStorage
                 new MenuWithInventoryPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
         }
-        
+
         /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
         public bool CanEdit<T>(IAssetInfo asset)
@@ -128,7 +130,7 @@ namespace ExpandedStorage
                 foreach (var jsonAssetsId in jsonAssetsApi.GetAllBigCraftableIds()
                     .Where(obj => StorageContent.ContainsKey(obj.Key)))
                 {
-                    StorageObjects.Add(jsonAssetsId.Value, jsonAssetsId.Key);
+                    StorageObjectsById.Add(jsonAssetsId.Value, jsonAssetsId.Key);
                 }
             };
         }
@@ -140,7 +142,7 @@ namespace ExpandedStorage
             if (!_contentLoader.IsOwnedLoaded)
                 return;
             Helper.Events.GameLoop.UpdateTicked -= LoadContentPacks;
-            VanillaStorages = _contentLoader.LoadVanillaStorages(StorageContent, StorageObjects);
+            _vanillaStorages = _contentLoader.LoadVanillaStorages(StorageContent, StorageObjectsById);
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -169,7 +171,7 @@ namespace ExpandedStorage
                 pos.Y = (int) pos.Y;
                 if (!location.objects.TryGetValue(pos, out var obj)
                     || !HasConfig(obj)
-                    || !StorageContent[StorageObjects[obj.ParentSheetIndex]].CanCarry
+                    || !StorageContent[StorageObjectsById[obj.ParentSheetIndex]].CanCarry
                     || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
                 location.objects.Remove(pos);
@@ -182,9 +184,7 @@ namespace ExpandedStorage
             }
         }
 
-        /// <summary>
-        /// Converts objects to modded storage when placed in the world.
-        /// </summary>
+        /// <summary>Place a carried chest back down.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)

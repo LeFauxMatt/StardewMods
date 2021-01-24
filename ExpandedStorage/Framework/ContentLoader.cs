@@ -109,17 +109,18 @@ namespace ExpandedStorage.Framework
             var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge"};
             var chestObjects = Game1.bigCraftablesInformation
                 .Select(obj => new KeyValuePair<int, string[]>(obj.Key, obj.Value.Split('/')))
-                .Where(obj => vanillaNames.Contains(obj.Value[0]) || vanillaNames.Contains(obj.Value[8]));
+                .Where(obj => vanillaNames.Contains(obj.Value[0]) || obj.Value[8] == "Chest");
             
             foreach (var obj in chestObjects)
             {
                 // Default Config for Non-Recognized Storages
                 if (!storageConfigs.ContainsKey(obj.Value[0]))
-                    storageConfigs.Add(obj.Value[0], new StorageContentData()
+                    storageConfigs.Add(obj.Value[0], new StorageContentData
                     {
                         StorageName = obj.Value[0],
                         Capacity = Chest.capacity,
-                        CanCarry = true
+                        CanCarry = true,
+                        IsPlaceable = true
                     });
                 
                 if (storageObjects.ContainsKey(obj.Key))
@@ -146,9 +147,11 @@ namespace ExpandedStorage.Framework
         private static Action SaveToFile(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs) =>
             () =>
             {
-                var configData = storageConfigs
-                    .Where(s => s.Value.ModUniqueId.Equals(contentPack.Manifest.UniqueID))
-                    .Select(s => new StorageConfig(s.Value)).ToList();
+                var configData = storageConfigs.Where(s =>
+                    s.Value.ModUniqueId != null
+                    && s.Value.ModUniqueId.Equals(contentPack.Manifest.UniqueID, StringComparison.OrdinalIgnoreCase))
+                    .Select(s => new StorageConfig(s.Value))
+                    .ToList();
                 contentPack.WriteJsonFile("config.json", configData);
             };
         private static void RegisterConfig(
@@ -163,6 +166,9 @@ namespace ExpandedStorage.Framework
             api.RegisterSimpleOption(manifest, "Can Carry", $"Allow {content.StorageName} to be carried?",
                 () => content.CanCarry,
                 value => content.CanCarry = value);
+            api.RegisterSimpleOption(manifest, "Is Placeable", $"Allow {content.StorageName} to be placed?",
+                () => content.IsPlaceable,
+                value => content.IsPlaceable = value);
         }
     }
 }
