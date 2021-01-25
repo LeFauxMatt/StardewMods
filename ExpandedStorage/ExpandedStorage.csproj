@@ -21,7 +21,6 @@
     </ItemGroup>
     <ItemGroup>
       <Folder Include="assets" />
-      <Folder Include="Properties" />
       <Folder Include="screenshots" />
     </ItemGroup>
     <Import Project="..\Common\Common.projitems" Label="Shared" />

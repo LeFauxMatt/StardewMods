@@ -39,7 +39,7 @@ namespace ExpandedStorage.Framework.Patches
                 return false;
             }
             
-            if (config == null || ExpandedStorage.IsVanilla(__instance))
+            if (config == null)
                 return true;
             
             var pos = new Vector2(x, y) / 64f;

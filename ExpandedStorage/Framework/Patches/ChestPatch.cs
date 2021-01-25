@@ -195,7 +195,7 @@ namespace ExpandedStorage.Framework.Patches
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.Capacity == 0)
+            if (config == null || config.Capacity == 0 || config.Capacity == Chest.capacity)
                 return true;
 
             __result = config.Capacity == -1

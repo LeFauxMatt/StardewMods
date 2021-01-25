@@ -76,6 +76,7 @@ namespace ExpandedStorage
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
             if (_config.AllowCarryingChests)
             {
@@ -149,6 +150,33 @@ namespace ExpandedStorage
                 () => _config.Controls.NextTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => _config.Controls.NextTab = KeybindList.ForSingle(value));
         }
+        
+        /// <summary>Track toolbar changes before user input.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        {
+            if (!Context.IsPlayerFree)
+                return;
+
+            var oldChest = _previousHeldChest.Value;
+            var chest = e.Added
+                .Select(p => p.Value)
+                .OfType<Chest>()
+                .LastOrDefault(HasConfig);
+
+            if (oldChest == null || chest == null || chest.items.Any() || !ReferenceEquals(e.Location, Game1.currentLocation))
+                return;
+
+            // Backup method for restoring carried Chest items
+            chest.name = oldChest.name;
+            chest.playerChoiceColor.Value = oldChest.playerChoiceColor.Value;
+            if (oldChest.items.Any())
+                chest.items.CopyFrom(oldChest.items);
+            foreach (var modData in oldChest.modData)
+                chest.modData.CopyFrom(modData);
+        }
+        
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
