@@ -23,16 +23,23 @@ namespace ExpandedStorage.Framework.Patches
 
         public static bool addItemToInventory_Prefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
         {
-            if(!ExpandedStorage.HasConfig(item) || ExpandedStorage.IsVanilla(item))
+            var config = ExpandedStorage.GetConfig(item);
+            if(config == null || ExpandedStorage.IsVanilla(item))
                 return true;
-            
+
             if (item is not Chest chest)
+            {
+                if (!Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType))
+                    specialChestType = Chest.SpecialChestTypes.None;
                 chest = new Chest(true, Vector2.Zero, item.ParentSheetIndex)
                 {
                     name = item.Name,
-                    Stack = item.Stack
+                    Stack = item.Stack,
+                    SpecialChestType = specialChestType
                 };
+            }
             chest.resetLidFrame();
+            
             foreach (var modData in item.modData)
                 chest.modData.CopyFrom(modData);
             

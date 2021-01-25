@@ -25,7 +25,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Returns Padding to top menu for search box.</summary>
         public static int Padding(MenuWithInventory menu) =>
             _config.ShowSearchBar
-            && menu is ItemGrabMenu {context: Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest}
+            && menu is ItemGrabMenu {context: Chest chest}
             && ExpandedStorage.HasConfig(chest)
                 ? 24
                 : 0;
@@ -39,7 +39,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Returns Displayed Rows of MenuWithInventory.</summary>
         public static int Rows(object context) =>
             _config.ExpandInventoryMenu 
-            && context is Chest {SpecialChestType: Chest.SpecialChestTypes.None} chest
+            && context is Chest chest
             && ExpandedStorage.HasConfig(chest)
                 ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
                 : 3;

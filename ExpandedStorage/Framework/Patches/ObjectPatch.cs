@@ -42,25 +42,32 @@ namespace ExpandedStorage.Framework.Patches
             if (config == null || ExpandedStorage.IsVanilla(__instance))
                 return true;
             
-
             var pos = new Vector2(x, y) / 64f;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
             if (location.objects.ContainsKey(pos) || location is MineShaft || location is VolcanoDungeon)
                 return true;
             
-            __instance.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
-            
             // Place Expanded Storage Chest
-            if (__instance is not Chest chest)
-                chest = new Chest(true, pos, __instance.ParentSheetIndex)
-                {
-                    name = __instance.Name,
-                    shakeTimer = 50
-                };
-            else
-                chest.TileLocation = pos;
+            if (!Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType))
+                specialChestType = Chest.SpecialChestTypes.None;
+            var chest = new Chest(true, pos, __instance.ParentSheetIndex)
+            {
+                name = __instance.Name,
+                shakeTimer = 50,
+                SpecialChestType = specialChestType
+            };
+            chest.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
             chest.resetLidFrame();
+
+            // Copy properties from previously held chest
+            if (__instance is Chest oldChest)
+            {
+                chest.playerChoiceColor.Value = oldChest.playerChoiceColor.Value;
+                if (oldChest.items.Any())
+                    chest.items.CopyFrom(oldChest.items);
+            }
+            
             foreach (var modData in __instance.modData)
                 chest.modData.CopyFrom(modData);
             

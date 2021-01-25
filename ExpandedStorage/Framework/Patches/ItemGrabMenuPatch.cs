@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Common.HarmonyPatches;
 using ExpandedStorage.Framework.UI;
 using Harmony;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
@@ -37,7 +38,7 @@ namespace ExpandedStorage.Framework.Patches
             if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
             {
                 harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
-                    postfix: new HarmonyMethod(GetType(), nameof(OffsetDown)));
+                    postfix: new HarmonyMethod(GetType(), nameof(ConstructorPostfix)));
             }
             
             if (Config.ExpandInventoryMenu || Config.ShowOverlayArrows || Config.ShowTabs || Config.ShowSearchBar)
@@ -78,15 +79,69 @@ namespace ExpandedStorage.Framework.Patches
                 Monitor.Log($"Failed to apply all patches in {nameof(CapacityPatches)}", LogLevel.Warn);
         }
 
-        static void OffsetDown(ItemGrabMenu __instance)
+        static void ConstructorPostfix(ItemGrabMenu __instance)
         {
             var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
+            var sourceItem = sourceItemReflected.GetValue();
+
+            if (sourceItem is Chest chest && chest.SpecialChestType != Chest.SpecialChestTypes.None)
+            {
+                // Add color picker back to special Expanded Storage Chests
+                var colorPickerChest = new Chest(true, sourceItem.ParentSheetIndex);
+                var chestColorPicker = new DiscreteColorPicker(
+                    __instance.xPositionOnScreen,
+                    __instance.yPositionOnScreen - 64 - IClickableMenu.borderWidth * 2,
+                    0,
+                    colorPickerChest);
+
+                colorPickerChest.playerChoiceColor.Value = chest.playerChoiceColor.Value;
+                chestColorPicker.colorSelection = chestColorPicker.getSelectionFromColor(chest.playerChoiceColor.Value);
+                __instance.chestColorPicker = chestColorPicker;
+
+                __instance.colorPickerToggleButton = new ClickableTextureComponent(
+                    new Rectangle(__instance.xPositionOnScreen + __instance.width,
+                        __instance.yPositionOnScreen + __instance.height / 3 - 64 + -160, 64, 64),
+                    Game1.mouseCursors,
+                    new Rectangle(119, 469, 16, 16),
+                    4f)
+                {
+                    hoverText = Game1.content.LoadString("Strings\\UI:Toggle_ColorPicker"),
+                    myID = 27346,
+                    downNeighborID = -99998,
+                    leftNeighborID = 53921,
+                    region = 15923
+                };
+
+                var discreteColorPickerCC = new List<ClickableComponent>();
+                for (var i = 0; i < chestColorPicker.totalColors; i++)
+                {
+                    discreteColorPickerCC.Add(
+                        new ClickableComponent(
+                            new Rectangle(
+                                chestColorPicker.xPositionOnScreen + IClickableMenu.borderWidth / 2 + i * 9 * 4,
+                                chestColorPicker.yPositionOnScreen + IClickableMenu.borderWidth / 2, 36, 28), "")
+                        {
+                            myID = i + 4343,
+                            rightNeighborID = i < chestColorPicker.totalColors - 1 ? i + 4343 + 1 : -1,
+                            leftNeighborID = i > 0 ? i + 4343 - 1 : -1,
+                            downNeighborID = __instance.ItemsToGrabMenu.inventory.Count > 0 ? 53910 : 0
+                        });
+                }
+
+                __instance.discreteColorPickerCC = discreteColorPickerCC;
+
+                __instance.populateClickableComponentList();
+                if (Game1.options.SnappyMenus)
+                    __instance.snapToDefaultClickableComponent();
+                __instance.SetupBorderNeighbors();
+            }
+
             if (Config.ShowSearchBar)
             {
                 var padding = ExpandedMenu.Padding(__instance);
                 __instance.yPositionOnScreen -= padding;
                 __instance.height += padding;
-                if (sourceItemReflected.GetValue() != null && __instance.chestColorPicker != null)
+                if (sourceItem != null && __instance.chestColorPicker != null)
                     __instance.chestColorPicker.yPositionOnScreen -= padding;
             }
 
@@ -95,7 +150,7 @@ namespace ExpandedStorage.Framework.Patches
                 var offset = ExpandedMenu.Offset(__instance);
                 __instance.height += offset;
                 __instance.inventory.movePosition(0, offset);
-                if (sourceItemReflected.GetValue() != null)
+                if (sourceItem != null)
                 {
                     __instance.okButton.bounds.Y += offset;
                     __instance.trashCan.bounds.Y += offset;

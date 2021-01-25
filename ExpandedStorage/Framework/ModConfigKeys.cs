@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 namespace ExpandedStorage.Framework

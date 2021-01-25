@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Models;
@@ -77,7 +76,6 @@ namespace ExpandedStorage
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
             if (_config.AllowCarryingChests)
             {
@@ -191,49 +189,18 @@ namespace ExpandedStorage
                     || !StorageContent[StorageObjectsById[obj.ParentSheetIndex]].CanCarry
                     || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
+                obj.TileLocation = Vector2.Zero;
                 location.objects.Remove(pos);
                 Helper.Input.Suppress(e.Button);
             }
-            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && e.Button.IsActionButton())
+            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && e.Button.IsActionButton() && _previousHeldChest.Value.Stack == 1)
             {
-                _previousHeldChest.Value.ShowMenu();
+                _previousHeldChest.Value.GetMutex().RequestLock(delegate
+                {
+                    _previousHeldChest.Value.ShowMenu();
+                });
                 Helper.Input.Suppress(e.Button);
             }
-        }
-
-        /// <summary>Place a carried chest back down.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
-        {
-            if (!Context.IsPlayerFree)
-                return;
-
-            var itemPos = e.Added
-                .LastOrDefault(p =>
-                    p.Value is Chest || p.Value.bigCraftable.Value && HasConfig(p.Value));
-            
-            var obj = itemPos.Value;
-            var pos = itemPos.Key;
-            if (obj is not Chest chest)
-                return;
-
-            // Copy properties from previously held chest
-            var previousHeldChest = _previousHeldChest.Value;
-            if (previousHeldChest != null && ReferenceEquals(e.Location, Game1.currentLocation))
-            {
-                chest.Name = previousHeldChest.Name;
-                chest.playerChoiceColor.Value = previousHeldChest.playerChoiceColor.Value;
-                if (previousHeldChest.items.Any())
-                    chest.items.CopyFrom(previousHeldChest.items);
-                // Copy modData
-                foreach (var chestModData in previousHeldChest.modData)
-                    chest.modData.CopyFrom(chestModData);
-            }
-            
-            // Replace object if necessary
-            if (!ReferenceEquals(chest, obj))
-                e.Location.objects[pos] = chest;
         }
     }
 }
