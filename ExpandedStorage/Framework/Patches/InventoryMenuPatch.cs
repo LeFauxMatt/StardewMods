@@ -20,9 +20,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             if (Config.AllowModdedCapacity || Config.ShowTabs || Config.ShowSearchBar)
             {
-                harmony.Patch(AccessTools.Method(_type, nameof(InventoryMenu.draw),
-                        new[]
-                            {typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)}),
+                harmony.Patch(AccessTools.Method(_type, nameof(InventoryMenu.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)}),
                     transpiler: new HarmonyMethod(GetType(), nameof(FilteredActualInventory)));
             }
         }

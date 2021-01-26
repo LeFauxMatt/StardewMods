@@ -72,6 +72,7 @@ namespace ExpandedStorage.Framework.UI
             {
                 _skipped = menuHandler._skipped;
                 _overlay.CurrentTab = menuHandler._overlay.CurrentTab;
+                _overlay.SearchText = menuHandler._overlay.SearchText;
             }
             
             RefreshList();

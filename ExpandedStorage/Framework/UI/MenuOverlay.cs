@@ -47,8 +47,6 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Icon to display next to search box.</summary>
         private readonly ClickableTextureComponent _searchIcon;
-        
-        private string _searchText;
 
         /// <summary>Chest menu tab components.</summary>
         private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
@@ -58,6 +56,9 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Currently selected tab.</summary>
         internal TabContentData CurrentTab { get; set; }
+        
+        /// <summary>Current search text.</summary>
+        internal string SearchText { get; set; }
 
         /// <summary>Y-Position for tabs when not selected.</summary>
         private int _tabY;
@@ -109,7 +110,7 @@ namespace ExpandedStorage.Framework.UI
                     X = bounds.X,
                     Y = bounds.Y - 14 * Game1.pixelZoom,
                     Width = bounds.Width,
-                    Text = _searchText,
+                    Text = SearchText,
                     Selected = false
                 };
 
@@ -201,10 +202,10 @@ namespace ExpandedStorage.Framework.UI
                 return;
             }
 
-            if (_searchField != null && _searchText != _searchField.Text)
+            if (_searchField != null && SearchText != _searchField.Text)
             {
-                _searchText = _searchField.Text;
-                _search.Invoke(_searchText);
+                SearchText = _searchField.Text;
+                _search.Invoke(SearchText);
             }
             
             if (Context.ScreenId != _screenId)
@@ -265,7 +266,7 @@ namespace ExpandedStorage.Framework.UI
         /// <returns>True when an interaction occurs</returns>
         internal bool ReceiveKeyPress(SButton button)
         {
-            if (button == SButton.Escape && _searchField.Selected)
+            if (button == SButton.Escape && _searchField != null &&_searchField.Selected)
                 _searchField.Selected = false;
             return _searchField != null && _searchField.Selected;
         }
