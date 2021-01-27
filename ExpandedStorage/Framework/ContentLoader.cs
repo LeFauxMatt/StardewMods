@@ -5,7 +5,6 @@ using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework
 {
@@ -44,7 +43,7 @@ namespace ExpandedStorage.Framework
                 
                 _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
                 var contentData = contentPack.ReadJsonFile<ContentData>("expandedStorage.json");
-                var defaultConfigData = contentData.ExpandedStorage.Select(s => new StorageConfig(s)).ToList();
+                var defaultConfigData = contentData.ExpandedStorage.Select(StorageConfig.Clone).ToList();
                 var configData = contentPack.HasFile("config.json")
                     ? contentPack.ReadJsonFile<IList<StorageConfig>>("config.json")
                     : defaultConfigData;
@@ -107,7 +106,6 @@ namespace ExpandedStorage.Framework
         {
             var vanillaStorages = new Dictionary<int, string>();
             var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge"};
-            
             foreach (var obj in Game1.bigCraftablesInformation)
             {
                 var objData = obj.Value.Split('/').ToList();
@@ -122,13 +120,7 @@ namespace ExpandedStorage.Framework
                 if (!storageConfigs.ContainsKey(storageName))
                 {
                     _monitor.Log($"Generating default config for {storageName}.");
-                    storageConfigs.Add(objData.ElementAt(0), new StorageContentData
-                    {
-                        StorageName = storageName,
-                        Capacity = Chest.capacity,
-                        CanCarry = true,
-                        IsPlaceable = true
-                    });
+                    storageConfigs.Add(objData.ElementAt(0), new StorageContentData(storageName));
                 }
                 
                 _monitor.Log($"Loading {storageName} as a vanilla storage object.");
@@ -160,7 +152,7 @@ namespace ExpandedStorage.Framework
                 var configData = storageConfigs.Where(s =>
                     s.Value.ModUniqueId != null
                     && s.Value.ModUniqueId.Equals(contentPack.Manifest.UniqueID, StringComparison.OrdinalIgnoreCase))
-                    .Select(s => new StorageConfig(s.Value))
+                    .Select(s => StorageConfig.Clone(s.Value))
                     .ToList();
                 contentPack.WriteJsonFile("config.json", configData);
             };
@@ -176,6 +168,12 @@ namespace ExpandedStorage.Framework
             api.RegisterSimpleOption(manifest, "Can Carry", $"Allow {content.StorageName} to be carried?",
                 () => content.CanCarry,
                 value => content.CanCarry = value);
+            api.RegisterSimpleOption(manifest, "Access Carried", $"Allow {content.StorageName} to be access while carried?",
+                () => content.AccessCarried,
+                value => content.AccessCarried = value);
+            api.RegisterSimpleOption(manifest, "Show Search Bar", $"Show search bar above chest inventory for {content.StorageName}?",
+                () => content.ShowSearchBar,
+                value => content.ShowSearchBar = value);
             api.RegisterSimpleOption(manifest, "Is Placeable", $"Allow {content.StorageName} to be placed?",
                 () => content.IsPlaceable,
                 value => content.IsPlaceable = value);

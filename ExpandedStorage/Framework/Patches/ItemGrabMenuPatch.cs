@@ -83,8 +83,14 @@ namespace ExpandedStorage.Framework.Patches
         {
             var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
             var sourceItem = sourceItemReflected.GetValue();
+            if (__instance.context is not Chest chest)
+                return;
+            
+            var config = ExpandedStorage.GetConfig(chest);
+            if (config == null)
+                return;
 
-            if (sourceItem is Chest chest && chest.SpecialChestType != Chest.SpecialChestTypes.None)
+            if (chest.SpecialChestType != Chest.SpecialChestTypes.None)
             {
                 // Add color picker back to special Expanded Storage Chests
                 var colorPickerChest = new Chest(true, sourceItem.ParentSheetIndex);
@@ -131,17 +137,14 @@ namespace ExpandedStorage.Framework.Patches
                 __instance.discreteColorPickerCC = discreteColorPickerCC;
 
                 __instance.populateClickableComponentList();
-                if (Game1.options.SnappyMenus)
-                    __instance.snapToDefaultClickableComponent();
-                __instance.SetupBorderNeighbors();
             }
 
-            if (Config.ShowSearchBar)
+            if (Config.ShowSearchBar && config.ShowSearchBar)
             {
                 var padding = ExpandedMenu.Padding(__instance);
                 __instance.yPositionOnScreen -= padding;
                 __instance.height += padding;
-                if (sourceItem != null && __instance.chestColorPicker != null)
+                if (__instance.chestColorPicker != null)
                     __instance.chestColorPicker.yPositionOnScreen -= padding;
             }
 
@@ -150,13 +153,14 @@ namespace ExpandedStorage.Framework.Patches
                 var offset = ExpandedMenu.Offset(__instance);
                 __instance.height += offset;
                 __instance.inventory.movePosition(0, offset);
-                if (sourceItem != null)
-                {
-                    __instance.okButton.bounds.Y += offset;
-                    __instance.trashCan.bounds.Y += offset;
-                    __instance.dropItemInvisibleButton.bounds.Y += offset;
-                }
+                __instance.okButton.bounds.Y += offset;
+                __instance.trashCan.bounds.Y += offset;
+                __instance.dropItemInvisibleButton.bounds.Y += offset;
             }
+            
+            if (Game1.options.SnappyMenus)
+                __instance.snapToDefaultClickableComponent();
+            __instance.SetupBorderNeighbors();
         }
 
         static bool readyToClose(ItemGrabMenu __instance, ref bool __result)

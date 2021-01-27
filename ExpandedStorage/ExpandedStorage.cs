@@ -17,6 +17,8 @@ namespace ExpandedStorage
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod, IAssetEditor
     {
+        private const string AdvancedLootKey = "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest";
+        
         /// <summary>Dictionary of Expanded Storage object data</summary>
         private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
         
@@ -41,7 +43,8 @@ namespace ExpandedStorage
         public static StorageContentData GetConfig(Item item) =>
             item is Object obj
             && obj.bigCraftable.Value
-            && StorageObjectsById.TryGetValue(obj.ParentSheetIndex, out var storageName)
+            && !item.modData.ContainsKey(AdvancedLootKey)
+            && StorageObjectsById.TryGetValue(GetId(item), out var storageName)
             && StorageContent.TryGetValue(storageName, out var config)
                 ? config : null;
         
@@ -49,12 +52,19 @@ namespace ExpandedStorage
         public static bool HasConfig(Item item) =>
             item is Object obj
             && obj.bigCraftable.Value
-            && StorageObjectsById.ContainsKey(item.ParentSheetIndex);
+            && StorageObjectsById.ContainsKey(GetId(item))
+            && !item.modData.ContainsKey(AdvancedLootKey);
+        
+        /// <summary>Returns the sheet id of item for config.</summary>
+        private static int GetId(Item item) =>
+            item is Chest chest
+            && chest.fridge.Value
+                ? _vanillaStorages.FirstOrDefault(s => s.Value.Equals("Mini-Fridge")).Key
+                : item.ParentSheetIndex;
         
         /// <summary>Returns true if item is a Vanilla Storage.</summary>
         public static bool IsVanilla(Item item) =>
-            item is Chest
-            && _vanillaStorages.ContainsKey(item.ParentSheetIndex);
+            item is Chest && _vanillaStorages.ContainsKey(item.ParentSheetIndex);
         
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static TabContentData GetTab(string tabName) =>

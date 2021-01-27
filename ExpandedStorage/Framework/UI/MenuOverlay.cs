@@ -56,9 +56,20 @@ namespace ExpandedStorage.Framework.UI
 
         /// <summary>Currently selected tab.</summary>
         internal TabContentData CurrentTab { get; set; }
-        
+
         /// <summary>Current search text.</summary>
-        internal string SearchText { get; set; }
+        internal string SearchText
+        {
+            get => _searchField?.Text;
+            set
+            {
+                if (_searchField != null)
+                    _searchField.Text = value;
+            }
+        }
+        
+        /// <summary>Previous search text.</summary>
+        private string _searchText;
 
         /// <summary>Y-Position for tabs when not selected.</summary>
         private int _tabY;
@@ -68,7 +79,7 @@ namespace ExpandedStorage.Framework.UI
 
         public bool SearchFocused => _searchField != null && _searchField.Selected;
         
-        public MenuOverlay(InventoryMenu menu, IList<TabContentData> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents, ModConfig config,
+        public MenuOverlay(InventoryMenu menu, IList<TabContentData> tabConfigs, IGameLoopEvents gameLoopGameLoopEvents, ModConfig config, StorageConfig storageConfig,
             Func<bool> canScrollUp,
             Func<bool> canScrollDown,
             Func<int, bool> scroll,
@@ -103,7 +114,7 @@ namespace ExpandedStorage.Framework.UI
                     Game1.pixelZoom);
             }
 
-            if (config.ShowSearchBar)
+            if (config.ShowSearchBar && storageConfig.ShowSearchBar)
             {
                 _searchField = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
                 {
@@ -202,10 +213,10 @@ namespace ExpandedStorage.Framework.UI
                 return;
             }
 
-            if (_searchField != null && SearchText != _searchField.Text)
+            if (_searchField != null && SearchText != _searchText)
             {
-                SearchText = _searchField.Text;
-                _search.Invoke(SearchText);
+                _searchText = SearchText;
+                _search.Invoke(_searchText);
             }
             
             if (Context.ScreenId != _screenId)
@@ -256,8 +267,10 @@ namespace ExpandedStorage.Framework.UI
 
             for (var i = 0; i < _tabConfigs.Count; i++)
             {
-                _tabs[i].bounds.Y = _tabY + (ReferenceEquals(CurrentTab, _tabConfigs[i]) ? Game1.pixelZoom : 0);
-                _tabs[i].draw(b);
+                var isSelectedTab = ReferenceEquals(CurrentTab, _tabConfigs[i]);
+                var c = isSelectedTab ? Color.White : Color.Gray;
+                _tabs[i].bounds.Y = _tabY + (isSelectedTab ? Game1.pixelZoom : 0);
+                _tabs[i].draw(b, c * 1f, 0.86f + _tabs[i].bounds.Y / 20000f);
             }
         }
 
@@ -328,11 +341,15 @@ namespace ExpandedStorage.Framework.UI
                 return false;
 
             // ReSharper disable once InvertIf
-            if (_searchArea != null && _searchArea.containsPoint(x, y))
+            if (_searchField != null)
             {
-                _searchField.Text = "";
-                _search.Invoke(_searchField.Text);
-                return true;
+                _searchField.Selected = _searchArea.containsPoint(x, y);
+                if (_searchField.Selected)
+                {
+                    _searchField.Text = "";
+                    _search.Invoke(_searchField.Text);
+                    return true;
+                }
             }
 
             return false;

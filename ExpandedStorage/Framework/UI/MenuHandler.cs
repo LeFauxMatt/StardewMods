@@ -61,7 +61,7 @@ namespace ExpandedStorage.Framework.UI
                     .Where(t => t != null)
                     .ToList();
             
-            _overlay = new MenuOverlay(_menu, _tabConfigs, events.GameLoop, config,
+            _overlay = new MenuOverlay(_menu, _tabConfigs, events.GameLoop, config, storageConfig,
                 () => CanScrollUp,
                 () => CanScrollDown,
                 Scroll,
@@ -70,9 +70,10 @@ namespace ExpandedStorage.Framework.UI
             
             if (menuHandler != null && ContextMatches(menuHandler))
             {
-                _skipped = menuHandler._skipped;
                 _overlay.CurrentTab = menuHandler._overlay.CurrentTab;
                 _overlay.SearchText = menuHandler._overlay.SearchText;
+                _skipped = menuHandler._skipped;
+                _searchText = menuHandler._searchText;
             }
             
             RefreshList();

@@ -17,6 +17,12 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>Allows storage to be picked up by the player.</summary>
         public bool CanCarry;
         
+        /// <summary>Allows storage to be access while carried.</summary>
+        public bool AccessCarried;
+
+        /// <summary>Show search bar above chest inventory.</summary>
+        public bool ShowSearchBar;
+        
         /// <summary>Allows the storage to be </summary>
         public bool IsPlaceable;
         
@@ -29,19 +35,29 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>List of tabs to show on chest menu.</summary>
         public IList<string> Tabs;
         
-        internal StorageConfig()
-            : this(null, Chest.capacity, true, true, new List<string>(), new List<string>(), new List<string>()) { }
-        internal StorageConfig(StorageConfig config)
-            : this(config.StorageName, config.Capacity, config.CanCarry, config.IsPlaceable, config.AllowList, config.BlockList, config.Tabs) { }
-        internal StorageConfig(string storageName, int capacity, bool canCarry, bool isPlaceable, IList<string> allowList, IList<string> blockList, IList<string> tabs)
+        internal StorageConfig() : this(null) {}
+        internal StorageConfig(
+            string storageName,
+            int capacity = Chest.capacity,
+            bool canCarry = true,
+            bool accessCarried = false,
+            bool showSearchBar = false,
+            bool isPlaceable = true,
+            IList<string> allowList = null,
+            IList<string> blockList = null,
+            IList<string> tabs = null)
         {
             StorageName = storageName;
             Capacity = capacity;
             CanCarry = canCarry;
+            AccessCarried = accessCarried;
+            ShowSearchBar = showSearchBar;
             IsPlaceable = isPlaceable;
-            AllowList = allowList;
-            BlockList = blockList;
-            Tabs = tabs;
+            AllowList = allowList ?? new List<string>();
+            BlockList = blockList ?? new List<string>();
+            Tabs = tabs ?? new List<string>();
         }
+        internal static StorageConfig Clone(StorageConfig config) =>
+            new StorageConfig(config.StorageName, config.Capacity, config.CanCarry, config.AccessCarried, config.ShowSearchBar, config.IsPlaceable, config.AllowList, config.BlockList, config.Tabs);
     }
 }
