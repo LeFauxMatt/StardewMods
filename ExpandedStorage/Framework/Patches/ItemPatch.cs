@@ -26,10 +26,10 @@ namespace ExpandedStorage.Framework.Patches
         /// <summary>Disallow chests containing items to be stacked.</summary>
         public static bool canStackWith_Prefix(Item __instance, ISalable other, ref bool __result)
         {
-            
-            if (!ExpandedStorage.HasConfig(__instance))
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null || __instance is not Chest chest || other is not Chest otherChest)
                 return true;
-            if (__instance is not Chest chest || other is not Chest otherChest || chest.items.Count == 0 && otherChest.items.Count == 0)
+            if (!config.AccessCarried && chest.items.Count == 0 && otherChest.items.Count == 0)
                 return true;
             __result = false;
             return false;
