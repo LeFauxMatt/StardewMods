@@ -55,7 +55,7 @@ namespace ExpandedStorage.Framework.Patches
                 return true;
 
             var config = ExpandedStorage.GetConfig(__instance); 
-            if (config == null || ExpandedStorage.IsVanilla(__instance))
+            if (config == null || config.IsVanilla)
                 return true;
             __instance.GetMutex().RequestLock(delegate
             {
@@ -84,7 +84,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                || ExpandedStorage.IsVanilla(__instance)
+                || config.IsVanilla
                 || !__instance.playerChest.Value
                 || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
@@ -147,7 +147,7 @@ namespace ExpandedStorage.Framework.Patches
             var parentSheetIndex = __instance.ParentSheetIndex;
             
             if (config == null
-                || ExpandedStorage.IsVanilla(__instance)
+                || config.IsVanilla
                 || !__instance.playerChest.Value
                 || !local)
                 return true;

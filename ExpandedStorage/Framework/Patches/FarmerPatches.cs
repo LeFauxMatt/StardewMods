@@ -24,7 +24,7 @@ namespace ExpandedStorage.Framework.Patches
         public static bool addItemToInventory_Prefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
         {
             var config = ExpandedStorage.GetConfig(item);
-            if(config == null || ExpandedStorage.IsVanilla(item))
+            if(config == null || config.IsVanilla)
                 return true;
 
             if (item is not Chest chest)

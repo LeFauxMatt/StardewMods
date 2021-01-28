@@ -28,9 +28,6 @@ namespace ExpandedStorage
         /// <summary>Dictionary of Expanded Storage tabs</summary>
         private static readonly IDictionary<string, TabContentData> StorageTabs = new Dictionary<string, TabContentData>();
 
-        /// <summary>List of vanilla storages Display Names</summary>
-        private static IDictionary<int, string> _vanillaStorages;
-
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
@@ -40,32 +37,34 @@ namespace ExpandedStorage
         private ContentLoader _contentLoader;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static StorageContentData GetConfig(Item item) =>
-            item is Object obj
-            && obj.bigCraftable.Value
-            && !item.modData.ContainsKey(AdvancedLootKey)
-            && StorageObjectsById.TryGetValue(GetId(item), out var storageName)
-            && StorageContent.TryGetValue(storageName, out var config)
-                ? config : null;
-        
+        public static StorageContentData GetConfig(Item item)
+        {
+            if (item is not Object obj
+                || !obj.bigCraftable.Value
+                || item.modData.ContainsKey(AdvancedLootKey))
+                return null;
+            if (item is Chest chest
+                && chest.fridge.Value
+                && StorageContent.TryGetValue("Mini-Fridge", out var miniFridgeConfig))
+                return miniFridgeConfig;
+            if (StorageObjectsById.TryGetValue(item.ParentSheetIndex, out var storageName)
+                && StorageContent.TryGetValue(storageName, out var storageConfig))
+                return storageConfig;
+            return null;
+        }
+
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(Item item) =>
-            item is Object obj
-            && obj.bigCraftable.Value
-            && StorageObjectsById.ContainsKey(GetId(item))
-            && !item.modData.ContainsKey(AdvancedLootKey);
-        
-        /// <summary>Returns the sheet id of item for config.</summary>
-        private static int GetId(Item item) =>
-            item is Chest chest
-            && chest.fridge.Value
-                ? _vanillaStorages.FirstOrDefault(s => s.Value.Equals("Mini-Fridge")).Key
-                : item.ParentSheetIndex;
-        
-        /// <summary>Returns true if item is a Vanilla Storage.</summary>
-        public static bool IsVanilla(Item item) =>
-            item is Chest && _vanillaStorages.ContainsKey(item.ParentSheetIndex);
-        
+        public static bool HasConfig(Item item)
+        {
+            if (item is not Object obj
+                || !obj.bigCraftable.Value
+                || item.modData.ContainsKey(AdvancedLootKey))
+                return false;
+            if (item is Chest chest && chest.fridge.Value)
+                return StorageContent.ContainsKey("Mini-Fridge");
+            return StorageObjectsById.ContainsKey(item.ParentSheetIndex);
+        }
+
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static TabContentData GetTab(string tabName) =>
             StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
@@ -86,6 +85,7 @@ namespace ExpandedStorage
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
             if (_config.AllowCarryingChests)
@@ -93,7 +93,7 @@ namespace ExpandedStorage
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
                 helper.Events.Input.ButtonPressed += OnButtonPressed;
             }
-
+            
             // Harmony Patches
             new Patcher(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatches(Monitor, _config),
@@ -118,7 +118,7 @@ namespace ExpandedStorage
 
         /// <summary>Load a matched asset.</summary>
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public void Edit<T>(IAssetData asset) { }
+        public void Edit<T>(IAssetData asset) {}
         
         /// <summary>Load content packs.</summary>
         /// <param name="sender">The event sender.</param>
@@ -142,23 +142,30 @@ namespace ExpandedStorage
                 }
             };
 
-            if (modConfigApi == null)
-                return;
-            
-            modConfigApi.RegisterModConfig(ModManifest, () => _config.Controls = new ModConfigKeys(), () => Helper.WriteConfig(_config));
-            modConfigApi.RegisterLabel(ModManifest, "Controls", "Controller/Keyboard controls");
-            modConfigApi.RegisterSimpleOption(ModManifest, "Scroll Up", $"Button for scrolling up",
-                () => _config.Controls.ScrollUp.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
-                value => _config.Controls.ScrollUp = KeybindList.ForSingle(value));
-            modConfigApi.RegisterSimpleOption(ModManifest, "Scroll Down", $"Button for scrolling down",
-                () => _config.Controls.ScrollDown.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
-                value => _config.Controls.ScrollDown = KeybindList.ForSingle(value));
-            modConfigApi.RegisterSimpleOption(ModManifest, "Previous Tab", $"Button for switching to the previous tab",
-                () => _config.Controls.PreviousTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
-                value => _config.Controls.PreviousTab = KeybindList.ForSingle(value));
-            modConfigApi.RegisterSimpleOption(ModManifest, "Next Tab", $"Button for switching to the next tab",
-                () => _config.Controls.NextTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
-                value => _config.Controls.NextTab = KeybindList.ForSingle(value));
+            if (modConfigApi != null)
+            {
+                modConfigApi.RegisterModConfig(ModManifest,
+                    () => _config = new ModConfig(),
+                    () => Helper.WriteConfig(_config));
+                ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
+            }
+        }
+        
+        /// <summary>Clear out Object Ids.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private static void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e)
+        {
+            var removeNames = StorageContent
+                .Where(c => !c.Value.IsVanilla)
+                .Select(c => c.Key);
+            var removeIds = StorageObjectsById
+                .Where(i => removeNames.Contains(i.Value))
+                .Select(i => i.Key);
+            foreach (var id in removeIds)
+            {
+                StorageObjectsById.Remove(id);
+            }
         }
         
         /// <summary>Track toolbar changes before user input.</summary>
@@ -195,7 +202,8 @@ namespace ExpandedStorage
             if (!_contentLoader.IsOwnedLoaded)
                 return;
             Helper.Events.GameLoop.UpdateTicked -= LoadContentPacks;
-            _vanillaStorages = _contentLoader.LoadVanillaStorages(StorageContent, StorageObjectsById);
+            if (!_contentLoader.IsVanillaLoaded)
+                _contentLoader.LoadVanillaStorages(StorageContent, StorageObjectsById);
         }
 
         /// <summary>Track toolbar changes before user input.</summary>

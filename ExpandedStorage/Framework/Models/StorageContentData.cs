@@ -1,19 +1,29 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using StardewValley;
 
 namespace ExpandedStorage.Framework.Models
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     internal class StorageContentData : StorageConfig
     {
-        public string OpenSound { get; set; } = "openChest";
-
-        public string SpecialChestType { get; set; } = "None";
+        /// <summary>The game sound that will play when the storage is opened.</summary>
+        public string OpenSound;
+        
+        /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
+        public string SpecialChestType;
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
-        internal StorageContentData() : this(null) {}
+        /// <summary>True for assets loaded into Game1.bigCraftables outside of JsonAssets.</summary>
+        internal bool IsVanilla;
+
+        internal StorageContentData() : this(null)
+        {
+            OpenSound = "openChest";
+            SpecialChestType = "None";
+        }
         internal StorageContentData(string storageName) : base(storageName) { }
         internal bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
         internal bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);

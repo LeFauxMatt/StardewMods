@@ -13,7 +13,9 @@ namespace ExpandedStorage.Framework
         private readonly IMonitor _monitor;
         private readonly IContentHelper _contentHelper;
         private readonly IEnumerable<IContentPack> _contentPacks;
-        public bool IsOwnedLoaded;
+
+        internal bool IsOwnedLoaded { get; private set; }
+        internal bool IsVanillaLoaded { get; private set; }
         internal ContentLoader(
             IMonitor monitor,
             IContentHelper contentHelper,
@@ -102,9 +104,8 @@ namespace ExpandedStorage.Framework
             IsOwnedLoaded = true;
         }
 
-        internal IDictionary<int, string> LoadVanillaStorages(IDictionary<string, StorageContentData> storageConfigs, IDictionary<int, string> storageObjects)
+        internal void LoadVanillaStorages(IDictionary<string, StorageContentData> storageConfigs, IDictionary<int, string> storageObjects)
         {
-            var vanillaStorages = new Dictionary<int, string>();
             var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge"};
             foreach (var obj in Game1.bigCraftablesInformation)
             {
@@ -117,22 +118,21 @@ namespace ExpandedStorage.Framework
                     continue;
                 
                 // Generate default config for non-recognized storages
-                if (!storageConfigs.ContainsKey(storageName))
+                if (!storageConfigs.TryGetValue(storageName, out var storageConfig))
                 {
                     _monitor.Log($"Generating default config for {storageName}.");
-                    storageConfigs.Add(objData.ElementAt(0), new StorageContentData(storageName));
+                    storageConfig = new StorageContentData(storageName);
+                    storageConfigs.Add(objData.ElementAt(0), storageConfig);
                 }
                 
-                _monitor.Log($"Loading {storageName} as a vanilla storage object.");
-                vanillaStorages.Add(obj.Key, storageName);
-                
+                storageConfig.IsVanilla = true;
                 if (storageObjects.ContainsKey(obj.Key))
                     continue;
                 
+                _monitor.Log($"Loading {storageName} as a vanilla storage object.");
                 storageObjects.Add(obj.Key, storageName);
             }
-            
-            return vanillaStorages;
+            IsVanillaLoaded = true;
         }
         
         private static Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs, List<StorageConfig> defaultConfigData) =>
