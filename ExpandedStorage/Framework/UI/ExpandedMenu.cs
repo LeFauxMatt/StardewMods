@@ -116,16 +116,15 @@ namespace ExpandedStorage.Framework.UI
         {
             if (ReferenceEquals(menu, _menu))
                 return;
-            
             _menu = menu;
-
+            
             if (menu is ItemGrabMenu itemGrabMenu)
                 UpdateReference(itemGrabMenu.context);
-            
+
             var chest = _context is Chest context ? context : null;
             var chestConfig = ExpandedStorage.GetConfig(chest);
             
-            _offset = _config.ExpandInventoryMenu
+            _offset = _config.ExpandInventoryMenu && chest != null
                 ? 64 * (_rows - 3)
                 : 0;
             
@@ -139,18 +138,17 @@ namespace ExpandedStorage.Framework.UI
 
         private static void UpdateReference(object context)
         {
-            if (ReferenceEquals(context, _context))
+            if (context != null && ReferenceEquals(context, _context))
                 return;
             
             _context = context;
             var chest = context is Chest chestContext ? chestContext : null;
             
-            _rows = _config.ExpandInventoryMenu
-                    && chest != null
+            _rows = _config.ExpandInventoryMenu && chest != null
                 ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
                 : 3;
             
-            _capacity = _config.AllowModdedCapacity
+            _capacity = _config.AllowModdedCapacity && chest != null
                 ? _rows * 12
                 : Chest.capacity;
         }
