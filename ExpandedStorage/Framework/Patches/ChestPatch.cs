@@ -13,7 +13,7 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ChestPatches : HarmonyPatch
     {
-        private readonly Type _chestType = typeof(Chest);
+        private readonly Type _type = typeof(Chest);
 
         private static IReflectionHelper Reflection;
 
@@ -25,24 +25,24 @@ namespace ExpandedStorage.Framework.Patches
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.checkForAction)),
+            harmony.Patch(AccessTools.Method(_type, nameof(Chest.checkForAction)),
                 new HarmonyMethod(GetType(), nameof(checkForAction_Prefix)));
             
-            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
+            harmony.Patch(AccessTools.Method(_type, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
                 new HarmonyMethod(GetType(), nameof(draw_Prefix)));
             
-            harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float, T.Bool}),
+            harmony.Patch(AccessTools.Method(_type, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float, T.Bool}),
                 new HarmonyMethod(GetType(), nameof(drawLocal_Prefix)));
 
             if (Config.AllowRestrictedStorage)
             {
-                harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.addItem), new[] {typeof(Item)}),
+                harmony.Patch(AccessTools.Method(_type, nameof(Chest.addItem), new[] {typeof(Item)}),
                     new HarmonyMethod(GetType(), nameof(addItem_Prefix)));
             }
 
             if (Config.AllowModdedCapacity)
             {
-                harmony.Patch(AccessTools.Method(_chestType, nameof(Chest.GetActualCapacity)),
+                harmony.Patch(AccessTools.Method(_type, nameof(Chest.GetActualCapacity)),
                     new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix)));
             }
         }

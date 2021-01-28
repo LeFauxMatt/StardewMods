@@ -13,13 +13,14 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class MenuWithInventoryPatch : HarmonyPatch
     {
+        private readonly Type _type = typeof(MenuWithInventory);
         internal MenuWithInventoryPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
         protected internal override void Apply(HarmonyInstance harmony)
         {
             if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
             {
-                harmony.Patch(AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), new[] {typeof(SpriteBatch), T.Bool, T.Bool, T.Int, T.Int, T.Int}),
+                harmony.Patch(AccessTools.Method(_type, nameof(MenuWithInventory.draw), new[] {typeof(SpriteBatch), T.Bool, T.Bool, T.Int, T.Int, T.Int}),
                     transpiler: new HarmonyMethod(GetType(), nameof(DrawPatches)));
             }
         }

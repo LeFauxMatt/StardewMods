@@ -20,6 +20,9 @@ namespace ExpandedStorage.Framework
         /// <summary>Allows storages to accept specific items.</summary>
         public bool AllowRestrictedStorage { get; set; } = true;
 
+        /// <summary>Allows storages to pull items directly into their inventory.</summary>
+        public bool AllowVacuumItems { get; set; } = true;
+
         /// <summary>Adds three extra rows to the Inventory Menu.</summary>
         public bool ExpandInventoryMenu { get; set; } = true;
         
@@ -74,6 +77,11 @@ namespace ExpandedStorage.Framework
                 () => config.AllowAccessCarriedChest,
                 value => config.AllowAccessCarriedChest = value);
             modConfigApi.RegisterSimpleOption(modManifest,
+                "Expand Inventory Menu",
+                "Uncheck to globally disable resizing the inventory menu",
+                () => config.ExpandInventoryMenu,
+                value => config.ExpandInventoryMenu = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
                 "Modded Capacity",
                 "Uncheck to globally disable non-vanilla capacity (36 item slots)",
                 () => config.AllowModdedCapacity,
@@ -83,11 +91,6 @@ namespace ExpandedStorage.Framework
                 "Uncheck to globally disable allow/block lists for chest items",
                 () => config.AllowRestrictedStorage,
                 value => config.AllowRestrictedStorage = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Expand Inventory Menu",
-                "Uncheck to globally disable resizing the inventory menu",
-                () => config.ExpandInventoryMenu,
-                value => config.ExpandInventoryMenu = value);
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Show Overlay Arrows",
                 "Uncheck to globally disable adding arrow buttons",
@@ -103,6 +106,11 @@ namespace ExpandedStorage.Framework
                 "Uncheck to globally disable chest tabs",
                 () => config.ShowTabs,
                 value => config.ShowTabs = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
+                "Vacuum Items",
+                "Uncheck to globally disable chests picking up items",
+                () => config.AllowVacuumItems,
+                value => config.AllowVacuumItems = value);
         }
     }
 }

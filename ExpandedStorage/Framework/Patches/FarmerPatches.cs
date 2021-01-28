@@ -10,21 +10,21 @@ namespace ExpandedStorage.Framework.Patches
 {
     internal class FarmerPatches : HarmonyPatch
     {
-        private readonly Type _farmerType = typeof(Farmer);
+        private readonly Type _type = typeof(Farmer);
         
         internal FarmerPatches(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(_farmerType, nameof(Farmer.addItemToInventory), new []{typeof(Item), typeof(List<Item>)}),
+            harmony.Patch(AccessTools.Method(_type, nameof(Farmer.addItemToInventory), new []{typeof(Item), typeof(List<Item>)}),
                 new HarmonyMethod(GetType(), nameof(addItemToInventory_Prefix)));
         }
 
         public static bool addItemToInventory_Prefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
         {
             var config = ExpandedStorage.GetConfig(item);
-            if(config == null || config.IsVanilla)
+            if(config == null || !config.AccessCarried)
                 return true;
 
             if (item is not Chest chest)

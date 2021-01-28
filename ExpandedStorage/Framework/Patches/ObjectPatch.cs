@@ -12,18 +12,18 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ObjectPatch : HarmonyPatch
     {
-        private readonly Type _objectType = typeof(StardewValley.Object);
+        private readonly Type _type = typeof(StardewValley.Object);
         internal ObjectPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
         
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(_objectType, nameof(StardewValley.Object.placementAction)),
+            harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.placementAction)),
                 new HarmonyMethod(GetType(), nameof(PlacementAction)));
             
             if (Config.AllowCarryingChests)
             {
-                harmony.Patch(AccessTools.Method(_objectType, nameof(StardewValley.Object.getDescription)),
+                harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.getDescription)),
                     postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix)));
             }
         }

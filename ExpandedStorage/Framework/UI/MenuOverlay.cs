@@ -279,9 +279,12 @@ namespace ExpandedStorage.Framework.UI
         /// <returns>True when an interaction occurs</returns>
         internal bool ReceiveKeyPress(SButton button)
         {
-            if (button == SButton.Escape && _searchField != null &&_searchField.Selected)
+            if (button == SButton.Escape && SearchFocused)
+            {
                 _searchField.Selected = false;
-            return _searchField != null && _searchField.Selected;
+                _menu.exitThisMenuNoSound();
+            }
+            return SearchFocused;
         }
 
         /// <summary>Handles Left-Click interaction with overlay elements</summary>

@@ -18,7 +18,7 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class ItemGrabMenuPatch : HarmonyPatch
     {
-        private readonly Type _itemGrabMenuType = typeof(ItemGrabMenu);
+        private readonly Type _type = typeof(ItemGrabMenu);
         private static IReflectionHelper _reflection;
 
         internal ItemGrabMenuPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
@@ -31,26 +31,20 @@ namespace ExpandedStorage.Framework.Patches
         {
             if (Config.AllowModdedCapacity)
             {
-                harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
+                harmony.Patch(AccessTools.Constructor(_type, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
                     transpiler: new HarmonyMethod(GetType(), nameof(CapacityPatches)));
             }
             
             if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
             {
-                harmony.Patch(AccessTools.Constructor(_itemGrabMenuType, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
+                harmony.Patch(AccessTools.Constructor(_type, new[] {typeof(IList<Item>), T.Bool, T.Bool, typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), T.String, typeof(ItemGrabMenu.behaviorOnItemSelect), T.Bool, T.Bool, T.Bool, T.Bool, T.Bool, T.Int, typeof(Item), T.Int, T.Object }),
                     postfix: new HarmonyMethod(GetType(), nameof(ConstructorPostfix)));
             }
             
             if (Config.ExpandInventoryMenu || Config.ShowOverlayArrows || Config.ShowTabs || Config.ShowSearchBar)
             {
-                harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
+                harmony.Patch(AccessTools.Method(_type, nameof(ItemGrabMenu.draw), new []{typeof(SpriteBatch)}),
                     transpiler: new HarmonyMethod(GetType(), nameof(DrawPatches)));
-            }
-
-            if (Config.ShowSearchBar)
-            {
-                harmony.Patch(AccessTools.Method(_itemGrabMenuType, nameof(ItemGrabMenu.readyToClose)),
-                    new HarmonyMethod(GetType(), nameof(readyToClose)));
             }
         }
 
@@ -163,14 +157,6 @@ namespace ExpandedStorage.Framework.Patches
             __instance.SetupBorderNeighbors();
         }
 
-        static bool readyToClose(ItemGrabMenu __instance, ref bool __result)
-        {
-            if (!ExpandedMenu.SearchFocused(__instance))
-                return true;
-            __result = false;
-            return false;
-        }
-        
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>
         static IEnumerable<CodeInstruction> DrawPatches(IEnumerable<CodeInstruction> instructions)
         {

@@ -20,6 +20,9 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>Allows storage to be access while carried.</summary>
         public bool AccessCarried;
 
+        /// <summary>Debris will be loaded straight into this chest's inventory for allowed items.</summary>
+        public bool VacuumItems;
+
         /// <summary>Show search bar above chest inventory.</summary>
         public bool ShowSearchBar;
         

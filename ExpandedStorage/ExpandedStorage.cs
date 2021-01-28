@@ -103,6 +103,7 @@ namespace ExpandedStorage
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
+                new DebrisPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
         }
 
