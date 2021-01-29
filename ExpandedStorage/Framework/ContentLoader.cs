@@ -105,7 +105,6 @@ namespace ExpandedStorage.Framework
                     }
                 }
             }
-
             IsOwnedLoaded = true;
         }
 
