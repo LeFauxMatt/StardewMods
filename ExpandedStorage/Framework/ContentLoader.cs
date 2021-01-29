@@ -67,15 +67,20 @@ namespace ExpandedStorage.Framework
                         continue;
                     }
                     
-                    var config = configData.First(c => c.StorageName.Equals(content.StorageName, StringComparison.OrdinalIgnoreCase));
+                    var config = configData.FirstOrDefault(c => c.StorageName.Equals(content.StorageName, StringComparison.OrdinalIgnoreCase));
+                    if (config == null)
+                    {
+                        config = StorageConfig.Clone(content);
+                        configData.Add(config);
+                        contentPack.WriteJsonFile("config.json", configData);
+                    }
                     content.CopyFrom(config);
+                    
                     content.ModUniqueId = contentPack.Manifest.UniqueID;
                     storageConfigs.Add(content.StorageName, content);
                     
-                    if (api == null)
-                        continue;
-
-                    RegisterConfig(api, contentPack.Manifest, content);
+                    if (api != null)
+                        RegisterConfig(api, contentPack.Manifest, content);
                 }
                 
                 // Load expanded storage tabs
