@@ -13,6 +13,8 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ChestPatches : HarmonyPatch
     {
+        private const string CustomChestTypesKey = "aedenthorn.CustomChestTypes/IsCustomChest";
+        
         private readonly Type _type = typeof(Chest);
 
         private static IReflectionHelper Reflection;
@@ -84,15 +86,9 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                //| config.IsVanilla
-                || !__instance.playerChest.Value
-                || __instance.playerChoiceColor.Value.Equals(Color.Black))
+                || __instance.modData.ContainsKey(CustomChestTypesKey)
+                || !__instance.playerChest.Value)
                 return true;
-            
-            var playerChoiceColor = __instance.playerChoiceColor.Value;
-            var parentSheetIndex = __instance.ParentSheetIndex;
-            var currentLidFrameReflected = Reflection.GetField<int>(__instance, "currentLidFrame");
-            var currentLidFrame = currentLidFrameReflected.GetValue();
 
             var draw_x = (float) x;
             var draw_y = (float) y;
@@ -103,12 +99,62 @@ namespace ExpandedStorage.Framework.Patches
             }
             var globalPosition = new Vector2(draw_x * 64f, (draw_y - 1f) * 64f);
             var layerDepth = Math.Max(0.0f, ((draw_y + 1f) * 64f - 24f) / 10000f) + draw_x * 1E-05f;
+            
+            drawChest(__instance, spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition), alpha, layerDepth);
+            return false;
+        }
+
+        public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
+        {
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null
+                || __instance.modData.ContainsKey(CustomChestTypesKey)
+                || !__instance.playerChest.Value
+                || !local)
+                return true;
+            
+            drawChest(__instance, spriteBatch, new Vector2(x, y - 64), alpha);
+            return false;
+        }
+
+        private static void drawChest(Chest chest, SpriteBatch spriteBatch, Vector2 pos, float alpha = 1f, float layerDepth = 0.89f)
+        {
+            var currentLidFrameReflected = Reflection.GetField<int>(chest, "currentLidFrame");
+            var currentLidFrame = currentLidFrameReflected.GetValue();
+            
+            if (chest.playerChoiceColor.Value.Equals(Color.Black))
+            {
+                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                    pos + ShakeOffset(chest, -1, 2),
+                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex, 16, 32),
+                    chest.Tint * alpha,
+                    0f,
+                    Vector2.Zero,
+                    4f,
+                    SpriteEffects.None,
+                    layerDepth);
+                
+                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                    pos + ShakeOffset(chest, -1, 2),
+                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame, 16, 32),
+                    chest.Tint * alpha,
+                    0f,
+                    Vector2.Zero,
+                    4f,
+                    SpriteEffects.None,
+                    layerDepth + 1E-05f);
+
+                return;
+            }
+            
+            var baseOffset = chest.ParentSheetIndex == 130 ? 38 : 6;
+            var aboveOffset = chest.ParentSheetIndex == 130 ? 45 : 11;
 
             // Draw Storage Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 6, 16, 32),
-                playerChoiceColor * alpha,
+                pos + ShakeOffset(chest, -1, 2),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + baseOffset, 16, 32),
+                chest.playerChoiceColor.Value * alpha,
                 0f,
                 Vector2.Zero,
                 4f,
@@ -117,9 +163,9 @@ namespace ExpandedStorage.Framework.Patches
             
             // Draw Lid Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 5, 16, 32),
-                playerChoiceColor * alpha * alpha,
+                pos + ShakeOffset(chest, -1, 2),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + baseOffset, 16, 32),
+                chest.playerChoiceColor.Value * alpha * alpha,
                 0f,
                 Vector2.Zero,
                 4f,
@@ -128,100 +174,21 @@ namespace ExpandedStorage.Framework.Patches
             
             // Draw Brace Layer (Non Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
+                pos + ShakeOffset(chest, -1, 2),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + aboveOffset, 16, 32),
                 Color.White * alpha,
                 0f,
                 Vector2.Zero,
                 4f,
                 SpriteEffects.None,
                 layerDepth + 2E-05f);
-
-            return false;
-        }
-
-        public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
-        {
-            var config = ExpandedStorage.GetConfig(__instance);
-            var playerChoiceColor = __instance.playerChoiceColor.Value;
-            var parentSheetIndex = __instance.ParentSheetIndex;
-            
-            if (config == null
-                //|| config.IsVanilla
-                || __instance.modData.ContainsKey("aedenthorn.CustomChestTypes/IsCustomChest")
-                || !__instance.playerChest.Value
-                || !local)
-                return true;
-
-            var currentLidFrameReflected = Reflection.GetField<int>(__instance, "currentLidFrame");
-            var currentLidFrame = currentLidFrameReflected.GetValue();
-            Monitor.Log($"{currentLidFrame}");
-            
-            if (playerChoiceColor.Equals(Color.Black))
-            {
-                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                    new Vector2(x, y - 64),
-                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex, 16, 32),
-                    __instance.Tint * alpha,
-                    0f,
-                    Vector2.Zero,
-                    4f,
-                    SpriteEffects.None,
-                    0.89f);
-                
-                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                    new Vector2(x, y - 64),
-                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame, 16, 32),
-                    __instance.Tint * alpha,
-                    0f,
-                    Vector2.Zero,
-                    4f,
-                    SpriteEffects.None,
-                    0.9f);
-                return false;
-            }
-            
-            // Draw Storage Layer (Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                new Vector2(x, y - 64),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 6, 16, 32),
-                playerChoiceColor * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                0.9f);
-            
-            // Draw Lid Layer (Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                new Vector2(x, y - 64),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 5, 16, 32),
-                playerChoiceColor * alpha * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                0.91f);
-            
-            // Draw Brace Layer (Non Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                new Vector2(x, y - 64),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
-                Color.White * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                0.92f);
-            
-            return false;
         }
 
         /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.Capacity == 0 || config.Capacity == Chest.capacity)
+            if (config == null || config.Capacity == 0)
                 return true;
 
             __result = config.Capacity == -1

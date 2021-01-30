@@ -29,13 +29,13 @@ namespace ExpandedStorage.Framework.Patches
 
             if (item is not Chest chest)
             {
-                if (!Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType))
-                    specialChestType = Chest.SpecialChestTypes.None;
                 chest = new Chest(true, Vector2.Zero, item.ParentSheetIndex)
                 {
                     name = item.Name,
                     Stack = item.Stack,
-                    SpecialChestType = specialChestType
+                    SpecialChestType = Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType)
+                        ? specialChestType
+                        : Chest.SpecialChestTypes.None
                 };
             }
             chest.resetLidFrame();

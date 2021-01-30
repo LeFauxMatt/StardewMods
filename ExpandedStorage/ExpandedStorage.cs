@@ -9,6 +9,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Buildings;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
 
@@ -44,33 +45,44 @@ namespace ExpandedStorage
         private ContentLoader _contentLoader;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static StorageContentData GetConfig(Item item)
-        {
-            if (item is not Object obj
-                || !obj.bigCraftable.Value
-                || item.modData.ContainsKey(AdvancedLootKey))
-                return null;
-            if (item is Chest chest
-                && chest.fridge.Value
-                && StorageContent.TryGetValue("Mini-Fridge", out var miniFridgeConfig))
-                return miniFridgeConfig;
-            if (StorageObjectsById.TryGetValue(item.ParentSheetIndex, out var storageName)
-                && StorageContent.TryGetValue(storageName, out var storageConfig))
-                return storageConfig;
-            return null;
-        }
+        public static StorageContentData GetConfig(object context) =>
+            context switch
+            {
+                GameLocation when StorageContent.TryGetValue("Mini-Shipping Bin", out var shippingBinConfig)
+                        => shippingBinConfig,
+                JunimoHut when StorageContent.TryGetValue("Junimo Hut", out var junimoHutConfig)
+                        => junimoHutConfig,
+                Chest chest when chest.fridge.Value
+                    && StorageContent.TryGetValue("Mini-Fridge", out var fridgeConfig)
+                        => fridgeConfig,
+                Object obj when obj.heldObject.Value is Chest
+                    && StorageContent.TryGetValue("Auto-Grabber", out var autoGrabberConfig)
+                        => autoGrabberConfig,
+                Object obj when obj.bigCraftable.Value
+                    && !obj.modData.ContainsKey(AdvancedLootKey)
+                    && StorageObjectsById.TryGetValue(obj.ParentSheetIndex, out var storageName)
+                    && StorageContent.TryGetValue(storageName, out var config)
+                        => config,
+                _ => null
+            };
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(Item item)
-        {
-            if (item is not Object obj
-                || !obj.bigCraftable.Value
-                || item.modData.ContainsKey(AdvancedLootKey))
-                return false;
-            if (item is Chest chest && chest.fridge.Value)
-                return StorageContent.ContainsKey("Mini-Fridge");
-            return StorageObjectsById.ContainsKey(item.ParentSheetIndex);
-        }
+        public static bool HasConfig(object context) =>
+            context switch
+            {
+                GameLocation
+                    => StorageContent.ContainsKey("Mini-Shipping Bin"),
+                JunimoHut
+                    => StorageContent.ContainsKey("Junimo Hut"),
+                Chest chest when chest.fridge.Value
+                    => StorageContent.ContainsKey("Mini-Fridge"),
+                Object obj when obj.heldObject.Value is Chest
+                    => StorageContent.ContainsKey("Auto-Grabber"),
+                Object obj when obj.bigCraftable.Value
+                    && !obj.modData.ContainsKey(AdvancedLootKey)
+                    => StorageObjectsById.ContainsKey(obj.ParentSheetIndex),
+                _ => false
+            };
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static TabContentData GetTab(string tabName) =>

@@ -13,6 +13,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 namespace ExpandedStorage.Framework.UI
 {
@@ -50,12 +51,11 @@ namespace ExpandedStorage.Framework.UI
             _items = _menu.actualInventory;
             _capacity = _menu.capacity;
             _cols = _menu.capacity / _menu.rows;
-            
-            var storageConfig = menu.context is Item item ? ExpandedStorage.GetConfig(item) : null;
-            
+
+            var storageConfig = ExpandedStorage.GetConfig(menu.context);
             if (storageConfig == null)
                 return;
-
+            
             _tabConfigs = storageConfig.Tabs
                     .Select(t => ExpandedStorage.GetTab($"{storageConfig.ModUniqueId}/{t}"))
                     .Where(t => t != null)
@@ -86,6 +86,9 @@ namespace ExpandedStorage.Framework.UI
             
             switch (_context)
             {
+                case Object obj when obj.heldObject.Value is Chest chest:
+                    chest.items.OnElementChanged += ItemsOnElementChanged;
+                    break;
                 case Chest chest:
                     chest.items.OnElementChanged += ItemsOnElementChanged;
                     break;
@@ -107,6 +110,9 @@ namespace ExpandedStorage.Framework.UI
             UnregisterEvents();
             switch (_context)
             {
+                case Object obj when obj.heldObject.Value is Chest chest:
+                    chest.items.OnElementChanged -= ItemsOnElementChanged;
+                    break;
                 case Chest chest:
                     chest.items.OnElementChanged -= ItemsOnElementChanged;
                     break;

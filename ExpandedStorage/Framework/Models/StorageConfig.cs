@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Models
 {
@@ -41,7 +40,7 @@ namespace ExpandedStorage.Framework.Models
         internal StorageConfig() : this(null) {}
         internal StorageConfig(
             string storageName,
-            int capacity = Chest.capacity,
+            int capacity = 0,
             bool canCarry = true,
             bool accessCarried = false,
             bool showSearchBar = false,

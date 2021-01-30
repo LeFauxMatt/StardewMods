@@ -279,10 +279,11 @@ namespace ExpandedStorage.Framework.UI
         /// <returns>True when an interaction occurs</returns>
         internal bool ReceiveKeyPress(SButton button)
         {
-            if (button == SButton.Escape && SearchFocused)
+            if (button == SButton.Escape)
             {
                 _searchField.Selected = false;
-                _menu.exitThisMenuNoSound();
+                Game1.playSound("bigDeSelect");
+                Game1.activeClickableMenu = null;
             }
             return SearchFocused;
         }

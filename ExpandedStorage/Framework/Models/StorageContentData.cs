@@ -1,6 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using StardewValley;
+using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Models
 {
@@ -18,7 +20,6 @@ namespace ExpandedStorage.Framework.Models
 
         /// <summary>True for assets loaded into Game1.bigCraftables outside of JsonAssets.</summary>
         internal bool IsVanilla;
-
         internal StorageContentData() : this(null)
         {
             OpenSound = "openChest";
@@ -27,6 +28,11 @@ namespace ExpandedStorage.Framework.Models
         internal StorageContentData(string storageName) : base(storageName) { }
         internal bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
         internal bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
+        internal bool HighlightMethod(Item item) =>
+            IsAllowed(item) && !IsBlocked(item)
+            && (!Enum.TryParse(SpecialChestType, out Chest.SpecialChestTypes specialChestType)
+                || specialChestType != Chest.SpecialChestTypes.MiniShippingBin
+                || Utility.highlightShippableObjects(item));
         internal void CopyFrom(StorageConfig config)
         {
             Capacity = config.Capacity;

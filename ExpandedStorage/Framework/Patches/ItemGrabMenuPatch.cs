@@ -75,17 +75,17 @@ namespace ExpandedStorage.Framework.Patches
 
         static void ConstructorPostfix(ItemGrabMenu __instance)
         {
-            var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
-            var sourceItem = sourceItemReflected.GetValue();
-            if (__instance.context is not Chest chest)
-                return;
-            
-            var config = ExpandedStorage.GetConfig(chest);
+            var config = ExpandedStorage.GetConfig(__instance.context);
             if (config == null)
                 return;
-
-            if (chest.SpecialChestType != Chest.SpecialChestTypes.None)
+            
+            __instance.inventory.highlightMethod = config.HighlightMethod;
+            
+            if (!config.IsVanilla && __instance.context is Chest chest && __instance.chestColorPicker == null)
             {
+                var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
+                var sourceItem = sourceItemReflected.GetValue();
+
                 // Add color picker back to special Expanded Storage Chests
                 var colorPickerChest = new Chest(true, sourceItem.ParentSheetIndex);
                 var chestColorPicker = new DiscreteColorPicker(
@@ -129,7 +129,6 @@ namespace ExpandedStorage.Framework.Patches
                 }
 
                 __instance.discreteColorPickerCC = discreteColorPickerCC;
-
                 __instance.populateClickableComponentList();
             }
 

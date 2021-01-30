@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -117,21 +118,21 @@ namespace ExpandedStorage.Framework.UI
             if (ReferenceEquals(menu, _menu))
                 return;
             _menu = menu;
-            
-            if (menu is ItemGrabMenu itemGrabMenu)
-                UpdateReference(itemGrabMenu.context);
 
-            var chest = _context is Chest context ? context : null;
-            var chestConfig = ExpandedStorage.GetConfig(chest);
-            
-            _offset = _config.ExpandInventoryMenu && chest != null
+            StorageContentData config = null;
+            if (menu is ItemGrabMenu itemGrabMenu)
+            {
+                UpdateReference(itemGrabMenu.context);
+                config = ExpandedStorage.GetConfig(itemGrabMenu.context);
+            }
+
+            _offset = _config.ExpandInventoryMenu && config != null
                 ? 64 * (_rows - 3)
                 : 0;
             
             _padding = _config.ShowSearchBar
-                       && chest != null
-                       && chestConfig != null
-                       && chestConfig.ShowSearchBar
+                       && config != null
+                       && config.ShowSearchBar
                 ? 24
                 : 0;
         }
@@ -140,15 +141,21 @@ namespace ExpandedStorage.Framework.UI
         {
             if (context != null && ReferenceEquals(context, _context))
                 return;
-            
             _context = context;
-            var chest = context is Chest chestContext ? chestContext : null;
+            var config = ExpandedStorage.GetConfig(context);
+            var capacity = (config?.Capacity ?? 0) switch
+            {
+                -1 => int.MaxValue,
+                0 when context is Chest chest => chest.GetActualCapacity(),
+                _ when config != null => config.Capacity,
+                _ => Chest.capacity
+            };
             
-            _rows = _config.ExpandInventoryMenu && chest != null
-                ? (int) MathHelper.Clamp((float) Math.Ceiling(chest.GetActualCapacity() / 12m), 1, 6)
+            _rows = _config.ExpandInventoryMenu
+                ? (int) MathHelper.Clamp((float) Math.Ceiling(capacity / 12m), 1, 6)
                 : 3;
             
-            _capacity = _config.AllowModdedCapacity && chest != null
+            _capacity = _config.AllowModdedCapacity
                 ? _rows * 12
                 : Chest.capacity;
         }
