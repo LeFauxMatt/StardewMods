@@ -36,6 +36,7 @@ namespace ExpandedStorage.Framework.Patches
             
             // Find prioritized storage
             var storages = farmer.Items
+                .Take(Config.VacuumToFirstRow ? 12 : farmer.Items.Count)
                 .Where(i => i is Chest)
                 .ToDictionary(i => i as Chest, ExpandedStorage.GetConfig)
                 .Where(s =>

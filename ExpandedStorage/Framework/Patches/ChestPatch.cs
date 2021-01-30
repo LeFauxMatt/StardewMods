@@ -84,7 +84,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                || config.IsVanilla
+                //| config.IsVanilla
                 || !__instance.playerChest.Value
                 || __instance.playerChoiceColor.Value.Equals(Color.Black))
                 return true;
@@ -115,17 +115,6 @@ namespace ExpandedStorage.Framework.Patches
                 SpriteEffects.None,
                 layerDepth);
             
-            // Draw Brace Layer (Non Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
-                Color.White * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                layerDepth + 2E-05f);
-            
             // Draw Lid Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                 Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
@@ -136,6 +125,17 @@ namespace ExpandedStorage.Framework.Patches
                 4f,
                 SpriteEffects.None,
                 layerDepth + 1E-05f);
+            
+            // Draw Brace Layer (Non Colorized)
+            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
+                Color.White * alpha,
+                0f,
+                Vector2.Zero,
+                4f,
+                SpriteEffects.None,
+                layerDepth + 2E-05f);
 
             return false;
         }
@@ -147,11 +147,16 @@ namespace ExpandedStorage.Framework.Patches
             var parentSheetIndex = __instance.ParentSheetIndex;
             
             if (config == null
-                || config.IsVanilla
+                //|| config.IsVanilla
+                || __instance.modData.ContainsKey("aedenthorn.CustomChestTypes/IsCustomChest")
                 || !__instance.playerChest.Value
                 || !local)
                 return true;
 
+            var currentLidFrameReflected = Reflection.GetField<int>(__instance, "currentLidFrame");
+            var currentLidFrame = currentLidFrameReflected.GetValue();
+            Monitor.Log($"{currentLidFrame}");
+            
             if (playerChoiceColor.Equals(Color.Black))
             {
                 spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
@@ -163,10 +168,20 @@ namespace ExpandedStorage.Framework.Patches
                     4f,
                     SpriteEffects.None,
                     0.89f);
+                
+                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                    new Vector2(x, y - 64),
+                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame, 16, 32),
+                    __instance.Tint * alpha,
+                    0f,
+                    Vector2.Zero,
+                    4f,
+                    SpriteEffects.None,
+                    0.9f);
                 return false;
             }
             
-            // Draw Colorized Chest
+            // Draw Storage Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                 new Vector2(x, y - 64),
                 Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 6, 16, 32),
@@ -177,16 +192,27 @@ namespace ExpandedStorage.Framework.Patches
                 SpriteEffects.None,
                 0.9f);
             
-            // Draw Braces
+            // Draw Lid Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                 new Vector2(x, y - 64),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 12, 16, 32),
-                Color.White * alpha,
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 5, 16, 32),
+                playerChoiceColor * alpha * alpha,
                 0f,
                 Vector2.Zero,
                 4f,
                 SpriteEffects.None,
                 0.91f);
+            
+            // Draw Brace Layer (Non Colorized)
+            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                new Vector2(x, y - 64),
+                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
+                Color.White * alpha,
+                0f,
+                Vector2.Zero,
+                4f,
+                SpriteEffects.None,
+                0.92f);
             
             return false;
         }

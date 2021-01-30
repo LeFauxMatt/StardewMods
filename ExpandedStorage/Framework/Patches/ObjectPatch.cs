@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Harmony;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
@@ -13,8 +14,14 @@ namespace ExpandedStorage.Framework.Patches
     internal class ObjectPatch : HarmonyPatch
     {
         private readonly Type _type = typeof(StardewValley.Object);
-        internal ObjectPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
+        
+        private static IReflectionHelper Reflection;
+
+        internal ObjectPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
+            : base(monitor, config)
+        {
+            Reflection = reflection;
+        }
         
         protected internal override void Apply(HarmonyInstance harmony)
         {
@@ -25,6 +32,9 @@ namespace ExpandedStorage.Framework.Patches
             {
                 harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.getDescription)),
                     postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix)));
+
+                harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.drawWhenHeld)),
+                    new HarmonyMethod(GetType(), nameof(drawWhenHeld_Prefix)));
             }
         }
         
@@ -58,7 +68,7 @@ namespace ExpandedStorage.Framework.Patches
                 SpecialChestType = specialChestType
             };
             chest.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
-            chest.resetLidFrame();
+            chest.fixLidFrame();
 
             // Copy properties from previously held chest
             if (__instance is Chest oldChest)
@@ -84,6 +94,18 @@ namespace ExpandedStorage.Framework.Patches
                 return;
             if (chest.items?.Count > 0)
                 __result += "\n" + $"Contains {chest.items.Count} items.";
+        }
+
+        public static bool drawWhenHeld_Prefix(StardewValley.Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
+        {
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null
+                || __instance is not Chest chest
+                || !chest.playerChest.Value)
+                return true;
+            
+            chest.draw(spriteBatch, (int)objectPosition.X, (int)objectPosition.Y + 64, 1f, true);
+            return false;
         }
     }
 }

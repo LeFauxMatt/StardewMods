@@ -33,6 +33,13 @@ namespace ExpandedStorage
 
         /// <summary>Tracks previously held chest before placing into world.</summary>
         private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
+        
+        /// <summary>Tracks previously held chest lid frame.</summary>
+        private readonly PerScreen<int> _currentLidFrame = new PerScreen<int>();
+
+        /// <summary>Reflected currentLidFrame for previousHeldChest.</summary>
+        private readonly PerScreen<IReflectedField<int>> _currentLidFrameReflected =
+            new PerScreen<IReflectedField<int>>();
 
         private ContentLoader _contentLoader;
 
@@ -98,7 +105,7 @@ namespace ExpandedStorage
             new Patcher(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatches(Monitor, _config),
                 new ItemPatch(Monitor, _config),
-                new ObjectPatch(Monitor, _config),
+                new ObjectPatch(Monitor, _config, helper.Reflection),
                 new ChestPatches(Monitor, _config, helper.Reflection),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
@@ -159,10 +166,12 @@ namespace ExpandedStorage
         {
             var removeNames = StorageContent
                 .Where(c => !c.Value.IsVanilla)
-                .Select(c => c.Key);
+                .Select(c => c.Key)
+                .ToList();
             var removeIds = StorageObjectsById
                 .Where(i => removeNames.Contains(i.Value))
-                .Select(i => i.Key);
+                .Select(i => i.Key)
+                .ToList();
             foreach (var id in removeIds)
             {
                 StorageObjectsById.Remove(id);
@@ -215,6 +224,31 @@ namespace ExpandedStorage
             if (!Context.IsPlayerFree)
                 return;
             _previousHeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
+            if (_previousHeldChest.Value == null)
+                return;
+            
+            if (_previousHeldChest.Value.frameCounter.Value <= -1
+                || _currentLidFrame.Value > _previousHeldChest.Value.getLastLidFrame())
+                return;
+            
+            _previousHeldChest.Value.frameCounter.Value--;
+            if (_previousHeldChest.Value.frameCounter.Value > 0
+                || !_previousHeldChest.Value.GetMutex().IsLockHeld())
+                return;
+            
+            if (_currentLidFrame.Value == _previousHeldChest.Value.getLastLidFrame())
+            {
+                _previousHeldChest.Value.ShowMenu();
+                _previousHeldChest.Value.frameCounter.Value = -1;
+                _currentLidFrame.Value = _previousHeldChest.Value.startingLidFrame.Value;
+                _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
+            }
+            else
+            {
+                _previousHeldChest.Value.frameCounter.Value = 5;
+                _currentLidFrame.Value++;
+                _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
+            }
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -242,9 +276,17 @@ namespace ExpandedStorage
             }
             else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && e.Button.IsActionButton() && _previousHeldChest.Value.Stack == 1)
             {
+                var config = GetConfig(_previousHeldChest.Value);
                 _previousHeldChest.Value.GetMutex().RequestLock(delegate
                 {
-                    _previousHeldChest.Value.ShowMenu();
+                    //_previousHeldChest.Value.ShowMenu();
+                    _previousHeldChest.Value.fixLidFrame();
+                    _previousHeldChest.Value.performOpenChest();
+                    _currentLidFrameReflected.Value = Helper.Reflection.GetField<int>(_previousHeldChest.Value, "currentLidFrame");
+                    _currentLidFrame.Value = _previousHeldChest.Value.startingLidFrame.Value;
+                    Game1.playSound(config.OpenSound);
+                    Game1.player.Halt();
+                    Game1.player.freezePause = 1000;
                 });
                 Helper.Input.Suppress(e.Button);
             }

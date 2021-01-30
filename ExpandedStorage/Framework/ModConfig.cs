@@ -22,6 +22,9 @@ namespace ExpandedStorage.Framework
 
         /// <summary>Allows storages to pull items directly into their inventory.</summary>
         public bool AllowVacuumItems { get; set; } = true;
+        
+        /// <summary>Only vacuum to storages in the first row of player inventory.</summary>
+        public bool VacuumToFirstRow { get; set; } = true;
 
         /// <summary>Adds three extra rows to the Inventory Menu.</summary>
         public bool ExpandInventoryMenu { get; set; } = true;
@@ -111,6 +114,11 @@ namespace ExpandedStorage.Framework
                 "Uncheck to globally disable chests picking up items",
                 () => config.AllowVacuumItems,
                 value => config.AllowVacuumItems = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
+                "Vacuum To First Row",
+                "Uncheck to allow vacuuming to any chest in player inventory",
+                () => config.VacuumToFirstRow,
+                value => config.VacuumToFirstRow = value);
         }
     }
 }

@@ -211,9 +211,10 @@ namespace ExpandedStorage.Framework.Patches
             if (Config.ShowOverlayArrows || Config.ShowSearchBar || Config.ShowTabs)
             {
                 patternPatches
-                    .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeButton)),
+                    .Find(IL.Ldfld(typeof(ItemGrabMenu), nameof(ItemGrabMenu.junimoNoteIcon)),
                         OC.Ldarg_1,
-                        IL.Callvirt(typeof(ClickableTextureComponent), nameof(ClickableTextureComponent.draw), typeof(SpriteBatch)))
+                        IL.Callvirt(typeof(ClickableTextureComponent), nameof(ClickableTextureComponent.draw), typeof(SpriteBatch)),
+                        OC.Ldarg_0)
                     .Log("Adding Overlay Draw method to ItemGrabMenu.")
                     .Patch(OverlayPatch(typeof(ExpandedMenu), nameof(ExpandedMenu.Draw)));
             }

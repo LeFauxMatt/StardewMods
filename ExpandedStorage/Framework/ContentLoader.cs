@@ -110,7 +110,7 @@ namespace ExpandedStorage.Framework
 
         internal void LoadVanillaStorages(IDictionary<string, StorageContentData> storageConfigs, IDictionary<int, string> storageObjects)
         {
-            var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge"};
+            var vanillaNames = new[] {"Chest", "Stone Chest", "Mini-Fridge", "Junimo Chest", "Mini-Shipping Bin"};
             foreach (var obj in Game1.bigCraftablesInformation)
             {
                 var objData = obj.Value.Split('/').ToList();
