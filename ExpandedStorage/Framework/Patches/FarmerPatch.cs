@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {

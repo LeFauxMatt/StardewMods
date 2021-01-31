@@ -5,7 +5,6 @@ using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;

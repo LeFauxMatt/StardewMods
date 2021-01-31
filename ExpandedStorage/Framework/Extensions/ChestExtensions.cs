@@ -9,6 +9,8 @@ namespace ExpandedStorage.Framework.Extensions
 {
     public static class ChestExtensions
     {
+        private static readonly HashSet<int> HideColorPickerIds = new() { 216, 248, 256 };
+        private static readonly HashSet<int> ShowBottomBraceIds = new() { 130, 232 };
         private static IReflectionHelper _reflection;
 
         internal static void Init(IReflectionHelper reflection)
@@ -18,11 +20,10 @@ namespace ExpandedStorage.Framework.Extensions
         
         public static void Draw(this Chest chest, SpriteBatch spriteBatch, Vector2 pos, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
-            var hideColorPicker = new List<int>{216, 248, 256};
             var currentLidFrameReflected = _reflection.GetField<int>(chest, "currentLidFrame");
             var currentLidFrame = currentLidFrameReflected.GetValue();
             
-            if (chest.playerChoiceColor.Value.Equals(Color.Black) || hideColorPicker.Contains(chest.ParentSheetIndex))
+            if (chest.playerChoiceColor.Value.Equals(Color.Black) || HideColorPickerIds.Contains(chest.ParentSheetIndex))
             {
                 spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                     pos + ShakeOffset(chest, -1, 2),
@@ -94,7 +95,7 @@ namespace ExpandedStorage.Framework.Extensions
                 SpriteEffects.None,
                 layerDepth + 2E-05f);
 
-            if (chest.ParentSheetIndex == 130 || chest.ParentSheetIndex == 232)
+            if (ShowBottomBraceIds.Contains(chest.ParentSheetIndex))
             {
                 // Draw Bottom Brace Layer (Non-Colorized)
                 var rect = Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + aboveOffset, 16, 32);
