@@ -110,7 +110,9 @@ namespace ExpandedStorage.Framework
             IsOwnedLoaded = true;
         }
 
-        internal void LoadVanillaStorages(IDictionary<string, StorageContentData> storageConfigs, IDictionary<int, string> storageObjects)
+        internal void LoadVanillaStorages(
+            IDictionary<string, StorageContentData> storageConfigs,
+            IDictionary<int, string> storageObjects)
         {
             foreach (var obj in Game1.bigCraftablesInformation)
             {
@@ -140,27 +142,6 @@ namespace ExpandedStorage.Framework
             IsVanillaLoaded = true;
         }
         
-        private static Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs, List<StorageConfig> defaultConfigData) =>
-            () =>
-            {
-                foreach (var content in storageConfigs)
-                {
-                    var config = defaultConfigData.First(c => c.StorageName.Equals(content.Key, StringComparison.OrdinalIgnoreCase));
-                    if (config != null)
-                        content.Value.CopyFrom(config);
-                }
-                SaveToFile(contentPack, storageConfigs).Invoke();
-            };
-        private static Action SaveToFile(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs) =>
-            () =>
-            {
-                var configData = storageConfigs.Where(s =>
-                    s.Value.ModUniqueId != null
-                    && s.Value.ModUniqueId.Equals(contentPack.Manifest.UniqueID, StringComparison.OrdinalIgnoreCase))
-                    .Select(s => StorageConfig.Clone(s.Value))
-                    .ToList();
-                contentPack.WriteJsonFile("config.json", configData);
-            };
         private static void RegisterConfig(
             IGenericModConfigMenuAPI api,
             IManifest manifest,
@@ -183,5 +164,28 @@ namespace ExpandedStorage.Framework
                 () => content.IsPlaceable,
                 value => content.IsPlaceable = value);
         }
+        
+        private static Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs, List<StorageConfig> defaultConfigData) =>
+            () =>
+            {
+                foreach (var content in storageConfigs)
+                {
+                    var config = defaultConfigData.First(c => c.StorageName.Equals(content.Key, StringComparison.OrdinalIgnoreCase));
+                    if (config != null)
+                        content.Value.CopyFrom(config);
+                }
+                SaveToFile(contentPack, storageConfigs).Invoke();
+            };
+        
+        private static Action SaveToFile(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs) =>
+            () =>
+            {
+                var configData = storageConfigs.Where(s =>
+                        s.Value.ModUniqueId != null
+                        && s.Value.ModUniqueId.Equals(contentPack.Manifest.UniqueID, StringComparison.OrdinalIgnoreCase))
+                    .Select(s => StorageConfig.Clone(s.Value))
+                    .ToList();
+                contentPack.WriteJsonFile("config.json", configData);
+            };
     }
 }

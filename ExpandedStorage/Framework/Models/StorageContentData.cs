@@ -14,16 +14,21 @@ namespace ExpandedStorage.Framework.Models
         
         /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
         public string SpecialChestType;
+        
+        /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
+        public bool IsFridge;
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
         /// <summary>True for assets loaded into Game1.bigCraftables outside of JsonAssets.</summary>
         internal bool IsVanilla;
+        
         internal StorageContentData() : this(null)
         {
             OpenSound = "openChest";
             SpecialChestType = "None";
+            IsFridge = false;
         }
         internal StorageContentData(string storageName) : base(storageName) { }
         internal bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);

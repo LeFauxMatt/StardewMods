@@ -24,7 +24,7 @@ namespace ExpandedStorage
         };
         
         /// <summary>Tracks previously held chest before placing into world.</summary>
-        internal static readonly PerScreen<Chest> HeldChest = new PerScreen<Chest>();
+        internal static readonly PerScreen<Chest> HeldChest = new();
         
         /// <summary>Dictionary of Expanded Storage object data</summary>
         private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
@@ -39,11 +39,10 @@ namespace ExpandedStorage
         private ModConfig _config;
 
         /// <summary>Tracks previously held chest lid frame.</summary>
-        private readonly PerScreen<int> _currentLidFrame = new PerScreen<int>();
+        private readonly PerScreen<int> _currentLidFrame = new();
 
         /// <summary>Reflected currentLidFrame for previousHeldChest.</summary>
-        private readonly PerScreen<IReflectedField<int>> _currentLidFrameReflected =
-            new PerScreen<IReflectedField<int>>();
+        private readonly PerScreen<IReflectedField<int>> _currentLidFrameReflected = new();
 
         private ContentLoader _contentLoader;
 
@@ -97,7 +96,7 @@ namespace ExpandedStorage
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
-                Monitor.Log("Expanded Storage should not be run alongside Carry Chest", LogLevel.Warn);
+                Monitor.Log("Expanded Storage should not be run alongside Carry Chest!", LogLevel.Warn);
                 _config.AllowCarryingChests = false;
             }
             
