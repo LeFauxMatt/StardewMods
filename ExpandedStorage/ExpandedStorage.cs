@@ -18,7 +18,10 @@ namespace ExpandedStorage
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod, IAssetEditor
     {
-        private const string AdvancedLootKey = "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest";
+        private static readonly HashSet<string> ExcludeModDataKeys = new()
+        {
+            "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
+        };
         
         /// <summary>Tracks previously held chest before placing into world.</summary>
         internal static readonly PerScreen<Chest> HeldChest = new PerScreen<Chest>();
@@ -59,7 +62,7 @@ namespace ExpandedStorage
                     && StorageContent.TryGetValue("Auto-Grabber", out var autoGrabberConfig)
                         => autoGrabberConfig,
                 Object obj when obj.bigCraftable.Value
-                    && !obj.modData.ContainsKey(AdvancedLootKey)
+                    && !obj.modData.Keys.Any(ExcludeModDataKeys.Contains)
                     && StorageObjectsById.TryGetValue(obj.ParentSheetIndex, out var storageName)
                     && StorageContent.TryGetValue(storageName, out var config)
                         => config,
@@ -79,7 +82,7 @@ namespace ExpandedStorage
                 Object obj when obj.heldObject.Value is Chest
                     => StorageContent.ContainsKey("Auto-Grabber"),
                 Object obj when obj.bigCraftable.Value
-                    && !obj.modData.ContainsKey(AdvancedLootKey)
+                    && !obj.modData.Keys.Any(ExcludeModDataKeys.Contains)
                     => StorageObjectsById.ContainsKey(obj.ParentSheetIndex),
                 _ => false
             };

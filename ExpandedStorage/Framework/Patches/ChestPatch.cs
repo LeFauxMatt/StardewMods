@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
@@ -13,7 +15,10 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ChestPatches : HarmonyPatch
     {
-        private const string CustomChestTypesKey = "aedenthorn.CustomChestTypes/IsCustomChest";
+        private static readonly HashSet<string> ExcludeModDataKeys = new()
+        {
+            "aedenthorn.CustomChestTypes/IsCustomChest"
+        };
 
         private readonly Type _type = typeof(Chest);
 
@@ -85,8 +90,8 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                || __instance.modData.ContainsKey(CustomChestTypesKey)
-                || !__instance.playerChest.Value)
+                || !__instance.playerChest.Value
+                || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
             var draw_x = (float) x;
@@ -108,9 +113,9 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                || __instance.modData.ContainsKey(CustomChestTypesKey)
+                || !local
                 || !__instance.playerChest.Value
-                || !local)
+                || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
             __instance.Draw(spriteBatch, new Vector2(x, y - 64), alpha);

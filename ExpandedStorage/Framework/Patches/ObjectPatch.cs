@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
@@ -14,8 +16,11 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ObjectPatch : HarmonyPatch
     {
-        private const string CustomChestTypesKey = "aedenthorn.CustomChestTypes/IsCustomChest";
-        
+        private static readonly HashSet<string> ExcludeModDataKeys = new()
+        {
+            "aedenthorn.CustomChestTypes/IsCustomChest"
+        };
+
         private readonly Type _type = typeof(StardewValley.Object);
         
         private static IReflectionHelper Reflection;
@@ -89,9 +94,9 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                || __instance.modData.ContainsKey(CustomChestTypesKey)
                 || __instance is not Chest chest
-                || !chest.playerChest.Value)
+                || !chest.playerChest.Value
+                || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
             
             chest.Draw(spriteBatch, objectPosition);
