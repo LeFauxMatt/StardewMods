@@ -17,14 +17,8 @@ namespace ExpandedStorage.Framework.Patches
 
         private readonly Type _type = typeof(Chest);
 
-        private static IReflectionHelper Reflection;
-
-        internal ChestPatches(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
-            : base(monitor, config)
-        {
-            Reflection = reflection;
-        }
-
+        internal ChestPatches(IMonitor monitor, ModConfig config)
+            : base(monitor, config) { }
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(AccessTools.Method(_type, nameof(Chest.checkForAction)),

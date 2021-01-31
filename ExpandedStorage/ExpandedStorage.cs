@@ -120,7 +120,7 @@ namespace ExpandedStorage
                 new FarmerPatch(Monitor, _config),
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config, helper.Reflection),
-                new ChestPatches(Monitor, _config, helper.Reflection),
+                new ChestPatches(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
@@ -278,15 +278,11 @@ namespace ExpandedStorage
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
             
-            if (HeldChest.Value == null && e.Button.IsUseToolButton())
+            if (HeldChest.Value == null
+                && _config.AllowCarryingChests
+                && e.Button.IsUseToolButton()
+                && location.CarryChest(pos))
             {
-                if (!location.objects.TryGetValue(pos, out var obj)
-                    || !HasConfig(obj)
-                    || !StorageContent[StorageObjectsById[obj.ParentSheetIndex]].CanCarry
-                    || !Game1.player.addItemToInventoryBool(obj, true))
-                    return;
-                obj.TileLocation = Vector2.Zero;
-                location.objects.Remove(pos);
                 Helper.Input.Suppress(e.Button);
             }
             else if (HeldChest.Value != null
