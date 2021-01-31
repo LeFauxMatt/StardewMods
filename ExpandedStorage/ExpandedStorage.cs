@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ExpandedStorage.Framework;
+using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
@@ -20,6 +21,9 @@ namespace ExpandedStorage
     {
         private const string AdvancedLootKey = "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest";
         
+        /// <summary>Tracks previously held chest before placing into world.</summary>
+        internal static readonly PerScreen<Chest> HeldChest = new PerScreen<Chest>();
+        
         /// <summary>Dictionary of Expanded Storage object data</summary>
         private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
         
@@ -32,9 +36,6 @@ namespace ExpandedStorage
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
-        /// <summary>Tracks previously held chest before placing into world.</summary>
-        private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
-        
         /// <summary>Tracks previously held chest lid frame.</summary>
         private readonly PerScreen<int> _currentLidFrame = new PerScreen<int>();
 
@@ -101,6 +102,7 @@ namespace ExpandedStorage
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
 
             ExpandedMenu.Init(helper.Events, helper.Input, _config);
+            ChestExtensions.Init(helper.Reflection);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -115,7 +117,7 @@ namespace ExpandedStorage
             
             // Harmony Patches
             new Patcher(ModManifest.UniqueID).ApplyAll(
-                new FarmerPatches(Monitor, _config),
+                new FarmerPatch(Monitor, _config),
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config, helper.Reflection),
                 new ChestPatches(Monitor, _config, helper.Reflection),
@@ -198,7 +200,7 @@ namespace ExpandedStorage
             if (!Context.IsPlayerFree)
                 return;
 
-            var oldChest = _previousHeldChest.Value;
+            var oldChest = HeldChest.Value;
             var chest = e.Added
                 .Select(p => p.Value)
                 .OfType<Chest>()
@@ -235,29 +237,29 @@ namespace ExpandedStorage
         {
             if (!Context.IsPlayerFree)
                 return;
-            _previousHeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
-            if (_previousHeldChest.Value == null)
+            HeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
+            if (HeldChest.Value == null)
                 return;
             
-            if (_previousHeldChest.Value.frameCounter.Value <= -1
-                || _currentLidFrame.Value > _previousHeldChest.Value.getLastLidFrame())
+            if (HeldChest.Value.frameCounter.Value <= -1
+                || _currentLidFrame.Value > HeldChest.Value.getLastLidFrame())
                 return;
             
-            _previousHeldChest.Value.frameCounter.Value--;
-            if (_previousHeldChest.Value.frameCounter.Value > 0
-                || !_previousHeldChest.Value.GetMutex().IsLockHeld())
+            HeldChest.Value.frameCounter.Value--;
+            if (HeldChest.Value.frameCounter.Value > 0
+                || !HeldChest.Value.GetMutex().IsLockHeld())
                 return;
             
-            if (_currentLidFrame.Value == _previousHeldChest.Value.getLastLidFrame())
+            if (_currentLidFrame.Value == HeldChest.Value.getLastLidFrame())
             {
-                _previousHeldChest.Value.ShowMenu();
-                _previousHeldChest.Value.frameCounter.Value = -1;
-                _currentLidFrame.Value = _previousHeldChest.Value.startingLidFrame.Value;
+                HeldChest.Value.frameCounter.Value = -1;
+                _currentLidFrame.Value = HeldChest.Value.startingLidFrame.Value;
                 _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
+                HeldChest.Value.ShowMenu();
             }
             else
             {
-                _previousHeldChest.Value.frameCounter.Value = 5;
+                HeldChest.Value.frameCounter.Value = 5;
                 _currentLidFrame.Value++;
                 _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
             }
@@ -271,12 +273,13 @@ namespace ExpandedStorage
             if (!Context.IsPlayerFree)
                 return;
             
-            if (e.Button.IsUseToolButton() && _previousHeldChest.Value == null)
+            var location = Game1.currentLocation;
+            var pos = Game1.player.GetToolLocation() / 64f;
+            pos.X = (int) pos.X;
+            pos.Y = (int) pos.Y;
+            
+            if (HeldChest.Value == null && e.Button.IsUseToolButton())
             {
-                var location = Game1.currentLocation;
-                var pos = Game1.player.GetToolLocation() / 64f;
-                pos.X = (int) pos.X;
-                pos.Y = (int) pos.Y;
                 if (!location.objects.TryGetValue(pos, out var obj)
                     || !HasConfig(obj)
                     || !StorageContent[StorageObjectsById[obj.ParentSheetIndex]].CanCarry
@@ -286,16 +289,20 @@ namespace ExpandedStorage
                 location.objects.Remove(pos);
                 Helper.Input.Suppress(e.Button);
             }
-            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && e.Button.IsActionButton() && _previousHeldChest.Value.Stack == 1)
+            else if (HeldChest.Value != null
+                     && _config.AllowAccessCarriedChest
+                     && e.Button.IsActionButton()
+                     && HeldChest.Value.Stack <= 1)
             {
-                var config = GetConfig(_previousHeldChest.Value);
-                _previousHeldChest.Value.GetMutex().RequestLock(delegate
+                if (location.objects.TryGetValue(pos, out var obj) && HasConfig(obj))
+                    return;
+                var config = GetConfig(HeldChest.Value);
+                HeldChest.Value.GetMutex().RequestLock(delegate
                 {
-                    //_previousHeldChest.Value.ShowMenu();
-                    _previousHeldChest.Value.fixLidFrame();
-                    _previousHeldChest.Value.performOpenChest();
-                    _currentLidFrameReflected.Value = Helper.Reflection.GetField<int>(_previousHeldChest.Value, "currentLidFrame");
-                    _currentLidFrame.Value = _previousHeldChest.Value.startingLidFrame.Value;
+                    HeldChest.Value.fixLidFrame();
+                    HeldChest.Value.performOpenChest();
+                    _currentLidFrameReflected.Value = Helper.Reflection.GetField<int>(HeldChest.Value, "currentLidFrame");
+                    _currentLidFrame.Value = HeldChest.Value.startingLidFrame.Value;
                     Game1.playSound(config.OpenSound);
                     Game1.player.Halt();
                     Game1.player.freezePause = 1000;

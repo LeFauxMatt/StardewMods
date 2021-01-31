@@ -5,7 +5,7 @@ namespace ExpandedStorage.Framework.Models
 {
     [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    internal class StorageConfig
+    public class StorageConfig
     {
         /// <summary>Storage Name must match the name from Json Assets.</summary>
         public string StorageName;

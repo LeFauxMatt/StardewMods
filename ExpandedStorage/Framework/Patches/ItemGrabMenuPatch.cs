@@ -78,8 +78,21 @@ namespace ExpandedStorage.Framework.Patches
             var config = ExpandedStorage.GetConfig(__instance.context);
             if (config == null)
                 return;
-            
-            __instance.inventory.highlightMethod = config.HighlightMethod;
+
+            if (ExpandedStorage.HeldChest.Value != null
+                && !ReferenceEquals(ExpandedStorage.HeldChest.Value, __instance.context))
+            {
+                __instance.inventory = new InventoryMenu(
+                    __instance.xPositionOnScreen + IClickableMenu.spaceToClearSideBorder + IClickableMenu.borderWidth / 2,
+                    __instance.yPositionOnScreen + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth + 192 - 16,
+                    false,
+                    ExpandedStorage.HeldChest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID),
+                    config.HighlightMethod);
+            }
+            else
+            {
+                __instance.inventory.highlightMethod = config.HighlightMethod;
+            }
             
             if (!config.IsVanilla && __instance.context is Chest chest && __instance.chestColorPicker == null)
             {

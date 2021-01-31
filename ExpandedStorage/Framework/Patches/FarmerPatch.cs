@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -8,11 +9,11 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    internal class FarmerPatches : HarmonyPatch
+    internal class FarmerPatch : HarmonyPatch
     {
         private readonly Type _type = typeof(Farmer);
         
-        internal FarmerPatches(IMonitor monitor, ModConfig config)
+        internal FarmerPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
 
         protected internal override void Apply(HarmonyInstance harmony)
@@ -27,22 +28,8 @@ namespace ExpandedStorage.Framework.Patches
             if(config == null || !config.AccessCarried)
                 return true;
 
-            if (item is not Chest chest)
-            {
-                chest = new Chest(true, Vector2.Zero, item.ParentSheetIndex)
-                {
-                    name = item.Name,
-                    Stack = item.Stack,
-                    SpecialChestType = Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType)
-                        ? specialChestType
-                        : Chest.SpecialChestTypes.None
-                };
-            }
-            chest.resetLidFrame();
-            
-            foreach (var modData in item.modData)
-                chest.modData.CopyFrom(modData);
-            
+            var chest = item.ToChest(config);
+
             // Find first stackable slot
             for (var j = 0; j < __instance.MaxItems; j++)
             {

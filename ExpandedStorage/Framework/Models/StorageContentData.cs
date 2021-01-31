@@ -7,7 +7,7 @@ using StardewValley.Objects;
 namespace ExpandedStorage.Framework.Models
 {
     [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
-    internal class StorageContentData : StorageConfig
+    public class StorageContentData : StorageConfig
     {
         /// <summary>The game sound that will play when the storage is opened.</summary>
         public string OpenSound;

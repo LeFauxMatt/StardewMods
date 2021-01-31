@@ -281,9 +281,11 @@ namespace ExpandedStorage.Framework.UI
         {
             if (button == SButton.Escape)
             {
-                _searchField.Selected = false;
+                if (_searchField != null)
+                    _searchField.Selected = false;
                 Game1.playSound("bigDeSelect");
                 Game1.activeClickableMenu = null;
+                return true;
             }
             return SearchFocused;
         }

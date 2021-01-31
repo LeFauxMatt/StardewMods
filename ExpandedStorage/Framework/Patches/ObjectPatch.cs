@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,6 +14,8 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ObjectPatch : HarmonyPatch
     {
+        private const string CustomChestTypesKey = "aedenthorn.CustomChestTypes/IsCustomChest";
+        
         private readonly Type _type = typeof(StardewValley.Object);
         
         private static IReflectionHelper Reflection;
@@ -56,31 +59,17 @@ namespace ExpandedStorage.Framework.Patches
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
             if (location.objects.ContainsKey(pos) || location is MineShaft || location is VolcanoDungeon)
-                return true;
-            
-            // Place Expanded Storage Chest
-            if (!Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType))
-                specialChestType = Chest.SpecialChestTypes.None;
-            var chest = new Chest(true, pos, __instance.ParentSheetIndex)
             {
-                name = __instance.Name,
-                shakeTimer = 50,
-                SpecialChestType = specialChestType
-            };
-            chest.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
-            chest.fixLidFrame();
-
-            // Copy properties from previously held chest
-            if (__instance is Chest oldChest)
-            {
-                chest.playerChoiceColor.Value = oldChest.playerChoiceColor.Value;
-                if (oldChest.items.Any())
-                    chest.items.CopyFrom(oldChest.items);
+                Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.13053"));
+                __result = false;
+                return false;
             }
-            
-            foreach (var modData in __instance.modData)
-                chest.modData.CopyFrom(modData);
-            
+
+            // Place Expanded Storage Chest
+            var chest = __instance.ToChest(config);
+            chest.shakeTimer = 50;
+            chest.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
+
             location.objects.Add(pos, chest);
             location.playSound("hammer");
             __result = true;
@@ -100,11 +89,12 @@ namespace ExpandedStorage.Framework.Patches
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
+                || __instance.modData.ContainsKey(CustomChestTypesKey)
                 || __instance is not Chest chest
                 || !chest.playerChest.Value)
                 return true;
             
-            chest.draw(spriteBatch, (int)objectPosition.X, (int)objectPosition.Y + 64, 1f, true);
+            chest.Draw(spriteBatch, objectPosition);
             return false;
         }
     }
