@@ -18,11 +18,13 @@ namespace ExpandedStorage.Framework.Extensions
             _reflection = reflection;
         }
         
-        public static void Draw(this Chest chest, SpriteBatch spriteBatch, Vector2 pos, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
+        public static void Draw(this Chest chest, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
             var currentLidFrameReflected = _reflection.GetField<int>(chest, "currentLidFrame");
             var currentLidFrame = currentLidFrameReflected.GetValue();
-            
+            if (currentLidFrame == 0)
+                currentLidFrame = chest.startingLidFrame.Value;
+
             if (chest.playerChoiceColor.Value.Equals(Color.Black) || HideColorPickerIds.Contains(chest.ParentSheetIndex))
             {
                 spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
@@ -30,7 +32,7 @@ namespace ExpandedStorage.Framework.Extensions
                     Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex, 16, 32),
                     chest.Tint * alpha,
                     0f,
-                    Vector2.Zero,
+                    origin,
                     scaleSize,
                     SpriteEffects.None,
                     layerDepth);
@@ -40,7 +42,7 @@ namespace ExpandedStorage.Framework.Extensions
                     Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame, 16, 32),
                     chest.Tint * alpha,
                     0f,
-                    Vector2.Zero,
+                    origin,
                     scaleSize,
                     SpriteEffects.None,
                     layerDepth + 1E-05f);
@@ -68,7 +70,7 @@ namespace ExpandedStorage.Framework.Extensions
                 Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + baseOffset, 16, 32),
                 chest.playerChoiceColor.Value * alpha,
                 0f,
-                Vector2.Zero,
+                origin,
                 scaleSize,
                 SpriteEffects.None,
                 layerDepth);
@@ -79,7 +81,7 @@ namespace ExpandedStorage.Framework.Extensions
                 Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + baseOffset, 16, 32),
                 chest.playerChoiceColor.Value * alpha * alpha,
                 0f,
-                Vector2.Zero,
+                origin,
                 scaleSize,
                 SpriteEffects.None,
                 layerDepth + 1E-05f);
@@ -90,28 +92,28 @@ namespace ExpandedStorage.Framework.Extensions
                 Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + aboveOffset, 16, 32),
                 Color.White * alpha,
                 0f,
-                Vector2.Zero,
+                origin,
                 scaleSize,
                 SpriteEffects.None,
                 layerDepth + 2E-05f);
 
-            if (ShowBottomBraceIds.Contains(chest.ParentSheetIndex))
-            {
-                // Draw Bottom Brace Layer (Non-Colorized)
-                var rect = Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + aboveOffset, 16, 32);
-                rect.Y += 20;
-                rect.Height -= 20;
-                pos.Y += 20 * scaleSize;
-                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                    pos,
-                    rect,
-                    Color.White * alpha,
-                    0f,
-                    Vector2.Zero,
-                    scaleSize,
-                    SpriteEffects.None,
-                    layerDepth + 3E-05f);
-            }
+            if (!ShowBottomBraceIds.Contains(chest.ParentSheetIndex))
+                return;
+            
+            // Draw Bottom Brace Layer (Non-Colorized)
+            var rect = Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + aboveOffset, 16, 32);
+            rect.Y += 20;
+            rect.Height -= 20;
+            pos.Y += 20 * scaleSize;
+            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
+                pos,
+                rect,
+                Color.White * alpha,
+                0f,
+                origin,
+                scaleSize,
+                SpriteEffects.None,
+                layerDepth + 3E-05f);
         }
         
         private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue) =>

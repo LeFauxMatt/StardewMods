@@ -18,6 +18,7 @@ namespace ExpandedStorage.Framework.Models
         
         internal bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
         internal bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
+        internal bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
         internal void CopyFrom(TabConfig config)
         {
             AllowList = config.AllowList;

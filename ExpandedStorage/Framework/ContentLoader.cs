@@ -77,9 +77,10 @@ namespace ExpandedStorage.Framework
                         contentPack.WriteJsonFile("config.json", configData);
                     }
                     content.CopyFrom(config);
-                    
                     content.ModUniqueId = contentPack.Manifest.UniqueID;
                     storageConfigs.Add(content.StorageName, content);
+                    
+                    _monitor.Log(content.SummaryReport, LogLevel.Debug);
                     
                     if (api != null)
                         RegisterConfig(api, contentPack.Manifest, content);
@@ -163,6 +164,9 @@ namespace ExpandedStorage.Framework
             api.RegisterSimpleOption(manifest, "Is Placeable", $"Allow {content.StorageName} to be placed?",
                 () => content.IsPlaceable,
                 value => content.IsPlaceable = value);
+            api.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {content.StorageName} to be collect debris?",
+                () => content.VacuumItems,
+                value => content.VacuumItems = value);
         }
         
         private static Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageContentData> storageConfigs, List<StorageConfig> defaultConfigData) =>

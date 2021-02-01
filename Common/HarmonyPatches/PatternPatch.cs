@@ -17,8 +17,8 @@ namespace Common.HarmonyPatches
         public int Skipped { get; private set; }
         public bool Loop => _patchType == PatchType.Replace && _loop == -1 || --_loop > 0;
 
-        private readonly List<CodeInstruction> _patterns = new List<CodeInstruction>();
-        private readonly Queue<int> _patternIndex = new Queue<int>();
+        private readonly List<CodeInstruction> _patterns = new();
+        private readonly Queue<int> _patternIndex = new();
         private readonly IList<Action<LinkedList<CodeInstruction>>> _patches = new List<Action<LinkedList<CodeInstruction>>>();
         private readonly PatchType _patchType;
         private int _startIndex;

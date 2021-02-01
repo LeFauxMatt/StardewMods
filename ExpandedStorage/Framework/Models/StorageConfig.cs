@@ -45,6 +45,7 @@ namespace ExpandedStorage.Framework.Models
             bool accessCarried = false,
             bool showSearchBar = false,
             bool isPlaceable = true,
+            bool vacuumItems = false,
             IList<string> allowList = null,
             IList<string> blockList = null,
             IList<string> tabs = null)
@@ -55,11 +56,12 @@ namespace ExpandedStorage.Framework.Models
             AccessCarried = accessCarried;
             ShowSearchBar = showSearchBar;
             IsPlaceable = isPlaceable;
+            VacuumItems = vacuumItems;
             AllowList = allowList ?? new List<string>();
             BlockList = blockList ?? new List<string>();
             Tabs = tabs ?? new List<string>();
         }
         internal static StorageConfig Clone(StorageConfig config) =>
-            new StorageConfig(config.StorageName, config.Capacity, config.CanCarry, config.AccessCarried, config.ShowSearchBar, config.IsPlaceable, config.AllowList, config.BlockList, config.Tabs);
+            new(config.StorageName, config.Capacity, config.CanCarry, config.AccessCarried, config.ShowSearchBar, config.IsPlaceable, config.VacuumItems, config.AllowList, config.BlockList, config.Tabs);
     }
 }

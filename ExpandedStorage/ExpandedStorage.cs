@@ -52,6 +52,8 @@ namespace ExpandedStorage
             {
                 GameLocation when StorageContent.TryGetValue("Mini-Shipping Bin", out var shippingBinConfig)
                         => shippingBinConfig,
+                ShippingBin when StorageContent.TryGetValue("Mini-Shipping Bin", out var shippingBinConfig)
+                        => shippingBinConfig,
                 JunimoHut when StorageContent.TryGetValue("Junimo Hut", out var junimoHutConfig)
                         => junimoHutConfig,
                 Chest chest when chest.fridge.Value
@@ -74,6 +76,8 @@ namespace ExpandedStorage
             {
                 GameLocation
                     => StorageContent.ContainsKey("Mini-Shipping Bin"),
+                ShippingBin
+                    => StorageContent.ContainsKey("Mini-Shipping Bin"),
                 JunimoHut
                     => StorageContent.ContainsKey("Junimo Hut"),
                 Chest chest when chest.fridge.Value
@@ -93,7 +97,8 @@ namespace ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
-
+            Monitor.Log(_config.SummaryReport, LogLevel.Debug);
+            
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
                 Monitor.Log("Expanded Storage should not be run alongside Carry Chest!", LogLevel.Warn);
@@ -101,9 +106,11 @@ namespace ExpandedStorage
             }
             
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
-
-            ExpandedMenu.Init(helper.Events, helper.Input, _config);
+            
             ChestExtensions.Init(helper.Reflection);
+            FarmerExtensions.Init(Monitor);
+            MenuViewModel.Init(helper.Events, helper.Input, _config);
+            MenuModel.Init(_config);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -120,7 +127,7 @@ namespace ExpandedStorage
             new Patcher(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatch(Monitor, _config),
                 new ItemPatch(Monitor, _config),
-                new ObjectPatch(Monitor, _config, helper.Reflection),
+                new ObjectPatch(Monitor, _config),
                 new ChestPatches(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
@@ -165,13 +172,13 @@ namespace ExpandedStorage
                 }
             };
 
-            if (modConfigApi != null)
-            {
-                modConfigApi.RegisterModConfig(ModManifest,
-                    () => _config = new ModConfig(),
-                    () => Helper.WriteConfig(_config));
-                ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
-            }
+            if (modConfigApi == null)
+                return;
+            
+            modConfigApi.RegisterModConfig(ModManifest,
+                () => _config = new ModConfig(),
+                () => Helper.WriteConfig(_config));
+            ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
         }
         
         /// <summary>Clear out Object Ids.</summary>
@@ -196,7 +203,7 @@ namespace ExpandedStorage
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        private static void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
         {
             if (!Context.IsPlayerFree)
                 return;
@@ -238,29 +245,38 @@ namespace ExpandedStorage
         {
             if (!Context.IsPlayerFree)
                 return;
-            HeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
-            if (HeldChest.Value == null)
-                return;
-            
-            if (HeldChest.Value.frameCounter.Value <= -1
-                || _currentLidFrame.Value > HeldChest.Value.getLastLidFrame())
-                return;
-            
-            HeldChest.Value.frameCounter.Value--;
-            if (HeldChest.Value.frameCounter.Value > 0
-                || !HeldChest.Value.GetMutex().IsLockHeld())
-                return;
-            
-            if (_currentLidFrame.Value == HeldChest.Value.getLastLidFrame())
+
+            if (Game1.player.CurrentItem is not Chest chest)
             {
-                HeldChest.Value.frameCounter.Value = -1;
-                _currentLidFrame.Value = HeldChest.Value.startingLidFrame.Value;
+                HeldChest.Value = null;
+                return;
+            }
+
+            if (!ReferenceEquals(HeldChest.Value, chest))
+            {
+                HeldChest.Value = chest;
+                chest.fixLidFrame();
+            }
+            
+            if (chest.frameCounter.Value <= -1
+                || _currentLidFrame.Value > chest.getLastLidFrame())
+                return;
+            
+            chest.frameCounter.Value--;
+            if (chest.frameCounter.Value > 0
+                || !chest.GetMutex().IsLockHeld())
+                return;
+            
+            if (_currentLidFrame.Value == chest.getLastLidFrame())
+            {
+                chest.frameCounter.Value = -1;
+                _currentLidFrame.Value = chest.startingLidFrame.Value;
                 _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
-                HeldChest.Value.ShowMenu();
+                chest.ShowMenu();
             }
             else
             {
-                HeldChest.Value.frameCounter.Value = 5;
+                chest.frameCounter.Value = 5;
                 _currentLidFrame.Value++;
                 _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
             }

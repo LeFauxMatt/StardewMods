@@ -6,6 +6,7 @@ using StardewModdingAPI.Utilities;
 namespace ExpandedStorage.Framework
 {
     [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public class ModConfig
     {
         /// <summary>Allow carried chests to be accessed while in inventory.</summary>
@@ -120,5 +121,17 @@ namespace ExpandedStorage.Framework
                 () => config.VacuumToFirstRow,
                 value => config.VacuumToFirstRow = value);
         }
+        
+        protected internal string SummaryReport =>
+            "Expanded Storage Configuration\n" +
+            $"\tAccess Carried     : {AllowAccessCarriedChest}\n" +
+            $"\tCarry Chest        : {AllowCarryingChests}\n" +
+            $"\tModded Capacity    : {AllowModdedCapacity}\n" +
+            $"\tResize Menu        : {ExpandInventoryMenu}\n" +
+            $"\tRestricted Storage : {AllowRestrictedStorage}\n" +
+            $"\tShow Arrows        : {ShowOverlayArrows}\n" +
+            $"\tShow Tabs          : {ShowTabs}\n" +
+            $"\tShow Search        : {ShowSearchBar}\n" +
+            $"\tVacuum Items       : {AllowVacuumItems}";
     }
 }

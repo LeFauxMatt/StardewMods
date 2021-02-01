@@ -25,7 +25,6 @@ namespace ExpandedStorage.Framework.Extensions
             chest.fridge.Value = config.IsFridge;
             if (item.ParentSheetIndex == 216)
                 chest.lidFrameCount.Value = 2;
-            chest.fixLidFrame();
 
             // Copy modData
             foreach (var modData in item.modData)

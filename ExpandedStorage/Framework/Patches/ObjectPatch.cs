@@ -21,29 +21,28 @@ namespace ExpandedStorage.Framework.Patches
             "aedenthorn.CustomChestTypes/IsCustomChest"
         };
 
-        private readonly Type _type = typeof(StardewValley.Object);
-        
-        private static IReflectionHelper Reflection;
-
-        internal ObjectPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
-            : base(monitor, config)
-        {
-            Reflection = reflection;
-        }
+        internal ObjectPatch(IMonitor monitor, ModConfig config)
+            : base(monitor, config) { }
         
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.placementAction)),
-                new HarmonyMethod(GetType(), nameof(PlacementAction)));
-            
-            if (Config.AllowCarryingChests)
-            {
-                harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.getDescription)),
-                    postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix)));
+            harmony.Patch(
+                AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.placementAction)),
+                new HarmonyMethod(GetType(), nameof(PlacementAction))
+            );
 
-                harmony.Patch(AccessTools.Method(_type, nameof(StardewValley.Object.drawWhenHeld)),
-                    new HarmonyMethod(GetType(), nameof(drawWhenHeld_Prefix)));
-            }
+            if (!Config.AllowCarryingChests)
+                return;
+            
+            harmony.Patch(
+                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.getDescription)),
+                postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix))
+            );
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.drawWhenHeld)),
+                new HarmonyMethod(GetType(), nameof(drawWhenHeld_Prefix))
+            );
         }
         
         public static bool PlacementAction(StardewValley.Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
@@ -99,7 +98,7 @@ namespace ExpandedStorage.Framework.Patches
                 || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
             
-            chest.Draw(spriteBatch, objectPosition);
+            chest.Draw(spriteBatch, objectPosition, Vector2.Zero);
             return false;
         }
     }

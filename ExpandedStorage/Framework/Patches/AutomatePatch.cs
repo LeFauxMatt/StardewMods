@@ -32,7 +32,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             if (_isAutomateLoaded && Config.AllowRestrictedStorage)
             {
-                Monitor.Log("Patching Automate");
+                Monitor.Log("Patching Automate for Restricted Storage");
                 var methodInfo = AccessTools.GetDeclaredMethods(_type)
                     .Find(m => m.Name.Equals("Store", StringComparison.OrdinalIgnoreCase));
                 harmony.Patch(methodInfo, new HarmonyMethod(GetType(), nameof(Store_Prefix)));
