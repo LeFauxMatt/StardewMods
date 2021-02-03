@@ -91,11 +91,10 @@ namespace ExpandedStorage.Framework.UI
         /// <param name="e"></param>
         private static void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
-            if (Instance.Value == null
-                || Context.HasScreenId(Instance.Value._screenId)
-                && Game1.activeClickableMenu is ItemGrabMenu)
-                return;
-            Instance.Value.Dispose();
+            if (Instance.Value != null && (!Context.HasScreenId(Instance.Value._screenId) || Game1.activeClickableMenu is not ItemGrabMenu))
+                Instance.Value.Dispose();
+            if (Instance.Value?._view.SearchField != null)
+                Instance.Value._model.SearchText = Instance.Value._view.SearchField.Text;
         }
         
         /// <summary>
