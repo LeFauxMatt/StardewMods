@@ -141,8 +141,15 @@ namespace ExpandedStorage.Framework.Patches
                 return true;
             
             __instance.Draw(spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
-            if (__instance.items.Any())
-                Utility.drawTinyDigits(__instance.items.Count, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.items.Count, 3f * scaleSize) + 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
+            
+            // Draw Stack
+            if (__instance.Stack > 1)
+                Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
+            
+            // Draw Held Items
+            var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+            if (items > 0)
+                Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
             return false;
         }
         
