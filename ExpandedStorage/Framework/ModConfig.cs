@@ -29,6 +29,9 @@ namespace ExpandedStorage.Framework
 
         /// <summary>Adds three extra rows to the Inventory Menu.</summary>
         public bool ExpandInventoryMenu { get; set; } = true;
+
+        /// <summary>Symbol used to search items by context tags.</summary>
+        public string SearchTagSymbol { get; set; } = "#";
         
         /// <summary>Adds clickable arrows to indicate when there are more items in the chest.</summary>
         public bool ShowOverlayArrows { get; set; } = true;
@@ -47,6 +50,7 @@ namespace ExpandedStorage.Framework
             modConfigApi.RegisterLabel(modManifest,
                 "Controls",
                 "Controller/Keyboard controls");
+            
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Scroll Up",
                 "Button for scrolling up",
@@ -67,9 +71,11 @@ namespace ExpandedStorage.Framework
                 "Button for switching to the next tab",
                 () => config.Controls.NextTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => config.Controls.NextTab = KeybindList.ForSingle(value));
+            
             modConfigApi.RegisterLabel(modManifest,
                 "Global Toggles",
                 "Enable/Disable features (restart to revert patches)");
+            
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Carry Chest",
                 "Uncheck to globally disable carrying chests",
@@ -81,6 +87,11 @@ namespace ExpandedStorage.Framework
                 () => config.AllowAccessCarriedChest,
                 value => config.AllowAccessCarriedChest = value);
             modConfigApi.RegisterSimpleOption(modManifest,
+                "Chest Tabs",
+                "Uncheck to globally disable chest tabs",
+                () => config.ShowTabs,
+                value => config.ShowTabs = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
                 "Expand Inventory Menu",
                 "Uncheck to globally disable resizing the inventory menu",
                 () => config.ExpandInventoryMenu,
@@ -91,25 +102,25 @@ namespace ExpandedStorage.Framework
                 () => config.AllowModdedCapacity,
                 value => config.AllowModdedCapacity = value);
             modConfigApi.RegisterSimpleOption(modManifest,
+                "Overlay Arrows",
+                "Uncheck to globally disable adding arrow buttons",
+                () => config.ShowOverlayArrows,
+                value => config.ShowOverlayArrows = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
                 "Restricted Storage",
                 "Uncheck to globally disable allow/block lists for chest items",
                 () => config.AllowRestrictedStorage,
                 value => config.AllowRestrictedStorage = value);
             modConfigApi.RegisterSimpleOption(modManifest,
-                "Show Overlay Arrows",
-                "Uncheck to globally disable adding arrow buttons",
-                () => config.ShowOverlayArrows,
-                value => config.ShowOverlayArrows = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Show Search Bar",
+                "Search Bar",
                 "Uncheck to globally disable carrying chests",
                 () => config.ShowSearchBar,
                 value => config.ShowSearchBar = value);
             modConfigApi.RegisterSimpleOption(modManifest,
-                "Show Tabs",
-                "Uncheck to globally disable chest tabs",
-                () => config.ShowTabs,
-                value => config.ShowTabs = value);
+                "Search Symbol",
+                "Symbol used to search items by context tag",
+                () => config.SearchTagSymbol,
+                value => config.SearchTagSymbol = value);
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Vacuum Items",
                 "Uncheck to globally disable chests picking up items",

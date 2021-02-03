@@ -281,7 +281,7 @@ namespace ExpandedStorage.Framework.UI
             HashSet<string> tags = null;
             foreach (var searchPart in searchParts)
             {
-                if (searchPart.StartsWith("#"))
+                if (searchPart.StartsWith(_config.SearchTagSymbol))
                 {
                     tags ??= item.GetContextTags(); 
                     if (!tags.Any(tag => tag.IndexOf(searchPart.Substring(1), StringComparison.InvariantCultureIgnoreCase) >= 0))
