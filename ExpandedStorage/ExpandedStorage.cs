@@ -258,7 +258,8 @@ namespace ExpandedStorage
                 chest.fixLidFrame();
             }
             
-            if (chest.frameCounter.Value <= -1
+            if (!_config.AllowAccessCarriedChest
+                || chest.frameCounter.Value <= -1
                 || _currentLidFrame.Value > chest.getLastLidFrame())
                 return;
             
