@@ -69,13 +69,10 @@ namespace ExpandedStorage.Framework.Patches
             chest.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
             
             // Automate preferences
-            if (config.ModData.Any())
+            foreach (var modData in config.ModData)
             {
-                foreach (var modData in config.ModData)
-                {
-                    if (!chest.modData.ContainsKey(modData.Key))
-                        chest.modData.Add(modData.Key, modData.Value);
-                }
+                if (!chest.modData.ContainsKey(modData.Key))
+                    chest.modData.Add(modData.Key, modData.Value);
             }
 
             location.objects.Add(pos, chest);
