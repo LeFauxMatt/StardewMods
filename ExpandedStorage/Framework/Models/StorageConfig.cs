@@ -65,7 +65,5 @@ namespace ExpandedStorage.Framework.Models
             ShowSearchBar = config.ShowSearchBar;
             VacuumItems = config.VacuumItems;
         }
-        
-        
     }
 }

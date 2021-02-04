@@ -25,6 +25,8 @@ namespace ExpandedStorage
         
         /// <summary>Tracks previously held chest before placing into world.</summary>
         internal static readonly PerScreen<Chest> HeldChest = new();
+
+        internal static readonly PerScreen<IDictionary<Chest, StorageContentData>> VacuumChests = new();
         
         /// <summary>Dictionary of Expanded Storage object data</summary>
         private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
@@ -121,6 +123,12 @@ namespace ExpandedStorage
             {
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
                 helper.Events.Input.ButtonPressed += OnButtonPressed;
+            }
+
+            if (_config.AllowVacuumItems)
+            {
+                helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+                helper.Events.Player.InventoryChanged += OnInventoryChanged;
             }
             
             // Harmony Patches
@@ -224,6 +232,42 @@ namespace ExpandedStorage
                 chest.items.CopyFrom(oldChest.items);
             foreach (var modData in oldChest.modData)
                 chest.modData.CopyFrom(modData);
+        }
+        
+        /// <summary>Initialize player item vacuum chests.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            if (!Game1.player.IsLocalPlayer)
+                return;
+            
+            VacuumChests.Value = Game1.player.Items
+                .Take(_config.VacuumToFirstRow ? 12 : Game1.player.MaxItems)
+                .Where(i => i is Chest)
+                .ToDictionary(i => i as Chest, GetConfig)
+                .Where(s => s.Value != null && s.Value.VacuumItems)
+                .ToDictionary(s => s.Key, s => s.Value);
+            
+            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
+        }
+        
+        /// <summary>Refresh player item vacuum chests.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+        {
+            if (!e.IsLocalPlayer)
+                return;
+            
+            VacuumChests.Value = e.Player.Items
+                .Take(_config.VacuumToFirstRow ? 12 : e.Player.MaxItems)
+                .Where(i => i is Chest)
+                .ToDictionary(i => i as Chest, GetConfig)
+                .Where(s => s.Value != null && s.Value.VacuumItems)
+                .ToDictionary(s => s.Key, s => s.Value);
+            
+            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
         }
         
         /// <summary>Track toolbar changes before user input.</summary>

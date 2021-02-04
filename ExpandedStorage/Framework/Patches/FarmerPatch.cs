@@ -17,13 +17,13 @@ namespace ExpandedStorage.Framework.Patches
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(AccessTools.Method(_type, nameof(Farmer.addItemToInventory), new []{typeof(Item), typeof(List<Item>)}),
-                new HarmonyMethod(GetType(), nameof(addItemToInventory_Prefix)));
+                new HarmonyMethod(GetType(), nameof(AddItemToInventoryPrefix)));
         }
 
-        public static bool addItemToInventory_Prefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
+        public static bool AddItemToInventoryPrefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
         {
             var config = ExpandedStorage.GetConfig(item);
-            if(config == null || !config.AccessCarried)
+            if(config == null || item.Stack > 1)
                 return true;
 
             var chest = item.ToChest(config);

@@ -36,7 +36,7 @@ namespace ExpandedStorage.Framework.Models
         public IList<string> BlockList = new List<string>();
 
         /// <summary>List of tabs to show on chest menu.</summary>
-        public IList<string> Tabs;
+        public IList<string> Tabs = new List<string>();
 
         internal StorageContentData() : this(null) { }
         internal StorageContentData(string storageName) : base(storageName) { }

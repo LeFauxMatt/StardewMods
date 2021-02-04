@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ExpandedStorage.Framework.Extensions;
@@ -27,25 +26,20 @@ namespace ExpandedStorage.Framework.Patches
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(
-                AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.placementAction)),
-                new HarmonyMethod(GetType(), nameof(PlacementAction))
+                AccessTools.Method(typeof(Object), nameof(Object.placementAction)),
+                new HarmonyMethod(GetType(), nameof(PlacementActionPrefix))
             );
 
             if (!Config.AllowCarryingChests)
                 return;
-            
-            harmony.Patch(
-                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.getDescription)),
-                postfix: new HarmonyMethod(GetType(), nameof(getDescription_Postfix))
-            );
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.drawWhenHeld)),
-                new HarmonyMethod(GetType(), nameof(drawWhenHeld_Prefix))
+                original: AccessTools.Method(typeof(Object), nameof(Object.drawWhenHeld)),
+                new HarmonyMethod(GetType(), nameof(DrawWhenHeldPrefix))
             );
         }
         
-        public static bool PlacementAction(StardewValley.Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
+        public static bool PlacementActionPrefix(Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
         {
             var config = ExpandedStorage.GetConfig(__instance);
             
@@ -89,16 +83,7 @@ namespace ExpandedStorage.Framework.Patches
             return false;
         }
 
-        /// <summary>Adds count of chests contents to its description.</summary>
-        public static void getDescription_Postfix(StardewValley.Object __instance, ref string __result)
-        {
-            if (__instance is not Chest chest || !ExpandedStorage.HasConfig(__instance))
-                return;
-            if (chest.items?.Count > 0)
-                __result += "\n" + $"Contains {chest.items.Count} items.";
-        }
-
-        public static bool drawWhenHeld_Prefix(StardewValley.Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
+        public static bool DrawWhenHeldPrefix(Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
