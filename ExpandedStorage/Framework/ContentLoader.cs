@@ -161,9 +161,6 @@ namespace ExpandedStorage.Framework
             api.RegisterSimpleOption(manifest, "Show Search Bar", $"Show search bar above chest inventory for {content.StorageName}?",
                 () => content.ShowSearchBar,
                 value => content.ShowSearchBar = value);
-            api.RegisterSimpleOption(manifest, "Disable Automate", $"Have Automate disabled for {content.StorageName} when placed?",
-                () => content.DisableAutomate,
-                value => content.DisableAutomate = value);
             api.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {content.StorageName} to be collect debris?",
                 () => content.VacuumItems,
                 value => content.VacuumItems = value);

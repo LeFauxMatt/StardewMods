@@ -44,7 +44,7 @@ namespace ExpandedStorage.Framework.Patches
             var reflectedChest = _reflection.GetField<Chest>(__instance, "Chest");
             var reflectedSample = _reflection.GetProperty<Item>(stack, "Sample");
             var config = ExpandedStorage.GetConfig(reflectedChest.GetValue());
-            return config == null || config.IsAllowed(reflectedSample.GetValue()) && !config.IsBlocked(reflectedSample.GetValue());
+            return config == null || config.Filter(reflectedSample.GetValue());
         }
     }
 }

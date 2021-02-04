@@ -29,6 +29,9 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>Allows the storage to be placed in the world.</summary>
         public bool IsPlaceable = true;
 
+        /// <summary>Add modData to placed chests (if key does not already exist).</summary>
+        public IDictionary<string, string> ModData = new Dictionary<string, string>();
+
         /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
         public IList<string> AllowList = new List<string>();
 
@@ -73,7 +76,6 @@ namespace ExpandedStorage.Framework.Models
             $"Loaded {StorageName} Config\n" +
             $"\tAccess Carried     : {AccessCarried}\n" +
             $"\tCarry Chest        : {CanCarry}\n" +
-            $"\tDisable Automate   : {DisableAutomate}\n" +
             $"\tModded Capacity    : {Capacity}\n" +
             $"\tOpen Sound         : {OpenSound}\n" +
             $"\tSpecial Chest Type : {SpecialChestType}\n" +

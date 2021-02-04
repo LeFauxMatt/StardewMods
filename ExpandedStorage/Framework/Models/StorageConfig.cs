@@ -17,9 +17,6 @@ namespace ExpandedStorage.Framework.Models
         
         /// <summary>Allows storage to be picked up by the player.</summary>
         public bool CanCarry;
-        
-        /// <summary>Makes automate disabled by default when placing chests.</summary>
-        public bool DisableAutomate;
 
         /// <summary>Show search bar above chest inventory.</summary>
         public bool ShowSearchBar;
@@ -33,7 +30,6 @@ namespace ExpandedStorage.Framework.Models
             int capacity = 0,
             bool canCarry = true,
             bool accessCarried = false,
-            bool disableAutomate = false,
             bool showSearchBar = false,
             bool vacuumItems = false)
         {
@@ -41,7 +37,6 @@ namespace ExpandedStorage.Framework.Models
             Capacity = capacity;
             CanCarry = canCarry;
             AccessCarried = accessCarried;
-            DisableAutomate = disableAutomate;
             ShowSearchBar = showSearchBar;
             VacuumItems = vacuumItems;
         }
@@ -51,7 +46,6 @@ namespace ExpandedStorage.Framework.Models
                 config.Capacity,
                 config.CanCarry,
                 config.AccessCarried,
-                config.DisableAutomate,
                 config.ShowSearchBar,
                 config.VacuumItems
             );
@@ -61,7 +55,6 @@ namespace ExpandedStorage.Framework.Models
             Capacity = config.Capacity;
             CanCarry = config.CanCarry;
             AccessCarried = config.AccessCarried;
-            DisableAutomate = config.DisableAutomate;
             ShowSearchBar = config.ShowSearchBar;
             VacuumItems = config.VacuumItems;
         }
