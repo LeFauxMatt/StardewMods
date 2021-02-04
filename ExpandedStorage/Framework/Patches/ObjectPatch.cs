@@ -74,7 +74,7 @@ namespace ExpandedStorage.Framework.Patches
                 if (!chest.modData.ContainsKey("Pathoschild.Automate/StoreItems"))
                     chest.modData.Add("Pathoschild.Automate/StoreItems", "Disable");
                 if (!chest.modData.ContainsKey("Pathoschild.Automate/TakeItems"))
-                    chest.modData.Add("Pathoschild.Automate/StoreItems", "Disable");
+                    chest.modData.Add("Pathoschild.Automate/TakeItems", "Disable");
             }
 
             location.objects.Add(pos, chest);

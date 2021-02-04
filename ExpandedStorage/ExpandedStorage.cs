@@ -10,6 +10,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Menus;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
 
@@ -123,6 +124,11 @@ namespace ExpandedStorage
             {
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
                 helper.Events.Input.ButtonPressed += OnButtonPressed;
+            }
+
+            if (_config.AllowAccessCarriedChest)
+            {
+                helper.Events.Input.ButtonsChanged += OnButtonsChanged;
             }
 
             if (_config.AllowVacuumItems)
@@ -367,6 +373,33 @@ namespace ExpandedStorage
                 });
                 Helper.Input.Suppress(e.Button);
             }
+        }
+
+        /// <summary>Track toolbar changes before user input.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+        {
+            if (HeldChest.Value == null || Game1.activeClickableMenu != null || !_config.Controls.OpenCrafting.JustPressed())
+                return;
+            
+            HeldChest.Value.GetMutex().RequestLock(delegate
+            {
+                var pos = Utility.getTopLeftPositionForCenteringOnScreen(800 + IClickableMenu.borderWidth * 2, 600 + IClickableMenu.borderWidth * 2);
+                Game1.activeClickableMenu = new CraftingPage(
+                    (int) pos.X,
+                    (int) pos.Y,
+                    800 + IClickableMenu.borderWidth * 2,
+                    600 + IClickableMenu.borderWidth * 2,
+                    false,
+                    true,
+                    new List<Chest> {HeldChest.Value})
+                {
+                    exitFunction = delegate { HeldChest.Value.GetMutex().ReleaseLock(); }
+                };
+            });
+
+            Helper.Input.SuppressActiveKeybinds(_config.Controls.OpenCrafting);
         }
     }
 }
