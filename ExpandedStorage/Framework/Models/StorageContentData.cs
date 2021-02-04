@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
@@ -10,51 +11,46 @@ namespace ExpandedStorage.Framework.Models
     [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     public class StorageContentData : StorageConfig
     {
-        /// <summary>The game sound that will play when the storage is opened.</summary>
-        public string OpenSound;
-        
-        /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
-        public string SpecialChestType;
-        
-        /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
-        public bool IsFridge;
-
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
         /// <summary>True for assets loaded into Game1.bigCraftables outside of JsonAssets.</summary>
         internal bool IsVanilla;
         
-        internal StorageContentData() : this(null)
-        {
-            OpenSound = "openChest";
-            SpecialChestType = "None";
-            IsFridge = false;
-        }
+        /// <summary>The game sound that will play when the storage is opened.</summary>
+        public string OpenSound = "openChest";
+
+        /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
+        public string SpecialChestType = "None";
         
+        /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
+        public bool IsFridge = false;
+        
+        /// <summary>Allows the storage to be placed in the world.</summary>
+        public bool IsPlaceable = true;
+
+        /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
+        public IList<string> AllowList = new List<string>();
+
+        /// <summary>When specified, storage may hold allowed items except for those with blocked context tags.</summary>
+        public IList<string> BlockList = new List<string>();
+
+        /// <summary>List of tabs to show on chest menu.</summary>
+        public IList<string> Tabs;
+
+        internal StorageContentData() : this(null) { }
         internal StorageContentData(string storageName) : base(storageName) { }
+        
         protected internal bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
         protected internal bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
         protected internal bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
+
         protected internal bool HighlightMethod(Item item) =>
             Filter(item)
             && (!Enum.TryParse(SpecialChestType, out Chest.SpecialChestTypes specialChestType)
                 || specialChestType != Chest.SpecialChestTypes.MiniShippingBin
                 || Utility.highlightShippableObjects(item));
         
-        internal void CopyFrom(StorageConfig config)
-        {
-            Capacity = config.Capacity;
-            CanCarry = config.CanCarry;
-            AccessCarried = config.AccessCarried;
-            ShowSearchBar = config.ShowSearchBar;
-            IsPlaceable = config.IsPlaceable;
-            VacuumItems = config.VacuumItems;
-            AllowList = config.AllowList;
-            BlockList = config.BlockList;
-            Tabs = config.Tabs;
-        }
-
         protected internal int MenuCapacity =>
             Capacity switch
             {
@@ -77,6 +73,7 @@ namespace ExpandedStorage.Framework.Models
             $"Loaded {StorageName} Config\n" +
             $"\tAccess Carried     : {AccessCarried}\n" +
             $"\tCarry Chest        : {CanCarry}\n" +
+            $"\tDisable Automate   : {DisableAutomate}\n" +
             $"\tModded Capacity    : {Capacity}\n" +
             $"\tOpen Sound         : {OpenSound}\n" +
             $"\tSpecial Chest Type : {SpecialChestType}\n" +
