@@ -375,6 +375,7 @@ namespace ExpandedStorage
                     Game1.player.Halt();
                     Game1.player.freezePause = 1000;
                 });
+                
                 Helper.Input.Suppress(e.Button);
             }
         }
@@ -406,7 +407,7 @@ namespace ExpandedStorage
                     exitFunction = delegate { HeldChest.Value.GetMutex().ReleaseLock(); }
                 };
             });
-
+            
             Helper.Input.SuppressActiveKeybinds(_config.Controls.OpenCrafting);
         }
     }

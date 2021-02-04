@@ -176,19 +176,25 @@ namespace ExpandedStorage.Framework.UI
         private void RegisterEvents()
         {
             var grabItem = Menu.ItemsToGrabMenu.onAddItem;
-            Menu.ItemsToGrabMenu.onAddItem = delegate(Item item, Farmer who)
+            if (grabItem != null)
             {
-                grabItem.Invoke(item, who);
-                RefreshItems();
-            };
-            
+                Menu.ItemsToGrabMenu.onAddItem = delegate(Item item, Farmer who)
+                {
+                    grabItem.Invoke(item, who);
+                    RefreshItems();
+                };
+            }
+
             var addItem = Menu.inventory.onAddItem;
-            Menu.inventory.onAddItem = delegate(Item item, Farmer who)
+            if (addItem != null)
             {
-                addItem.Invoke(item, who);
-                RefreshItems();
-            };
-            
+                Menu.inventory.onAddItem = delegate(Item item, Farmer who)
+                {
+                    addItem.Invoke(item, who);
+                    RefreshItems();
+                };
+            }
+
             switch (_menuContext)
             {
                 case Object obj when obj.heldObject.Value is Chest chest:
