@@ -360,7 +360,11 @@ namespace ExpandedStorage
             {
                 if (location.objects.TryGetValue(pos, out var obj) && HasConfig(obj))
                     return;
+                
                 var config = GetConfig(HeldChest.Value);
+                if (!config.AccessCarried)
+                    return;
+                
                 HeldChest.Value.GetMutex().RequestLock(delegate
                 {
                     HeldChest.Value.fixLidFrame();
@@ -381,6 +385,10 @@ namespace ExpandedStorage
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
             if (HeldChest.Value == null || Game1.activeClickableMenu != null || !_config.Controls.OpenCrafting.JustPressed())
+                return;
+            
+            var config = GetConfig(HeldChest.Value);
+            if (!config.AccessCarried)
                 return;
             
             HeldChest.Value.GetMutex().RequestLock(delegate

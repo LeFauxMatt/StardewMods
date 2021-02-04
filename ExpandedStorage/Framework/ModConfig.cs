@@ -113,7 +113,7 @@ namespace ExpandedStorage.Framework
                 value => config.AllowRestrictedStorage = value);
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Search Bar",
-                "Uncheck to globally disable carrying chests",
+                "Uncheck to globally disable the search bar",
                 () => config.ShowSearchBar,
                 value => config.ShowSearchBar = value);
             modConfigApi.RegisterSimpleOption(modManifest,
