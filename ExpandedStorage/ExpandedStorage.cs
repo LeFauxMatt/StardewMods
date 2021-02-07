@@ -1,27 +1,32 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ExpandedStorage.Framework;
+using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
 
 namespace ExpandedStorage
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod, IAssetEditor
     {
-        private const string AdvancedLootKey = "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest";
+        private static readonly HashSet<string> ExcludeModDataKeys = new()
+        {
+            "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
+        };
         
-        /// <summary>Dictionary of Expanded Storage object data</summary>
-        private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
-        
+        /// <summary>Tracks previously held chest before placing into world.</summary>
+        internal static readonly PerScreen<Chest> HeldChest = new();
+
+        internal static readonly PerScreen<IDictionary<Chest, StorageContentData>> VacuumChests = new();
+
         /// <summary>Dictionary of Expanded Storage configs</summary>
         private static readonly IDictionary<string, StorageContentData> StorageContent = new Dictionary<string, StorageContentData>();
 
@@ -31,39 +36,23 @@ namespace ExpandedStorage
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
-        /// <summary>Tracks previously held chest before placing into world.</summary>
-        private readonly PerScreen<Chest> _previousHeldChest = new PerScreen<Chest>();
+        /// <summary>Tracks previously held chest lid frame.</summary>
+        private readonly PerScreen<int> _currentLidFrame = new();
+
+        /// <summary>Reflected currentLidFrame for previousHeldChest.</summary>
+        private readonly PerScreen<IReflectedField<int>> _currentLidFrameReflected = new();
 
         private ContentLoader _contentLoader;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static StorageContentData GetConfig(Item item)
-        {
-            if (item is not Object obj
-                || !obj.bigCraftable.Value
-                || item.modData.ContainsKey(AdvancedLootKey))
-                return null;
-            if (item is Chest chest
-                && chest.fridge.Value
-                && StorageContent.TryGetValue("Mini-Fridge", out var miniFridgeConfig))
-                return miniFridgeConfig;
-            if (StorageObjectsById.TryGetValue(item.ParentSheetIndex, out var storageName)
-                && StorageContent.TryGetValue(storageName, out var storageConfig))
-                return storageConfig;
-            return null;
-        }
+        public static StorageContentData GetConfig(object context) =>
+            StorageContent
+                .Select(c => c.Value)
+                .FirstOrDefault(c => c.MatchesContext(context));
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(Item item)
-        {
-            if (item is not Object obj
-                || !obj.bigCraftable.Value
-                || item.modData.ContainsKey(AdvancedLootKey))
-                return false;
-            if (item is Chest chest && chest.fridge.Value)
-                return StorageContent.ContainsKey("Mini-Fridge");
-            return StorageObjectsById.ContainsKey(item.ParentSheetIndex);
-        }
+        private static bool HasConfig(object context) =>
+            StorageContent.Any(c => c.Value.MatchesContext(context));
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static TabContentData GetTab(string tabName) =>
@@ -72,20 +61,24 @@ namespace ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
+            Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
-                Monitor.Log("Expanded Storage should not be run alongside Carry Chest", LogLevel.Warn);
+                Monitor.Log("Expanded Storage should not be run alongside Carry Chest!", LogLevel.Warn);
                 _config.AllowCarryingChests = false;
             }
             
+            _contentLoader = new ContentLoader(Monitor, Helper, StorageContent, StorageTabs);
+            
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
-
-            ExpandedMenu.Init(helper.Events, helper.Input, _config);
+            ChestExtensions.Init(helper.Reflection);
+            FarmerExtensions.Init(Monitor);
+            MenuViewModel.Init(helper.Events, helper.Input, helper.Reflection, _config);
+            MenuModel.Init(_config);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
             if (_config.AllowCarryingChests)
@@ -93,18 +86,44 @@ namespace ExpandedStorage
                 helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
                 helper.Events.Input.ButtonPressed += OnButtonPressed;
             }
+
+            if (_config.AllowAccessCarriedChest)
+            {
+                helper.Events.Input.ButtonsChanged += OnButtonsChanged;
+            }
+
+            if (_config.AllowVacuumItems)
+            {
+                helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+                helper.Events.Player.InventoryChanged += OnInventoryChanged;
+            }
             
             // Harmony Patches
             new Patcher(ModManifest.UniqueID).ApplyAll(
-                new FarmerPatches(Monitor, _config),
+                new FarmerPatch(Monitor, _config),
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
-                new ChestPatches(Monitor, _config, helper.Reflection),
+                new ChestPatches(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
                 new DebrisPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
+        }
+
+        /// <summary>Setup Generic Mod Config Menu</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
+            if (modConfigApi == null)
+                return;
+            
+            modConfigApi.RegisterModConfig(ModManifest,
+                () => _config = new ModConfig(),
+                () => Helper.WriteConfig(_config));
+            ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
         }
 
         /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
@@ -113,71 +132,23 @@ namespace ExpandedStorage
         {
             // Load bigCraftable on next tick for vanilla storages
             if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-                Helper.Events.GameLoop.UpdateTicked += LoadContentPacks;
+                Helper.Events.GameLoop.UpdateTicked += _contentLoader.OnAssetsLoaded;
             return false;
         }
 
         /// <summary>Load a matched asset.</summary>
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
         public void Edit<T>(IAssetData asset) {}
-        
-        /// <summary>Load content packs.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-        {
-            var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
-            _contentLoader = new ContentLoader(Monitor, Helper.Content, Helper.ContentPacks.GetOwned());
-            _contentLoader.LoadOwnedStorages(modConfigApi, StorageContent, StorageTabs);
-            
-            var jsonAssetsApi = Helper.ModRegistry.GetApi<IJsonAssetsApi>("spacechase0.JsonAssets");
-            if (jsonAssetsApi == null)
-                return;
-            
-            jsonAssetsApi.IdsAssigned += delegate
-            {
-                foreach (var jsonAssetsId in jsonAssetsApi.GetAllBigCraftableIds()
-                    .Where(obj => StorageContent.ContainsKey(obj.Key)))
-                {
-                    StorageObjectsById.Add(jsonAssetsId.Value, jsonAssetsId.Key);
-                }
-            };
 
-            if (modConfigApi != null)
-            {
-                modConfigApi.RegisterModConfig(ModManifest,
-                    () => _config = new ModConfig(),
-                    () => Helper.WriteConfig(_config));
-                ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
-            }
-        }
-        
-        /// <summary>Clear out Object Ids.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private static void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e)
-        {
-            var removeNames = StorageContent
-                .Where(c => !c.Value.IsVanilla)
-                .Select(c => c.Key);
-            var removeIds = StorageObjectsById
-                .Where(i => removeNames.Contains(i.Value))
-                .Select(i => i.Key);
-            foreach (var id in removeIds)
-            {
-                StorageObjectsById.Remove(id);
-            }
-        }
-        
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        private static void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
         {
             if (!Context.IsPlayerFree)
                 return;
 
-            var oldChest = _previousHeldChest.Value;
+            var oldChest = HeldChest.Value;
             var chest = e.Added
                 .Select(p => p.Value)
                 .OfType<Chest>()
@@ -195,16 +166,40 @@ namespace ExpandedStorage
                 chest.modData.CopyFrom(modData);
         }
         
-        /// <summary>Track toolbar changes before user input.</summary>
+        /// <summary>Initialize player item vacuum chests.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void LoadContentPacks(object sender, UpdateTickedEventArgs e)
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            if (!_contentLoader.IsOwnedLoaded)
+            if (!Game1.player.IsLocalPlayer)
                 return;
-            Helper.Events.GameLoop.UpdateTicked -= LoadContentPacks;
-            if (!_contentLoader.IsVanillaLoaded)
-                _contentLoader.LoadVanillaStorages(StorageContent, StorageObjectsById);
+            
+            VacuumChests.Value = Game1.player.Items
+                .Take(_config.VacuumToFirstRow ? 12 : Game1.player.MaxItems)
+                .Where(i => i is Chest)
+                .ToDictionary(i => i as Chest, GetConfig)
+                .Where(s => s.Value != null && s.Value.VacuumItems)
+                .ToDictionary(s => s.Key, s => s.Value);
+            
+            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
+        }
+        
+        /// <summary>Refresh player item vacuum chests.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+        {
+            if (!e.IsLocalPlayer)
+                return;
+            
+            VacuumChests.Value = e.Player.Items
+                .Take(_config.VacuumToFirstRow ? 12 : e.Player.MaxItems)
+                .Where(i => i is Chest)
+                .ToDictionary(i => i as Chest, GetConfig)
+                .Where(s => s.Value != null && s.Value.VacuumItems)
+                .ToDictionary(s => s.Key, s => s.Value);
+            
+            Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")));
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -214,7 +209,42 @@ namespace ExpandedStorage
         {
             if (!Context.IsPlayerFree)
                 return;
-            _previousHeldChest.Value = Game1.player.CurrentItem is Chest chest ? chest : null;
+
+            if (Game1.player.CurrentItem is not Chest chest)
+            {
+                HeldChest.Value = null;
+                return;
+            }
+
+            if (!ReferenceEquals(HeldChest.Value, chest))
+            {
+                HeldChest.Value = chest;
+                chest.fixLidFrame();
+            }
+            
+            if (!_config.AllowAccessCarriedChest
+                || chest.frameCounter.Value <= -1
+                || _currentLidFrame.Value > chest.getLastLidFrame())
+                return;
+            
+            chest.frameCounter.Value--;
+            if (chest.frameCounter.Value > 0
+                || !chest.GetMutex().IsLockHeld())
+                return;
+            
+            if (_currentLidFrame.Value == chest.getLastLidFrame())
+            {
+                chest.frameCounter.Value = -1;
+                _currentLidFrame.Value = chest.startingLidFrame.Value;
+                _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
+                chest.ShowMenu();
+            }
+            else
+            {
+                chest.frameCounter.Value = 5;
+                _currentLidFrame.Value++;
+                _currentLidFrameReflected.Value.SetValue(_currentLidFrame.Value);
+            }
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -225,29 +255,74 @@ namespace ExpandedStorage
             if (!Context.IsPlayerFree)
                 return;
             
-            if (e.Button.IsUseToolButton() && _previousHeldChest.Value == null)
+            var location = Game1.currentLocation;
+            var pos = Game1.player.GetToolLocation() / 64f;
+            pos.X = (int) pos.X;
+            pos.Y = (int) pos.Y;
+            
+            if (HeldChest.Value == null
+                && _config.AllowCarryingChests
+                && e.Button.IsUseToolButton()
+                && location.CarryChest(pos))
             {
-                var location = Game1.currentLocation;
-                var pos = Game1.player.GetToolLocation() / 64f;
-                pos.X = (int) pos.X;
-                pos.Y = (int) pos.Y;
-                if (!location.objects.TryGetValue(pos, out var obj)
-                    || !HasConfig(obj)
-                    || !StorageContent[StorageObjectsById[obj.ParentSheetIndex]].CanCarry
-                    || !Game1.player.addItemToInventoryBool(obj, true))
+                Helper.Input.Suppress(e.Button);
+            }
+            else if (HeldChest.Value != null
+                     && _config.AllowAccessCarriedChest
+                     && e.Button.IsActionButton()
+                     && HeldChest.Value.Stack <= 1)
+            {
+                if (location.objects.TryGetValue(pos, out var obj) && HasConfig(obj))
                     return;
-                obj.TileLocation = Vector2.Zero;
-                location.objects.Remove(pos);
-                Helper.Input.Suppress(e.Button);
-            }
-            else if (_config.AllowAccessCarriedChest && _previousHeldChest.Value != null && e.Button.IsActionButton() && _previousHeldChest.Value.Stack == 1)
-            {
-                _previousHeldChest.Value.GetMutex().RequestLock(delegate
+                
+                var config = GetConfig(HeldChest.Value);
+                if (!config.AccessCarried)
+                    return;
+                
+                HeldChest.Value.GetMutex().RequestLock(delegate
                 {
-                    _previousHeldChest.Value.ShowMenu();
+                    HeldChest.Value.fixLidFrame();
+                    HeldChest.Value.performOpenChest();
+                    _currentLidFrameReflected.Value = Helper.Reflection.GetField<int>(HeldChest.Value, "currentLidFrame");
+                    _currentLidFrame.Value = HeldChest.Value.startingLidFrame.Value;
+                    Game1.playSound(config.OpenSound);
+                    Game1.player.Halt();
+                    Game1.player.freezePause = 1000;
                 });
+                
                 Helper.Input.Suppress(e.Button);
             }
+        }
+
+        /// <summary>Track toolbar changes before user input.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+        {
+            if (HeldChest.Value == null || Game1.activeClickableMenu != null || !_config.Controls.OpenCrafting.JustPressed())
+                return;
+            
+            var config = GetConfig(HeldChest.Value);
+            if (!config.AccessCarried)
+                return;
+            
+            HeldChest.Value.GetMutex().RequestLock(delegate
+            {
+                var pos = Utility.getTopLeftPositionForCenteringOnScreen(800 + IClickableMenu.borderWidth * 2, 600 + IClickableMenu.borderWidth * 2);
+                Game1.activeClickableMenu = new CraftingPage(
+                    (int) pos.X,
+                    (int) pos.Y,
+                    800 + IClickableMenu.borderWidth * 2,
+                    600 + IClickableMenu.borderWidth * 2,
+                    false,
+                    true,
+                    new List<Chest> {HeldChest.Value})
+                {
+                    exitFunction = delegate { HeldChest.Value.GetMutex().ReleaseLock(); }
+                };
+            });
+            
+            Helper.Input.SuppressActiveKeybinds(_config.Controls.OpenCrafting);
         }
     }
 }

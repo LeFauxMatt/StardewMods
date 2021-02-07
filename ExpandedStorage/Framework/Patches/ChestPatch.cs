@@ -1,61 +1,76 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using ExpandedStorage.Framework.Extensions;
+using ExpandedStorage.Framework.Models;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
 
 namespace ExpandedStorage.Framework.Patches
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ChestPatches : HarmonyPatch
     {
-        private readonly Type _type = typeof(Chest);
-
-        private static IReflectionHelper Reflection;
-
-        internal ChestPatches(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
-            : base(monitor, config)
+        private static readonly HashSet<string> ExcludeModDataKeys = new()
         {
-            Reflection = reflection;
-        }
+            "aedenthorn.CustomChestTypes/IsCustomChest"
+        };
 
+        internal ChestPatches(IMonitor monitor, ModConfig config)
+            : base(monitor, config) { }
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(_type, nameof(Chest.checkForAction)),
-                new HarmonyMethod(GetType(), nameof(checkForAction_Prefix)));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
+                prefix: new HarmonyMethod(GetType(), nameof(CheckForActionPrefix))
+            );
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
+                prefix: new HarmonyMethod(GetType(), nameof(DrawPrefix))
+            );
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)}),
+                prefix: new HarmonyMethod(GetType(), nameof(DrawLocalPrefix))
+            );
             
-            harmony.Patch(AccessTools.Method(_type, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float}),
-                new HarmonyMethod(GetType(), nameof(draw_Prefix)));
-            
-            harmony.Patch(AccessTools.Method(_type, nameof(Chest.draw), new[] {typeof(SpriteBatch), T.Int, T.Int, T.Float, T.Bool}),
-                new HarmonyMethod(GetType(), nameof(drawLocal_Prefix)));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] {typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)}),
+                prefix: new HarmonyMethod(GetType(), nameof(DrawInMenuPrefix))
+            );
 
             if (Config.AllowRestrictedStorage)
             {
-                harmony.Patch(AccessTools.Method(_type, nameof(Chest.addItem), new[] {typeof(Item)}),
-                    new HarmonyMethod(GetType(), nameof(addItem_Prefix)));
+                harmony.Patch(
+                    original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem), new[] {typeof(Item)}),
+                    prefix: new HarmonyMethod(GetType(), nameof(AddItemPrefix))
+                );
             }
 
             if (Config.AllowModdedCapacity)
             {
-                harmony.Patch(AccessTools.Method(_type, nameof(Chest.GetActualCapacity)),
-                    new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix)));
+                harmony.Patch(
+                    original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                    prefix: new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix))
+                );
             }
         }
 
-        public static bool checkForAction_Prefix(Chest __instance, ref bool __result, Farmer who, bool justCheckingForActivity)
+        public static bool CheckForActionPrefix(Chest __instance, ref bool __result, Farmer who, bool justCheckingForActivity)
         {
             if (justCheckingForActivity
                 || !__instance.playerChest.Value
                 || !Game1.didPlayerJustRightClick(true))
                 return true;
 
-            var config = ExpandedStorage.GetConfig(__instance); 
-            if (config == null || config.IsVanilla)
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null || config.SourceType != SourceType.JsonAssets)
                 return true;
             __instance.GetMutex().RequestLock(delegate
             {
@@ -69,31 +84,28 @@ namespace ExpandedStorage.Framework.Patches
         }
 
         /// <summary>Prevent adding item if filtered.</summary>
-        public static bool addItem_Prefix(Chest __instance, ref Item __result, Item item)
+        public static bool AddItemPrefix(Chest __instance, ref Item __result, Item item)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (!ReferenceEquals(__instance, item) && (config == null || config.IsAllowed(item) && !config.IsBlocked(item)))
+            if (!ReferenceEquals(__instance, item) && (config == null || config.Filter(item)))
                 return true;
-
+            
             __result = item;
             return false;
         }
 
-        /// <summary>Draw chest with playerChoiceColor.</summary>
-        public static bool draw_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
+        /// <summary>Draw chest with playerChoiceColor and lid animation when placed.</summary>
+        public static bool DrawPrefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
-                || config.IsVanilla
                 || !__instance.playerChest.Value
-                || __instance.playerChoiceColor.Value.Equals(Color.Black))
+                || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
-            
-            var playerChoiceColor = __instance.playerChoiceColor.Value;
-            var parentSheetIndex = __instance.ParentSheetIndex;
-            var currentLidFrameReflected = Reflection.GetField<int>(__instance, "currentLidFrame");
-            var currentLidFrame = currentLidFrameReflected.GetValue();
 
+            if (!config.IsPlaceable)
+                return false;
+            
             var draw_x = (float) x;
             var draw_y = (float) y;
             if (__instance.localKickStartTile.HasValue)
@@ -101,101 +113,55 @@ namespace ExpandedStorage.Framework.Patches
                 draw_x = Utility.Lerp(__instance.localKickStartTile.Value.X, draw_x, __instance.kickProgress);
                 draw_y = Utility.Lerp(__instance.localKickStartTile.Value.Y, draw_y, __instance.kickProgress);
             }
+
             var globalPosition = new Vector2(draw_x * 64f, (draw_y - 1f) * 64f);
             var layerDepth = Math.Max(0.0f, ((draw_y + 1f) * 64f - 24f) / 10000f) + draw_x * 1E-05f;
 
-            // Draw Storage Layer (Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 6, 16, 32),
-                playerChoiceColor * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                layerDepth);
-            
-            // Draw Brace Layer (Non Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 11, 16, 32),
-                Color.White * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                layerDepth + 2E-05f);
-            
-            // Draw Lid Layer (Colorized)
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                Game1.GlobalToLocal(Game1.viewport, globalPosition + ShakeOffset(__instance, -1, 2)),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame + 5, 16, 32),
-                playerChoiceColor * alpha * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                layerDepth + 1E-05f);
-
+            __instance.Draw(spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition), Vector2.Zero, alpha, layerDepth);
             return false;
         }
 
-        public static bool drawLocal_Prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
+        /// <summary>Draw chest with playerChoiceColor and lid animation when held.</summary>
+        public static bool DrawLocalPrefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            var playerChoiceColor = __instance.playerChoiceColor.Value;
-            var parentSheetIndex = __instance.ParentSheetIndex;
-            
             if (config == null
-                || config.IsVanilla
+                || !local
                 || !__instance.playerChest.Value
-                || !local)
+                || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            if (playerChoiceColor.Equals(Color.Black))
-            {
-                spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                    new Vector2(x, y - 64),
-                    Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex, 16, 32),
-                    __instance.Tint * alpha,
-                    0f,
-                    Vector2.Zero,
-                    4f,
-                    SpriteEffects.None,
-                    0.89f);
-                return false;
-            }
-            
-            // Draw Colorized Chest
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                new Vector2(x, y - 64),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 6, 16, 32),
-                playerChoiceColor * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                0.9f);
-            
-            // Draw Braces
-            spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
-                new Vector2(x, y - 64),
-                Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, parentSheetIndex + 12, 16, 32),
-                Color.White * alpha,
-                0f,
-                Vector2.Zero,
-                4f,
-                SpriteEffects.None,
-                0.91f);
-            
+            __instance.Draw(spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
             return false;
         }
-
+        
+        /// <summary>Draw chest with playerChoiceColor and lid animation in menu.</summary>
+        public static bool DrawInMenuPrefix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Color color, bool drawShadow)
+        {
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config == null
+                || !__instance.playerChest.Value
+                || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+                return true;
+            
+            __instance.Draw(spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
+            
+            // Draw Stack
+            if (__instance.Stack > 1)
+                Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
+            
+            // Draw Held Items
+            var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+            if (items > 0)
+                Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
+            return false;
+        }
+        
         /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.Capacity == 0 || config.Capacity == Chest.capacity)
+            if (config == null || config.Capacity == 0)
                 return true;
 
             __result = config.Capacity == -1
@@ -203,9 +169,5 @@ namespace ExpandedStorage.Framework.Patches
                 : config.Capacity;
             return false;
         }
-        private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue) =>
-            instance.shakeTimer > 0
-                ? new Vector2(Game1.random.Next(minValue, maxValue), 0)
-                : Vector2.Zero;
     }
 }

@@ -8,7 +8,7 @@ namespace Common.HarmonyPatches
     public class PatternPatches : IEnumerable<CodeInstruction>
     {
         private static IMonitor _monitor;
-        private readonly Queue<PatternPatch> _patternPatches = new Queue<PatternPatch>();
+        private readonly Queue<PatternPatch> _patternPatches = new();
         private readonly IEnumerable<CodeInstruction> _instructions;
         public bool Done => _patternPatches.Count == 0;
         public PatternPatches(IEnumerable<CodeInstruction> instructions, IMonitor monitor)
@@ -47,7 +47,7 @@ namespace Common.HarmonyPatches
                 
                 // Return patched code
                 if (currentOperation.Text != null)
-                    _monitor.Log(currentOperation.Text);
+                    _monitor.VerboseLog(currentOperation.Text);
                 rawStack.AddLast(instruction);
                 currentOperation.Patches(rawStack);
                 foreach (var patch in rawStack)

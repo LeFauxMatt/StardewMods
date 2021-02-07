@@ -29,7 +29,7 @@ namespace ExpandedStorage.Framework.Patches
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null || __instance is not Chest chest || other is not Chest otherChest)
                 return true;
-            if (!config.AccessCarried && chest.items.Count == 0 && otherChest.items.Count == 0)
+            if (!config.AccessCarried && !config.CanCarry && chest.items.Count == 0 && otherChest.items.Count == 0)
                 return true;
             __result = false;
             return false;

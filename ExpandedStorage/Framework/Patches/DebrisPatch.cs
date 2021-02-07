@@ -1,0 +1,67 @@
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using ExpandedStorage.Framework.Extensions;
+using Harmony;
+using Microsoft.Xna.Framework;
+using StardewModdingAPI;
+using StardewValley;
+using StardewValley.Tools;
+
+namespace ExpandedStorage.Framework.Patches
+{
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    internal class DebrisPatch : HarmonyPatch
+    {
+        private readonly Type _type = typeof(Debris);
+        internal DebrisPatch(IMonitor monitor, ModConfig config)
+            : base(monitor, config) { }
+        
+        protected internal override void Apply(HarmonyInstance harmony)
+        {
+            if (Config.AllowVacuumItems)
+            {
+                harmony.Patch(AccessTools.Method(_type, nameof(Debris.collect)),
+                    new HarmonyMethod(GetType(), nameof(collect_Prefix)));
+            }
+        }
+
+        /// <summary>Collect debris directly into carried chest.</summary>
+        public static bool collect_Prefix(Debris __instance, ref bool __result, Farmer farmer, Chunk chunk)
+        {
+            chunk ??= __instance.Chunks.FirstOrDefault();
+            if (chunk == null)
+                return true;
+            
+            var switcher = __instance.debrisType.Value.Equals(Debris.DebrisType.ARCHAEOLOGY) || __instance.debrisType.Value.Equals(Debris.DebrisType.OBJECT)
+                ? chunk.debrisType
+                : chunk.debrisType - chunk.debrisType % 2;
+
+            if (__instance.item == null && __instance.debrisType.Value == 0)
+                return true;
+
+            if (__instance.item != null)
+            {
+                __instance.item = farmer.AddItemToInventory(__instance.item);
+                __result = __instance.item == null;
+                return !__result;
+            }
+
+            Item item = __instance.debrisType.Value switch
+            {
+                Debris.DebrisType.ARCHAEOLOGY => new StardewValley.Object(chunk.debrisType, 1),
+                _ when switcher <= -10000 => new MeleeWeapon(switcher),
+                _ when switcher <= 0 => new StardewValley.Object(Vector2.Zero, -switcher),
+                _ when switcher == 93 || switcher == 94 => new Torch(Vector2.Zero, 1, switcher)
+                {
+                    Quality = __instance.itemQuality
+                },
+                _ => new StardewValley.Object(Vector2.Zero, switcher, 1) {Quality = __instance.itemQuality}
+            };
+            
+            item = farmer.AddItemToInventory(item);
+            __result = item == null;
+            return !__result;
+        }
+    }
+}
