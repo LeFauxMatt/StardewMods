@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ExpandedStorage.Framework.Extensions;
+using ExpandedStorage.Framework.Models;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -69,7 +70,7 @@ namespace ExpandedStorage.Framework.Patches
                 return true;
 
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.IsVanilla)
+            if (config == null || config.SourceType != SourceType.JsonAssets)
                 return true;
             __instance.GetMutex().RequestLock(delegate
             {
@@ -102,6 +103,9 @@ namespace ExpandedStorage.Framework.Patches
                 || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
+            if (!config.IsPlaceable)
+                return false;
+            
             var draw_x = (float) x;
             var draw_y = (float) y;
             if (__instance.localKickStartTile.HasValue)

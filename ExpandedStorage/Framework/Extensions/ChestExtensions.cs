@@ -17,7 +17,7 @@ namespace ExpandedStorage.Framework.Extensions
         {
             _reflection = reflection;
         }
-        
+
         public static void Draw(this Chest chest, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
             var currentLidFrameReflected = _reflection.GetField<int>(chest, "currentLidFrame");

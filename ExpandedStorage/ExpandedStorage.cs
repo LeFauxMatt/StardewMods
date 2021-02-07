@@ -9,10 +9,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
 
 namespace ExpandedStorage
 {
@@ -28,10 +26,7 @@ namespace ExpandedStorage
         internal static readonly PerScreen<Chest> HeldChest = new();
 
         internal static readonly PerScreen<IDictionary<Chest, StorageContentData>> VacuumChests = new();
-        
-        /// <summary>Dictionary of Expanded Storage object data</summary>
-        private static readonly IDictionary<int, string> StorageObjectsById = new Dictionary<int, string>();
-        
+
         /// <summary>Dictionary of Expanded Storage configs</summary>
         private static readonly IDictionary<string, StorageContentData> StorageContent = new Dictionary<string, StorageContentData>();
 
@@ -51,47 +46,13 @@ namespace ExpandedStorage
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
         public static StorageContentData GetConfig(object context) =>
-            context switch
-            {
-                GameLocation when StorageContent.TryGetValue("Mini-Shipping Bin", out var shippingBinConfig)
-                        => shippingBinConfig,
-                ShippingBin when StorageContent.TryGetValue("Mini-Shipping Bin", out var shippingBinConfig)
-                        => shippingBinConfig,
-                JunimoHut when StorageContent.TryGetValue("Junimo Hut", out var junimoHutConfig)
-                        => junimoHutConfig,
-                Chest chest when chest.fridge.Value
-                    && StorageContent.TryGetValue("Mini-Fridge", out var fridgeConfig)
-                        => fridgeConfig,
-                Object obj when obj.heldObject.Value is Chest
-                    && StorageContent.TryGetValue("Auto-Grabber", out var autoGrabberConfig)
-                        => autoGrabberConfig,
-                Object obj when obj.bigCraftable.Value
-                    && !obj.modData.Keys.Any(ExcludeModDataKeys.Contains)
-                    && StorageObjectsById.TryGetValue(obj.ParentSheetIndex, out var storageName)
-                    && StorageContent.TryGetValue(storageName, out var config)
-                        => config,
-                _ => null
-            };
+            StorageContent
+                .Select(c => c.Value)
+                .FirstOrDefault(c => c.MatchesContext(context));
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(object context) =>
-            context switch
-            {
-                GameLocation
-                    => StorageContent.ContainsKey("Mini-Shipping Bin"),
-                ShippingBin
-                    => StorageContent.ContainsKey("Mini-Shipping Bin"),
-                JunimoHut
-                    => StorageContent.ContainsKey("Junimo Hut"),
-                Chest chest when chest.fridge.Value
-                    => StorageContent.ContainsKey("Mini-Fridge"),
-                Object obj when obj.heldObject.Value is Chest
-                    => StorageContent.ContainsKey("Auto-Grabber"),
-                Object obj when obj.bigCraftable.Value
-                    && !obj.modData.Keys.Any(ExcludeModDataKeys.Contains)
-                    => StorageObjectsById.ContainsKey(obj.ParentSheetIndex),
-                _ => false
-            };
+        private static bool HasConfig(object context) =>
+            StorageContent.Any(c => c.Value.MatchesContext(context));
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static TabContentData GetTab(string tabName) =>
@@ -101,23 +62,23 @@ namespace ExpandedStorage
         {
             _config = helper.ReadConfig<ModConfig>();
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
-            
+
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
                 Monitor.Log("Expanded Storage should not be run alongside Carry Chest!", LogLevel.Warn);
                 _config.AllowCarryingChests = false;
             }
             
-            var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
+            _contentLoader = new ContentLoader(Monitor, Helper, StorageContent, StorageTabs);
             
+            var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
             ChestExtensions.Init(helper.Reflection);
             FarmerExtensions.Init(Monitor);
-            MenuViewModel.Init(helper.Events, helper.Input, _config);
+            MenuViewModel.Init(helper.Events, helper.Input, helper.Reflection, _config);
             MenuModel.Init(_config);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
             if (_config.AllowCarryingChests)
@@ -150,42 +111,12 @@ namespace ExpandedStorage
                 new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
         }
 
-        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            // Load bigCraftable on next tick for vanilla storages
-            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-                Helper.Events.GameLoop.UpdateTicked += LoadContentPacks;
-            return false;
-        }
-
-        /// <summary>Load a matched asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public void Edit<T>(IAssetData asset) {}
-        
-        /// <summary>Load content packs.</summary>
+        /// <summary>Setup Generic Mod Config Menu</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
-            _contentLoader = new ContentLoader(Monitor, Helper.Content, Helper.ContentPacks.GetOwned());
-            _contentLoader.LoadOwnedStorages(modConfigApi, StorageContent, StorageTabs);
-            
-            var jsonAssetsApi = Helper.ModRegistry.GetApi<IJsonAssetsApi>("spacechase0.JsonAssets");
-            if (jsonAssetsApi == null)
-                return;
-            
-            jsonAssetsApi.IdsAssigned += delegate
-            {
-                foreach (var jsonAssetsId in jsonAssetsApi.GetAllBigCraftableIds()
-                    .Where(obj => StorageContent.ContainsKey(obj.Key)))
-                {
-                    StorageObjectsById.Add(jsonAssetsId.Value, jsonAssetsId.Key);
-                }
-            };
-
             if (modConfigApi == null)
                 return;
             
@@ -194,26 +125,21 @@ namespace ExpandedStorage
                 () => Helper.WriteConfig(_config));
             ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
         }
-        
-        /// <summary>Clear out Object Ids.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private static void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e)
+
+        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public bool CanEdit<T>(IAssetInfo asset)
         {
-            var removeNames = StorageContent
-                .Where(c => !c.Value.IsVanilla)
-                .Select(c => c.Key)
-                .ToList();
-            var removeIds = StorageObjectsById
-                .Where(i => removeNames.Contains(i.Value))
-                .Select(i => i.Key)
-                .ToList();
-            foreach (var id in removeIds)
-            {
-                StorageObjectsById.Remove(id);
-            }
+            // Load bigCraftable on next tick for vanilla storages
+            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
+                Helper.Events.GameLoop.UpdateTicked += _contentLoader.OnAssetsLoaded;
+            return false;
         }
-        
+
+        /// <summary>Load a matched asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public void Edit<T>(IAssetData asset) {}
+
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -273,19 +199,7 @@ namespace ExpandedStorage
                 .Where(s => s.Value != null && s.Value.VacuumItems)
                 .ToDictionary(s => s.Key, s => s.Value);
             
-            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
-        }
-        
-        /// <summary>Track toolbar changes before user input.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void LoadContentPacks(object sender, UpdateTickedEventArgs e)
-        {
-            if (!_contentLoader.IsOwnedLoaded)
-                return;
-            Helper.Events.GameLoop.UpdateTicked -= LoadContentPacks;
-            if (!_contentLoader.IsVanillaLoaded)
-                _contentLoader.LoadVanillaStorages(StorageContent, StorageObjectsById);
+            Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")));
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
