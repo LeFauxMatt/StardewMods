@@ -47,7 +47,7 @@ namespace Common.HarmonyPatches
                 
                 // Return patched code
                 if (currentOperation.Text != null)
-                    _monitor.Log(currentOperation.Text, LogLevel.Debug);
+                    _monitor.VerboseLog(currentOperation.Text);
                 rawStack.AddLast(instruction);
                 currentOperation.Patches(rawStack);
                 foreach (var patch in rawStack)
