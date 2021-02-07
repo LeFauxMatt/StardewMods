@@ -46,7 +46,7 @@ namespace ExpandedStorage.Framework.Models
         public string SpecialChestType = "None";
         
         /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
-        public bool IsFridge = false;
+        public bool IsFridge;
         
         /// <summary>Allows the storage to be placed in the world.</summary>
         public bool IsPlaceable = true;

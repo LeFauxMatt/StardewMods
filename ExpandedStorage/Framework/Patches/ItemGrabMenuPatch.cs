@@ -158,7 +158,10 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     var tmp = chest.addItem(item);
                     if (tmp == null)
+                    {
                         ExpandedStorage.HeldChest.Value.GetItemsForPlayer(who.UniqueMultiplayerID).Remove(item);
+                        ExpandedStorage.HeldChest.Value.clearNulls();
+                    }
                     chest.ShowMenu();
                     if (Game1.activeClickableMenu is ItemGrabMenu menu)
                         menu.heldItem = tmp;
@@ -168,7 +171,10 @@ namespace ExpandedStorage.Framework.Patches
                 {
                     __instance.heldItem = ExpandedStorage.HeldChest.Value.addItem(item);
                     if (__instance.heldItem == null)
+                    {
                         chest.GetItemsForPlayer(who.UniqueMultiplayerID).Remove(item);
+                        chest.clearNulls();
+                    }
                 };
                 
                 __instance.inventory = new InventoryMenu(

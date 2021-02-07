@@ -17,14 +17,10 @@ namespace ExpandedStorage
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod, IAssetEditor
     {
-        private static readonly HashSet<string> ExcludeModDataKeys = new()
-        {
-            "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
-        };
-        
         /// <summary>Tracks previously held chest before placing into world.</summary>
         internal static readonly PerScreen<Chest> HeldChest = new();
 
+        /// <summary>Tracks all chests that may be used for vacuum items.</summary>
         internal static readonly PerScreen<IDictionary<Chest, StorageContentData>> VacuumChests = new();
 
         /// <summary>Dictionary of Expanded Storage configs</summary>

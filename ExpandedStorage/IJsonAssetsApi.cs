@@ -10,14 +10,8 @@ namespace ExpandedStorage
     public interface IJsonAssetsApi
     {
         void LoadAssets(string path);
-
-        int GetObjectId(string name);
-        int GetCropId(string name);
-        int GetFruitTreeId(string name);
+        
         int GetBigCraftableId(string name);
-        int GetHatId(string name);
-        int GetWeaponId(string name);
-        int GetClothingId(string name);
 
         IDictionary<string, int> GetAllObjectIds();
         IDictionary<string, int> GetAllCropIds();
