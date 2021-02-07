@@ -15,6 +15,9 @@ namespace ExpandedStorage.Framework
         /// <summary>Allow chests to be picked up and placed with items.</summary>
         public bool AllowCarryingChests { get; set; } = true;
 
+        /// <summary>Allow chest menu for held chest and accessed chest.</summary>
+        public bool AllowChestToChest { get; set; } = true;
+
         /// <summary>Whether to allow modded storage to have capacity other than 36 slots.</summary>
         public bool AllowModdedCapacity { get; set; } = true;
 
@@ -73,24 +76,44 @@ namespace ExpandedStorage.Framework
                 value => config.Controls.NextTab = KeybindList.ForSingle(value));
             
             modConfigApi.RegisterLabel(modManifest,
-                "Global Toggles",
-                "Enable/Disable features (restart to revert patches)");
+                "Tweaks",
+                "Modify behavior for certain features");
             
             modConfigApi.RegisterSimpleOption(modManifest,
-                "Carry Chest",
-                "Uncheck to globally disable carrying chests",
-                () => config.AllowCarryingChests,
-                value => config.AllowCarryingChests = value);
+                "Search Symbol",
+                "Symbol used to search items by context tag",
+                () => config.SearchTagSymbol,
+                value => config.SearchTagSymbol = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
+                "Vacuum To First Row",
+                "Uncheck to allow vacuuming to any chest in player inventory",
+                () => config.VacuumToFirstRow,
+                value => config.VacuumToFirstRow = value);
+            
+            modConfigApi.RegisterLabel(modManifest,
+                "Toggles",
+                "Enable/Disable features (restart to revert patches)");
+            
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Access Carried Chest",
                 "Uncheck to globally disable accessing chest items for carried chests",
                 () => config.AllowAccessCarriedChest,
                 value => config.AllowAccessCarriedChest = value);
             modConfigApi.RegisterSimpleOption(modManifest,
+                "Carry Chest",
+                "Uncheck to globally disable carrying chests",
+                () => config.AllowCarryingChests,
+                value => config.AllowCarryingChests = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
                 "Chest Tabs",
                 "Uncheck to globally disable chest tabs",
                 () => config.ShowTabs,
                 value => config.ShowTabs = value);
+            modConfigApi.RegisterSimpleOption(modManifest,
+                "Chest To Chest",
+                "Uncheck to globally disable chest to chest menu",
+                () => config.AllowChestToChest,
+                value => config.AllowChestToChest = value);
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Expand Inventory Menu",
                 "Uncheck to globally disable resizing the inventory menu",
@@ -117,20 +140,10 @@ namespace ExpandedStorage.Framework
                 () => config.ShowSearchBar,
                 value => config.ShowSearchBar = value);
             modConfigApi.RegisterSimpleOption(modManifest,
-                "Search Symbol",
-                "Symbol used to search items by context tag",
-                () => config.SearchTagSymbol,
-                value => config.SearchTagSymbol = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
                 "Vacuum Items",
                 "Uncheck to globally disable chests picking up items",
                 () => config.AllowVacuumItems,
                 value => config.AllowVacuumItems = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Vacuum To First Row",
-                "Uncheck to allow vacuuming to any chest in player inventory",
-                () => config.VacuumToFirstRow,
-                value => config.VacuumToFirstRow = value);
         }
         
         protected internal string SummaryReport =>

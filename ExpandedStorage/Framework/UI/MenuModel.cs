@@ -139,6 +139,14 @@ namespace ExpandedStorage.Framework.UI
                 Instance.Value.Dispose();
                 return new MenuModel(menu);
             }
+
+            if (Game1.options.SnappyMenus)
+            {
+                var oldId = Instance.Value.Menu.currentlySnappedComponent.myID;
+                if (oldId != -1)
+                    menu.currentlySnappedComponent = menu.getComponentWithID(oldId);
+                menu.snapCursorToCurrentSnappedComponent();
+            }
             
             Instance.Value.Menu = menu;
             Instance.Value.RefreshItems();
@@ -175,26 +183,6 @@ namespace ExpandedStorage.Framework.UI
 
         private void RegisterEvents()
         {
-            var grabItem = Menu.ItemsToGrabMenu.onAddItem;
-            if (grabItem != null)
-            {
-                Menu.ItemsToGrabMenu.onAddItem = delegate(Item item, Farmer who)
-                {
-                    grabItem.Invoke(item, who);
-                    RefreshItems();
-                };
-            }
-
-            var addItem = Menu.inventory.onAddItem;
-            if (addItem != null)
-            {
-                Menu.inventory.onAddItem = delegate(Item item, Farmer who)
-                {
-                    addItem.Invoke(item, who);
-                    RefreshItems();
-                };
-            }
-
             switch (_menuContext)
             {
                 case Object obj when obj.heldObject.Value is Chest chest:

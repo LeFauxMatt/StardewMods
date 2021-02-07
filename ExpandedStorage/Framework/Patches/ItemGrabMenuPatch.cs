@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.HarmonyPatches;
+using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
 using Harmony;
 using Microsoft.Xna.Framework;
@@ -144,9 +145,32 @@ namespace ExpandedStorage.Framework.Patches
             if (config == null || __instance.context is ShippingBin)
                 return;
 
-            if (ExpandedStorage.HeldChest.Value != null
-                && !ReferenceEquals(ExpandedStorage.HeldChest.Value, __instance.context))
+            if (__instance.context is not Chest chest)
+                chest = null;
+
+            if (Config.AllowChestToChest
+                && ExpandedStorage.HeldChest.Value != null
+                && chest != null
+                && !ReferenceEquals(ExpandedStorage.HeldChest.Value, chest))
             {
+                var reflectedBehaviorFunction = _reflection.GetField<ItemGrabMenu.behaviorOnItemSelect>(__instance, "behaviorFunction");
+                reflectedBehaviorFunction.SetValue(delegate(Item item, Farmer who)
+                {
+                    var tmp = chest.addItem(item);
+                    if (tmp == null)
+                        ExpandedStorage.HeldChest.Value.GetItemsForPlayer(who.UniqueMultiplayerID).Remove(item);
+                    chest.ShowMenu();
+                    if (Game1.activeClickableMenu is ItemGrabMenu menu)
+                        menu.heldItem = tmp;
+                });
+                
+                __instance.behaviorOnItemGrab = delegate(Item item, Farmer who)
+                {
+                    __instance.heldItem = ExpandedStorage.HeldChest.Value.addItem(item);
+                    if (__instance.heldItem == null)
+                        chest.GetItemsForPlayer(who.UniqueMultiplayerID).Remove(item);
+                };
+                
                 __instance.inventory = new InventoryMenu(
                     __instance.xPositionOnScreen + IClickableMenu.spaceToClearSideBorder + IClickableMenu.borderWidth / 2,
                     __instance.yPositionOnScreen + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth + 192 - 16,
@@ -159,7 +183,7 @@ namespace ExpandedStorage.Framework.Patches
                 __instance.inventory.highlightMethod = config.HighlightMethod;
             }
             
-            if (!config.IsVanilla && __instance.context is Chest chest && __instance.chestColorPicker == null)
+            if (config.SourceType == SourceType.JsonAssets && chest != null && __instance.chestColorPicker == null)
             {
                 var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
                 var sourceItem = sourceItemReflected.GetValue();
@@ -229,8 +253,6 @@ namespace ExpandedStorage.Framework.Patches
                 __instance.dropItemInvisibleButton.bounds.Y += offset;
             }
             
-            if (Game1.options.SnappyMenus)
-                __instance.snapToDefaultClickableComponent();
             __instance.SetupBorderNeighbors();
         }
 

@@ -17,6 +17,7 @@ namespace ExpandedStorage.Framework.UI
 
         private static IModEvents _events;
         private static IInputHelper _inputHelper;
+        private static IReflectionHelper _reflection;
         private static ModConfig _config;
 
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
@@ -24,10 +25,11 @@ namespace ExpandedStorage.Framework.UI
         
         private readonly MenuModel _model;
         private readonly MenuView _view;
-        internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config)
+        internal static void Init(IModEvents events, IInputHelper inputHelper, IReflectionHelper reflection, ModConfig config)
         {
             _events = events;
             _inputHelper = inputHelper;
+            _reflection = reflection;
             _config = config;
 
             // Events
@@ -61,6 +63,22 @@ namespace ExpandedStorage.Framework.UI
             _events.Input.ButtonPressed += OnButtonPressed;
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
+            
+            var reflectedBehaviorFunction =
+                _reflection.GetField<ItemGrabMenu.behaviorOnItemSelect>(menu, "behaviorFunction");
+            var behaviorOnItemSelect = reflectedBehaviorFunction.GetValue();
+            reflectedBehaviorFunction.SetValue(delegate(Item item, Farmer who)
+            {
+                behaviorOnItemSelect?.Invoke(item, who);
+                _model.RefreshItems();
+            });
+            
+            var behaviorOnItemGrab = menu.behaviorOnItemGrab;
+            menu.behaviorOnItemGrab = delegate(Item item, Farmer who)
+            {
+                behaviorOnItemGrab?.Invoke(item, who);
+                _model.RefreshItems();
+            };
 
             if (_model.StorageConfig == null)
                 return;
@@ -247,6 +265,7 @@ namespace ExpandedStorage.Framework.UI
                     ? _model.Items.IndexOf(item).ToString()
                     : _model.Items.Count.ToString();
             }
+            
             
             // Show/hide arrows
             if (_view.UpArrow != null)
