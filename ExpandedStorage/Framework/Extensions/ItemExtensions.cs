@@ -39,5 +39,12 @@ namespace ExpandedStorage.Framework.Extensions
             
             return chest;
         }
+
+        public static bool MatchesTagExt(this Item item, string tag) =>
+            item switch
+            {
+                Furniture when tag == "category_furniture" => true,
+                _ => item.HasContextTag(tag)
+            };
     }
 }

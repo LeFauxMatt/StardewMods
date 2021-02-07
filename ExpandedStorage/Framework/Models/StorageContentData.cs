@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
+using ExpandedStorage.Framework.Extensions;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
@@ -26,19 +27,10 @@ namespace ExpandedStorage.Framework.Models
         {
             "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
         };
-        
-        /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
-        internal string ModUniqueId;
 
-        /// <summary>Which mod was used to load these assets into the game.</summary>
-        internal SourceType SourceType;
-        
-        /// <summary>List of ParentSheetIndex related to this item.</summary>
-        internal IList<int> ObjectIds = new List<int>();
-        
         /// <summary>Storage Name must match the name from Json Assets.</summary>
         public string StorageName;
-        
+
         /// <summary>The game sound that will play when the storage is opened.</summary>
         public string OpenSound = "openChest";
 
@@ -62,6 +54,15 @@ namespace ExpandedStorage.Framework.Models
 
         /// <summary>List of tabs to show on chest menu.</summary>
         public IList<string> Tabs = new List<string>();
+        
+        /// <summary>Which mod was used to load these assets into the game.</summary>
+        internal SourceType SourceType;
+        
+        /// <summary>List of ParentSheetIndex related to this item.</summary>
+        internal IList<int> ObjectIds = new List<int>();
+        
+        /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
+        internal string ModUniqueId;
 
         internal StorageContentData() : this(null) { }
         internal StorageContentData(string storageName, SourceType sourceType = SourceType.Unknown)
@@ -98,8 +99,8 @@ namespace ExpandedStorage.Framework.Models
                 _ => false
             };
         
-        private bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
-        private bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
+        private bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
+        private bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.MatchesTagExt);
         public bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
 
         public bool HighlightMethod(Item item) =>
