@@ -4,18 +4,40 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
 using StardewValley;
+using StardewValley.Buildings;
+using StardewValley.Locations;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 namespace ExpandedStorage.Framework.Models
 {
+    public enum SourceType
+    {
+        Unknown,
+        Vanilla,
+        JsonAssets,
+        CustomChestTypes
+    };
+    
     [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     public class StorageContentData : StorageConfig
     {
+        private static readonly HashSet<string> ExcludeModDataKeys = new()
+        {
+            "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
+        };
+        
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
-        /// <summary>True for assets loaded into Game1.bigCraftables outside of JsonAssets.</summary>
-        internal bool IsVanilla;
+        /// <summary>Which mod was used to load these assets into the game.</summary>
+        internal SourceType SourceType;
+        
+        /// <summary>List of ParentSheetIndex related to this item.</summary>
+        internal IList<int> ObjectIds = new List<int>();
+        
+        /// <summary>Storage Name must match the name from Json Assets.</summary>
+        public string StorageName;
         
         /// <summary>The game sound that will play when the storage is opened.</summary>
         public string OpenSound = "openChest";
@@ -42,19 +64,51 @@ namespace ExpandedStorage.Framework.Models
         public IList<string> Tabs = new List<string>();
 
         internal StorageContentData() : this(null) { }
-        internal StorageContentData(string storageName) : base(storageName) { }
-        
-        protected internal bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
-        protected internal bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
-        protected internal bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
+        internal StorageContentData(string storageName, SourceType sourceType = SourceType.Unknown)
+        {
+            StorageName = storageName;
+            SourceType = sourceType;
+            
+            switch (storageName)
+            {
+                case "Mini-Shipping Bin":;
+                    SpecialChestType = "MiniShippingBin";
+                    break;
+                case "Mini-Fridge":
+                    IsFridge = true;
+                    break;
+                case "Junimo Chest":
+                    SpecialChestType = "JunimoChest";
+                    break;
+            }
+        }
 
-        protected internal bool HighlightMethod(Item item) =>
+        public bool MatchesContext(object context) =>
+            context switch
+            {
+                AdventureGuild => false,
+                GameLocation => SpecialChestType == "MiniShippingBin",
+                ShippingBin => SpecialChestType == "MiniShippingBin",
+                JunimoHut => StorageName == "Junimo Hut",
+                Chest chest when chest.fridge.Value => IsFridge,
+                Object obj when obj.heldObject.Value is Chest => StorageName == "Auto-Grabber",
+                Object obj when obj.bigCraftable.Value
+                                && !obj.modData.Keys.Any(ExcludeModDataKeys.Contains)
+                    => ObjectIds.Contains(obj.ParentSheetIndex),
+                _ => false
+            };
+        
+        private bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.HasContextTag);
+        private bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.HasContextTag);
+        public bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
+
+        public bool HighlightMethod(Item item) =>
             Filter(item)
             && (!Enum.TryParse(SpecialChestType, out Chest.SpecialChestTypes specialChestType)
                 || specialChestType != Chest.SpecialChestTypes.MiniShippingBin
                 || Utility.highlightShippableObjects(item));
         
-        protected internal int MenuCapacity =>
+        internal int MenuCapacity =>
             Capacity switch
             {
                 0 => -1, // Vanilla
@@ -62,7 +116,7 @@ namespace ExpandedStorage.Framework.Models
                 _ => Math.Min(72, Capacity.RoundUp(12)) // Specific
             };
 
-        protected internal int MenuRows =>
+        internal int MenuRows =>
             Capacity switch
             {
                 0 => 3, // Vanilla
@@ -70,9 +124,9 @@ namespace ExpandedStorage.Framework.Models
                 _ => Math.Min(6, Capacity.RoundUp(12) / 12) // Specific
             };
 
-        protected internal int MenuPadding => ShowSearchBar ? 24 : 0;
-        protected internal int MenuOffset => 64 * (MenuRows - 3);
-        protected internal string SummaryReport =>
+        internal int MenuPadding => ShowSearchBar ? 24 : 0;
+        internal int MenuOffset => 64 * (MenuRows - 3);
+        internal string SummaryReport =>
             $"Loaded {StorageName} Config\n" +
             $"\tAccess Carried     : {AccessCarried}\n" +
             $"\tCarry Chest        : {CanCarry}\n" +
