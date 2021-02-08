@@ -88,6 +88,7 @@ namespace ExpandedStorage.Framework.Models
             context switch
             {
                 AdventureGuild => false,
+                LibraryMuseum => false,
                 GameLocation => SpecialChestType == "MiniShippingBin",
                 ShippingBin => SpecialChestType == "MiniShippingBin",
                 JunimoHut => StorageName == "Junimo Hut",
