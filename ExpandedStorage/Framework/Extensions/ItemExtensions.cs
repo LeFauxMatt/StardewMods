@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Linq;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 namespace ExpandedStorage.Framework.Extensions
 {
     public static class ItemExtensions
     {
+        private const string CategoryFurniture = "category_furniture";
+        private const string CategoryArtifact = "category_artifact";
         public static Chest ToChest(this Item item, StorageContentData config = null)
         {
             // Get config for chest
@@ -40,11 +44,16 @@ namespace ExpandedStorage.Framework.Extensions
             return chest;
         }
 
-        public static bool MatchesTagExt(this Item item, string tag) =>
+        public static bool MatchesTagExt(this Item item, string search) => item.MatchesTagExt(search, true);
+        public static bool MatchesTagExt(this Item item, string search, bool exactMatch) =>
             item switch
             {
-                Furniture when tag == "category_furniture" => true,
-                _ => item.HasContextTag(tag)
+                Furniture when TagEquals(search, CategoryFurniture, exactMatch) => true,
+                Object {Type: "Arch"} when TagEquals(search, CategoryArtifact, exactMatch) => true,
+                _ => item.GetContextTags().Any(tag => TagEquals(search, tag, exactMatch))
             };
+
+        private static bool TagEquals(string search, string match, bool exact) =>
+            exact && search.Equals(match) || match.IndexOf(search, StringComparison.InvariantCultureIgnoreCase) > -1;
     }
 }
