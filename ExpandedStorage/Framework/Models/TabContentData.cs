@@ -5,6 +5,11 @@ using ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 
+#pragma warning disable 649
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable CollectionNeverUpdated.Global
+// ReSharper disable FieldCanBeMadeReadOnly.Global
+
 namespace ExpandedStorage.Framework.Models
 {
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
