@@ -42,6 +42,9 @@ namespace ExpandedStorage.Framework.UI
             _screenId = Context.ScreenId;
             _model = MenuModel.Get(menu);
 
+            if (_model.StorageConfig == null)
+                return;
+            
             _view = new MenuView(menu.ItemsToGrabMenu,
                 new MenuViewOptions
                 {
@@ -100,8 +103,8 @@ namespace ExpandedStorage.Framework.UI
             _events.Input.CursorMoved -= OnCursorMoved;
             _events.Input.MouseWheelScrolled -= OnMouseWheelScrolled;
             _model.ItemChanged -= OnItemChanged;
-            _model.Dispose();
-            _view.Dispose();
+            _model?.Dispose();
+            _view?.Dispose();
         }
         
         /// <summary>Raised after the game state is updated (≈60 times per second).</summary>
@@ -111,7 +114,7 @@ namespace ExpandedStorage.Framework.UI
         {
             if (Instance.Value != null && (!Context.HasScreenId(Instance.Value._screenId) || Game1.activeClickableMenu is not ItemGrabMenu))
                 Instance.Value.Dispose();
-            if (Instance.Value?._view.SearchField != null)
+            if (Instance.Value?._view?.SearchField != null)
                 Instance.Value._model.SearchText = Instance.Value._view.SearchField.Text;
         }
         
@@ -122,13 +125,9 @@ namespace ExpandedStorage.Framework.UI
         /// <param name="e">The event arguments.</param>
         private static void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
-            if (e.NewMenu is not ItemGrabMenu menu || menu.shippingBin)
-            {
-                Instance.Value?.Dispose();
-                return;
-            }
             Instance.Value?.Dispose();
-            Instance.Value = new MenuViewModel(menu);
+            if (e.NewMenu is ItemGrabMenu {shippingBin: false} menu)
+                Instance.Value = new MenuViewModel(menu);
         }
 
         /// <summary>Attempts to scroll offset by one row of slots relative to the inventory menu.</summary>

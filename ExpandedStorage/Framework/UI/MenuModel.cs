@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
+using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Netcode;
@@ -280,20 +281,21 @@ namespace ExpandedStorage.Framework.UI
         private bool SearchMatches(Item item)
         {
             var searchParts = _searchText.Split(' ');
-            HashSet<string> tags = null;
             foreach (var searchPart in searchParts)
             {
-                if (searchPart.StartsWith(_config.SearchTagSymbol))
+                var matchCondition = !searchPart.StartsWith("!");
+                var searchPhrase = matchCondition ? searchPart : searchPart.Substring(1);
+                if (string.IsNullOrWhiteSpace(searchPhrase))
+                    return true;
+                if (searchPhrase.StartsWith(_config.SearchTagSymbol))
                 {
-                    tags ??= item.GetContextTags(); 
-                    if (!tags.Any(tag => tag.IndexOf(searchPart.Substring(1), StringComparison.InvariantCultureIgnoreCase) >= 0))
+                    if (item.MatchesTagExt(searchPhrase.Substring(1), false) != matchCondition)
                         return false;
                 }
-                else
+                else if ((item.Name.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1 &&
+                          item.DisplayName.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1) == matchCondition)
                 {
-                    if (item.Name.IndexOf(searchPart, StringComparison.InvariantCultureIgnoreCase) == -1 &&
-                        item.DisplayName.IndexOf(searchPart, StringComparison.InvariantCultureIgnoreCase) == -1)
-                        return false;
+                    return false;
                 }
             }
             return true;
