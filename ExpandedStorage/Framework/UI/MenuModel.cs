@@ -283,13 +283,17 @@ namespace ExpandedStorage.Framework.UI
             var searchParts = _searchText.Split(' ');
             foreach (var searchPart in searchParts)
             {
-                if (searchPart.StartsWith(_config.SearchTagSymbol))
+                var matchCondition = !searchPart.StartsWith("!");
+                var searchPhrase = matchCondition ? searchPart : searchPart.Substring(1);
+                if (string.IsNullOrWhiteSpace(searchPhrase))
+                    return true;
+                if (searchPhrase.StartsWith(_config.SearchTagSymbol))
                 {
-                    if (!item.MatchesTagExt(searchPart.Substring(1), false))
+                    if (item.MatchesTagExt(searchPhrase.Substring(1), false) != matchCondition)
                         return false;
                 }
-                else if (item.Name.IndexOf(searchPart, StringComparison.InvariantCultureIgnoreCase) == -1 &&
-                         item.DisplayName.IndexOf(searchPart, StringComparison.InvariantCultureIgnoreCase) == -1)
+                else if ((item.Name.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1 &&
+                          item.DisplayName.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1) == matchCondition)
                 {
                     return false;
                 }
