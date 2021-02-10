@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.PatternPatches;
 using ExpandedStorage.Framework.UI;
@@ -10,7 +9,6 @@ using StardewValley.Menus;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class InventoryMenuPatch : MenuPatch
     {
         internal InventoryMenuPatch(IMonitor monitor, ModConfig config)

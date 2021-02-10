@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
@@ -13,7 +12,6 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class DebrisPatch : HarmonyPatch
     {
-        private readonly Type _type = typeof(Debris);
         internal DebrisPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
         
@@ -21,7 +19,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             if (Config.AllowVacuumItems)
             {
-                harmony.Patch(AccessTools.Method(_type, nameof(Debris.collect)),
+                harmony.Patch(AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
                     new HarmonyMethod(GetType(), nameof(collect_Prefix)));
             }
         }

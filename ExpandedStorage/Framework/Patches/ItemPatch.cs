@@ -7,10 +7,8 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ItemPatch : HarmonyPatch
     {
-        private readonly Type _type = typeof(Item);
         internal ItemPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
         
@@ -18,7 +16,7 @@ namespace ExpandedStorage.Framework.Patches
         {
             if (Config.AllowCarryingChests)
             {
-                harmony.Patch(AccessTools.Method(_type, nameof(Item.canStackWith), new []{typeof(ISalable)}),
+                harmony.Patch(AccessTools.Method(typeof(Item), nameof(Item.canStackWith), new []{typeof(ISalable)}),
                     new HarmonyMethod(GetType(), nameof(canStackWith_Prefix)));
             }
         }

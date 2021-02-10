@@ -20,7 +20,6 @@ namespace ExpandedStorage.Framework.UI
 
         private static IModEvents _events;
         private static IInputHelper _inputHelper;
-        private static IReflectionHelper _reflection;
         private static ModConfig _config;
 
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
@@ -32,11 +31,10 @@ namespace ExpandedStorage.Framework.UI
         public static void RefreshItems() =>
             Instance.Value?.OnItemChanged(Instance.Value, null);
         
-        internal static void Init(IModEvents events, IInputHelper inputHelper, IReflectionHelper reflection, ModConfig config)
+        internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config)
         {
             _events = events;
             _inputHelper = inputHelper;
-            _reflection = reflection;
             _config = config;
 
             // Events

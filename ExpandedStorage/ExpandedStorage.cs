@@ -78,7 +78,7 @@ namespace ExpandedStorage
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
             ChestExtensions.Init(helper.Reflection);
             FarmerExtensions.Init(Monitor);
-            MenuViewModel.Init(helper.Events, helper.Input, helper.Reflection, _config);
+            MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
 
             // Events
@@ -107,7 +107,7 @@ namespace ExpandedStorage
                 new FarmerPatch(Monitor, _config),
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
-                new ChestPatches(Monitor, _config),
+                new ChestPatch(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),

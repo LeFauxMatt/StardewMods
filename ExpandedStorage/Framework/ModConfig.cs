@@ -1,13 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Linq;
 using Common.API.GenericModConfigMenu;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 namespace ExpandedStorage.Framework
 {
-    [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public class ModConfig
     {
         /// <summary>Allow carried chests to be accessed while in inventory.</summary>

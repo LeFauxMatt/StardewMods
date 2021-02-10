@@ -15,10 +15,13 @@ namespace ExpandedStorage.Framework.Patches
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class ObjectPatch : HarmonyPatch
     {
-        private static readonly HashSet<string> ExcludeModDataKeys = new()
+        private static readonly HashSet<string> ExcludeModDataKeys = new();
+        
+        internal static void AddExclusion(string modDataKey)
         {
-            "aedenthorn.CustomChestTypes/IsCustomChest"
-        };
+            if (!ExcludeModDataKeys.Contains(modDataKey))
+                ExcludeModDataKeys.Add(modDataKey);
+        }
 
         internal ObjectPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }

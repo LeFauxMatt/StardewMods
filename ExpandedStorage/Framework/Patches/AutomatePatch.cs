@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.ExternalMods.Automate;
 using Harmony;
@@ -9,8 +8,6 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    [SuppressMessage("ReSharper", "InvertIf")]
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal class AutomatePatch : HarmonyPatch
     {
         private readonly Type _type;

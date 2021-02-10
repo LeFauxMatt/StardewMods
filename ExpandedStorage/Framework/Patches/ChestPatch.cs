@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
@@ -14,15 +13,17 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal class ChestPatches : HarmonyPatch
+    internal class ChestPatch : HarmonyPatch
     {
-        private static readonly HashSet<string> ExcludeModDataKeys = new()
-        {
-            "aedenthorn.CustomChestTypes/IsCustomChest"
-        };
+        private static readonly HashSet<string> ExcludeModDataKeys = new();
 
-        internal ChestPatches(IMonitor monitor, ModConfig config)
+        internal static void AddExclusion(string modDataKey)
+        {
+            if (!ExcludeModDataKeys.Contains(modDataKey))
+                ExcludeModDataKeys.Add(modDataKey);
+        }
+
+        internal ChestPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
         protected internal override void Apply(HarmonyInstance harmony)
         {

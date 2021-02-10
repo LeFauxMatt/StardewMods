@@ -6,10 +6,13 @@ using Common.API.GenericModConfigMenu;
 using Common.API.JsonAssets;
 using ExpandedStorage.Framework.API;
 using ExpandedStorage.Framework.Models;
+using ExpandedStorage.Framework.Patches;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Objects;
+using Object = System.Object;
 
 namespace ExpandedStorage
 {
@@ -42,6 +45,17 @@ namespace ExpandedStorage
             
             // Events
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+        }
+
+        public void DisableWithModData(string modDataKey)
+        {
+            Storage.AddExclusion(modDataKey);
+        }
+        
+        public void DisableDrawWithModData(string modDataKey)
+        {
+            ChestPatch.AddExclusion(modDataKey);
+            ObjectPatch.AddExclusion(modDataKey);
         }
 
         public IStorage GetStorage(string storageName) =>

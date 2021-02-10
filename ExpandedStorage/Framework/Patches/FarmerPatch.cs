@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using StardewModdingAPI;
@@ -9,14 +8,12 @@ namespace ExpandedStorage.Framework.Patches
 {
     internal class FarmerPatch : HarmonyPatch
     {
-        private readonly Type _type = typeof(Farmer);
-        
         internal FarmerPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(_type, nameof(Farmer.addItemToInventory), new []{typeof(Item), typeof(List<Item>)}),
+            harmony.Patch(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new []{typeof(Item), typeof(List<Item>)}),
                 new HarmonyMethod(GetType(), nameof(AddItemToInventoryPrefix)));
         }
 

@@ -17,6 +17,10 @@ namespace ExpandedStorage.Framework
             _helper = helper;
             _expandedStorageAPI = expandedStorageAPI;
 
+            // Default Exclusions
+            _expandedStorageAPI.DisableWithModData("aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest");
+            _expandedStorageAPI.DisableDrawWithModData("aedenthorn.CustomChestTypes/IsCustomChest");
+            
             // Events
             _expandedStorageAPI.ReadyToLoad += OnReadyToLoad;
         }

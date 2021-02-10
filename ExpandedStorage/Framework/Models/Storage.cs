@@ -22,11 +22,14 @@ namespace ExpandedStorage.Framework.Models
     
     public class Storage : StorageConfig, IStorage
     {
-        private static readonly HashSet<string> ExcludeModDataKeys = new()
-        {
-            "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
-        };
+        private static readonly HashSet<string> ExcludeModDataKeys = new();
         
+        internal static void AddExclusion(string modDataKey)
+        {
+            if (!ExcludeModDataKeys.Contains(modDataKey))
+                ExcludeModDataKeys.Add(modDataKey);
+        }
+
         public string StorageName { get; set; }
         public string OpenSound { get; set; } = "openChest";
         public string SpecialChestType { get; set; } = "None";
@@ -68,6 +71,7 @@ namespace ExpandedStorage.Framework.Models
         public bool MatchesContext(object context) =>
             context switch
             {
+                Item item when item.modData.Keys.Any(ExcludeModDataKeys.Contains) => false,
                 AdventureGuild => false,
                 LibraryMuseum => false,
                 GameLocation => SpecialChestType == "MiniShippingBin",
@@ -75,9 +79,7 @@ namespace ExpandedStorage.Framework.Models
                 JunimoHut => StorageName == "Junimo Hut",
                 Chest chest when chest.fridge.Value => IsFridge,
                 Object obj when obj.heldObject.Value is Chest => StorageName == "Auto-Grabber",
-                Object obj when obj.bigCraftable.Value
-                                && !obj.modData.Keys.Any(ExcludeModDataKeys.Contains)
-                    => ObjectIds.Contains(obj.ParentSheetIndex),
+                Object obj when obj.bigCraftable.Value => ObjectIds.Contains(obj.ParentSheetIndex),
                 _ => false
             };
         
