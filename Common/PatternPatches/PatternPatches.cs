@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Harmony;
 using StardewModdingAPI;
 
-namespace Common.HarmonyPatches
+namespace Common.PatternPatches
 {
     public class PatternPatches : IEnumerable<CodeInstruction>
     {

@@ -9,8 +9,11 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ExternalMods\Automate\ITrackedStack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExternalMods\GenericModConfigMenu\IGenericModConfigMenuAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommonExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HarmonyPatches\PatternPatch.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HarmonyPatches\PatternPatches.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExternalMods\JsonAssets\IJsonAssetsAPI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\PatternPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\PatternPatches.cs" />
   </ItemGroup>
 </Project>

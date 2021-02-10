@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Common.API.GenericModConfigMenu;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 

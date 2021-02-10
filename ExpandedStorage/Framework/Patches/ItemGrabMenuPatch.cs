@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.HarmonyPatches;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
 using Harmony;
@@ -15,9 +14,6 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
-    [SuppressMessage("ReSharper", "InvertIf")]
-    [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class ItemGrabMenuPatch : MenuPatch
     {
         private static IReflectionHelper _reflection;
@@ -145,6 +141,9 @@ namespace ExpandedStorage.Framework.Patches
             if (config == null || __instance.context is ShippingBin)
                 return;
 
+            __instance.ItemsToGrabMenu.rows = MenuModel.GetRows(__instance.context);
+            __instance.ItemsToGrabMenu.capacity = MenuModel.GetMenuCapacity(__instance.context);
+
             if (__instance.context is not Chest chest)
                 chest = null;
 
@@ -161,6 +160,7 @@ namespace ExpandedStorage.Framework.Patches
                     {
                         ExpandedStorage.HeldChest.Value.GetItemsForPlayer(who.UniqueMultiplayerID).Remove(item);
                         ExpandedStorage.HeldChest.Value.clearNulls();
+                        MenuViewModel.RefreshItems();
                     }
                     chest.ShowMenu();
                     if (Game1.activeClickableMenu is ItemGrabMenu menu)
@@ -174,6 +174,7 @@ namespace ExpandedStorage.Framework.Patches
                     {
                         chest.GetItemsForPlayer(who.UniqueMultiplayerID).Remove(item);
                         chest.clearNulls();
+                        MenuViewModel.RefreshItems();
                     }
                 };
                 

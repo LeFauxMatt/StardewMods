@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 // ReSharper disable All
-namespace ExpandedStorage
+namespace Common.API.GenericModConfigMenu
 {
     public interface IGenericModConfigMenuAPI
     {

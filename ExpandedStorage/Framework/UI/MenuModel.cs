@@ -25,10 +25,10 @@ namespace ExpandedStorage.Framework.UI
         internal ItemGrabMenu Menu;
         
         /// <summary>Expanded Storage Config data for Menu</summary>
-        internal readonly StorageContentData StorageConfig;
+        internal readonly Storage StorageConfig;
         
         /// <summary>Expanded Storage Tab data for Menu</summary>
-        internal readonly IList<TabContentData> StorageTabs;
+        internal readonly IList<StorageTab> StorageTabs;
 
         /// <summary>Displayed inventory items after filter and scroll</summary>
         internal IList<Item> FilteredItems { get; set; }
@@ -168,7 +168,7 @@ namespace ExpandedStorage.Framework.UI
             _skippedRows = 0;
             _searchText = "";
 
-            if (StorageConfig != null)
+            if (StorageConfig?.Tabs != null)
             {
                 StorageTabs = StorageConfig.Tabs
                     .Select(t => ExpandedStorage.GetTab($"{StorageConfig.ModUniqueId}/{t}"))

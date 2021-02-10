@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Common.ExternalMods.Automate;
 using Harmony;
 using StardewModdingAPI;
 using StardewValley;

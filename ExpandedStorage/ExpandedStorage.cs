@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Common.API.GenericModConfigMenu;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
@@ -21,13 +22,13 @@ namespace ExpandedStorage
         internal static readonly PerScreen<Chest> HeldChest = new();
 
         /// <summary>Tracks all chests that may be used for vacuum items.</summary>
-        internal static readonly PerScreen<IDictionary<Chest, StorageContentData>> VacuumChests = new();
+        internal static readonly PerScreen<IDictionary<Chest, Storage>> VacuumChests = new();
 
         /// <summary>Dictionary of Expanded Storage configs</summary>
-        private static readonly IDictionary<string, StorageContentData> StorageContent = new Dictionary<string, StorageContentData>();
+        private static readonly IDictionary<string, Storage> Storages = new Dictionary<string, Storage>();
 
         /// <summary>Dictionary of Expanded Storage tabs</summary>
-        private static readonly IDictionary<string, TabContentData> StorageTabs = new Dictionary<string, TabContentData>();
+        private static readonly IDictionary<string, StorageTab> StorageTabs = new Dictionary<string, StorageTab>();
 
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
@@ -39,20 +40,26 @@ namespace ExpandedStorage
         private readonly PerScreen<IReflectedField<int>> _currentLidFrameReflected = new();
 
         private ContentLoader _contentLoader;
+        private ExpandedStorageAPI _expandedStorageAPI;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static StorageContentData GetConfig(object context) =>
-            StorageContent
+        public static Storage GetConfig(object context) =>
+            Storages
                 .Select(c => c.Value)
                 .FirstOrDefault(c => c.MatchesContext(context));
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
         private static bool HasConfig(object context) =>
-            StorageContent.Any(c => c.Value.MatchesContext(context));
+            Storages.Any(c => c.Value.MatchesContext(context));
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
-        public static TabContentData GetTab(string tabName) =>
+        public static StorageTab GetTab(string tabName) =>
             StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
+
+        public override object GetApi()
+        {
+            return _expandedStorageAPI;
+        }
         
         public override void Entry(IModHelper helper)
         {
@@ -64,8 +71,9 @@ namespace ExpandedStorage
                 Monitor.Log("Expanded Storage should not be run alongside Carry Chest!", LogLevel.Warn);
                 _config.AllowCarryingChests = false;
             }
-            
-            _contentLoader = new ContentLoader(Monitor, Helper, StorageContent, StorageTabs);
+
+            _expandedStorageAPI = new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
+            _contentLoader = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
             
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
             ChestExtensions.Init(helper.Reflection);
@@ -128,7 +136,7 @@ namespace ExpandedStorage
         {
             // Load bigCraftable on next tick for vanilla storages
             if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-                Helper.Events.GameLoop.UpdateTicked += _contentLoader.OnAssetsLoaded;
+                Helper.Events.GameLoop.UpdateTicked += _expandedStorageAPI.OnAssetsLoaded;
             return false;
         }
 

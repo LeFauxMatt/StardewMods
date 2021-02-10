@@ -74,7 +74,7 @@ namespace ExpandedStorage.Framework.UI
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
             
-            if (_model.StorageConfig == null)
+            if (_model.StorageConfig?.Tabs == null)
                 return;
             
             foreach (var tab in _model.StorageTabs)

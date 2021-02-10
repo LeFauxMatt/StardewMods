@@ -60,19 +60,22 @@ An Expanded Storage must be loaded into the game as a [Big Craftable](https://st
 field               | description
 --------------------|-------------
 `StorageName`       | Name of the object, must match the Big Craftable name. **(Required)**
-`Capacity`          | Number of item slots this storage supports. `-1` will be treated as infinite items, `0` will use the default vanilla value. (default 0)
+`Capacity`          | Number of item slots this storage supports. `-1` will be treated as infinite items, `0` will use the default vanilla value. (default `0`)<sup>[1](#storagecapacity)</sup>
 `CanCarry`          | Allows this storage to be picked up when it contains items. (default `true`)
 `AccessCarried`     | Open the chest menu while item is currently being held. (default `false`)
 `VacuumItems`       | Storage will collect dropped items directly into it, bypassing the backpack. (default `false`)
 `ShowSearchBar`     | Add a search bar to the chest menu for this storage. (default `false`)
 `IsPlaceable`       | Set to `false` to disallow chest from being placed. (default `true`)
-`OpenSound`         | Sound to play when storage is being opened. (default `"openChest"`)
+`OpenSound`         | Sound to play when storage is being opened. (default `"openChest"`) <sup>[2](#handyheadphones)</sup>
 `IsFridge`          | Set to `true` if storage should be treated as a Mini-Fridge. (default `false`)
 `SpecialChestType`  | `"None"`, `"MiniShippingBin"`, or `"JunimoChest"`. (default `"None"`) 
 `AllowList`         | Restrict chest to only accept items containing these [tags](#context-tags). (default `null`)
 `BlockList`         | Restrict chest to reject items containing these [tags](#context-tags). (default `null`)
 `Tabs`              | Adds [tabs](#storage-tabs) to the chest menu for this storage by the tab name(s). (default `null`)
 `ModData`           | Adds to the storage [modData](#mod-data) when placed. (default `null`)
+
+<b id="storagecapacity">1.</b> Assign a capacity of at least one row (12) to avoid visual glitches.  
+<b id="handyheadphones">2.</b> I recommend [Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from in-game.
 
 ### Storage Tabs
 

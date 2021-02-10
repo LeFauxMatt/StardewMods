@@ -15,7 +15,7 @@ namespace ExpandedStorage.Framework.Extensions
         private const string CategoryArtifact = "category_artifact";
         private const string DonateMuseum = "donate_museum";
         private const string DonateBundle = "donate_bundle";
-        public static Chest ToChest(this Item item, StorageContentData config = null)
+        public static Chest ToChest(this Item item, Storage config = null)
         {
             // Get config for chest
             config ??= ExpandedStorage.GetConfig(item);

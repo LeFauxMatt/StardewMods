@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.HarmonyPatches;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.UI;
 using Harmony;
 using Microsoft.Xna.Framework.Graphics;

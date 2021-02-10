@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Harmony;
 
-namespace Common.HarmonyPatches
+namespace Common.PatternPatches
 {
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class PatternPatch

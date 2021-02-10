@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
 using ExpandedStorage.Framework.Extensions;
@@ -20,43 +19,42 @@ namespace ExpandedStorage.Framework.Models
         CustomChestTypes
     };
     
-    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
-    public class StorageContentData : StorageConfig
+    public class Storage : StorageConfig
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new()
         {
             "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
         };
-
-        /// <summary>Storage Name must match the name from Json Assets.</summary>
-        public string StorageName;
-
+        
+        /// <summary>Storage Name must match the name field for a BigCraftable Object.</summary>
+        public string StorageName { get; set; }
+        
         /// <summary>The game sound that will play when the storage is opened.</summary>
-        public string OpenSound = "openChest";
-
+        public string OpenSound { get; set; } = "openChest";
+        
         /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
-        public string SpecialChestType = "None";
+        public string SpecialChestType { get; set; } = "None";
         
         /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
-        public bool IsFridge;
+        public bool IsFridge { get; set; } = false;
         
         /// <summary>Allows the storage to be placed in the world.</summary>
-        public bool IsPlaceable = true;
-
-        /// <summary>Add modData to placed chests (if key does not already exist).</summary>
-        public IDictionary<string, string> ModData = new Dictionary<string, string>();
-
-        /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
-        public IList<string> AllowList = new List<string>();
-
-        /// <summary>When specified, storage may hold allowed items except for those with blocked context tags.</summary>
-        public IList<string> BlockList = new List<string>();
-
-        /// <summary>List of tabs to show on chest menu.</summary>
-        public IList<string> Tabs = new List<string>();
+        public bool IsPlaceable { get; set; } = true;
         
+        /// <summary>Add modData to placed chests (if key does not already exist).</summary>
+        public IDictionary<string, string> ModData { get; set; }
+        
+        /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
+        public IList<string> AllowList { get; set; }
+        
+        /// <summary>When specified, storage may hold allowed items except for those with blocked context tags.</summary>
+        public IList<string> BlockList { get; set; }
+        
+        /// <summary>List of tabs to show on chest menu.</summary>
+        public IList<string> Tabs { get; set; }
+
         /// <summary>Which mod was used to load these assets into the game.</summary>
-        internal SourceType SourceType;
+        internal SourceType SourceType { get; set; } = SourceType.Unknown;
         
         /// <summary>List of ParentSheetIndex related to this item.</summary>
         internal IList<int> ObjectIds = new List<int>();
@@ -64,11 +62,10 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
-        internal StorageContentData() : this(null) { }
-        internal StorageContentData(string storageName, SourceType sourceType = SourceType.Unknown)
+        internal Storage() : this(null) { }
+        internal Storage(string storageName)
         {
             StorageName = storageName;
-            SourceType = sourceType;
             
             switch (storageName)
             {
@@ -100,8 +97,8 @@ namespace ExpandedStorage.Framework.Models
                 _ => false
             };
         
-        private bool IsAllowed(Item item) => !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
-        private bool IsBlocked(Item item) => BlockList.Any() && BlockList.Any(item.MatchesTagExt);
+        private bool IsAllowed(Item item) => AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
+        private bool IsBlocked(Item item) => BlockList != null && BlockList.Any() && BlockList.Any(item.MatchesTagExt);
         public bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
 
         public bool HighlightMethod(Item item) =>

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 // ReSharper disable All
 
-namespace ExpandedStorage
+namespace Common.API.JsonAssets
 {
-    public interface IJsonAssetsApi
+    public interface IJsonAssetsAPI
     {
-        //void LoadAssets(string path);
+        void LoadAssets(string path);
         
-        //int GetBigCraftableId(string name);
+        int GetBigCraftableId(string name);
 
         //IDictionary<string, int> GetAllObjectIds();
         //IDictionary<string, int> GetAllCropIds();
