@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using StardewModdingAPI;
-using StardewValley.Characters;
 
 namespace ExpandedStorage.Framework.API
 {
@@ -24,6 +24,14 @@ namespace ExpandedStorage.Framework.API
         /// <param name="modDataKey">The modData key.</param>
         void DisableDrawWithModData(string modDataKey);
 
+        /// <summary>Returns all Expanded Storage by name.</summary>
+        /// <returns>List of storages</returns>
+        IList<string> GetAllStorages();
+
+        /// <summary>Returns all Expanded Storage by sheet index.</summary>
+        /// <returns>List of storage ids</returns>
+        IList<int> GetAllStorageIds();
+        
         /// <summary>Returns storage info based on name.</summary>
         /// <param name="storageName">The name of the storage.</param>
         /// <returns>Storage Info</returns>

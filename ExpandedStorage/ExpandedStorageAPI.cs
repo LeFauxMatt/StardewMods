@@ -11,8 +11,6 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Objects;
-using Object = System.Object;
 
 namespace ExpandedStorage
 {
@@ -57,6 +55,11 @@ namespace ExpandedStorage
             ChestPatch.AddExclusion(modDataKey);
             ObjectPatch.AddExclusion(modDataKey);
         }
+
+        public IList<string> GetAllStorages() => _storageConfigs.Keys.ToList();
+
+        public IList<int> GetAllStorageIds() =>
+            _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
 
         public IStorage GetStorage(string storageName) =>
             _storageConfigs.TryGetValue(storageName, out var storage)

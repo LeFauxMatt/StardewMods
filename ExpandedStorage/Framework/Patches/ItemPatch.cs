@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Harmony;
+﻿using Harmony;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;

@@ -15,7 +15,6 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
     internal class ExpandedStorage : Mod, IAssetEditor
     {
         /// <summary>Tracks previously held chest before placing into world.</summary>
