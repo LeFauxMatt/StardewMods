@@ -1,5 +1,6 @@
 ﻿using System;
 using Common.API.GenericModConfigMenu;
+using ExpandedStorage.Framework.API;
 using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework

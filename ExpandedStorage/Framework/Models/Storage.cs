@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common;
+using ExpandedStorage.Framework.API;
 using ExpandedStorage.Framework.Extensions;
 using StardewValley;
 using StardewValley.Buildings;
@@ -19,38 +20,21 @@ namespace ExpandedStorage.Framework.Models
         CustomChestTypes
     };
     
-    public class Storage : StorageConfig
+    public class Storage : StorageConfig, IStorage
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new()
         {
             "aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest"
         };
         
-        /// <summary>Storage Name must match the name field for a BigCraftable Object.</summary>
         public string StorageName { get; set; }
-        
-        /// <summary>The game sound that will play when the storage is opened.</summary>
         public string OpenSound { get; set; } = "openChest";
-        
-        /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
         public string SpecialChestType { get; set; } = "None";
-        
-        /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
         public bool IsFridge { get; set; } = false;
-        
-        /// <summary>Allows the storage to be placed in the world.</summary>
         public bool IsPlaceable { get; set; } = true;
-        
-        /// <summary>Add modData to placed chests (if key does not already exist).</summary>
         public IDictionary<string, string> ModData { get; set; }
-        
-        /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
         public IList<string> AllowList { get; set; }
-        
-        /// <summary>When specified, storage may hold allowed items except for those with blocked context tags.</summary>
         public IList<string> BlockList { get; set; }
-        
-        /// <summary>List of tabs to show on chest menu.</summary>
         public IList<string> Tabs { get; set; }
 
         /// <summary>Which mod was used to load these assets into the game.</summary>
@@ -125,6 +109,17 @@ namespace ExpandedStorage.Framework.Models
 
         internal int MenuPadding => ShowSearchBar ? 24 : 0;
         internal int MenuOffset => 64 * (MenuRows - 3);
+        internal void CopyFrom(IStorage storage)
+        {
+            OpenSound = storage.OpenSound;
+            SpecialChestType = storage.SpecialChestType;
+            IsFridge = storage.IsFridge;
+            IsPlaceable = storage.IsPlaceable;
+            ModData = storage.ModData;
+            AllowList = storage.AllowList;
+            BlockList = storage.BlockList;
+            Tabs = storage.Tabs;
+        }
         internal string SummaryReport =>
             $"Loaded {StorageName} Config\n" +
             $"\tAccess Carried     : {AccessCarried}\n" +

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Common.API.GenericModConfigMenu;
 using Common.API.JsonAssets;
+using ExpandedStorage.Framework.API;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -23,8 +24,8 @@ namespace ExpandedStorage
         
         private IGenericModConfigMenuAPI _modConfigApi;
         private IJsonAssetsAPI _jsonAssetsApi;
-        
         public event EventHandler ReadyToLoad;
+        public event EventHandler StoragesLoaded;
 
         private bool _isContentLoaded;
         
@@ -41,6 +42,59 @@ namespace ExpandedStorage
             
             // Events
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+        }
+
+        public bool RegisterStorage(IStorage storage, IStorageConfig config = null)
+        {
+            if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
+                return false;
+            
+            storageConfig.CopyFrom(storage);
+            
+            if (config != null)
+                storageConfig.CopyFrom(config);
+            
+            return true;
+        }
+        
+        public bool RegisterStorage(int sheetIndex, IStorage storage, IStorageConfig config = null)
+        {
+            var storageConfig = _storageConfigs
+                .Select(storageData => storageData.Value)
+                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
+            
+            if (storageConfig == null)
+                return false;
+            
+            storageConfig.CopyFrom(storage);
+            
+            if (config != null)
+                storageConfig.CopyFrom(config);
+            
+            return true;
+        }
+        
+        public bool UpdateStorageConfig(IStorage storage, IStorageConfig config)
+        {
+            if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
+                return false;
+            
+            storageConfig.CopyFrom(config);
+            return true;
+        }
+        
+        public bool UpdateStorageConfig(int sheetIndex, IStorageConfig config)
+        {
+            var storageConfig = _storageConfigs
+                .Select(storageData => storageData.Value)
+                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
+            
+            if (storageConfig == null)
+                return false;
+            
+            storageConfig.CopyFrom(config);
+            
+            return true;
         }
 
         public bool LoadContentPack(string path)
@@ -173,8 +227,7 @@ namespace ExpandedStorage
             if (_jsonAssetsApi != null)
                 _jsonAssetsApi.IdsAssigned += OnIdsAssigned;
             
-            InvokeReadyToLoad();
-
+            InvokeAll(ReadyToLoad);
             _isContentLoaded = true;
         }
 
@@ -202,6 +255,8 @@ namespace ExpandedStorage
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Value))
                     storageConfig.ObjectIds.Add(bigCraftable.Value);
             }
+            
+            InvokeAll(StoragesLoaded);
         }
 
         /// <summary>Load Vanilla Asset Ids.</summary>
@@ -248,6 +303,8 @@ namespace ExpandedStorage
                 if (!storageConfig.ObjectIds.Contains(obj.Key))
                     storageConfig.ObjectIds.Add(obj.Key);
             }
+
+            InvokeAll(StoragesLoaded);
         }
 
         private Func<Texture2D> LoadTexture(IContentPack contentPack, string assetName) =>
@@ -320,12 +377,13 @@ namespace ExpandedStorage
                 _storageConfigs
                     .Where(c => c.Value.ModUniqueId == contentPack.Manifest.UniqueID)
                     .ToDictionary(c => c.Key, c => StorageConfig.Clone(c.Value)));
-        
-        private void InvokeReadyToLoad()
+
+        private void InvokeAll(EventHandler eventHandler)
         {
-            if (ReadyToLoad == null)
+            if (eventHandler == null)
                 return;
-            foreach (var @delegate in ReadyToLoad.GetInvocationList())
+
+            foreach (var @delegate in eventHandler.GetInvocationList())
             {
                 @delegate.DynamicInvoke(this, null);
             }
