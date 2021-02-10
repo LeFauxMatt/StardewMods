@@ -44,6 +44,26 @@ namespace ExpandedStorage
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
 
+        public IStorage GetStorage(string storageName) =>
+            _storageConfigs.TryGetValue(storageName, out var storage)
+                ? storage
+                : null;
+
+        public IStorage GetStorage(int sheetIndex) =>
+            _storageConfigs
+                .Select(storageData => storageData.Value)
+                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
+        
+        public IStorageConfig GetStorageConfig(string storageName) =>
+            _storageConfigs.TryGetValue(storageName, out var storage)
+                ? storage
+                : null;
+
+        public IStorageConfig GetStorageConfig(int sheetIndex) =>
+            _storageConfigs
+                .Select(storageData => storageData.Value)
+                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
+        
         public bool RegisterStorage(IStorage storage, IStorageConfig config = null)
         {
             if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))

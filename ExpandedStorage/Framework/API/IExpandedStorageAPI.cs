@@ -16,6 +16,26 @@ namespace ExpandedStorage.Framework.API
         /// <returns>True if content was loaded successfully.</returns>
         bool LoadContentPack(IContentPack contentPack);
 
+        /// <summary>Returns storage info based on name.</summary>
+        /// <param name="storageName">The name of the storage.</param>
+        /// <returns>Storage Info</returns>
+        IStorage GetStorage(string storageName);
+        
+        /// <summary>Returns storage info based on sheet index.</summary>
+        /// <param name="sheetIndex">Sheet index on BigCraftables.</param>
+        /// <returns>Storage Info</returns>
+        IStorage GetStorage(int sheetIndex);
+        
+        /// <summary>Returns storage config based on name.</summary>
+        /// <param name="storageName">The name of the storage.</param>
+        /// <returns>Storage Config</returns>
+        IStorageConfig GetStorageConfig(string storageName);
+        
+        /// <summary>Returns storage config based on sheet index.</summary>
+        /// <param name="sheetIndex">Sheet index on BigCraftables.</param>
+        /// <returns>Storage Config</returns>
+        IStorageConfig GetStorageConfig(int sheetIndex);
+
         /// <summary>Registers Expanded Storage features for a storage object.</summary>
         /// <param name="storage">Storage features to enable.</param>
         /// <param name="config">Storage config.</param>
