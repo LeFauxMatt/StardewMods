@@ -278,12 +278,12 @@ namespace ExpandedStorage.Framework.UI
             
             
             // Show/hide arrows
-            if (_view.UpArrow != null)
+            if (_view?.UpArrow != null)
             {
                 _view.UpArrow.visible = _model.SkippedRows > 0;
             }
 
-            if (_view.DownArrow != null)
+            if (_view?.DownArrow != null)
             {
                 _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
             }
