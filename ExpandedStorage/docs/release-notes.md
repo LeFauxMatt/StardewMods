@@ -30,24 +30,36 @@
 
 ## 1.4.2
 
-- Fixed error when config is missing
-
-## 1.4.1
-
-- Fixed config loading duplicate data after Return to Title
-
-## 1.4.0
-
 - Added non-placeable storage
 - Support Generic Mod Config Menu
 - Support Special Chest Types
+- Fixed config loading duplicate data after Return to Title
+- Fixed error when config is missing
 
-## 1.3.0
+## 1.3.1
 
 - Added chest tabs
+- Fixed scrolling desync
 
-## 1.2.0
+## 1.2.2
 
-- Added resizable chest menu
-- Added controller config 
+- Support vanilla chests
 - Support colored chests
+
+## 1.1.0
+
+- Added patching system
+- Added resizable chest menu
+- Added controller config
+
+## 1.0.4
+
+- Added Overlay for scrolling inventory
+- Added controller support
+- Added Carry Chest
+- Fixed Chests Anywhere compatibility
+- Remove dependency on StardewHack
+
+## 1.0.0
+
+- Initial Release
