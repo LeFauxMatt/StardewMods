@@ -247,7 +247,7 @@ namespace ExpandedStorage.Framework.UI
         {
             var items = _model.Items.Where(item => item != null);
 
-            if (_model.CurrentTab != -1)
+            if (_model.CurrentTab != -1 && _model.StorageTabs != null)
             {
                 var currentTab = _model.StorageTabs.ElementAtOrDefault(_model.CurrentTab);
                 if (currentTab != null)

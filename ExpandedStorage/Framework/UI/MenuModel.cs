@@ -69,7 +69,7 @@ namespace ExpandedStorage.Framework.UI
             get => _currentTab;
             set
             {
-                if (_currentTab == value)
+                if (_currentTab == value || StorageTabs == null)
                     return;
                 _currentTab = value switch
                 {
