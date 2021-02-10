@@ -115,7 +115,7 @@ namespace ExpandedStorage.Framework
                         _monitor.Log($"Duplicate storage {storageContent.StorageName} found in {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
                         continue;
                     }
-
+                    
                     // Generate default config
                     if (!playerConfig.TryGetValue(storageContent.StorageName, out var storageConfig))
                     {
@@ -123,7 +123,7 @@ namespace ExpandedStorage.Framework
                         playerConfig.Add(storageContent.StorageName, storageConfig);
                         contentPack.WriteJsonFile("config.json", playerConfig);
                     }
-
+                    
                     // Generate player instance of storage content
                     var playerContent = new StorageContentData
                     {

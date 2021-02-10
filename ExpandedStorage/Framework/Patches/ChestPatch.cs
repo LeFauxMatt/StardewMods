@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
+using ExpandedStorage.Framework.UI;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -30,6 +31,14 @@ namespace ExpandedStorage.Framework.Patches
                 prefix: new HarmonyMethod(GetType(), nameof(CheckForActionPrefix))
             );
 
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromChest)),
+                postfix: new HarmonyMethod(GetType(), nameof(GrabItemFromChestPostfix)));
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromInventory)),
+                postfix: new HarmonyMethod(GetType(), nameof(GrabItemFromInventoryPostfix)));
+            
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
                 prefix: new HarmonyMethod(GetType(), nameof(DrawPrefix))
@@ -92,6 +101,18 @@ namespace ExpandedStorage.Framework.Patches
             
             __result = item;
             return false;
+        }
+
+        /// <summary>Refresh inventory after item grabbed from chest.</summary>
+        public static void GrabItemFromChestPostfix()
+        {
+            MenuViewModel.RefreshItems();
+        }
+
+        /// <summary>Refresh inventory after item grabbed from inventory.</summary>
+        public static void GrabItemFromInventoryPostfix()
+        {
+            MenuViewModel.RefreshItems();
         }
 
         /// <summary>Draw chest with playerChoiceColor and lid animation when placed.</summary>

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common;
-using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
-using Microsoft.Xna.Framework;
 using Netcode;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -33,7 +31,7 @@ namespace ExpandedStorage.Framework.UI
         internal readonly IList<TabContentData> StorageTabs;
 
         /// <summary>Displayed inventory items after filter and scroll</summary>
-        internal IList<Item> FilteredItems { get; private set; }
+        internal IList<Item> FilteredItems { get; set; }
         
         /// <summary>The inventory items that the inventory menu is associated with</summary>
         internal readonly IList<Item> Items;
@@ -47,7 +45,7 @@ namespace ExpandedStorage.Framework.UI
                 if (_searchText == value)
                     return;
                 _searchText = value;
-                RefreshItems();
+                InvokeItemChanged();
             }
         }
         private string _searchText;
@@ -61,7 +59,7 @@ namespace ExpandedStorage.Framework.UI
                 if (_skippedRows == value)
                     return;
                 _skippedRows = value;
-                RefreshItems();
+                InvokeItemChanged();
             }
         }
         private int _skippedRows;
@@ -80,16 +78,16 @@ namespace ExpandedStorage.Framework.UI
                     _ => value
                 };
                 _skippedRows = 0;
-                RefreshItems();
+                InvokeItemChanged();
             }
         }
         private int _currentTab;
         
         /// <summary>The maximum number of rows that can be skipped</summary>
-        internal int MaxRows { get; private set; }
+        internal int MaxRows { get; set; }
 
         /// <summary>The number of rows for the inventory menu</summary>
-        private readonly int _menuRows;
+        internal readonly int MenuRows;
         
         /// <summary>The object that the inventory menu is associated with</summary>
         private readonly object _menuContext;
@@ -150,7 +148,6 @@ namespace ExpandedStorage.Framework.UI
             }
             
             Instance.Value.Menu = menu;
-            Instance.Value.RefreshItems();
             return Instance.Value;
         }
         
@@ -160,12 +157,12 @@ namespace ExpandedStorage.Framework.UI
             
             Menu = menu;
             _menuContext = menu.context;
-            _menuRows = Menu.ItemsToGrabMenu.rows;
+            MenuRows = Menu.ItemsToGrabMenu.rows;
 
             StorageConfig = ExpandedStorage.GetConfig(_menuContext);
             Items = menu.ItemsToGrabMenu.actualInventory;
             FilteredItems = Items;
-            MaxRows = Math.Max(0, Items.Count.RoundUp(12) / 12 - _menuRows);
+            MaxRows = Math.Max(0, Items.Count.RoundUp(12) / 12 - MenuRows);
             
             _currentTab = -1;
             _skippedRows = 0;
@@ -233,12 +230,12 @@ namespace ExpandedStorage.Framework.UI
         
         private void ItemsOnElementChanged(NetList<Item, NetRef<Item>> list, int index, Item oldValue, Item newValue)
         {
-            RefreshItems();
+            InvokeItemChanged();
         }
 
         private void ShippingBinOnValueChanged(Item value)
         {
-            RefreshItems();
+            InvokeItemChanged();
         }
 
         private void InvokeItemChanged()
@@ -249,56 +246,6 @@ namespace ExpandedStorage.Framework.UI
             {
                 @delegate.DynamicInvoke(this, null);
             }
-        }
-
-        protected internal void RefreshItems()
-        {
-            var items = Items.Where(item => item != null);
-
-            if (_currentTab != -1)
-            {
-                var currentTab = StorageTabs.ElementAtOrDefault(_currentTab);
-                if (currentTab != null)
-                    items = items.Where(currentTab.Filter);
-            }
-            
-            if (!string.IsNullOrWhiteSpace(_searchText))
-            {
-                items = items.Where(SearchMatches);
-            }
-            
-            var list = items.ToList();
-            MaxRows = Math.Max(0, list.Count.RoundUp(12) / 12 - _menuRows);
-            _skippedRows = (int) MathHelper.Clamp(_skippedRows, 0, MaxRows);
-            FilteredItems = list
-                .Skip(_skippedRows * 12)
-                .Take(_menuRows * 12 + 12)
-                .ToList();
-
-            InvokeItemChanged();
-        }
-        
-        private bool SearchMatches(Item item)
-        {
-            var searchParts = _searchText.Split(' ');
-            foreach (var searchPart in searchParts)
-            {
-                var matchCondition = !searchPart.StartsWith("!");
-                var searchPhrase = matchCondition ? searchPart : searchPart.Substring(1);
-                if (string.IsNullOrWhiteSpace(searchPhrase))
-                    return true;
-                if (searchPhrase.StartsWith(_config.SearchTagSymbol))
-                {
-                    if (item.MatchesTagExt(searchPhrase.Substring(1), false) != matchCondition)
-                        return false;
-                }
-                else if ((item.Name.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1 &&
-                          item.DisplayName.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1) == matchCondition)
-                {
-                    return false;
-                }
-            }
-            return true;
         }
     }
 }

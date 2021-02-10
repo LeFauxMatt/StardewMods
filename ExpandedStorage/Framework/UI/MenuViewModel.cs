@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Common;
+using ExpandedStorage.Framework.Extensions;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -25,6 +28,10 @@ namespace ExpandedStorage.Framework.UI
         
         private readonly MenuModel _model;
         private readonly MenuView _view;
+
+        public static void RefreshItems() =>
+            Instance.Value?.OnItemChanged(Instance.Value, null);
+        
         internal static void Init(IModEvents events, IInputHelper inputHelper, IReflectionHelper reflection, ModConfig config)
         {
             _events = events;
@@ -67,22 +74,6 @@ namespace ExpandedStorage.Framework.UI
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
             
-            var reflectedBehaviorFunction =
-                _reflection.GetField<ItemGrabMenu.behaviorOnItemSelect>(menu, "behaviorFunction");
-            var behaviorOnItemSelect = reflectedBehaviorFunction.GetValue();
-            reflectedBehaviorFunction.SetValue(delegate(Item item, Farmer who)
-            {
-                behaviorOnItemSelect?.Invoke(item, who);
-                _model.RefreshItems();
-            });
-            
-            var behaviorOnItemGrab = menu.behaviorOnItemGrab;
-            menu.behaviorOnItemGrab = delegate(Item item, Farmer who)
-            {
-                behaviorOnItemGrab?.Invoke(item, who);
-                _model.RefreshItems();
-            };
-
             if (_model.StorageConfig == null)
                 return;
             
@@ -92,7 +83,7 @@ namespace ExpandedStorage.Framework.UI
             }
 
             _view.CurrentTab = _model.CurrentTab;
-            _model.RefreshItems();
+            OnItemChanged(this, null);
         }
         
         public void Dispose()
@@ -256,6 +247,28 @@ namespace ExpandedStorage.Framework.UI
         /// <param name="e">The event arguments.</param>
         private void OnItemChanged(object sender, EventArgs e)
         {
+            var items = _model.Items.Where(item => item != null);
+
+            if (_model.CurrentTab != -1)
+            {
+                var currentTab = _model.StorageTabs.ElementAtOrDefault(_model.CurrentTab);
+                if (currentTab != null)
+                    items = items.Where(currentTab.Filter);
+            }
+            
+            if (!string.IsNullOrWhiteSpace(_model.SearchText))
+            {
+                items = items.Where(SearchMatches);
+            }
+            
+            var list = items.ToList();
+            _model.MaxRows = Math.Max(0, list.Count.RoundUp(12) / 12 - _model.MenuRows);
+            _model.SkippedRows = (int) MathHelper.Clamp(_model.SkippedRows, 0, _model.MaxRows);
+            _model.FilteredItems = list
+                .Skip(_model.SkippedRows * 12)
+                .Take(_model.MenuRows * 12 + 12)
+                .ToList();
+            
             // Update Inventory Menu to correct item slot
             for (var i = 0; i < _model.Menu.ItemsToGrabMenu.inventory.Count; i++)
             {
@@ -276,6 +289,29 @@ namespace ExpandedStorage.Framework.UI
             {
                 _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
             }
+        }
+
+        private bool SearchMatches(Item item)
+        {
+            var searchParts = _model.SearchText.Split(' ');
+            foreach (var searchPart in searchParts)
+            {
+                var matchCondition = !searchPart.StartsWith("!");
+                var searchPhrase = matchCondition ? searchPart : searchPart.Substring(1);
+                if (string.IsNullOrWhiteSpace(searchPhrase))
+                    return true;
+                if (searchPhrase.StartsWith(_config.SearchTagSymbol))
+                {
+                    if (item.MatchesTagExt(searchPhrase.Substring(1), false) != matchCondition)
+                        return false;
+                }
+                else if ((item.Name.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1 &&
+                          item.DisplayName.IndexOf(searchPhrase, StringComparison.InvariantCultureIgnoreCase) == -1) == matchCondition)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
