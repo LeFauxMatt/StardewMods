@@ -1,5 +1,14 @@
 ﻿# Release Notes
 
+## 1.6.0
+
+- Added ExpandedStorageAPI methods
+- Optimized texture loading for chest tabs
+
+## 1.5.3
+
+- Fixed error when loading chest without tabs
+
 ## 1.5.2
 
 - Added all Furniture to category_furniture tag
