@@ -5,6 +5,11 @@ using ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 
+// ReSharper disable MemberCanBePrivate.Global
+
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 namespace ExpandedStorage.Framework.Models
 {
     public class StorageTab
@@ -30,8 +35,19 @@ namespace ExpandedStorage.Framework.Models
         /// <summary>Texture to draw for tab.</summary>
         internal Texture2D Texture => _texture ??= LoadTexture();
 
-        private bool IsAllowed(Item item) => AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
-        private bool IsBlocked(Item item) => BlockList != null && BlockList.Any() && BlockList.Any(item.MatchesTagExt);
-        internal bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
+        private bool IsAllowed(Item item)
+        {
+            return AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
+        }
+
+        private bool IsBlocked(Item item)
+        {
+            return BlockList != null && BlockList.Any() && BlockList.Any(item.MatchesTagExt);
+        }
+
+        internal bool Filter(Item item)
+        {
+            return IsAllowed(item) && !IsBlocked(item);
+        }
     }
 }

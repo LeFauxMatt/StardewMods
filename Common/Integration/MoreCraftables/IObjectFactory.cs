@@ -1,6 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
 
+// ReSharper disable UnusedParameter.Global
+
+// ReSharper disable UnusedMember.Global
+
 namespace Common.Integration.MoreCraftables
 {
     public interface IObjectFactory

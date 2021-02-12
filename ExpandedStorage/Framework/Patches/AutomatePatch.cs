@@ -7,6 +7,9 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
+// ReSharper disable InvertIf
+// ReSharper disable InconsistentNaming
+
 namespace ExpandedStorage.Framework.Patches
 {
     internal class AutomatePatch : Patch<ModConfig>
@@ -20,10 +23,10 @@ namespace ExpandedStorage.Framework.Patches
         {
             _reflection = reflection;
             _isAutomateLoaded = isAutomateLoaded;
-            
+
             if (!isAutomateLoaded)
                 return;
-            
+
             var automateAssembly = AppDomain.CurrentDomain.GetAssemblies().First(a => a.FullName.StartsWith("Automate,"));
             _type = automateAssembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer");
         }

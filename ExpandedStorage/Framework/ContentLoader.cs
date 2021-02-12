@@ -19,7 +19,7 @@ namespace ExpandedStorage.Framework
             // Default Exclusions
             _expandedStorageAPI.DisableWithModData("aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest");
             _expandedStorageAPI.DisableDrawWithModData("aedenthorn.CustomChestTypes/IsCustomChest");
-            
+
             // Events
             _expandedStorageAPI.ReadyToLoad += OnReadyToLoad;
         }
@@ -30,13 +30,10 @@ namespace ExpandedStorage.Framework
         private void OnReadyToLoad(object sender, EventArgs e)
         {
             var contentPacks = _helper.ContentPacks.GetOwned();
-            
+
             _monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
             foreach (var contentPack in contentPacks)
-            {
-                if (!_expandedStorageAPI.LoadContentPack(contentPack))
-                    continue;
-            }
+                _expandedStorageAPI.LoadContentPack(contentPack);
         }
     }
 }

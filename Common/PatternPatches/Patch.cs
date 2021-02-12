@@ -1,12 +1,16 @@
 ﻿using Harmony;
 using StardewModdingAPI;
 
+// ReSharper disable StaticMemberInGenericType
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable NotAccessedField.Global
+
 namespace Common.PatternPatches
 {
     public abstract class Patch<T>
     {
-        internal static IMonitor Monitor;
-        internal static T Config;
+        private protected static IMonitor Monitor;
+        private protected static T Config;
 
         internal Patch(IMonitor monitor, T config)
         {

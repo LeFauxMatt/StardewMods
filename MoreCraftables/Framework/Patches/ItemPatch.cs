@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Common.PatternPatches;
 using Harmony;
 using MoreCraftables.Framework.Models;
-using Common.PatternPatches;
 using StardewModdingAPI;
 using StardewValley;
 
@@ -23,8 +23,8 @@ namespace MoreCraftables.Framework.Patches
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(
-                original: AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                prefix: new HarmonyMethod(GetType(), nameof(CanStackWithPrefix))
+                AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
+                new HarmonyMethod(GetType(), nameof(CanStackWithPrefix))
             );
         }
 
@@ -38,7 +38,7 @@ namespace MoreCraftables.Framework.Patches
             // Verify instance is Object
             if (__instance is not Object obj)
                 return true;
-            
+
             // Verify other item is Object
             if (other is not Object otherObj)
                 return true;

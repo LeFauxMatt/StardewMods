@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using StardewValley;
-using Object = StardewValley.Object;
+
+// ReSharper disable UnusedMember.Global
 
 namespace Common.Integration.MoreCraftables
 {

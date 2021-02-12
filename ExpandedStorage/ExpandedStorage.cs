@@ -2,13 +2,13 @@
 using System.Linq;
 using Common.API.GenericModConfigMenu;
 using Common.Extensions;
+using Common.Integration.MoreCraftables;
+using Common.PatternPatches;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
-using Common.Integration.MoreCraftables;
-using Common.PatternPatches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -16,6 +16,8 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using ObjectFactory = ExpandedStorage.Framework.ObjectFactory;
+
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace ExpandedStorage
 {
@@ -42,7 +44,6 @@ namespace ExpandedStorage
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
-        private ContentLoader _contentLoader;
         private ExpandedStorageAPI _expandedStorageAPI;
         private IMoreCraftablesAPI _moreCraftablesAPI;
 
@@ -58,24 +59,34 @@ namespace ExpandedStorage
 
         /// <summary>Load a matched asset.</summary>
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public void Edit<T>(IAssetData asset) {}
+        public void Edit<T>(IAssetData asset)
+        {
+        }
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static Storage GetConfig(object context) =>
-            Storages
+        public static Storage GetConfig(object context)
+        {
+            return Storages
                 .Select(c => c.Value)
                 .FirstOrDefault(c => c.MatchesContext(context));
+        }
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(object context) =>
-            Storages.Any(c => c.Value.MatchesContext(context));
+        public static bool HasConfig(object context)
+        {
+            return Storages.Any(c => c.Value.MatchesContext(context));
+        }
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
-        public static StorageTab GetTab(string tabName) =>
-            StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
+        public static StorageTab GetTab(string tabName)
+        {
+            return StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
+        }
 
-        public override object GetApi() =>
-            _expandedStorageAPI ??= new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
+        public override object GetApi()
+        {
+            return _expandedStorageAPI ??= new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
+        }
 
         public override void Entry(IModHelper helper)
         {
@@ -104,17 +115,14 @@ namespace ExpandedStorage
                 helper.Events.Input.ButtonPressed += OnButtonPressed;
             }
 
-            if (_config.AllowAccessCarriedChest)
-            {
-                helper.Events.Input.ButtonsChanged += OnButtonsChanged;
-            }
+            if (_config.AllowAccessCarriedChest) helper.Events.Input.ButtonsChanged += OnButtonsChanged;
 
             if (_config.AllowVacuumItems)
             {
                 helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
                 helper.Events.Player.InventoryChanged += OnInventoryChanged;
             }
-            
+
             // Harmony Patches
             new Patcher<ModConfig>(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatch(Monitor, _config),
@@ -134,16 +142,16 @@ namespace ExpandedStorage
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             _expandedStorageAPI = (ExpandedStorageAPI) GetApi();
-            _contentLoader = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
+            var unused = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
 
             _moreCraftablesAPI = Helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
             _moreCraftablesAPI.AddHandledType(ModManifest, new HandledType());
             _moreCraftablesAPI.AddObjectFactory(ModManifest, new ObjectFactory());
-            
+
             var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             if (modConfigApi == null)
                 return;
-            
+
             modConfigApi.RegisterModConfig(ModManifest,
                 () => _config = new ModConfig(),
                 () => Helper.WriteConfig(_config));
@@ -183,14 +191,14 @@ namespace ExpandedStorage
         {
             if (!Game1.player.IsLocalPlayer)
                 return;
-            
+
             VacuumChests.Value = Game1.player.Items
                 .Take(_config.VacuumToFirstRow ? 12 : Game1.player.MaxItems)
                 .Where(i => i is Chest)
                 .ToDictionary(i => i as Chest, GetConfig)
                 .Where(s => s.Value != null && s.Value.VacuumItems)
                 .ToDictionary(s => s.Key, s => s.Value);
-            
+
             Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
         }
 
@@ -201,14 +209,14 @@ namespace ExpandedStorage
         {
             if (!e.IsLocalPlayer)
                 return;
-            
+
             VacuumChests.Value = e.Player.Items
                 .Take(_config.VacuumToFirstRow ? 12 : e.Player.MaxItems)
                 .Where(i => i is Chest)
                 .ToDictionary(i => i as Chest, GetConfig)
                 .Where(s => s.Value != null && s.Value.VacuumItems)
                 .ToDictionary(s => s.Key, s => s.Value);
-            
+
             Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")));
         }
 
@@ -231,17 +239,17 @@ namespace ExpandedStorage
                 HeldChest.Value = chest;
                 chest.fixLidFrame();
             }
-            
+
             if (!_config.AllowAccessCarriedChest
                 || chest.frameCounter.Value <= -1
                 || _currentLidFrame.Value > chest.getLastLidFrame())
                 return;
-            
+
             chest.frameCounter.Value--;
             if (chest.frameCounter.Value > 0
                 || !chest.GetMutex().IsLockHeld())
                 return;
-            
+
             if (_currentLidFrame.Value == chest.getLastLidFrame())
             {
                 chest.frameCounter.Value = -1;
@@ -264,12 +272,12 @@ namespace ExpandedStorage
         {
             if (!Context.IsPlayerFree)
                 return;
-            
+
             var location = Game1.currentLocation;
             var pos = Game1.player.GetToolLocation() / 64f;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
-            
+
             if (HeldChest.Value == null
                 && _config.AllowCarryingChests
                 && e.Button.IsUseToolButton()
@@ -284,11 +292,11 @@ namespace ExpandedStorage
             {
                 if (location.objects.TryGetValue(pos, out var obj) && HasConfig(obj))
                     return;
-                
+
                 var config = GetConfig(HeldChest.Value);
                 if (!config.AccessCarried)
                     return;
-                
+
                 HeldChest.Value.GetMutex().RequestLock(delegate
                 {
                     HeldChest.Value.fixLidFrame();
@@ -299,7 +307,7 @@ namespace ExpandedStorage
                     Game1.player.Halt();
                     Game1.player.freezePause = 1000;
                 });
-                
+
                 Helper.Input.Suppress(e.Button);
             }
         }
@@ -311,11 +319,11 @@ namespace ExpandedStorage
         {
             if (HeldChest.Value == null || Game1.activeClickableMenu != null || !_config.Controls.OpenCrafting.JustPressed())
                 return;
-            
+
             var config = GetConfig(HeldChest.Value);
             if (!config.AccessCarried)
                 return;
-            
+
             HeldChest.Value.GetMutex().RequestLock(delegate
             {
                 var pos = Utility.getTopLeftPositionForCenteringOnScreen(800 + IClickableMenu.borderWidth * 2, 600 + IClickableMenu.borderWidth * 2);
@@ -331,7 +339,7 @@ namespace ExpandedStorage
                     exitFunction = delegate { HeldChest.Value.GetMutex().ReleaseLock(); }
                 };
             });
-            
+
             Helper.Input.SuppressActiveKeybinds(_config.Controls.OpenCrafting);
         }
     }

@@ -1,19 +1,21 @@
 ﻿using System.Collections.Generic;
+using Common.PatternPatches;
 using MoreCraftables.Framework;
 using MoreCraftables.Framework.Models;
 using MoreCraftables.Framework.Patches;
-using Common.PatternPatches;
 using StardewModdingAPI;
+
+// ReSharper disable UnusedType.Global
 
 namespace MoreCraftables
 {
     public class MoreCraftables : Mod
     {
-        private MoreCraftablesAPI _moreCraftablesAPI;
-
         private readonly IList<HandledTypeWrapper> _handledTypes = new List<HandledTypeWrapper>();
         private readonly IList<ObjectFactoryWrapper> _objectFactories = new List<ObjectFactoryWrapper>();
         private ModConfig _config;
+        private MoreCraftablesAPI _moreCraftablesAPI;
+
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
@@ -26,6 +28,9 @@ namespace MoreCraftables
             );
         }
 
-        public override object GetApi() => _moreCraftablesAPI;
+        public override object GetApi()
+        {
+            return _moreCraftablesAPI;
+        }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Harmony;
 
+// ReSharper disable UnusedMember.Global
+
 namespace Common.PatternPatches
 {
     public class PatternPatch
@@ -23,6 +25,7 @@ namespace Common.PatternPatches
                 _patchType = PatchType.Prepend;
                 return;
             }
+
             _patchType = PatchType.Replace;
             _patterns.AddRange(pattern);
             _patternIndex.Enqueue(_patterns.Count);
@@ -81,33 +84,33 @@ namespace Common.PatternPatches
             // Initialize end index
             if (_startIndex == _endIndex)
                 _endIndex = _patternIndex.Dequeue();
-            
+
             // Reset on loop
             if (_index == _endIndex)
                 _index = _startIndex;
-            
+
             // Opcode not matching
             if (!_patterns[_index].opcode.Equals(instruction.opcode))
             {
                 _index = _startIndex;
                 return false;
             }
-            
+
             // Operand not matching
             if (_patterns[_index].operand != null && !_patterns[_index].operand.Equals(instruction.operand))
             {
                 _index = _startIndex;
                 return false;
             }
-            
+
             // Incomplete pattern search
             if (++_index != _endIndex)
                 return false;
-            
+
             // Complete pattern search
             if (_patternIndex.Count <= 0)
                 return true;
-            
+
             // Incomplete pattern search
             _startIndex = _endIndex;
             return false;
@@ -115,10 +118,7 @@ namespace Common.PatternPatches
 
         public void Patches(LinkedList<CodeInstruction> rawStack)
         {
-            foreach (var patch in _patches)
-            {
-                patch?.Invoke(rawStack);
-            }
+            foreach (var patch in _patches) patch?.Invoke(rawStack);
         }
 
         private enum PatchType

@@ -5,7 +5,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        
+
         <Platforms>x86</Platforms>
         <PlatformTarget>x86</PlatformTarget>
         <LangVersion>latest</LangVersion>

@@ -66,15 +66,15 @@ namespace ExpandedStorage.Framework.UI
         {
             Instance.Value = this;
             _screenId = Context.ScreenId;
-            
+
             _menu = menu;
             _scroll = scroll;
             _setTab = setTab;
             _search = search;
-            
+
             var bounds = new Rectangle(_menu.xPositionOnScreen, _menu.yPositionOnScreen, _menu.width, _menu.height);
             _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
-            
+
             if (config.ShowArrows)
             {
                 UpArrow = new ClickableTextureComponent(
@@ -82,7 +82,7 @@ namespace ExpandedStorage.Framework.UI
                     Game1.mouseCursors,
                     new Rectangle(421, 459, 11, 12),
                     Game1.pixelZoom);
-            
+
                 DownArrow = new ClickableTextureComponent(
                     new Rectangle(UpArrow.bounds.X, bounds.Bottom - 36, UpArrow.bounds.Width, UpArrow.bounds.Height),
                     Game1.mouseCursors,
@@ -173,7 +173,7 @@ namespace ExpandedStorage.Framework.UI
                 tab.bounds.Y = _tabY;
                 xPosition += tab.bounds.Width;
             }
-            
+
             _lastViewport = new Rectangle(Game1.uiViewport.X, Game1.uiViewport.Y, Game1.uiViewport.Width, Game1.uiViewport.Height);
         }
 
@@ -183,19 +183,19 @@ namespace ExpandedStorage.Framework.UI
         {
             if (Instance.Value == null || Instance.Value._screenId != Context.ScreenId)
                 return;
-            
+
             if (Instance.Value._drawCount == 0
                 || Game1.uiViewport.Width != Instance.Value._lastViewport.Width
                 || Game1.uiViewport.Height != Instance.Value._lastViewport.Height)
                 Instance.Value.InitComponents();
-            
+
             Instance.Value._drawCount++;
 
             Instance.Value.UpArrow?.draw(b);
             Instance.Value.DownArrow?.draw(b);
             Instance.Value.SearchField?.Draw(b, false);
             Instance.Value._searchIcon?.draw(b);
-            
+
             if (Instance.Value._hoverText != null)
                 IClickableMenu.drawHoverText(b, Instance.Value._hoverText, Game1.smallFont);
         }
@@ -206,12 +206,12 @@ namespace ExpandedStorage.Framework.UI
         {
             if (Instance.Value == null || Instance.Value._screenId != Context.ScreenId)
                 return;
-            
+
             if (Instance.Value._drawCount == 0
                 || Game1.uiViewport.Width != Instance.Value._lastViewport.Width
                 || Game1.uiViewport.Height != Instance.Value._lastViewport.Height)
                 Instance.Value.InitComponents();
-            
+
             Instance.Value._drawCount++;
 
             for (var i = 0; i < Instance.Value._tabs.Count; i++)
@@ -233,11 +233,10 @@ namespace ExpandedStorage.Framework.UI
 
             if (button != SButton.Escape)
                 return SearchField != null && SearchField.Selected;
-            
+
             Game1.playSound("bigDeSelect");
             Game1.activeClickableMenu = null;
             return true;
-
         }
 
         /// <summary>Handles Left-Click interaction with overlay elements</summary>
@@ -264,7 +263,7 @@ namespace ExpandedStorage.Framework.UI
                     Game1.playSound("shwip");
                 return true;
             }
-            
+
             if (DownArrow != null && DownArrow.containsPoint(x, y))
             {
                 _scroll.Invoke(-1);
@@ -276,7 +275,7 @@ namespace ExpandedStorage.Framework.UI
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
             if (tab == null)
                 return false;
-            
+
             var i = Convert.ToInt32(tab.name);
             CurrentTab = CurrentTab == i ? -1 : i;
             _setTab.Invoke(CurrentTab);
@@ -298,11 +297,11 @@ namespace ExpandedStorage.Framework.UI
 
             if (SearchField == null)
                 return false;
-            
+
             SearchField.Selected = _searchArea.containsPoint(x, y);
             if (!SearchField.Selected)
                 return false;
-            
+
             SearchField.Text = "";
             _search.Invoke(SearchField.Text);
             return true;
@@ -315,7 +314,7 @@ namespace ExpandedStorage.Framework.UI
         {
             if (!IsInitialized || Context.ScreenId != _screenId)
                 return;
-            
+
             UpArrow?.tryHover(x, y, 0.25f);
             DownArrow?.tryHover(x, y, 0.25f);
             SearchField?.Hover(x, y);

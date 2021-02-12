@@ -4,15 +4,19 @@ namespace ExpandedStorage.Framework.Models
 {
     public class StorageConfig : IStorageConfig
     {
-        internal StorageConfig() { }
-        public int Capacity { get; set; } = 0;
-        public bool AccessCarried { get; set; } = false;
-        public bool CanCarry { get; set; } = true;
-        public bool ShowSearchBar { get; set; } = false;
-        public bool VacuumItems { get; set; } = false;
+        internal StorageConfig()
+        {
+        }
 
-        internal static StorageConfig Clone(IStorageConfig config) =>
-            new()
+        public int Capacity { get; set; }
+        public bool AccessCarried { get; set; }
+        public bool CanCarry { get; set; } = true;
+        public bool ShowSearchBar { get; set; }
+        public bool VacuumItems { get; set; }
+
+        internal static StorageConfig Clone(IStorageConfig config)
+        {
+            return new()
             {
                 Capacity = config.Capacity,
                 CanCarry = config.CanCarry,
@@ -20,6 +24,7 @@ namespace ExpandedStorage.Framework.Models
                 ShowSearchBar = config.ShowSearchBar,
                 VacuumItems = config.VacuumItems
             };
+        }
 
         internal void CopyFrom(IStorageConfig config)
         {

@@ -1,5 +1,8 @@
 ﻿using StardewModdingAPI;
 
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Global
+
 namespace Common.Integration.MoreCraftables
 {
     public interface IMoreCraftablesAPI

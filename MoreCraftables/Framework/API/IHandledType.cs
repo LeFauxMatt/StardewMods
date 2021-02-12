@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using StardewValley;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedParameter.Global
+
 namespace MoreCraftables.Framework.API
 {
     public interface IHandledType

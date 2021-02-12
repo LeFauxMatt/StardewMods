@@ -20,7 +20,7 @@ namespace ExpandedStorage.Framework.Extensions
         {
             // Get config for chest
             config ??= ExpandedStorage.GetConfig(item);
-            
+
             // Create Chest from Item
             var chest = new Chest(true, Vector2.Zero, item.ParentSheetIndex)
             {
@@ -37,21 +37,25 @@ namespace ExpandedStorage.Framework.Extensions
             // Copy modData
             foreach (var modData in item.modData)
                 chest.modData.CopyFrom(modData);
-            
+
             if (item is not Chest oldChest)
                 return chest;
 
             chest.playerChoiceColor.Value = oldChest.playerChoiceColor.Value;
             if (oldChest.items.Any())
                 chest.items.CopyFrom(oldChest.items);
-            
+
             return chest;
         }
 
-        public static bool MatchesTagExt(this Item item, string search) => item.MatchesTagExt(search, true);
+        public static bool MatchesTagExt(this Item item, string search)
+        {
+            return item.MatchesTagExt(search, true);
+        }
 
-        public static bool MatchesTagExt(this Item item, string search, bool exactMatch) =>
-            item switch
+        public static bool MatchesTagExt(this Item item, string search, bool exactMatch)
+        {
+            return item switch
             {
                 Furniture when TagEquals(search, CategoryFurniture, exactMatch) => true,
                 Object {Type: "Arch"} when TagEquals(search, CategoryArtifact, exactMatch) => true,
@@ -60,20 +64,27 @@ namespace ExpandedStorage.Framework.Extensions
                 Object obj when TagEquals(search, DonateBundle, exactMatch) => CanDonateToBundle(obj),
                 _ => item.GetContextTags().Any(tag => TagEquals(search, tag, exactMatch))
             };
+        }
 
-        private static bool TagEquals(string search, string match, bool exact) =>
-            exact && search.Equals(match) || match.IndexOf(search, StringComparison.InvariantCultureIgnoreCase) > -1;
+        private static bool TagEquals(string search, string match, bool exact)
+        {
+            return exact && search.Equals(match) || match.IndexOf(search, StringComparison.InvariantCultureIgnoreCase) > -1;
+        }
 
-        private static bool CanDonateToMuseum(Item item) =>
-            Game1.locations
-                .OfType<LibraryMuseum>()
-                .FirstOrDefault()?.isItemSuitableForDonation(item)
-            ?? false;
+        private static bool CanDonateToMuseum(Item item)
+        {
+            return Game1.locations
+                       .OfType<LibraryMuseum>()
+                       .FirstOrDefault()?.isItemSuitableForDonation(item)
+                   ?? false;
+        }
 
-        private static bool CanDonateToBundle(Object obj) =>
-            Game1.locations
-                .OfType<CommunityCenter>()
-                .FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
-            ?? false;
+        private static bool CanDonateToBundle(Object obj)
+        {
+            return Game1.locations
+                       .OfType<CommunityCenter>()
+                       .FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
+                   ?? false;
+        }
     }
 }

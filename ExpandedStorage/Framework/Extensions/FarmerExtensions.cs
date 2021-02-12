@@ -6,6 +6,8 @@ using StardewValley;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
 
+// ReSharper disable NotAccessedField.Local
+
 namespace ExpandedStorage.Framework.Extensions
 {
     public static class FarmerExtensions
@@ -22,7 +24,7 @@ namespace ExpandedStorage.Framework.Extensions
         {
             if (!farmer.IsLocalPlayer)
                 return item;
-            
+
             // Find prioritized storage
             var storages = ExpandedStorage.VacuumChests.Value
                 .Where(s => s.Value.Filter(item))
@@ -38,7 +40,6 @@ namespace ExpandedStorage.Framework.Extensions
                 var name = showItem.DisplayName;
                 var color = Color.WhiteSmoke;
                 if (showItem is Object showObj)
-                {
                     switch (showObj.Type)
                     {
                         case "Arch":
@@ -58,10 +59,10 @@ namespace ExpandedStorage.Framework.Extensions
                             color = Color.Pink;
                             break;
                     }
-                }
+
                 Game1.addHUDMessage(new HUDMessage(name, Math.Max(1, showItem.Stack), true, color, showItem));
             }
-            
+
             // Bypass storage for Golden Walnuts
             if (Utility.IsNormalObjectAtParentSheetIndex(item, 73))
             {
@@ -69,7 +70,7 @@ namespace ExpandedStorage.Framework.Extensions
                 ShowHud(item);
                 return null;
             }
-            
+
             // Bypass storage for Lost Book
             if (Utility.IsNormalObjectAtParentSheetIndex(item, 102))
             {
@@ -83,7 +84,8 @@ namespace ExpandedStorage.Framework.Extensions
             {
                 farmer.QiGems += item.Stack;
                 Game1.playSound("qi_shop_purchase");
-                farmer.currentLocation.TemporarySprites.Add(new TemporaryAnimatedSprite("Maps\\springobjects", Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, 858, 16, 16), 100f, 1, 8, new Vector2(0f, -96f), flicker: false, flipped: false, 1f, 0f, Color.White, 4f, 0f, 0f, 0f)
+                // ReSharper disable once StringLiteralTypo
+                farmer.currentLocation.TemporarySprites.Add(new TemporaryAnimatedSprite(@"Maps\springobjects", Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, 858, 16, 16), 100f, 1, 8, new Vector2(0f, -96f), false, false, 1f, 0f, Color.White, 4f, 0f, 0f, 0f)
                 {
                     motion = new Vector2(0f, -6f),
                     acceleration = new Vector2(0f, 0.2f),
@@ -115,10 +117,10 @@ namespace ExpandedStorage.Framework.Extensions
 
             if (originalItem.HasBeenInInventory)
                 return item;
-            
+
             if (item != null && item.Stack == stack && originalItem is not SpecialItem)
                 return item;
-            
+
             switch (originalItem)
             {
                 case SpecialItem specialItem:
@@ -134,21 +136,18 @@ namespace ExpandedStorage.Framework.Extensions
                                 farmer.specialBigCraftables.Add(obj.ParentSheetIndex);
                         }
                         else if (!farmer.specialItems.Contains(obj.ParentSheetIndex))
+                        {
                             farmer.specialItems.Add(obj.ParentSheetIndex);
+                        }
                     }
-                    
+
                     if (!obj.HasBeenPickedUpByFarmer)
                     {
                         if (obj.Category == -2 || obj.Type != null && obj.Type.Contains("Mineral"))
-                        {
                             farmer.foundMineral(obj.ParentSheetIndex);
-                        }
-                        else if (originalItem is not Furniture && obj.Type != null && obj.Type.Contains("Arch"))
-                        {
-                            farmer.foundArtifact(obj.ParentSheetIndex, 1);
-                        }
+                        else if (originalItem is not Furniture && obj.Type != null && obj.Type.Contains("Arch")) farmer.foundArtifact(obj.ParentSheetIndex, 1);
                     }
-                    
+
                     Utility.checkItemFirstInventoryAdd(originalItem);
                     break;
                 }
@@ -169,7 +168,7 @@ namespace ExpandedStorage.Framework.Extensions
                     Game1.stats.IridiumFound += stack;
                     break;
             }
-            
+
             ShowHud(originalItem);
             return item;
         }

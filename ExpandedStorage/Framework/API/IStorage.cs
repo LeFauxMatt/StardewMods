@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+// ReSharper disable UnusedMemberInSuper.Global
+
 namespace ExpandedStorage.Framework.API
 {
     public interface IStorage

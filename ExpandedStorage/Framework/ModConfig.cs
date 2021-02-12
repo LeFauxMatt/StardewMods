@@ -3,6 +3,9 @@ using Common.API.GenericModConfigMenu;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+
 namespace ExpandedStorage.Framework
 {
     public class ModConfig
@@ -63,7 +66,7 @@ namespace ExpandedStorage.Framework
             modConfigApi.RegisterLabel(modManifest,
                 "Controls",
                 "Controller/Keyboard controls");
-            
+
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Scroll Up",
                 "Button for scrolling up",
@@ -84,11 +87,11 @@ namespace ExpandedStorage.Framework
                 "Button for switching to the next tab",
                 () => config.Controls.NextTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => config.Controls.NextTab = KeybindList.ForSingle(value));
-            
+
             modConfigApi.RegisterLabel(modManifest,
                 "Tweaks",
                 "Modify behavior for certain features");
-            
+
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Search Symbol",
                 "Symbol used to search items by context tag",
@@ -99,11 +102,11 @@ namespace ExpandedStorage.Framework
                 "Uncheck to allow vacuuming to any chest in player inventory",
                 () => config.VacuumToFirstRow,
                 value => config.VacuumToFirstRow = value);
-            
+
             modConfigApi.RegisterLabel(modManifest,
                 "Toggles",
                 "Enable/Disable features (restart to revert patches)");
-            
+
             modConfigApi.RegisterSimpleOption(modManifest,
                 "Access Carried Chest",
                 "Uncheck to globally disable accessing chest items for carried chests",

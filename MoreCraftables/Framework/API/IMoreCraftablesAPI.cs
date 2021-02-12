@@ -1,5 +1,7 @@
 ﻿using StardewModdingAPI;
 
+// ReSharper disable UnusedMember.Global
+
 namespace MoreCraftables.Framework.API
 {
     public interface IMoreCraftablesAPI

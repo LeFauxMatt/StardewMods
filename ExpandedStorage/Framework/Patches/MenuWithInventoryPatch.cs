@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
+using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley.Menus;
-using Common.PatternPatches;
 
 namespace ExpandedStorage.Framework.Patches
 {
@@ -13,7 +13,9 @@ namespace ExpandedStorage.Framework.Patches
     internal class MenuWithInventoryPatch : MenuPatch
     {
         internal MenuWithInventoryPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
+            : base(monitor, config)
+        {
+        }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
@@ -27,14 +29,12 @@ namespace ExpandedStorage.Framework.Patches
                     typeof(int),
                     typeof(int)
                 });
-            
+
             if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
-            {
                 harmony.Patch(
-                    original: drawMethod,
+                    drawMethod,
                     transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
                 );
-            }
         }
 
         static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -68,7 +68,7 @@ namespace ExpandedStorage.Framework.Patches
                     new CodeInstruction(OpCodes.Add)
                 )
                 .Log("Subtracting Y-Offset from drawDialogueBox.height");
-            
+
             if (Config.AllowModdedCapacity)
                 patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
             if (Config.ShowSearchBar)
@@ -76,7 +76,7 @@ namespace ExpandedStorage.Framework.Patches
 
             foreach (var patternPatch in patternPatches)
                 yield return patternPatch;
-            
+
             if (!patternPatches.Done)
                 Monitor.Log($"Failed to apply all patches in {nameof(DrawTranspiler)}", LogLevel.Warn);
         }

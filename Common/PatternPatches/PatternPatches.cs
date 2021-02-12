@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using Harmony;
 using StardewModdingAPI;
 
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Global
+
 namespace Common.PatternPatches
 {
     public class PatternPatches : IEnumerable<CodeInstruction>
@@ -41,23 +44,21 @@ namespace Common.PatternPatches
                     rawStack.AddLast(instruction);
                     continue;
                 }
-                
+
                 // Return patched code
                 if (currentOperation.Text != null)
                     _monitor.VerboseLog(currentOperation.Text);
                 rawStack.AddLast(instruction);
                 currentOperation.Patches(rawStack);
-                foreach (var patch in rawStack)
-                {
-                    yield return patch;
-                }
+                foreach (var patch in rawStack) yield return patch;
+
                 rawStack.Clear();
                 skipped = currentOperation.Skipped;
-                
+
                 // Repeat
                 if (currentOperation.Loop)
                     continue;
-                
+
                 // Next pattern
                 if (_patternPatches.Count > 0)
                     currentOperation = _patternPatches.Dequeue();
@@ -65,13 +66,13 @@ namespace Common.PatternPatches
                     done = true;
             }
 
-            foreach (var instruction in rawStack)
-            {
-                yield return instruction;
-            }
+            foreach (var instruction in rawStack) yield return instruction;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
         public PatternPatch Find(params CodeInstruction[] pattern)
         {

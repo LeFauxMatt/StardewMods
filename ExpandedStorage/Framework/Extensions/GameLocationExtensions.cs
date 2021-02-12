@@ -9,11 +9,11 @@ namespace ExpandedStorage.Framework.Extensions
         {
             if (!location.objects.TryGetValue(pos, out var obj))
                 return false;
-            
+
             var config = ExpandedStorage.GetConfig(obj);
             if (config == null || !config.CanCarry || !Game1.player.addItemToInventoryBool(obj, true))
                 return false;
-            
+
             obj.TileLocation = Vector2.Zero;
             location.objects.Remove(pos);
             return true;

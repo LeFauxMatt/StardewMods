@@ -5,12 +5,15 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedType.Global
+
 namespace Common.Extensions
 {
     public static class ChestExtensions
     {
-        private static readonly HashSet<int> HideColorPickerIds = new() { 216, 248, 256 };
-        private static readonly HashSet<int> ShowBottomBraceIds = new() { 130, 232 };
+        private static readonly HashSet<int> HideColorPickerIds = new() {216, 248, 256};
+        private static readonly HashSet<int> ShowBottomBraceIds = new() {130, 232};
         private static IReflectionHelper _reflection;
 
         internal static void Init(IReflectionHelper reflection)
@@ -36,7 +39,7 @@ namespace Common.Extensions
                     scaleSize,
                     SpriteEffects.None,
                     layerDepth);
-                
+
                 spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                     pos + ShakeOffset(chest, -1, 2),
                     Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, currentLidFrame, 16, 32),
@@ -46,7 +49,7 @@ namespace Common.Extensions
                     scaleSize,
                     SpriteEffects.None,
                     layerDepth + 1E-05f);
-                
+
                 return;
             }
 
@@ -56,7 +59,7 @@ namespace Common.Extensions
                 232 => 0,
                 _ => 6
             };
-            
+
             var aboveOffset = chest.ParentSheetIndex switch
             {
                 130 => 46,
@@ -74,7 +77,7 @@ namespace Common.Extensions
                 scaleSize,
                 SpriteEffects.None,
                 layerDepth);
-            
+
             // Draw Lid Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                 pos + ShakeOffset(chest, -1, 2),
@@ -99,7 +102,7 @@ namespace Common.Extensions
 
             if (!ShowBottomBraceIds.Contains(chest.ParentSheetIndex))
                 return;
-            
+
             // Draw Bottom Brace Layer (Non-Colorized)
             var rect = Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + aboveOffset, 16, 32);
             rect.Y += 20;
@@ -116,9 +119,11 @@ namespace Common.Extensions
                 layerDepth + 3E-05f);
         }
 
-        private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue) =>
-            instance.shakeTimer > 0
+        private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue)
+        {
+            return instance.shakeTimer > 0
                 ? new Vector2(Game1.random.Next(minValue, maxValue), 0)
                 : Vector2.Zero;
+        }
     }
 }

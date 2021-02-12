@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
 using MoreCraftables.Framework.Models;
-using Common.PatternPatches;
 using StardewModdingAPI;
 using StardewValley;
-using Object = StardewValley.Object;
 
 // ReSharper disable InconsistentNaming
 
@@ -16,7 +15,7 @@ namespace MoreCraftables.Framework.Patches
     {
         private static IList<HandledTypeWrapper> _handledTypes;
         private static IList<ObjectFactoryWrapper> _objectFactories;
-        
+
         public ObjectPatch(IMonitor monitor, ModConfig config, IList<HandledTypeWrapper> handledTypes, IList<ObjectFactoryWrapper> objectFactories)
             : base(monitor, config)
         {
@@ -46,12 +45,12 @@ namespace MoreCraftables.Framework.Patches
 
             if (location.objects.ContainsKey(pos))
                 return true;
-            
+
             // Verify this is a handled item type
             var handledType = _handledTypes.FirstOrDefault(t => t.HandledType.IsHandledItem(__instance));
             if (handledType == null)
                 return true;
-            
+
             // Verify a factory exists for this handled type
             var objectFactory = _objectFactories
                 .Where(f => f.ObjectFactory.IsHandledType(handledType.HandledType))
@@ -66,11 +65,11 @@ namespace MoreCraftables.Framework.Patches
                 __result = false;
                 return false;
             }
-            
+
             // Copy modData from original object
             foreach (var modData in __instance.modData)
                 obj.modData.CopyFrom(modData);
-            
+
             // Place object at location
             location.objects.Add(pos, obj);
             __instance.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;

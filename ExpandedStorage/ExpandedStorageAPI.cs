@@ -16,7 +16,7 @@ namespace ExpandedStorage
 {
     public class ExpandedStorageAPI : IExpandedStorageAPI
     {
-        private static readonly HashSet<string> VanillaNames = new() { "Chest", "Stone Chest", "Mini-Fridge", "Junimo Chest", "Mini-Shipping Bin" };
+        private static readonly HashSet<string> VanillaNames = new() {"Chest", "Stone Chest", "Mini-Fridge", "Junimo Chest", "Mini-Shipping Bin"};
         private readonly IModHelper _helper;
 
         private readonly IMonitor _monitor;
@@ -38,7 +38,7 @@ namespace ExpandedStorage
             _helper = helper;
             _storageConfigs = storageConfigs;
             _tabConfigs = tabConfigs;
-            
+
             // Events
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
@@ -57,41 +57,54 @@ namespace ExpandedStorage
             ObjectPatch.AddExclusion(modDataKey);
         }
 
-        public IList<string> GetAllStorages() => _storageConfigs.Keys.ToList();
+        public IList<string> GetAllStorages()
+        {
+            return _storageConfigs.Keys.ToList();
+        }
 
-        public IList<int> GetAllStorageIds() =>
-            _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
+        public IList<int> GetAllStorageIds()
+        {
+            return _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
+        }
 
-        public IStorage GetStorage(string storageName) =>
-            _storageConfigs.TryGetValue(storageName, out var storage)
+        public IStorage GetStorage(string storageName)
+        {
+            return _storageConfigs.TryGetValue(storageName, out var storage)
                 ? storage
                 : null;
+        }
 
-        public IStorage GetStorage(int sheetIndex) =>
-            _storageConfigs
+        public IStorage GetStorage(int sheetIndex)
+        {
+            return _storageConfigs
                 .Select(storageData => storageData.Value)
                 .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
+        }
 
-        public IStorageConfig GetStorageConfig(string storageName) =>
-            _storageConfigs.TryGetValue(storageName, out var storage)
+        public IStorageConfig GetStorageConfig(string storageName)
+        {
+            return _storageConfigs.TryGetValue(storageName, out var storage)
                 ? storage
                 : null;
+        }
 
-        public IStorageConfig GetStorageConfig(int sheetIndex) =>
-            _storageConfigs
+        public IStorageConfig GetStorageConfig(int sheetIndex)
+        {
+            return _storageConfigs
                 .Select(storageData => storageData.Value)
                 .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
+        }
 
         public bool RegisterStorage(IStorage storage, IStorageConfig config = null)
         {
             if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
                 return false;
-            
+
             storageConfig.CopyFrom(storage);
-            
+
             if (config != null)
                 storageConfig.CopyFrom(config);
-            
+
             return true;
         }
 
@@ -100,15 +113,15 @@ namespace ExpandedStorage
             var storageConfig = _storageConfigs
                 .Select(storageData => storageData.Value)
                 .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-            
+
             if (storageConfig == null)
                 return false;
-            
+
             storageConfig.CopyFrom(storage);
-            
+
             if (config != null)
                 storageConfig.CopyFrom(config);
-            
+
             return true;
         }
 
@@ -116,7 +129,7 @@ namespace ExpandedStorage
         {
             if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
                 return false;
-            
+
             storageConfig.CopyFrom(config);
             return true;
         }
@@ -126,12 +139,12 @@ namespace ExpandedStorage
             var storageConfig = _storageConfigs
                 .Select(storageData => storageData.Value)
                 .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-            
+
             if (storageConfig == null)
                 return false;
-            
+
             storageConfig.CopyFrom(config);
-            
+
             return true;
         }
 
@@ -161,17 +174,17 @@ namespace ExpandedStorage
         {
             _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
             var contentData = contentPack.ReadJsonFile<ContentData>("expandedStorage.json");
-            
+
             if (contentData?.ExpandedStorage == null)
             {
                 _monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
                 return false;
             }
-            
+
             var defaultConfig =
                 contentData.ExpandedStorage
                     .ToDictionary(config => config.StorageName, StorageConfig.Clone);
-            
+
             Dictionary<string, StorageConfig> playerConfig;
             try
             {
@@ -183,7 +196,6 @@ namespace ExpandedStorage
             }
 
             if (playerConfig == null)
-            {
                 try
                 {
                     var legacyConfig = contentPack.ReadJsonFile<IList<Storage>>("config.json");
@@ -197,7 +209,6 @@ namespace ExpandedStorage
                 {
                     playerConfig = null;
                 }
-            }
 
             if (playerConfig == null)
             {
@@ -211,14 +222,14 @@ namespace ExpandedStorage
                 contentPack.Manifest,
                 RevertToDefault(contentPack, defaultConfig),
                 SaveToFile(contentPack));
-            
+
             // Load expanded storage objects
             foreach (var storageContent in contentData.ExpandedStorage.Where(storageContent => !string.IsNullOrWhiteSpace(storageContent.StorageName)))
             {
                 storageContent.ModUniqueId = contentPack.Manifest.UniqueID;
                 if (!RegisterStorage(storageContent))
                     continue;
-                
+
                 // Generate default config
                 if (!playerConfig.TryGetValue(storageContent.StorageName, out var storageConfig))
                 {
@@ -230,27 +241,27 @@ namespace ExpandedStorage
                 // Copy player config into storage content
                 storageContent.CopyFrom(storageConfig);
                 _monitor.Log(storageContent.SummaryReport, LogLevel.Debug);
-                
+
                 RegisterConfig(contentPack.Manifest, storageContent, storageContent.StorageName);
             }
-            
+
             if (contentData.StorageTabs == null)
                 return true;
-            
+
             // Load expanded storage tabs
             foreach (var storageTab in contentData.StorageTabs.Where(t => !string.IsNullOrWhiteSpace(t.TabName) && !string.IsNullOrWhiteSpace(t.TabImage)))
             {
                 storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
                 if (!RegisterStorageTab(storageTab))
                     continue;
-                
+
                 // Localize Tab Name
                 storageTab.TabName = contentPack.Translation.Get(storageTab.TabName).Default(storageTab.TabName);
-                
+
                 // Assign Load Texture function
                 storageTab.LoadTexture = LoadTexture(contentPack, $"assets/{storageTab.TabImage}");
             }
-            
+
             return true;
         }
 
@@ -261,10 +272,10 @@ namespace ExpandedStorage
         {
             _modConfigApi = _helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             _jsonAssetsApi = _helper.ModRegistry.GetApi<IJsonAssetsAPI>("spacechase0.JsonAssets");
-            
+
             if (_jsonAssetsApi != null)
                 _jsonAssetsApi.IdsAssigned += OnIdsAssigned;
-            
+
             InvokeAll(ReadyToLoad);
             _isContentLoaded = true;
         }
@@ -277,10 +288,8 @@ namespace ExpandedStorage
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
                 .Where(config => config.Value.SourceType == SourceType.JsonAssets))
-            {
                 storageConfig.Value.ObjectIds.Clear();
-            }
-            
+
             // Add new object ids
             foreach (var bigCraftable in _jsonAssetsApi
                 .GetAllBigCraftableIds()
@@ -289,11 +298,11 @@ namespace ExpandedStorage
                 if (!_storageConfigs.TryGetValue(bigCraftable.Key, out var storageConfig))
                     continue;
                 storageConfig.SourceType = SourceType.JsonAssets;
-                
+
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Value))
                     storageConfig.ObjectIds.Add(bigCraftable.Value);
             }
-            
+
             InvokeAll(StoragesLoaded);
         }
 
@@ -304,22 +313,20 @@ namespace ExpandedStorage
         {
             if (!_isContentLoaded)
                 return;
-            
+
             _helper.Events.GameLoop.UpdateTicked -= OnAssetsLoaded;
-            
+
             _monitor.Log("Loading default storage config");
             var defaultConfig = _helper.Data.ReadJsonFile<Storage>("expandedStorage.json") ?? new Storage();
 
             if (!File.Exists(Path.Combine(_helper.DirectoryPath, "expandedStorage.json")))
                 _helper.Data.WriteJsonFile("expandedStorage.json", defaultConfig);
-            
+
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
                 .Where(config => config.Value.SourceType != SourceType.JsonAssets))
-            {
                 storageConfig.Value.ObjectIds.Clear();
-            }
-            
+
             foreach (var obj in Game1.bigCraftablesInformation
                 .ToDictionary(obj => obj.Key, obj => obj.Value.Split('/').ToArray())
                 .Where(obj => obj.Value.Length == 9 && obj.Value[8] == "Chest" || VanillaNames.Contains(obj.Value[0])))
@@ -332,12 +339,12 @@ namespace ExpandedStorage
                     storageConfig.CopyFrom(defaultConfig);
                     _storageConfigs.Add(obj.Value[0], storageConfig);
                 }
-                
+
                 if (VanillaNames.Contains(obj.Value[0]))
                     storageConfig.SourceType = SourceType.Vanilla;
                 else if (obj.Key >= 424000 && obj.Key < 425000)
                     storageConfig.SourceType = SourceType.CustomChestTypes;
-                
+
                 if (!storageConfig.ObjectIds.Contains(obj.Key))
                     storageConfig.ObjectIds.Add(obj.Key);
             }
@@ -345,10 +352,12 @@ namespace ExpandedStorage
             InvokeAll(StoragesLoaded);
         }
 
-        private Func<Texture2D> LoadTexture(IContentPack contentPack, string assetName) =>
-            () => contentPack.HasFile(assetName)
+        private Func<Texture2D> LoadTexture(IContentPack contentPack, string assetName)
+        {
+            return () => contentPack.HasFile(assetName)
                 ? contentPack.LoadAsset<Texture2D>(assetName)
                 : _helper.Content.Load<Texture2D>(assetName);
+        }
 
         private bool RegisterStorage(Storage storageContent)
         {
@@ -358,6 +367,7 @@ namespace ExpandedStorage
                 _monitor.Log($"Duplicate storage {storageContent.StorageName} in {storageContent.ModUniqueId}.", LogLevel.Warn);
                 return false;
             }
+
             _storageConfigs.Add(storageContent.StorageName, storageContent);
             return true;
         }
@@ -365,20 +375,21 @@ namespace ExpandedStorage
         private bool RegisterStorageTab(StorageTab storageTab)
         {
             var tabName = $"{storageTab.ModUniqueId}/{storageTab.TabName}";
-            
+
             // Skip duplicate tab names
             if (_tabConfigs.ContainsKey(tabName))
             {
                 _monitor.Log($"Duplicate tab {storageTab.TabName} in {storageTab.ModUniqueId}", LogLevel.Warn);
                 return false;
             }
+
             _tabConfigs.Add(tabName, storageTab);
             return true;
         }
 
         private void RegisterConfig(
             IManifest manifest,
-            StorageConfig config,
+            IStorageConfig config,
             string storageName)
         {
             _modConfigApi?.RegisterLabel(manifest, storageName, "Added by Expanded Storage");
@@ -399,32 +410,32 @@ namespace ExpandedStorage
                 value => config.VacuumItems = value);
         }
 
-        private Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageConfig> defaultConfig) =>
-            () =>
+        private Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageConfig> defaultConfig)
+        {
+            return () =>
             {
                 foreach (var defaultValue in defaultConfig)
-                {
                     if (_storageConfigs.TryGetValue(defaultValue.Key, out var storageConfig))
                         storageConfig.CopyFrom(defaultValue.Value);
-                }
+
                 SaveToFile(contentPack).Invoke();
             };
+        }
 
-        private Action SaveToFile(IContentPack contentPack) =>
-            () => contentPack.WriteJsonFile("config.json",
+        private Action SaveToFile(IContentPack contentPack)
+        {
+            return () => contentPack.WriteJsonFile("config.json",
                 _storageConfigs
                     .Where(c => c.Value.ModUniqueId == contentPack.Manifest.UniqueID)
                     .ToDictionary(c => c.Key, c => StorageConfig.Clone(c.Value)));
+        }
 
         private void InvokeAll(EventHandler eventHandler)
         {
             if (eventHandler == null)
                 return;
 
-            foreach (var @delegate in eventHandler.GetInvocationList())
-            {
-                @delegate.DynamicInvoke(this, null);
-            }
+            foreach (var @delegate in eventHandler.GetInvocationList()) @delegate.DynamicInvoke(this, null);
         }
     }
 }

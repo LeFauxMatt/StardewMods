@@ -47,10 +47,7 @@ namespace ExpandedStorage.Framework.UI
                 SetTab,
                 SetSearch);
 
-            if (_view.SearchField != null)
-            {
-                _view.SearchField.Text = _model.SearchText;
-            }
+            if (_view.SearchField != null) _view.SearchField.Text = _model.SearchText;
 
             // Events
             _model.ItemChanged += OnItemChanged;
@@ -62,10 +59,7 @@ namespace ExpandedStorage.Framework.UI
             if (_model.StorageConfig?.Tabs == null)
                 return;
 
-            foreach (var tab in _model.StorageTabs)
-            {
-                _view.AddTab(tab.Texture, tab.TabName);
-            }
+            foreach (var tab in _model.StorageTabs) _view.AddTab(tab.Texture, tab.TabName);
 
             _view.CurrentTab = _model.CurrentTab;
             OnItemChanged(this, null);
@@ -83,8 +77,10 @@ namespace ExpandedStorage.Framework.UI
             _view?.Dispose();
         }
 
-        public static void RefreshItems() =>
+        public static void RefreshItems()
+        {
             Instance.Value?.OnItemChanged(Instance.Value, null);
+        }
 
         internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config)
         {
@@ -109,7 +105,7 @@ namespace ExpandedStorage.Framework.UI
         }
 
         /// <summary>
-        /// Resets scrolling/overlay when chest menu exits or context changes.
+        ///     Resets scrolling/overlay when chest menu exits or context changes.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -136,16 +132,28 @@ namespace ExpandedStorage.Framework.UI
         }
 
         /// <summary>Sets the current tab by index.</summary>
-        private void SetTab(int index) => _model.CurrentTab = index;
+        private void SetTab(int index)
+        {
+            _model.CurrentTab = index;
+        }
 
         /// <summary>Switch to previous tab.</summary>
-        private void PreviousTab() => _model.CurrentTab--;
+        private void PreviousTab()
+        {
+            _model.CurrentTab--;
+        }
 
         /// <summary>Switch to next tab.</summary>
-        private void NextTab() => _model.CurrentTab++;
+        private void NextTab()
+        {
+            _model.CurrentTab++;
+        }
 
         /// <summary>Filter items by search text.</summary>
-        private void SetSearch(string searchText) => _model.SearchText = searchText;
+        private void SetSearch(string searchText)
+        {
+            _model.SearchText = searchText;
+        }
 
         /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
         /// <param name="sender">The event sender.</param>
@@ -255,10 +263,7 @@ namespace ExpandedStorage.Framework.UI
                     items = items.Where(currentTab.Filter);
             }
 
-            if (!string.IsNullOrWhiteSpace(_model.SearchText))
-            {
-                items = items.Where(SearchMatches);
-            }
+            if (!string.IsNullOrWhiteSpace(_model.SearchText)) items = items.Where(SearchMatches);
 
             var list = items.ToList();
             _model.MaxRows = Math.Max(0, list.Count.RoundUp(12) / 12 - _model.MenuRows);
@@ -279,15 +284,9 @@ namespace ExpandedStorage.Framework.UI
 
 
             // Show/hide arrows
-            if (_view?.UpArrow != null)
-            {
-                _view.UpArrow.visible = _model.SkippedRows > 0;
-            }
+            if (_view?.UpArrow != null) _view.UpArrow.visible = _model.SkippedRows > 0;
 
-            if (_view?.DownArrow != null)
-            {
-                _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
-            }
+            if (_view?.DownArrow != null) _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
         }
 
         private bool SearchMatches(Item item)

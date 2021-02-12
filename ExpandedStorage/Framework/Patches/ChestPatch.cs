@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Extensions;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
-using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
+
+// ReSharper disable UnusedParameter.Global
+
+// ReSharper disable InconsistentNaming
 
 namespace ExpandedStorage.Framework.Patches
 {
@@ -19,7 +23,9 @@ namespace ExpandedStorage.Framework.Patches
         private static readonly HashSet<string> ExcludeModDataKeys = new();
 
         internal ChestPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
+            : base(monitor, config)
+        {
+        }
 
         internal static void AddExclusion(string modDataKey)
         {
@@ -30,48 +36,44 @@ namespace ExpandedStorage.Framework.Patches
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
-                prefix: new HarmonyMethod(GetType(), nameof(CheckForActionPrefix))
+                AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
+                new HarmonyMethod(GetType(), nameof(CheckForActionPrefix))
             );
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromChest)),
+                AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromChest)),
                 postfix: new HarmonyMethod(GetType(), nameof(GrabItemFromChestPostfix)));
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromInventory)),
+                AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromInventory)),
                 postfix: new HarmonyMethod(GetType(), nameof(GrabItemFromInventoryPostfix)));
-            
+
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
-                prefix: new HarmonyMethod(GetType(), nameof(DrawPrefix))
+                AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
+                new HarmonyMethod(GetType(), nameof(DrawPrefix))
             );
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)}),
-                prefix: new HarmonyMethod(GetType(), nameof(DrawLocalPrefix))
+                AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)}),
+                new HarmonyMethod(GetType(), nameof(DrawLocalPrefix))
             );
-            
+
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] {typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)}),
-                prefix: new HarmonyMethod(GetType(), nameof(DrawInMenuPrefix))
+                AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] {typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)}),
+                new HarmonyMethod(GetType(), nameof(DrawInMenuPrefix))
             );
 
             if (Config.AllowRestrictedStorage)
-            {
                 harmony.Patch(
-                    original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem), new[] {typeof(Item)}),
-                    prefix: new HarmonyMethod(GetType(), nameof(AddItemPrefix))
+                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem), new[] {typeof(Item)}),
+                    new HarmonyMethod(GetType(), nameof(AddItemPrefix))
                 );
-            }
 
             if (Config.AllowModdedCapacity)
-            {
                 harmony.Patch(
-                    original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                    prefix: new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix))
+                    AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                    new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix))
                 );
-            }
         }
 
         public static bool CheckForActionPrefix(Chest __instance, ref bool __result, Farmer who, bool justCheckingForActivity)
@@ -101,7 +103,7 @@ namespace ExpandedStorage.Framework.Patches
             var config = ExpandedStorage.GetConfig(__instance);
             if (!ReferenceEquals(__instance, item) && (config == null || config.Filter(item)))
                 return true;
-            
+
             __result = item;
             return false;
         }
@@ -129,7 +131,7 @@ namespace ExpandedStorage.Framework.Patches
 
             if (!config.IsPlaceable)
                 return false;
-            
+
             var draw_x = (float) x;
             var draw_y = (float) y;
             if (__instance.localKickStartTile.HasValue)
@@ -167,13 +169,13 @@ namespace ExpandedStorage.Framework.Patches
                 || !__instance.playerChest.Value
                 || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
-            
+
             __instance.Draw(spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
-            
+
             // Draw Stack
             if (__instance.Stack > 1)
                 Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
-            
+
             // Draw Held Items
             var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
             if (items > 0)

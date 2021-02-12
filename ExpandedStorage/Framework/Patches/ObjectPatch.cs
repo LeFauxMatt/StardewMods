@@ -2,8 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Extensions;
-using ExpandedStorage.Framework.Extensions;
 using Common.PatternPatches;
+using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,6 +11,9 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
+
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedParameter.Global
 
 namespace ExpandedStorage.Framework.Patches
 {
@@ -41,7 +44,7 @@ namespace ExpandedStorage.Framework.Patches
                 return;
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(Object), nameof(Object.drawWhenHeld)),
+                AccessTools.Method(typeof(Object), nameof(Object.drawWhenHeld)),
                 new HarmonyMethod(GetType(), nameof(DrawWhenHeldPrefix))
             );
         }
@@ -82,13 +85,9 @@ namespace ExpandedStorage.Framework.Patches
 
             // Automate preferences
             if (config.ModData != null)
-            {
                 foreach (var modData in config.ModData)
-                {
                     if (!chest.modData.ContainsKey(modData.Key))
                         chest.modData.Add(modData.Key, modData.Value);
-                }
-            }
 
             location.objects.Add(pos, chest);
             location.playSound("hammer");
@@ -96,7 +95,9 @@ namespace ExpandedStorage.Framework.Patches
             return false;
         }
 
-        public static bool DrawWhenHeldPrefix(Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition,
+        public static bool DrawWhenHeldPrefix(Object __instance,
+            SpriteBatch spriteBatch,
+            Vector2 objectPosition,
             Farmer f)
         {
             var config = ExpandedStorage.GetConfig(__instance);

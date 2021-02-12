@@ -1,27 +1,31 @@
 ﻿using System.Collections.Generic;
-using ExpandedStorage.Framework.Extensions;
 using Common.PatternPatches;
+using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using StardewModdingAPI;
 using StardewValley;
+
+// ReSharper disable InconsistentNaming
 
 namespace ExpandedStorage.Framework.Patches
 {
     internal class FarmerPatch : Patch<ModConfig>
     {
         internal FarmerPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
+            : base(monitor, config)
+        {
+        }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new []{typeof(Item), typeof(List<Item>)}),
+            harmony.Patch(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] {typeof(Item), typeof(List<Item>)}),
                 new HarmonyMethod(GetType(), nameof(AddItemToInventoryPrefix)));
         }
 
         public static bool AddItemToInventoryPrefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
         {
             var config = ExpandedStorage.GetConfig(item);
-            if(config == null || item.Stack > 1)
+            if (config == null || item.Stack > 1)
                 return true;
 
             var chest = item.ToChest(config);
@@ -35,7 +39,7 @@ namespace ExpandedStorage.Framework.Patches
                     || __instance.Items[j].ParentSheetIndex != item.ParentSheetIndex
                     || !chest.canStackWith(__instance.Items[j]))
                     continue;
-                
+
                 var stackLeft = __instance.Items[j].addToStack(chest);
                 affected_items_list?.Add(__instance.Items[j]);
                 if (stackLeft <= 0)
@@ -43,22 +47,23 @@ namespace ExpandedStorage.Framework.Patches
                     __result = null;
                     return false;
                 }
+
                 chest.Stack = stackLeft;
             }
-            
+
             // Find first empty slot
             for (var i = 0; i < __instance.MaxItems; i++)
             {
                 if (i > __instance.Items.Count || __instance.Items[i] != null)
                     continue;
-                
+
                 __instance.Items[i] = chest;
                 affected_items_list?.Add(__instance.Items[i]);
-                
+
                 __result = null;
                 return false;
             }
-            
+
             __result = chest;
             return false;
         }

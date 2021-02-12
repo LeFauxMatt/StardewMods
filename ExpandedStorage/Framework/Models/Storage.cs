@@ -18,24 +18,26 @@ namespace ExpandedStorage.Framework.Models
         Vanilla,
         JsonAssets,
         CustomChestTypes
-    };
-    
+    }
+
     public class Storage : StorageConfig, IStorage
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
 
+        /// <summary>List of ParentSheetIndex related to this item.</summary>
+        internal readonly IList<int> ObjectIds = new List<int>();
+
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
-        /// <summary>List of ParentSheetIndex related to this item.</summary>
-        internal IList<int> ObjectIds = new List<int>();
-
-        internal Storage() : this(null) { }
+        internal Storage() : this(null)
+        {
+        }
 
         internal Storage(string storageName)
         {
             StorageName = storageName;
-            
+
             switch (storageName)
             {
                 case "Mini-Shipping Bin":
@@ -86,7 +88,7 @@ namespace ExpandedStorage.Framework.Models
         public string StorageName { get; set; }
         public string OpenSound { get; set; } = "openChest";
         public string SpecialChestType { get; set; } = "None";
-        public bool IsFridge { get; set; } = false;
+        public bool IsFridge { get; set; }
         public bool IsPlaceable { get; set; } = true;
         public IDictionary<string, string> ModData { get; set; }
         public IList<string> AllowList { get; set; }
@@ -99,8 +101,9 @@ namespace ExpandedStorage.Framework.Models
                 ExcludeModDataKeys.Add(modDataKey);
         }
 
-        public bool MatchesContext(object context) =>
-            context switch
+        public bool MatchesContext(object context)
+        {
+            return context switch
             {
                 Item item when item.modData.Keys.Any(ExcludeModDataKeys.Contains) => false,
                 AdventureGuild => false,
@@ -113,16 +116,30 @@ namespace ExpandedStorage.Framework.Models
                 Object obj when obj.bigCraftable.Value => ObjectIds.Contains(obj.ParentSheetIndex),
                 _ => false
             };
+        }
 
-        private bool IsAllowed(Item item) => AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
-        private bool IsBlocked(Item item) => BlockList != null && BlockList.Any() && BlockList.Any(item.MatchesTagExt);
-        public bool Filter(Item item) => IsAllowed(item) && !IsBlocked(item);
+        private bool IsAllowed(Item item)
+        {
+            return AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
+        }
 
-        public bool HighlightMethod(Item item) =>
-            Filter(item)
-            && (!Enum.TryParse(SpecialChestType, out Chest.SpecialChestTypes specialChestType)
-                || specialChestType != Chest.SpecialChestTypes.MiniShippingBin
-                || Utility.highlightShippableObjects(item));
+        private bool IsBlocked(Item item)
+        {
+            return BlockList != null && BlockList.Any() && BlockList.Any(item.MatchesTagExt);
+        }
+
+        public bool Filter(Item item)
+        {
+            return IsAllowed(item) && !IsBlocked(item);
+        }
+
+        public bool HighlightMethod(Item item)
+        {
+            return Filter(item)
+                   && (!Enum.TryParse(SpecialChestType, out Chest.SpecialChestTypes specialChestType)
+                       || specialChestType != Chest.SpecialChestTypes.MiniShippingBin
+                       || Utility.highlightShippableObjects(item));
+        }
 
         internal void CopyFrom(IStorage storage)
         {

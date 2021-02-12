@@ -1,6 +1,8 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+
 namespace ExpandedStorage.Framework
 {
     public class ModConfigKeys

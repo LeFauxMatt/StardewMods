@@ -15,10 +15,7 @@ namespace Common.PatternPatches
         {
             var harmony = HarmonyInstance.Create(_uniqueId);
 
-            foreach (var patch in patches)
-            {
-                patch.Apply(harmony);
-            }
+            foreach (var patch in patches) patch.Apply(harmony);
         }
     }
 }

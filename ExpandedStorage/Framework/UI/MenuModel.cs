@@ -45,7 +45,7 @@ namespace ExpandedStorage.Framework.UI
         private MenuModel(ItemGrabMenu menu)
         {
             Instance.Value = this;
-            
+
             Menu = menu;
             _menuContext = menu.context;
             MenuRows = Menu.ItemsToGrabMenu.rows;
@@ -54,18 +54,16 @@ namespace ExpandedStorage.Framework.UI
             Items = menu.ItemsToGrabMenu.actualInventory;
             FilteredItems = Items;
             MaxRows = Math.Max(0, Items.Count.RoundUp(12) / 12 - MenuRows);
-            
+
             _currentTab = -1;
             _skippedRows = 0;
             _searchText = "";
 
             if (StorageConfig?.Tabs != null)
-            {
                 StorageTabs = StorageConfig.Tabs
                     .Select(t => ExpandedStorage.GetTab($"{StorageConfig.ModUniqueId}/{t}"))
                     .Where(t => t != null)
                     .ToList();
-            }
 
             RegisterEvents();
         }
@@ -145,35 +143,45 @@ namespace ExpandedStorage.Framework.UI
         internal event EventHandler ItemChanged;
 
         /// <summary>Returns Offset to lower menu for expanded menus.</summary>
-        public static int GetOffset(MenuWithInventory menu) =>
-            _config.ExpandInventoryMenu && menu is ItemGrabMenu {shippingBin: false} igm
+        public static int GetOffset(MenuWithInventory menu)
+        {
+            return _config.ExpandInventoryMenu && menu is ItemGrabMenu {shippingBin: false} igm
                 ? ExpandedStorage.GetConfig(igm.context)?.MenuOffset ?? 0
                 : 0;
+        }
 
         /// <summary>Returns Padding to top menu for search box.</summary>
-        public static int GetPadding(MenuWithInventory menu) =>
-            _config.ShowSearchBar && menu is ItemGrabMenu {shippingBin: false} igm
+        public static int GetPadding(MenuWithInventory menu)
+        {
+            return _config.ShowSearchBar && menu is ItemGrabMenu {shippingBin: false} igm
                 ? ExpandedStorage.GetConfig(igm.context)?.MenuPadding ?? 0
                 : 0;
+        }
 
         /// <summary>Returns Display Capacity of MenuWithInventory.</summary>
-        public static int GetMenuCapacity(object context) =>
-            _config.ExpandInventoryMenu
+        public static int GetMenuCapacity(object context)
+        {
+            return _config.ExpandInventoryMenu
                 ? ExpandedStorage.GetConfig(context)?.MenuCapacity ?? 36
                 : 36;
+        }
 
         /// <summary>Returns Displayed Rows of MenuWithInventory.</summary>
-        public static int GetRows(object context) =>
-            _config.ExpandInventoryMenu
+        public static int GetRows(object context)
+        {
+            return _config.ExpandInventoryMenu
                 ? ExpandedStorage.GetConfig(context)?.MenuRows ?? 3
                 : 3;
+        }
 
         /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
-        public static IList<Item> GetItems(IList<Item> items) =>
-            (_config.ShowTabs || _config.ShowSearchBar)
-            && Instance.Value != null && ReferenceEquals(Instance.Value.Items, items)
+        public static IList<Item> GetItems(IList<Item> items)
+        {
+            return (_config.ShowTabs || _config.ShowSearchBar)
+                   && Instance.Value != null && ReferenceEquals(Instance.Value.Items, items)
                 ? Instance.Value.FilteredItems
                 : items;
+        }
 
         internal static void Init(ModConfig config)
         {
@@ -184,7 +192,7 @@ namespace ExpandedStorage.Framework.UI
         {
             if (Instance.Value == null)
                 return new MenuModel(menu);
-            
+
             if (Instance.Value != null && !Instance.Value.ContextMatches(menu))
             {
                 Instance.Value.Dispose();
@@ -198,7 +206,7 @@ namespace ExpandedStorage.Framework.UI
                     menu.currentlySnappedComponent = menu.getComponentWithID(oldId);
                 menu.snapCursorToCurrentSnappedComponent();
             }
-            
+
             Instance.Value.Menu = menu;
             return Instance.Value;
         }
@@ -225,10 +233,12 @@ namespace ExpandedStorage.Framework.UI
             }
         }
 
-        private bool ContextMatches(ItemGrabMenu menu) =>
-            menu.context != null
-            && ReferenceEquals(menu.context, _menuContext)
-            || ReferenceEquals(menu.ItemsToGrabMenu.actualInventory, Items);
+        private bool ContextMatches(ItemGrabMenu menu)
+        {
+            return menu.context != null
+                   && ReferenceEquals(menu.context, _menuContext)
+                   || ReferenceEquals(menu.ItemsToGrabMenu.actualInventory, Items);
+        }
 
         private void ItemsOnElementChanged(NetList<Item, NetRef<Item>> list, int index, Item oldValue, Item newValue)
         {
@@ -244,10 +254,7 @@ namespace ExpandedStorage.Framework.UI
         {
             if (ItemChanged == null)
                 return;
-            foreach (var @delegate in ItemChanged.GetInvocationList())
-            {
-                @delegate.DynamicInvoke(this, null);
-            }
+            foreach (var @delegate in ItemChanged.GetInvocationList()) @delegate.DynamicInvoke(this, null);
         }
     }
 }

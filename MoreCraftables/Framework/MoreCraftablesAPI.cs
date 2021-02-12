@@ -9,6 +9,7 @@ namespace MoreCraftables.Framework
     {
         private readonly IList<HandledTypeWrapper> _handledTypes;
         private readonly IList<ObjectFactoryWrapper> _objectFactories;
+
         public MoreCraftablesAPI(IList<HandledTypeWrapper> handledTypes, IList<ObjectFactoryWrapper> objectFactories)
         {
             _handledTypes = handledTypes;
@@ -23,7 +24,7 @@ namespace MoreCraftables.Framework
                 HandledType = handledType
             });
         }
-        
+
         public void AddObjectFactory(IManifest manifest, IObjectFactory objectFactory)
         {
             _objectFactories.Add(new ObjectFactoryWrapper
