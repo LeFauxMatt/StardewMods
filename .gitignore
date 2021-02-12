@@ -5,3 +5,4 @@ _releases/
 riderModule.iml
 /_ReSharper.Caches/
 .vs/
+*.DotSettings.user
