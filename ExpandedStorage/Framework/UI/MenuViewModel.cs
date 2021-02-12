@@ -22,25 +22,12 @@ namespace ExpandedStorage.Framework.UI
         private static IInputHelper _inputHelper;
         private static ModConfig _config;
 
+        private readonly MenuModel _model;
+
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
         private readonly int _screenId;
-        
-        private readonly MenuModel _model;
+
         private readonly MenuView _view;
-
-        public static void RefreshItems() =>
-            Instance.Value?.OnItemChanged(Instance.Value, null);
-        
-        internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config)
-        {
-            _events = events;
-            _inputHelper = inputHelper;
-            _config = config;
-
-            // Events
-            _events.GameLoop.UpdateTicked += OnUpdateTicked;
-            _events.Display.MenuChanged += OnMenuChanged;
-        }
 
         private MenuViewModel(ItemGrabMenu menu)
         {
@@ -83,7 +70,7 @@ namespace ExpandedStorage.Framework.UI
             _view.CurrentTab = _model.CurrentTab;
             OnItemChanged(this, null);
         }
-        
+
         public void Dispose()
         {
             Instance.Value = null;
@@ -95,7 +82,21 @@ namespace ExpandedStorage.Framework.UI
             _model?.Dispose();
             _view?.Dispose();
         }
-        
+
+        public static void RefreshItems() =>
+            Instance.Value?.OnItemChanged(Instance.Value, null);
+
+        internal static void Init(IModEvents events, IInputHelper inputHelper, ModConfig config)
+        {
+            _events = events;
+            _inputHelper = inputHelper;
+            _config = config;
+
+            // Events
+            _events.GameLoop.UpdateTicked += OnUpdateTicked;
+            _events.Display.MenuChanged += OnMenuChanged;
+        }
+
         /// <summary>Raised after the game state is updated (≈60 times per second).</summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -106,7 +107,7 @@ namespace ExpandedStorage.Framework.UI
             if (Instance.Value?._view?.SearchField != null)
                 Instance.Value._model.SearchText = Instance.Value._view.SearchField.Text;
         }
-        
+
         /// <summary>
         /// Resets scrolling/overlay when chest menu exits or context changes.
         /// </summary>
@@ -133,19 +134,19 @@ namespace ExpandedStorage.Framework.UI
                     break;
             }
         }
-        
+
         /// <summary>Sets the current tab by index.</summary>
         private void SetTab(int index) => _model.CurrentTab = index;
-        
+
         /// <summary>Switch to previous tab.</summary>
         private void PreviousTab() => _model.CurrentTab--;
-        
+
         /// <summary>Switch to next tab.</summary>
         private void NextTab() => _model.CurrentTab++;
-        
+
         /// <summary>Filter items by search text.</summary>
         private void SetSearch(string searchText) => _model.SearchText = searchText;
-        
+
         /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -203,7 +204,7 @@ namespace ExpandedStorage.Framework.UI
             else if (_view.ReceiveKeyPress(e.Button))
                 _inputHelper.Suppress(e.Button);
         }
-        
+
         /// <summary>Raised after the player moves the in-game cursor.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -216,7 +217,7 @@ namespace ExpandedStorage.Framework.UI
             var y = Game1.getMouseY(true);
             _view.Hover(x, y);
         }
-        
+
         /// <summary>Raised after the player scrolls the mouse wheel.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>

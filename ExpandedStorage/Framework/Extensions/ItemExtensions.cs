@@ -15,6 +15,7 @@ namespace ExpandedStorage.Framework.Extensions
         private const string CategoryArtifact = "category_artifact";
         private const string DonateMuseum = "donate_museum";
         private const string DonateBundle = "donate_bundle";
+
         public static Chest ToChest(this Item item, Storage config = null)
         {
             // Get config for chest
@@ -48,6 +49,7 @@ namespace ExpandedStorage.Framework.Extensions
         }
 
         public static bool MatchesTagExt(this Item item, string search) => item.MatchesTagExt(search, true);
+
         public static bool MatchesTagExt(this Item item, string search, bool exactMatch) =>
             item switch
             {
@@ -58,9 +60,10 @@ namespace ExpandedStorage.Framework.Extensions
                 Object obj when TagEquals(search, DonateBundle, exactMatch) => CanDonateToBundle(obj),
                 _ => item.GetContextTags().Any(tag => TagEquals(search, tag, exactMatch))
             };
-        
+
         private static bool TagEquals(string search, string match, bool exact) =>
             exact && search.Equals(match) || match.IndexOf(search, StringComparison.InvariantCultureIgnoreCase) > -1;
+
         private static bool CanDonateToMuseum(Item item) =>
             Game1.locations
                 .OfType<LibraryMuseum>()

@@ -17,19 +17,17 @@ namespace ExpandedStorage
     public class ExpandedStorageAPI : IExpandedStorageAPI
     {
         private static readonly HashSet<string> VanillaNames = new() { "Chest", "Stone Chest", "Mini-Fridge", "Junimo Chest", "Mini-Shipping Bin" };
-        
-        private readonly IMonitor _monitor;
         private readonly IModHelper _helper;
+
+        private readonly IMonitor _monitor;
         private readonly IDictionary<string, Storage> _storageConfigs;
         private readonly IDictionary<string, StorageTab> _tabConfigs;
-        
-        private IGenericModConfigMenuAPI _modConfigApi;
-        private IJsonAssetsAPI _jsonAssetsApi;
-        public event EventHandler ReadyToLoad;
-        public event EventHandler StoragesLoaded;
 
         private bool _isContentLoaded;
-        
+        private IJsonAssetsAPI _jsonAssetsApi;
+
+        private IGenericModConfigMenuAPI _modConfigApi;
+
         internal ExpandedStorageAPI(
             IMonitor monitor,
             IModHelper helper,
@@ -45,11 +43,14 @@ namespace ExpandedStorage
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
 
+        public event EventHandler ReadyToLoad;
+        public event EventHandler StoragesLoaded;
+
         public void DisableWithModData(string modDataKey)
         {
             Storage.AddExclusion(modDataKey);
         }
-        
+
         public void DisableDrawWithModData(string modDataKey)
         {
             ChestPatch.AddExclusion(modDataKey);
@@ -70,7 +71,7 @@ namespace ExpandedStorage
             _storageConfigs
                 .Select(storageData => storageData.Value)
                 .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-        
+
         public IStorageConfig GetStorageConfig(string storageName) =>
             _storageConfigs.TryGetValue(storageName, out var storage)
                 ? storage
@@ -80,7 +81,7 @@ namespace ExpandedStorage
             _storageConfigs
                 .Select(storageData => storageData.Value)
                 .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-        
+
         public bool RegisterStorage(IStorage storage, IStorageConfig config = null)
         {
             if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
@@ -93,7 +94,7 @@ namespace ExpandedStorage
             
             return true;
         }
-        
+
         public bool RegisterStorage(int sheetIndex, IStorage storage, IStorageConfig config = null)
         {
             var storageConfig = _storageConfigs
@@ -110,7 +111,7 @@ namespace ExpandedStorage
             
             return true;
         }
-        
+
         public bool UpdateStorageConfig(IStorage storage, IStorageConfig config)
         {
             if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
@@ -119,7 +120,7 @@ namespace ExpandedStorage
             storageConfig.CopyFrom(config);
             return true;
         }
-        
+
         public bool UpdateStorageConfig(int sheetIndex, IStorageConfig config)
         {
             var storageConfig = _storageConfigs
@@ -348,7 +349,7 @@ namespace ExpandedStorage
             () => contentPack.HasFile(assetName)
                 ? contentPack.LoadAsset<Texture2D>(assetName)
                 : _helper.Content.Load<Texture2D>(assetName);
-        
+
         private bool RegisterStorage(Storage storageContent)
         {
             // Skip duplicate storage configs
@@ -397,7 +398,7 @@ namespace ExpandedStorage
                 () => config.VacuumItems,
                 value => config.VacuumItems = value);
         }
-        
+
         private Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageConfig> defaultConfig) =>
             () =>
             {
@@ -408,7 +409,7 @@ namespace ExpandedStorage
                 }
                 SaveToFile(contentPack).Invoke();
             };
-        
+
         private Action SaveToFile(IContentPack contentPack) =>
             () => contentPack.WriteJsonFile("config.json",
                 _storageConfigs

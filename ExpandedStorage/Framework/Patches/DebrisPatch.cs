@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
@@ -10,11 +11,11 @@ using StardewValley.Tools;
 namespace ExpandedStorage.Framework.Patches
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal class DebrisPatch : HarmonyPatch
+    internal class DebrisPatch : Patch<ModConfig>
     {
         internal DebrisPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
-        
+
         protected internal override void Apply(HarmonyInstance harmony)
         {
             if (Config.AllowVacuumItems)
@@ -47,14 +48,14 @@ namespace ExpandedStorage.Framework.Patches
 
             Item item = __instance.debrisType.Value switch
             {
-                Debris.DebrisType.ARCHAEOLOGY => new StardewValley.Object(chunk.debrisType, 1),
+                Debris.DebrisType.ARCHAEOLOGY => new Object(chunk.debrisType, 1),
                 _ when switcher <= -10000 => new MeleeWeapon(switcher),
-                _ when switcher <= 0 => new StardewValley.Object(Vector2.Zero, -switcher),
+                _ when switcher <= 0 => new Object(Vector2.Zero, -switcher),
                 _ when switcher == 93 || switcher == 94 => new Torch(Vector2.Zero, 1, switcher)
                 {
                     Quality = __instance.itemQuality
                 },
-                _ => new StardewValley.Object(Vector2.Zero, switcher, 1) {Quality = __instance.itemQuality}
+                _ => new Object(Vector2.Zero, switcher, 1) {Quality = __instance.itemQuality}
             };
             
             item = farmer.AddItemToInventory(item);

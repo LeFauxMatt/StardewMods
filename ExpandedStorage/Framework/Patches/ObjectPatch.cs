@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;
@@ -13,19 +14,21 @@ using StardewValley.Objects;
 namespace ExpandedStorage.Framework.Patches
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal class ObjectPatch : HarmonyPatch
+    internal class ObjectPatch : Patch<ModConfig>
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
-        
+
+        internal ObjectPatch(IMonitor monitor, ModConfig config)
+            : base(monitor, config)
+        {
+        }
+
         internal static void AddExclusion(string modDataKey)
         {
             if (!ExcludeModDataKeys.Contains(modDataKey))
                 ExcludeModDataKeys.Add(modDataKey);
         }
 
-        internal ObjectPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
-        
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(
@@ -41,21 +44,22 @@ namespace ExpandedStorage.Framework.Patches
                 new HarmonyMethod(GetType(), nameof(DrawWhenHeldPrefix))
             );
         }
-        
-        public static bool PlacementActionPrefix(Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
+
+        public static bool PlacementActionPrefix(Object __instance, ref bool __result, GameLocation location, int x,
+            int y, Farmer who)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            
+
             // Disallow non-placeable storages
             if (config != null && !config.IsPlaceable)
             {
                 __result = false;
                 return false;
             }
-            
+
             if (config == null)
                 return true;
-            
+
             var pos = new Vector2(x, y) / 64f;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
@@ -70,7 +74,7 @@ namespace ExpandedStorage.Framework.Patches
             var chest = __instance.ToChest(config);
             chest.shakeTimer = 50;
             chest.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
-            
+
             // Automate preferences
             if (config.ModData != null)
             {
@@ -87,7 +91,8 @@ namespace ExpandedStorage.Framework.Patches
             return false;
         }
 
-        public static bool DrawWhenHeldPrefix(Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
+        public static bool DrawWhenHeldPrefix(Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition,
+            Farmer f)
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null
@@ -95,7 +100,7 @@ namespace ExpandedStorage.Framework.Patches
                 || !chest.playerChest.Value
                 || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
-            
+
             chest.Draw(spriteBatch, objectPosition, Vector2.Zero);
             return false;
         }

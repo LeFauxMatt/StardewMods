@@ -6,10 +6,10 @@ namespace ExpandedStorage.Framework
 {
     internal class ContentLoader
     {
-        private readonly IMonitor _monitor;
-        private readonly IModHelper _helper;
-
         private readonly IExpandedStorageAPI _expandedStorageAPI;
+        private readonly IModHelper _helper;
+        private readonly IMonitor _monitor;
+
         internal ContentLoader(IMonitor monitor, IModHelper helper, IExpandedStorageAPI expandedStorageAPI)
         {
             _monitor = monitor;

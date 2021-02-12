@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Common.API.GenericModConfigMenu;
+using Common.PatternPatches;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
@@ -15,7 +16,7 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage
 {
-    internal class ExpandedStorage : Mod, IAssetEditor
+    public class ExpandedStorage : Mod, IAssetEditor
     {
         /// <summary>Tracks previously held chest before placing into world.</summary>
         internal static readonly PerScreen<Chest> HeldChest = new();
@@ -29,17 +30,31 @@ namespace ExpandedStorage
         /// <summary>Dictionary of Expanded Storage tabs</summary>
         private static readonly IDictionary<string, StorageTab> StorageTabs = new Dictionary<string, StorageTab>();
 
-        /// <summary>The mod configuration.</summary>
-        private ModConfig _config;
-
         /// <summary>Tracks previously held chest lid frame.</summary>
         private readonly PerScreen<int> _currentLidFrame = new();
 
         /// <summary>Reflected currentLidFrame for previousHeldChest.</summary>
         private readonly PerScreen<IReflectedField<int>> _currentLidFrameReflected = new();
 
+        /// <summary>The mod configuration.</summary>
+        private ModConfig _config;
+
         private ContentLoader _contentLoader;
         private ExpandedStorageAPI _expandedStorageAPI;
+
+        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public bool CanEdit<T>(IAssetInfo asset)
+        {
+            // Load bigCraftable on next tick for vanilla storages
+            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
+                Helper.Events.GameLoop.UpdateTicked += _expandedStorageAPI.OnAssetsLoaded;
+            return false;
+        }
+
+        /// <summary>Load a matched asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public void Edit<T>(IAssetData asset) {}
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
         public static Storage GetConfig(object context) =>
@@ -55,11 +70,8 @@ namespace ExpandedStorage
         public static StorageTab GetTab(string tabName) =>
             StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
 
-        public override object GetApi()
-        {
-            return _expandedStorageAPI;
-        }
-        
+        public override object GetApi() => _expandedStorageAPI;
+
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
@@ -102,7 +114,7 @@ namespace ExpandedStorage
             }
             
             // Harmony Patches
-            new Patcher(ModManifest.UniqueID).ApplyAll(
+            new Patcher<ModConfig>(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatch(Monitor, _config),
                 new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
@@ -129,20 +141,6 @@ namespace ExpandedStorage
             ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
         }
 
-        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            // Load bigCraftable on next tick for vanilla storages
-            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-                Helper.Events.GameLoop.UpdateTicked += _expandedStorageAPI.OnAssetsLoaded;
-            return false;
-        }
-
-        /// <summary>Load a matched asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public void Edit<T>(IAssetData asset) {}
-
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -168,7 +166,7 @@ namespace ExpandedStorage
             foreach (var modData in oldChest.modData)
                 chest.modData.CopyFrom(modData);
         }
-        
+
         /// <summary>Initialize player item vacuum chests.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -186,7 +184,7 @@ namespace ExpandedStorage
             
             Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
         }
-        
+
         /// <summary>Refresh player item vacuum chests.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>

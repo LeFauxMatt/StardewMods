@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Common.ExternalMods.Automate;
+using Common.PatternPatches;
 using Harmony;
 using StardewModdingAPI;
 using StardewValley;
@@ -8,11 +9,12 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    internal class AutomatePatch : HarmonyPatch
+    internal class AutomatePatch : Patch<ModConfig>
     {
-        private readonly Type _type;
-        private readonly bool _isAutomateLoaded;
         private static IReflectionHelper _reflection;
+        private readonly bool _isAutomateLoaded;
+        private readonly Type _type;
+
         internal AutomatePatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection, bool isAutomateLoaded)
             : base(monitor, config)
         {

@@ -31,22 +31,22 @@ namespace ExpandedStorage.Framework.API
         /// <summary>Returns all Expanded Storage by sheet index.</summary>
         /// <returns>List of storage ids</returns>
         IList<int> GetAllStorageIds();
-        
+
         /// <summary>Returns storage info based on name.</summary>
         /// <param name="storageName">The name of the storage.</param>
         /// <returns>Storage Info</returns>
         IStorage GetStorage(string storageName);
-        
+
         /// <summary>Returns storage info based on sheet index.</summary>
         /// <param name="sheetIndex">Sheet index on BigCraftables.</param>
         /// <returns>Storage Info</returns>
         IStorage GetStorage(int sheetIndex);
-        
+
         /// <summary>Returns storage config based on name.</summary>
         /// <param name="storageName">The name of the storage.</param>
         /// <returns>Storage Config</returns>
         IStorageConfig GetStorageConfig(string storageName);
-        
+
         /// <summary>Returns storage config based on sheet index.</summary>
         /// <param name="sheetIndex">Sheet index on BigCraftables.</param>
         /// <returns>Storage Config</returns>
@@ -64,7 +64,7 @@ namespace ExpandedStorage.Framework.API
         /// <param name="config">Storage config.</param>
         /// <returns>True if storage was found and updated.</returns>
         bool RegisterStorage(int sheetIndex, IStorage storage, IStorageConfig config);
-        
+
         /// <summary>Update Config for Expanded Storage.</summary>
         /// <param name="storage">Storage features to enable.</param>
         /// <param name="config">Storage config.</param>

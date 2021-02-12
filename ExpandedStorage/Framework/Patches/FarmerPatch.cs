@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using StardewModdingAPI;
@@ -6,7 +7,7 @@ using StardewValley;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    internal class FarmerPatch : HarmonyPatch
+    internal class FarmerPatch : Patch<ModConfig>
     {
         internal FarmerPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }

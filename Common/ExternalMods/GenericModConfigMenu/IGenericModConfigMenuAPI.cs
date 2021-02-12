@@ -2,13 +2,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+
 // ReSharper disable All
 namespace Common.API.GenericModConfigMenu
 {
     public interface IGenericModConfigMenuAPI
     {
         void RegisterModConfig(IManifest mod, Action revertToDefault, Action saveToFile);
-    
+
         void RegisterLabel(IManifest mod, string labelName, string labelDesc);
         void RegisterSimpleOption(IManifest mod, string optionName, string optionDesc, Func< bool > optionGet, Action< bool > optionSet);
         void RegisterSimpleOption(IManifest mod, string optionName, string optionDesc, Func< int > optionGet, Action< int > optionSet);

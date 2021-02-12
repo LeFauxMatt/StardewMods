@@ -1,9 +1,8 @@
 ﻿using Harmony;
-using HarmonyPatch = ExpandedStorage.Framework.Patches.HarmonyPatch;
 
-namespace ExpandedStorage.Framework
+namespace Common.PatternPatches
 {
-    internal class Patcher
+    public class Patcher<T>
     {
         private readonly string _uniqueId;
 
@@ -12,7 +11,7 @@ namespace ExpandedStorage.Framework
             _uniqueId = uniqueId;
         }
 
-        internal void ApplyAll(params HarmonyPatch[] patches)
+        internal void ApplyAll(params Patch<T>[] patches)
         {
             var harmony = HarmonyInstance.Create(_uniqueId);
 

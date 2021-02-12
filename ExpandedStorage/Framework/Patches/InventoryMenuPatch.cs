@@ -13,6 +13,7 @@ namespace ExpandedStorage.Framework.Patches
     {
         internal InventoryMenuPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
+
         protected internal override void Apply(HarmonyInstance harmony)
         {
             if (Config.AllowModdedCapacity || Config.ShowTabs || Config.ShowSearchBar)

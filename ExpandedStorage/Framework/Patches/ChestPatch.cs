@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.PatternPatches;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
@@ -13,9 +14,12 @@ using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    internal class ChestPatch : HarmonyPatch
+    internal class ChestPatch : Patch<ModConfig>
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
+
+        internal ChestPatch(IMonitor monitor, ModConfig config)
+            : base(monitor, config) { }
 
         internal static void AddExclusion(string modDataKey)
         {
@@ -23,8 +27,6 @@ namespace ExpandedStorage.Framework.Patches
                 ExcludeModDataKeys.Add(modDataKey);
         }
 
-        internal ChestPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config) { }
         protected internal override void Apply(HarmonyInstance harmony)
         {
             harmony.Patch(
@@ -156,7 +158,7 @@ namespace ExpandedStorage.Framework.Patches
             __instance.Draw(spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
             return false;
         }
-        
+
         /// <summary>Draw chest with playerChoiceColor and lid animation in menu.</summary>
         public static bool DrawInMenuPrefix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Color color, bool drawShadow)
         {
@@ -178,7 +180,7 @@ namespace ExpandedStorage.Framework.Patches
                 Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
             return false;
         }
-        
+
         /// <summary>Returns modded capacity for storage.</summary>
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {

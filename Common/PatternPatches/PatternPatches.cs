@@ -8,20 +8,17 @@ namespace Common.PatternPatches
     public class PatternPatches : IEnumerable<CodeInstruction>
     {
         private static IMonitor _monitor;
-        private readonly Queue<PatternPatch> _patternPatches = new();
         private readonly IEnumerable<CodeInstruction> _instructions;
-        public bool Done => _patternPatches.Count == 0;
+        private readonly Queue<PatternPatch> _patternPatches = new();
+
         public PatternPatches(IEnumerable<CodeInstruction> instructions, IMonitor monitor)
         {
             _instructions = instructions;
             _monitor = monitor;
         }
-        public PatternPatch Find(params CodeInstruction[] pattern)
-        {
-            var operation = new PatternPatch(pattern);
-            _patternPatches.Enqueue(operation);
-            return operation;
-        }
+
+        public bool Done => _patternPatches.Count == 0;
+
         public IEnumerator<CodeInstruction> GetEnumerator()
         {
             var currentOperation = _patternPatches.Dequeue();
@@ -73,7 +70,14 @@ namespace Common.PatternPatches
                 yield return instruction;
             }
         }
-        
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public PatternPatch Find(params CodeInstruction[] pattern)
+        {
+            var operation = new PatternPatch(pattern);
+            _patternPatches.Enqueue(operation);
+            return operation;
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace ExpandedStorage.Framework
     {
         /// <summary>Allow carried chests to be accessed while in inventory.</summary>
         public bool AllowAccessCarriedChest { get; set; } = true;
-        
+
         /// <summary>Allow chests to be picked up and placed with items.</summary>
         public bool AllowCarryingChests { get; set; } = true;
 
@@ -24,7 +24,7 @@ namespace ExpandedStorage.Framework
 
         /// <summary>Allows storages to pull items directly into their inventory.</summary>
         public bool AllowVacuumItems { get; set; } = true;
-        
+
         /// <summary>Only vacuum to storages in the first row of player inventory.</summary>
         public bool VacuumToFirstRow { get; set; } = true;
 
@@ -33,7 +33,7 @@ namespace ExpandedStorage.Framework
 
         /// <summary>Symbol used to search items by context tags.</summary>
         public string SearchTagSymbol { get; set; } = "#";
-        
+
         /// <summary>Adds clickable arrows to indicate when there are more items in the chest.</summary>
         public bool ShowOverlayArrows { get; set; } = true;
 
@@ -45,6 +45,18 @@ namespace ExpandedStorage.Framework
 
         /// <summary>Control scheme for Expanded Storage features.</summary>
         public ModConfigKeys Controls { get; set; } = new();
+
+        protected internal string SummaryReport =>
+            "Expanded Storage Configuration\n" +
+            $"\tAccess Carried     : {AllowAccessCarriedChest}\n" +
+            $"\tCarry Chest        : {AllowCarryingChests}\n" +
+            $"\tModded Capacity    : {AllowModdedCapacity}\n" +
+            $"\tResize Menu        : {ExpandInventoryMenu}\n" +
+            $"\tRestricted Storage : {AllowRestrictedStorage}\n" +
+            $"\tShow Arrows        : {ShowOverlayArrows}\n" +
+            $"\tShow Tabs          : {ShowTabs}\n" +
+            $"\tShow Search        : {ShowSearchBar}\n" +
+            $"\tVacuum Items       : {AllowVacuumItems}";
 
         public static void RegisterModConfig(IManifest modManifest, IGenericModConfigMenuAPI modConfigApi, ModConfig config)
         {
@@ -143,17 +155,5 @@ namespace ExpandedStorage.Framework
                 () => config.AllowVacuumItems,
                 value => config.AllowVacuumItems = value);
         }
-        
-        protected internal string SummaryReport =>
-            "Expanded Storage Configuration\n" +
-            $"\tAccess Carried     : {AllowAccessCarriedChest}\n" +
-            $"\tCarry Chest        : {AllowCarryingChests}\n" +
-            $"\tModded Capacity    : {AllowModdedCapacity}\n" +
-            $"\tResize Menu        : {ExpandInventoryMenu}\n" +
-            $"\tRestricted Storage : {AllowRestrictedStorage}\n" +
-            $"\tShow Arrows        : {ShowOverlayArrows}\n" +
-            $"\tShow Tabs          : {ShowTabs}\n" +
-            $"\tShow Search        : {ShowSearchBar}\n" +
-            $"\tVacuum Items       : {AllowVacuumItems}";
     }
 }

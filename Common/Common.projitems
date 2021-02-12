@@ -13,6 +13,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ExternalMods\GenericModConfigMenu\IGenericModConfigMenuAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalMods\JsonAssets\IJsonAssetsAPI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\Patch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\Patcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\PatternPatches.cs" />
   </ItemGroup>

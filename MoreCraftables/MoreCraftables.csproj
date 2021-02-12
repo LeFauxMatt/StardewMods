@@ -1,27 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <AssemblyName>ExpandedStorage</AssemblyName>
-        <RootNamespace>ExpandedStorage</RootNamespace>
-        <Version>1.6.0-beta.1</Version>
+        <AssemblyName>MoreCraftables</AssemblyName>
+        <RootNamespace>MoreCraftables</RootNamespace>
+        <Version>1.0.0</Version>
         <TargetFramework>net452</TargetFramework>
         <Platforms>x86</Platforms>
         <PlatformTarget>x86</PlatformTarget>
         <EnableHarmony>true</EnableHarmony>
         <LangVersion>9</LangVersion>
         <Authors>furyx639</Authors>
-        <Title>ExpandedStorage</Title>
-        <Description>Mod which allows Content Packs to add custom storage.</Description>
-        <PackageLicenseUrl>https://github.com/ImJustMatt/StardewMods/blob/master/ExpandedStorage/LICENSE</PackageLicenseUrl>
+        <Title>MoreCraftables</Title>
+        <Description>Mod which allows Content Packs to add custom objects.</Description>
+        <PackageLicenseUrl>https://github.com/ImJustMatt/StardewMods/blob/master/MoreCraftables/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
-        <PackageId>furyx639.ExpandedStorage</PackageId>
+        <PackageId>furyx639.MoreCraftables</PackageId>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.2.2" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="assets" />
-      <Folder Include="screenshots" />
+      <Folder Include="docs" />
+      <Folder Include="Framework\Patches" />
     </ItemGroup>
     <Import Project="..\Common\Common.projitems" Label="Shared" />
 </Project>

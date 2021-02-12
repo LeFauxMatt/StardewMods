@@ -1,30 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Harmony;
 
 namespace Common.PatternPatches
 {
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class PatternPatch
     {
-        private enum PatchType
-        {
-            Replace,
-            Prepend
-        }
-        public string Text { get; private set; }
-        public int Skipped { get; private set; }
-        public bool Loop => _patchType == PatchType.Replace && _loop == -1 || --_loop > 0;
-
-        private readonly List<CodeInstruction> _patterns = new();
-        private readonly Queue<int> _patternIndex = new();
         private readonly IList<Action<LinkedList<CodeInstruction>>> _patches = new List<Action<LinkedList<CodeInstruction>>>();
         private readonly PatchType _patchType;
-        private int _startIndex;
+        private readonly Queue<int> _patternIndex = new();
+
+        private readonly List<CodeInstruction> _patterns = new();
         private int _endIndex;
         private int _index;
         private int _loop;
+        private int _startIndex;
+
         public PatternPatch(ICollection<CodeInstruction> pattern)
         {
             if (pattern == null || pattern.Count == 0)
@@ -37,24 +28,30 @@ namespace Common.PatternPatches
             _patternIndex.Enqueue(_patterns.Count);
         }
 
+        public string Text { get; private set; }
+        public int Skipped { get; private set; }
+        public bool Loop => _patchType == PatchType.Replace && _loop == -1 || --_loop > 0;
+
         public PatternPatch Find(params CodeInstruction[] pattern)
         {
             _patterns.AddRange(pattern);
             _patternIndex.Enqueue(_patterns.Count);
             return this;
         }
+
         public PatternPatch Patch(Action<LinkedList<CodeInstruction>> patch)
         {
             _patches.Add(patch);
             return this;
         }
+
         // ReSharper disable once UnusedMethodReturnValue.Global
         public PatternPatch Patch(params CodeInstruction[] patches)
         {
             _patterns.AddRange(patches);
             return this;
         }
-        
+
         public PatternPatch Log(string text)
         {
             Text = text;
@@ -74,6 +71,7 @@ namespace Common.PatternPatches
             _loop = loop;
             return this;
         }
+
         public bool Matches(CodeInstruction instruction)
         {
             // Return true if no pattern to match
@@ -121,6 +119,12 @@ namespace Common.PatternPatches
             {
                 patch?.Invoke(rawStack);
             }
+        }
+
+        private enum PatchType
+        {
+            Replace,
+            Prepend
         }
     }
 }

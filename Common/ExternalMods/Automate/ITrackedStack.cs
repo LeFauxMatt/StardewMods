@@ -1,4 +1,5 @@
 ﻿using StardewValley;
+
 // ReSharper disable All
 namespace Common.ExternalMods.Automate
 {

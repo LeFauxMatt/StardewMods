@@ -1,15 +1,16 @@
-﻿using Harmony;
+﻿using Common.PatternPatches;
+using Harmony;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework.Patches
 {
-    internal class ItemPatch : HarmonyPatch
+    internal class ItemPatch : Patch<ModConfig>
     {
         internal ItemPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
-        
+
         protected internal override void Apply(HarmonyInstance harmony)
         {
             if (Config.AllowCarryingChests)

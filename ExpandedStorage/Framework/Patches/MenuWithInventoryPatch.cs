@@ -14,6 +14,7 @@ namespace ExpandedStorage.Framework.Patches
     {
         internal MenuWithInventoryPatch(IMonitor monitor, ModConfig config)
             : base(monitor, config) { }
+
         protected internal override void Apply(HarmonyInstance harmony)
         {
             var drawMethod = AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw),
@@ -35,6 +36,7 @@ namespace ExpandedStorage.Framework.Patches
                 );
             }
         }
+
         static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             var patternPatches = new PatternPatches(instructions, Monitor);

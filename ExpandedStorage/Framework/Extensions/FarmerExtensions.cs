@@ -12,11 +12,12 @@ namespace ExpandedStorage.Framework.Extensions
     {
         private const string ChestsAnywhereOrderKey = "Pathoschild.ChestsAnywhere/Order";
         private static IMonitor _monitor;
+
         internal static void Init(IMonitor monitor)
         {
             _monitor = monitor;
         }
-        
+
         public static Item AddItemToInventory(this Farmer farmer, Item item)
         {
             if (!farmer.IsLocalPlayer)

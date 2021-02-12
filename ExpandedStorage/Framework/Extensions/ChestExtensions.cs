@@ -115,7 +115,7 @@ namespace ExpandedStorage.Framework.Extensions
                 SpriteEffects.None,
                 layerDepth + 3E-05f);
         }
-        
+
         private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue) =>
             instance.shakeTimer > 0
                 ? new Vector2(Game1.random.Next(minValue, maxValue), 0)

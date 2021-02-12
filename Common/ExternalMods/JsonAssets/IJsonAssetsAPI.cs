@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 
 // ReSharper disable All
-
 namespace Common.API.JsonAssets
 {
     public interface IJsonAssetsAPI
     {
         void LoadAssets(string path);
-        
+
         int GetBigCraftableId(string name);
 
         //IDictionary<string, int> GetAllObjectIds();

@@ -13,50 +13,49 @@ namespace ExpandedStorage.Framework.UI
     internal class MenuView : IDisposable
     {
         private static readonly PerScreen<MenuView> Instance = new();
-        
+
+        private readonly InventoryMenu _menu;
+
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
         private readonly int _screenId;
-        
-        private readonly InventoryMenu _menu;
+
         private readonly Action<int> _scroll;
-        private readonly Action<int> _setTab;
         private readonly Action<string> _search;
-        
-        /// <summary>Scrolls inventory menu up one row.</summary>
-        internal readonly ClickableTextureComponent UpArrow;
-        
+
+        /// <summary>Corresponds to the bounds of the searchField.</summary>
+        private readonly ClickableComponent _searchArea;
+
+        /// <summary>Icon to display next to search box.</summary>
+        private readonly ClickableTextureComponent _searchIcon;
+
+        private readonly Action<int> _setTab;
+
+        /// <summary>Chest menu tab components.</summary>
+        private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
+
         /// <summary>Scrolls inventory menu down one row.</summary>
         internal readonly ClickableTextureComponent DownArrow;
 
         /// <summary>Input to filter items by name or context tags.</summary>
         internal readonly TextBox SearchField;
-        
-        /// <summary>Icon to display next to search box.</summary>
-        private readonly ClickableTextureComponent _searchIcon;
-        
-        /// <summary>Chest menu tab components.</summary>
-        private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
-        
-        /// <summary>Currently selected tab.</summary>
-        internal int CurrentTab;
-        
+
+        /// <summary>Scrolls inventory menu up one row.</summary>
+        internal readonly ClickableTextureComponent UpArrow;
+
+        /// <summary>The number of draw cycles since the menu was initialized.</summary>
+        private int _drawCount;
+
         /// <summary>Draw hoverText over chest menu.</summary>
         private string _hoverText;
 
         /// <summary>The last viewport bounds.</summary>
         private Rectangle _lastViewport;
 
-        /// <summary>The number of draw cycles since the menu was initialized.</summary>
-        private int _drawCount;
-
-        /// <summary>Returns whether the menu and its components have been initialized.</summary>
-        private bool IsInitialized => _drawCount > 1;
-
-        /// <summary>Corresponds to the bounds of the searchField.</summary>
-        private readonly ClickableComponent _searchArea;
-
         /// <summary>Y-Position for tabs when not selected.</summary>
         private int _tabY;
+
+        /// <summary>Currently selected tab.</summary>
+        internal int CurrentTab;
 
         protected internal MenuView(
             InventoryMenu menu,
@@ -113,6 +112,15 @@ namespace ExpandedStorage.Framework.UI
             CurrentTab = -1;
         }
 
+        /// <summary>Returns whether the menu and its components have been initialized.</summary>
+        private bool IsInitialized => _drawCount > 1;
+
+        /// <summary>Unregister Event Handling</summary>
+        public void Dispose()
+        {
+            Instance.Value = null;
+        }
+
         public void AddTab(Texture2D texture, string name)
         {
             var lastTab = _tabs.LastOrDefault();
@@ -130,12 +138,6 @@ namespace ExpandedStorage.Framework.UI
             _tabs.Add(tab);
         }
 
-        /// <summary>Unregister Event Handling</summary>
-        public void Dispose()
-        {
-            Instance.Value = null;
-        }
-        
         /// <summary></summary>
         private void InitComponents()
         {
@@ -282,7 +284,7 @@ namespace ExpandedStorage.Framework.UI
                 Game1.playSound("smallSelect");
             return true;
         }
-        
+
         /// <summary>Handles Right-Click interaction with overlay elements</summary>
         /// <param name="x">x-coordinate of left-click</param>
         /// <param name="y">Y-Coordinate of left-click</param>
