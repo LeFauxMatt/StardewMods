@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.PatternPatches;
 using ExpandedStorage.Framework.Extensions;
+using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;

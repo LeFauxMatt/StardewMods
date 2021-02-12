@@ -1,18 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Common.API.GenericModConfigMenu;
-using Common.PatternPatches;
+using Common.Extensions;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
+using Common.Integration.MoreCraftables;
+using Common.PatternPatches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using ObjectFactory = ExpandedStorage.Framework.ObjectFactory;
 
 namespace ExpandedStorage
 {
@@ -41,6 +44,7 @@ namespace ExpandedStorage
 
         private ContentLoader _contentLoader;
         private ExpandedStorageAPI _expandedStorageAPI;
+        private IMoreCraftablesAPI _moreCraftablesAPI;
 
         /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
@@ -63,14 +67,15 @@ namespace ExpandedStorage
                 .FirstOrDefault(c => c.MatchesContext(context));
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        private static bool HasConfig(object context) =>
+        public static bool HasConfig(object context) =>
             Storages.Any(c => c.Value.MatchesContext(context));
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
         public static StorageTab GetTab(string tabName) =>
             StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
 
-        public override object GetApi() => _expandedStorageAPI;
+        public override object GetApi() =>
+            _expandedStorageAPI ??= new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
 
         public override void Entry(IModHelper helper)
         {
@@ -83,9 +88,6 @@ namespace ExpandedStorage
                 _config.AllowCarryingChests = false;
             }
 
-            _expandedStorageAPI = new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
-            _contentLoader = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
-            
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
             ChestExtensions.Init(helper.Reflection);
             FarmerExtensions.Init(Monitor);
@@ -116,7 +118,7 @@ namespace ExpandedStorage
             // Harmony Patches
             new Patcher<ModConfig>(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatch(Monitor, _config),
-                new ItemPatch(Monitor, _config),
+                //new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
                 new ChestPatch(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
@@ -131,6 +133,13 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
+            _expandedStorageAPI = (ExpandedStorageAPI) GetApi();
+            _contentLoader = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
+
+            _moreCraftablesAPI = Helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
+            _moreCraftablesAPI.AddHandledType(ModManifest, new HandledType());
+            _moreCraftablesAPI.AddObjectFactory(ModManifest, new ObjectFactory());
+            
             var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             if (modConfigApi == null)
                 return;

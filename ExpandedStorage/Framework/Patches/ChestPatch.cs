@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.PatternPatches;
-using ExpandedStorage.Framework.Extensions;
+using Common.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
+using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using Common.PatternPatches;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
 using Harmony;
@@ -11,6 +10,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using Common.PatternPatches;
 
 namespace ExpandedStorage.Framework.Patches
 {

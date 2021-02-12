@@ -5,7 +5,7 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
-namespace ExpandedStorage.Framework.Extensions
+namespace Common.Extensions
 {
     public static class ChestExtensions
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common;
+using Common.Extensions;
 using ExpandedStorage.Framework.API;
 using ExpandedStorage.Framework.Extensions;
 using StardewValley;
@@ -38,7 +38,7 @@ namespace ExpandedStorage.Framework.Models
             
             switch (storageName)
             {
-                case "Mini-Shipping Bin":;
+                case "Mini-Shipping Bin":
                     SpecialChestType = "MiniShippingBin";
                     break;
                 case "Mini-Fridge":

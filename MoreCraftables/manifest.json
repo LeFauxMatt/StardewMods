@@ -1,0 +1,20 @@
+﻿{
+  "Name": "More Craftables",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Mod which allows Content Packs to add custom storage.",
+  "UniqueID": "furyx639.MoreCraftables",
+  "EntryDll": "MoreCraftables.dll",
+  "MinimumApiVersion": "3.9.0",
+  "UpdateKeys": [ "Nexus:7431" ],
+  "Dependencies": [
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "spacechase0.JsonAssets",
+      "IsRequired": false
+    }
+  ]
+}

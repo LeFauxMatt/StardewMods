@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common;
+using Common.Extensions;
 using ExpandedStorage.Framework.Models;
 using Netcode;
 using StardewModdingAPI.Utilities;

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using Common.PatternPatches;
 using ExpandedStorage.Framework.UI;
+using Common.PatternPatches;
 using Harmony;
 using StardewModdingAPI;
 using StardewValley.Menus;

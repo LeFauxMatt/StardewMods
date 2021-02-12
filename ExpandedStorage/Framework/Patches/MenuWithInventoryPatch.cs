@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley.Menus;
+using Common.PatternPatches;
 
 namespace ExpandedStorage.Framework.Patches
 {

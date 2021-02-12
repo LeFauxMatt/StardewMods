@@ -1,6 +1,6 @@
 ﻿using StardewModdingAPI;
 
-namespace MoreCraftables.Framework.API
+namespace Common.Integration.MoreCraftables
 {
     public interface IMoreCraftablesAPI
     {

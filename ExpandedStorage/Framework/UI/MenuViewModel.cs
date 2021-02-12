@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common;
+using Common.Extensions;
 using ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -36,7 +36,7 @@ namespace ExpandedStorage.Framework.UI
 
             if (_model.StorageConfig == null)
                 return;
-            
+
             _view = new MenuView(menu.ItemsToGrabMenu,
                 new MenuViewOptions
                 {
@@ -51,17 +51,17 @@ namespace ExpandedStorage.Framework.UI
             {
                 _view.SearchField.Text = _model.SearchText;
             }
-            
+
             // Events
             _model.ItemChanged += OnItemChanged;
             _events.Input.ButtonsChanged += OnButtonsChanged;
             _events.Input.ButtonPressed += OnButtonPressed;
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
-            
+
             if (_model.StorageConfig?.Tabs == null)
                 return;
-            
+
             foreach (var tab in _model.StorageTabs)
             {
                 _view.AddTab(tab.Texture, tab.TabName);
@@ -171,7 +171,7 @@ namespace ExpandedStorage.Framework.UI
 
             if (!_config.ShowTabs)
                 return;
-            
+
             if (_config.Controls.PreviousTab.JustPressed())
             {
                 PreviousTab();
@@ -193,10 +193,10 @@ namespace ExpandedStorage.Framework.UI
         {
             if (_view == null || Context.ScreenId != _screenId)
                 return;
-            
+
             var x = Game1.getMouseX(true);
             var y = Game1.getMouseY(true);
-            
+
             if ((e.Button == SButton.MouseLeft || e.Button.IsUseToolButton()) && _view.LeftClick(x, y))
                 _inputHelper.Suppress(e.Button);
             else if ((e.Button == SButton.MouseRight || e.Button.IsActionButton()) && _view.RightClick(x, y))
@@ -212,7 +212,7 @@ namespace ExpandedStorage.Framework.UI
         {
             if (_view == null || Context.ScreenId != _screenId)
                 return;
-            
+
             var x = Game1.getMouseX(true);
             var y = Game1.getMouseY(true);
             _view.Hover(x, y);
@@ -225,9 +225,9 @@ namespace ExpandedStorage.Framework.UI
         {
             if (_view == null || Context.ScreenId != _screenId)
                 return;
-            
+
             Scroll(e.Delta);
-            
+
             var cur = Game1.oldMouseState;
             Game1.oldMouseState = new MouseState(
                 cur.X,
@@ -254,12 +254,12 @@ namespace ExpandedStorage.Framework.UI
                 if (currentTab != null)
                     items = items.Where(currentTab.Filter);
             }
-            
+
             if (!string.IsNullOrWhiteSpace(_model.SearchText))
             {
                 items = items.Where(SearchMatches);
             }
-            
+
             var list = items.ToList();
             _model.MaxRows = Math.Max(0, list.Count.RoundUp(12) / 12 - _model.MenuRows);
             _model.SkippedRows = (int) MathHelper.Clamp(_model.SkippedRows, 0, _model.MaxRows);
@@ -267,7 +267,7 @@ namespace ExpandedStorage.Framework.UI
                 .Skip(_model.SkippedRows * 12)
                 .Take(_model.MenuRows * 12 + 12)
                 .ToList();
-            
+
             // Update Inventory Menu to correct item slot
             for (var i = 0; i < _model.Menu.ItemsToGrabMenu.inventory.Count; i++)
             {
@@ -276,8 +276,8 @@ namespace ExpandedStorage.Framework.UI
                     ? _model.Items.IndexOf(item).ToString()
                     : _model.Items.Count.ToString();
             }
-            
-            
+
+
             // Show/hide arrows
             if (_view?.UpArrow != null)
             {
@@ -310,6 +310,7 @@ namespace ExpandedStorage.Framework.UI
                     return false;
                 }
             }
+
             return true;
         }
     }

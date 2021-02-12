@@ -5,23 +5,13 @@
         <RootNamespace>ExpandedStorage</RootNamespace>
         <Version>1.6.0-beta.1</Version>
         <TargetFramework>net452</TargetFramework>
-        <Platforms>x86</Platforms>
-        <PlatformTarget>x86</PlatformTarget>
         <EnableHarmony>true</EnableHarmony>
-        <LangVersion>9</LangVersion>
-        <Authors>furyx639</Authors>
-        <Title>ExpandedStorage</Title>
-        <Description>Mod which allows Content Packs to add custom storage.</Description>
-        <PackageLicenseUrl>https://github.com/ImJustMatt/StardewMods/blob/master/ExpandedStorage/LICENSE</PackageLicenseUrl>
-        <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
-        <PackageId>furyx639.ExpandedStorage</PackageId>
     </PropertyGroup>
+    
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.2.2" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="assets" />
-      <Folder Include="screenshots" />
-    </ItemGroup>
+    
     <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\_build\common.targets" />
 </Project>

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.PatternPatches;
+using Common.Extensions;
 using ExpandedStorage.Framework.Extensions;
+using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -31,10 +32,10 @@ namespace ExpandedStorage.Framework.Patches
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(
-                AccessTools.Method(typeof(Object), nameof(Object.placementAction)),
-                new HarmonyMethod(GetType(), nameof(PlacementActionPrefix))
-            );
+            // harmony.Patch(
+            //     AccessTools.Method(typeof(Object), nameof(Object.placementAction)),
+            //     new HarmonyMethod(GetType(), nameof(PlacementActionPrefix))
+            // );
 
             if (!Config.AllowCarryingChests)
                 return;
@@ -45,8 +46,12 @@ namespace ExpandedStorage.Framework.Patches
             );
         }
 
-        public static bool PlacementActionPrefix(Object __instance, ref bool __result, GameLocation location, int x,
-            int y, Farmer who)
+        public static bool PlacementActionPrefix(Object __instance,
+            ref bool __result,
+            GameLocation location,
+            int x,
+            int y,
+            Farmer who)
         {
             var config = ExpandedStorage.GetConfig(__instance);
 

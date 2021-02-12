@@ -9,6 +9,10 @@
   "UpdateKeys": [ "Nexus:7431" ],
   "Dependencies": [
     {
+      "UniqueID": "furyx639.MoreCraftables",
+      "IsRequired": true
+    },
+    {
       "UniqueID": "Pathoschild.Automate",
       "IsRequired": false
     },
