@@ -1,10 +1,7 @@
-﻿using Common.Integration.MoreCraftables;
+﻿using MoreCraftables.Framework.API;
 using StardewValley;
 
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedType.Global
-
-namespace Common.Extensions
+namespace MoreCraftables.Framework.Extensions
 {
     public static class GameLocationExtensions
     {

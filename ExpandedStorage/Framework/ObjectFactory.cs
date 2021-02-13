@@ -1,5 +1,5 @@
-﻿using Common.Integration.MoreCraftables;
-using ExpandedStorage.Framework.Extensions;
+﻿using ExpandedStorage.Framework.Extensions;
+using ExpandedStorage.Framework.Integrations;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Locations;

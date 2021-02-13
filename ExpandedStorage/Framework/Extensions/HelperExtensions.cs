@@ -1,11 +1,8 @@
 ﻿using System;
 
-// ReSharper disable UnusedType.Global
-// ReSharper disable UnusedMember.Global
-
-namespace Common.Extensions
+namespace ExpandedStorage.Framework.Extensions
 {
-    public static class CommonExtensions
+    public static class HelperExtensions
     {
         public static int RoundUp(this int i, int d = 1)
         {

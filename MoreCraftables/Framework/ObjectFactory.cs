@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Common.Extensions;
-using Common.Integration.MoreCraftables;
 using Microsoft.Xna.Framework;
+using MoreCraftables.Framework.API;
+using MoreCraftables.Framework.Extensions;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;

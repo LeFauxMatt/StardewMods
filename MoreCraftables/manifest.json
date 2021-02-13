@@ -6,7 +6,7 @@
   "UniqueID": "furyx639.MoreCraftables",
   "EntryDll": "MoreCraftables.dll",
   "MinimumApiVersion": "3.9.0",
-  "UpdateKeys": [ "Nexus:7431" ],
+  "UpdateKeys": ["Nexus:8058"],
   "Dependencies": [
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",

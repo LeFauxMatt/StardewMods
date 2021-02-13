@@ -1,4 +1,4 @@
-﻿namespace MoreCraftables.Framework.API
+﻿namespace ExpandedStorage.Framework.Integrations
 {
     public interface IMoreCraftablesAPI
     {

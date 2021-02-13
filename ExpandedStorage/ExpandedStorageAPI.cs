@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Common.API.GenericModConfigMenu;
-using Common.API.JsonAssets;
 using ExpandedStorage.Framework.API;
+using ExpandedStorage.Framework.Integrations;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using Microsoft.Xna.Framework.Graphics;

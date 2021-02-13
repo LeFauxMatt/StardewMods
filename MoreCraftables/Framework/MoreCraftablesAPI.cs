@@ -1,37 +1,32 @@
 ﻿using System.Collections.Generic;
 using MoreCraftables.Framework.API;
-using MoreCraftables.Framework.Models;
 using StardewModdingAPI;
 
 namespace MoreCraftables.Framework
 {
     public class MoreCraftablesAPI : IMoreCraftablesAPI
     {
-        private readonly IList<HandledTypeWrapper> _handledTypes;
-        private readonly IList<ObjectFactoryWrapper> _objectFactories;
+        private readonly IList<IHandledType> _handledTypes;
+        private readonly IMonitor _monitor;
+        private readonly IList<IObjectFactory> _objectFactories;
 
-        public MoreCraftablesAPI(IList<HandledTypeWrapper> handledTypes, IList<ObjectFactoryWrapper> objectFactories)
+        public MoreCraftablesAPI(IMonitor monitor, IList<IHandledType> handledTypes, IList<IObjectFactory> objectFactories)
         {
+            _monitor = monitor;
             _handledTypes = handledTypes;
             _objectFactories = objectFactories;
         }
 
-        public void AddHandledType(IManifest manifest, IHandledType handledType)
+        public void AddHandledType(IHandledType handledType)
         {
-            _handledTypes.Add(new HandledTypeWrapper
-            {
-                ModUniqueId = manifest.UniqueID,
-                HandledType = handledType
-            });
+            _monitor.Log($"Adding HandledType {handledType.Type}");
+            _handledTypes.Add(handledType);
         }
 
-        public void AddObjectFactory(IManifest manifest, IObjectFactory objectFactory)
+        public void AddObjectFactory(IObjectFactory objectFactory)
         {
-            _objectFactories.Add(new ObjectFactoryWrapper
-            {
-                ModUniqueId = manifest.UniqueID,
-                ObjectFactory = objectFactory
-            });
+            _monitor.Log($"Adding ObjectFactory");
+            _objectFactories.Add(objectFactory);
         }
     }
 }

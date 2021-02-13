@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Common.API.GenericModConfigMenu;
+using ExpandedStorage.Framework.Integrations;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 

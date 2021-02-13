@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using StardewValley;
 
-// ReSharper disable UnusedMember.Global
-
-namespace MoreCraftables.Framework.API
+namespace ExpandedStorage.Framework.Integrations
 {
     public interface IHandledType
     {

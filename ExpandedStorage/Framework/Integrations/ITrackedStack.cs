@@ -1,9 +1,8 @@
 ﻿using StardewValley;
 
-// ReSharper disable All
-namespace Common.ExternalMods.Automate
+namespace ExpandedStorage.Framework.Integrations
 {
-    internal interface ITrackedStack
+    public interface ITrackedStack
     {
         /*********
         ** Accessors

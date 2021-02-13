@@ -5,10 +5,7 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedType.Global
-
-namespace Common.Extensions
+namespace ExpandedStorage.Framework.Extensions
 {
     public static class ChestExtensions
     {

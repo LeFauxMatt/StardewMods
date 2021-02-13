@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using Common.ExternalMods.Automate;
 using Common.PatternPatches;
+using ExpandedStorage.Framework.Integrations;
 using Harmony;
 using StardewModdingAPI;
 using StardewValley;

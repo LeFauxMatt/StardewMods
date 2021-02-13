@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
 
-namespace MoreCraftables.Framework.API
+namespace ExpandedStorage.Framework.Integrations
 {
     public interface IObjectFactory
     {

@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Common.API.GenericModConfigMenu;
-using Common.Extensions;
-using Common.Integration.MoreCraftables;
 using Common.PatternPatches;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
+using ExpandedStorage.Framework.Integrations;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
@@ -85,13 +83,15 @@ namespace ExpandedStorage
 
         public override object GetApi()
         {
-            return _expandedStorageAPI ??= new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
+            return _expandedStorageAPI;
         }
 
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
+            
+            _expandedStorageAPI = new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
@@ -141,12 +141,11 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            _expandedStorageAPI = (ExpandedStorageAPI) GetApi();
             var unused = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
 
             _moreCraftablesAPI = Helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
-            _moreCraftablesAPI.AddHandledType(ModManifest, new HandledType());
-            _moreCraftablesAPI.AddObjectFactory(ModManifest, new ObjectFactory());
+            _moreCraftablesAPI.AddHandledType(new HandledType());
+            _moreCraftablesAPI.AddObjectFactory(new ObjectFactory());
 
             var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             if (modConfigApi == null)

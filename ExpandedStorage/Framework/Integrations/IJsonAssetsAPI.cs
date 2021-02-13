@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-// ReSharper disable All
-namespace Common.API.JsonAssets
+namespace ExpandedStorage.Framework.Integrations
 {
     public interface IJsonAssetsAPI
     {
