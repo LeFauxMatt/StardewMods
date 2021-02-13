@@ -1,4 +1,4 @@
-﻿using ExpandedStorage.Framework.API;
+﻿using ExpandedStorage.API;
 
 namespace ExpandedStorage.Framework.Models
 {

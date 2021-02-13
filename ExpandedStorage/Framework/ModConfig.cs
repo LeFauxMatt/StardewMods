@@ -8,7 +8,7 @@ using StardewModdingAPI.Utilities;
 
 namespace ExpandedStorage.Framework
 {
-    public class ModConfig
+    internal class ModConfig
     {
         /// <summary>Allow carried chests to be accessed while in inventory.</summary>
         public bool AllowAccessCarriedChest { get; set; } = true;

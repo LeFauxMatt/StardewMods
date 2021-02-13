@@ -8,7 +8,7 @@ using StardewModdingAPI;
 
 namespace Common.PatternPatches
 {
-    public class PatternPatches : IEnumerable<CodeInstruction>
+    internal class PatternPatches : IEnumerable<CodeInstruction>
     {
         private static IMonitor _monitor;
         private readonly IEnumerable<CodeInstruction> _instructions;

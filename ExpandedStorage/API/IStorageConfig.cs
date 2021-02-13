@@ -1,4 +1,4 @@
-﻿namespace ExpandedStorage.Framework.API
+﻿namespace ExpandedStorage.API
 {
     public interface IStorageConfig
     {

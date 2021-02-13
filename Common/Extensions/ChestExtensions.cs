@@ -5,9 +5,9 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
-namespace ExpandedStorage.Framework.Extensions
+namespace ExpandedStorage.Common.Extensions
 {
-    public static class ChestExtensions
+    internal static class ChestExtensions
     {
         private static readonly HashSet<int> HideColorPickerIds = new() {216, 248, 256};
         private static readonly HashSet<int> ShowBottomBraceIds = new() {130, 232};

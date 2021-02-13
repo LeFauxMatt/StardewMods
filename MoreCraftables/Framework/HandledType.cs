@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using MoreCraftables.Framework.API;
+using MoreCraftables.API;
 using StardewValley;
 
 // ReSharper disable UnusedType.Global

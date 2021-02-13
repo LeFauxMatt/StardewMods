@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ExpandedStorage.Framework.Extensions
+namespace ExpandedStorage.Common.Extensions
 {
-    public static class HelperExtensions
+    internal static class CommonExtensions
     {
         public static int RoundUp(this int i, int d = 1)
         {

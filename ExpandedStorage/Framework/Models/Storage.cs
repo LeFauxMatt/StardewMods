@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedStorage.Framework.API;
+using ExpandedStorage.API;
+using ExpandedStorage.Common.Extensions;
 using ExpandedStorage.Framework.Extensions;
 using StardewValley;
 using StardewValley.Buildings;

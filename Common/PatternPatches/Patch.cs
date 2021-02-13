@@ -7,7 +7,7 @@ using StardewModdingAPI;
 
 namespace Common.PatternPatches
 {
-    public abstract class Patch<T>
+    internal abstract class Patch<T>
     {
         private protected static IMonitor Monitor;
         private protected static T Config;

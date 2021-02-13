@@ -1,9 +1,9 @@
-﻿using MoreCraftables.Framework.API;
+﻿using MoreCraftables.API;
 using StardewValley;
 
 namespace MoreCraftables.Framework.Extensions
 {
-    public static class GameLocationExtensions
+    internal static class GameLocationExtensions
     {
         public static void PlaySoundOrDefault(this GameLocation location, IHandledType handledType, string defaultSound)
         {

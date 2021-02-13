@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ExpandedStorage.Framework.Integrations;
+using MoreCraftables.API;
 using StardewValley;
 using StardewValley.Objects;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using ExpandedStorage.Framework.API;
+using ExpandedStorage.API;
 using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework
@@ -10,7 +10,7 @@ namespace ExpandedStorage.Framework
         private readonly IModHelper _helper;
         private readonly IMonitor _monitor;
 
-        internal ContentLoader(IMonitor monitor, IModHelper helper, IExpandedStorageAPI expandedStorageAPI)
+        internal ContentLoader(IMonitor monitor, IModHelper helper, ExpandedStorageAPI expandedStorageAPI)
         {
             _monitor = monitor;
             _helper = helper;

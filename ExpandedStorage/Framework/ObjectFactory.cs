@@ -1,12 +1,12 @@
 ﻿using ExpandedStorage.Framework.Extensions;
-using ExpandedStorage.Framework.Integrations;
 using Microsoft.Xna.Framework;
+using MoreCraftables.API;
 using StardewValley;
 using StardewValley.Locations;
 
 namespace ExpandedStorage.Framework
 {
-    public class ObjectFactory : IObjectFactory
+    internal class ObjectFactory : IObjectFactory
     {
         public Object CreateInstance(IHandledType handledType, Object obj, GameLocation location, Vector2 pos)
         {

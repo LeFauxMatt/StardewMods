@@ -3,7 +3,6 @@ using System.Linq;
 using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
-using MoreCraftables.Framework.API;
 using MoreCraftables.Framework.Models;
 using StardewModdingAPI;
 using StardewValley;
@@ -12,12 +11,12 @@ using StardewValley;
 
 namespace MoreCraftables.Framework.Patches
 {
-    public class ObjectPatch : Patch<ModConfig>
+    internal class ObjectPatch : Patch<ModConfig>
     {
-        private static IList<IHandledType> _handledTypes;
-        private static IList<IObjectFactory> _objectFactories;
+        private static IList<HandledTypeWrapper> _handledTypes;
+        private static IList<ObjectFactoryWrapper> _objectFactories;
 
-        public ObjectPatch(IMonitor monitor, ModConfig config, IList<IHandledType> handledTypes, IList<IObjectFactory> objectFactories)
+        public ObjectPatch(IMonitor monitor, ModConfig config, IList<HandledTypeWrapper> handledTypes, IList<ObjectFactoryWrapper> objectFactories)
             : base(monitor, config)
         {
             _handledTypes = handledTypes;
@@ -48,16 +47,19 @@ namespace MoreCraftables.Framework.Patches
                 return true;
 
             // Verify this is a handled item type
-            var handledType = _handledTypes.FirstOrDefault(t => t.IsHandledItem(__instance));
+            var handledType = _handledTypes.FirstOrDefault(t => t.HandledType.IsHandledItem(__instance));
             if (handledType == null)
                 return true;
 
             // Verify a factory exists for this handled type
             var objectFactory = _objectFactories
-                .FirstOrDefault(f => f.IsHandledType(handledType));
+                .Where(f => f.ObjectFactory.IsHandledType(handledType.HandledType))
+                .OrderByDescending(f => f.ModUniqueId.Equals(handledType.ModUniqueId))
+                .ThenByDescending(f => f.ModUniqueId.Equals("furyx639.MoreCraftables"))
+                .FirstOrDefault();
 
             // Get instance of object to place
-            var obj = objectFactory?.CreateInstance(handledType, __instance, location, pos);
+            var obj = objectFactory?.ObjectFactory.CreateInstance(handledType.HandledType, __instance, location, pos);
             if (obj == null)
             {
                 __result = false;

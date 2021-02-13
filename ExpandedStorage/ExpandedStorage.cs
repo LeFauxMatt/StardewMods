@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Common.PatternPatches;
+using ExpandedStorage.Common.Extensions;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Integrations;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
+using MoreCraftables.API;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -41,6 +43,8 @@ namespace ExpandedStorage
 
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
+
+        private ContentLoader _contentLoader;
 
         private ExpandedStorageAPI _expandedStorageAPI;
         private IMoreCraftablesAPI _moreCraftablesAPI;
@@ -90,8 +94,9 @@ namespace ExpandedStorage
         {
             _config = helper.ReadConfig<ModConfig>();
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
-            
+
             _expandedStorageAPI = new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
+            _contentLoader = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
@@ -141,11 +146,9 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            var unused = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
-
             _moreCraftablesAPI = Helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
-            _moreCraftablesAPI.AddHandledType(new HandledType());
-            _moreCraftablesAPI.AddObjectFactory(new ObjectFactory());
+            _moreCraftablesAPI.AddHandledType(ModManifest, new HandledType());
+            _moreCraftablesAPI.AddObjectFactory(ModManifest, new ObjectFactory());
 
             var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             if (modConfigApi == null)

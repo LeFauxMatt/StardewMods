@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.PatternPatches;
-using ExpandedStorage.Framework.Extensions;
+using ExpandedStorage.Common.Extensions;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.UI;
 using Harmony;

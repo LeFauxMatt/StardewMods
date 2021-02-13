@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using StardewModdingAPI;
 
-// ReSharper disable UnusedMember.Global
-// ReSharper disable EventNeverSubscribedTo.Global
-
-namespace ExpandedStorage.Framework.API
+namespace ExpandedStorage.API
 {
     public interface IExpandedStorageAPI
     {

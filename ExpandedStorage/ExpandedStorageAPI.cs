@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExpandedStorage.Framework.API;
+using ExpandedStorage.API;
 using ExpandedStorage.Framework.Integrations;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
@@ -24,7 +24,6 @@ namespace ExpandedStorage
 
         private bool _isContentLoaded;
         private IJsonAssetsAPI _jsonAssetsApi;
-
         private IGenericModConfigMenuAPI _modConfigApi;
 
         internal ExpandedStorageAPI(

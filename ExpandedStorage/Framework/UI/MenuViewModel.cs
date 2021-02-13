@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using ExpandedStorage.Common.Extensions;
 using ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.PatternPatches;
+using ExpandedStorage.Common.Extensions;
 using ExpandedStorage.Framework.Extensions;
 using Harmony;
 using Microsoft.Xna.Framework;

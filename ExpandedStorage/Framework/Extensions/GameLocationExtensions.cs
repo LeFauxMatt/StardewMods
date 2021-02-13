@@ -3,7 +3,7 @@ using StardewValley;
 
 namespace ExpandedStorage.Framework.Extensions
 {
-    public static class GameLocationExtensions
+    internal static class GameLocationExtensions
     {
         public static bool CarryChest(this GameLocation location, Vector2 pos)
         {

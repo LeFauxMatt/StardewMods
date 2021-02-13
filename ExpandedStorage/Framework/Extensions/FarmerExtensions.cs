@@ -6,11 +6,9 @@ using StardewValley;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
 
-// ReSharper disable NotAccessedField.Local
-
 namespace ExpandedStorage.Framework.Extensions
 {
-    public static class FarmerExtensions
+    internal static class FarmerExtensions
     {
         private const string ChestsAnywhereOrderKey = "Pathoschild.ChestsAnywhere/Order";
         private static IMonitor _monitor;

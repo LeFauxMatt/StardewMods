@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using StardewValley;
 
-namespace ExpandedStorage.Framework.Integrations
+namespace MoreCraftables.API
 {
     public interface IHandledType
     {

@@ -6,7 +6,7 @@ using Harmony;
 
 namespace Common.PatternPatches
 {
-    public class PatternPatch
+    internal class PatternPatch
     {
         private readonly IList<Action<LinkedList<CodeInstruction>>> _patches = new List<Action<LinkedList<CodeInstruction>>>();
         private readonly PatchType _patchType;

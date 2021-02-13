@@ -2,7 +2,7 @@
 
 namespace Common.PatternPatches
 {
-    public class Patcher<T>
+    internal class Patcher<T>
     {
         private readonly string _uniqueId;
 
