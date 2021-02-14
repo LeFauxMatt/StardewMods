@@ -16,7 +16,13 @@ namespace ExpandedStorage
 {
     public class ExpandedStorageAPI : IExpandedStorageAPI
     {
-        private static readonly HashSet<string> VanillaNames = new() {"Chest", "Stone Chest", "Mini-Fridge", "Junimo Chest", "Mini-Shipping Bin"};
+        private static readonly HashSet<string> VanillaNames = new()
+        {
+            "Default",
+            "Chest", "Stone Chest", "Junimo Chest", "Junimo Hut",
+            "Shipping Bin", "Mini-Shipping Bin",
+            "Fridge", "Mini-Fridge"
+        };
         private readonly IList<string> _contentDirs = new List<string>();
         private readonly IModHelper _helper;
         private readonly IMonitor _monitor;
@@ -114,8 +120,35 @@ namespace ExpandedStorage
                 return false;
             }
 
-            if (contentPack.HasFile("content-pack.json"))
+            // Generate files for More Craftables
+            if (expandedStorages.Any(s => !VanillaNames.Contains(s.Key)))
+            {
+                // Generate content-pack.json
+                if (!contentPack.HasFile("content-pack.json"))
+                {
+                    contentPack.WriteJsonFile("content-pack.json", new ContentPack
+                    {
+                        Author = contentPack.Manifest.Author,
+                        Description = contentPack.Manifest.Description,
+                        Name = contentPack.Manifest.Name,
+                        UniqueID = contentPack.Manifest.UniqueID,
+                        UpdateKeys = contentPack.Manifest.UpdateKeys,
+                        Version = contentPack.Manifest.Version.ToString()
+                    });
+                }
+                
+                // Generate more-craftables.json
+                if (!contentPack.HasFile("more-craftables.json"))
+                {
+                    contentPack.WriteJsonFile("more-craftables.json", expandedStorages
+                        .Where(s => !VanillaNames.Contains(s.Key))
+                        .ToDictionary(
+                            s => s.Key,
+                            s => new Dictionary<string, string> {{"Type", "Chest"}}
+                        ));
+                }
                 _contentDirs.Add(contentPack.DirectoryPath);
+            }
 
             var defaultConfig = expandedStorages.ToDictionary(
                 s => s.Key,

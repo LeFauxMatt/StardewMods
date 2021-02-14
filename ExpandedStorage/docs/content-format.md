@@ -5,12 +5,10 @@
 An Expanded Storage content pack must contain the following files:
 
 - `manifest.json`
-- `content-pack.json`
 - `expanded-storage.json`
-- `more-craftables.json`
 - `storage-tabs.json` (Optional)
 
-Additionally, storages must be added to this folder in the [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) Big Craftable format:
+Each Storage must be added to the `BigCraftables' folder in the [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) Big Craftable format:
 
 - `BigCraftables\Storage Name\big-craftable.json`
 - `BigCraftables\Storage Name\big-craftable.png`
@@ -24,30 +22,6 @@ Additionally, storages must be added to this folder in the [Json Assets](https:/
 ```
 
 For full details of `manifest.json` refer to [Modding:Modder Guide/APIs/Manifest](https://stardewcommunitywiki.com/Modding:Modder_Guide/APIs/Manifest).
-
-**`content-pack.json` is similar to `manifest.json` but only requires certain fields:**
-
-```json
-{
-  "UniqueID": "Author.ModName",
-  "Name": "Mod Name",
-  "Description": "A description of this mod",
-  "Author": "Your Name",
-  "Version": "1.0.0",
-  "UpdateKeys": []
-}
-```
-
-**`more-craftables.json` must list all objects that will be added as Storages:**
-
-```json
-{
-  "Storage Name": {"Type": "Chest"},
-  "Another Storage": {"Type": "Chest"}
-}
-```
-
-For additional documentation, please refer to [More Craftables Content Format]().
 
 **`expanded-storage.json` is used to enable/disable Expanded Storage features for Storages:**
 
@@ -118,20 +92,22 @@ field               | description
 `Tabs`              | Adds [tabs](#storage-tabs) to the chest menu for this storage by the tab name(s). (default `null`)
 `ModData`           | Adds to the storage [modData](#mod-data) when placed. (default `null`)
 
-<b id="storagecapacity">1.</b> Assign a capacity of at least one row (12) to avoid visual glitches.  
-<b id="handyheadphones">2.</b> I recommend [Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from in-game.
+<span id="storagecapacity">1.</span> Assign a capacity of at least one row (12) to avoid visual glitches.  
+<span id="handyheadphones">2.</span> I recommend [Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from in-game.
 
 ### Storage Tabs
 
 ```json
-"TabImage": "Crops.png",
-"AllowList": [
+"TabName": {
+  "TabImage": "Crops.png",
+  "AllowList": [
     "category_greens",
     "category_flowers",
     "category_fruits",
     "category_vegetables"
-],
-"BlockList": []
+  ],
+  "BlockList": []
+}
 ```
 
 field           | description
@@ -140,6 +116,23 @@ field           | description
 `TabImage`      | Number of item slots this storage supports. `-1` will be treated as infinite items, `0` will use the default vanilla value. (default 0)
 `AllowList`     | Restrict chest to only accept items containing these [tags](#context-tags). (default `null`)
 `BlockList`     | Restrict chest to reject items containing these [tags](#context-tags). (default `null`)
+
+**Tab Names can be localized under the `i18n` folder:**
+
+- `i18n\default.json`
+- `i18n\fr.json`
+
+```json
+{
+  "Crops": "Crops Translated",
+  "Cooking": "Cooking Translated"
+}
+```
+
+**Custom Tab Images can be saved under the `assets` folder:**
+
+- `assets\Crops.png`
+- `assets\Cooking.png`
 
 ### Context Tags
 
