@@ -248,12 +248,21 @@ namespace ExpandedStorage.Framework.Patches
 
             if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu)
             {
+                
                 var offset = MenuModel.GetOffset(__instance);
                 __instance.height += offset;
                 __instance.inventory.movePosition(0, offset);
                 __instance.okButton.bounds.Y += offset;
                 __instance.trashCan.bounds.Y += offset;
                 __instance.dropItemInvisibleButton.bounds.Y += offset;
+
+                if (offset < 0)
+                {
+                    if (__instance.colorPickerToggleButton != null)
+                        __instance.colorPickerToggleButton.bounds.Y += offset;
+                    __instance.fillStacksButton.bounds.Y += offset;
+                    __instance.organizeButton.bounds.Y += offset;
+                }
             }
 
             __instance.SetupBorderNeighbors();
