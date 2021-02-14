@@ -124,29 +124,24 @@ namespace ExpandedStorage
             if (expandedStorages.Any(s => !VanillaNames.Contains(s.Key)))
             {
                 // Generate content-pack.json
-                if (!contentPack.HasFile("content-pack.json"))
+                contentPack.WriteJsonFile("content-pack.json", new ContentPack
                 {
-                    contentPack.WriteJsonFile("content-pack.json", new ContentPack
-                    {
-                        Author = contentPack.Manifest.Author,
-                        Description = contentPack.Manifest.Description,
-                        Name = contentPack.Manifest.Name,
-                        UniqueID = contentPack.Manifest.UniqueID,
-                        UpdateKeys = contentPack.Manifest.UpdateKeys,
-                        Version = contentPack.Manifest.Version.ToString()
-                    });
-                }
+                    Author = contentPack.Manifest.Author,
+                    Description = contentPack.Manifest.Description,
+                    Name = contentPack.Manifest.Name,
+                    UniqueID = contentPack.Manifest.UniqueID,
+                    UpdateKeys = contentPack.Manifest.UpdateKeys,
+                    Version = contentPack.Manifest.Version.ToString()
+                });
                 
                 // Generate more-craftables.json
-                if (!contentPack.HasFile("more-craftables.json"))
-                {
-                    contentPack.WriteJsonFile("more-craftables.json", expandedStorages
-                        .Where(s => !VanillaNames.Contains(s.Key))
-                        .ToDictionary(
-                            s => s.Key,
-                            s => new Dictionary<string, string> {{"Type", "Chest"}}
-                        ));
-                }
+                contentPack.WriteJsonFile("more-craftables.json", expandedStorages
+                    .Where(s => !VanillaNames.Contains(s.Key))
+                    .ToDictionary(
+                        s => s.Key,
+                        s => new Dictionary<string, string> {{"Type", "Chest"}}
+                    ));
+                
                 _contentDirs.Add(contentPack.DirectoryPath);
             }
 
