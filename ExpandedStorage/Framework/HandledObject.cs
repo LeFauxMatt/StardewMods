@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MoreCraftables.API;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework
@@ -19,7 +18,7 @@ namespace ExpandedStorage.Framework
         public bool IsHandledItem(Item item)
         {
             var config = ExpandedStorage.GetConfig(item);
-            return config?.SourceType == SourceType.MoreCraftables;
+            return config?.SourceType == SourceType.MoreCraftables || config?.SourceType == SourceType.Vanilla;
         }
 
         public bool CanStackWith(Item item, Item otherItem)
@@ -41,6 +40,11 @@ namespace ExpandedStorage.Framework
             return config?.IsPlaceable != null && config.IsPlaceable
                 ? Base.CreateInstance(obj, location, pos)
                 : null;
+        }
+
+        public bool Draw(Object obj, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f, IHandledObject.DrawContext drawContext = default, Color color = default)
+        {
+            return Base.Draw(obj, spriteBatch, pos, origin, alpha, layerDepth, scaleSize);
         }
     }
 }

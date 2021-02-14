@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using ExpandedStorage.API;
 using ExpandedStorage.Framework;
@@ -54,7 +53,6 @@ namespace ExpandedStorage
         public void DisableDrawWithModData(string modDataKey)
         {
             ChestPatch.AddExclusion(modDataKey);
-            ObjectPatch.AddExclusion(modDataKey);
         }
 
         public IList<string> GetAllStorages()
@@ -74,78 +72,11 @@ namespace ExpandedStorage
                 : null;
         }
 
-        public IStorage GetStorage(int sheetIndex)
-        {
-            return _storageConfigs
-                .Select(storageData => storageData.Value)
-                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-        }
-
         public IStorageConfig GetStorageConfig(string storageName)
         {
             return _storageConfigs.TryGetValue(storageName, out var storage)
                 ? storage
                 : null;
-        }
-
-        public IStorageConfig GetStorageConfig(int sheetIndex)
-        {
-            return _storageConfigs
-                .Select(storageData => storageData.Value)
-                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-        }
-
-        public bool RegisterStorage(IStorage storage, IStorageConfig config = null)
-        {
-            if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
-                return false;
-
-            storageConfig.CopyFrom(storage);
-
-            if (config != null)
-                storageConfig.CopyFrom(config);
-
-            return true;
-        }
-
-        public bool RegisterStorage(int sheetIndex, IStorage storage, IStorageConfig config = null)
-        {
-            var storageConfig = _storageConfigs
-                .Select(storageData => storageData.Value)
-                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-
-            if (storageConfig == null)
-                return false;
-
-            storageConfig.CopyFrom(storage);
-
-            if (config != null)
-                storageConfig.CopyFrom(config);
-
-            return true;
-        }
-
-        public bool UpdateStorageConfig(IStorage storage, IStorageConfig config)
-        {
-            if (!_storageConfigs.TryGetValue(storage.StorageName, out var storageConfig))
-                return false;
-
-            storageConfig.CopyFrom(config);
-            return true;
-        }
-
-        public bool UpdateStorageConfig(int sheetIndex, IStorageConfig config)
-        {
-            var storageConfig = _storageConfigs
-                .Select(storageData => storageData.Value)
-                .FirstOrDefault(storageData => storageData.ObjectIds.Contains(sheetIndex));
-
-            if (storageConfig == null)
-                return false;
-
-            storageConfig.CopyFrom(config);
-
-            return true;
         }
 
         public bool LoadContentPack(string path)
@@ -173,51 +104,29 @@ namespace ExpandedStorage
         public bool LoadContentPack(IContentPack contentPack)
         {
             _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
-            var contentData = contentPack.ReadJsonFile<ContentData>("expandedStorage.json");
 
-            if (contentData?.ExpandedStorage == null)
+            var expandedStorages = contentPack.ReadJsonFile<IDictionary<string, Storage>>("expanded-storage.json");
+            var storageTabs = contentPack.ReadJsonFile<IDictionary<string, StorageTab>>("storage-tabs.json");
+
+            if (expandedStorages == null)
             {
-                _monitor.Log($"Cannot load {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
+                _monitor.Log($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
                 return false;
             }
-
-            var defaultConfig =
-                contentData.ExpandedStorage
-                    .ToDictionary(config => config.StorageName, StorageConfig.Clone);
 
             if (contentPack.HasFile("content-pack.json"))
                 _contentDirs.Add(contentPack.DirectoryPath);
 
-            Dictionary<string, StorageConfig> playerConfig;
-            try
-            {
-                playerConfig = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json");
-            }
-            catch (Exception)
-            {
-                playerConfig = null;
-            }
+            var defaultConfig = expandedStorages.ToDictionary(
+                s => s.Key,
+                s => StorageConfig.Clone(s.Value));
 
-            if (playerConfig == null)
-                try
-                {
-                    var legacyConfig = contentPack.ReadJsonFile<IList<Storage>>("config.json");
-                    if (legacyConfig != null)
-                    {
-                        playerConfig = legacyConfig.ToDictionary(c => c.StorageName, StorageConfig.Clone);
-                        contentPack.WriteJsonFile("config.json", playerConfig);
-                    }
-                }
-                catch (Exception)
-                {
-                    playerConfig = null;
-                }
-
+            var playerConfig = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json");
             if (playerConfig == null)
             {
                 playerConfig = defaultConfig.ToDictionary(
-                    config => config.Key,
-                    config => StorageConfig.Clone(config.Value));
+                    c => c.Key,
+                    c => StorageConfig.Clone(c.Value));
                 contentPack.WriteJsonFile("config.json", playerConfig);
             }
 
@@ -227,42 +136,42 @@ namespace ExpandedStorage
                 SaveToFile(contentPack));
 
             // Load expanded storage objects
-            foreach (var storageContent in contentData.ExpandedStorage.Where(storageContent => !string.IsNullOrWhiteSpace(storageContent.StorageName)))
+            foreach (var expandedStorage in expandedStorages)
             {
-                storageContent.ModUniqueId = contentPack.Manifest.UniqueID;
-                if (!RegisterStorage(storageContent))
+                expandedStorage.Value.ModUniqueId = contentPack.Manifest.UniqueID;
+                if (!RegisterStorage(expandedStorage.Key, expandedStorage.Value))
                     continue;
 
                 // Generate default config
-                if (!playerConfig.TryGetValue(storageContent.StorageName, out var storageConfig))
+                if (!playerConfig.TryGetValue(expandedStorage.Key, out var storageConfig))
                 {
-                    storageConfig = StorageConfig.Clone(storageContent);
-                    playerConfig.Add(storageContent.StorageName, storageConfig);
+                    storageConfig = StorageConfig.Clone(expandedStorage.Value);
+                    playerConfig.Add(expandedStorage.Key, storageConfig);
                     contentPack.WriteJsonFile("config.json", playerConfig);
                 }
 
                 // Copy player config into storage content
-                storageContent.CopyFrom(storageConfig);
-                _monitor.Log(storageContent.SummaryReport, LogLevel.Debug);
+                expandedStorage.Value.CopyFrom(storageConfig);
+                _monitor.Log(expandedStorage.Value.SummaryReport, LogLevel.Debug);
 
-                RegisterConfig(contentPack.Manifest, storageContent, storageContent.StorageName);
+                RegisterConfig(contentPack.Manifest, expandedStorage.Value, expandedStorage.Key);
             }
 
-            if (contentData.StorageTabs == null)
+            if (storageTabs == null)
                 return true;
 
             // Load expanded storage tabs
-            foreach (var storageTab in contentData.StorageTabs.Where(t => !string.IsNullOrWhiteSpace(t.TabName) && !string.IsNullOrWhiteSpace(t.TabImage)))
+            foreach (var storageTab in storageTabs)
             {
-                storageTab.ModUniqueId = contentPack.Manifest.UniqueID;
-                if (!RegisterStorageTab(storageTab))
+                storageTab.Value.ModUniqueId = contentPack.Manifest.UniqueID;
+                if (!RegisterStorageTab(storageTab.Key, storageTab.Value))
                     continue;
 
                 // Localize Tab Name
-                storageTab.TabName = contentPack.Translation.Get(storageTab.TabName).Default(storageTab.TabName);
+                storageTab.Value.TabName = contentPack.Translation.Get(storageTab.Key).Default(storageTab.Key);
 
                 // Assign Load Texture function
-                storageTab.LoadTexture = LoadTexture(contentPack, $"assets/{storageTab.TabImage}");
+                storageTab.Value.LoadTexture = LoadTexture(contentPack, $"assets/{storageTab.Value.TabImage}");
             }
 
             return true;
@@ -312,6 +221,7 @@ namespace ExpandedStorage
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Value))
                     storageConfig.ObjectIds.Add(bigCraftable.Value);
             }
+
             _monitor.Log("StoragesLoaded");
             InvokeAll(StoragesLoaded);
         }
@@ -326,11 +236,8 @@ namespace ExpandedStorage
 
             _helper.Events.GameLoop.UpdateTicked -= OnUpdateTicked;
 
-            _monitor.Log("Loading default storage config");
-            var defaultConfig = _helper.Data.ReadJsonFile<Storage>("expandedStorage.json") ?? new Storage();
-
-            if (!File.Exists(Path.Combine(_helper.DirectoryPath, "expandedStorage.json")))
-                _helper.Data.WriteJsonFile("expandedStorage.json", defaultConfig);
+            if (!_storageConfigs.TryGetValue("Default", out var defaultConfig))
+                defaultConfig = new Storage();
 
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
@@ -358,8 +265,6 @@ namespace ExpandedStorage
                 if (!storageConfig.ObjectIds.Contains(obj.Key))
                     storageConfig.ObjectIds.Add(obj.Key);
             }
-
-            InvokeAll(StoragesLoaded);
         }
 
         private Func<Texture2D> LoadTexture(IContentPack contentPack, string assetName)
@@ -369,31 +274,31 @@ namespace ExpandedStorage
                 : _helper.Content.Load<Texture2D>(assetName);
         }
 
-        private bool RegisterStorage(Storage storageContent)
+        private bool RegisterStorage(string storageName, Storage storageContent)
         {
             // Skip duplicate storage configs
-            if (_storageConfigs.ContainsKey(storageContent.StorageName))
+            if (_storageConfigs.ContainsKey(storageName))
             {
-                _monitor.Log($"Duplicate storage {storageContent.StorageName} in {storageContent.ModUniqueId}.", LogLevel.Warn);
+                _monitor.Log($"Duplicate storage {storageName} in {storageContent.ModUniqueId}.", LogLevel.Warn);
                 return false;
             }
 
-            _storageConfigs.Add(storageContent.StorageName, storageContent);
+            _storageConfigs.Add(storageName, storageContent);
             return true;
         }
 
-        private bool RegisterStorageTab(StorageTab storageTab)
+        private bool RegisterStorageTab(string tabName, StorageTab storageTab)
         {
-            var tabName = $"{storageTab.ModUniqueId}/{storageTab.TabName}";
+            var tabId = $"{storageTab.ModUniqueId}/{tabName}";
 
             // Skip duplicate tab names
-            if (_tabConfigs.ContainsKey(tabName))
+            if (_tabConfigs.ContainsKey(tabId))
             {
-                _monitor.Log($"Duplicate tab {storageTab.TabName} in {storageTab.ModUniqueId}", LogLevel.Warn);
+                _monitor.Log($"Duplicate tab {tabName} in {storageTab.ModUniqueId}", LogLevel.Warn);
                 return false;
             }
 
-            _tabConfigs.Add(tabName, storageTab);
+            _tabConfigs.Add(tabId, storageTab);
             return true;
         }
 

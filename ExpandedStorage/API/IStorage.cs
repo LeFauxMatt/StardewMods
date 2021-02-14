@@ -4,9 +4,6 @@ namespace ExpandedStorage.API
 {
     public interface IStorage
     {
-        /// <summary>Storage Name must match the name field for a BigCraftable Object.</summary>
-        string StorageName { get; set; }
-
         /// <summary>The game sound that will play when the storage is opened.</summary>
         string OpenSound { get; set; }
 

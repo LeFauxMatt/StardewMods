@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using StardewModdingAPI;
 
 namespace ExpandedStorage.Framework
@@ -7,13 +8,15 @@ namespace ExpandedStorage.Framework
     {
         private readonly ExpandedStorageAPI _expandedStorageAPI;
         private readonly IModHelper _helper;
+        private readonly IManifest _manifest;
         private readonly IMonitor _monitor;
 
-        internal ContentLoader(IModHelper helper, IMonitor monitor, ExpandedStorageAPI expandedStorageAPI)
+        internal ContentLoader(IModHelper helper, IManifest manifest, IMonitor monitor, ExpandedStorageAPI expandedStorageAPI)
         {
             _helper = helper;
+            _manifest = manifest;
             _monitor = monitor;
-            
+
             _expandedStorageAPI = expandedStorageAPI;
             _expandedStorageAPI.ReadyToLoad += OnReadyToLoad;
 
@@ -45,10 +48,10 @@ namespace ExpandedStorage.Framework
         {
             var contentPacks = _helper.ContentPacks.GetOwned();
             _monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
-            foreach (var contentPack in contentPacks)
-            {
-                _expandedStorageAPI.LoadContentPack(contentPack);
-            }
+            foreach (var contentPack in contentPacks) _expandedStorageAPI.LoadContentPack(contentPack);
+
+            // Load Default Config
+            _expandedStorageAPI.LoadContentPack(Path.Combine(_helper.DirectoryPath, "default"));
         }
     }
 }

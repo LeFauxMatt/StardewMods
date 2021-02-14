@@ -12,7 +12,7 @@ namespace MoreCraftables.Framework.HandledObjects.Objects
 
         public HandledFence(IHandledObject handledObject) : base(handledObject)
         {
-            _whichType =  Properties.TryGetValue("whichType", out var whichType) && whichType is int whichTypeValue
+            _whichType = Properties.TryGetValue("whichType", out var whichType) && whichType is int whichTypeValue
                 ? whichTypeValue
                 : 0;
             _isGate = Properties.TryGetValue("isGate", out var isGate) && (bool) isGate;

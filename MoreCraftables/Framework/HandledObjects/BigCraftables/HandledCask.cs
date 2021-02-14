@@ -2,7 +2,6 @@
 using MoreCraftables.API;
 using StardewValley;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
 
 namespace MoreCraftables.Framework.HandledObjects.BigCraftables
 {

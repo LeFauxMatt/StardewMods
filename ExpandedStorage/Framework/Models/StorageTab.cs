@@ -18,10 +18,10 @@ namespace ExpandedStorage.Framework.Models
         protected internal Func<Texture2D> LoadTexture;
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
-        internal string ModUniqueId;
+        protected internal string ModUniqueId;
 
-        /// <summary>Tab Name must match the name from Json Assets.</summary>
-        public string TabName { get; set; }
+        /// <summary>Display Name for tab.</summary>
+        protected internal string TabName;
 
         /// <summary>Image to display for tab, will search asset folder first and default next.</summary>
         public string TabImage { get; set; }

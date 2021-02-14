@@ -1,6 +1,6 @@
 ﻿# Release Notes
 
-## 1.6.0
+## 2.0.0
 
 - Added ExpandedStorageAPI methods
 - Optimized texture loading for chest tabs

@@ -281,7 +281,7 @@ namespace ExpandedStorage.Framework.UI
                     ? _model.Items.IndexOf(item).ToString()
                     : _model.Items.Count.ToString();
             }
-            
+
             // Show/hide arrows
             if (_view?.UpArrow != null)
                 _view.UpArrow.visible = _model.SkippedRows > 0;

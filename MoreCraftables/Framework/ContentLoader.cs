@@ -25,10 +25,7 @@ namespace MoreCraftables.Framework
         {
             var contentPacks = _contentPackHelper.GetOwned();
             _monitor.Log("Loading More Craftables Content", LogLevel.Info);
-            foreach (var contentPack in contentPacks)
-            {
-                _moreCraftablesAPI.LoadContentPack(contentPack);
-            }
+            foreach (var contentPack in contentPacks) _moreCraftablesAPI.LoadContentPack(contentPack);
         }
     }
 }

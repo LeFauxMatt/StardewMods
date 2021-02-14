@@ -3,6 +3,7 @@ using System.Linq;
 using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MoreCraftables.API;
 using MoreCraftables.Framework.Models;
 using StardewModdingAPI;
@@ -28,6 +29,11 @@ namespace MoreCraftables.Framework.Patches
                 AccessTools.Method(typeof(Object), nameof(Object.placementAction)),
                 new HarmonyMethod(GetType(), nameof(PlacementActionPrefix))
             );
+
+            harmony.Patch(
+                AccessTools.Method(typeof(Object), nameof(Object.drawWhenHeld)),
+                new HarmonyMethod(GetType(), nameof(DrawWhenHeldPrefix))
+            );
         }
 
         public static bool PlacementActionPrefix(Object __instance,
@@ -49,7 +55,7 @@ namespace MoreCraftables.Framework.Patches
             var handledType = _handledTypes
                 .Select(t => t.Value)
                 .LastOrDefault(t => t.IsHandledItem(__instance));
-            
+
             if (handledType == null)
                 return true;
 
@@ -60,12 +66,12 @@ namespace MoreCraftables.Framework.Patches
                 __result = false;
                 return false;
             }
-            
+
             // Copy properties from instance
             obj.ParentSheetIndex = __instance.ParentSheetIndex;
             obj.Name = __instance.Name;
             obj.Price = __instance.Price;
-            obj.Edibility =  __instance.Edibility;
+            obj.Edibility = __instance.Edibility;
             obj.Type = __instance.Type;
             obj.Category = __instance.Category;
             obj.Fragility = __instance.Fragility;
@@ -82,6 +88,19 @@ namespace MoreCraftables.Framework.Patches
             __instance.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
             __result = true;
             return false;
+        }
+
+        public static bool DrawWhenHeldPrefix(Object __instance,
+            SpriteBatch spriteBatch,
+            Vector2 objectPosition,
+            Farmer f)
+        {
+            // Verify this is a handled item type
+            var handledType = _handledTypes
+                .Select(t => t.Value)
+                .LastOrDefault(t => t.IsHandledItem(__instance));
+
+            return handledType == null || handledType.Draw(__instance, spriteBatch, objectPosition, Vector2.Zero, drawContext: IHandledObject.DrawContext.Held);
         }
     }
 }

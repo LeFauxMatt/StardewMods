@@ -9,7 +9,6 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\Patch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\Patcher.cs" />

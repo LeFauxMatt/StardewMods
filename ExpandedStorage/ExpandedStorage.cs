@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Common.PatternPatches;
-using ExpandedStorage.Common.Extensions;
 using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Extensions;
 using ExpandedStorage.Framework.Integrations;
@@ -59,9 +58,14 @@ namespace ExpandedStorage
         }
 
         /// <summary>Returns ExpandedStorageTab by tab name.</summary>
-        public static StorageTab GetTab(string tabName)
+        public static StorageTab GetTab(string modUniqueId, string tabName)
         {
-            return StorageTabs.TryGetValue(tabName, out var tab) ? tab : null;
+            return StorageTabs
+                .Where(t => t.Key.EndsWith($"/{tabName}"))
+                .Select(t => t.Value)
+                .OrderByDescending(t => t.ModUniqueId.Equals(modUniqueId))
+                .ThenByDescending(t => t.ModUniqueId.Equals("furyx639.ExpandedStorage"))
+                .FirstOrDefault();
         }
 
         public override object GetApi()
@@ -75,7 +79,7 @@ namespace ExpandedStorage
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
             _expandedStorageAPI = new ExpandedStorageAPI(Helper, Monitor, Storages, StorageTabs);
-            helper.Content.AssetEditors.Add(new ContentLoader(Helper, Monitor, _expandedStorageAPI));
+            helper.Content.AssetEditors.Add(new ContentLoader(Helper, ModManifest, Monitor, _expandedStorageAPI));
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
@@ -84,7 +88,6 @@ namespace ExpandedStorage
             }
 
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
-            ChestExtensions.Init(helper.Reflection);
             FarmerExtensions.Init(Monitor);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
@@ -110,7 +113,6 @@ namespace ExpandedStorage
             // Harmony Patches
             new Patcher<ModConfig>(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatch(Monitor, _config),
-                new ObjectPatch(Monitor, _config),
                 new ChestPatch(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),

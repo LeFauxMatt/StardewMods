@@ -13,7 +13,9 @@
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\MoreCraftables\MoreCraftables.csproj" />
+      <ProjectReference Include="..\MoreCraftables\MoreCraftables.csproj">
+          <Private>false</Private>
+      </ProjectReference>
     </ItemGroup>
 
     <Import Project="..\Common\Common.projitems" Label="Shared" />

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MoreCraftables.API;
 using StardewValley;
 
@@ -26,7 +27,7 @@ namespace MoreCraftables.Framework.HandledObjects
                 : null;
         }
 
-        public virtual string[] GetData => new string[]{};
+        public virtual string[] GetData => new string[] { };
         public IHandledObject Base { get; set; }
         public string Type { get; set; }
         public IDictionary<string, object> Properties { get; set; }
@@ -44,6 +45,11 @@ namespace MoreCraftables.Framework.HandledObjects
         public virtual Object CreateInstance(Object obj, GameLocation location, Vector2 pos)
         {
             return null;
+        }
+
+        public virtual bool Draw(Object obj, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f, IHandledObject.DrawContext drawContext = default, Color color = default)
+        {
+            return false;
         }
 
         internal void PlaySoundOrDefault(GameLocation location, string defaultSound)

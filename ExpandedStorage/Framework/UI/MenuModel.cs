@@ -61,7 +61,7 @@ namespace ExpandedStorage.Framework.UI
 
             if (StorageConfig?.Tabs != null)
                 StorageTabs = StorageConfig.Tabs
-                    .Select(t => ExpandedStorage.GetTab($"{StorageConfig.ModUniqueId}/{t}"))
+                    .Select(t => ExpandedStorage.GetTab(StorageConfig.ModUniqueId, t))
                     .Where(t => t != null)
                     .ToList();
 

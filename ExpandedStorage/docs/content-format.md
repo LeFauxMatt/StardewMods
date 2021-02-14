@@ -1,45 +1,89 @@
-﻿## Content Format
+﻿## Expanded Storage Content Format
 
 ### Overview
 
-The overall structure of an Expanded Storage content pack consists of two files `manifest.json` and `expandedStorage.json`
+An Expanded Storage content pack must contain the following files:
 
-From `manifest.json` you must specify that the mod is a content pack for Expanded Storage by including the following:
+- `manifest.json`
+- `content-pack.json`
+- `expanded-storage.json`
+- `more-craftables.json`
+- `storage-tabs.json` (Optional)
+
+Additionally, storages must be added to this folder in the [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) Big Craftable format:
+
+- `BigCraftables\Storage Name\big-craftable.json`
+- `BigCraftables\Storage Name\big-craftable.png`
+
+**`manifest.json` must specify this is a content pack for Expanded Storage:**
+
 ```json
 "ContentPackFor": {
   "UniqueID": "furyx639.ExpandedStorage"
 }
 ```
 
-Your `expandedStorage.json` should list all [storages](#expanded-storage) and [tabs](#storage-tabs) it has using the format outlined in the following sections.
+For full details of `manifest.json` refer to [Modding:Modder Guide/APIs/Manifest](https://stardewcommunitywiki.com/Modding:Modder_Guide/APIs/Manifest).
+
+**`content-pack.json` is similar to `manifest.json` but only requires certain fields:**
 
 ```json
 {
-  "ExpandedStorage": [
-    {
-      // Expanded Storage
-    },
-    {
-      // Expanded Storage
-    }
-  ],
-  "StorageTabs": [
-    {
-      // Storage Tab
-    },
-    {
-      // Storage Tab
-    }
-  ]
+  "UniqueID": "Author.ModName",
+  "Name": "Mod Name",
+  "Description": "A description of this mod",
+  "Author": "Your Name",
+  "Version": "1.0.0",
+  "UpdateKeys": []
 }
 ```
 
-### Expanded Storage
-
-An Expanded Storage must be loaded into the game as a [Big Craftable](https://stardewcommunitywiki.com/Modding:Big_craftables_data). These can be loaded using various methods, but [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) is recommended. Other options include [Custom Chest Types](https://www.nexusmods.com/stardewvalley/mods/7755), [Content Patcher](https://www.nexusmods.com/stardewvalley/mods/1915), or loading as a [SMAPI mod](https://stardewcommunitywiki.com/Modding:Modder_Guide/APIs/Content#Add_a_new_asset).
+**`more-craftables.json` must list all objects that will be added as Storages:**
 
 ```json
-"StorageName": "Large Chest",
+{
+  "Storage Name": {"Type": "Chest"},
+  "Another Storage": {"Type": "Chest"}
+}
+```
+
+For additional documentation, please refer to [More Craftables Content Format]().
+
+**`expanded-storage.json` is used to enable/disable Expanded Storage features for Storages:**
+
+```json
+{
+  "Storage Name": {
+    "Capacity": -1,
+    "CanCarry": true
+  }
+}
+```
+
+For full details of `expanded-storage.json` see [Expanded Storages](#expanded-storage).
+
+**`storage-tabs.json` is used to provide definitions for Storage Tabs:**
+
+```json
+{
+  "Crops": {
+    "TabImage": "Crops.png",
+    "AllowList": [
+      "category_fruits",
+      "category_vegetables"
+    ]
+  }
+}
+```
+
+For full details of `storage-tabs.json` see [Storage Tabs](#storage-tabs).
+
+### Expanded Storage
+
+Expanded Storages are loaded into the game using [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) and [More Craftables](https://www.nexusmods.com/stardewvalley/mods/8058).  
+It's also possible to load storage or enable features using the [Expanded Storage API]().
+
+```json
 "Capacity": 72,
 "CanCarry": true,
 "AccessCarried": true,
@@ -80,7 +124,6 @@ field               | description
 ### Storage Tabs
 
 ```json
-"TabName": "Crops",
 "TabImage": "Crops.png",
 "AllowList": [
     "category_greens",

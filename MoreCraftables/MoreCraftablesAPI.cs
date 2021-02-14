@@ -90,7 +90,7 @@ namespace MoreCraftables
                 _monitor.Log($"Cannot read content-data.json from {path}", LogLevel.Warn);
                 return false;
             }
-            
+
             var contentPack = _helper.ContentPacks.CreateTemporary(
                 path,
                 info.UniqueID,
@@ -105,23 +105,29 @@ namespace MoreCraftables
         public bool LoadContentPack(IContentPack contentPack)
         {
             _monitor.Log($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Info);
-            var contentData = contentPack.ReadJsonFile<IDictionary<string, GenericHandledObject>>("moreCraftables.json");
+            var moreCraftables = contentPack.ReadJsonFile<IDictionary<string, GenericHandledObject>>("more-craftables.json");
 
-            foreach (var item in contentData)
+            if (moreCraftables == null)
+            {
+                _monitor.Log($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+                return false;
+            }
+
+            foreach (var item in moreCraftables)
             {
                 if (item.Value.Type == null || !Enum.TryParse(item.Value.Type, out GenericHandledObject.ItemType itemType))
                 {
                     _monitor.Log($"Cannot load {item.Key} from {contentPack.Manifest.Name} {contentPack.Manifest.Version}", LogLevel.Warn);
                     continue;
                 }
-                
+
                 switch (itemType)
                 {
                     case GenericHandledObject.ItemType.Cask:
                         AddHandledObject(item.Key, new HandledCask(item.Value));
                         continue;
                     case GenericHandledObject.ItemType.Chest:
-                        AddHandledObject(item.Key, new HandledChest(item.Value));
+                        AddHandledObject(item.Key, new HandledChest(item.Value, _helper.Reflection));
                         continue;
                     case GenericHandledObject.ItemType.Fence:
                         AddHandledObject(item.Key, new HandledFence(item.Value));
@@ -168,7 +174,6 @@ namespace MoreCraftables
             var furnitureData = Game1.content.Load<Dictionary<int, string>>("Data\\Furniture")
                 .ToDictionary(d => d.Key, d => d.Value.Split('/'));
             foreach (var obj in _handledObjects)
-            {
                 switch (obj.Value)
                 {
                     case HandledBigCraftable handledBigCraftable when bigCraftableIds.TryGetValue(obj.Key, out var bigCraftableId):
@@ -183,7 +188,7 @@ namespace MoreCraftables
                             handledFurniture.ObjectId = data.Key;
                         break;
                 }
-            }
+
             _monitor.Log("IdsAssigned");
             InvokeAll(IdsLoaded);
         }
