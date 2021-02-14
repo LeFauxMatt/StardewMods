@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ExpandedStorage.API;
+using ExpandedStorage.Framework;
 using ExpandedStorage.Framework.Integrations;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using Microsoft.Xna.Framework.Graphics;
+using MoreCraftables.API;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -16,24 +18,24 @@ namespace ExpandedStorage
     public class ExpandedStorageAPI : IExpandedStorageAPI
     {
         private static readonly HashSet<string> VanillaNames = new() {"Chest", "Stone Chest", "Mini-Fridge", "Junimo Chest", "Mini-Shipping Bin"};
+        private readonly IList<string> _contentDirs = new List<string>();
         private readonly IModHelper _helper;
-
         private readonly IMonitor _monitor;
         private readonly IDictionary<string, Storage> _storageConfigs;
         private readonly IDictionary<string, StorageTab> _tabConfigs;
 
         private bool _isContentLoaded;
-        private IJsonAssetsAPI _jsonAssetsApi;
-        private IGenericModConfigMenuAPI _modConfigApi;
+        private IGenericModConfigMenuAPI _modConfigAPI;
+        private IMoreCraftablesAPI _moreCraftablesAPI;
 
         internal ExpandedStorageAPI(
-            IMonitor monitor,
             IModHelper helper,
+            IMonitor monitor,
             IDictionary<string, Storage> storageConfigs,
             IDictionary<string, StorageTab> tabConfigs)
         {
-            _monitor = monitor;
             _helper = helper;
+            _monitor = monitor;
             _storageConfigs = storageConfigs;
             _tabConfigs = tabConfigs;
 
@@ -149,7 +151,7 @@ namespace ExpandedStorage
         public bool LoadContentPack(string path)
         {
             var temp = _helper.ContentPacks.CreateFake(path);
-            var info = temp.ReadJsonFile<IManifest>("content-pack.json");
+            var info = temp.ReadJsonFile<ContentPack>("content-pack.json");
 
             if (info == null)
             {
@@ -163,7 +165,7 @@ namespace ExpandedStorage
                 info.Name,
                 info.Description,
                 info.Author,
-                info.Version);
+                new SemanticVersion(info.Version));
 
             return LoadContentPack(contentPack);
         }
@@ -182,6 +184,9 @@ namespace ExpandedStorage
             var defaultConfig =
                 contentData.ExpandedStorage
                     .ToDictionary(config => config.StorageName, StorageConfig.Clone);
+
+            if (contentPack.HasFile("content-pack.json"))
+                _contentDirs.Add(contentPack.DirectoryPath);
 
             Dictionary<string, StorageConfig> playerConfig;
             try
@@ -216,7 +221,7 @@ namespace ExpandedStorage
                 contentPack.WriteJsonFile("config.json", playerConfig);
             }
 
-            _modConfigApi?.RegisterModConfig(
+            _modConfigAPI?.RegisterModConfig(
                 contentPack.Manifest,
                 RevertToDefault(contentPack, defaultConfig),
                 SaveToFile(contentPack));
@@ -268,51 +273,58 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            _modConfigApi = _helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
-            _jsonAssetsApi = _helper.ModRegistry.GetApi<IJsonAssetsAPI>("spacechase0.JsonAssets");
+            _modConfigAPI = _helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
+            _moreCraftablesAPI = _helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
+            _moreCraftablesAPI.ReadyToLoad += OnReadyToLoad;
+            _moreCraftablesAPI.IdsLoaded += OnIdsLoaded;
+        }
 
-            if (_jsonAssetsApi != null)
-                _jsonAssetsApi.IdsAssigned += OnIdsAssigned;
-
+        /// <summary>Load More Craftables Ids.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnReadyToLoad(object sender, EventArgs e)
+        {
+            _monitor.Log("ReadyToLoad");
             InvokeAll(ReadyToLoad);
+            foreach (var contentDir in _contentDirs)
+                _moreCraftablesAPI.LoadContentPack(contentDir);
+            _moreCraftablesAPI.AddHandledObject("furyx639.ExpandedStorage", new HandledObject());
             _isContentLoaded = true;
         }
 
-        /// <summary>Load Json Asset Ids.</summary>
+        /// <summary>Load More Craftables Ids.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnIdsAssigned(object sender, EventArgs e)
+        private void OnIdsLoaded(object sender, EventArgs e)
         {
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
-                .Where(config => config.Value.SourceType == SourceType.JsonAssets))
+                .Where(config => config.Value.SourceType == SourceType.MoreCraftables))
                 storageConfig.Value.ObjectIds.Clear();
 
             // Add new object ids
-            foreach (var bigCraftable in _jsonAssetsApi
-                .GetAllBigCraftableIds()
-                .Where(obj => _storageConfigs.ContainsKey(obj.Key)))
+            var bigCraftables = _moreCraftablesAPI.GetAllBigCraftableIds();
+            foreach (var bigCraftable in bigCraftables)
             {
                 if (!_storageConfigs.TryGetValue(bigCraftable.Key, out var storageConfig))
                     continue;
-                storageConfig.SourceType = SourceType.JsonAssets;
-
+                storageConfig.SourceType = SourceType.MoreCraftables;
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Value))
                     storageConfig.ObjectIds.Add(bigCraftable.Value);
             }
-
+            _monitor.Log("StoragesLoaded");
             InvokeAll(StoragesLoaded);
         }
 
         /// <summary>Load Vanilla Asset Ids.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        internal void OnAssetsLoaded(object sender, UpdateTickedEventArgs e)
+        public void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
             if (!_isContentLoaded)
                 return;
 
-            _helper.Events.GameLoop.UpdateTicked -= OnAssetsLoaded;
+            _helper.Events.GameLoop.UpdateTicked -= OnUpdateTicked;
 
             _monitor.Log("Loading default storage config");
             var defaultConfig = _helper.Data.ReadJsonFile<Storage>("expandedStorage.json") ?? new Storage();
@@ -322,7 +334,7 @@ namespace ExpandedStorage
 
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
-                .Where(config => config.Value.SourceType != SourceType.JsonAssets))
+                .Where(config => config.Value.SourceType != SourceType.MoreCraftables))
                 storageConfig.Value.ObjectIds.Clear();
 
             foreach (var obj in Game1.bigCraftablesInformation
@@ -390,20 +402,20 @@ namespace ExpandedStorage
             IStorageConfig config,
             string storageName)
         {
-            _modConfigApi?.RegisterLabel(manifest, storageName, "Added by Expanded Storage");
-            _modConfigApi?.RegisterSimpleOption(manifest, "Capacity", $"How many item slots should {storageName} have?",
+            _modConfigAPI?.RegisterLabel(manifest, storageName, "Added by Expanded Storage");
+            _modConfigAPI?.RegisterSimpleOption(manifest, "Capacity", $"How many item slots should {storageName} have?",
                 () => config.Capacity,
                 value => config.Capacity = value);
-            _modConfigApi?.RegisterSimpleOption(manifest, "Can Carry", $"Allow {storageName} to be carried?",
+            _modConfigAPI?.RegisterSimpleOption(manifest, "Can Carry", $"Allow {storageName} to be carried?",
                 () => config.CanCarry,
                 value => config.CanCarry = value);
-            _modConfigApi?.RegisterSimpleOption(manifest, "Access Carried", $"Allow {storageName} to be access while carried?",
+            _modConfigAPI?.RegisterSimpleOption(manifest, "Access Carried", $"Allow {storageName} to be access while carried?",
                 () => config.AccessCarried,
                 value => config.AccessCarried = value);
-            _modConfigApi?.RegisterSimpleOption(manifest, "Search Bar", $"Show search bar above chest inventory for {storageName}?",
+            _modConfigAPI?.RegisterSimpleOption(manifest, "Search Bar", $"Show search bar above chest inventory for {storageName}?",
                 () => config.ShowSearchBar,
                 value => config.ShowSearchBar = value);
-            _modConfigApi?.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {storageName} to be collect debris?",
+            _modConfigAPI?.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {storageName} to be collect debris?",
                 () => config.VacuumItems,
                 value => config.VacuumItems = value);
         }

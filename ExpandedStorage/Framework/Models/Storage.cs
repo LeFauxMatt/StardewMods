@@ -16,7 +16,7 @@ namespace ExpandedStorage.Framework.Models
     {
         Unknown,
         Vanilla,
-        JsonAssets,
+        MoreCraftables,
         CustomChestTypes
     }
 
@@ -25,7 +25,7 @@ namespace ExpandedStorage.Framework.Models
         private static readonly HashSet<string> ExcludeModDataKeys = new();
 
         /// <summary>List of ParentSheetIndex related to this item.</summary>
-        internal readonly IList<int> ObjectIds = new List<int>();
+        internal readonly HashSet<int> ObjectIds = new();
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;

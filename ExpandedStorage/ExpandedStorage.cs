@@ -8,20 +8,18 @@ using ExpandedStorage.Framework.Integrations;
 using ExpandedStorage.Framework.Models;
 using ExpandedStorage.Framework.Patches;
 using ExpandedStorage.Framework.UI;
-using MoreCraftables.API;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
-using ObjectFactory = ExpandedStorage.Framework.ObjectFactory;
 
 // ReSharper disable ClassNeverInstantiated.Global
 
 namespace ExpandedStorage
 {
-    public class ExpandedStorage : Mod, IAssetEditor
+    public class ExpandedStorage : Mod
     {
         /// <summary>Tracks previously held chest before placing into world.</summary>
         internal static readonly PerScreen<Chest> HeldChest = new();
@@ -44,26 +42,7 @@ namespace ExpandedStorage
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
-        private ContentLoader _contentLoader;
-
         private ExpandedStorageAPI _expandedStorageAPI;
-        private IMoreCraftablesAPI _moreCraftablesAPI;
-
-        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            // Load bigCraftable on next tick for vanilla storages
-            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-                Helper.Events.GameLoop.UpdateTicked += _expandedStorageAPI.OnAssetsLoaded;
-            return false;
-        }
-
-        /// <summary>Load a matched asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public void Edit<T>(IAssetData asset)
-        {
-        }
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
         public static Storage GetConfig(object context)
@@ -95,8 +74,8 @@ namespace ExpandedStorage
             _config = helper.ReadConfig<ModConfig>();
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
-            _expandedStorageAPI = new ExpandedStorageAPI(Monitor, Helper, Storages, StorageTabs);
-            _contentLoader = new ContentLoader(Monitor, Helper, _expandedStorageAPI);
+            _expandedStorageAPI = new ExpandedStorageAPI(Helper, Monitor, Storages, StorageTabs);
+            helper.Content.AssetEditors.Add(new ContentLoader(Helper, Monitor, _expandedStorageAPI));
 
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
@@ -131,7 +110,6 @@ namespace ExpandedStorage
             // Harmony Patches
             new Patcher<ModConfig>(ModManifest.UniqueID).ApplyAll(
                 new FarmerPatch(Monitor, _config),
-                //new ItemPatch(Monitor, _config),
                 new ObjectPatch(Monitor, _config),
                 new ChestPatch(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
@@ -146,10 +124,6 @@ namespace ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            _moreCraftablesAPI = Helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
-            _moreCraftablesAPI.AddHandledType(ModManifest, new HandledType());
-            _moreCraftablesAPI.AddObjectFactory(ModManifest, new ObjectFactory());
-
             var modConfigApi = Helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             if (modConfigApi == null)
                 return;

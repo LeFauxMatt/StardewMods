@@ -1,19 +1,25 @@
 ﻿using System.Collections.Generic;
+using ExpandedStorage.Framework.Extensions;
+using ExpandedStorage.Framework.Models;
+using Microsoft.Xna.Framework;
 using MoreCraftables.API;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Objects;
 
 namespace ExpandedStorage.Framework
 {
-    public class HandledType : IHandledType
+    public class HandledObject : IHandledObject
     {
-        public string Type { get; set; } = "ExpandedStorage";
+        public IHandledObject Base { get; set; }
+        public string Type { get; set; } = "Chest";
 
         public IDictionary<string, object> Properties { get; set; }
 
         public bool IsHandledItem(Item item)
         {
-            return ExpandedStorage.HasConfig(item);
+            var config = ExpandedStorage.GetConfig(item);
+            return config?.SourceType == SourceType.MoreCraftables;
         }
 
         public bool CanStackWith(Item item, Item otherItem)
@@ -26,6 +32,15 @@ namespace ExpandedStorage.Framework
             // Can stack if both are empty chests
             return (item is not Chest chest || chest.items.Count == 0) &&
                    (otherItem is not Chest otherChest || otherChest.items.Count == 0);
+        }
+
+        public Object CreateInstance(Object obj, GameLocation location, Vector2 pos)
+        {
+            // Disallow placing non-placeable objects
+            var config = ExpandedStorage.GetConfig(obj);
+            return config?.IsPlaceable != null && config.IsPlaceable
+                ? Base.CreateInstance(obj, location, pos)
+                : null;
         }
     }
 }

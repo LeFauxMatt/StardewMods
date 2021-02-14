@@ -16,7 +16,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches\PatternPatches.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Integrations" />
-  </ItemGroup>
 </Project>

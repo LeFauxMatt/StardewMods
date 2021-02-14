@@ -56,12 +56,12 @@ namespace ExpandedStorage.Framework.UI
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
 
-            if (_model.StorageConfig?.Tabs == null)
-                return;
+            if (_model.StorageConfig?.Tabs != null)
+            {
+                foreach (var tab in _model.StorageTabs) _view.AddTab(tab.Texture, tab.TabName);
+                _view.CurrentTab = _model.CurrentTab;
+            }
 
-            foreach (var tab in _model.StorageTabs) _view.AddTab(tab.Texture, tab.TabName);
-
-            _view.CurrentTab = _model.CurrentTab;
             OnItemChanged(this, null);
         }
 
@@ -281,12 +281,13 @@ namespace ExpandedStorage.Framework.UI
                     ? _model.Items.IndexOf(item).ToString()
                     : _model.Items.Count.ToString();
             }
-
-
+            
             // Show/hide arrows
-            if (_view?.UpArrow != null) _view.UpArrow.visible = _model.SkippedRows > 0;
+            if (_view?.UpArrow != null)
+                _view.UpArrow.visible = _model.SkippedRows > 0;
 
-            if (_view?.DownArrow != null) _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
+            if (_view?.DownArrow != null)
+                _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
         }
 
         private bool SearchMatches(Item item)

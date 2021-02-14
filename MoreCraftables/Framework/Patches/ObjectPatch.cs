@@ -3,6 +3,7 @@ using System.Linq;
 using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework;
+using MoreCraftables.API;
 using MoreCraftables.Framework.Models;
 using StardewModdingAPI;
 using StardewValley;
@@ -13,14 +14,12 @@ namespace MoreCraftables.Framework.Patches
 {
     internal class ObjectPatch : Patch<ModConfig>
     {
-        private static IList<HandledTypeWrapper> _handledTypes;
-        private static IList<ObjectFactoryWrapper> _objectFactories;
+        private static IDictionary<string, IHandledObject> _handledTypes;
 
-        public ObjectPatch(IMonitor monitor, ModConfig config, IList<HandledTypeWrapper> handledTypes, IList<ObjectFactoryWrapper> objectFactories)
+        public ObjectPatch(IMonitor monitor, ModConfig config, IDictionary<string, IHandledObject> handledTypes)
             : base(monitor, config)
         {
             _handledTypes = handledTypes;
-            _objectFactories = objectFactories;
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
@@ -47,24 +46,32 @@ namespace MoreCraftables.Framework.Patches
                 return true;
 
             // Verify this is a handled item type
-            var handledType = _handledTypes.FirstOrDefault(t => t.HandledType.IsHandledItem(__instance));
+            var handledType = _handledTypes
+                .Select(t => t.Value)
+                .LastOrDefault(t => t.IsHandledItem(__instance));
+            
             if (handledType == null)
                 return true;
 
-            // Verify a factory exists for this handled type
-            var objectFactory = _objectFactories
-                .Where(f => f.ObjectFactory.IsHandledType(handledType.HandledType))
-                .OrderByDescending(f => f.ModUniqueId.Equals(handledType.ModUniqueId))
-                .ThenByDescending(f => f.ModUniqueId.Equals("furyx639.MoreCraftables"))
-                .FirstOrDefault();
-
             // Get instance of object to place
-            var obj = objectFactory?.ObjectFactory.CreateInstance(handledType.HandledType, __instance, location, pos);
+            var obj = handledType.CreateInstance(__instance, location, pos);
             if (obj == null)
             {
                 __result = false;
                 return false;
             }
+            
+            // Copy properties from instance
+            obj.ParentSheetIndex = __instance.ParentSheetIndex;
+            obj.Name = __instance.Name;
+            obj.Price = __instance.Price;
+            obj.Edibility =  __instance.Edibility;
+            obj.Type = __instance.Type;
+            obj.Category = __instance.Category;
+            obj.Fragility = __instance.Fragility;
+            obj.setOutdoors.Value = __instance.setOutdoors.Value;
+            obj.setIndoors.Value = __instance.setIndoors.Value;
+            obj.isLamp.Value = __instance.isLamp.Value;
 
             // Copy modData from original object
             foreach (var modData in __instance.modData)

@@ -188,7 +188,7 @@ namespace ExpandedStorage.Framework.Patches
                 __instance.inventory.highlightMethod = config.HighlightMethod;
             }
 
-            if (config.SourceType == SourceType.JsonAssets && chest != null && __instance.chestColorPicker == null)
+            if (config.SourceType == SourceType.MoreCraftables && chest != null && __instance.chestColorPicker == null)
             {
                 var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
                 var sourceItem = sourceItemReflected.GetValue();

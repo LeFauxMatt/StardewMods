@@ -84,7 +84,7 @@ namespace ExpandedStorage.Framework.Patches
                 return true;
 
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.SourceType != SourceType.JsonAssets)
+            if (config == null || config.SourceType != SourceType.MoreCraftables)
                 return true;
             __instance.GetMutex().RequestLock(delegate
             {

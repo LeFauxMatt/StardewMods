@@ -2,6 +2,7 @@
 using System.Linq;
 using Common.PatternPatches;
 using Harmony;
+using MoreCraftables.API;
 using MoreCraftables.Framework.Models;
 using StardewModdingAPI;
 using StardewValley;
@@ -12,9 +13,9 @@ namespace MoreCraftables.Framework.Patches
 {
     internal class ItemPatch : Patch<ModConfig>
     {
-        private static IList<HandledTypeWrapper> _handledTypes;
+        private static IDictionary<string, IHandledObject> _handledTypes;
 
-        public ItemPatch(IMonitor monitor, ModConfig config, IList<HandledTypeWrapper> handledTypes)
+        public ItemPatch(IMonitor monitor, ModConfig config, IDictionary<string, IHandledObject> handledTypes)
             : base(monitor, config)
         {
             _handledTypes = handledTypes;
@@ -31,7 +32,9 @@ namespace MoreCraftables.Framework.Patches
         public static bool CanStackWithPrefix(Item __instance, ref bool __result, ISalable other)
         {
             // Verify this is a handled item type
-            var handledType = _handledTypes.FirstOrDefault(t => t.HandledType.IsHandledItem(__instance));
+            var handledType = _handledTypes
+                .Select(t => t.Value)
+                .LastOrDefault(t => t.IsHandledItem(__instance));
             if (handledType == null)
                 return true;
 
@@ -49,7 +52,7 @@ namespace MoreCraftables.Framework.Patches
                        && obj.ParentSheetIndex == otherObj.ParentSheetIndex
                        && obj.bigCraftable.Value == otherObj.bigCraftable.Value
                        && obj.Quality == otherObj.Quality
-                       && handledType.HandledType.CanStackWith(__instance, (Item) other);
+                       && handledType.CanStackWith(__instance, (Item) other);
             return false;
         }
     }
