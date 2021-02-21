@@ -129,6 +129,9 @@ namespace MoreCraftables
                     case GenericHandledObject.ItemType.Chest:
                         AddHandledObject(item.Key, new HandledChest(item.Value, _helper.Reflection));
                         continue;
+                    case GenericHandledObject.ItemType.CrabPot:
+                        AddHandledObject(item.Key, new HandledCrabPot(item.Value));
+                        continue;
                     case GenericHandledObject.ItemType.Fence:
                         AddHandledObject(item.Key, new HandledFence(item.Value));
                         continue;

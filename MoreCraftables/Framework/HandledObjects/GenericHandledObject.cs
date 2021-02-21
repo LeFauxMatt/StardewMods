@@ -61,6 +61,7 @@ namespace MoreCraftables.Framework.HandledObjects
         {
             Cask,
             Chest,
+            CrabPot,
             Fence
         }
     }
