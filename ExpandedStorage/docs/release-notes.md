@@ -1,9 +1,11 @@
 ﻿# Release Notes
 
-## 2.0.0
+## 1.6.0
 
 - Added ExpandedStorageAPI methods
+- Added default config for unknown storages
 - Optimized texture loading for chest tabs
+- Updated content/config format
 
 ## 1.5.3
 
