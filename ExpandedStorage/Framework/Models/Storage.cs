@@ -112,7 +112,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         public IDictionary<string, string> ModData { get; set; } = new Dictionary<string, string>();
         public IList<string> AllowList { get; set; } = new List<string>();
         public IList<string> BlockList { get; set; } = new List<string>();
-        public IList<string> Tabs { get; set; } = new List<string>();
+        public IList<string> Tabs { get; set; } = new List<string> {"Crops", "Seeds", "Materials", "Cooking", "Fishing", "Equipment", "Clothing", "Misc"};
         public int Capacity { get; set; }
         public bool AccessCarried { get; set; }
         public bool CanCarry { get; set; } = true;

@@ -13,10 +13,7 @@ namespace ImJustMatt.ExpandedStorage.Framework
         public ModConfigKeys Controls { get; set; } = new();
 
         /// <summary>Default config for unconfigured storages.</summary>
-        public Storage DefaultStorage { get; set; } = new()
-        {
-            Tabs = new List<string> {"Crops", "Seeds", "Materials", "Cooking", "Fishing", "Equipment", "Clothing", "Misc"}
-        };
+        public Storage DefaultStorage { get; set; } = new();
 
         /// <summary>Default tabs for unconfigured storages.</summary>
         public IDictionary<string, StorageTab> DefaultTabs { get; set; } = new Dictionary<string, StorageTab>
