@@ -135,7 +135,7 @@ namespace ImJustMatt.ExpandedStorage
             }
 
             // Generate file for Json Assets
-            if (!expandedStorages.Keys.All(Storage.VanillaNames.Contains))
+            if (_jsonAssetsAPI != null && !expandedStorages.Keys.All(Storage.VanillaNames.Contains))
             {
                 // Generate content-pack.json
                 contentPack.WriteJsonFile("content-pack.json", new ContentPack
@@ -219,17 +219,20 @@ namespace ImJustMatt.ExpandedStorage
             }
         }
 
-        /// <summary>Load Expanded Storage content packs</summary>
+        /// <summary>Load Json Asset API</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             _jsonAssetsAPI = _helper.ModRegistry.GetApi<IJsonAssetsAPI>("spacechase0.JsonAssets");
-            _jsonAssetsAPI.IdsAssigned += OnIdsLoaded;
+            if (_jsonAssetsAPI != null)
+                _jsonAssetsAPI.IdsAssigned += OnIdsLoaded;
+            else
+                _monitor.Log("Json Assets not detected, Expanded Storages will not be loaded", LogLevel.Warn);
             _helper.Events.GameLoop.UpdateTicked += OnReadyToLoad;
         }
 
-        /// <summary>Load More Craftables Ids.</summary>
+        /// <summary>Load Expanded Storage content packs.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnReadyToLoad(object sender, UpdateTickedEventArgs e)
@@ -237,7 +240,7 @@ namespace ImJustMatt.ExpandedStorage
             _helper.Events.GameLoop.UpdateTicked -= OnReadyToLoad;
             InvokeAll(ReadyToLoad);
             foreach (var contentDir in _contentDirs)
-                _jsonAssetsAPI.LoadAssets(contentDir);
+                _jsonAssetsAPI?.LoadAssets(contentDir);
             _isContentLoaded = true;
         }
 

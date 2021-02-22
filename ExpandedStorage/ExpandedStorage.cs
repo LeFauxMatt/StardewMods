@@ -87,7 +87,6 @@ namespace ImJustMatt.ExpandedStorage
             _contentLoader = new ContentLoader(Helper, ModManifest, Monitor, _config, _expandedStorageAPI);
             helper.Content.AssetEditors.Add(_expandedStorageAPI);
 
-            var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
             ChestExtensions.Init(helper.Reflection);
             FarmerExtensions.Init(Monitor);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
@@ -121,7 +120,7 @@ namespace ImJustMatt.ExpandedStorage
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
                 new DebrisPatch(Monitor, _config),
-                new AutomatePatch(Monitor, _config, helper.Reflection, isAutomateLoaded));
+                new AutomatePatch(Monitor, _config, helper.Reflection, helper.ModRegistry.IsLoaded("Pathoschild.Automate")));
         }
 
         /// <summary>Setup Generic Mod Config Menu</summary>
