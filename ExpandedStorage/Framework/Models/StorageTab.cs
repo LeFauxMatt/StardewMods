@@ -15,10 +15,22 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 {
     public class StorageTab : IStorageTab
     {
+        private Texture2D _texture;
+
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         protected internal string ModUniqueId;
+
+        internal StorageTab()
+        {
+        }
+
+        internal StorageTab(string tabImage, params string[] allowList)
+        {
+            TabImage = tabImage;
+            AllowList = allowList.ToList();
+        }
+
         internal Texture2D Texture => _texture ??= LoadTexture();
-        private Texture2D _texture;
         public string TabName { get; set; }
         public string TabImage { get; set; }
         public IList<string> AllowList { get; set; } = new List<string>();
@@ -40,16 +52,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             return IsAllowed(item) && !IsBlocked(item);
         }
 
-        internal StorageTab()
-        {
-        }
-
-        internal StorageTab(string tabImage, params string[] allowList)
-        {
-            TabImage = tabImage;
-            AllowList = allowList.ToList();
-        }
-        
         internal static StorageTab Clone(IStorageTab storageTab)
         {
             var newTab = new StorageTab();

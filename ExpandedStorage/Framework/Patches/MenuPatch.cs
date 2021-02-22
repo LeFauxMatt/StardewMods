@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Harmony;
-using ImJustMatt.ExpandedStorage.Framework.UI;
 using ImJustMatt.Common.PatternPatches;
+using ImJustMatt.ExpandedStorage.Framework.UI;
 using StardewModdingAPI;
 using StardewValley.Menus;
 

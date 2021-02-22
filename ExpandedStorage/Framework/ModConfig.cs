@@ -20,20 +20,19 @@ namespace ImJustMatt.ExpandedStorage.Framework
         {
             Tabs = new List<string> {"Crops", "Seeds", "Materials", "Cooking", "Fishing", "Equipment", "Clothing", "Misc"}
         };
-        
+
         /// <summary>Default tabs for unconfigured storages.</summary>
         public IDictionary<string, StorageTab> DefaultTabs { get; set; } = new Dictionary<string, StorageTab>
         {
             {
                 "Clothing", new StorageTab("Shirts.png",
-                "category_clothing",
-                "category_boots", "category_hat")
-                
+                    "category_clothing",
+                    "category_boots", "category_hat")
             },
             {
                 "Cooking",
                 new StorageTab("Cooking.png",
-        "category_syrup",
+                    "category_syrup",
                     "category_artisan_goods",
                     "category_ingredients",
                     "category_sell_at_pierres_and_marnies",

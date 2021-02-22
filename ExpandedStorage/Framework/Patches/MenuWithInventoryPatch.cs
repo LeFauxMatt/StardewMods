@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Harmony;
+using ImJustMatt.Common.PatternPatches;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley.Menus;
@@ -27,7 +28,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                     typeof(int),
                     typeof(int)
                 });
-            
+
             harmony.Patch(
                 drawMethod,
                 transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
@@ -36,7 +37,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
+            var patternPatches = new PatternPatches(instructions, Monitor);
 
             var patch = patternPatches
                 .Find(
@@ -49,7 +50,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                     new CodeInstruction(OpCodes.Add)
                 )
                 .Log("Adding Offset to drawDialogueBox.y.");
-            
+
             patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
             patch.Patch(OffsetPatch(MenuPadding, OpCodes.Add));
 
@@ -63,7 +64,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                     new CodeInstruction(OpCodes.Add)
                 )
                 .Log("Subtracting Y-Offset from drawDialogueBox.height");
-            
+
             patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
             patch.Patch(OffsetPatch(MenuPadding, OpCodes.Add));
 

@@ -9,13 +9,14 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         public bool CanCarry { get; set; }
         public bool ShowSearchBar { get; set; }
         public bool VacuumItems { get; set; }
-        
+
         internal static StorageConfig Clone(IStorageConfig config)
         {
             var newConfig = new StorageConfig();
             newConfig.CopyFrom(config);
             return newConfig;
         }
+
         internal void CopyFrom(IStorageConfig config)
         {
             Capacity = config.Capacity;

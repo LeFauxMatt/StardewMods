@@ -6,7 +6,7 @@ namespace ImJustMatt.ExpandedStorage.API
     {
         /// <summary>The game sound that will play when the storage is opened.</summary>
         string OpenSound { get; set; }
-        
+
         /// <summary>The game sound that will play when the storage is placed.</summary>
         string PlaceSound { get; set; }
 

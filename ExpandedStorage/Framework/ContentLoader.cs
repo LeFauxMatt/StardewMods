@@ -13,12 +13,12 @@ namespace ImJustMatt.ExpandedStorage.Framework
 {
     internal class ContentLoader
     {
-        private readonly IExpandedStorageAPI _expandedStorageAPI;
         private readonly ModConfig _config;
+        private readonly IExpandedStorageAPI _expandedStorageAPI;
         private readonly IModHelper _helper;
         private readonly IManifest _manifest;
         private readonly IMonitor _monitor;
-        
+
         private IGenericModConfigMenuAPI _modConfigAPI;
 
         internal ContentLoader(IModHelper helper,
@@ -31,19 +31,19 @@ namespace ImJustMatt.ExpandedStorage.Framework
             _manifest = manifest;
             _monitor = monitor;
             _config = config;
-            
+
             _expandedStorageAPI = expandedStorageAPI;
 
             // Default Exclusions
             _expandedStorageAPI.DisableWithModData("aedenthorn.AdvancedLootFramework/IsAdvancedLootFrameworkChest");
             _expandedStorageAPI.DisableDrawWithModData("aedenthorn.CustomChestTypes/IsCustomChest");
-            
+
             // Events
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             _expandedStorageAPI.ReadyToLoad += OnReadyToLoad;
             _expandedStorageAPI.StoragesLoaded += OnStoragesLoaded;
         }
-        
+
         /// <summary>Load Expanded Storage content packs</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -62,49 +62,51 @@ namespace ImJustMatt.ExpandedStorage.Framework
             foreach (var contentPack in contentPacks)
             {
                 _expandedStorageAPI.LoadContentPack(contentPack);
-                
+
                 var storageNames = _expandedStorageAPI.GetOwnedStorages(contentPack.Manifest);
                 var playerConfigs = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json")
-                    ?? new Dictionary<string, StorageConfig>();
+                                    ?? new Dictionary<string, StorageConfig>();
                 var defaultConfigs = new Dictionary<string, StorageConfig>();
-                
+
                 var revertToDefault = GetRevertToDefault(playerConfigs, defaultConfigs);
                 var saveToFile = GetSaveToFile(contentPack, playerConfigs);
                 _modConfigAPI?.RegisterModConfig(contentPack.Manifest, revertToDefault, saveToFile);
-                
+
                 foreach (var storageName in storageNames)
                 {
                     if (!_expandedStorageAPI.TryGetStorage(storageName, out var config))
                         continue;
-                    
+
                     var defaultConfig = StorageConfig.Clone(config);
                     defaultConfigs.Add(storageName, defaultConfig);
-                    
+
                     if (!playerConfigs.TryGetValue(storageName, out var playerConfig))
                     {
                         // Generate default player config
                         playerConfig = StorageConfig.Clone(config);
                         playerConfigs.Add(storageName, playerConfig);
                     }
+
                     _expandedStorageAPI.SetStorageConfig(contentPack.Manifest, storageName, playerConfig);
                     RegisterConfig(contentPack.Manifest, storageName, playerConfig);
                 }
+
                 saveToFile.Invoke();
             }
-            
+
             // Load Default Tabs
             foreach (var storageTab in _config.DefaultTabs)
             {
                 // Localized Tab Name
                 storageTab.Value.TabName = _helper.Translation.Get(storageTab.Key).Default(storageTab.Key);
-                
+
                 // Load texture function
                 storageTab.Value.LoadTexture = () => _helper.Content.Load<Texture2D>($"assets/{storageTab.Value.TabImage}");
-                
+
                 _expandedStorageAPI.RegisterStorageTab(_manifest, storageTab.Key, storageTab.Value);
             }
         }
-        
+
         /// <summary>Load Vanilla Storages with default config.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
@@ -121,7 +123,7 @@ namespace ImJustMatt.ExpandedStorage.Framework
                 _expandedStorageAPI.SetStorageConfig(_manifest, data[0], _config.DefaultStorage);
             }
         }
-        
+
         private Action GetRevertToDefault(IDictionary<string, StorageConfig> playerConfigs, IDictionary<string, StorageConfig> defaultConfigs)
         {
             void RevertToDefault()
@@ -145,7 +147,7 @@ namespace ImJustMatt.ExpandedStorage.Framework
 
             return SaveToFile;
         }
-        
+
         private void RegisterConfig(IManifest manifest, string storageName, IStorageConfig config)
         {
             _modConfigAPI?.RegisterLabel(manifest, storageName, manifest.Description);

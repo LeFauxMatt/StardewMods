@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Harmony;
-using ImJustMatt.ExpandedStorage.Framework.Models;
-using ImJustMatt.ExpandedStorage.Framework.UI;
 using ImJustMatt.Common.PatternPatches;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
+using ImJustMatt.ExpandedStorage.Framework.Models;
+using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -48,17 +48,17 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 AccessTools.Method(typeof(Chest), nameof(Chest.grabItemFromInventory)),
                 postfix: new HarmonyMethod(GetType(), nameof(GrabItemFromInventoryPostfix))
             );
-            
+
             harmony.Patch(
                 AccessTools.Method(typeof(Chest), nameof(Chest.addItem), new[] {typeof(Item)}),
                 new HarmonyMethod(GetType(), nameof(AddItemPrefix))
             );
-            
+
             harmony.Patch(
                 AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
                 new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix))
             );
-            
+
             harmony.Patch(
                 AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
                 new HarmonyMethod(GetType(), nameof(DrawPrefix))
@@ -68,7 +68,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)}),
                 new HarmonyMethod(GetType(), nameof(DrawLocalPrefix))
             );
-            
+
             harmony.Patch(
                 AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] {typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)}),
                 new HarmonyMethod(GetType(), nameof(DrawInMenuPrefix))
@@ -131,7 +131,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 : config.Capacity;
             return false;
         }
-        
+
         /// <summary>Draw chest with playerChoiceColor and lid animation when placed.</summary>
         public static bool DrawPrefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
@@ -141,7 +141,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
             if (!config.IsPlaceable)
                 return false;
-            
+
             var draw_x = (float) x;
             var draw_y = (float) y;
             if (__instance.localKickStartTile.HasValue)
@@ -167,20 +167,20 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             __instance.Draw(spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
             return false;
         }
-        
+
         /// <summary>Draw chest with playerChoiceColor and lid animation in menu.</summary>
         public static bool DrawInMenuPrefix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Color color, bool drawShadow)
         {
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
-            
+
             __instance.Draw(spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
-            
+
             // Draw Stack
             if (__instance.Stack > 1)
                 Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
-            
+
             // Draw Held Items
             var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
             if (items > 0)

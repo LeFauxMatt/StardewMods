@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
 using Harmony;
+using ImJustMatt.Common.PatternPatches;
 using ImJustMatt.ExpandedStorage.Framework.Models;
 using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework;
@@ -47,17 +48,17 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                     typeof(int),
                     typeof(object)
                 });
-            
+
             harmony.Patch(
                 constructor,
                 transpiler: new HarmonyMethod(GetType(), nameof(ConstructorTranspiler))
             );
-            
+
             harmony.Patch(
                 constructor,
                 postfix: new HarmonyMethod(GetType(), nameof(ConstructorPostfix))
             );
-            
+
             harmony.Patch(
                 AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
                 transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
@@ -67,7 +68,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         /// <summary>Loads default chest InventoryMenu when storage has modded capacity.</summary>
         private static IEnumerable<CodeInstruction> ConstructorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
+            var patternPatches = new PatternPatches(instructions, Monitor);
 
             patternPatches
                 .Find(
@@ -242,7 +243,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
             if (Config.ExpandInventoryMenu)
             {
-                
                 var offset = MenuModel.GetOffset(__instance);
                 __instance.height += offset;
                 __instance.inventory.movePosition(0, offset);
@@ -265,8 +265,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>
         private static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
-            
+            var patternPatches = new PatternPatches(instructions, Monitor);
+
             patternPatches
                 .Find(
                     new CodeInstruction(OpCodes.Callvirt,

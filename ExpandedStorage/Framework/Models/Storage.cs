@@ -23,6 +23,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
     public class Storage : IStorage
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
+
         public static readonly HashSet<string> VanillaNames = new()
         {
             "Chest",
@@ -37,9 +38,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
-        
-        /// <summary>Which mod was used to load these assets into the game.</summary>
-        internal SourceType SourceType { get; set; } = SourceType.Unknown;
 
         internal Storage() : this(null)
         {
@@ -68,6 +66,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
                     break;
             }
         }
+
+        /// <summary>Which mod was used to load these assets into the game.</summary>
+        internal SourceType SourceType { get; set; } = SourceType.Unknown;
 
         internal int MenuCapacity =>
             Capacity switch
@@ -102,6 +103,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             $"\tAllow list         : {string.Join(", ", AllowList)}\n" +
             $"\tBlock List         : {string.Join(", ", BlockList)}\n" +
             $"\tTabs               : {string.Join(", ", Tabs)}";
+
         public string OpenSound { get; set; } = "openChest";
         public string PlaceSound { get; set; } = "axe";
         public string SpecialChestType { get; set; } = "None";
@@ -137,12 +139,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
                 _ => false
             };
         }
-        
+
         internal static bool IsVanillaStorage(KeyValuePair<int, string> obj)
         {
             return obj.Value.EndsWith("Chest") || VanillaNames.Any(obj.Value.StartsWith);
         }
-        
+
         private bool IsAllowed(Item item)
         {
             return AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
@@ -176,6 +178,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         internal void CopyFrom(IStorage storage)
         {
             OpenSound = OpenSound == "openChest" ? storage.OpenSound : OpenSound;
+            PlaceSound = PlaceSound == "axe" ? storage.PlaceSound : PlaceSound;
             SpecialChestType = SpecialChestType == "None" ? storage.SpecialChestType : SpecialChestType;
             IsFridge = IsFridge || storage.IsFridge;
             IsPlaceable = storage.IsPlaceable;
@@ -189,7 +192,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             ShowSearchBar = storage.ShowSearchBar;
             VacuumItems = storage.VacuumItems;
         }
-        
+
         internal void CopyFrom(IStorageConfig config)
         {
             Capacity = config.Capacity;

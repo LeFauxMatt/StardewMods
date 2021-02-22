@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ImJustMatt.Common.PatternPatches;
 using ImJustMatt.ExpandedStorage.Framework;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using ImJustMatt.ExpandedStorage.Framework.Integrations;
 using ImJustMatt.ExpandedStorage.Framework.Models;
 using ImJustMatt.ExpandedStorage.Framework.Patches;
 using ImJustMatt.ExpandedStorage.Framework.UI;
-using ImJustMatt.Common.PatternPatches;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -95,7 +95,7 @@ namespace ImJustMatt.ExpandedStorage
             helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.Player.InventoryChanged += OnInventoryChanged;
-            
+
             if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
                 Monitor.Log("Do not run Expanded with Carry Chest!", LogLevel.Warn);
@@ -259,13 +259,13 @@ namespace ImJustMatt.ExpandedStorage
                     config = GetConfig(obj);
                 if (config == null || !config.CanCarry || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
-                
+
                 obj.TileLocation = Vector2.Zero;
                 location.objects.Remove(pos);
                 Helper.Input.Suppress(e.Button);
                 return;
             }
-            
+
             // Access Carried Chest
             if (HeldChest.Value != null && e.Button.IsActionButton())
             {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
 using Harmony;
+using ImJustMatt.Common.PatternPatches;
 using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -24,7 +25,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         private static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
+            var patternPatches = new PatternPatches(instructions, Monitor);
 
             patternPatches
                 .Find(

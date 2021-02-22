@@ -31,7 +31,7 @@ namespace ImJustMatt.ExpandedStorage.API
         /// <summary>Returns all Expanded Storage by sheet index.</summary>
         /// <returns>List of storage ids</returns>
         IList<int> GetAllStorageIds();
-        
+
         /// <summary>Returns all Expanded Storage by name.</summary>
         /// <param name="manifest">Mod manifest</param>
         /// <returns>List of storages</returns>
@@ -55,7 +55,7 @@ namespace ImJustMatt.ExpandedStorage.API
         /// <param name="storageName">The name of the storage.</param>
         /// <param name="config">Storage config</param>
         void SetStorageConfig(IManifest manifest, string storageName, IStorageConfig config);
-        
+
         /// <summary>
         /// 
         /// </summary>

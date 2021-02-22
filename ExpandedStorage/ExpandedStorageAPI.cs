@@ -38,6 +38,22 @@ namespace ImJustMatt.ExpandedStorage
             _helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
 
+        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public bool CanEdit<T>(IAssetInfo asset)
+        {
+            // Load bigCraftable on next tick for vanilla storages
+            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
+                _helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
+            return false;
+        }
+
+        /// <summary>Load a matched asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public void Edit<T>(IAssetData asset)
+        {
+        }
+
         public event EventHandler ReadyToLoad;
         public event EventHandler StoragesLoaded;
 
@@ -61,7 +77,7 @@ namespace ImJustMatt.ExpandedStorage
         {
             return _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
         }
-        
+
         public IList<string> GetOwnedStorages(IManifest manifest)
         {
             return _storageConfigs
@@ -130,7 +146,7 @@ namespace ImJustMatt.ExpandedStorage
             {
                 RegisterStorage(contentPack.Manifest, expandedStorage.Key, expandedStorage.Value);
             }
-            
+
             // Generate file for Json Assets
             if (!expandedStorages.Keys.All(Storage.VanillaNames.Contains))
             {
@@ -144,7 +160,7 @@ namespace ImJustMatt.ExpandedStorage
                     UpdateKeys = contentPack.Manifest.UpdateKeys,
                     Version = contentPack.Manifest.Version.ToString()
                 });
-                
+
                 _contentDirs.Add(contentPack.DirectoryPath);
             }
 
@@ -156,7 +172,7 @@ namespace ImJustMatt.ExpandedStorage
             {
                 // Localized Tab Name
                 storageTab.Value.TabName = contentPack.Translation.Get(storageTab.Key).Default(storageTab.Key);
-                
+
                 // Load texture function
                 storageTab.Value.LoadTexture = GetLoadTexture(contentPack, $"assets/{storageTab.Value.TabImage}");
 
@@ -177,7 +193,7 @@ namespace ImJustMatt.ExpandedStorage
             storage.CopyFrom(config);
             _monitor.Log($"{storageName} Config:\n{storage.SummaryReport}", LogLevel.Debug);
         }
-        
+
         public void RegisterStorage(IManifest manifest, string storageName, IStorage storage)
         {
             // Skip duplicate storage configs
@@ -186,7 +202,7 @@ namespace ImJustMatt.ExpandedStorage
                 _monitor.Log($"Duplicate storage {storageName} in {manifest.UniqueID}.", LogLevel.Warn);
                 return;
             }
-            
+
             // Update existing storage
             if (storageConfig != null)
             {
@@ -214,22 +230,6 @@ namespace ImJustMatt.ExpandedStorage
                 tabConfig.ModUniqueId = manifest.UniqueID;
                 _tabConfigs.Add(tabId, tabConfig);
             }
-        }
-        
-        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            // Load bigCraftable on next tick for vanilla storages
-            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
-                _helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
-            return false;
-        }
-
-        /// <summary>Load a matched asset.</summary>
-        /// <param name="asset">Basic metadata about the asset being loaded.</param>
-        public void Edit<T>(IAssetData asset)
-        {
         }
 
         /// <summary>Load Expanded Storage content packs</summary>
@@ -291,7 +291,7 @@ namespace ImJustMatt.ExpandedStorage
             foreach (var storageConfig in _storageConfigs
                 .Where(config => config.Value.SourceType != SourceType.JsonAssets))
                 storageConfig.Value.ObjectIds.Clear();
-            
+
             var bigCraftables = Game1.bigCraftablesInformation.Where(Storage.IsVanillaStorage);
             foreach (var bigCraftable in bigCraftables)
             {
@@ -299,12 +299,12 @@ namespace ImJustMatt.ExpandedStorage
 
                 if (!_storageConfigs.TryGetValue(data[0], out var storageConfig))
                     continue;
-                
+
                 if (Storage.VanillaNames.Contains(data[0]))
                     storageConfig.SourceType = SourceType.Vanilla;
                 else if (bigCraftable.Key >= 424000 && bigCraftable.Key < 425000)
                     storageConfig.SourceType = SourceType.CustomChestTypes;
-                
+
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Key))
                     storageConfig.ObjectIds.Add(bigCraftable.Key);
             }
@@ -319,7 +319,7 @@ namespace ImJustMatt.ExpandedStorage
                     : _helper.Content.Load<Texture2D>(assetName);
                 return texture;
             }
-            
+
             return LoadTexture;
         }
 

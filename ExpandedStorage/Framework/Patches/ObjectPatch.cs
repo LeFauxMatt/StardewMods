@@ -9,6 +9,7 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
+
 // ReSharper disable InconsistentNaming
 
 namespace ImJustMatt.ExpandedStorage.Framework.Patches
@@ -16,11 +17,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
     internal class ObjectPatch : Patch<ModConfig>
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
-        
+
         public ObjectPatch(IMonitor monitor, ModConfig config) : base(monitor, config)
         {
         }
-        
+
         internal static void AddExclusion(string modDataKey)
         {
             if (!ExcludeModDataKeys.Contains(modDataKey))
@@ -45,13 +46,13 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             var config = ExpandedStorage.GetConfig(__instance);
             if (config == null)
                 return true;
-            
+
             if (!config.IsPlaceable)
             {
                 __result = false;
                 return false;
             }
-            
+
             // Verify pos is not already occupied
             var pos = new Vector2(x, y) / 64f;
             pos.X = (int) pos.X;
@@ -79,6 +80,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                     __result = false;
                     return false;
                 }
+
                 if (location is FarmHouse {upgradeLevel: < 1})
                 {
                     Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:MiniFridge_NoKitchen"));
@@ -96,7 +98,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             // Place object at location
             location.objects.Add(pos, chest);
             location.playSound(config.PlaceSound);
-            
+
             __result = true;
             return false;
         }

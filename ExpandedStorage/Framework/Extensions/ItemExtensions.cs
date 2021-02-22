@@ -36,7 +36,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
             // Copy modData from original item
             foreach (var modData in item.modData)
                 chest.modData.CopyFrom(modData);
-            
+
             // Copy modData from config
             foreach (var modData in config.ModData)
             {

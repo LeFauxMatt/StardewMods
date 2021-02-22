@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Harmony;
-using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using ImJustMatt.Common.PatternPatches;
+using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using StardewModdingAPI;
 using StardewValley;
 

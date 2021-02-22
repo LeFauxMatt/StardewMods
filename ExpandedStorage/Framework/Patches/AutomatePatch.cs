@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Harmony;
-using ImJustMatt.ExpandedStorage.Framework.Integrations;
 using ImJustMatt.Common.PatternPatches;
+using ImJustMatt.ExpandedStorage.Framework.Integrations;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
