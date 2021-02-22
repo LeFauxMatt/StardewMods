@@ -20,7 +20,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         CustomChestTypes
     }
 
-    public class Storage : IStorage, IStorageConfig
+    public class Storage : IStorage
     {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
         public static readonly HashSet<string> VanillaNames = new()
@@ -53,12 +53,18 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             {
                 case "Mini-Shipping Bin":
                     SpecialChestType = "MiniShippingBin";
+                    OpenSound = "shwip";
                     break;
                 case "Mini-Fridge":
                     IsFridge = true;
+                    OpenSound = "doorCreak";
+                    PlaceSound = "hammer";
                     break;
                 case "Junimo Chest":
                     SpecialChestType = "JunimoChest";
+                    break;
+                case "Stone Chest":
+                    PlaceSound = "hammer";
                     break;
             }
         }
@@ -89,6 +95,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             $"\tShow Search        : {ShowSearchBar}\n" +
             $"\tVacuum Items       : {VacuumItems}\n" +
             $"\tOpen Sound         : {OpenSound}\n" +
+            $"\tPlace Sound        : {PlaceSound}\n" +
             $"\tSpecial Chest Type : {SpecialChestType}\n" +
             $"\tIs Fridge          : {IsFridge}\n" +
             $"\tPlaceable          : {IsPlaceable}\n" +
@@ -96,6 +103,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             $"\tBlock List         : {string.Join(", ", BlockList)}\n" +
             $"\tTabs               : {string.Join(", ", Tabs)}";
         public string OpenSound { get; set; } = "openChest";
+        public string PlaceSound { get; set; } = "axe";
         public string SpecialChestType { get; set; } = "None";
         public bool IsFridge { get; set; }
         public bool IsPlaceable { get; set; } = true;
@@ -167,14 +175,19 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         internal void CopyFrom(IStorage storage)
         {
-            OpenSound = storage.OpenSound;
-            SpecialChestType = storage.SpecialChestType;
-            IsFridge = storage.IsFridge;
+            OpenSound = OpenSound == "openChest" ? storage.OpenSound : OpenSound;
+            SpecialChestType = SpecialChestType == "None" ? storage.SpecialChestType : SpecialChestType;
+            IsFridge = IsFridge || storage.IsFridge;
             IsPlaceable = storage.IsPlaceable;
             ModData = storage.ModData;
             AllowList = storage.AllowList;
             BlockList = storage.BlockList;
             Tabs = storage.Tabs;
+            Capacity = storage.Capacity;
+            CanCarry = storage.CanCarry;
+            AccessCarried = storage.AccessCarried;
+            ShowSearchBar = storage.ShowSearchBar;
+            VacuumItems = storage.VacuumItems;
         }
         
         internal void CopyFrom(IStorageConfig config)

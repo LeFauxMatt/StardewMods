@@ -85,6 +85,7 @@ field               | description
 `ShowSearchBar`     | Add a search bar to the chest menu for this storage. (default `false`)
 `IsPlaceable`       | Set to `false` to disallow chest from being placed. (default `true`)
 `OpenSound`         | Sound to play when storage is being opened. (default `"openChest"`) <sup>[2](#handyheadphones)</sup>
+`PlaceSound`        | Sound to play when storage is placed. (default `"axe"`) <sup>[2](#handyheadphones)</sup>
 `IsFridge`          | Set to `true` if storage should be treated as a Mini-Fridge. (default `false`)
 `SpecialChestType`  | `"None"`, `"MiniShippingBin"`, or `"JunimoChest"`. (default `"None"`) 
 `AllowList`         | Restrict chest to only accept items containing these [tags](#context-tags). (default `null`)

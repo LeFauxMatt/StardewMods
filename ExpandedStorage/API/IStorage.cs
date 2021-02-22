@@ -2,10 +2,13 @@
 
 namespace ImJustMatt.ExpandedStorage.API
 {
-    public interface IStorage
+    public interface IStorage : IStorageConfig
     {
         /// <summary>The game sound that will play when the storage is opened.</summary>
         string OpenSound { get; set; }
+        
+        /// <summary>The game sound that will play when the storage is placed.</summary>
+        string PlaceSound { get; set; }
 
         /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
         string SpecialChestType { get; set; }

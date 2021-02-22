@@ -21,7 +21,6 @@ namespace ImJustMatt.ExpandedStorage
         private readonly IDictionary<string, StorageTab> _tabConfigs;
 
         private bool _isContentLoaded;
-        private IGenericModConfigMenuAPI _modConfigAPI;
         private IJsonAssetsAPI _jsonAssetsAPI;
 
         internal ExpandedStorageAPI(
@@ -62,18 +61,32 @@ namespace ImJustMatt.ExpandedStorage
         {
             return _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
         }
+        
+        public IList<string> GetOwnedStorages(IManifest manifest)
+        {
+            return _storageConfigs
+                .Where(storageConfig => storageConfig.Value.ModUniqueId == manifest.UniqueID)
+                .Select(storageConfig => storageConfig.Key)
+                .ToList();
+        }
 
-        public bool TryGetStorage(string storageName, out IStorage storage, out IStorageConfig config)
+        public IList<int> GetOwnedStorageIds(IManifest manifest)
+        {
+            return _storageConfigs
+                .Where(storageConfig => storageConfig.Value.ModUniqueId == manifest.UniqueID)
+                .SelectMany(storageConfig => storageConfig.Value.ObjectIds)
+                .ToList();
+        }
+
+        public bool TryGetStorage(string storageName, out IStorage storage)
         {
             if (_storageConfigs.TryGetValue(storageName, out var storageConfig))
             {
                 storage = Storage.Clone(storageConfig);
-                config = StorageConfig.Clone(storageConfig);
                 return true;
             }
 
             storage = null;
-            config = null;
             return false;
         }
 
@@ -105,49 +118,21 @@ namespace ImJustMatt.ExpandedStorage
 
             var expandedStorages = contentPack.ReadJsonFile<IDictionary<string, Storage>>("expanded-storage.json");
             var storageTabs = contentPack.ReadJsonFile<IDictionary<string, StorageTab>>("storage-tabs.json");
-            var playerConfigs = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json");
 
             if (expandedStorages == null)
             {
                 _monitor.Log($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
                 return false;
             }
-            
-            var defaultConfigs = new Dictionary<string, StorageConfig>();
-            playerConfigs ??= new Dictionary<string, StorageConfig>();
-            var revertToDefault = GetRevertToDefault(playerConfigs, defaultConfigs);
-            var saveToFile = GetSaveToFile(contentPack, playerConfigs);
-
-            _modConfigAPI?.RegisterModConfig(contentPack.Manifest, revertToDefault, saveToFile);
 
             // Load expanded storages
-            foreach (var defaultConfig in expandedStorages)
+            foreach (var expandedStorage in expandedStorages)
             {
-                RegisterStorage(contentPack.Manifest, defaultConfig.Key, defaultConfig.Value);
-                if (!_storageConfigs.TryGetValue(defaultConfig.Key, out var expandedStorage) || expandedStorage.ModUniqueId != contentPack.Manifest.UniqueID)
-                    continue;
-                
-                defaultConfigs.Add(defaultConfig.Key, StorageConfig.Clone(defaultConfig.Value));
-                
-                if (playerConfigs.TryGetValue(defaultConfig.Key, out var playerConfig))
-                {
-                    // Copy player config into expanded storage
-                    SetStorageConfig(contentPack.Manifest, defaultConfig.Key, playerConfig);
-                }
-                else
-                {
-                    // Generate default player config
-                    playerConfig = StorageConfig.Clone(defaultConfig.Value);
-                    playerConfigs.Add(defaultConfig.Key, playerConfig);
-                    SetStorageConfig(contentPack.Manifest, defaultConfig.Key, playerConfig);
-                }
-                
-                RegisterConfig(contentPack.Manifest, expandedStorage, defaultConfig.Key);
+                RegisterStorage(contentPack.Manifest, expandedStorage.Key, expandedStorage.Value);
             }
-            saveToFile.Invoke();
             
             // Generate file for Json Assets
-            if (expandedStorages.Keys.Any(Storage.VanillaNames.Contains))
+            if (!expandedStorages.Keys.All(Storage.VanillaNames.Contains))
             {
                 // Generate content-pack.json
                 contentPack.WriteJsonFile("content-pack.json", new ContentPack
@@ -252,7 +237,6 @@ namespace ImJustMatt.ExpandedStorage
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            _modConfigAPI = _helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             _jsonAssetsAPI = _helper.ModRegistry.GetApi<IJsonAssetsAPI>("spacechase0.JsonAssets");
             _jsonAssetsAPI.IdsAssigned += OnIdsLoaded;
             _helper.Events.GameLoop.UpdateTicked += OnReadyToLoad;
@@ -326,26 +310,6 @@ namespace ImJustMatt.ExpandedStorage
             }
         }
 
-        private void RegisterConfig(IManifest manifest, IStorageConfig config, string storageName)
-        {
-            _modConfigAPI?.RegisterLabel(manifest, storageName, "Added by Expanded Storage");
-            _modConfigAPI?.RegisterSimpleOption(manifest, "Capacity", $"How many item slots should {storageName} have?",
-                () => config.Capacity,
-                value => config.Capacity = value);
-            _modConfigAPI?.RegisterSimpleOption(manifest, "Can Carry", $"Allow {storageName} to be carried?",
-                () => config.CanCarry,
-                value => config.CanCarry = value);
-            _modConfigAPI?.RegisterSimpleOption(manifest, "Access Carried", $"Allow {storageName} to be access while carried?",
-                () => config.AccessCarried,
-                value => config.AccessCarried = value);
-            _modConfigAPI?.RegisterSimpleOption(manifest, "Search Bar", $"Show search bar above chest inventory for {storageName}?",
-                () => config.ShowSearchBar,
-                value => config.ShowSearchBar = value);
-            _modConfigAPI?.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {storageName} to be collect debris?",
-                () => config.VacuumItems,
-                value => config.VacuumItems = value);
-        }
-        
         private Func<Texture2D> GetLoadTexture(IContentPack contentPack, string assetName)
         {
             Texture2D LoadTexture()
@@ -357,30 +321,6 @@ namespace ImJustMatt.ExpandedStorage
             }
             
             return LoadTexture;
-        }
-
-        private Action GetRevertToDefault(IDictionary<string, StorageConfig> playerConfigs, IDictionary<string, StorageConfig> defaultConfigs)
-        {
-            void RevertToDefault()
-            {
-                foreach (var defaultConfig in defaultConfigs)
-                    if (playerConfigs.TryGetValue(defaultConfig.Key, out var playerConfig))
-                        playerConfig.CopyFrom(defaultConfig.Value);
-            }
-
-            return RevertToDefault;
-        }
-
-        private Action GetSaveToFile(IContentPack contentPack, IDictionary<string, StorageConfig> playerConfigs)
-        {
-            void SaveToFile()
-            {
-                foreach (var playerConfig in playerConfigs)
-                    SetStorageConfig(contentPack.Manifest, playerConfig.Key, playerConfig.Value);
-                contentPack.WriteJsonFile("config.json", playerConfigs);
-            }
-
-            return SaveToFile;
         }
 
         private void InvokeAll(EventHandler eventHandler)

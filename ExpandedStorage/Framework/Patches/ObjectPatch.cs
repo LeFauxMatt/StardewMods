@@ -58,7 +58,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             pos.Y = (int) pos.Y;
 
             if (location.objects.ContainsKey(pos))
-                return true;
+            {
+                Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.13053"));
+                __result = false;
+                return false;
+            }
 
             if (location is MineShaft || location is VolcanoDungeon)
             {
@@ -66,7 +70,23 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 __result = false;
                 return false;
             }
-            
+
+            if (config.IsFridge)
+            {
+                if (location is not FarmHouse && location is not IslandFarmHouse)
+                {
+                    Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.13053"));
+                    __result = false;
+                    return false;
+                }
+                if (location is FarmHouse {upgradeLevel: < 1})
+                {
+                    Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:MiniFridge_NoKitchen"));
+                    __result = false;
+                    return false;
+                }
+            }
+
             __instance.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
 
             // Get instance of object to place
@@ -75,7 +95,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
             // Place object at location
             location.objects.Add(pos, chest);
-            location.playSound("axe");
+            location.playSound(config.PlaceSound);
             
             __result = true;
             return false;

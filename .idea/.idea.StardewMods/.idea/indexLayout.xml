@@ -3,9 +3,8 @@
   <component name="ContentModelUserStore">
     <attachedFolders>
       <Path>.</Path>
-      <Path>_build</Path>
-      <Path>_releases</Path>
       <Path>build</Path>
+      <Path>releases</Path>
     </attachedFolders>
     <explicitIncludes />
     <explicitExcludes />
