@@ -5,7 +5,7 @@ using StardewModdingAPI;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable NotAccessedField.Global
 
-namespace Common.PatternPatches
+namespace ImJustMatt.Common.PatternPatches
 {
     internal abstract class Patch<T>
     {

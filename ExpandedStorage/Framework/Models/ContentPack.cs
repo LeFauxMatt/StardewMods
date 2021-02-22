@@ -1,4 +1,4 @@
-﻿namespace ExpandedStorage.Framework.Models
+﻿namespace ImJustMatt.ExpandedStorage.Framework.Models
 {
     internal class ContentPack
     {

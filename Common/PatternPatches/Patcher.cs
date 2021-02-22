@@ -1,6 +1,6 @@
 ﻿using Harmony;
 
-namespace Common.PatternPatches
+namespace ImJustMatt.Common.PatternPatches
 {
     internal class Patcher<T>
     {

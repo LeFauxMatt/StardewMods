@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ExpandedStorage.API
+namespace ImJustMatt.ExpandedStorage.API
 {
     public interface IStorage
     {

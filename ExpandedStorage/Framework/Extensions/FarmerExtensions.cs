@@ -6,7 +6,7 @@ using StardewValley;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
 
-namespace ExpandedStorage.Framework.Extensions
+namespace ImJustMatt.ExpandedStorage.Framework.Extensions
 {
     internal static class FarmerExtensions
     {

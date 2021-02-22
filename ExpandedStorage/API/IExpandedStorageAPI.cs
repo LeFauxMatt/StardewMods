@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using StardewModdingAPI;
 
-namespace ExpandedStorage.API
+namespace ImJustMatt.ExpandedStorage.API
 {
     public interface IExpandedStorageAPI
     {
@@ -34,13 +34,15 @@ namespace ExpandedStorage.API
 
         /// <summary>Returns storage info based on name.</summary>
         /// <param name="storageName">The name of the storage.</param>
-        /// <returns>Storage Info</returns>
-        IStorage GetStorage(string storageName);
+        /// <param name="storage">Storage Info</param>
+        /// <param name="config">Storage Config</param>
+        /// <returns>True if storage was found</returns>
+        bool TryGetStorage(string storageName, out IStorage storage, out IStorageConfig config);
 
-        /// <summary>Returns storage config based on name.</summary>
-        /// <param name="storageName">The name of the storage.</param>
-        /// <returns>Storage Config</returns>
-        IStorageConfig GetStorageConfig(string storageName);
+        void SetStorageConfig(IManifest manifest, string storageName, IStorageConfig config);
+        void RegisterStorage(IManifest manifest, string storageName, IStorage storage);
+
+        void RegisterStorageTab(IManifest manifest, string tabName, IStorageTab storageTab);
 
         /// <summary>Event shortly after GameLaunch when content packs can be loaded.</summary>
         event EventHandler ReadyToLoad;

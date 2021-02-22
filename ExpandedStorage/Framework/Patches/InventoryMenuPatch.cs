@@ -1,33 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using Common.PatternPatches;
-using ExpandedStorage.Framework.UI;
 using Harmony;
+using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley.Menus;
 
-namespace ExpandedStorage.Framework.Patches
+namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal class InventoryMenuPatch : MenuPatch
     {
-        internal InventoryMenuPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config)
+        internal InventoryMenuPatch(IMonitor monitor, ModConfig config) : base(monitor, config)
         {
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            if (Config.AllowModdedCapacity || Config.ShowTabs || Config.ShowSearchBar)
-                harmony.Patch(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)}),
-                    transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
-                );
+            harmony.Patch(
+                AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)}),
+                transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
+            );
         }
 
         private static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, Monitor);
+            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
 
             patternPatches
                 .Find(

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Common.PatternPatches;
-using ExpandedStorage.Framework.Integrations;
 using Harmony;
+using ImJustMatt.ExpandedStorage.Framework.Integrations;
+using ImJustMatt.Common.PatternPatches;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
@@ -10,7 +10,7 @@ using StardewValley.Objects;
 // ReSharper disable InvertIf
 // ReSharper disable InconsistentNaming
 
-namespace ExpandedStorage.Framework.Patches
+namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal class AutomatePatch : Patch<ModConfig>
     {
@@ -33,7 +33,7 @@ namespace ExpandedStorage.Framework.Patches
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            if (_isAutomateLoaded && Config.AllowRestrictedStorage)
+            if (_isAutomateLoaded)
             {
                 Monitor.Log("Patching Automate for Restricted Storage");
                 var methodInfo = AccessTools.GetDeclaredMethods(_type)

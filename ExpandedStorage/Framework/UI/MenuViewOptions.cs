@@ -1,4 +1,4 @@
-﻿namespace ExpandedStorage.Framework.UI
+﻿namespace ImJustMatt.ExpandedStorage.Framework.UI
 {
     public class MenuViewOptions
     {

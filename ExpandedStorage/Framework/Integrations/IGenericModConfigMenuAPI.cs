@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 
-namespace ExpandedStorage.Framework.Integrations
+namespace ImJustMatt.ExpandedStorage.Framework.Integrations
 {
     public interface IGenericModConfigMenuAPI
     {

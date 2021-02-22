@@ -1,19 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.PatternPatches;
 using Harmony;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley.Menus;
 
-namespace ExpandedStorage.Framework.Patches
+namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     [SuppressMessage("ReSharper", "ArrangeTypeMemberModifiers")]
     internal class MenuWithInventoryPatch : MenuPatch
     {
-        internal MenuWithInventoryPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config)
+        internal MenuWithInventoryPatch(IMonitor monitor, ModConfig config) : base(monitor, config)
         {
         }
 
@@ -29,17 +27,16 @@ namespace ExpandedStorage.Framework.Patches
                     typeof(int),
                     typeof(int)
                 });
-
-            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
-                harmony.Patch(
-                    drawMethod,
-                    transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
-                );
+            
+            harmony.Patch(
+                drawMethod,
+                transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
+            );
         }
 
         static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, Monitor);
+            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
 
             var patch = patternPatches
                 .Find(
@@ -52,11 +49,9 @@ namespace ExpandedStorage.Framework.Patches
                     new CodeInstruction(OpCodes.Add)
                 )
                 .Log("Adding Offset to drawDialogueBox.y.");
-
-            if (Config.AllowModdedCapacity)
-                patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
-            if (Config.ShowSearchBar)
-                patch.Patch(OffsetPatch(MenuPadding, OpCodes.Add));
+            
+            patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
+            patch.Patch(OffsetPatch(MenuPadding, OpCodes.Add));
 
             patch = patternPatches
                 .Find(
@@ -68,11 +63,9 @@ namespace ExpandedStorage.Framework.Patches
                     new CodeInstruction(OpCodes.Add)
                 )
                 .Log("Subtracting Y-Offset from drawDialogueBox.height");
-
-            if (Config.AllowModdedCapacity)
-                patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
-            if (Config.ShowSearchBar)
-                patch.Patch(OffsetPatch(MenuPadding, OpCodes.Add));
+            
+            patch.Patch(OffsetPatch(MenuOffset, OpCodes.Add));
+            patch.Patch(OffsetPatch(MenuPadding, OpCodes.Add));
 
             foreach (var patternPatch in patternPatches)
                 yield return patternPatch;

@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Common.PatternPatches;
-using ExpandedStorage.Framework;
-using ExpandedStorage.Framework.Extensions;
-using ExpandedStorage.Framework.Integrations;
-using ExpandedStorage.Framework.Models;
-using ExpandedStorage.Framework.Patches;
-using ExpandedStorage.Framework.UI;
+using ImJustMatt.ExpandedStorage.Framework;
+using ImJustMatt.ExpandedStorage.Framework.Extensions;
+using ImJustMatt.ExpandedStorage.Framework.Integrations;
+using ImJustMatt.ExpandedStorage.Framework.Models;
+using ImJustMatt.ExpandedStorage.Framework.Patches;
+using ImJustMatt.ExpandedStorage.Framework.UI;
+using ImJustMatt.Common.PatternPatches;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -16,7 +17,7 @@ using StardewValley.Objects;
 
 // ReSharper disable ClassNeverInstantiated.Global
 
-namespace ExpandedStorage
+namespace ImJustMatt.ExpandedStorage
 {
     public class ExpandedStorage : Mod
     {
@@ -79,15 +80,11 @@ namespace ExpandedStorage
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
             _expandedStorageAPI = new ExpandedStorageAPI(Helper, Monitor, Storages, StorageTabs);
-            helper.Content.AssetEditors.Add(new ContentLoader(Helper, ModManifest, Monitor, _expandedStorageAPI));
-
-            if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
-            {
-                Monitor.Log("Expanded Storage should not be run alongside Carry Chest!", LogLevel.Warn);
-                _config.AllowCarryingChests = false;
-            }
+            var unused = new ContentLoader(Helper, ModManifest, Monitor, _config, _expandedStorageAPI);
+            helper.Content.AssetEditors.Add(_expandedStorageAPI);
 
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
+            ChestExtensions.Init(helper.Reflection);
             FarmerExtensions.Init(Monitor);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
@@ -95,23 +92,24 @@ namespace ExpandedStorage
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
-
-            if (_config.AllowCarryingChests)
+            helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
+            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+            helper.Events.Player.InventoryChanged += OnInventoryChanged;
+            
+            if (helper.ModRegistry.IsLoaded("spacechase0.CarryChest"))
             {
-                helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
-                helper.Events.Input.ButtonPressed += OnButtonPressed;
+                Monitor.Log("Do not run Expanded with Carry Chest!", LogLevel.Warn);
             }
-
-            if (_config.AllowAccessCarriedChest) helper.Events.Input.ButtonsChanged += OnButtonsChanged;
-
-            if (_config.AllowVacuumItems)
+            else
             {
-                helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
-                helper.Events.Player.InventoryChanged += OnInventoryChanged;
+                helper.Events.Input.ButtonPressed += OnButtonPressed;
+                helper.Events.Input.ButtonsChanged += OnButtonsChanged;
             }
 
             // Harmony Patches
             new Patcher<ModConfig>(ModManifest.UniqueID).ApplyAll(
+                new ItemPatch(Monitor, _config),
+                new ObjectPatch(Monitor, _config),
                 new FarmerPatch(Monitor, _config),
                 new ChestPatch(Monitor, _config),
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
@@ -177,7 +175,7 @@ namespace ExpandedStorage
                 .Where(s => s.Value != null && s.Value.VacuumItems)
                 .ToDictionary(s => s.Key, s => s.Value);
 
-            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")), LogLevel.Debug);
+            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum:\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Key}")), LogLevel.Debug);
         }
 
         /// <summary>Refresh player item vacuum chests.</summary>
@@ -195,7 +193,7 @@ namespace ExpandedStorage
                 .Where(s => s.Value != null && s.Value.VacuumItems)
                 .ToDictionary(s => s.Key, s => s.Value);
 
-            Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Value.StorageName}")));
+            Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum:\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Key}")));
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -218,14 +216,11 @@ namespace ExpandedStorage
                 chest.fixLidFrame();
             }
 
-            if (!_config.AllowAccessCarriedChest
-                || chest.frameCounter.Value <= -1
-                || _currentLidFrame.Value > chest.getLastLidFrame())
+            if (chest.frameCounter.Value <= -1 || _currentLidFrame.Value > chest.getLastLidFrame())
                 return;
 
             chest.frameCounter.Value--;
-            if (chest.frameCounter.Value > 0
-                || !chest.GetMutex().IsLockHeld())
+            if (chest.frameCounter.Value > 0 || !chest.GetMutex().IsLockHeld())
                 return;
 
             if (_currentLidFrame.Value == chest.getLastLidFrame())
@@ -253,26 +248,29 @@ namespace ExpandedStorage
 
             var location = Game1.currentLocation;
             var pos = Game1.player.GetToolLocation() / 64f;
+            Storage config = null;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
 
-            if (HeldChest.Value == null
-                && _config.AllowCarryingChests
-                && e.Button.IsUseToolButton()
-                && location.CarryChest(pos))
+            // Carry Chest
+            if (e.Button.IsUseToolButton())
             {
-                Helper.Input.Suppress(e.Button);
-            }
-            else if (HeldChest.Value != null
-                     && _config.AllowAccessCarriedChest
-                     && e.Button.IsActionButton()
-                     && HeldChest.Value.Stack <= 1)
-            {
-                if (location.objects.TryGetValue(pos, out var obj) && HasConfig(obj))
+                if (location.objects.TryGetValue(pos, out var obj))
+                    config = GetConfig(obj);
+                if (config == null || !config.CanCarry || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
-
-                var config = GetConfig(HeldChest.Value);
-                if (!config.AccessCarried)
+                
+                obj.TileLocation = Vector2.Zero;
+                location.objects.Remove(pos);
+                Helper.Input.Suppress(e.Button);
+                return;
+            }
+            
+            // Access Carried Chest
+            if (HeldChest.Value != null && e.Button.IsActionButton())
+            {
+                config = GetConfig(HeldChest.Value);
+                if (config == null || !config.AccessCarried)
                     return;
 
                 HeldChest.Value.GetMutex().RequestLock(delegate

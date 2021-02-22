@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using ExpandedStorage.Common.Extensions;
-using ExpandedStorage.Framework.Extensions;
+using ImJustMatt.Common.Extensions;
+using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
@@ -11,7 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
-namespace ExpandedStorage.Framework.UI
+namespace ImJustMatt.ExpandedStorage.Framework.UI
 {
     [SuppressMessage("ReSharper", "IdentifierTypo")]
     internal class MenuViewModel : IDisposable
@@ -40,8 +40,8 @@ namespace ExpandedStorage.Framework.UI
             _view = new MenuView(menu.ItemsToGrabMenu,
                 new MenuViewOptions
                 {
-                    ShowArrows = _config.ShowOverlayArrows && _model.StorageConfig != null,
-                    ShowSearch = _config.ShowSearchBar && _model.StorageConfig != null && _model.StorageConfig.ShowSearchBar
+                    ShowArrows = _model.StorageConfig != null,
+                    ShowSearch = _model.StorageConfig != null && _model.StorageConfig.ShowSearchBar
                 },
                 Scroll,
                 SetTab,
@@ -163,21 +163,18 @@ namespace ExpandedStorage.Framework.UI
             if (_view == null || Context.ScreenId != _screenId)
                 return;
 
-            if (_config.AllowModdedCapacity)
+            if (_config.Controls.ScrollDown.JustPressed())
             {
-                if (_config.Controls.ScrollDown.JustPressed())
-                {
-                    Scroll(-1);
-                    _inputHelper.SuppressActiveKeybinds(_config.Controls.ScrollDown);
-                }
-                else if (_config.Controls.ScrollUp.JustPressed())
-                {
-                    Scroll(1);
-                    _inputHelper.SuppressActiveKeybinds(_config.Controls.ScrollUp);
-                }
+                Scroll(-1);
+                _inputHelper.SuppressActiveKeybinds(_config.Controls.ScrollDown);
+            }
+            else if (_config.Controls.ScrollUp.JustPressed())
+            {
+                Scroll(1);
+                _inputHelper.SuppressActiveKeybinds(_config.Controls.ScrollUp);
             }
 
-            if (!_config.ShowTabs)
+            if (_model.StorageConfig?.Tabs == null)
                 return;
 
             if (_config.Controls.PreviousTab.JustPressed())

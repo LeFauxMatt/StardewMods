@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using ExpandedStorage.Common.Extensions;
-using ExpandedStorage.Framework.Models;
+using ImJustMatt.Common.Extensions;
+using ImJustMatt.ExpandedStorage.Framework.Models;
 using Netcode;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -12,7 +12,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
 
-namespace ExpandedStorage.Framework.UI
+namespace ImJustMatt.ExpandedStorage.Framework.UI
 {
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class MenuModel : IDisposable
@@ -153,7 +153,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Returns Padding to top menu for search box.</summary>
         public static int GetPadding(MenuWithInventory menu)
         {
-            return _config.ShowSearchBar && menu is ItemGrabMenu {shippingBin: false} igm
+            return menu is ItemGrabMenu {shippingBin: false} igm
                 ? ExpandedStorage.GetConfig(igm.context)?.MenuPadding ?? 0
                 : 0;
         }
@@ -177,8 +177,7 @@ namespace ExpandedStorage.Framework.UI
         /// <summary>Returns the filtered list of items in the InventoryMenu.</summary>
         public static IList<Item> GetItems(IList<Item> items)
         {
-            return (_config.ShowTabs || _config.ShowSearchBar)
-                   && Instance.Value != null && ReferenceEquals(Instance.Value.Items, items)
+            return Instance.Value != null && ReferenceEquals(Instance.Value.Items, items)
                 ? Instance.Value.FilteredItems
                 : items;
         }

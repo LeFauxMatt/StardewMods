@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <AssemblyName>ExpandedStorage</AssemblyName>
-        <RootNamespace>ExpandedStorage</RootNamespace>
+        <RootNamespace>ImJustMatt.ExpandedStorage</RootNamespace>
         <Version>1.6.0-beta.1</Version>
         <TargetFramework>net452</TargetFramework>
         <EnableHarmony>true</EnableHarmony>
@@ -12,12 +12,6 @@
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.2.2" />
     </ItemGroup>
     
-    <ItemGroup>
-      <ProjectReference Include="..\MoreCraftables\MoreCraftables.csproj">
-          <Private>false</Private>
-      </ProjectReference>
-    </ItemGroup>
-
+    <Import Project="..\build\common.targets" />
     <Import Project="..\Common\Common.projitems" Label="Shared" />
-    <Import Project="..\_build\common.targets" />
 </Project>

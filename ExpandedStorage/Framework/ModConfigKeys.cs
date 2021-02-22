@@ -3,7 +3,7 @@ using StardewModdingAPI.Utilities;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-namespace ExpandedStorage.Framework
+namespace ImJustMatt.ExpandedStorage.Framework
 {
     public class ModConfigKeys
     {

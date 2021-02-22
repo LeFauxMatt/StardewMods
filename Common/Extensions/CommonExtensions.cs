@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ExpandedStorage.Common.Extensions
+namespace ImJustMatt.Common.Extensions
 {
     internal static class CommonExtensions
     {

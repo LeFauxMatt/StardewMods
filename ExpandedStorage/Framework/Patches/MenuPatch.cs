@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using Common.PatternPatches;
-using ExpandedStorage.Framework.UI;
 using Harmony;
+using ImJustMatt.ExpandedStorage.Framework.UI;
+using ImJustMatt.Common.PatternPatches;
 using StardewModdingAPI;
 using StardewValley.Menus;
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 
-namespace ExpandedStorage.Framework.Patches
+namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal abstract class MenuPatch : Patch<ModConfig>
     {
@@ -39,8 +39,7 @@ namespace ExpandedStorage.Framework.Patches
         private protected static readonly FieldInfo IClickableMenuYPositionOnScreen =
             AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen));
 
-        internal MenuPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config)
+        internal MenuPatch(IMonitor monitor, ModConfig config) : base(monitor, config)
         {
         }
 

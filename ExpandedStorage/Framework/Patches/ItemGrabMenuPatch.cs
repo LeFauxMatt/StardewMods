@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using Common.PatternPatches;
-using ExpandedStorage.Framework.Models;
-using ExpandedStorage.Framework.UI;
 using Harmony;
+using ImJustMatt.ExpandedStorage.Framework.Models;
+using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -15,14 +14,13 @@ using StardewValley.Objects;
 // ReSharper disable InvertIf
 // ReSharper disable InconsistentNaming
 
-namespace ExpandedStorage.Framework.Patches
+namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal class ItemGrabMenuPatch : MenuPatch
     {
         private static IReflectionHelper _reflection;
 
-        internal ItemGrabMenuPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection)
-            : base(monitor, config)
+        internal ItemGrabMenuPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection) : base(monitor, config)
         {
             _reflection = reflection;
         }
@@ -49,30 +47,27 @@ namespace ExpandedStorage.Framework.Patches
                     typeof(int),
                     typeof(object)
                 });
-
-            if (Config.AllowModdedCapacity)
-                harmony.Patch(
-                    constructor,
-                    transpiler: new HarmonyMethod(GetType(), nameof(ConstructorTranspiler))
-                );
-
-            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu || Config.ShowSearchBar)
-                harmony.Patch(
-                    constructor,
-                    postfix: new HarmonyMethod(GetType(), nameof(ConstructorPostfix))
-                );
-
-            if (Config.ExpandInventoryMenu || Config.ShowOverlayArrows || Config.ShowTabs || Config.ShowSearchBar)
-                harmony.Patch(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
-                    transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
-                );
+            
+            harmony.Patch(
+                constructor,
+                transpiler: new HarmonyMethod(GetType(), nameof(ConstructorTranspiler))
+            );
+            
+            harmony.Patch(
+                constructor,
+                postfix: new HarmonyMethod(GetType(), nameof(ConstructorPostfix))
+            );
+            
+            harmony.Patch(
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
+                transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
+            );
         }
 
         /// <summary>Loads default chest InventoryMenu when storage has modded capacity.</summary>
         private static IEnumerable<CodeInstruction> ConstructorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, Monitor);
+            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
 
             patternPatches
                 .Find(
@@ -144,8 +139,7 @@ namespace ExpandedStorage.Framework.Patches
             if (__instance.context is not Chest chest)
                 chest = null;
 
-            if (Config.AllowChestToChest
-                && ExpandedStorage.HeldChest.Value != null
+            if (ExpandedStorage.HeldChest.Value != null
                 && chest != null
                 && !ReferenceEquals(ExpandedStorage.HeldChest.Value, chest))
             {
@@ -188,7 +182,7 @@ namespace ExpandedStorage.Framework.Patches
                 __instance.inventory.highlightMethod = config.HighlightMethod;
             }
 
-            if (config.SourceType == SourceType.MoreCraftables && chest != null && __instance.chestColorPicker == null)
+            if (config.SourceType == SourceType.JsonAssets && chest != null && __instance.chestColorPicker == null)
             {
                 var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
                 var sourceItem = sourceItemReflected.GetValue();
@@ -237,7 +231,7 @@ namespace ExpandedStorage.Framework.Patches
                 __instance.populateClickableComponentList();
             }
 
-            if (Config.ShowSearchBar && config.ShowSearchBar)
+            if (config.ShowSearchBar)
             {
                 var padding = MenuModel.GetPadding(__instance);
                 __instance.yPositionOnScreen -= padding;
@@ -246,7 +240,7 @@ namespace ExpandedStorage.Framework.Patches
                     __instance.chestColorPicker.yPositionOnScreen -= padding;
             }
 
-            if (Config.AllowModdedCapacity && Config.ExpandInventoryMenu)
+            if (Config.ExpandInventoryMenu)
             {
                 
                 var offset = MenuModel.GetOffset(__instance);
@@ -271,20 +265,19 @@ namespace ExpandedStorage.Framework.Patches
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>
         private static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, Monitor);
-
-            if (Config.ShowTabs)
-                patternPatches
-                    .Find(
-                        new CodeInstruction(OpCodes.Callvirt,
-                            AccessTools.Method(typeof(SpriteBatch), nameof(SpriteBatch.Draw)))
-                    )
-                    .Log("Adding DrawUnderlay method to ItemGrabMenu.")
-                    .Patch(delegate(LinkedList<CodeInstruction> list)
-                    {
-                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
-                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(MenuView), nameof(MenuView.DrawUnderlay))));
-                    });
+            var patternPatches = new Common.PatternPatches.PatternPatches(instructions, Monitor);
+            
+            patternPatches
+                .Find(
+                    new CodeInstruction(OpCodes.Callvirt,
+                        AccessTools.Method(typeof(SpriteBatch), nameof(SpriteBatch.Draw)))
+                )
+                .Log("Adding DrawUnderlay method to ItemGrabMenu.")
+                .Patch(delegate(LinkedList<CodeInstruction> list)
+                {
+                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(MenuView), nameof(MenuView.DrawUnderlay))));
+                });
 
             // Offset backpack icon
             if (Config.ExpandInventoryMenu)
@@ -300,50 +293,46 @@ namespace ExpandedStorage.Framework.Patches
                     .Repeat(3);
 
             // Add top padding
-            if (Config.ShowSearchBar)
-            {
-                patternPatches
-                    .Find(
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                        new CodeInstruction(OpCodes.Ldfld, IClickableMenuYPositionOnScreen),
-                        new CodeInstruction(OpCodes.Ldsfld, IClickableMenuBorderWidth),
-                        new CodeInstruction(OpCodes.Sub),
-                        new CodeInstruction(OpCodes.Ldsfld, IClickableMenuSpaceToClearTopBorder),
-                        new CodeInstruction(OpCodes.Sub)
-                    )
-                    .Log("Adding top padding offset to drawDialogueBox.y.")
-                    .Patch(OffsetPatch(MenuPadding, OpCodes.Sub));
+            patternPatches
+                .Find(
+                    new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+                    new CodeInstruction(OpCodes.Ldfld, IClickableMenuYPositionOnScreen),
+                    new CodeInstruction(OpCodes.Ldsfld, IClickableMenuBorderWidth),
+                    new CodeInstruction(OpCodes.Sub),
+                    new CodeInstruction(OpCodes.Ldsfld, IClickableMenuSpaceToClearTopBorder),
+                    new CodeInstruction(OpCodes.Sub)
+                )
+                .Log("Adding top padding offset to drawDialogueBox.y.")
+                .Patch(OffsetPatch(MenuPadding, OpCodes.Sub));
 
-                patternPatches
-                    .Find(
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                        new CodeInstruction(OpCodes.Ldfld, IClickableMenuHeight),
-                        new CodeInstruction(OpCodes.Ldsfld, IClickableMenuSpaceToClearTopBorder),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldsfld, IClickableMenuBorderWidth),
-                        new CodeInstruction(OpCodes.Ldc_I4_2),
-                        new CodeInstruction(OpCodes.Mul),
-                        new CodeInstruction(OpCodes.Add)
-                    )
-                    .Log("Adding top padding offset to drawDialogueBox.height.")
-                    .Patch(OffsetPatch(MenuPadding, OpCodes.Add));
-            }
+            patternPatches
+                .Find(
+                    new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+                    new CodeInstruction(OpCodes.Ldfld, IClickableMenuHeight),
+                    new CodeInstruction(OpCodes.Ldsfld, IClickableMenuSpaceToClearTopBorder),
+                    new CodeInstruction(OpCodes.Add),
+                    new CodeInstruction(OpCodes.Ldsfld, IClickableMenuBorderWidth),
+                    new CodeInstruction(OpCodes.Ldc_I4_2),
+                    new CodeInstruction(OpCodes.Mul),
+                    new CodeInstruction(OpCodes.Add)
+                )
+                .Log("Adding top padding offset to drawDialogueBox.height.")
+                .Patch(OffsetPatch(MenuPadding, OpCodes.Add));
 
             // Draw arrows under hover text
-            if (Config.ShowOverlayArrows || Config.ShowSearchBar || Config.ShowTabs)
-                patternPatches
-                    .Find(
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.junimoNoteIcon))),
-                        new CodeInstruction(OpCodes.Ldarg_1),
-                        new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(ClickableTextureComponent), nameof(ClickableTextureComponent.draw), new[] {typeof(SpriteBatch)})),
-                        new CodeInstruction(OpCodes.Ldarg_0)
-                    )
-                    .Log("Adding DrawOverlay method to ItemGrabMenu.")
-                    .Patch(delegate(LinkedList<CodeInstruction> list)
-                    {
-                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
-                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(MenuView), nameof(MenuView.DrawOverlay))));
-                    });
+            patternPatches
+                .Find(
+                    new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.junimoNoteIcon))),
+                    new CodeInstruction(OpCodes.Ldarg_1),
+                    new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(ClickableTextureComponent), nameof(ClickableTextureComponent.draw), new[] {typeof(SpriteBatch)})),
+                    new CodeInstruction(OpCodes.Ldarg_0)
+                )
+                .Log("Adding DrawOverlay method to ItemGrabMenu.")
+                .Patch(delegate(LinkedList<CodeInstruction> list)
+                {
+                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(MenuView), nameof(MenuView.DrawOverlay))));
+                });
 
             foreach (var patternPatch in patternPatches)
                 yield return patternPatch;

@@ -1,70 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MoreCraftables.API;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
 
-namespace MoreCraftables.Framework.HandledObjects.BigCraftables
+namespace ImJustMatt.ExpandedStorage.Framework.Extensions
 {
-    public class HandledChest : HandledBigCraftable
+    public static class ChestExtensions
     {
         private static readonly HashSet<int> HideColorPickerIds = new() {216, 248, 256};
         private static readonly HashSet<int> ShowBottomBraceIds = new() {130, 232};
         private static IReflectionHelper _reflection;
 
-        private readonly bool _fridge;
-
-        private readonly Chest.SpecialChestTypes _specialChestType;
-
-        public HandledChest(IHandledObject handledObject, IReflectionHelper reflection) : base(handledObject)
+        internal static void Init(IReflectionHelper reflection)
         {
             _reflection = reflection;
-
-            _specialChestType =
-                Properties.TryGetValue("SpecialChestType", out var specialChestType)
-                && specialChestType is string specialChestTypeString
-                && Enum.TryParse(specialChestTypeString, out Chest.SpecialChestTypes specialChestTypeValue)
-                    ? specialChestTypeValue
-                    : Chest.SpecialChestTypes.None;
-            _fridge = Properties.TryGetValue("fridge", out var fridge) && (bool) fridge;
         }
-
-        public override Object CreateInstance(Object obj, GameLocation location, Vector2 pos)
+        
+        public static void Draw(this Chest chest, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
-            if (location is MineShaft || location is VolcanoDungeon)
-            {
-                Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.13053"));
-                return null;
-            }
-
-            PlaySoundOrDefault(location, "axe");
-            var chest = new Chest(true, pos, obj.ParentSheetIndex)
-            {
-                shakeTimer = 50,
-                SpecialChestType = _specialChestType
-            };
-            chest.fridge.Value = _fridge;
-
-            if (obj is not Chest otherChest)
-                return chest;
-
-            chest.playerChoiceColor.Value = otherChest.playerChoiceColor.Value;
-            if (otherChest.items.Any())
-                chest.items.CopyFrom(otherChest.items);
-
-            return chest;
-        }
-
-        public override bool Draw(Object obj, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f, IHandledObject.DrawContext drawContext = IHandledObject.DrawContext.Placed, Color color = default)
-        {
-            if (obj is not Chest chest)
-                return true;
-
             var currentLidFrameReflected = _reflection.GetField<int>(chest, "currentLidFrame");
             var currentLidFrame = currentLidFrameReflected.GetValue();
             if (currentLidFrame == 0)
@@ -92,7 +47,7 @@ namespace MoreCraftables.Framework.HandledObjects.BigCraftables
                     SpriteEffects.None,
                     layerDepth + 1E-05f);
 
-                return false;
+                return;
             }
 
             var baseOffset = chest.ParentSheetIndex switch {130 => 38, 232 => 0, _ => 6};
@@ -132,7 +87,7 @@ namespace MoreCraftables.Framework.HandledObjects.BigCraftables
                 layerDepth + 2E-05f);
 
             if (!ShowBottomBraceIds.Contains(chest.ParentSheetIndex))
-                return false;
+                return;
 
             // Draw Bottom Brace Layer (Non-Colorized)
             var rect = Game1.getSourceRectForStandardTileSheet(Game1.bigCraftableSpriteSheet, chest.ParentSheetIndex + aboveOffset, 16, 32);
@@ -148,7 +103,7 @@ namespace MoreCraftables.Framework.HandledObjects.BigCraftables
                 scaleSize,
                 SpriteEffects.None,
                 layerDepth + 3E-05f);
-            return false;
+            return;
         }
 
         private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue)

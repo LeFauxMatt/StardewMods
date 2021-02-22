@@ -1,6 +1,6 @@
 ﻿using StardewValley;
 
-namespace ExpandedStorage.Framework.Integrations
+namespace ImJustMatt.ExpandedStorage.Framework.Integrations
 {
     public interface ITrackedStack
     {

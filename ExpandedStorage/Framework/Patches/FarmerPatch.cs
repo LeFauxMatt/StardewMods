@@ -1,25 +1,26 @@
 ﻿using System.Collections.Generic;
-using Common.PatternPatches;
-using ExpandedStorage.Framework.Extensions;
 using Harmony;
+using ImJustMatt.ExpandedStorage.Framework.Extensions;
+using ImJustMatt.Common.PatternPatches;
 using StardewModdingAPI;
 using StardewValley;
 
 // ReSharper disable InconsistentNaming
 
-namespace ExpandedStorage.Framework.Patches
+namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal class FarmerPatch : Patch<ModConfig>
     {
-        internal FarmerPatch(IMonitor monitor, ModConfig config)
-            : base(monitor, config)
+        internal FarmerPatch(IMonitor monitor, ModConfig config) : base(monitor, config)
         {
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
-            harmony.Patch(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] {typeof(Item), typeof(List<Item>)}),
-                new HarmonyMethod(GetType(), nameof(AddItemToInventoryPrefix)));
+            harmony.Patch(
+                AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] {typeof(Item), typeof(List<Item>)}),
+                new HarmonyMethod(GetType(), nameof(AddItemToInventoryPrefix))
+            );
         }
 
         public static bool AddItemToInventoryPrefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)

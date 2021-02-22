@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedStorage.Framework.Extensions;
+using ImJustMatt.ExpandedStorage.API;
+using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 
@@ -10,30 +11,19 @@ using StardewValley;
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace ExpandedStorage.Framework.Models
+namespace ImJustMatt.ExpandedStorage.Framework.Models
 {
-    public class StorageTab
+    public class StorageTab : IStorageTab
     {
-        private Texture2D _texture;
-        protected internal Func<Texture2D> LoadTexture;
-
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         protected internal string ModUniqueId;
-
-        /// <summary>Display Name for tab.</summary>
-        protected internal string TabName;
-
-        /// <summary>Image to display for tab, will search asset folder first and default next.</summary>
-        public string TabImage { get; set; }
-
-        /// <summary>When specified, tab will only show the listed item/category IDs.</summary>
-        public IList<string> AllowList { get; set; }
-
-        /// <summary>When specified, tab will show all/allowed items except for listed item/category IDs.</summary>
-        public IList<string> BlockList { get; set; }
-
-        /// <summary>Texture to draw for tab.</summary>
         internal Texture2D Texture => _texture ??= LoadTexture();
+        private Texture2D _texture;
+        public string TabName { get; set; }
+        public string TabImage { get; set; }
+        public IList<string> AllowList { get; set; } = new List<string>();
+        public IList<string> BlockList { get; set; } = new List<string>();
+        public Func<Texture2D> LoadTexture { get; set; }
 
         private bool IsAllowed(Item item)
         {
@@ -48,6 +38,32 @@ namespace ExpandedStorage.Framework.Models
         internal bool Filter(Item item)
         {
             return IsAllowed(item) && !IsBlocked(item);
+        }
+
+        internal StorageTab()
+        {
+        }
+
+        internal StorageTab(string tabImage, params string[] allowList)
+        {
+            TabImage = tabImage;
+            AllowList = allowList.ToList();
+        }
+        
+        internal static StorageTab Clone(IStorageTab storageTab)
+        {
+            var newTab = new StorageTab();
+            newTab.CopyFrom(storageTab);
+            return newTab;
+        }
+
+        internal void CopyFrom(IStorageTab storageTab)
+        {
+            TabName = storageTab.TabName;
+            TabImage = storageTab.TabImage;
+            AllowList = storageTab.AllowList;
+            BlockList = storageTab.BlockList;
+            LoadTexture = storageTab.LoadTexture;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace ExpandedStorage.API
+﻿namespace ImJustMatt.ExpandedStorage.API
 {
     public interface IStorageConfig
     {

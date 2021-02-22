@@ -1,32 +1,96 @@
-﻿using System.Linq;
-using ExpandedStorage.Framework.Integrations;
+﻿using System.Collections.Generic;
+using System.Linq;
+using ImJustMatt.ExpandedStorage.Framework.Integrations;
+using ImJustMatt.ExpandedStorage.Framework.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-namespace ExpandedStorage.Framework
+namespace ImJustMatt.ExpandedStorage.Framework
 {
     internal class ModConfig
     {
-        /// <summary>Allow carried chests to be accessed while in inventory.</summary>
-        public bool AllowAccessCarriedChest { get; set; } = true;
+        /// <summary>Control scheme for Expanded Storage features.</summary>
+        public ModConfigKeys Controls { get; set; } = new();
 
-        /// <summary>Allow chests to be picked up and placed with items.</summary>
-        public bool AllowCarryingChests { get; set; } = true;
-
-        /// <summary>Allow chest menu for held chest and accessed chest.</summary>
-        public bool AllowChestToChest { get; set; } = true;
-
-        /// <summary>Whether to allow modded storage to have capacity other than 36 slots.</summary>
-        public bool AllowModdedCapacity { get; set; } = true;
-
-        /// <summary>Allows storages to accept specific items.</summary>
-        public bool AllowRestrictedStorage { get; set; } = true;
-
-        /// <summary>Allows storages to pull items directly into their inventory.</summary>
-        public bool AllowVacuumItems { get; set; } = true;
+        /// <summary>Default config for unconfigured storages.</summary>
+        public Storage DefaultStorage { get; set; } = new()
+        {
+            Tabs = new List<string> {"Crops", "Seeds", "Materials", "Cooking", "Fishing", "Equipment", "Clothing", "Misc"}
+        };
+        
+        /// <summary>Default tabs for unconfigured storages.</summary>
+        public IDictionary<string, StorageTab> DefaultTabs { get; set; } = new Dictionary<string, StorageTab>
+        {
+            {
+                "Clothing", new StorageTab("Shirts.png",
+                "category_clothing",
+                "category_boots", "category_hat")
+                
+            },
+            {
+                "Cooking",
+                new StorageTab("Cooking.png",
+        "category_syrup",
+                    "category_artisan_goods",
+                    "category_ingredients",
+                    "category_sell_at_pierres_and_marnies",
+                    "category_sell_at_pierres",
+                    "category_meat",
+                    "category_cooking",
+                    "category_milk",
+                    "category_egg")
+            },
+            {
+                "Crops",
+                new StorageTab("Crops.png",
+                    "category_greens",
+                    "category_flowers",
+                    "category_fruits",
+                    "category_vegetable")
+            },
+            {
+                "Equipment",
+                new StorageTab("Tools.png",
+                    "category_equipment",
+                    "category_ring",
+                    "category_tool",
+                    "category_weapon")
+            },
+            {
+                "Fishing",
+                new StorageTab("Fish.png",
+                    "category_bait",
+                    "category_fish",
+                    "category_tackle",
+                    "category_sell_at_fish_shop")
+            },
+            {
+                "Materials",
+                new StorageTab("Minerals.png",
+                    "category_monster_loot",
+                    "category_metal_resources",
+                    "category_building_resources",
+                    "category_minerals",
+                    "category_crafting",
+                    "category_gem")
+            },
+            {
+                "Misc",
+                new StorageTab("Misc.png",
+                    "category_big_craftable",
+                    "category_furniture",
+                    "category_junk")
+            },
+            {
+                "Seeds",
+                new StorageTab("Seeds.png",
+                    "category_seeds",
+                    "category_fertilizer")
+            }
+        };
 
         /// <summary>Only vacuum to storages in the first row of player inventory.</summary>
         public bool VacuumToFirstRow { get; set; } = true;
@@ -37,29 +101,16 @@ namespace ExpandedStorage.Framework
         /// <summary>Symbol used to search items by context tags.</summary>
         public string SearchTagSymbol { get; set; } = "#";
 
-        /// <summary>Adds clickable arrows to indicate when there are more items in the chest.</summary>
-        public bool ShowOverlayArrows { get; set; } = true;
-
-        /// <summary>Allows filtering Inventory Menu by searching for the the item name.</summary>
-        public bool ShowSearchBar { get; set; } = true;
-
-        /// <summary>Allows showing tabs in the Chest Menu.</summary>
-        public bool ShowTabs { get; set; } = true;
-
-        /// <summary>Control scheme for Expanded Storage features.</summary>
-        public ModConfigKeys Controls { get; set; } = new();
-
         protected internal string SummaryReport =>
             "Expanded Storage Configuration\n" +
-            $"\tAccess Carried     : {AllowAccessCarriedChest}\n" +
-            $"\tCarry Chest        : {AllowCarryingChests}\n" +
-            $"\tModded Capacity    : {AllowModdedCapacity}\n" +
             $"\tResize Menu        : {ExpandInventoryMenu}\n" +
-            $"\tRestricted Storage : {AllowRestrictedStorage}\n" +
-            $"\tShow Arrows        : {ShowOverlayArrows}\n" +
-            $"\tShow Tabs          : {ShowTabs}\n" +
-            $"\tShow Search        : {ShowSearchBar}\n" +
-            $"\tVacuum Items       : {AllowVacuumItems}";
+            $"\tSearch Tag Symbol  : {SearchTagSymbol}\n" +
+            $"\tVacuum First Row   : {VacuumToFirstRow}\n" +
+            $"\tNext Tab           : {Controls.NextTab}\n" +
+            $"\tPrevious Tab       : {Controls.PreviousTab}\n" +
+            $"\tScroll Up          : {Controls.ScrollUp}\n" +
+            $"\tScroll Down        : {Controls.ScrollDown}\n" +
+            $"\tShow Crafting      : {Controls.OpenCrafting}";
 
         public static void RegisterModConfig(IManifest modManifest, IGenericModConfigMenuAPI modConfigApi, ModConfig config)
         {
@@ -102,61 +153,6 @@ namespace ExpandedStorage.Framework
                 "Uncheck to allow vacuuming to any chest in player inventory",
                 () => config.VacuumToFirstRow,
                 value => config.VacuumToFirstRow = value);
-
-            modConfigApi.RegisterLabel(modManifest,
-                "Toggles",
-                "Enable/Disable features (restart to revert patches)");
-
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Access Carried Chest",
-                "Uncheck to globally disable accessing chest items for carried chests",
-                () => config.AllowAccessCarriedChest,
-                value => config.AllowAccessCarriedChest = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Carry Chest",
-                "Uncheck to globally disable carrying chests",
-                () => config.AllowCarryingChests,
-                value => config.AllowCarryingChests = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Chest Tabs",
-                "Uncheck to globally disable chest tabs",
-                () => config.ShowTabs,
-                value => config.ShowTabs = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Chest To Chest",
-                "Uncheck to globally disable chest to chest menu",
-                () => config.AllowChestToChest,
-                value => config.AllowChestToChest = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Expand Inventory Menu",
-                "Uncheck to globally disable resizing the inventory menu",
-                () => config.ExpandInventoryMenu,
-                value => config.ExpandInventoryMenu = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Modded Capacity",
-                "Uncheck to globally disable non-vanilla capacity (36 item slots)",
-                () => config.AllowModdedCapacity,
-                value => config.AllowModdedCapacity = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Overlay Arrows",
-                "Uncheck to globally disable adding arrow buttons",
-                () => config.ShowOverlayArrows,
-                value => config.ShowOverlayArrows = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Restricted Storage",
-                "Uncheck to globally disable allow/block lists for chest items",
-                () => config.AllowRestrictedStorage,
-                value => config.AllowRestrictedStorage = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Search Bar",
-                "Uncheck to globally disable the search bar",
-                () => config.ShowSearchBar,
-                value => config.ShowSearchBar = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
-                "Vacuum Items",
-                "Uncheck to globally disable chests picking up items",
-                () => config.AllowVacuumItems,
-                value => config.AllowVacuumItems = value);
         }
     }
 }

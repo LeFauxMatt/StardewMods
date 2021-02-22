@@ -1,28 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedStorage.API;
-using ExpandedStorage.Framework;
-using ExpandedStorage.Framework.Integrations;
-using ExpandedStorage.Framework.Models;
-using ExpandedStorage.Framework.Patches;
+using ImJustMatt.ExpandedStorage.API;
+using ImJustMatt.ExpandedStorage.Framework.Integrations;
+using ImJustMatt.ExpandedStorage.Framework.Models;
+using ImJustMatt.ExpandedStorage.Framework.Patches;
 using Microsoft.Xna.Framework.Graphics;
-using MoreCraftables.API;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 
-namespace ExpandedStorage
+namespace ImJustMatt.ExpandedStorage
 {
-    public class ExpandedStorageAPI : IExpandedStorageAPI
+    public class ExpandedStorageAPI : IExpandedStorageAPI, IAssetEditor
     {
-        private static readonly HashSet<string> VanillaNames = new()
-        {
-            "Default",
-            "Chest", "Stone Chest", "Junimo Chest", "Junimo Hut",
-            "Shipping Bin", "Mini-Shipping Bin",
-            "Fridge", "Mini-Fridge"
-        };
         private readonly IList<string> _contentDirs = new List<string>();
         private readonly IModHelper _helper;
         private readonly IMonitor _monitor;
@@ -31,7 +22,7 @@ namespace ExpandedStorage
 
         private bool _isContentLoaded;
         private IGenericModConfigMenuAPI _modConfigAPI;
-        private IMoreCraftablesAPI _moreCraftablesAPI;
+        private IJsonAssetsAPI _jsonAssetsAPI;
 
         internal ExpandedStorageAPI(
             IModHelper helper,
@@ -59,6 +50,7 @@ namespace ExpandedStorage
         public void DisableDrawWithModData(string modDataKey)
         {
             ChestPatch.AddExclusion(modDataKey);
+            ObjectPatch.AddExclusion(modDataKey);
         }
 
         public IList<string> GetAllStorages()
@@ -71,18 +63,18 @@ namespace ExpandedStorage
             return _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
         }
 
-        public IStorage GetStorage(string storageName)
+        public bool TryGetStorage(string storageName, out IStorage storage, out IStorageConfig config)
         {
-            return _storageConfigs.TryGetValue(storageName, out var storage)
-                ? storage
-                : null;
-        }
+            if (_storageConfigs.TryGetValue(storageName, out var storageConfig))
+            {
+                storage = Storage.Clone(storageConfig);
+                config = StorageConfig.Clone(storageConfig);
+                return true;
+            }
 
-        public IStorageConfig GetStorageConfig(string storageName)
-        {
-            return _storageConfigs.TryGetValue(storageName, out var storage)
-                ? storage
-                : null;
+            storage = null;
+            config = null;
+            return false;
         }
 
         public bool LoadContentPack(string path)
@@ -113,15 +105,49 @@ namespace ExpandedStorage
 
             var expandedStorages = contentPack.ReadJsonFile<IDictionary<string, Storage>>("expanded-storage.json");
             var storageTabs = contentPack.ReadJsonFile<IDictionary<string, StorageTab>>("storage-tabs.json");
+            var playerConfigs = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json");
 
             if (expandedStorages == null)
             {
                 _monitor.Log($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
                 return false;
             }
+            
+            var defaultConfigs = new Dictionary<string, StorageConfig>();
+            playerConfigs ??= new Dictionary<string, StorageConfig>();
+            var revertToDefault = GetRevertToDefault(playerConfigs, defaultConfigs);
+            var saveToFile = GetSaveToFile(contentPack, playerConfigs);
 
-            // Generate files for More Craftables
-            if (expandedStorages.Any(s => !VanillaNames.Contains(s.Key)))
+            _modConfigAPI?.RegisterModConfig(contentPack.Manifest, revertToDefault, saveToFile);
+
+            // Load expanded storages
+            foreach (var defaultConfig in expandedStorages)
+            {
+                RegisterStorage(contentPack.Manifest, defaultConfig.Key, defaultConfig.Value);
+                if (!_storageConfigs.TryGetValue(defaultConfig.Key, out var expandedStorage) || expandedStorage.ModUniqueId != contentPack.Manifest.UniqueID)
+                    continue;
+                
+                defaultConfigs.Add(defaultConfig.Key, StorageConfig.Clone(defaultConfig.Value));
+                
+                if (playerConfigs.TryGetValue(defaultConfig.Key, out var playerConfig))
+                {
+                    // Copy player config into expanded storage
+                    SetStorageConfig(contentPack.Manifest, defaultConfig.Key, playerConfig);
+                }
+                else
+                {
+                    // Generate default player config
+                    playerConfig = StorageConfig.Clone(defaultConfig.Value);
+                    playerConfigs.Add(defaultConfig.Key, playerConfig);
+                    SetStorageConfig(contentPack.Manifest, defaultConfig.Key, playerConfig);
+                }
+                
+                RegisterConfig(contentPack.Manifest, expandedStorage, defaultConfig.Key);
+            }
+            saveToFile.Invoke();
+            
+            // Generate file for Json Assets
+            if (expandedStorages.Keys.Any(Storage.VanillaNames.Contains))
             {
                 // Generate content-pack.json
                 contentPack.WriteJsonFile("content-pack.json", new ContentPack
@@ -134,55 +160,7 @@ namespace ExpandedStorage
                     Version = contentPack.Manifest.Version.ToString()
                 });
                 
-                // Generate more-craftables.json
-                contentPack.WriteJsonFile("more-craftables.json", expandedStorages
-                    .Where(s => !VanillaNames.Contains(s.Key))
-                    .ToDictionary(
-                        s => s.Key,
-                        s => new Dictionary<string, string> {{"Type", "Chest"}}
-                    ));
-                
                 _contentDirs.Add(contentPack.DirectoryPath);
-            }
-
-            var defaultConfig = expandedStorages.ToDictionary(
-                s => s.Key,
-                s => StorageConfig.Clone(s.Value));
-
-            var playerConfig = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json");
-            if (playerConfig == null)
-            {
-                playerConfig = defaultConfig.ToDictionary(
-                    c => c.Key,
-                    c => StorageConfig.Clone(c.Value));
-                contentPack.WriteJsonFile("config.json", playerConfig);
-            }
-
-            _modConfigAPI?.RegisterModConfig(
-                contentPack.Manifest,
-                RevertToDefault(contentPack, defaultConfig),
-                SaveToFile(contentPack));
-
-            // Load expanded storage objects
-            foreach (var expandedStorage in expandedStorages)
-            {
-                expandedStorage.Value.ModUniqueId = contentPack.Manifest.UniqueID;
-                if (!RegisterStorage(expandedStorage.Key, expandedStorage.Value))
-                    continue;
-
-                // Generate default config
-                if (!playerConfig.TryGetValue(expandedStorage.Key, out var storageConfig))
-                {
-                    storageConfig = StorageConfig.Clone(expandedStorage.Value);
-                    playerConfig.Add(expandedStorage.Key, storageConfig);
-                    contentPack.WriteJsonFile("config.json", playerConfig);
-                }
-
-                // Copy player config into storage content
-                expandedStorage.Value.CopyFrom(storageConfig);
-                _monitor.Log(expandedStorage.Value.SummaryReport, LogLevel.Debug);
-
-                RegisterConfig(contentPack.Manifest, expandedStorage.Value, expandedStorage.Key);
             }
 
             if (storageTabs == null)
@@ -191,18 +169,82 @@ namespace ExpandedStorage
             // Load expanded storage tabs
             foreach (var storageTab in storageTabs)
             {
-                storageTab.Value.ModUniqueId = contentPack.Manifest.UniqueID;
-                if (!RegisterStorageTab(storageTab.Key, storageTab.Value))
-                    continue;
-
-                // Localize Tab Name
+                // Localized Tab Name
                 storageTab.Value.TabName = contentPack.Translation.Get(storageTab.Key).Default(storageTab.Key);
+                
+                // Load texture function
+                storageTab.Value.LoadTexture = GetLoadTexture(contentPack, $"assets/{storageTab.Value.TabImage}");
 
-                // Assign Load Texture function
-                storageTab.Value.LoadTexture = LoadTexture(contentPack, $"assets/{storageTab.Value.TabImage}");
+                RegisterStorageTab(contentPack.Manifest, storageTab.Key, storageTab.Value);
             }
 
             return true;
+        }
+
+        public void SetStorageConfig(IManifest manifest, string storageName, IStorageConfig config)
+        {
+            if (!_storageConfigs.TryGetValue(storageName, out var storage) || storage.ModUniqueId != manifest.UniqueID)
+            {
+                _monitor.Log($"Unknown storage {storageName} in {manifest.UniqueID}.", LogLevel.Warn);
+                return;
+            }
+
+            storage.CopyFrom(config);
+            _monitor.Log($"{storageName} Config:\n{storage.SummaryReport}", LogLevel.Debug);
+        }
+        
+        public void RegisterStorage(IManifest manifest, string storageName, IStorage storage)
+        {
+            // Skip duplicate storage configs
+            if (_storageConfigs.TryGetValue(storageName, out var storageConfig) && storageConfig.ModUniqueId != manifest.UniqueID)
+            {
+                _monitor.Log($"Duplicate storage {storageName} in {manifest.UniqueID}.", LogLevel.Warn);
+                return;
+            }
+            
+            // Update existing storage
+            if (storageConfig != null)
+            {
+                storageConfig.CopyFrom(storage);
+                return;
+            }
+
+            // Add new storage
+            storageConfig = new Storage(storageName);
+            storageConfig.CopyFrom(storage);
+            storageConfig.ModUniqueId = manifest.UniqueID;
+            _storageConfigs.Add(storageName, storageConfig);
+        }
+
+        public void RegisterStorageTab(IManifest manifest, string tabName, IStorageTab storageTab)
+        {
+            var tabId = $"{manifest.UniqueID}/{tabName}";
+            if (_tabConfigs.TryGetValue(tabId, out var tabConfig))
+            {
+                tabConfig.CopyFrom(storageTab);
+            }
+            else
+            {
+                tabConfig = StorageTab.Clone(storageTab);
+                tabConfig.ModUniqueId = manifest.UniqueID;
+                _tabConfigs.Add(tabId, tabConfig);
+            }
+        }
+        
+        /// <summary>Get whether this instance can load the initial version of the given asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public bool CanEdit<T>(IAssetInfo asset)
+        {
+            // Load bigCraftable on next tick for vanilla storages
+            if (asset.AssetNameEquals("Data/BigCraftablesInformation"))
+                _helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
+            return false;
+        }
+
+        /// <summary>Load a matched asset.</summary>
+        /// <param name="asset">Basic metadata about the asset being loaded.</param>
+        public void Edit<T>(IAssetData asset)
+        {
         }
 
         /// <summary>Load Expanded Storage content packs</summary>
@@ -211,129 +253,80 @@ namespace ExpandedStorage
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             _modConfigAPI = _helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
-            _moreCraftablesAPI = _helper.ModRegistry.GetApi<IMoreCraftablesAPI>("furyx639.MoreCraftables");
-            _moreCraftablesAPI.ReadyToLoad += OnReadyToLoad;
-            _moreCraftablesAPI.IdsLoaded += OnIdsLoaded;
+            _jsonAssetsAPI = _helper.ModRegistry.GetApi<IJsonAssetsAPI>("spacechase0.JsonAssets");
+            _jsonAssetsAPI.IdsAssigned += OnIdsLoaded;
+            _helper.Events.GameLoop.UpdateTicked += OnReadyToLoad;
         }
 
         /// <summary>Load More Craftables Ids.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnReadyToLoad(object sender, EventArgs e)
+        private void OnReadyToLoad(object sender, UpdateTickedEventArgs e)
         {
-            _monitor.Log("ReadyToLoad");
+            _helper.Events.GameLoop.UpdateTicked -= OnReadyToLoad;
             InvokeAll(ReadyToLoad);
             foreach (var contentDir in _contentDirs)
-                _moreCraftablesAPI.LoadContentPack(contentDir);
-            _moreCraftablesAPI.AddHandledObject("furyx639.ExpandedStorage", new HandledObject());
+                _jsonAssetsAPI.LoadAssets(contentDir);
             _isContentLoaded = true;
         }
 
-        /// <summary>Load More Craftables Ids.</summary>
+        /// <summary>Load Json Assets Ids.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnIdsLoaded(object sender, EventArgs e)
         {
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
-                .Where(config => config.Value.SourceType == SourceType.MoreCraftables))
+                .Where(config => config.Value.SourceType == SourceType.JsonAssets))
                 storageConfig.Value.ObjectIds.Clear();
 
             // Add new object ids
-            var bigCraftables = _moreCraftablesAPI.GetAllBigCraftableIds();
+            var bigCraftables = _jsonAssetsAPI.GetAllBigCraftableIds();
             foreach (var bigCraftable in bigCraftables)
             {
                 if (!_storageConfigs.TryGetValue(bigCraftable.Key, out var storageConfig))
                     continue;
-                storageConfig.SourceType = SourceType.MoreCraftables;
+                storageConfig.SourceType = SourceType.JsonAssets;
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Value))
                     storageConfig.ObjectIds.Add(bigCraftable.Value);
             }
-
-            _monitor.Log("StoragesLoaded");
-            InvokeAll(StoragesLoaded);
         }
 
         /// <summary>Load Vanilla Asset Ids.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        public void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
             if (!_isContentLoaded)
                 return;
 
             _helper.Events.GameLoop.UpdateTicked -= OnUpdateTicked;
-
-            if (!_storageConfigs.TryGetValue("Default", out var defaultConfig))
-                defaultConfig = new Storage();
+            InvokeAll(StoragesLoaded);
 
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
-                .Where(config => config.Value.SourceType != SourceType.MoreCraftables))
+                .Where(config => config.Value.SourceType != SourceType.JsonAssets))
                 storageConfig.Value.ObjectIds.Clear();
-
-            foreach (var obj in Game1.bigCraftablesInformation
-                .ToDictionary(obj => obj.Key, obj => obj.Value.Split('/').ToArray())
-                .Where(obj => obj.Value.Length == 9 && obj.Value[8] == "Chest" || VanillaNames.Contains(obj.Value[0])))
+            
+            var bigCraftables = Game1.bigCraftablesInformation.Where(Storage.IsVanillaStorage);
+            foreach (var bigCraftable in bigCraftables)
             {
-                // Generate default config for non-recognized storages
-                if (!_storageConfigs.TryGetValue(obj.Value[0], out var storageConfig))
-                {
-                    _monitor.Log($"Generating default config for {obj.Value[0]}.");
-                    storageConfig = new Storage(obj.Value[0]);
-                    storageConfig.CopyFrom(defaultConfig);
-                    _storageConfigs.Add(obj.Value[0], storageConfig);
-                }
+                var data = bigCraftable.Value.Split('/').ToArray();
 
-                if (VanillaNames.Contains(obj.Value[0]))
+                if (!_storageConfigs.TryGetValue(data[0], out var storageConfig))
+                    continue;
+                
+                if (Storage.VanillaNames.Contains(data[0]))
                     storageConfig.SourceType = SourceType.Vanilla;
-                else if (obj.Key >= 424000 && obj.Key < 425000)
+                else if (bigCraftable.Key >= 424000 && bigCraftable.Key < 425000)
                     storageConfig.SourceType = SourceType.CustomChestTypes;
-
-                if (!storageConfig.ObjectIds.Contains(obj.Key))
-                    storageConfig.ObjectIds.Add(obj.Key);
+                
+                if (!storageConfig.ObjectIds.Contains(bigCraftable.Key))
+                    storageConfig.ObjectIds.Add(bigCraftable.Key);
             }
         }
 
-        private Func<Texture2D> LoadTexture(IContentPack contentPack, string assetName)
-        {
-            return () => contentPack.HasFile(assetName)
-                ? contentPack.LoadAsset<Texture2D>(assetName)
-                : _helper.Content.Load<Texture2D>(assetName);
-        }
-
-        private bool RegisterStorage(string storageName, Storage storageContent)
-        {
-            // Skip duplicate storage configs
-            if (_storageConfigs.ContainsKey(storageName))
-            {
-                _monitor.Log($"Duplicate storage {storageName} in {storageContent.ModUniqueId}.", LogLevel.Warn);
-                return false;
-            }
-
-            _storageConfigs.Add(storageName, storageContent);
-            return true;
-        }
-
-        private bool RegisterStorageTab(string tabName, StorageTab storageTab)
-        {
-            var tabId = $"{storageTab.ModUniqueId}/{tabName}";
-
-            // Skip duplicate tab names
-            if (_tabConfigs.ContainsKey(tabId))
-            {
-                _monitor.Log($"Duplicate tab {tabName} in {storageTab.ModUniqueId}", LogLevel.Warn);
-                return false;
-            }
-
-            _tabConfigs.Add(tabId, storageTab);
-            return true;
-        }
-
-        private void RegisterConfig(
-            IManifest manifest,
-            IStorageConfig config,
-            string storageName)
+        private void RegisterConfig(IManifest manifest, IStorageConfig config, string storageName)
         {
             _modConfigAPI?.RegisterLabel(manifest, storageName, "Added by Expanded Storage");
             _modConfigAPI?.RegisterSimpleOption(manifest, "Capacity", $"How many item slots should {storageName} have?",
@@ -352,25 +345,42 @@ namespace ExpandedStorage
                 () => config.VacuumItems,
                 value => config.VacuumItems = value);
         }
-
-        private Action RevertToDefault(IContentPack contentPack, IDictionary<string, StorageConfig> defaultConfig)
+        
+        private Func<Texture2D> GetLoadTexture(IContentPack contentPack, string assetName)
         {
-            return () =>
+            Texture2D LoadTexture()
             {
-                foreach (var defaultValue in defaultConfig)
-                    if (_storageConfigs.TryGetValue(defaultValue.Key, out var storageConfig))
-                        storageConfig.CopyFrom(defaultValue.Value);
-
-                SaveToFile(contentPack).Invoke();
-            };
+                var texture = contentPack.HasFile(assetName)
+                    ? contentPack.LoadAsset<Texture2D>(assetName)
+                    : _helper.Content.Load<Texture2D>(assetName);
+                return texture;
+            }
+            
+            return LoadTexture;
         }
 
-        private Action SaveToFile(IContentPack contentPack)
+        private Action GetRevertToDefault(IDictionary<string, StorageConfig> playerConfigs, IDictionary<string, StorageConfig> defaultConfigs)
         {
-            return () => contentPack.WriteJsonFile("config.json",
-                _storageConfigs
-                    .Where(c => c.Value.ModUniqueId == contentPack.Manifest.UniqueID)
-                    .ToDictionary(c => c.Key, c => StorageConfig.Clone(c.Value)));
+            void RevertToDefault()
+            {
+                foreach (var defaultConfig in defaultConfigs)
+                    if (playerConfigs.TryGetValue(defaultConfig.Key, out var playerConfig))
+                        playerConfig.CopyFrom(defaultConfig.Value);
+            }
+
+            return RevertToDefault;
+        }
+
+        private Action GetSaveToFile(IContentPack contentPack, IDictionary<string, StorageConfig> playerConfigs)
+        {
+            void SaveToFile()
+            {
+                foreach (var playerConfig in playerConfigs)
+                    SetStorageConfig(contentPack.Manifest, playerConfig.Key, playerConfig.Value);
+                contentPack.WriteJsonFile("config.json", playerConfigs);
+            }
+
+            return SaveToFile;
         }
 
         private void InvokeAll(EventHandler eventHandler)
