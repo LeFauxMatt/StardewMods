@@ -104,31 +104,31 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
             }
 
             // Insert item into storage
-            var originalItem = item;
+            Item tmp = null;
             var stack = (uint) item.Stack;
             foreach (var storage in storages)
             {
-                item = storage.addItem(item);
-                if (item == null)
+                tmp = storage.addItem(item);
+                if (tmp == null)
                     break;
             }
 
-            if (originalItem.HasBeenInInventory)
-                return item;
+            if (item.HasBeenInInventory)
+                return null;
 
-            if (item != null && item.Stack == stack && originalItem is not SpecialItem)
-                return item;
+            if (tmp?.Stack == item.Stack && item is not SpecialItem)
+                return tmp;
 
-            switch (originalItem)
+            switch (item)
             {
                 case SpecialItem specialItem:
                     specialItem.actionWhenReceived(farmer);
-                    return item;
+                    return tmp;
                 case Object obj:
                 {
                     if (obj.specialItem)
                     {
-                        if (obj.bigCraftable.Value || originalItem is Furniture)
+                        if (obj.bigCraftable.Value || item is Furniture)
                         {
                             if (!farmer.specialBigCraftables.Contains(obj.ParentSheetIndex))
                                 farmer.specialBigCraftables.Add(obj.ParentSheetIndex);
@@ -143,15 +143,15 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                     {
                         if (obj.Category == -2 || obj.Type != null && obj.Type.Contains("Mineral"))
                             farmer.foundMineral(obj.ParentSheetIndex);
-                        else if (originalItem is not Furniture && obj.Type != null && obj.Type.Contains("Arch")) farmer.foundArtifact(obj.ParentSheetIndex, 1);
+                        else if (item is not Furniture && obj.Type != null && obj.Type.Contains("Arch")) farmer.foundArtifact(obj.ParentSheetIndex, 1);
                     }
 
-                    Utility.checkItemFirstInventoryAdd(originalItem);
+                    Utility.checkItemFirstInventoryAdd(item);
                     break;
                 }
             }
 
-            switch (originalItem.ParentSheetIndex)
+            switch (item.ParentSheetIndex)
             {
                 case 384:
                     Game1.stats.GoldFound += stack;
@@ -167,8 +167,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                     break;
             }
 
-            ShowHud(originalItem);
-            return item;
+            ShowHud(item);
+            return tmp;
         }
     }
 }

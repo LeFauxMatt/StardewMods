@@ -135,7 +135,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 return;
 
             __instance.ItemsToGrabMenu.rows = MenuModel.GetRows(__instance.context);
-            __instance.ItemsToGrabMenu.capacity = MenuModel.GetMenuCapacity(__instance.context);
+            var capacity = MenuModel.GetMenuCapacity(__instance.context);
+            if (capacity > 0)
+                __instance.ItemsToGrabMenu.capacity = capacity;
 
             if (__instance.context is not Chest chest)
                 chest = null;
