@@ -4,7 +4,6 @@ using System.Linq;
 using ImJustMatt.ExpandedStorage.API;
 using ImJustMatt.ExpandedStorage.Framework.Integrations;
 using ImJustMatt.ExpandedStorage.Framework.Models;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -72,6 +71,7 @@ namespace ImJustMatt.ExpandedStorage.Framework
                 var saveToFile = GetSaveToFile(contentPack, playerConfigs);
                 _modConfigAPI?.RegisterModConfig(contentPack.Manifest, revertToDefault, saveToFile);
 
+                // Load player config for storages
                 foreach (var storageName in storageNames)
                 {
                     if (!_expandedStorageAPI.TryGetStorage(storageName, out var config))
@@ -99,10 +99,6 @@ namespace ImJustMatt.ExpandedStorage.Framework
             {
                 // Localized Tab Name
                 storageTab.Value.TabName = _helper.Translation.Get(storageTab.Key).Default(storageTab.Key);
-
-                // Load texture function
-                storageTab.Value.LoadTexture = () => _helper.Content.Load<Texture2D>($"assets/{storageTab.Value.TabImage}");
-
                 _expandedStorageAPI.RegisterStorageTab(_manifest, storageTab.Key, storageTab.Value);
             }
         }
@@ -124,7 +120,16 @@ namespace ImJustMatt.ExpandedStorage.Framework
             }
         }
 
-        private Action GetRevertToDefault(IDictionary<string, StorageConfig> playerConfigs, IDictionary<string, StorageConfig> defaultConfigs)
+        internal void ReloadDefaultStorageConfigs()
+        {
+            var storageNames = _expandedStorageAPI.GetOwnedStorages(_manifest);
+            foreach (var storageName in storageNames)
+            {
+                _expandedStorageAPI.SetStorageConfig(_manifest, storageName, _config.DefaultStorage);
+            }
+        }
+
+        private static Action GetRevertToDefault(IDictionary<string, StorageConfig> playerConfigs, IDictionary<string, StorageConfig> defaultConfigs)
         {
             void RevertToDefault()
             {
@@ -163,7 +168,7 @@ namespace ImJustMatt.ExpandedStorage.Framework
             _modConfigAPI?.RegisterSimpleOption(manifest, "Search Bar", $"Show search bar above chest inventory for {storageName}?",
                 () => config.ShowSearchBar,
                 value => config.ShowSearchBar = value);
-            _modConfigAPI?.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {storageName} to be collect debris?",
+            _modConfigAPI?.RegisterSimpleOption(manifest, "Vacuum Items", $"Allow {storageName} to collect debris?",
                 () => config.VacuumItems,
                 value => config.VacuumItems = value);
         }

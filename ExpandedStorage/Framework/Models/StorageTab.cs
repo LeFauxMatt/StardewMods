@@ -4,18 +4,19 @@ using System.Linq;
 using ImJustMatt.ExpandedStorage.API;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 
 // ReSharper disable MemberCanBePrivate.Global
-
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace ImJustMatt.ExpandedStorage.Framework.Models
 {
     public class StorageTab : IStorageTab
     {
-        private Texture2D _texture;
+        private static IContentHelper _contentHelper;
+
+        /// <summary>Dictionary of Expanded Storage tab images</summary>
+        private static readonly IDictionary<string, Func<string, Texture2D>> TabImageLoader = new Dictionary<string, Func<string, Texture2D>>();
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         protected internal string ModUniqueId;
@@ -30,12 +31,20 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             AllowList = allowList.ToList();
         }
 
-        internal Texture2D Texture => _texture ??= LoadTexture();
+        internal Texture2D Texture =>
+            TabImageLoader.TryGetValue(ModUniqueId, out var loadTexture)
+                ? loadTexture.Invoke(TabImage) ?? _contentHelper.Load<Texture2D>($"assets/{TabImage}")
+                : _contentHelper.Load<Texture2D>($"assets/{TabImage}");
+
         public string TabName { get; set; }
         public string TabImage { get; set; }
         public IList<string> AllowList { get; set; } = new List<string>();
         public IList<string> BlockList { get; set; } = new List<string>();
-        public Func<Texture2D> LoadTexture { get; set; }
+
+        protected internal static void Init(IContentHelper contentHelper)
+        {
+            _contentHelper = contentHelper;
+        }
 
         private bool IsAllowed(Item item)
         {
@@ -65,7 +74,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             TabImage = storageTab.TabImage;
             AllowList = storageTab.AllowList;
             BlockList = storageTab.BlockList;
-            LoadTexture = storageTab.LoadTexture;
+        }
+
+        internal static void AddTabImageLoader(IManifest manifest, Func<string, Texture2D> tabImageLoader)
+        {
+            TabImageLoader.Add(manifest.UniqueID, tabImageLoader);
         }
     }
 }

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
+﻿using System.Collections.Generic;
 
 namespace ImJustMatt.ExpandedStorage.API
 {
     public interface IStorageTab
     {
-        /// <summary>Loads Texture to draw for tab.</summary>
-        Func<Texture2D> LoadTexture { get; set; }
-
         /// <summary>Display Name for tab.</summary>
         string TabName { get; set; }
 

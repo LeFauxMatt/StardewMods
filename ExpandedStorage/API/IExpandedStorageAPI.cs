@@ -24,23 +24,26 @@ namespace ImJustMatt.ExpandedStorage.API
         /// <param name="modDataKey">The modData key.</param>
         void DisableDrawWithModData(string modDataKey);
 
+        /// <summary></summary>
+        /// <param name="manifest">Mod manifest</param>
+        /// <param name="storageName">The name of the storage.</param>
+        /// <param name="storage">Storage data</param>
+        void RegisterStorage(IManifest manifest, string storageName, IStorage storage);
+
+        /// <summary></summary>
+        /// <param name="manifest">Mod manifest</param>
+        /// <param name="storageName">The name of the storage.</param>
+        /// <param name="config">Storage config</param>
+        void SetStorageConfig(IManifest manifest, string storageName, IStorageConfig config);
+
         /// <summary>Returns all Expanded Storage by name.</summary>
         /// <returns>List of storages</returns>
         IList<string> GetAllStorages();
 
-        /// <summary>Returns all Expanded Storage by sheet index.</summary>
-        /// <returns>List of storage ids</returns>
-        IList<int> GetAllStorageIds();
-
-        /// <summary>Returns all Expanded Storage by name.</summary>
+        /// <summary>Returns owned Expanded Storage by name.</summary>
         /// <param name="manifest">Mod manifest</param>
         /// <returns>List of storages</returns>
         IList<string> GetOwnedStorages(IManifest manifest);
-
-        /// <summary>Returns all Expanded Storage by sheet index.</summary>
-        /// <param name="manifest">Mod manifest</param>
-        /// <returns>List of storage ids</returns>
-        IList<int> GetOwnedStorageIds(IManifest manifest);
 
         /// <summary>Returns storage info based on name.</summary>
         /// <param name="storageName">The name of the storage.</param>
@@ -48,25 +51,7 @@ namespace ImJustMatt.ExpandedStorage.API
         /// <returns>True if storage was found</returns>
         bool TryGetStorage(string storageName, out IStorage storage);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="manifest">Mod manifest</param>
-        /// <param name="storageName">The name of the storage.</param>
-        /// <param name="config">Storage config</param>
-        void SetStorageConfig(IManifest manifest, string storageName, IStorageConfig config);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="manifest">Mod manifest</param>
-        /// <param name="storageName">The name of the storage.</param>
-        /// <param name="storage">Storage data</param>
-        void RegisterStorage(IManifest manifest, string storageName, IStorage storage);
-
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary></summary>
         /// <param name="manifest">Mod manifest</param>
         /// <param name="tabName">Storage tab name</param>
         /// <param name="storageTab">Storage tab data</param>

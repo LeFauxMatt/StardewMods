@@ -5,9 +5,6 @@ using ImJustMatt.ExpandedStorage.Framework.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
-
 namespace ImJustMatt.ExpandedStorage.Framework
 {
     internal class ModConfig
@@ -111,47 +108,79 @@ namespace ImJustMatt.ExpandedStorage.Framework
             $"\tScroll Down        : {Controls.ScrollDown}\n" +
             $"\tShow Crafting      : {Controls.OpenCrafting}";
 
-        public static void RegisterModConfig(IManifest modManifest, IGenericModConfigMenuAPI modConfigApi, ModConfig config)
+        internal void CopyFrom(ModConfig config)
         {
-            modConfigApi.RegisterLabel(modManifest,
+            ExpandInventoryMenu = config.ExpandInventoryMenu;
+            SearchTagSymbol = config.SearchTagSymbol;
+            VacuumToFirstRow = config.VacuumToFirstRow;
+            Controls = config.Controls;
+            DefaultStorage = Storage.Clone(config.DefaultStorage);
+        }
+
+        public static void RegisterModConfig(IManifest manifest, IGenericModConfigMenuAPI modConfigAPI, ModConfig config)
+        {
+            // Controls
+            modConfigAPI.RegisterLabel(manifest,
                 "Controls",
                 "Controller/Keyboard controls");
 
-            modConfigApi.RegisterSimpleOption(modManifest,
+            modConfigAPI.RegisterSimpleOption(manifest,
                 "Scroll Up",
                 "Button for scrolling up",
                 () => config.Controls.ScrollUp.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => config.Controls.ScrollUp = KeybindList.ForSingle(value));
-            modConfigApi.RegisterSimpleOption(modManifest,
+            modConfigAPI.RegisterSimpleOption(manifest,
                 "Scroll Down",
                 "Button for scrolling down",
                 () => config.Controls.ScrollDown.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => config.Controls.ScrollDown = KeybindList.ForSingle(value));
-            modConfigApi.RegisterSimpleOption(modManifest,
+            modConfigAPI.RegisterSimpleOption(manifest,
                 "Previous Tab",
                 "Button for switching to the previous tab",
                 () => config.Controls.PreviousTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => config.Controls.PreviousTab = KeybindList.ForSingle(value));
-            modConfigApi.RegisterSimpleOption(modManifest,
+            modConfigAPI.RegisterSimpleOption(manifest,
                 "Next Tab",
                 "Button for switching to the next tab",
                 () => config.Controls.NextTab.Keybinds.Single(kb => kb.IsBound).Buttons.First(),
                 value => config.Controls.NextTab = KeybindList.ForSingle(value));
 
-            modConfigApi.RegisterLabel(modManifest,
+            // Tweaks
+            modConfigAPI.RegisterLabel(manifest,
                 "Tweaks",
                 "Modify behavior for certain features");
 
-            modConfigApi.RegisterSimpleOption(modManifest,
+            modConfigAPI.RegisterSimpleOption(manifest,
                 "Search Symbol",
                 "Symbol used to search items by context tag",
                 () => config.SearchTagSymbol,
                 value => config.SearchTagSymbol = value);
-            modConfigApi.RegisterSimpleOption(modManifest,
+            modConfigAPI.RegisterSimpleOption(manifest,
                 "Vacuum To First Row",
                 "Uncheck to allow vacuuming to any chest in player inventory",
                 () => config.VacuumToFirstRow,
                 value => config.VacuumToFirstRow = value);
+
+            // Default Storage Config
+            modConfigAPI.RegisterLabel(manifest,
+                "Default Storage",
+                "Default config for unconfigured storages.");
+
+            modConfigAPI.RegisterSimpleOption(manifest, "Capacity", "How many item slots should storages contain?",
+                () => config.DefaultStorage.Capacity,
+                value => config.DefaultStorage.Capacity = value);
+            modConfigAPI.RegisterSimpleOption(manifest, "Can Carry", "Allow storages to be carried?",
+                () => config.DefaultStorage.CanCarry,
+                value => config.DefaultStorage.CanCarry = value);
+            modConfigAPI.RegisterSimpleOption(manifest, "Access Carried", "Allow storages to be access while carried?",
+                () => config.DefaultStorage.AccessCarried,
+                value => config.DefaultStorage.AccessCarried = value);
+            modConfigAPI.RegisterSimpleOption(manifest, "Search Bar", "Show search bar above chest inventory for storages?",
+                () => config.DefaultStorage.ShowSearchBar,
+                value => config.DefaultStorage.ShowSearchBar = value);
+            modConfigAPI.RegisterSimpleOption(manifest, "Vacuum Items", "Allow storages to collect debris?",
+                () => config.DefaultStorage.VacuumItems,
+                value => config.DefaultStorage.VacuumItems = value);
         }
     }
 }

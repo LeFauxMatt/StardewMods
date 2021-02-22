@@ -73,24 +73,11 @@ namespace ImJustMatt.ExpandedStorage
             return _storageConfigs.Keys.ToList();
         }
 
-        public IList<int> GetAllStorageIds()
-        {
-            return _storageConfigs.SelectMany(storageConfig => storageConfig.Value.ObjectIds).ToList();
-        }
-
         public IList<string> GetOwnedStorages(IManifest manifest)
         {
             return _storageConfigs
                 .Where(storageConfig => storageConfig.Value.ModUniqueId == manifest.UniqueID)
                 .Select(storageConfig => storageConfig.Key)
-                .ToList();
-        }
-
-        public IList<int> GetOwnedStorageIds(IManifest manifest)
-        {
-            return _storageConfigs
-                .Where(storageConfig => storageConfig.Value.ModUniqueId == manifest.UniqueID)
-                .SelectMany(storageConfig => storageConfig.Value.ObjectIds)
                 .ToList();
         }
 
@@ -167,15 +154,14 @@ namespace ImJustMatt.ExpandedStorage
             if (storageTabs == null)
                 return true;
 
+            // Add asset to tab image dictionary
+            StorageTab.AddTabImageLoader(contentPack.Manifest, contentPack.LoadAsset<Texture2D>);
+
             // Load expanded storage tabs
             foreach (var storageTab in storageTabs)
             {
                 // Localized Tab Name
                 storageTab.Value.TabName = contentPack.Translation.Get(storageTab.Key).Default(storageTab.Key);
-
-                // Load texture function
-                storageTab.Value.LoadTexture = GetLoadTexture(contentPack, $"assets/{storageTab.Value.TabImage}");
-
                 RegisterStorageTab(contentPack.Manifest, storageTab.Key, storageTab.Value);
             }
 
@@ -223,6 +209,7 @@ namespace ImJustMatt.ExpandedStorage
             if (_tabConfigs.TryGetValue(tabId, out var tabConfig))
             {
                 tabConfig.CopyFrom(storageTab);
+                tabConfig.ModUniqueId = manifest.UniqueID;
             }
             else
             {
@@ -308,19 +295,6 @@ namespace ImJustMatt.ExpandedStorage
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Key))
                     storageConfig.ObjectIds.Add(bigCraftable.Key);
             }
-        }
-
-        private Func<Texture2D> GetLoadTexture(IContentPack contentPack, string assetName)
-        {
-            Texture2D LoadTexture()
-            {
-                var texture = contentPack.HasFile(assetName)
-                    ? contentPack.LoadAsset<Texture2D>(assetName)
-                    : _helper.Content.Load<Texture2D>(assetName);
-                return texture;
-            }
-
-            return LoadTexture;
         }
 
         private void InvokeAll(EventHandler eventHandler)

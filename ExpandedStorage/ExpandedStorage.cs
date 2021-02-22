@@ -42,6 +42,10 @@ namespace ImJustMatt.ExpandedStorage
         /// <summary>The mod configuration.</summary>
         private ModConfig _config;
 
+        /// <summary>Handled content loaded by Expanded Storage.</summary>
+        private ContentLoader _contentLoader;
+
+        /// <summary>Expanded Storage API.</summary>
         private ExpandedStorageAPI _expandedStorageAPI;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
@@ -80,7 +84,7 @@ namespace ImJustMatt.ExpandedStorage
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
             _expandedStorageAPI = new ExpandedStorageAPI(Helper, Monitor, Storages, StorageTabs);
-            var unused = new ContentLoader(Helper, ModManifest, Monitor, _config, _expandedStorageAPI);
+            _contentLoader = new ContentLoader(Helper, ModManifest, Monitor, _config, _expandedStorageAPI);
             helper.Content.AssetEditors.Add(_expandedStorageAPI);
 
             var isAutomateLoaded = helper.ModRegistry.IsLoaded("Pathoschild.Automate");
@@ -88,6 +92,7 @@ namespace ImJustMatt.ExpandedStorage
             FarmerExtensions.Init(Monitor);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
+            StorageTab.Init(helper.Content);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -128,10 +133,25 @@ namespace ImJustMatt.ExpandedStorage
             if (modConfigApi == null)
                 return;
 
+            var config = new ModConfig();
+            config.CopyFrom(_config);
+
+            void DefaultConfig()
+            {
+                config.CopyFrom(new ModConfig());
+            }
+
+            void SaveConfig()
+            {
+                _config.CopyFrom(config);
+                Helper.WriteConfig(_config);
+                _contentLoader.ReloadDefaultStorageConfigs();
+            }
+
             modConfigApi.RegisterModConfig(ModManifest,
-                () => _config = new ModConfig(),
-                () => Helper.WriteConfig(_config));
-            ModConfig.RegisterModConfig(ModManifest, modConfigApi, _config);
+                DefaultConfig,
+                SaveConfig);
+            ModConfig.RegisterModConfig(ModManifest, modConfigApi, config);
         }
 
         /// <summary>Track toolbar changes before user input.</summary>
@@ -251,11 +271,12 @@ namespace ImJustMatt.ExpandedStorage
             Storage config = null;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
+            location.objects.TryGetValue(pos, out var obj);
 
             // Carry Chest
             if (e.Button.IsUseToolButton())
             {
-                if (location.objects.TryGetValue(pos, out var obj))
+                if (obj != null)
                     config = GetConfig(obj);
                 if (config == null || !config.CanCarry || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
@@ -267,7 +288,7 @@ namespace ImJustMatt.ExpandedStorage
             }
 
             // Access Carried Chest
-            if (HeldChest.Value != null && e.Button.IsActionButton())
+            if (obj == null && HeldChest.Value != null && e.Button.IsActionButton())
             {
                 config = GetConfig(HeldChest.Value);
                 if (config == null || !config.AccessCarried)
