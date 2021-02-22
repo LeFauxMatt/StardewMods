@@ -3,7 +3,7 @@ Stardew Valley mod which allows Content Pack Creators to add custom storage to t
 
 # Requirements
 
-* [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) is used to add chests to the game
+* [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) is used to add big craftable objects to the game
 
 # Compatibility
 
@@ -13,11 +13,11 @@ Please report any issues to GitHub Issues
 
 # For Modders
 
-Currently supports a simple Content Pack format requiring only a few lines of json and artwork.
+Documentation is available for the [Content Pack Format](docs/content-format.md).
+
+For integrations with other mods an [API](API) is available.
 
 Check out the latest version of [MegaStorage](https://www.nexusmods.com/stardewvalley/mods/4089) as an example.
-
-In the future I'll add API-based loaded for more advanced functionality.
 
 # Credits
 
