@@ -147,7 +147,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         public string Image { get; set; }
         public int Frames { get; set; } = 1;
-        public bool PlayerColor { get; set; } = false;
+        public bool PlayerColor { get; set; }
         public int Depth { get; set; }
         public string OpenSound { get; set; } = "openChest";
         public string PlaceSound { get; set; } = "axe";

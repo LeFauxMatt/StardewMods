@@ -2,6 +2,8 @@
 
 ## 1.6.0
 
+- Added Bigger Expanded Storages
+- Added Advanced Color Picker
 - Added ExpandedStorageAPI methods
 - Added default config for unknown storages
 - Optimized texture loading for chest tabs

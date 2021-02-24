@@ -1,5 +1,13 @@
 ﻿## Expanded Storage Content Format
 
+### Contents
+
+* [Overview](#overview)
+* [Expanded Storage](#expanded-storage)
+* [Storage Tabs](#storage-tabs)
+* [Sprite Sheet](#sprite-sheets)
+* [Context Tags](#context-tags)
+
 ### Overview
 
 An Expanded Storage content pack must contain the following files:
@@ -13,7 +21,9 @@ Each Storage must be added to the `BigCraftables' folder in the [Json Assets](ht
 - `BigCraftables\Storage Name\big-craftable.json`
 - `BigCraftables\Storage Name\big-craftable.png`
 
-**`manifest.json` must specify this is a content pack for Expanded Storage:**
+#### Manifest.json
+
+`manifest.json` must specify this is a content pack for Expanded Storage:
 
 ```json
 "ContentPackFor": {
@@ -23,7 +33,9 @@ Each Storage must be added to the `BigCraftables' folder in the [Json Assets](ht
 
 For full details of `manifest.json` refer to [Modding:Modder Guide/APIs/Manifest](https://stardewcommunitywiki.com/Modding:Modder_Guide/APIs/Manifest).
 
-**`expanded-storage.json` is used to enable/disable Expanded Storage features for Storages:**
+#### Expanded-Storage.json
+
+`expanded-storage.json` is used to enable/disable Expanded Storage features for Storages:
 
 ```json
 {
@@ -36,7 +48,9 @@ For full details of `manifest.json` refer to [Modding:Modder Guide/APIs/Manifest
 
 For full details of `expanded-storage.json` see [Expanded Storages](#expanded-storage).
 
-**`storage-tabs.json` is used to provide definitions for Storage Tabs:**
+#### Storage-Tabs.json
+
+`storage-tabs.json` is used to provide definitions for Storage Tabs:
 
 ```json
 {
@@ -78,14 +92,18 @@ It's also possible to load storage or enable features using the [Expanded Storag
 field               | description
 --------------------|-------------
 `StorageName`       | Name of the object, must match the Big Craftable name. **(Required)**
-`Capacity`          | Number of item slots this storage supports. `-1` will be treated as infinite items, `0` will use the default vanilla value. (default `0`)<sup>[1](#storagecapacity)</sup>
+`Image`             | Image in assets used as the spritesheet for this storage. (default `null`) <sup>[1](#spritesheet)</sup> 
+`Frames`            | Number of frames to animate when opening the storage. (default `1`)
+`Depth`             | Distance from bottom of sprite that is used to determine placement/obstruction. (default `height-16`)
+`PlayerColor`       | Set to `true` to allow player color choice. (default `false`)
+`Capacity`          | Number of item slots this storage supports. `-1` will be treated as infinite items, `0` will use the default vanilla value. (default `0`) <sup>[2](#storagecapacity)</sup>
 `CanCarry`          | Allows this storage to be picked up when it contains items. (default `true`)
 `AccessCarried`     | Open the chest menu while item is currently being held. (default `false`)
 `VacuumItems`       | Storage will collect dropped items directly into it, bypassing the backpack. (default `false`)
 `ShowSearchBar`     | Add a search bar to the chest menu for this storage. (default `false`)
 `IsPlaceable`       | Set to `false` to disallow chest from being placed. (default `true`)
-`OpenSound`         | Sound to play when storage is being opened. (default `"openChest"`) <sup>[2](#handyheadphones)</sup>
-`PlaceSound`        | Sound to play when storage is placed. (default `"axe"`) <sup>[2](#handyheadphones)</sup>
+`OpenSound`         | Sound to play when storage is being opened. (default `"openChest"`) <sup>[3](#handyheadphones)</sup>
+`PlaceSound`        | Sound to play when storage is placed. (default `"axe"`) <sup>[3](#handyheadphones)</sup>
 `IsFridge`          | Set to `true` if storage should be treated as a Mini-Fridge. (default `false`)
 `SpecialChestType`  | `"None"`, `"MiniShippingBin"`, or `"JunimoChest"`. (default `"None"`) 
 `AllowList`         | Restrict chest to only accept items containing these [tags](#context-tags). (default `null`)
@@ -93,8 +111,9 @@ field               | description
 `Tabs`              | Adds [tabs](#storage-tabs) to the chest menu for this storage by the tab name(s). (default `null`)
 `ModData`           | Adds to the storage [modData](#mod-data) when placed. (default `null`)
 
-<span id="storagecapacity">1.</span> Assign a capacity of at least one row (12) to avoid visual glitches.  
-<span id="handyheadphones">2.</span> I recommend [Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from in-game.
+<span id="spritesheet">1.</span> Refer to the [Sprite Sheets](#sprite-sheets) section for arranging sprites correctly.  
+<span id="storagecapacity">2.</span> Assign a capacity of at least one row (12) to avoid visual glitches.  
+<span id="handyheadphones">3.</span> I recommend [Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from in-game.
 
 ### Storage Tabs
 
@@ -118,7 +137,9 @@ field           | description
 `AllowList`     | Restrict chest to only accept items containing these [tags](#context-tags). (default `null`)
 `BlockList`     | Restrict chest to reject items containing these [tags](#context-tags). (default `null`)
 
-**Tab Names can be localized under the `i18n` folder:**
+#### Localization
+
+Tab Names can be localized under the `i18n` folder:
 
 - `i18n\default.json`
 - `i18n\fr.json`
@@ -130,10 +151,41 @@ field           | description
 }
 ```
 
-**Custom Tab Images can be saved under the `assets` folder:**
+#### Assets
+
+Custom Tab Images can be saved under the `assets` folder:
 
 - `assets\Crops.png`
 - `assets\Cooking.png`
+
+### Sprite Sheets
+
+A sprite sheet is a single image with frames that span horizontally and layers which span vertically. If a sprite sheet is not defined, then storages will revert back to using the regular sprite sheet that is loaded using Json Assets.
+
+These sprite sheets should be saved in the mods `assets` folder.
+
+#### Storage Dimensions
+
+This sprite sheet is automatically used to determine the object's dimensions.
+
+The width of the object is determined by `Total Image Width ÷ Frames`.
+
+If `PlayerColor` is set to `false` the height of the object will be `Total Image Height`.  
+If `PlayerColor` is set to `true` the height of the object will be `Total Image Height ÷ 3`.
+
+#### Animation Frames
+
+The left-most frame will always be the object at rest, and every frame after is animated when the storage is opened.
+
+#### Player Color
+
+When `PlayerColor` is set to `true` then the spritesheet must include three rows of sprites.
+
+row | sprites
+----|---------
+1   | Default render when no player color choice is made.
+2   | Base layer that will be rendered with the player's color choice.
+3   | Drawn over the Base layer, but without the player's color choice.
 
 ### Context Tags
 
