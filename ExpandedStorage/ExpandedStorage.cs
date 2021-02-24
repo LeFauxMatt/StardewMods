@@ -124,6 +124,7 @@ namespace ImJustMatt.ExpandedStorage
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
+                new DiscreteColorPickerPatch(Monitor, _config, helper.Content),
                 new DebrisPatch(Monitor, _config),
                 new UtilityPatch(Monitor, _config, helper.Reflection),
                 new AutomatePatch(Monitor, _config, helper.Reflection, helper.ModRegistry.IsLoaded("Pathoschild.Automate")));
