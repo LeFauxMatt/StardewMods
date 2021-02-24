@@ -4,6 +4,7 @@ using System.Linq;
 using ImJustMatt.Common.Extensions;
 using ImJustMatt.ExpandedStorage.API;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
+using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
@@ -36,6 +37,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         /// <summary>List of ParentSheetIndex related to this item.</summary>
         internal readonly HashSet<int> ObjectIds = new();
 
+        private int? _height;
+
+        private Texture2D _texture;
+        private int? _width;
+
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         internal string ModUniqueId;
 
@@ -67,6 +73,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             }
         }
 
+        /// <summary>Property to access the SpriteSheet image.</summary>
+        internal Texture2D Texture =>
+            _texture ??= !string.IsNullOrWhiteSpace(Image) && ExpandedStorage.AssetLoaders.TryGetValue(ModUniqueId, out var loadTexture)
+                ? loadTexture.Invoke($"assets/{Image}")
+                : null;
+
         /// <summary>Which mod was used to load these assets into the game.</summary>
         internal SourceType SourceType { get; set; } = SourceType.Unknown;
 
@@ -89,6 +101,35 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         internal int MenuPadding => ShowSearchBar ? 24 : 0;
         internal int MenuOffset => 64 * (MenuRows - 3);
 
+        internal int Width => _width ??= Texture != null ? Texture.Width / Math.Max(1, Frames) : 16;
+        internal int Height => _height ??= Texture != null ? PlayerColor ? Texture.Height / 3 : Texture.Height : 32;
+
+        internal float ScaleSize
+        {
+            get
+            {
+                var tilesWide = Width / 16f;
+                var tilesHigh = Height / 16f;
+                return tilesWide switch
+                {
+                    >= 7 => 0.5f,
+                    >= 6 => 0.66f,
+                    >= 5 => 0.75f,
+                    _ => tilesHigh switch
+                    {
+                        >= 5 => 0.8f,
+                        >= 3 => 1f,
+                        _ => tilesWide switch
+                        {
+                            <= 2 => 2f,
+                            <= 4 => 1f,
+                            _ => 0.1f
+                        }
+                    }
+                };
+            }
+        }
+
         internal string SummaryReport =>
             $"\tModded Capacity    : {Capacity}\n" +
             $"\tCarry Chest        : {CanCarry}\n" +
@@ -104,6 +145,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             $"\tBlock List         : {string.Join(", ", BlockList)}\n" +
             $"\tTabs               : {string.Join(", ", Tabs)}";
 
+        public string Image { get; set; }
+        public int Frames { get; set; } = 1;
+        public bool PlayerColor { get; set; } = false;
+        public int Depth { get; set; }
         public string OpenSound { get; set; } = "openChest";
         public string PlaceSound { get; set; } = "axe";
         public string SpecialChestType { get; set; } = "None";
@@ -177,6 +222,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         internal void CopyFrom(IStorage storage)
         {
+            Image = storage.Image;
+            Frames = storage.Frames;
+            PlayerColor = storage.PlayerColor;
+            Depth = storage.Depth;
             OpenSound = OpenSound == "openChest" ? storage.OpenSound : OpenSound;
             PlaceSound = PlaceSound == "axe" ? storage.PlaceSound : PlaceSound;
             SpecialChestType = SpecialChestType == "None" ? storage.SpecialChestType : SpecialChestType;

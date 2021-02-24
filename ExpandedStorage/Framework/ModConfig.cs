@@ -9,6 +9,9 @@ namespace ImJustMatt.ExpandedStorage.Framework
 {
     internal class ModConfig
     {
+        /// <summary>Enable controller config settings.</summary>
+        public bool Controller { get; set; } = true;
+
         /// <summary>Control scheme for Expanded Storage features.</summary>
         public ModConfigKeys Controls { get; set; } = new();
 
@@ -99,6 +102,7 @@ namespace ImJustMatt.ExpandedStorage.Framework
             $"\tResize Menu        : {ExpandInventoryMenu}\n" +
             $"\tSearch Tag Symbol  : {SearchTagSymbol}\n" +
             $"\tVacuum First Row   : {VacuumToFirstRow}\n" +
+            $"\tEnable Controller  : {Controller}\n" +
             $"\tNext Tab           : {Controls.NextTab}\n" +
             $"\tPrevious Tab       : {Controls.PreviousTab}\n" +
             $"\tScroll Up          : {Controls.ScrollUp}\n" +
@@ -107,11 +111,17 @@ namespace ImJustMatt.ExpandedStorage.Framework
 
         internal void CopyFrom(ModConfig config)
         {
+            Controls = config.Controls;
+            Controller = config.Controller;
+            VacuumToFirstRow = config.VacuumToFirstRow;
             ExpandInventoryMenu = config.ExpandInventoryMenu;
             SearchTagSymbol = config.SearchTagSymbol;
-            VacuumToFirstRow = config.VacuumToFirstRow;
-            Controls = config.Controls;
             DefaultStorage = Storage.Clone(config.DefaultStorage);
+            DefaultTabs.Clear();
+            foreach (var tab in config.DefaultTabs)
+            {
+                DefaultTabs.Add(tab.Key, StorageTab.Clone(tab.Value));
+            }
         }
 
         public static void RegisterModConfig(IManifest manifest, IGenericModConfigMenuAPI modConfigAPI, ModConfig config)
@@ -147,6 +157,11 @@ namespace ImJustMatt.ExpandedStorage.Framework
                 "Tweaks",
                 "Modify behavior for certain features");
 
+            modConfigAPI.RegisterSimpleOption(manifest,
+                "Enable Controller",
+                "Enables settings designed to improve controller compatibility",
+                () => config.Controller,
+                value => config.Controller = value);
             modConfigAPI.RegisterSimpleOption(manifest,
                 "Search Symbol",
                 "Symbol used to search items by context tag",

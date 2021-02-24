@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ImJustMatt.ExpandedStorage.API;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
@@ -15,9 +14,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
     {
         private static IContentHelper _contentHelper;
 
-        /// <summary>Dictionary of Expanded Storage tab images</summary>
-        private static readonly IDictionary<string, Func<string, Texture2D>> TabImageLoader = new Dictionary<string, Func<string, Texture2D>>();
-
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
         protected internal string ModUniqueId;
 
@@ -32,8 +28,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         }
 
         internal Texture2D Texture =>
-            TabImageLoader.TryGetValue(ModUniqueId, out var loadTexture)
-                ? loadTexture.Invoke(TabImage) ?? _contentHelper.Load<Texture2D>($"assets/{TabImage}")
+            ExpandedStorage.AssetLoaders.TryGetValue(ModUniqueId, out var loadTexture)
+                ? loadTexture.Invoke($"assets/{TabImage}") ?? _contentHelper.Load<Texture2D>($"assets/{TabImage}")
                 : _contentHelper.Load<Texture2D>($"assets/{TabImage}");
 
         public string TabName { get; set; }
@@ -74,11 +70,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             TabImage = storageTab.TabImage;
             AllowList = storageTab.AllowList;
             BlockList = storageTab.BlockList;
-        }
-
-        internal static void AddTabImageLoader(IManifest manifest, Func<string, Texture2D> tabImageLoader)
-        {
-            TabImageLoader.Add(manifest.UniqueID, tabImageLoader);
         }
     }
 }

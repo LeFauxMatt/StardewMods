@@ -30,7 +30,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                     : Chest.SpecialChestTypes.None
             };
             chest.fridge.Value = config.IsFridge;
-            if (item.ParentSheetIndex == 216)
+
+            if (string.IsNullOrWhiteSpace(config.Image))
+                chest.lidFrameCount.Value = Math.Max(config.Frames, 1);
+            else if (item.ParentSheetIndex == 216)
                 chest.lidFrameCount.Value = 2;
 
             // Copy modData from original item

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ImJustMatt.Common.PatternPatches;
 using ImJustMatt.ExpandedStorage.Framework;
@@ -8,6 +9,7 @@ using ImJustMatt.ExpandedStorage.Framework.Models;
 using ImJustMatt.ExpandedStorage.Framework.Patches;
 using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -33,6 +35,9 @@ namespace ImJustMatt.ExpandedStorage
         /// <summary>Dictionary of Expanded Storage tabs</summary>
         private static readonly IDictionary<string, StorageTab> StorageTabs = new Dictionary<string, StorageTab>();
 
+        /// <summary>Dictionary of Expanded Storage content pack asset loaders</summary>
+        public static readonly IDictionary<string, Func<string, Texture2D>> AssetLoaders = new Dictionary<string, Func<string, Texture2D>>();
+
         /// <summary>Tracks previously held chest lid frame.</summary>
         private readonly PerScreen<int> _currentLidFrame = new();
 
@@ -57,7 +62,7 @@ namespace ImJustMatt.ExpandedStorage
         }
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        public static bool HasConfig(object context)
+        private static bool HasConfig(object context)
         {
             return Storages.Any(c => c.Value.MatchesContext(context));
         }
@@ -120,6 +125,7 @@ namespace ImJustMatt.ExpandedStorage
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
                 new DebrisPatch(Monitor, _config),
+                new UtilityPatch(Monitor, _config, helper.Reflection),
                 new AutomatePatch(Monitor, _config, helper.Reflection, helper.ModRegistry.IsLoaded("Pathoschild.Automate")));
         }
 
@@ -143,7 +149,7 @@ namespace ImJustMatt.ExpandedStorage
             void SaveConfig()
             {
                 _config.CopyFrom(config);
-                Helper.WriteConfig(_config);
+                Helper.WriteConfig(config);
                 _contentLoader.ReloadDefaultStorageConfigs();
             }
 
@@ -156,10 +162,44 @@ namespace ImJustMatt.ExpandedStorage
         /// <summary>Track toolbar changes before user input.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private static void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
         {
             if (!Context.IsPlayerFree)
                 return;
+
+            var location = e.Location;
+            var removed = e.Removed.LastOrDefault(p => p.Value is Chest && HasConfig(p.Value));
+
+            if (removed.Value != null)
+            {
+                var config = GetConfig(removed.Value);
+                if (config?.Texture != null)
+                {
+                    var x = removed.Value.modData.TryGetValue("furyx639.ExpandedStorage/X", out var xStr)
+                        ? int.Parse(xStr)
+                        : 0;
+                    var y = removed.Value.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var yStr)
+                        ? int.Parse(yStr)
+                        : 0;
+                    var pos = new Vector2(x, y);
+                    var width = config.Width / 16;
+                    var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
+
+                    Helper.Events.World.ObjectListChanged -= OnObjectListChanged;
+                    for (var i = 0; i < width; i++)
+                    {
+                        for (var j = 0; j < height; j++)
+                        {
+                            var tilePosition = pos + new Vector2(i, j);
+                            if (tilePosition.Equals(removed.Key) || !location.Objects.ContainsKey(tilePosition))
+                                continue;
+                            location.Objects.Remove(tilePosition);
+                        }
+                    }
+
+                    Helper.Events.World.ObjectListChanged += OnObjectListChanged;
+                }
+            }
 
             var oldChest = HeldChest.Value;
             var chest = e.Added
@@ -266,7 +306,7 @@ namespace ImJustMatt.ExpandedStorage
                 return;
 
             var location = Game1.currentLocation;
-            var pos = Game1.player.GetToolLocation() / 64f;
+            var pos = _config.Controller ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
             Storage config = null;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;

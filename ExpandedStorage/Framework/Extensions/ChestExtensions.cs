@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ImJustMatt.ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -18,14 +19,42 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
             _reflection = reflection;
         }
 
-        public static void Draw(this Chest chest, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
+        public static void Draw(this Chest chest, Storage config, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
             var currentLidFrameReflected = _reflection.GetField<int>(chest, "currentLidFrame");
             var currentLidFrame = currentLidFrameReflected.GetValue();
             if (currentLidFrame == 0)
                 currentLidFrame = chest.startingLidFrame.Value;
 
-            if (chest.playerChoiceColor.Value.Equals(Color.Black) || HideColorPickerIds.Contains(chest.ParentSheetIndex))
+            var drawColored = !chest.playerChoiceColor.Value.Equals(Color.Black) && !HideColorPickerIds.Contains(chest.ParentSheetIndex);
+
+            var texture = config.Texture;
+            if (texture != null && scaleSize > 3f)
+            {
+                currentLidFrame -= chest.startingLidFrame.Value;
+                var startLayer = !drawColored || !config.PlayerColor ? 0 : 1;
+                var endLayer = startLayer == 0 ? 1 : 3;
+
+                for (var layer = startLayer; layer < endLayer; layer++)
+                {
+                    var color = layer % 2 == 0 || !drawColored
+                        ? chest.Tint
+                        : chest.playerChoiceColor.Value;
+                    spriteBatch.Draw(config.Texture,
+                        pos + ShakeOffset(chest, -1, 2),
+                        new Rectangle(config.Width * currentLidFrame, config.Height * layer, config.Width, config.Height),
+                        color * alpha,
+                        0f,
+                        origin,
+                        scaleSize,
+                        SpriteEffects.None,
+                        layerDepth + (1 + layer - startLayer) * 1E-05f);
+                }
+
+                return;
+            }
+
+            if (!drawColored)
             {
                 spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                     pos + ShakeOffset(chest, -1, 2),
@@ -36,6 +65,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                     scaleSize,
                     SpriteEffects.None,
                     layerDepth);
+
+                if (scaleSize < 4f)
+                    return;
 
                 spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
                     pos + ShakeOffset(chest, -1, 2),
@@ -50,8 +82,20 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                 return;
             }
 
-            var baseOffset = chest.ParentSheetIndex switch {130 => 38, 232 => 0, _ => 6};
-            var aboveOffset = chest.ParentSheetIndex switch {130 => 46, 232 => 8, _ => 11};
+            //var baseOffset = chest.ParentSheetIndex switch {130 => 38, 232 => 0, _ => 6};
+            //var aboveOffset = chest.ParentSheetIndex switch {130 => 46, 232 => 8, _ => 11};
+            var baseOffset = 6;
+            var aboveOffset = 11;
+            if (chest.ParentSheetIndex == 130)
+            {
+                baseOffset = 38;
+                aboveOffset = 46;
+            }
+            else if (chest.ParentSheetIndex == 232)
+            {
+                baseOffset = 0;
+                aboveOffset = 8;
+            }
 
             // Draw Storage Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,
@@ -103,7 +147,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                 scaleSize,
                 SpriteEffects.None,
                 layerDepth + 3E-05f);
-            return;
         }
 
         private static Vector2 ShakeOffset(Object instance, int minValue, int maxValue)

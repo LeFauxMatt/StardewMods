@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Harmony;
 using ImJustMatt.Common.PatternPatches;
@@ -38,6 +39,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             harmony.Patch(
                 AccessTools.Method(typeof(Object), nameof(Object.drawWhenHeld)),
                 new HarmonyMethod(GetType(), nameof(DrawWhenHeldPrefix))
+            );
+
+            harmony.Patch(
+                AccessTools.Method(typeof(Object), nameof(Object.drawPlacementBounds)),
+                new HarmonyMethod(GetType(), nameof(DrawPlacementBoundsPrefix))
             );
         }
 
@@ -90,14 +96,33 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             }
 
             __instance.owner.Value = who?.UniqueMultiplayerID ?? Game1.player.UniqueMultiplayerID;
+            __instance.modData["furyx639.ExpandedStorage/X"] = pos.X.ToString(CultureInfo.InvariantCulture);
+            __instance.modData["furyx639.ExpandedStorage/Y"] = pos.Y.ToString(CultureInfo.InvariantCulture);
 
             // Get instance of object to place
             var chest = __instance.ToChest(config);
             chest.shakeTimer = 50;
+            chest.TileLocation = pos;
 
             // Place object at location
             location.objects.Add(pos, chest);
             location.playSound(config.PlaceSound);
+
+            // Place clones at additional tile locations
+            if (config.Texture != null)
+            {
+                var width = config.Width / 16;
+                var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
+                for (var i = 0; i < width; i++)
+                {
+                    for (var j = 0; j < height; j++)
+                    {
+                        if (i == 0 && j == 0)
+                            continue;
+                        location.objects.Add(pos + new Vector2(i, j), chest);
+                    }
+                }
+            }
 
             __result = true;
             return false;
@@ -109,7 +134,60 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || __instance is not Chest chest || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            chest.Draw(spriteBatch, objectPosition, Vector2.Zero);
+            if (config.Texture != null)
+            {
+                objectPosition.X -= config.Width * 2f - 32;
+                objectPosition.Y -= config.Height * 2f - 64;
+            }
+
+            chest.Draw(config, spriteBatch, objectPosition, Vector2.Zero);
+            return false;
+        }
+
+        public static bool DrawPlacementBoundsPrefix(Object __instance, SpriteBatch spriteBatch, GameLocation location)
+        {
+            var config = ExpandedStorage.GetConfig(__instance);
+            if (config?.Texture == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+                return true;
+
+            var tile = 64 * Game1.GetPlacementGrabTile();
+            var width = config.Width / 16;
+            var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
+
+            var x = (int) tile.X;
+            var y = (int) tile.Y;
+
+            Game1.isCheckingNonMousePlacement = !Game1.IsPerformingMousePlacement();
+            if (Game1.isCheckingNonMousePlacement)
+            {
+                var pos = Utility.GetNearbyValidPlacementPosition(Game1.player, location, __instance, x, y);
+                x = (int) pos.X;
+                y = (int) pos.Y;
+            }
+
+            var canPlaceHere = Utility.playerCanPlaceItemHere(location, __instance, x, y, Game1.player)
+                               || Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
+                               && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player);
+
+            Game1.isCheckingNonMousePlacement = false;
+
+            for (var i = 0; i < width; i++)
+            {
+                for (var j = 0; j < height; j++)
+                {
+                    spriteBatch.Draw(Game1.mouseCursors,
+                        new Vector2((x / 64 + i) * 64 - Game1.viewport.X, (y / 64 + j) * 64 - Game1.viewport.Y),
+                        new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
+                        Color.White,
+                        0f,
+                        Vector2.Zero,
+                        4f,
+                        SpriteEffects.None,
+                        0.01f);
+                }
+            }
+
+            __instance.draw(spriteBatch, x / 64, y / 64, 0.5f);
             return false;
         }
     }

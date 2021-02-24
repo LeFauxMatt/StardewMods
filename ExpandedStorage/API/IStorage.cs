@@ -4,6 +4,18 @@ namespace ImJustMatt.ExpandedStorage.API
 {
     public interface IStorage : IStorageConfig
     {
+        /// <summary>The spritesheet to use for drawing this storage.</summary>
+        string Image { get; set; }
+
+        /// <summary>The number of animation frames in the spritesheet.</summary>
+        int Frames { get; set; }
+
+        /// <summary>Enables the player color choice and overlay layers.</summary>
+        bool PlayerColor { get; set; }
+
+        /// <summary>The depth from the bottom for the obstruction bounds.</summary>
+        int Depth { get; set; }
+
         /// <summary>The game sound that will play when the storage is opened.</summary>
         string OpenSound { get; set; }
 

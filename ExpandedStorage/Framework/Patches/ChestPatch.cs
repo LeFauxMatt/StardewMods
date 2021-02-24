@@ -139,7 +139,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            if (!config.IsPlaceable)
+            if (!config.IsPlaceable || (int) __instance.TileLocation.X != x || (int) __instance.TileLocation.Y != y)
                 return false;
 
             var draw_x = (float) x;
@@ -153,7 +153,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             var globalPosition = new Vector2(draw_x * 64f, (draw_y - 1f) * 64f);
             var layerDepth = Math.Max(0.0f, ((draw_y + 1f) * 64f - 24f) / 10000f) + draw_x * 1E-05f;
 
-            __instance.Draw(spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition), Vector2.Zero, alpha, layerDepth);
+            __instance.Draw(config, spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition), Vector2.Zero, alpha, layerDepth);
             return false;
         }
 
@@ -164,7 +164,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || !local || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            __instance.Draw(spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
+            __instance.Draw(config, spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
             return false;
         }
 
@@ -175,7 +175,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            __instance.Draw(spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
+            __instance.Draw(config, spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
 
             // Draw Stack
             if (__instance.Stack > 1)

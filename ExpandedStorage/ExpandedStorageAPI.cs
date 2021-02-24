@@ -137,6 +137,9 @@ namespace ImJustMatt.ExpandedStorage
             // Generate file for Json Assets
             if (_jsonAssetsAPI != null && !expandedStorages.Keys.All(Storage.VanillaNames.Contains))
             {
+                // Add asset loader
+                ExpandedStorage.AssetLoaders.Add(contentPack.Manifest.UniqueID, contentPack.LoadAsset<Texture2D>);
+
                 // Generate content-pack.json
                 contentPack.WriteJsonFile("content-pack.json", new ContentPack
                 {
@@ -153,9 +156,6 @@ namespace ImJustMatt.ExpandedStorage
 
             if (storageTabs == null)
                 return true;
-
-            // Add asset to tab image dictionary
-            StorageTab.AddTabImageLoader(contentPack.Manifest, contentPack.LoadAsset<Texture2D>);
 
             // Load expanded storage tabs
             foreach (var storageTab in storageTabs)
