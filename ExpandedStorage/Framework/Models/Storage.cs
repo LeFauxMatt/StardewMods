@@ -1,28 +1,25 @@
-﻿using System;
+﻿#nullable enable
 using System.Collections.Generic;
 using System.Linq;
-using ImJustMatt.Common.Extensions;
 using ImJustMatt.ExpandedStorage.API;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
-using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
 
 namespace ImJustMatt.ExpandedStorage.Framework.Models
 {
-    public enum SourceType
+    public class Storage : StorageConfig, IStorage
     {
-        Unknown,
-        Vanilla,
-        JsonAssets,
-        CustomChestTypes
-    }
+        public enum SourceType
+        {
+            Unknown,
+            Vanilla,
+            JsonAssets,
+            CustomChestTypes
+        }
 
-    public class Storage : IStorage
-    {
         private static readonly HashSet<string> ExcludeModDataKeys = new();
 
         public static readonly HashSet<string> VanillaNames = new()
@@ -37,137 +34,91 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         /// <summary>List of ParentSheetIndex related to this item.</summary>
         internal readonly HashSet<int> ObjectIds = new();
 
-        private int? _height;
-
-        private Texture2D _texture;
-        private int? _width;
+        private StorageMenu? _storageMenu;
+        private StorageSprite? _storageSprite;
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
-        internal string ModUniqueId;
+        internal string ModUniqueId = "";
 
-        internal Storage() : this(null)
+        internal Storage() : this("")
         {
         }
 
         internal Storage(string storageName)
         {
-            //StorageName = storageName;
-
             switch (storageName)
             {
                 case "Mini-Shipping Bin":
                     SpecialChestType = "MiniShippingBin";
                     OpenSound = "shwip";
+                    PlaceSound = "axe";
                     break;
                 case "Mini-Fridge":
+                    SpecialChestType = "None";
                     IsFridge = true;
                     OpenSound = "doorCreak";
                     PlaceSound = "hammer";
                     break;
                 case "Junimo Chest":
                     SpecialChestType = "JunimoChest";
+                    OpenSound = "doorCreak";
+                    PlaceSound = "axe";
                     break;
                 case "Stone Chest":
+                    SpecialChestType = "None";
+                    OpenSound = "openChest";
                     PlaceSound = "hammer";
+                    break;
+                default:
+                    SpecialChestType = "None";
+                    OpenSound = "openChest";
+                    PlaceSound = "axe";
                     break;
             }
         }
 
-        /// <summary>Property to access the SpriteSheet image.</summary>
-        internal Texture2D Texture =>
-            _texture ??= !string.IsNullOrWhiteSpace(Image) && ExpandedStorage.AssetLoaders.TryGetValue(ModUniqueId, out var loadTexture)
-                ? loadTexture.Invoke($"assets/{Image}")
-                : null;
-
         /// <summary>Which mod was used to load these assets into the game.</summary>
-        internal SourceType SourceType { get; set; } = SourceType.Unknown;
+        internal SourceType Source { get; set; } = SourceType.Unknown;
 
-        internal int MenuCapacity =>
-            Capacity switch
-            {
-                0 => -1, // Vanilla
-                _ when Capacity < 0 => 72, // Unlimited
-                _ => Math.Min(72, Capacity.RoundUp(12)) // Specific
-            };
+        internal StorageMenu Menu => new(this);
 
-        internal int MenuRows =>
-            Capacity switch
-            {
-                0 => 3, // Vanilla
-                _ when Capacity < 0 => 6, // Unlimited
-                _ => Math.Min(6, Capacity.RoundUp(12) / 12) // Specific
-            };
+        internal StorageSprite? SpriteSheet => !string.IsNullOrWhiteSpace(Image)
+            ? _storageSprite ??= new StorageSprite(this)
+            : null;
 
-        internal int MenuPadding => ShowSearchBar ? 24 : 0;
-        internal int MenuOffset => 64 * (MenuRows - 3);
+        internal string SummaryReport => string.Join("\n",
+            $"{"Storage Option",-20} | Current Value",
+            $"{new string('-', 21)}|{new string('-', 15)}",
+            $"{"Special Chest Type",-20} | {SpecialChestType}",
+            $"{"Is Fridge",-20} | {IsFridge}",
+            $"{"Modded Capacity",-20} | {Capacity}",
+            $"{"Open Sound",-20} | {OpenSound}",
+            $"{"Place Sound",-20} | {PlaceSound}",
+            $"{"Is Placeable",-20} | {IsPlaceable}",
+            string.Join("\n",
+                StorageOptions.Keys.Where(option => Option(option) != Choice.Unspecified).Select(option => $"{option,-20} | {Option(option)}")
+            ),
+            $"{"Allow List",-20} | {string.Join(", ", AllowList)},",
+            $"{"Block List",-20} | {string.Join(", ", BlockList)},",
+            $"{"Tabs",-20} | {string.Join(", ", Tabs)}"
+        );
 
-        internal int Width => _width ??= Texture != null ? Texture.Width / Math.Max(1, Frames) : 16;
-        internal int Height => _height ??= Texture != null ? PlayerColor ? Texture.Height / 3 : Texture.Height : 32;
-
-        internal float ScaleSize
-        {
-            get
-            {
-                var tilesWide = Width / 16f;
-                var tilesHigh = Height / 16f;
-                return tilesWide switch
-                {
-                    >= 7 => 0.5f,
-                    >= 6 => 0.66f,
-                    >= 5 => 0.75f,
-                    _ => tilesHigh switch
-                    {
-                        >= 5 => 0.8f,
-                        >= 3 => 1f,
-                        _ => tilesWide switch
-                        {
-                            <= 2 => 2f,
-                            <= 4 => 1f,
-                            _ => 0.1f
-                        }
-                    }
-                };
-            }
-        }
-
-        internal string SummaryReport =>
-            $"\tModded Capacity    : {Capacity}\n" +
-            $"\tCarry Chest        : {CanCarry}\n" +
-            $"\tAccess Carried     : {AccessCarried}\n" +
-            $"\tShow Search        : {ShowSearchBar}\n" +
-            $"\tVacuum Items       : {VacuumItems}\n" +
-            $"\tOpen Sound         : {OpenSound}\n" +
-            $"\tPlace Sound        : {PlaceSound}\n" +
-            $"\tSpecial Chest Type : {SpecialChestType}\n" +
-            $"\tIs Fridge          : {IsFridge}\n" +
-            $"\tPlaceable          : {IsPlaceable}\n" +
-            $"\tAllow list         : {string.Join(", ", AllowList)}\n" +
-            $"\tBlock List         : {string.Join(", ", BlockList)}\n" +
-            $"\tTabs               : {string.Join(", ", Tabs)}";
-
-        public string Image { get; set; }
-        public int Frames { get; set; } = 1;
-        public bool PlayerColor { get; set; }
-        public int Depth { get; set; }
-        public string OpenSound { get; set; } = "openChest";
-        public string PlaceSound { get; set; } = "axe";
-        public string SpecialChestType { get; set; } = "None";
+        public string SpecialChestType { get; set; }
         public bool IsFridge { get; set; }
+        public string OpenSound { get; set; }
+        public string PlaceSound { get; set; }
         public bool IsPlaceable { get; set; } = true;
+        public string Image { get; set; } = "";
+        public int Frames { get; set; } = 5;
+        public bool PlayerColor { get; set; } = true;
+        public int Depth { get; set; }
         public IDictionary<string, string> ModData { get; set; } = new Dictionary<string, string>();
-        public IList<string> AllowList { get; set; } = new List<string>();
-        public IList<string> BlockList { get; set; } = new List<string>();
-        public IList<string> Tabs { get; set; } = new List<string> {"Crops", "Seeds", "Materials", "Cooking", "Fishing", "Equipment", "Clothing", "Misc"};
-        public int Capacity { get; set; }
-        public bool AccessCarried { get; set; }
-        public bool CanCarry { get; set; } = true;
-        public bool ShowSearchBar { get; set; } = true;
-        public bool VacuumItems { get; set; }
+        public HashSet<string> AllowList { get; set; } = new();
+        public HashSet<string> BlockList { get; set; } = new();
 
         internal static void AddExclusion(string modDataKey)
         {
-            if (!ExcludeModDataKeys.Contains(modDataKey))
-                ExcludeModDataKeys.Add(modDataKey);
+            ExcludeModDataKeys.Add(modDataKey);
         }
 
         public bool MatchesContext(object context)
@@ -192,25 +143,22 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         private bool IsAllowed(Item item)
         {
-            return AllowList == null || !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
+            return !AllowList.Any() || AllowList.Any(item.MatchesTagExt);
         }
 
         private bool IsBlocked(Item item)
         {
-            return BlockList != null && BlockList.Any() && BlockList.Any(item.MatchesTagExt);
+            return BlockList.Any() && BlockList.Any(item.MatchesTagExt);
         }
 
-        public bool Filter(Item item)
+        internal bool Filter(Item item)
         {
             return IsAllowed(item) && !IsBlocked(item);
         }
 
-        public bool HighlightMethod(Item item)
+        internal bool HighlightMethod(Item item)
         {
-            return Filter(item)
-                   && (!Enum.TryParse(SpecialChestType, out Chest.SpecialChestTypes specialChestType)
-                       || specialChestType != Chest.SpecialChestTypes.MiniShippingBin
-                       || Utility.highlightShippableObjects(item));
+            return Filter(item) && (SpecialChestType != "MiniShippingBin" || Utility.highlightShippableObjects(item));
         }
 
         internal static Storage Clone(IStorage storage)
@@ -222,33 +170,31 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         internal void CopyFrom(IStorage storage)
         {
-            Image = storage.Image;
-            Frames = storage.Frames;
-            PlayerColor = storage.PlayerColor;
-            Depth = storage.Depth;
-            OpenSound = OpenSound == "openChest" ? storage.OpenSound : OpenSound;
-            PlaceSound = PlaceSound == "axe" ? storage.PlaceSound : PlaceSound;
-            SpecialChestType = SpecialChestType == "None" ? storage.SpecialChestType : SpecialChestType;
-            IsFridge = IsFridge || storage.IsFridge;
-            IsPlaceable = storage.IsPlaceable;
-            ModData = storage.ModData;
-            AllowList = storage.AllowList;
-            BlockList = storage.BlockList;
-            Tabs = storage.Tabs;
-            Capacity = storage.Capacity;
-            CanCarry = storage.CanCarry;
-            AccessCarried = storage.AccessCarried;
-            ShowSearchBar = storage.ShowSearchBar;
-            VacuumItems = storage.VacuumItems;
-        }
+            if (!IsFridge) IsFridge = storage.IsFridge;
+            if (SpecialChestType == "None") SpecialChestType = storage.SpecialChestType;
+            if (OpenSound == "openChest") OpenSound = storage.OpenSound;
+            if (PlaceSound == "axe") PlaceSound = storage.PlaceSound;
+            if (IsPlaceable) IsPlaceable = storage.IsPlaceable;
+            if (!string.IsNullOrWhiteSpace(storage.Image)) Image = storage.Image;
+            if (storage.Frames > 0) Frames = storage.Frames;
+            if (!PlayerColor) PlayerColor = storage.PlayerColor;
+            if (Depth == 0) Depth = storage.Depth;
 
-        internal void CopyFrom(IStorageConfig config)
-        {
-            Capacity = config.Capacity;
-            CanCarry = config.CanCarry;
-            AccessCarried = config.AccessCarried;
-            ShowSearchBar = config.ShowSearchBar;
-            VacuumItems = config.VacuumItems;
+            if (storage.AllowList.Any())
+                AllowList = new HashSet<string>(storage.AllowList);
+
+            if (storage.BlockList.Any())
+                BlockList = new HashSet<string>(storage.BlockList);
+
+            if (storage.ModData.Any())
+                ModData.Clear();
+            foreach (var modData in storage.ModData)
+            {
+                if (!ModData.ContainsKey(modData.Key))
+                    ModData.Add(modData.Key, modData.Value);
+            }
+
+            CopyFrom((IStorageConfig) storage);
         }
     }
 }

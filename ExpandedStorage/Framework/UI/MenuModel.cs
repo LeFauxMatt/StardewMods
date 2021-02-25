@@ -146,7 +146,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetOffset(MenuWithInventory menu)
         {
             return _config.ExpandInventoryMenu && menu is ItemGrabMenu {shippingBin: false} igm
-                ? ExpandedStorage.GetConfig(igm.context)?.MenuOffset ?? 0
+                ? ExpandedStorage.GetConfig(igm.context)?.Menu.Offset ?? 0
                 : 0;
         }
 
@@ -154,7 +154,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetPadding(MenuWithInventory menu)
         {
             return menu is ItemGrabMenu {shippingBin: false} igm
-                ? ExpandedStorage.GetConfig(igm.context)?.MenuPadding ?? 0
+                ? ExpandedStorage.GetConfig(igm.context)?.Menu.Padding ?? 0
                 : 0;
         }
 
@@ -162,7 +162,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetMenuCapacity(object context)
         {
             return _config.ExpandInventoryMenu
-                ? ExpandedStorage.GetConfig(context)?.MenuCapacity ?? 36
+                ? ExpandedStorage.GetConfig(context)?.Menu.Capacity ?? 36
                 : 36;
         }
 
@@ -170,7 +170,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetRows(object context)
         {
             return _config.ExpandInventoryMenu
-                ? ExpandedStorage.GetConfig(context)?.MenuRows ?? 3
+                ? ExpandedStorage.GetConfig(context)?.Menu.Rows ?? 3
                 : 3;
         }
 

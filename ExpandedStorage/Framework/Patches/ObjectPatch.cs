@@ -25,8 +25,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         internal static void AddExclusion(string modDataKey)
         {
-            if (!ExcludeModDataKeys.Contains(modDataKey))
-                ExcludeModDataKeys.Add(modDataKey);
+            ExcludeModDataKeys.Add(modDataKey);
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
@@ -109,19 +108,14 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             location.playSound(config.PlaceSound);
 
             // Place clones at additional tile locations
-            if (config.Texture != null)
+            if (config.SpriteSheet is { } spriteSheet)
             {
-                var width = config.Width / 16;
-                var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
-                for (var i = 0; i < width; i++)
+                spriteSheet.ForEachPos(0, 0, delegate(Vector2 offset)
                 {
-                    for (var j = 0; j < height; j++)
-                    {
-                        if (i == 0 && j == 0)
-                            continue;
-                        location.objects.Add(pos + new Vector2(i, j), chest);
-                    }
-                }
+                    if (offset.Equals(Vector2.Zero))
+                        return;
+                    location.Objects.Add(pos + offset, chest);
+                });
             }
 
             __result = true;
@@ -134,10 +128,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || __instance is not Chest chest || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            if (config.Texture != null)
+            if (config.SpriteSheet is { } spriteSheet)
             {
-                objectPosition.X -= config.Width * 2f - 32;
-                objectPosition.Y -= config.Height * 2f - 64;
+                objectPosition.X -= spriteSheet.Width * 2f - 32;
+                objectPosition.Y -= spriteSheet.Height * 2f - 64;
             }
 
             chest.Draw(config, spriteBatch, objectPosition, Vector2.Zero);
@@ -146,14 +140,17 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static bool DrawPlacementBoundsPrefix(Object __instance, SpriteBatch spriteBatch, GameLocation location)
         {
+            if (__instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+                return true;
+
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config?.Texture == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+            if (config is not {IsPlaceable: true})
+                return false;
+
+            if (config.SpriteSheet is not { } spriteSheet)
                 return true;
 
             var tile = 64 * Game1.GetPlacementGrabTile();
-            var width = config.Width / 16;
-            var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
-
             var x = (int) tile.X;
             var y = (int) tile.Y;
 
@@ -171,21 +168,18 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
             Game1.isCheckingNonMousePlacement = false;
 
-            for (var i = 0; i < width; i++)
+            spriteSheet.ForEachPos(x / 64, y / 64, delegate(Vector2 pos)
             {
-                for (var j = 0; j < height; j++)
-                {
-                    spriteBatch.Draw(Game1.mouseCursors,
-                        new Vector2((x / 64 + i) * 64 - Game1.viewport.X, (y / 64 + j) * 64 - Game1.viewport.Y),
-                        new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        4f,
-                        SpriteEffects.None,
-                        0.01f);
-                }
-            }
+                spriteBatch.Draw(Game1.mouseCursors,
+                    pos * 64 - new Vector2(Game1.viewport.X, Game1.viewport.Y),
+                    new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
+                    Color.White,
+                    0f,
+                    Vector2.Zero,
+                    4f,
+                    SpriteEffects.None,
+                    0.01f);
+            });
 
             __instance.draw(spriteBatch, x / 64, y / 64, 0.5f);
             return false;

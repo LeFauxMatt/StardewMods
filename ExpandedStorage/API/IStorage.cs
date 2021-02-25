@@ -4,6 +4,21 @@ namespace ImJustMatt.ExpandedStorage.API
 {
     public interface IStorage : IStorageConfig
     {
+        /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
+        string SpecialChestType { get; set; }
+
+        /// <summary>Enable storage to function as a mini-fridge.</summary>
+        bool IsFridge { get; set; }
+
+        /// <summary>The game sound that will play when the storage is opened.</summary>
+        string OpenSound { get; set; }
+
+        /// <summary>The game sound that will play when the storage is placed.</summary>
+        string PlaceSound { get; set; }
+
+        /// <summary>Allow storage to be placed.</summary>
+        bool IsPlaceable { get; set; }
+
         /// <summary>The spritesheet to use for drawing this storage.</summary>
         string Image { get; set; }
 
@@ -16,31 +31,13 @@ namespace ImJustMatt.ExpandedStorage.API
         /// <summary>The depth from the bottom for the obstruction bounds.</summary>
         int Depth { get; set; }
 
-        /// <summary>The game sound that will play when the storage is opened.</summary>
-        string OpenSound { get; set; }
-
-        /// <summary>The game sound that will play when the storage is placed.</summary>
-        string PlaceSound { get; set; }
-
-        /// <summary>One of the special chest types (None, MiniShippingBin, JunimoChest).</summary>
-        string SpecialChestType { get; set; }
-
-        /// <summary>Determines whether the storage type should be flagged as a Fridge.</summary>
-        bool IsFridge { get; set; }
-
-        /// <summary>Allows the storage to be placed in the world.</summary>
-        bool IsPlaceable { get; set; }
-
         /// <summary>Add modData to placed chests (if key does not already exist).</summary>
         IDictionary<string, string> ModData { get; set; }
 
         /// <summary>When specified, storage may only hold items with allowed context tags.</summary>
-        IList<string> AllowList { get; set; }
+        HashSet<string> AllowList { get; set; }
 
         /// <summary>When specified, storage may hold allowed items except for those with blocked context tags.</summary>
-        IList<string> BlockList { get; set; }
-
-        /// <summary>List of tabs to show on chest menu.</summary>
-        IList<string> Tabs { get; set; }
+        HashSet<string> BlockList { get; set; }
     }
 }

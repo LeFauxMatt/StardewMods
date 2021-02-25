@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ImJustMatt.ExpandedStorage.Framework.Integrations;
 using ImJustMatt.ExpandedStorage.Framework.Models;
@@ -16,7 +17,10 @@ namespace ImJustMatt.ExpandedStorage.Framework
         public ModConfigKeys Controls { get; set; } = new();
 
         /// <summary>Default config for unconfigured storages.</summary>
-        public Storage DefaultStorage { get; set; } = new();
+        public StorageConfig DefaultStorage { get; set; } = new()
+        {
+            Tabs = new List<string> {"Crops", "Seeds", "Materials", "Cooking", "Fishing", "Equipment", "Clothing", "Misc"}
+        };
 
         /// <summary>Default tabs for unconfigured storages.</summary>
         public IDictionary<string, StorageTab> DefaultTabs { get; set; } = new Dictionary<string, StorageTab>
@@ -97,17 +101,20 @@ namespace ImJustMatt.ExpandedStorage.Framework
         /// <summary>Symbol used to search items by context tags.</summary>
         public string SearchTagSymbol { get; set; } = "#";
 
-        protected internal string SummaryReport =>
-            "Expanded Storage Configuration\n" +
-            $"\tResize Menu        : {ExpandInventoryMenu}\n" +
-            $"\tSearch Tag Symbol  : {SearchTagSymbol}\n" +
-            $"\tVacuum First Row   : {VacuumToFirstRow}\n" +
-            $"\tEnable Controller  : {Controller}\n" +
-            $"\tNext Tab           : {Controls.NextTab}\n" +
-            $"\tPrevious Tab       : {Controls.PreviousTab}\n" +
-            $"\tScroll Up          : {Controls.ScrollUp}\n" +
-            $"\tScroll Down        : {Controls.ScrollDown}\n" +
-            $"\tShow Crafting      : {Controls.OpenCrafting}";
+        protected internal string SummaryReport => string.Join("\n",
+            "Expanded Storage Configuration",
+            $"{"Config Option",-20} | Current Value",
+            $"{new string('-', 21)}|{new string('-', 15)}",
+            $"{"Resize Menu",-20} | {ExpandInventoryMenu}",
+            $"{"Search Tag Symbol",-20} | {SearchTagSymbol}",
+            $"{"Vacuum First Row",-20} | {VacuumToFirstRow}",
+            $"{"Enable Controller",-20} | {Controller}",
+            $"{"Next Tab",-20} | {Controls.NextTab}",
+            $"{"Previous Tab",-20} | {Controls.PreviousTab}",
+            $"{"Scroll Up",-20} | {Controls.ScrollUp}",
+            $"{"Scroll Down",-20} | {Controls.ScrollDown}",
+            $"{"Show Crafting",-20} | {Controls.OpenCrafting}"
+        );
 
         internal void CopyFrom(ModConfig config)
         {
@@ -116,7 +123,8 @@ namespace ImJustMatt.ExpandedStorage.Framework
             VacuumToFirstRow = config.VacuumToFirstRow;
             ExpandInventoryMenu = config.ExpandInventoryMenu;
             SearchTagSymbol = config.SearchTagSymbol;
-            DefaultStorage = Storage.Clone(config.DefaultStorage);
+            DefaultStorage = new Storage();
+            DefaultStorage.CopyFrom(config.DefaultStorage);
             DefaultTabs.Clear();
             foreach (var tab in config.DefaultTabs)
             {
@@ -174,25 +182,35 @@ namespace ImJustMatt.ExpandedStorage.Framework
                 value => config.VacuumToFirstRow = value);
 
             // Default Storage Config
+            var optionChoices = Enum.GetNames(typeof(StorageConfig.Choice));
+
+            Func<string> OptionGet(string option)
+            {
+                return () => config.DefaultStorage.Option(option).ToString();
+            }
+
+            Action<string> OptionSet(string option)
+            {
+                return value =>
+                {
+                    if (Enum.TryParse(value, out StorageConfig.Choice choice))
+                        config.DefaultStorage.SetOption(option, choice);
+                };
+            }
+
             modConfigAPI.RegisterLabel(manifest,
                 "Default Storage",
                 "Default config for unconfigured storages.");
 
-            modConfigAPI.RegisterSimpleOption(manifest, "Capacity", "How many item slots should storages contain?",
+            modConfigAPI.RegisterSimpleOption(manifest, "Capacity", "Number of item slots the storage will contain",
                 () => config.DefaultStorage.Capacity,
                 value => config.DefaultStorage.Capacity = value);
-            modConfigAPI.RegisterSimpleOption(manifest, "Can Carry", "Allow storages to be carried?",
-                () => config.DefaultStorage.CanCarry,
-                value => config.DefaultStorage.CanCarry = value);
-            modConfigAPI.RegisterSimpleOption(manifest, "Access Carried", "Allow storages to be access while carried?",
-                () => config.DefaultStorage.AccessCarried,
-                value => config.DefaultStorage.AccessCarried = value);
-            modConfigAPI.RegisterSimpleOption(manifest, "Search Bar", "Show search bar above chest inventory for storages?",
-                () => config.DefaultStorage.ShowSearchBar,
-                value => config.DefaultStorage.ShowSearchBar = value);
-            modConfigAPI.RegisterSimpleOption(manifest, "Vacuum Items", "Allow storages to collect debris?",
-                () => config.DefaultStorage.VacuumItems,
-                value => config.DefaultStorage.VacuumItems = value);
+
+            foreach (var option in StorageConfig.StorageOptions)
+            {
+                modConfigAPI.RegisterChoiceOption(manifest, option.Key, option.Value,
+                    OptionGet(option.Key), OptionSet(option.Key), optionChoices);
+            }
         }
     }
 }

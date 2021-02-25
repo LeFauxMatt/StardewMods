@@ -11,9 +11,9 @@ namespace ImJustMatt.ExpandedStorage.API
         string TabImage { get; set; }
 
         /// <summary>When specified, tab will only show the listed item/category IDs.</summary>
-        IList<string> AllowList { get; set; }
+        HashSet<string> AllowList { get; set; }
 
         /// <summary>When specified, tab will show all/allowed items except for listed item/category IDs.</summary>
-        IList<string> BlockList { get; set; }
+        HashSet<string> BlockList { get; set; }
     }
 }

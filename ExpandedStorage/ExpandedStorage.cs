@@ -35,6 +35,9 @@ namespace ImJustMatt.ExpandedStorage
         /// <summary>Dictionary of Expanded Storage tabs</summary>
         private static readonly IDictionary<string, StorageTab> StorageTabs = new Dictionary<string, StorageTab>();
 
+        /// <summary>Default storage settings for unspecified options</summary>
+        internal static StorageConfig DefaultConfig;
+
         /// <summary>Dictionary of Expanded Storage content pack asset loaders</summary>
         public static readonly IDictionary<string, Func<string, Texture2D>> AssetLoaders = new Dictionary<string, Func<string, Texture2D>>();
 
@@ -56,9 +59,10 @@ namespace ImJustMatt.ExpandedStorage
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
         public static Storage GetConfig(object context)
         {
-            return Storages
+            var storage = Storages
                 .Select(c => c.Value)
                 .FirstOrDefault(c => c.MatchesContext(context));
+            return storage;
         }
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
@@ -86,6 +90,7 @@ namespace ImJustMatt.ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
+            DefaultConfig = _config.DefaultStorage;
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
             _expandedStorageAPI = new ExpandedStorageAPI(Helper, Monitor, Storages, StorageTabs);
@@ -93,7 +98,6 @@ namespace ImJustMatt.ExpandedStorage
             helper.Content.AssetEditors.Add(_expandedStorageAPI);
 
             ChestExtensions.Init(helper.Reflection);
-            FarmerExtensions.Init(Monitor);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
             StorageTab.Init(helper.Content);
@@ -126,7 +130,7 @@ namespace ImJustMatt.ExpandedStorage
                 new MenuWithInventoryPatch(Monitor, _config),
                 new DiscreteColorPickerPatch(Monitor, _config, helper.Content),
                 new DebrisPatch(Monitor, _config),
-                new UtilityPatch(Monitor, _config, helper.Reflection),
+                new UtilityPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, helper.ModRegistry.IsLoaded("Pathoschild.Automate")));
         }
 
@@ -174,7 +178,7 @@ namespace ImJustMatt.ExpandedStorage
             if (removed.Value != null)
             {
                 var config = GetConfig(removed.Value);
-                if (config?.Texture != null)
+                if (config?.SpriteSheet is { } spriteSheet)
                 {
                     var x = removed.Value.modData.TryGetValue("furyx639.ExpandedStorage/X", out var xStr)
                         ? int.Parse(xStr)
@@ -182,22 +186,16 @@ namespace ImJustMatt.ExpandedStorage
                     var y = removed.Value.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var yStr)
                         ? int.Parse(yStr)
                         : 0;
-                    var pos = new Vector2(x, y);
-                    var width = config.Width / 16;
-                    var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
 
-                    Helper.Events.World.ObjectListChanged -= OnObjectListChanged;
-                    for (var i = 0; i < width; i++)
+                    void RemoveObject(Vector2 pos)
                     {
-                        for (var j = 0; j < height; j++)
-                        {
-                            var tilePosition = pos + new Vector2(i, j);
-                            if (tilePosition.Equals(removed.Key) || !location.Objects.ContainsKey(tilePosition))
-                                continue;
-                            location.Objects.Remove(tilePosition);
-                        }
+                        if (pos.Equals(removed.Key) || location.Objects.ContainsKey(pos))
+                            return;
+                        location.Objects.Remove(pos);
                     }
 
+                    Helper.Events.World.ObjectListChanged -= OnObjectListChanged;
+                    spriteSheet.ForEachPos(x, y, RemoveObject);
                     Helper.Events.World.ObjectListChanged += OnObjectListChanged;
                 }
             }
@@ -230,12 +228,12 @@ namespace ImJustMatt.ExpandedStorage
 
             VacuumChests.Value = Game1.player.Items
                 .Take(_config.VacuumToFirstRow ? 12 : Game1.player.MaxItems)
-                .Where(i => i is Chest)
-                .ToDictionary(i => i as Chest, GetConfig)
-                .Where(s => s.Value != null && s.Value.VacuumItems)
+                .OfType<Chest>()
+                .ToDictionary(i => i, GetConfig)
+                .Where(s => s.Value?.Option("VacuumItems") == StorageConfig.Choice.Enable)
                 .ToDictionary(s => s.Key, s => s.Value);
 
-            Monitor.Log($"Found {VacuumChests.Value.Count} For Vacuum:\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Key}")), LogLevel.Debug);
+            Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum:\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Key}")));
         }
 
         /// <summary>Refresh player item vacuum chests.</summary>
@@ -248,9 +246,9 @@ namespace ImJustMatt.ExpandedStorage
 
             VacuumChests.Value = e.Player.Items
                 .Take(_config.VacuumToFirstRow ? 12 : e.Player.MaxItems)
-                .Where(i => i is Chest)
-                .ToDictionary(i => i as Chest, GetConfig)
-                .Where(s => s.Value != null && s.Value.VacuumItems)
+                .OfType<Chest>()
+                .ToDictionary(i => i, GetConfig)
+                .Where(s => s.Value?.Option("VacuumItems") == StorageConfig.Choice.Enable)
                 .ToDictionary(s => s.Key, s => s.Value);
 
             Monitor.VerboseLog($"Found {VacuumChests.Value.Count} For Vacuum:\n" + string.Join("\n", VacuumChests.Value.Select(s => $"\t{s.Key}")));
@@ -314,14 +312,16 @@ namespace ImJustMatt.ExpandedStorage
             location.objects.TryGetValue(pos, out var obj);
 
             // Carry Chest
-            if (e.Button.IsUseToolButton())
+            if (obj != null && e.Button.IsUseToolButton())
             {
-                if (obj != null)
-                    config = GetConfig(obj);
-                if (config == null || !config.CanCarry || !Game1.player.addItemToInventoryBool(obj, true))
+                config = GetConfig(obj);
+                if (config?.Option("CanCarry") == StorageConfig.Choice.Disable
+                    || config?.Option("CanCarry") == StorageConfig.Choice.Unspecified
+                    && DefaultConfig.Option("CanCarry") != StorageConfig.Choice.Enable
+                    || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
 
-                obj.TileLocation = Vector2.Zero;
+                obj!.TileLocation = Vector2.Zero;
                 location.objects.Remove(pos);
                 Helper.Input.Suppress(e.Button);
                 return;
@@ -331,7 +331,7 @@ namespace ImJustMatt.ExpandedStorage
             if (obj == null && HeldChest.Value != null && e.Button.IsActionButton())
             {
                 config = GetConfig(HeldChest.Value);
-                if (config == null || !config.AccessCarried)
+                if (config?.Option("AccessCarried") != StorageConfig.Choice.Enable)
                     return;
 
                 HeldChest.Value.GetMutex().RequestLock(delegate
@@ -358,7 +358,7 @@ namespace ImJustMatt.ExpandedStorage
                 return;
 
             var config = GetConfig(HeldChest.Value);
-            if (!config.AccessCarried)
+            if (config?.Option("AccessCarried") != StorageConfig.Choice.Enable)
                 return;
 
             HeldChest.Value.GetMutex().RequestLock(delegate

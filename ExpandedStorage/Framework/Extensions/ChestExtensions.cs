@@ -28,11 +28,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
 
             var drawColored = !chest.playerChoiceColor.Value.Equals(Color.Black) && !HideColorPickerIds.Contains(chest.ParentSheetIndex);
 
-            var texture = config.Texture;
-            if (texture != null && scaleSize > 3f)
+            if (config.SpriteSheet is {Texture: { }} spriteSheet && scaleSize > 3f)
             {
                 currentLidFrame -= chest.startingLidFrame.Value;
-                var startLayer = !drawColored || !config.PlayerColor ? 0 : 1;
+                var startLayer = drawColored && config is {PlayerColor: true} ? 1 : 0;
                 var endLayer = startLayer == 0 ? 1 : 3;
 
                 for (var layer = startLayer; layer < endLayer; layer++)
@@ -40,9 +39,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                     var color = layer % 2 == 0 || !drawColored
                         ? chest.Tint
                         : chest.playerChoiceColor.Value;
-                    spriteBatch.Draw(config.Texture,
+                    spriteBatch.Draw(spriteSheet.Texture,
                         pos + ShakeOffset(chest, -1, 2),
-                        new Rectangle(config.Width * currentLidFrame, config.Height * layer, config.Width, config.Height),
+                        new Rectangle(spriteSheet.Width * currentLidFrame, spriteSheet.Height * layer, spriteSheet.Width, spriteSheet.Height),
                         color * alpha,
                         0f,
                         origin,
@@ -82,20 +81,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                 return;
             }
 
-            //var baseOffset = chest.ParentSheetIndex switch {130 => 38, 232 => 0, _ => 6};
-            //var aboveOffset = chest.ParentSheetIndex switch {130 => 46, 232 => 8, _ => 11};
-            var baseOffset = 6;
-            var aboveOffset = 11;
-            if (chest.ParentSheetIndex == 130)
-            {
-                baseOffset = 38;
-                aboveOffset = 46;
-            }
-            else if (chest.ParentSheetIndex == 232)
-            {
-                baseOffset = 0;
-                aboveOffset = 8;
-            }
+            var baseOffset = chest.ParentSheetIndex switch {130 => 38, 232 => 0, _ => 6};
+            var aboveOffset = chest.ParentSheetIndex switch {130 => 46, 232 => 8, _ => 11};
 
             // Draw Storage Layer (Colorized)
             spriteBatch.Draw(Game1.bigCraftableSpriteSheet,

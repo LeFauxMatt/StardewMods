@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
@@ -11,12 +10,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
     internal static class FarmerExtensions
     {
         private const string ChestsAnywhereOrderKey = "Pathoschild.ChestsAnywhere/Order";
-        private static IMonitor _monitor;
-
-        internal static void Init(IMonitor monitor)
-        {
-            _monitor = monitor;
-        }
 
         public static Item AddItemToInventory(this Farmer farmer, Item item)
         {

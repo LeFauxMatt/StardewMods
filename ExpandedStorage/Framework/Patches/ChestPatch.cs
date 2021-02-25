@@ -28,8 +28,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         internal static void AddExclusion(string modDataKey)
         {
-            if (!ExcludeModDataKeys.Contains(modDataKey))
-                ExcludeModDataKeys.Add(modDataKey);
+            ExcludeModDataKeys.Add(modDataKey);
         }
 
         protected internal override void Apply(HarmonyInstance harmony)
@@ -83,7 +82,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 return true;
 
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.SourceType != SourceType.JsonAssets)
+            if (config == null || config.Source != Storage.SourceType.JsonAssets)
                 return true;
             __instance.GetMutex().RequestLock(delegate
             {
@@ -123,12 +122,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
         {
             var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.Capacity == 0)
+            if (config?.Capacity is not { } capacity || capacity == 0)
                 return true;
-
-            __result = config.Capacity == -1
-                ? int.MaxValue
-                : config.Capacity;
+            __result = capacity == -1 ? int.MaxValue : capacity;
             return false;
         }
 
@@ -139,7 +135,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            if (!config.IsPlaceable || (int) __instance.TileLocation.X != x || (int) __instance.TileLocation.Y != y)
+            // Only draw origin sprite for bigger expanded storages
+            if (config.SpriteSheet is { } spriteSheet
+                && (spriteSheet.TileWidth > 1 || spriteSheet.TileHeight > 1)
+                && ((int) __instance.TileLocation.X != x || (int) __instance.TileLocation.Y != y))
                 return false;
 
             var draw_x = (float) x;

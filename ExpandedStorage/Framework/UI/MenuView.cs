@@ -59,7 +59,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
 
         protected internal MenuView(
             InventoryMenu menu,
-            MenuViewOptions config,
+            Options options,
             Action<int> scroll,
             Action<int> setTab,
             Action<string> search)
@@ -75,22 +75,19 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             var bounds = new Rectangle(_menu.xPositionOnScreen, _menu.yPositionOnScreen, _menu.width, _menu.height);
             _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
 
-            if (config.ShowArrows)
-            {
-                UpArrow = new ClickableTextureComponent(
-                    new Rectangle(bounds.Right + 8, bounds.Y - 40, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
-                    Game1.mouseCursors,
-                    new Rectangle(421, 459, 11, 12),
-                    Game1.pixelZoom);
+            UpArrow = new ClickableTextureComponent(
+                new Rectangle(bounds.Right + 8, bounds.Y - 40, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
+                Game1.mouseCursors,
+                new Rectangle(421, 459, 11, 12),
+                Game1.pixelZoom);
 
-                DownArrow = new ClickableTextureComponent(
-                    new Rectangle(UpArrow.bounds.X, bounds.Bottom - 36, UpArrow.bounds.Width, UpArrow.bounds.Height),
-                    Game1.mouseCursors,
-                    new Rectangle(421, 472, 11, 12),
-                    Game1.pixelZoom);
-            }
+            DownArrow = new ClickableTextureComponent(
+                new Rectangle(UpArrow.bounds.X, bounds.Bottom - 36, UpArrow.bounds.Width, UpArrow.bounds.Height),
+                Game1.mouseCursors,
+                new Rectangle(421, 472, 11, 12),
+                Game1.pixelZoom);
 
-            if (config.ShowSearch)
+            if (options.ShowSearch)
             {
                 SearchField = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
                 {
@@ -321,6 +318,16 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
 
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
             _hoverText = tab?.hoverText;
+        }
+
+        internal class Options
+        {
+            internal bool ShowSearch;
+
+            public Options()
+            {
+                ShowSearch = false;
+            }
         }
     }
 }

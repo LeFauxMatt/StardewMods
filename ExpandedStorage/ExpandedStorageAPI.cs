@@ -22,6 +22,7 @@ namespace ImJustMatt.ExpandedStorage
 
         private bool _isContentLoaded;
         private IJsonAssetsAPI _jsonAssetsAPI;
+        private IGenericModConfigMenuAPI _modConfigAPI;
 
         internal ExpandedStorageAPI(
             IModHelper helper,
@@ -128,18 +129,68 @@ namespace ImJustMatt.ExpandedStorage
                 return false;
             }
 
+            var playerConfigs = contentPack.ReadJsonFile<Dictionary<string, StorageConfig>>("config.json")
+                                ?? new Dictionary<string, StorageConfig>();
+            var defaultConfigs = new Dictionary<string, StorageConfig>();
+
+            void RevertToDefault()
+            {
+                foreach (var defaultConfig in defaultConfigs)
+                    if (playerConfigs.TryGetValue(defaultConfig.Key, out var playerConfig))
+                        playerConfig.CopyFrom(defaultConfig.Value);
+            }
+
+            void SaveToFile()
+            {
+                foreach (var playerConfig in playerConfigs)
+                    if (_storageConfigs.TryGetValue(playerConfig.Key, out var storage) && storage.ModUniqueId == contentPack.Manifest.UniqueID)
+                        storage.CopyFrom(playerConfig.Value);
+                contentPack.WriteJsonFile("config.json", playerConfigs);
+            }
+
+            _modConfigAPI?.RegisterModConfig(contentPack.Manifest, RevertToDefault, SaveToFile);
+
+            // Load default if specified
+            if (expandedStorages.TryGetValue("DefaultStorage", out var defaultStorage))
+            {
+                expandedStorages.Remove("DefaultStorage");
+            }
+
             // Load expanded storages
             foreach (var expandedStorage in expandedStorages)
             {
-                RegisterStorage(contentPack.Manifest, expandedStorage.Key, expandedStorage.Value);
+                var defaultConfig = new Storage(expandedStorage.Key);
+
+                if (defaultStorage != null)
+                    defaultConfig.CopyFrom(defaultStorage);
+
+                defaultConfig.CopyFrom(expandedStorage.Value);
+
+                defaultConfigs.Add(expandedStorage.Key, defaultConfig);
+
+                if (!playerConfigs.TryGetValue(expandedStorage.Key, out var playerConfig))
+                {
+                    // Generate default player config
+                    playerConfig = new StorageConfig();
+                    playerConfig.CopyFrom(defaultConfig);
+                    playerConfigs.Add(expandedStorage.Key, playerConfig);
+                }
+
+                RegisterStorage(contentPack.Manifest, expandedStorage.Key, defaultConfig);
+                SetStorageConfig(contentPack.Manifest, expandedStorage.Key, playerConfig);
+
+                if (_storageConfigs.TryGetValue(expandedStorage.Key, out var storageConfig))
+                    RegisterConfig(contentPack.Manifest, expandedStorage.Key, storageConfig);
             }
+
+            SaveToFile();
+
+            // Add asset loader
+            ExpandedStorage.AssetLoaders.Add(contentPack.Manifest.UniqueID, contentPack.LoadAsset<Texture2D>);
 
             // Generate file for Json Assets
             if (_jsonAssetsAPI != null && !expandedStorages.Keys.All(Storage.VanillaNames.Contains))
             {
-                // Add asset loader
-                ExpandedStorage.AssetLoaders.Add(contentPack.Manifest.UniqueID, contentPack.LoadAsset<Texture2D>);
-
                 // Generate content-pack.json
                 contentPack.WriteJsonFile("content-pack.json", new ContentPack
                 {
@@ -219,16 +270,48 @@ namespace ImJustMatt.ExpandedStorage
             }
         }
 
+        private void RegisterConfig(IManifest manifest, string storageName, StorageConfig config)
+        {
+            var optionChoices = Enum.GetNames(typeof(StorageConfig.Choice));
+
+            Func<string> OptionGet(string option)
+            {
+                return () => config.Option(option).ToString();
+            }
+
+            Action<string> OptionSet(string option)
+            {
+                return value =>
+                {
+                    if (Enum.TryParse(value, out StorageConfig.Choice choice))
+                        config.SetOption(option, choice);
+                };
+            }
+
+            _modConfigAPI.RegisterLabel(manifest, storageName, manifest.Description);
+
+            _modConfigAPI.RegisterSimpleOption(manifest, "Capacity", "Number of item slots the storage will contain",
+                () => config.Capacity,
+                value => config.Capacity = value);
+
+            foreach (var option in StorageConfig.StorageOptions)
+            {
+                _modConfigAPI.RegisterChoiceOption(manifest, option.Key, option.Value,
+                    OptionGet(option.Key), OptionSet(option.Key), optionChoices);
+            }
+        }
+
         /// <summary>Load Json Asset API</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
+            _modConfigAPI = _helper.ModRegistry.GetApi<IGenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
             _jsonAssetsAPI = _helper.ModRegistry.GetApi<IJsonAssetsAPI>("spacechase0.JsonAssets");
             if (_jsonAssetsAPI != null)
                 _jsonAssetsAPI.IdsAssigned += OnIdsLoaded;
             else
-                _monitor.Log("Json Assets not detected, Expanded Storages will not be loaded", LogLevel.Warn);
+                _monitor.Log("Json Assets not detected, Expanded Storages content will not be loaded", LogLevel.Warn);
             _helper.Events.GameLoop.UpdateTicked += OnReadyToLoad;
         }
 
@@ -251,7 +334,7 @@ namespace ImJustMatt.ExpandedStorage
         {
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
-                .Where(config => config.Value.SourceType == SourceType.JsonAssets))
+                .Where(config => config.Value.Source == Storage.SourceType.JsonAssets))
                 storageConfig.Value.ObjectIds.Clear();
 
             // Add new object ids
@@ -260,7 +343,7 @@ namespace ImJustMatt.ExpandedStorage
             {
                 if (!_storageConfigs.TryGetValue(bigCraftable.Key, out var storageConfig))
                     continue;
-                storageConfig.SourceType = SourceType.JsonAssets;
+                storageConfig.Source = Storage.SourceType.JsonAssets;
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Value))
                     storageConfig.ObjectIds.Add(bigCraftable.Value);
             }
@@ -279,7 +362,7 @@ namespace ImJustMatt.ExpandedStorage
 
             // Clear out old object ids
             foreach (var storageConfig in _storageConfigs
-                .Where(config => config.Value.SourceType != SourceType.JsonAssets))
+                .Where(config => config.Value.Source != Storage.SourceType.JsonAssets))
                 storageConfig.Value.ObjectIds.Clear();
 
             var bigCraftables = Game1.bigCraftablesInformation.Where(Storage.IsVanillaStorage);
@@ -291,9 +374,9 @@ namespace ImJustMatt.ExpandedStorage
                     continue;
 
                 if (Storage.VanillaNames.Contains(data[0]))
-                    storageConfig.SourceType = SourceType.Vanilla;
+                    storageConfig.Source = Storage.SourceType.Vanilla;
                 else if (bigCraftable.Key >= 424000 && bigCraftable.Key < 425000)
-                    storageConfig.SourceType = SourceType.CustomChestTypes;
+                    storageConfig.Source = Storage.SourceType.CustomChestTypes;
 
                 if (!storageConfig.ObjectIds.Contains(bigCraftable.Key))
                     storageConfig.ObjectIds.Add(bigCraftable.Key);

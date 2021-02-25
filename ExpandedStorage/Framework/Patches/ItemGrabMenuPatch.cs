@@ -134,10 +134,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (config == null || __instance.context is ShippingBin)
                 return;
 
-            __instance.ItemsToGrabMenu.rows = MenuModel.GetRows(__instance.context);
-            var capacity = MenuModel.GetMenuCapacity(__instance.context);
-            if (capacity > 0)
-                __instance.ItemsToGrabMenu.capacity = capacity;
+            var menuConfig = config.Menu;
+            __instance.ItemsToGrabMenu.rows = menuConfig.Rows;
+            if (menuConfig.Capacity > 0)
+                __instance.ItemsToGrabMenu.capacity = menuConfig.Capacity;
 
             if (__instance.context is not Chest chest)
                 chest = null;
@@ -185,7 +185,15 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 __instance.inventory.highlightMethod = config.HighlightMethod;
             }
 
-            if (config.SourceType == SourceType.JsonAssets && chest != null && __instance.chestColorPicker == null)
+            if (config.Source == Storage.SourceType.JsonAssets && chest != null && !config.PlayerColor && __instance.chestColorPicker != null)
+            {
+                __instance.chestColorPicker = null;
+                __instance.colorPickerToggleButton = null;
+                __instance.discreteColorPickerCC = null;
+                __instance.populateClickableComponentList();
+            }
+
+            if (config.Source == Storage.SourceType.JsonAssets && chest != null && config.PlayerColor && __instance.chestColorPicker == null)
             {
                 var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
                 var sourceItem = sourceItemReflected.GetValue();
@@ -234,30 +242,28 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 __instance.populateClickableComponentList();
             }
 
-            if (config.ShowSearchBar)
+            if (config.Option("ShowSearchBar") == StorageConfig.Choice.Enable)
             {
-                var padding = MenuModel.GetPadding(__instance);
-                __instance.yPositionOnScreen -= padding;
-                __instance.height += padding;
+                __instance.yPositionOnScreen -= menuConfig.Padding;
+                __instance.height += menuConfig.Padding;
                 if (__instance.chestColorPicker != null)
-                    __instance.chestColorPicker.yPositionOnScreen -= padding;
+                    __instance.chestColorPicker.yPositionOnScreen -= menuConfig.Padding;
             }
 
             if (Config.ExpandInventoryMenu)
             {
-                var offset = MenuModel.GetOffset(__instance);
-                __instance.height += offset;
-                __instance.inventory.movePosition(0, offset);
-                __instance.okButton.bounds.Y += offset;
-                __instance.trashCan.bounds.Y += offset;
-                __instance.dropItemInvisibleButton.bounds.Y += offset;
+                __instance.height += menuConfig.Offset;
+                __instance.inventory.movePosition(0, menuConfig.Offset);
+                __instance.okButton.bounds.Y += menuConfig.Offset;
+                __instance.trashCan.bounds.Y += menuConfig.Offset;
+                __instance.dropItemInvisibleButton.bounds.Y += menuConfig.Offset;
 
-                if (offset < 0)
+                if (menuConfig.Offset < 0)
                 {
                     if (__instance.colorPickerToggleButton != null)
-                        __instance.colorPickerToggleButton.bounds.Y += offset;
-                    __instance.fillStacksButton.bounds.Y += offset;
-                    __instance.organizeButton.bounds.Y += offset;
+                        __instance.colorPickerToggleButton.bounds.Y += menuConfig.Offset;
+                    __instance.fillStacksButton.bounds.Y += menuConfig.Offset;
+                    __instance.organizeButton.bounds.Y += menuConfig.Offset;
                 }
             }
 

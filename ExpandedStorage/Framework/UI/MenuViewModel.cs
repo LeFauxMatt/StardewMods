@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ImJustMatt.Common.Extensions;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
+using ImJustMatt.ExpandedStorage.Framework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
@@ -38,10 +39,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
                 return;
 
             _view = new MenuView(menu.ItemsToGrabMenu,
-                new MenuViewOptions
+                new MenuView.Options
                 {
-                    ShowArrows = _model.StorageConfig != null,
-                    ShowSearch = _model.StorageConfig != null && _model.StorageConfig.ShowSearchBar
+                    ShowSearch = _model.StorageConfig.Option("ShowSearchBar") == StorageConfig.Choice.Enable
                 },
                 Scroll,
                 SetTab,
@@ -56,7 +56,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
 
-            if (_model.StorageConfig?.Tabs != null)
+            if (_model.StorageConfig.Tabs.Any())
             {
                 foreach (var tab in _model.StorageTabs) _view.AddTab(tab.Texture, tab.TabName);
                 _view.CurrentTab = _model.CurrentTab;

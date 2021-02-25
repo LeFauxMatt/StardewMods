@@ -9,15 +9,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal class UtilityPatch : Patch<ModConfig>
     {
-        private static IReflectedMethod _itemCanBePlaced;
-
-        public UtilityPatch(IMonitor monitor, ModConfig config, IReflectionHelper reflection) : base(monitor, config)
+        public UtilityPatch(IMonitor monitor, ModConfig config) : base(monitor, config)
         {
-            _itemCanBePlaced = reflection.GetMethod(typeof(Utility), "itemCanBePlaced");
         }
-
-        private static bool ItemCanBePlaced(GameLocation location, Vector2 tileLocation, Item item) =>
-            _itemCanBePlaced.Invoke<bool>(location, tileLocation, item);
 
         protected internal override void Apply(HarmonyInstance harmony)
         {
@@ -30,7 +24,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         public static bool PlayerCanPlaceItemHerePrefix(ref bool __result, GameLocation location, Item item, int x, int y, Farmer f)
         {
             var config = ExpandedStorage.GetConfig(item);
-            if (config?.Texture == null)
+            if (config?.SpriteSheet is not { } spriteSheet)
                 return true;
 
             x = 64 * (x / 64);
@@ -42,17 +36,14 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 return false;
             }
 
-            var width = config.Width / 16;
-            var height = (config.Depth == 0 ? config.Height - 16 : config.Depth) / 16;
-
             // Is Within Tile With Leeway
-            if (!Utility.withinRadiusOfPlayer(x, y, Math.Max(width, height), f))
+            if (!Utility.withinRadiusOfPlayer(x, y, Math.Max(spriteSheet.TileWidth, spriteSheet.TileHeight), f))
             {
                 __result = false;
                 return false;
             }
 
-            var rect = new Rectangle(x, y, width * 64, height * 64);
+            var rect = new Rectangle(x, y, spriteSheet.TileWidth * 64, spriteSheet.TileHeight * 64);
 
             // Position intersects with farmer
             foreach (var farmer in location.farmers)
@@ -72,9 +63,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 return false;
             }
 
-            for (var i = 0; i < width; i++)
+            for (var i = 0; i < spriteSheet.TileWidth; i++)
             {
-                for (var j = 0; j < height; j++)
+                for (var j = 0; j < spriteSheet.TileHeight; j++)
                 {
                     var tileLocation = new Vector2(x / 64 + i, y / 64 + j);
 
