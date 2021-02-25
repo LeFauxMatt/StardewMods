@@ -213,6 +213,12 @@ namespace ImJustMatt.ExpandedStorage
             {
                 // Localized Tab Name
                 storageTab.Value.TabName = contentPack.Translation.Get(storageTab.Key).Default(storageTab.Key);
+
+                // Storage Tab Texture
+                storageTab.Value.Texture = contentPack.HasFile($"assets/{storageTab.Value.TabImage}")
+                    ? contentPack.LoadAsset<Texture2D>($"assets/{storageTab.Value.TabImage}")
+                    : _helper.Content.Load<Texture2D>($"assets/{storageTab.Value.TabImage}");
+
                 RegisterStorageTab(contentPack.Manifest, storageTab.Key, storageTab.Value);
             }
 
@@ -264,9 +270,10 @@ namespace ImJustMatt.ExpandedStorage
             }
             else
             {
-                tabConfig = StorageTab.Clone(storageTab);
-                tabConfig.ModUniqueId = manifest.UniqueID;
-                _tabConfigs.Add(tabId, tabConfig);
+                var tab = new StorageTab();
+                tab.CopyFrom(storageTab);
+                tab.ModUniqueId = manifest.UniqueID;
+                _tabConfigs.Add(tabId, tab);
             }
         }
 

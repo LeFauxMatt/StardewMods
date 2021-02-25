@@ -100,7 +100,6 @@ namespace ImJustMatt.ExpandedStorage
             ChestExtensions.Init(helper.Reflection);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
-            StorageTab.Init(helper.Content);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;

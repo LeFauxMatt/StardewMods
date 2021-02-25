@@ -128,7 +128,9 @@ namespace ImJustMatt.ExpandedStorage.Framework
             DefaultTabs.Clear();
             foreach (var tab in config.DefaultTabs)
             {
-                DefaultTabs.Add(tab.Key, StorageTab.Clone(tab.Value));
+                var newTab = new StorageTab();
+                newTab.CopyFrom(tab.Value);
+                DefaultTabs.Add(tab.Key, newTab);
             }
         }
 

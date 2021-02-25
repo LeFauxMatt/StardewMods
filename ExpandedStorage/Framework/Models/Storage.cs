@@ -33,7 +33,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
 
         /// <summary>List of ParentSheetIndex related to this item.</summary>
         internal readonly HashSet<int> ObjectIds = new();
-        
+
         private StorageSprite? _storageSprite;
 
         /// <summary>The UniqueId of the Content Pack that storage data was loaded from.</summary>
