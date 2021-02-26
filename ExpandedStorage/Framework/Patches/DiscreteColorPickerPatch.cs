@@ -13,7 +13,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
     internal class DiscreteColorPickerPatch : Patch<ModConfig>
     {
         private static Texture2D _hueBar;
-        private static Texture2D _gradientBar;
         private static Color[] _colors;
         private static HSLColor _color;
 
@@ -21,7 +20,6 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             : base(monitor, config)
         {
             _hueBar = contentHelper.Load<Texture2D>("assets/Hue.png");
-            _gradientBar = contentHelper.Load<Texture2D>("assets/Gradient.png");
             _colors = new Color[_hueBar.Width * _hueBar.Height];
             _hueBar.GetData(_colors);
         }
@@ -56,7 +54,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static void ConstructorPostfix(DiscreteColorPicker __instance)
         {
-            __instance.yPositionOnScreen -= 28;
+            //__instance.yPositionOnScreen -= 28;
+            __instance.yPositionOnScreen -= 64;
             __instance.height += 28;
             __instance.totalColors = _hueBar.Width + 1;
         }
@@ -83,7 +82,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             {
                 // Hue Selection
                 selection = (int) ((selection - 36) / 712f * __instance.totalColors);
-                _color = HSLColor.FromColor(_colors[selection]);
+                var color = HSLColor.FromColor(_colors[selection]);
+                if (__instance.colorSelection == 0)
+                    _color = color;
+                else
+                    _color.H = color.H;
+                __instance.colorSelection = selection;
             }
             else
                 switch (selection)
@@ -144,23 +148,55 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 SpriteEffects.None,
                 0.88f);
 
-            // Color Selection
-
-
             // Saturation Bar
-            b.Draw(_gradientBar,
-                new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 36, __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2, 352, 24),
-                new HSLColor {H = _color.H, S = _color.L == 0 ? 0 : 1, L = 0.5f}.ToRgbColor());
+            for (var i = 0; i < 16; i++)
+            {
+                b.Draw(Game1.staminaRect,
+                    new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 36 + i * 22, __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2, 22, 28),
+                    new HSLColor {H = _color.H, S = i / 16f, L = _color.L}.ToRgbColor());
+            }
+
+            if (__instance.colorSelection != 0)
+                b.Draw(Game1.mouseCursors,
+                    new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 36 - 10 + (int) (_color.S * 352), __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2 + 16, 20, 16),
+                    new Rectangle(412, 495, 5, 4),
+                    Color.White);
 
             // Lightness Bar
-            b.Draw(_gradientBar,
-                new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 396, __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2, 352, 24),
-                Color.White);
+            for (var i = 0; i < 16; i++)
+            {
+                b.Draw(Game1.staminaRect,
+                    new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 396 + i * 22, __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2, 22, 28),
+                    new HSLColor {H = _color.H, S = _color.S, L = i / 16f}.ToRgbColor());
+            }
+
+            if (__instance.colorSelection != 0)
+                b.Draw(Game1.mouseCursors,
+                    new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 396 - 10 + (int) (_color.L * 352), __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2 + 16, 20, 16),
+                    new Rectangle(412, 495, 5, 4),
+                    Color.White);
 
             // Hue Bar
             b.Draw(_hueBar,
                 new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 36, __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2 + 32, 712, 28),
                 Color.White);
+
+            if (__instance.colorSelection != 0)
+                b.Draw(Game1.mouseCursors,
+                    new Rectangle(__instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 + 36 - 10 + (int) (_color.H * 712), __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2 + 32 + 16, 20, 16),
+                    new Rectangle(412, 495, 5, 4),
+                    Color.White);
+            else
+                IClickableMenu.drawTextureBox(b,
+                    Game1.mouseCursors,
+                    new Rectangle(375, 357, 3, 3),
+                    __instance.xPositionOnScreen + IClickableMenu.borderWidth / 2 - 4,
+                    __instance.yPositionOnScreen + IClickableMenu.borderWidth / 2 - 4,
+                    36,
+                    36,
+                    Color.Black,
+                    4f,
+                    false);
 
             // Chest
             if (__instance.itemToDrawColored is Chest chest)

@@ -193,52 +193,59 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 __instance.populateClickableComponentList();
             }
 
-            if (config.Source == Storage.SourceType.JsonAssets && chest != null && config.PlayerColor && __instance.chestColorPicker == null)
+            if (config.Source == Storage.SourceType.JsonAssets && chest != null && config.PlayerColor)
             {
-                var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
-                var sourceItem = sourceItemReflected.GetValue();
-
-                // Add color picker back to special Expanded Storage Chests
-                var colorPickerChest = new Chest(true, sourceItem.ParentSheetIndex);
-                var chestColorPicker = new DiscreteColorPicker(
-                    __instance.xPositionOnScreen,
-                    __instance.yPositionOnScreen - 64 - IClickableMenu.borderWidth * 2,
-                    0,
-                    colorPickerChest);
-
-                colorPickerChest.playerChoiceColor.Value = chest.playerChoiceColor.Value;
-                chestColorPicker.colorSelection = chestColorPicker.getSelectionFromColor(chest.playerChoiceColor.Value);
-                __instance.chestColorPicker = chestColorPicker;
-
-                __instance.colorPickerToggleButton = new ClickableTextureComponent(
-                    new Rectangle(__instance.xPositionOnScreen + __instance.width,
-                        __instance.yPositionOnScreen + __instance.height / 3 - 64 + -160, 64, 64),
-                    Game1.mouseCursors,
-                    new Rectangle(119, 469, 16, 16),
-                    4f)
+                if (__instance.chestColorPicker == null)
                 {
-                    hoverText = Game1.content.LoadString("Strings\\UI:Toggle_ColorPicker"),
-                    myID = 27346,
-                    downNeighborID = -99998,
-                    leftNeighborID = 53921,
-                    region = 15923
-                };
+                    __instance.colorPickerToggleButton = new ClickableTextureComponent(
+                        new Rectangle(__instance.xPositionOnScreen + __instance.width,
+                            __instance.yPositionOnScreen + __instance.height / 3 - 64 + -160, 64, 64),
+                        Game1.mouseCursors,
+                        new Rectangle(119, 469, 16, 16),
+                        4f)
+                    {
+                        hoverText = Game1.content.LoadString("Strings\\UI:Toggle_ColorPicker"),
+                        myID = 27346,
+                        downNeighborID = -99998,
+                        leftNeighborID = 53921,
+                        region = 15923
+                    };
 
-                var discreteColorPickerCC = new List<ClickableComponent>();
-                for (var i = 0; i < chestColorPicker.totalColors; i++)
-                    discreteColorPickerCC.Add(
-                        new ClickableComponent(
-                            new Rectangle(
-                                chestColorPicker.xPositionOnScreen + IClickableMenu.borderWidth / 2 + i * 9 * 4,
-                                chestColorPicker.yPositionOnScreen + IClickableMenu.borderWidth / 2, 36, 28), "")
-                        {
-                            myID = i + 4343,
-                            rightNeighborID = i < chestColorPicker.totalColors - 1 ? i + 4343 + 1 : -1,
-                            leftNeighborID = i > 0 ? i + 4343 - 1 : -1,
-                            downNeighborID = __instance.ItemsToGrabMenu.inventory.Count > 0 ? 53910 : 0
-                        });
+                    var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
+                    var sourceItem = sourceItemReflected.GetValue();
 
-                __instance.discreteColorPickerCC = discreteColorPickerCC;
+                    // Add color picker back to special Expanded Storage Chests
+                    var colorPickerChest = new Chest(true, sourceItem.ParentSheetIndex);
+                    var chestColorPicker = new DiscreteColorPicker(
+                        __instance.xPositionOnScreen,
+                        __instance.yPositionOnScreen - 64 - IClickableMenu.borderWidth * 2,
+                        0,
+                        colorPickerChest);
+
+                    colorPickerChest.playerChoiceColor.Value = chest.playerChoiceColor.Value;
+                    chestColorPicker.colorSelection = chestColorPicker.getSelectionFromColor(chest.playerChoiceColor.Value);
+                    __instance.chestColorPicker = chestColorPicker;
+                }
+
+                if (__instance.discreteColorPickerCC == null)
+                {
+                    var discreteColorPickerCC = new List<ClickableComponent>();
+                    for (var i = 0; i < __instance.chestColorPicker.totalColors; i++)
+                        discreteColorPickerCC.Add(
+                            new ClickableComponent(
+                                new Rectangle(
+                                    __instance.chestColorPicker.xPositionOnScreen + IClickableMenu.borderWidth / 2 + i * 9 * 4,
+                                    __instance.chestColorPicker.yPositionOnScreen + IClickableMenu.borderWidth / 2, 36, 28), "")
+                            {
+                                myID = i + 4343,
+                                rightNeighborID = i < __instance.chestColorPicker.totalColors - 1 ? i + 4343 + 1 : -1,
+                                leftNeighborID = i > 0 ? i + 4343 - 1 : -1,
+                                downNeighborID = __instance.ItemsToGrabMenu.inventory.Count > 0 ? 53910 : 0
+                            });
+
+                    __instance.discreteColorPickerCC = discreteColorPickerCC;
+                }
+
                 __instance.populateClickableComponentList();
             }
 
