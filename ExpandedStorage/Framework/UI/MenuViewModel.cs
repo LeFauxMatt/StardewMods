@@ -11,6 +11,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 namespace ImJustMatt.ExpandedStorage.Framework.UI
 {
@@ -35,28 +36,37 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             _screenId = Context.ScreenId;
             _model = MenuModel.Get(menu);
 
-            if (_model.StorageConfig == null)
+            if (_model.Storage == null)
                 return;
 
-            _view = new MenuView(menu.ItemsToGrabMenu,
+            Chest chest = null;
+            if (_model.Context is Chest sourceItem)
+            {
+                chest = new Chest(true, sourceItem.ParentSheetIndex);
+                chest.playerChoiceColor.Value = sourceItem.playerChoiceColor.Value;
+            }
+
+            _view = new MenuView(menu,
                 new MenuView.Options
                 {
-                    ShowSearch = _model.StorageConfig.Option("ShowSearchBar") == StorageConfig.Choice.Enable
+                    ShowSearch = _model.Storage.Option("ShowSearchBar", true) == StorageConfig.Choice.Enable,
+                    ShowColor = chest != null && _model.Storage.PlayerColor,
+                    Chest = chest,
+                    Text = _model.SearchText
                 },
                 Scroll,
                 SetTab,
                 SetSearch);
 
-            if (_view.SearchField != null) _view.SearchField.Text = _model.SearchText;
-
             // Events
             _model.ItemChanged += OnItemChanged;
             _events.Input.ButtonsChanged += OnButtonsChanged;
             _events.Input.ButtonPressed += OnButtonPressed;
+            _events.Input.ButtonReleased += OnButtonReleased;
             _events.Input.CursorMoved += OnCursorMoved;
             _events.Input.MouseWheelScrolled += OnMouseWheelScrolled;
 
-            if (_model.StorageConfig.Tabs.Any())
+            if (_model.Storage.Option("ShowTabs", true) == StorageConfig.Choice.Enable && _model.Storage.Tabs.Any())
             {
                 foreach (var tab in _model.StorageTabs) _view.AddTab(tab.Texture, tab.TabName);
                 _view.CurrentTab = _model.CurrentTab;
@@ -70,6 +80,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             Instance.Value = null;
             _events.Input.ButtonsChanged -= OnButtonsChanged;
             _events.Input.ButtonPressed -= OnButtonPressed;
+            _events.Input.ButtonReleased -= OnButtonReleased;
             _events.Input.CursorMoved -= OnCursorMoved;
             _events.Input.MouseWheelScrolled -= OnMouseWheelScrolled;
             _model.ItemChanged -= OnItemChanged;
@@ -98,10 +109,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         /// <param name="e"></param>
         private static void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
-            if (Instance.Value != null && (!Context.HasScreenId(Instance.Value._screenId) || Game1.activeClickableMenu is not ItemGrabMenu))
+            if (Instance.Value == null)
+                return;
+            if (!Context.HasScreenId(Instance.Value._screenId) || Game1.activeClickableMenu is not ItemGrabMenu)
                 Instance.Value.Dispose();
-            if (Instance.Value?._view?.SearchField != null)
-                Instance.Value._model.SearchText = Instance.Value._view.SearchField.Text;
+            else
+                Instance.Value._model.SearchText = MenuView.SearchText;
         }
 
         /// <summary>
@@ -174,7 +187,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
                 _inputHelper.SuppressActiveKeybinds(_config.Controls.ScrollUp);
             }
 
-            if (_model.StorageConfig?.Tabs == null)
+            if (_model.Storage?.Tabs == null)
                 return;
 
             if (_config.Controls.PreviousTab.JustPressed())
@@ -208,6 +221,28 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
                 _inputHelper.Suppress(e.Button);
             else if (_view.ReceiveKeyPress(e.Button))
                 _inputHelper.Suppress(e.Button);
+        }
+
+        /// <summary>Track if configured control buttons are pressed or pass input to overlay.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
+        {
+            if (_view == null || Context.ScreenId != _screenId)
+                return;
+
+            var x = Game1.getMouseX(true);
+            var y = Game1.getMouseY(true);
+
+            if ((e.Button == SButton.MouseLeft || e.Button.IsUseToolButton()) && _view.LeftClick(x, y, true))
+                _inputHelper.Suppress(e.Button);
+            else if ((e.Button == SButton.MouseRight || e.Button.IsActionButton()) && _view.RightClick(x, y, true))
+                _inputHelper.Suppress(e.Button);
+
+            if (_model.Context is Chest chest)
+            {
+                chest.playerChoiceColor.Value = _view.CurrentColor ?? chest.playerChoiceColor.Value;
+            }
         }
 
         /// <summary>Raised after the player moves the in-game cursor.</summary>
@@ -280,11 +315,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             }
 
             // Show/hide arrows
-            if (_view?.UpArrow != null)
-                _view.UpArrow.visible = _model.SkippedRows > 0;
-
-            if (_view?.DownArrow != null)
-                _view.DownArrow.visible = _model.SkippedRows < _model.MaxRows;
+            _view.ToggleArrows(_model.SkippedRows > 0, _model.SkippedRows < _model.MaxRows);
         }
 
         private bool SearchMatches(Item item)

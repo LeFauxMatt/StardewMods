@@ -4,7 +4,6 @@ using System.Linq;
 using Harmony;
 using ImJustMatt.Common.PatternPatches;
 using ImJustMatt.ExpandedStorage.Framework.Extensions;
-using ImJustMatt.ExpandedStorage.Framework.Models;
 using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -55,7 +54,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
             harmony.Patch(
                 AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                new HarmonyMethod(GetType(), nameof(GetActualCapacity_Prefix))
+                new HarmonyMethod(GetType(), nameof(GetActualCapacityPrefix))
             );
 
             harmony.Patch(
@@ -81,16 +80,18 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 || !Game1.didPlayerJustRightClick(true))
                 return true;
 
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || config.Source != Storage.SourceType.JsonAssets)
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null)
                 return true;
+
             __instance.GetMutex().RequestLock(delegate
             {
                 __instance.frameCounter.Value = 5;
-                Game1.playSound(config.OpenSound);
+                Game1.playSound(storage.OpenSound);
                 Game1.player.Halt();
                 Game1.player.freezePause = 1000;
             });
+
             __result = true;
             return false;
         }
@@ -98,8 +99,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         /// <summary>Prevent adding item if filtered.</summary>
         public static bool AddItemPrefix(Chest __instance, ref Item __result, Item item)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (!ReferenceEquals(__instance, item) && (config == null || config.Filter(item)))
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (!ReferenceEquals(__instance, item) && (storage == null || storage.Filter(item)))
                 return true;
 
             __result = item;
@@ -119,24 +120,25 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         }
 
         /// <summary>Returns modded capacity for storage.</summary>
-        public static bool GetActualCapacity_Prefix(Chest __instance, ref int __result)
+        public static bool GetActualCapacityPrefix(Chest __instance, ref int __result)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config?.Capacity is not { } capacity || capacity == 0)
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null || storage.ActualCapacity == 0)
                 return true;
-            __result = capacity == -1 ? int.MaxValue : capacity;
+
+            __result = storage.ActualCapacity == -1 ? int.MaxValue : storage.ActualCapacity;
             return false;
         }
 
         /// <summary>Draw chest with playerChoiceColor and lid animation when placed.</summary>
         public static bool DrawPrefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
             // Only draw origin sprite for bigger expanded storages
-            if (config.SpriteSheet is { } spriteSheet
+            if (storage.SpriteSheet is { } spriteSheet
                 && (spriteSheet.TileWidth > 1 || spriteSheet.TileHeight > 1)
                 && ((int) __instance.TileLocation.X != x || (int) __instance.TileLocation.Y != y))
                 return false;
@@ -152,29 +154,48 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             var globalPosition = new Vector2(draw_x * 64f, (draw_y - 1f) * 64f);
             var layerDepth = Math.Max(0.0f, ((draw_y + 1f) * 64f - 24f) / 10000f) + draw_x * 1E-05f;
 
-            __instance.Draw(config, spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition), Vector2.Zero, alpha, layerDepth);
+            __instance.Draw(storage, spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition), Vector2.Zero, alpha, layerDepth);
             return false;
         }
 
         /// <summary>Draw chest with playerChoiceColor and lid animation when held.</summary>
         public static bool DrawLocalPrefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || !local || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null || !local || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            __instance.Draw(config, spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
+            __instance.Draw(storage, spriteBatch, new Vector2(x, y - 64), Vector2.Zero, alpha);
             return false;
         }
 
         /// <summary>Draw chest with playerChoiceColor and lid animation in menu.</summary>
         public static bool DrawInMenuPrefix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Color color, bool drawShadow)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            __instance.Draw(config, spriteBatch, location + new Vector2(32, 32), new Vector2(8, 16), transparency, layerDepth, 4f * (scaleSize < 0.2 ? scaleSize : scaleSize / 2f));
+            Vector2 origin;
+            var drawScaleSize = scaleSize;
+            if (storage.SpriteSheet is {Texture: { }} spriteSheet)
+            {
+                drawScaleSize *= spriteSheet.ScaleSize;
+                origin = new Vector2(spriteSheet.Width / 2f, spriteSheet.Height / 2f);
+            }
+            else
+            {
+                drawScaleSize *= scaleSize < 0.2 ? 4f : 2f;
+                origin = new Vector2(8, 16);
+            }
+
+            __instance.Draw(storage,
+                spriteBatch,
+                location + new Vector2(32, 32),
+                origin,
+                transparency,
+                layerDepth,
+                drawScaleSize);
 
             // Draw Stack
             if (__instance.Stack > 1)

@@ -2,6 +2,7 @@
 using System.Reflection.Emit;
 using Harmony;
 using ImJustMatt.Common.PatternPatches;
+using ImJustMatt.ExpandedStorage.Framework.Extensions;
 using ImJustMatt.ExpandedStorage.Framework.Models;
 using ImJustMatt.ExpandedStorage.Framework.UI;
 using Microsoft.Xna.Framework;
@@ -62,6 +63,21 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             harmony.Patch(
                 AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
                 transpiler: new HarmonyMethod(GetType(), nameof(DrawTranspiler))
+            );
+
+            harmony.Patch(
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
+                postfix: new HarmonyMethod(GetType(), nameof(GameWindowSizeChangedPostfix))
+            );
+
+            harmony.Patch(
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                postfix: new HarmonyMethod(GetType(), nameof(SetSourceItemPostfix))
+            );
+
+            harmony.Patch(
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
+                postfix: new HarmonyMethod(GetType(), nameof(RepositionSideButtonsPostfix))
             );
         }
 
@@ -130,11 +146,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         private static void ConstructorPostfix(ItemGrabMenu __instance)
         {
-            var config = ExpandedStorage.GetConfig(__instance.context);
-            if (config == null || __instance.context is ShippingBin)
+            var storage = ExpandedStorage.GetStorage(__instance.context);
+            if (storage == null || __instance.context is ShippingBin)
                 return;
 
-            var menuConfig = config.Menu;
+            var menuConfig = storage.Menu;
+
             __instance.ItemsToGrabMenu.rows = menuConfig.Rows;
             if (menuConfig.Capacity > 0)
                 __instance.ItemsToGrabMenu.capacity = menuConfig.Capacity;
@@ -178,78 +195,42 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                     __instance.yPositionOnScreen + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth + 192 - 16,
                     false,
                     ExpandedStorage.HeldChest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID),
-                    config.HighlightMethod);
+                    chest.HighlightMethod(storage));
             }
             else
             {
-                __instance.inventory.highlightMethod = config.HighlightMethod;
+                __instance.inventory.highlightMethod = chest.HighlightMethod(storage);
             }
 
-            if (config.Source == Storage.SourceType.JsonAssets && chest != null && !config.PlayerColor && __instance.chestColorPicker != null)
+            if (__instance.chestColorPicker != null)
             {
+                if (!storage.PlayerColor)
+                    __instance.colorPickerToggleButton = null;
                 __instance.chestColorPicker = null;
-                __instance.colorPickerToggleButton = null;
                 __instance.discreteColorPickerCC = null;
                 __instance.populateClickableComponentList();
+                __instance.SetupBorderNeighbors();
             }
-
-            if (config.Source == Storage.SourceType.JsonAssets && chest != null && config.PlayerColor)
+            else if (storage.PlayerColor)
             {
-                if (__instance.chestColorPicker == null)
+                __instance.colorPickerToggleButton = new ClickableTextureComponent(
+                    new Rectangle(__instance.xPositionOnScreen + __instance.width,
+                        __instance.yPositionOnScreen + __instance.height / 3 - 64 + -160, 64, 64),
+                    Game1.mouseCursors,
+                    new Rectangle(119, 469, 16, 16),
+                    4f)
                 {
-                    __instance.colorPickerToggleButton = new ClickableTextureComponent(
-                        new Rectangle(__instance.xPositionOnScreen + __instance.width,
-                            __instance.yPositionOnScreen + __instance.height / 3 - 64 + -160, 64, 64),
-                        Game1.mouseCursors,
-                        new Rectangle(119, 469, 16, 16),
-                        4f)
-                    {
-                        hoverText = Game1.content.LoadString("Strings\\UI:Toggle_ColorPicker"),
-                        myID = 27346,
-                        downNeighborID = -99998,
-                        leftNeighborID = 53921,
-                        region = 15923
-                    };
-
-                    var sourceItemReflected = _reflection.GetField<Item>(__instance, "sourceItem");
-                    var sourceItem = sourceItemReflected.GetValue();
-
-                    // Add color picker back to special Expanded Storage Chests
-                    var colorPickerChest = new Chest(true, sourceItem.ParentSheetIndex);
-                    var chestColorPicker = new DiscreteColorPicker(
-                        __instance.xPositionOnScreen,
-                        __instance.yPositionOnScreen - 64 - IClickableMenu.borderWidth * 2,
-                        0,
-                        colorPickerChest);
-
-                    colorPickerChest.playerChoiceColor.Value = chest.playerChoiceColor.Value;
-                    chestColorPicker.colorSelection = chestColorPicker.getSelectionFromColor(chest.playerChoiceColor.Value);
-                    __instance.chestColorPicker = chestColorPicker;
-                }
-
-                if (__instance.discreteColorPickerCC == null)
-                {
-                    var discreteColorPickerCC = new List<ClickableComponent>();
-                    for (var i = 0; i < __instance.chestColorPicker.totalColors; i++)
-                        discreteColorPickerCC.Add(
-                            new ClickableComponent(
-                                new Rectangle(
-                                    __instance.chestColorPicker.xPositionOnScreen + IClickableMenu.borderWidth / 2 + i * 9 * 4,
-                                    __instance.chestColorPicker.yPositionOnScreen + IClickableMenu.borderWidth / 2, 36, 28), "")
-                            {
-                                myID = i + 4343,
-                                rightNeighborID = i < __instance.chestColorPicker.totalColors - 1 ? i + 4343 + 1 : -1,
-                                leftNeighborID = i > 0 ? i + 4343 - 1 : -1,
-                                downNeighborID = __instance.ItemsToGrabMenu.inventory.Count > 0 ? 53910 : 0
-                            });
-
-                    __instance.discreteColorPickerCC = discreteColorPickerCC;
-                }
-
+                    hoverText = Game1.content.LoadString("Strings\\UI:Toggle_ColorPicker"),
+                    myID = 27346,
+                    downNeighborID = -99998,
+                    leftNeighborID = 53921,
+                    region = 15923
+                };
                 __instance.populateClickableComponentList();
+                __instance.SetupBorderNeighbors();
             }
 
-            if (config.Option("ShowSearchBar") == StorageConfig.Choice.Enable)
+            if (storage.Option("ShowSearchBar", true) == StorageConfig.Choice.Enable)
             {
                 __instance.yPositionOnScreen -= menuConfig.Padding;
                 __instance.height += menuConfig.Padding;
@@ -261,20 +242,54 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             {
                 __instance.height += menuConfig.Offset;
                 __instance.inventory.movePosition(0, menuConfig.Offset);
-                __instance.okButton.bounds.Y += menuConfig.Offset;
-                __instance.trashCan.bounds.Y += menuConfig.Offset;
-                __instance.dropItemInvisibleButton.bounds.Y += menuConfig.Offset;
-
-                if (menuConfig.Offset < 0)
-                {
-                    if (__instance.colorPickerToggleButton != null)
-                        __instance.colorPickerToggleButton.bounds.Y += menuConfig.Offset;
-                    __instance.fillStacksButton.bounds.Y += menuConfig.Offset;
-                    __instance.organizeButton.bounds.Y += menuConfig.Offset;
-                }
+                if (__instance.okButton != null)
+                    __instance.okButton.bounds.Y += menuConfig.Offset;
+                if (__instance.trashCan != null)
+                    __instance.trashCan.bounds.Y += menuConfig.Offset;
+                if (__instance.dropItemInvisibleButton != null)
+                    __instance.dropItemInvisibleButton.bounds.Y += menuConfig.Offset;
+                __instance.RepositionSideButtons();
             }
+        }
 
-            __instance.SetupBorderNeighbors();
+        /// <summary>Set color picker to HSL Color Picker.</summary>
+        private static void GameWindowSizeChangedPostfix(ItemGrabMenu __instance)
+        {
+            var storage = ExpandedStorage.GetStorage(__instance.context);
+            if (storage == null || __instance.context is ShippingBin)
+                return;
+
+            __instance.chestColorPicker = storage.PlayerColor ? MenuView.ColorPicker : null;
+        }
+
+        /// <summary>Set color picker to HSL Color Picker.</summary>
+        private static void SetSourceItemPostfix(ItemGrabMenu __instance, Item item)
+        {
+            var storage = ExpandedStorage.GetStorage(__instance.context);
+            if (storage == null || __instance.context is ShippingBin)
+                return;
+
+            __instance.chestColorPicker = storage.PlayerColor ? MenuView.ColorPicker : null;
+        }
+
+        /// <summary>Reposition side buttons with offset.</summary>
+        private static void RepositionSideButtonsPostfix(ItemGrabMenu __instance)
+        {
+            var storage = ExpandedStorage.GetStorage(__instance.context);
+            if (storage == null || __instance.context is ShippingBin)
+                return;
+
+            var menuConfig = storage.Menu;
+
+            if (Config.ExpandInventoryMenu && menuConfig.Offset < 0)
+            {
+                if (__instance.colorPickerToggleButton != null)
+                    __instance.colorPickerToggleButton.bounds.Y += menuConfig.Offset / 2;
+                if (__instance.fillStacksButton != null)
+                    __instance.fillStacksButton.bounds.Y += menuConfig.Offset / 2;
+                if (__instance.organizeButton != null)
+                    __instance.organizeButton.bounds.Y += menuConfig.Offset / 2;
+            }
         }
 
         /// <summary>Patch UI elements for ItemGrabMenu.</summary>

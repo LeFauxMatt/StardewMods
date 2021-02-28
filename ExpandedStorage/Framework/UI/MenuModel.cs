@@ -21,7 +21,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         private static ModConfig _config;
 
         /// <summary>The object that the inventory menu is associated with</summary>
-        private readonly object _menuContext;
+        internal readonly object Context;
 
         /// <summary>The inventory items that the inventory menu is associated with</summary>
         internal readonly IList<Item> Items;
@@ -30,7 +30,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         internal readonly int MenuRows;
 
         /// <summary>Expanded Storage Config data for Menu</summary>
-        internal readonly Storage StorageConfig;
+        internal readonly Storage Storage;
 
         /// <summary>Expanded Storage Tab data for Menu</summary>
         internal readonly IList<StorageTab> StorageTabs;
@@ -47,10 +47,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             Instance.Value = this;
 
             Menu = menu;
-            _menuContext = menu.context;
+            Context = menu.context;
             MenuRows = Menu.ItemsToGrabMenu.rows;
 
-            StorageConfig = ExpandedStorage.GetConfig(_menuContext);
+            Storage = ExpandedStorage.GetStorage(Context);
             Items = menu.ItemsToGrabMenu.actualInventory;
             FilteredItems = Items;
             MaxRows = Math.Max(0, Items.Count.RoundUp(12) / 12 - MenuRows);
@@ -59,9 +59,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             _skippedRows = 0;
             _searchText = "";
 
-            if (StorageConfig?.Tabs != null)
-                StorageTabs = StorageConfig.Tabs
-                    .Select(t => ExpandedStorage.GetTab(StorageConfig.ModUniqueId, t))
+            if (Storage?.Tabs != null)
+                StorageTabs = Storage.Tabs
+                    .Select(t => ExpandedStorage.GetTab(Storage.ModUniqueId, t))
                     .Where(t => t != null)
                     .ToList();
 
@@ -120,7 +120,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
 
         public void Dispose()
         {
-            switch (_menuContext)
+            switch (Context)
             {
                 case Object obj when obj.heldObject.Value is Chest chest:
                     chest.items.OnElementChanged -= ItemsOnElementChanged;
@@ -146,7 +146,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetOffset(MenuWithInventory menu)
         {
             return _config.ExpandInventoryMenu && menu is ItemGrabMenu {shippingBin: false} igm
-                ? ExpandedStorage.GetConfig(igm.context)?.Menu.Offset ?? 0
+                ? ExpandedStorage.GetStorage(igm.context)?.Menu.Offset ?? 0
                 : 0;
         }
 
@@ -154,7 +154,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetPadding(MenuWithInventory menu)
         {
             return menu is ItemGrabMenu {shippingBin: false} igm
-                ? ExpandedStorage.GetConfig(igm.context)?.Menu.Padding ?? 0
+                ? ExpandedStorage.GetStorage(igm.context)?.Menu.Padding ?? 0
                 : 0;
         }
 
@@ -162,7 +162,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetMenuCapacity(object context)
         {
             return _config.ExpandInventoryMenu
-                ? ExpandedStorage.GetConfig(context)?.Menu.Capacity ?? 36
+                ? ExpandedStorage.GetStorage(context)?.Menu.Capacity ?? 36
                 : 36;
         }
 
@@ -170,7 +170,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         public static int GetRows(object context)
         {
             return _config.ExpandInventoryMenu
-                ? ExpandedStorage.GetConfig(context)?.Menu.Rows ?? 3
+                ? ExpandedStorage.GetStorage(context)?.Menu?.Rows ?? 3
                 : 3;
         }
 
@@ -212,7 +212,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
 
         private void RegisterEvents()
         {
-            switch (_menuContext)
+            switch (Context)
             {
                 case Object obj when obj.heldObject.Value is Chest chest:
                     chest.items.OnElementChanged += ItemsOnElementChanged;
@@ -235,7 +235,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         private bool ContextMatches(ItemGrabMenu menu)
         {
             return menu.context != null
-                   && ReferenceEquals(menu.context, _menuContext)
+                   && ReferenceEquals(menu.context, Context)
                    || ReferenceEquals(menu.ItemsToGrabMenu.actualInventory, Items);
         }
 

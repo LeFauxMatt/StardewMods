@@ -46,8 +46,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
         {
             var reflectedChest = _reflection.GetField<Chest>(__instance, "Chest");
             var reflectedSample = _reflection.GetProperty<Item>(stack, "Sample");
-            var config = ExpandedStorage.GetConfig(reflectedChest.GetValue());
-            return config == null || config.Filter(reflectedSample.GetValue());
+            var storage = ExpandedStorage.GetStorage(reflectedChest.GetValue());
+            return storage == null || storage.Filter(reflectedSample.GetValue());
         }
     }
 }

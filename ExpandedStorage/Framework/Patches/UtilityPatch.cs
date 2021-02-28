@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Harmony;
 using ImJustMatt.Common.PatternPatches;
 using Microsoft.Xna.Framework;
@@ -23,8 +24,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static bool PlayerCanPlaceItemHerePrefix(ref bool __result, GameLocation location, Item item, int x, int y, Farmer f)
         {
-            var config = ExpandedStorage.GetConfig(item);
-            if (config?.SpriteSheet is not { } spriteSheet)
+            var storage = ExpandedStorage.GetStorage(item);
+            if (storage?.SpriteSheet is not {Texture: { }} spriteSheet)
                 return true;
 
             x = 64 * (x / 64);
@@ -43,16 +44,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 return false;
             }
 
-            var rect = new Rectangle(x, y, spriteSheet.TileWidth * 64, spriteSheet.TileHeight * 64);
-
             // Position intersects with farmer
-            foreach (var farmer in location.farmers)
+            var rect = new Rectangle(x, y, spriteSheet.TileWidth * 64, spriteSheet.TileHeight * 64);
+            if (location.farmers.Any(farmer => farmer.GetBoundingBox().Intersects(rect)))
             {
-                if (farmer.GetBoundingBox().Intersects(rect))
-                {
-                    __result = false;
-                    return false;
-                }
+                __result = false;
+                return false;
             }
 
             // Is Close Enough to Farmer
@@ -68,27 +65,14 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 for (var j = 0; j < spriteSheet.TileHeight; j++)
                 {
                     var tileLocation = new Vector2(x / 64 + i, y / 64 + j);
+                    if (item.canBePlacedHere(location, tileLocation)
+                        && location.getObjectAtTile((int) tileLocation.X, (int) tileLocation.Y) == null
+                        && location.isTilePlaceable(tileLocation, item))
+                        continue;
 
                     // Item cannot be placed here
-                    if (!item.canBePlacedHere(location, tileLocation))
-                    {
-                        __result = false;
-                        return false;
-                    }
-
-                    // Space is already occupied
-                    if (location.getObjectAtTile((int) tileLocation.X, (int) tileLocation.Y) != null)
-                    {
-                        __result = false;
-                        return false;
-                    }
-
-                    // Invalid tile placement for item
-                    if (!location.isTilePlaceable(tileLocation, item))
-                    {
-                        __result = false;
-                        return false;
-                    }
+                    __result = false;
+                    return false;
                 }
             }
 

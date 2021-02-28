@@ -16,7 +16,8 @@ An Expanded Storage content pack must contain the following files:
 - `expanded-storage.json`
 - `storage-tabs.json` (Optional)
 
-Each Storage must be added to the `BigCraftables' folder in the [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) Big Craftable format:
+Each Storage must be added to the `BigCraftables' folder in the
+[Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) Big Craftable format:
 
 - `BigCraftables\Storage Name\big-craftable.json`
 - `BigCraftables\Storage Name\big-craftable.png`
@@ -31,7 +32,8 @@ Each Storage must be added to the `BigCraftables' folder in the [Json Assets](ht
 }
 ```
 
-For full details of `manifest.json` refer to [Modding:Modder Guide/APIs/Manifest](https://stardewcommunitywiki.com/Modding:Modder_Guide/APIs/Manifest).
+For full details of `manifest.json` refer to
+[Modding:Modder Guide/APIs/Manifest](https://stardewcommunitywiki.com/Modding:Modder_Guide/APIs/Manifest).
 
 #### Expanded-Storage.json
 
@@ -68,7 +70,8 @@ For full details of `storage-tabs.json` see [Storage Tabs](#storage-tabs).
 
 ### Expanded Storage
 
-Expanded Storages are loaded into the game using [Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720) and [More Craftables](https://www.nexusmods.com/stardewvalley/mods/8058).  
+Expanded Storages are loaded into the game using
+[Json Assets](https://www.nexusmods.com/stardewvalley/mods/1720).  
 It's also possible to load storage or enable features using the [Expanded Storage API]().
 
 ```json
@@ -104,16 +107,24 @@ field               | description
 `IsPlaceable`       | Set to `false` to disallow chest from being placed. (default `true`)
 `OpenSound`         | Sound to play when storage is being opened. (default `"openChest"`) <sup>[3](#handyheadphones)</sup>
 `PlaceSound`        | Sound to play when storage is placed. (default `"axe"`) <sup>[3](#handyheadphones)</sup>
+`CarrySound`        | Sound to play when storage is picked up. (default `"pickUpItem"`) <sup>[3](#handyheadphones)</sup>
 `IsFridge`          | Set to `true` if storage should be treated as a Mini-Fridge. (default `false`)
 `SpecialChestType`  | `"None"`, `"MiniShippingBin"`, or `"JunimoChest"`. (default `"None"`) 
-`AllowList`         | Restrict chest to only accept items containing these [tags](#context-tags). (default `null`)
-`BlockList`         | Restrict chest to reject items containing these [tags](#context-tags). (default `null`)
-`Tabs`              | Adds [tabs](#storage-tabs) to the chest menu for this storage by the tab name(s). (default `null`)
+`AllowList`         | Restrict chest to only accept items containing these [tags](#context-tags). (default `[]`)
+`BlockList`         | Restrict chest to reject items containing these [tags](#context-tags). (default `[]`)
+`Tabs`              | Adds [tabs](#storage-tabs) to the chest menu for this storage by the tab name(s). (default `[]`)
 `ModData`           | Adds to the storage [modData](#mod-data) when placed. (default `null`)
+`EnabledFeatures`   | List of [config options](#config-options) to enable. (default `[]`)
+`DisabledFeatures`  | List of [config options](#config-options) to disable. (default `[]`)
 
-<span id="spritesheet">1.</span> Refer to the [Sprite Sheets](#sprite-sheets) section for arranging sprites correctly.  
-<span id="storagecapacity">2.</span> Assign a capacity of at least one row (12) to avoid visual glitches.  
-<span id="handyheadphones">3.</span> I recommend [Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from in-game.
+
+<span id="spritesheet">1.</span> Refer to the [Sprite Sheets](#sprite-sheets)
+section for arranging sprites correctly.  
+<span id="storagecapacity">2.</span> Assign a capacity of at least one row (12)
+to avoid visual glitches.  
+<span id="handyheadphones">3.</span> I recommend
+[Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen
+to sounds available to play from in-game.
 
 ### Storage Tabs
 
@@ -157,6 +168,20 @@ Custom Tab Images can be saved under the `assets` folder:
 
 - `assets\Crops.png`
 - `assets\Cooking.png`
+
+### Config Options
+
+Config options may be enabled/disabled to override the default config. If both
+enabled and disabled are specified then disabled will take precedence. If
+neither are specified then the global config will apply.
+
+field               | description
+--------------------|-------------
+`AccessCarried`     | Open the chest menu while item is currently being held. (default `disabled`)
+`CanCarry`          | Allows this storage to be picked up when it contains items. (default `enabled`)
+`ShowSearchBar`     | Add a search bar to the chest menu for this storage. (default `enabled`)
+`ShowTabs`          | Add a search bar to the chest menu for this storage. (default `enabled`)
+`VacuumItems`       | Storage will collect dropped items directly into it, bypassing the backpack. (default `disabled`)
 
 ### Sprite Sheets
 

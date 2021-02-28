@@ -51,35 +51,38 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
                     SpecialChestType = "MiniShippingBin";
                     OpenSound = "shwip";
                     PlaceSound = "axe";
+                    CarrySound = "pickUpItem";
                     break;
                 case "Mini-Fridge":
                     SpecialChestType = "None";
                     IsFridge = true;
                     OpenSound = "doorCreak";
                     PlaceSound = "hammer";
+                    CarrySound = "pickUpItem";
                     break;
                 case "Junimo Chest":
                     SpecialChestType = "JunimoChest";
                     OpenSound = "doorCreak";
                     PlaceSound = "axe";
+                    CarrySound = "pickUpItem";
                     break;
                 case "Stone Chest":
                     SpecialChestType = "None";
                     OpenSound = "openChest";
                     PlaceSound = "hammer";
+                    CarrySound = "pickUpItem";
                     break;
                 default:
                     SpecialChestType = "None";
                     OpenSound = "openChest";
                     PlaceSound = "axe";
+                    CarrySound = "pickUpItem";
                     break;
             }
         }
 
         /// <summary>Which mod was used to load these assets into the game.</summary>
         internal SourceType Source { get; set; } = SourceType.Unknown;
-
-        internal StorageMenu Menu => new(this);
 
         internal StorageSprite? SpriteSheet => !string.IsNullOrWhiteSpace(Image)
             ? _storageSprite ??= new StorageSprite(this)
@@ -106,6 +109,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
         public bool IsFridge { get; set; }
         public string OpenSound { get; set; }
         public string PlaceSound { get; set; }
+        public string CarrySound { get; set; }
         public bool IsPlaceable { get; set; } = true;
         public string Image { get; set; } = "";
         public int Frames { get; set; } = 5;
@@ -172,11 +176,12 @@ namespace ImJustMatt.ExpandedStorage.Framework.Models
             if (!IsFridge) IsFridge = storage.IsFridge;
             if (SpecialChestType == "None") SpecialChestType = storage.SpecialChestType;
             if (OpenSound == "openChest") OpenSound = storage.OpenSound;
+            if (CarrySound == "") CarrySound = storage.CarrySound;
             if (PlaceSound == "axe") PlaceSound = storage.PlaceSound;
             if (IsPlaceable) IsPlaceable = storage.IsPlaceable;
             if (!string.IsNullOrWhiteSpace(storage.Image)) Image = storage.Image;
             if (storage.Frames > 0) Frames = storage.Frames;
-            if (!PlayerColor) PlayerColor = storage.PlayerColor;
+            PlayerColor = storage.PlayerColor;
             if (Depth == 0) Depth = storage.Depth;
 
             if (storage.AllowList.Any())

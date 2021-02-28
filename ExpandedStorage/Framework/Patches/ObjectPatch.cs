@@ -48,11 +48,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static bool PlacementActionPrefix(Object __instance, ref bool __result, GameLocation location, int x, int y, Farmer who)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null)
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null)
                 return true;
 
-            if (!config.IsPlaceable)
+            if (!storage.IsPlaceable)
             {
                 __result = false;
                 return false;
@@ -77,7 +77,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
                 return false;
             }
 
-            if (config.IsFridge)
+            if (storage.IsFridge)
             {
                 if (location is not FarmHouse && location is not IslandFarmHouse)
                 {
@@ -99,16 +99,16 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             __instance.modData["furyx639.ExpandedStorage/Y"] = pos.Y.ToString(CultureInfo.InvariantCulture);
 
             // Get instance of object to place
-            var chest = __instance.ToChest(config);
+            var chest = __instance.ToChest(storage);
             chest.shakeTimer = 50;
             chest.TileLocation = pos;
 
             // Place object at location
             location.objects.Add(pos, chest);
-            location.playSound(config.PlaceSound);
+            location.playSound(storage.PlaceSound);
 
             // Place clones at additional tile locations
-            if (config.SpriteSheet is { } spriteSheet)
+            if (storage.SpriteSheet is {Texture: { }} spriteSheet)
             {
                 spriteSheet.ForEachPos(0, 0, delegate(Vector2 offset)
                 {
@@ -124,17 +124,17 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static bool DrawWhenHeldPrefix(Object __instance, SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null || __instance is not Chest chest || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null || __instance is not Chest chest || __instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            if (config.SpriteSheet is { } spriteSheet)
+            if (storage.SpriteSheet is {Texture: { }} spriteSheet)
             {
                 objectPosition.X -= spriteSheet.Width * 2f - 32;
                 objectPosition.Y -= spriteSheet.Height * 2f - 64;
             }
 
-            chest.Draw(config, spriteBatch, objectPosition, Vector2.Zero);
+            chest.Draw(storage, spriteBatch, objectPosition, Vector2.Zero);
             return false;
         }
 
@@ -143,11 +143,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
             if (__instance.modData.Keys.Any(ExcludeModDataKeys.Contains))
                 return true;
 
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config is not {IsPlaceable: true})
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage != null && !storage.IsPlaceable)
                 return false;
 
-            if (config.SpriteSheet is not { } spriteSheet)
+            if (storage?.SpriteSheet is not {Texture: { }} spriteSheet)
                 return true;
 
             var tile = 64 * Game1.GetPlacementGrabTile();

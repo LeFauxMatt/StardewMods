@@ -5,6 +5,8 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
+// ReSharper disable InconsistentNaming
+
 namespace ImJustMatt.ExpandedStorage.Framework.Patches
 {
     internal class ItemPatch : Patch<ModConfig>
@@ -23,15 +25,13 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static bool CanStackWithPrefix(Item __instance, ref bool __result, ISalable other)
         {
-            var config = ExpandedStorage.GetConfig(__instance);
-            if (config == null)
+            var storage = ExpandedStorage.GetStorage(__instance);
+            if (storage == null)
                 return true;
 
             // Disallow stacking for any chest instance objects
-            if (config.Option("CanCarry") != StorageConfig.Choice.Enable
-                && config.Option("AccessCarried") != StorageConfig.Choice.Enable
-                && ExpandedStorage.DefaultConfig.Option("CanCarry") != StorageConfig.Choice.Enable
-                && ExpandedStorage.DefaultConfig.Option("AccessCarried") != StorageConfig.Choice.Enable
+            if (storage.Option("CanCarry", true) != StorageConfig.Choice.Enable
+                && storage.Option("AccessCarried", true) != StorageConfig.Choice.Enable
                 && __instance is not Chest
                 && other is not Chest)
                 return true;

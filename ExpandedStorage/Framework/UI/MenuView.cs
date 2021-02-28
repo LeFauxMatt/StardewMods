@@ -7,6 +7,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 namespace ImJustMatt.ExpandedStorage.Framework.UI
 {
@@ -14,7 +15,13 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
     {
         private static readonly PerScreen<MenuView> Instance = new();
 
-        private readonly InventoryMenu _menu;
+        /// <summary>Chest color picker.</summary>
+        private readonly HSLColorPicker _colorPicker;
+
+        /// <summary>Scrolls inventory menu down one row.</summary>
+        private readonly ClickableTextureComponent _downArrow;
+
+        private readonly ItemGrabMenu _menu;
 
         /// <summary>The screen ID for which the overlay was created, to support split-screen mode.</summary>
         private readonly int _screenId;
@@ -25,6 +32,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         /// <summary>Corresponds to the bounds of the searchField.</summary>
         private readonly ClickableComponent _searchArea;
 
+        /// <summary>Input to filter items by name or context tags.</summary>
+        private readonly TextBox _searchField;
+
         /// <summary>Icon to display next to search box.</summary>
         private readonly ClickableTextureComponent _searchIcon;
 
@@ -33,14 +43,8 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         /// <summary>Chest menu tab components.</summary>
         private readonly IList<ClickableTextureComponent> _tabs = new List<ClickableTextureComponent>();
 
-        /// <summary>Scrolls inventory menu down one row.</summary>
-        internal readonly ClickableTextureComponent DownArrow;
-
-        /// <summary>Input to filter items by name or context tags.</summary>
-        internal readonly TextBox SearchField;
-
         /// <summary>Scrolls inventory menu up one row.</summary>
-        internal readonly ClickableTextureComponent UpArrow;
+        private readonly ClickableTextureComponent _upArrow;
 
         /// <summary>The number of draw cycles since the menu was initialized.</summary>
         private int _drawCount;
@@ -58,7 +62,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         internal int CurrentTab;
 
         protected internal MenuView(
-            InventoryMenu menu,
+            ItemGrabMenu menu,
             Options options,
             Action<int> scroll,
             Action<int> setTab,
@@ -73,34 +77,50 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             _search = search;
 
             var bounds = new Rectangle(_menu.xPositionOnScreen, _menu.yPositionOnScreen, _menu.width, _menu.height);
-            _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
+            var upperBounds = new Rectangle(
+                _menu.ItemsToGrabMenu.xPositionOnScreen,
+                _menu.ItemsToGrabMenu.yPositionOnScreen,
+                _menu.ItemsToGrabMenu.width,
+                _menu.ItemsToGrabMenu.height);
+            _tabY = upperBounds.Bottom + 1 * Game1.pixelZoom;
 
-            UpArrow = new ClickableTextureComponent(
-                new Rectangle(bounds.Right + 8, bounds.Y - 40, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
+            _upArrow = new ClickableTextureComponent(
+                new Rectangle(upperBounds.Right + 8, upperBounds.Y - 40, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
                 Game1.mouseCursors,
                 new Rectangle(421, 459, 11, 12),
                 Game1.pixelZoom);
 
-            DownArrow = new ClickableTextureComponent(
-                new Rectangle(UpArrow.bounds.X, bounds.Bottom - 36, UpArrow.bounds.Width, UpArrow.bounds.Height),
+            _downArrow = new ClickableTextureComponent(
+                new Rectangle(_upArrow.bounds.X, upperBounds.Bottom - 36, _upArrow.bounds.Width, _upArrow.bounds.Height),
                 Game1.mouseCursors,
                 new Rectangle(421, 472, 11, 12),
                 Game1.pixelZoom);
 
+            if (options.ShowColor)
+            {
+                _colorPicker = new HSLColorPicker(
+                    bounds.Right + 96,
+                    bounds.Top - 56,
+                    options.Chest);
+                _colorPicker.colorSelection = _colorPicker.getSelectionFromColor(options.Chest.playerChoiceColor.Value);
+                _menu.chestColorPicker = _colorPicker;
+            }
+
             if (options.ShowSearch)
             {
-                SearchField = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
+                _searchField = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
                 {
-                    X = bounds.X,
-                    Y = bounds.Y - 14 * Game1.pixelZoom,
-                    Width = bounds.Width,
-                    Selected = false
+                    X = upperBounds.X,
+                    Y = upperBounds.Y - 14 * Game1.pixelZoom,
+                    Width = upperBounds.Width,
+                    Selected = false,
+                    Text = options.Text
                 };
 
-                _searchArea = new ClickableComponent(new Rectangle(SearchField.X, SearchField.Y, SearchField.Width, SearchField.Height), "");
+                _searchArea = new ClickableComponent(new Rectangle(_searchField.X, _searchField.Y, _searchField.Width, _searchField.Height), "");
 
                 _searchIcon = new ClickableTextureComponent(
-                    new Rectangle(bounds.Right - 38, bounds.Y - 14 * Game1.pixelZoom + 6, 32, 32),
+                    new Rectangle(upperBounds.Right - 38, upperBounds.Y - 14 * Game1.pixelZoom + 6, 32, 32),
                     Game1.mouseCursors,
                     new Rectangle(80, 0, 13, 13),
                     2.5f);
@@ -109,8 +129,21 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             CurrentTab = -1;
         }
 
+        internal Color? CurrentColor => _colorPicker?.getCurrentColor();
+
         /// <summary>Returns whether the menu and its components have been initialized.</summary>
         private bool IsInitialized => _drawCount > 1;
+
+        /// <summary>Returns Displayed Rows of MenuWithInventory.</summary>
+        internal static HSLColorPicker ColorPicker =>
+            Instance.Value == null || Instance.Value._screenId != Context.ScreenId
+                ? null
+                : Instance.Value._colorPicker;
+
+        internal static string SearchText =>
+            Instance.Value == null || Instance.Value._screenId != Context.ScreenId
+                ? null
+                : Instance.Value._searchField.Text;
 
         /// <summary>Unregister Event Handling</summary>
         public void Dispose()
@@ -122,7 +155,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         {
             var lastTab = _tabs.LastOrDefault();
             var i = _tabs.Count;
-            var x = lastTab?.bounds.Right ?? _menu.xPositionOnScreen;
+            var x = lastTab?.bounds.Right ?? _menu.ItemsToGrabMenu.xPositionOnScreen;
             var tab = new ClickableTextureComponent(
                 new Rectangle(x, _tabY, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
                 texture,
@@ -135,35 +168,47 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             _tabs.Add(tab);
         }
 
+        internal void ToggleArrows(bool upArrow, bool downArrow)
+        {
+            if (_upArrow != null)
+                _upArrow.visible = upArrow;
+            if (_downArrow != null)
+                _downArrow.visible = downArrow;
+        }
+
         /// <summary></summary>
         private void InitComponents()
         {
-            var bounds = new Rectangle(_menu.xPositionOnScreen, _menu.yPositionOnScreen, _menu.width, _menu.height);
+            var upperBounds = new Rectangle(
+                _menu.ItemsToGrabMenu.xPositionOnScreen,
+                _menu.ItemsToGrabMenu.yPositionOnScreen,
+                _menu.ItemsToGrabMenu.width,
+                _menu.ItemsToGrabMenu.height);
 
-            if (UpArrow != null)
+            if (_upArrow != null)
             {
-                UpArrow.bounds.X = bounds.Right + 8;
-                UpArrow.bounds.Y = bounds.Y - 40;
+                _upArrow.bounds.X = upperBounds.Right + 8;
+                _upArrow.bounds.Y = upperBounds.Y - 40;
             }
 
-            if (DownArrow != null)
+            if (_downArrow != null)
             {
-                DownArrow.bounds.X = bounds.Right + 8;
-                DownArrow.bounds.Y = bounds.Bottom - 36;
+                _downArrow.bounds.X = upperBounds.Right + 8;
+                _downArrow.bounds.Y = upperBounds.Bottom - 36;
             }
 
-            if (SearchField != null)
+            if (_searchField != null)
             {
-                SearchField.X = bounds.X;
-                SearchField.Y = bounds.Y - 14 * Game1.pixelZoom;
-                _searchArea.bounds.X = SearchField.X;
-                _searchArea.bounds.Y = SearchField.Y;
-                _searchIcon.bounds.X = bounds.Right - 38;
-                _searchIcon.bounds.Y = bounds.Y - 14 * Game1.pixelZoom + 6;
+                _searchField.X = upperBounds.X;
+                _searchField.Y = upperBounds.Y - 14 * Game1.pixelZoom;
+                _searchArea.bounds.X = _searchField.X;
+                _searchArea.bounds.Y = _searchField.Y;
+                _searchIcon.bounds.X = upperBounds.Right - 38;
+                _searchIcon.bounds.Y = upperBounds.Y - 14 * Game1.pixelZoom + 6;
             }
 
-            _tabY = bounds.Bottom + 1 * Game1.pixelZoom;
-            var xPosition = bounds.Left;
+            _tabY = upperBounds.Bottom + 1 * Game1.pixelZoom;
+            var xPosition = upperBounds.Left;
             foreach (var tab in _tabs)
             {
                 tab.bounds.X = xPosition;
@@ -188,9 +233,9 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
 
             Instance.Value._drawCount++;
 
-            Instance.Value.UpArrow?.draw(b);
-            Instance.Value.DownArrow?.draw(b);
-            Instance.Value.SearchField?.Draw(b, false);
+            Instance.Value._upArrow?.draw(b);
+            Instance.Value._downArrow?.draw(b);
+            Instance.Value._searchField?.Draw(b, false);
             Instance.Value._searchIcon?.draw(b);
 
             if (Instance.Value._hoverText != null)
@@ -229,7 +274,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
                 return false;
 
             if (button != SButton.Escape)
-                return SearchField != null && SearchField.Selected;
+                return _searchField != null && _searchField.Selected;
 
             Game1.playSound("bigDeSelect");
             Game1.activeClickableMenu = null;
@@ -239,21 +284,28 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         /// <summary>Handles Left-Click interaction with overlay elements</summary>
         /// <param name="x">x-coordinate of left-click</param>
         /// <param name="y">Y-Coordinate of left-click</param>
-        /// <param name="playSound">Whether sound should be enabled for click</param>
+        /// <param name="released">True when left click is released</param>
+        /// /// <param name="playSound">Whether sound should be enabled for click</param>
         /// <returns>True when an interaction occurs</returns>
-        internal bool LeftClick(int x, int y, bool playSound = true)
+        internal bool LeftClick(int x, int y, bool released = false, bool playSound = true)
         {
             if (!IsInitialized || Context.ScreenId != _screenId)
                 return false;
 
-            if (SearchField != null)
+            if (released)
             {
-                SearchField.Selected = _searchArea.containsPoint(x, y);
-                if (SearchField.Selected)
+                _colorPicker?.ReleaseBar();
+                return false;
+            }
+
+            if (_searchField != null)
+            {
+                _searchField.Selected = _searchArea.containsPoint(x, y);
+                if (_searchField.Selected)
                     return true;
             }
 
-            if (UpArrow != null && UpArrow.containsPoint(x, y))
+            if (_upArrow != null && _upArrow.containsPoint(x, y))
             {
                 _scroll.Invoke(1);
                 if (playSound)
@@ -261,7 +313,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
                 return true;
             }
 
-            if (DownArrow != null && DownArrow.containsPoint(x, y))
+            if (_downArrow != null && _downArrow.containsPoint(x, y))
             {
                 _scroll.Invoke(-1);
                 if (playSound)
@@ -284,23 +336,27 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
         /// <summary>Handles Right-Click interaction with overlay elements</summary>
         /// <param name="x">x-coordinate of left-click</param>
         /// <param name="y">Y-Coordinate of left-click</param>
+        /// <param name="released">True when left click is released</param>
         /// <param name="playSound">Whether sound should be enabled for click</param>
         /// <returns>True when an interaction occurs</returns>
         // ReSharper disable once UnusedParameter.Global
-        internal bool RightClick(int x, int y, bool playSound = true)
+        internal bool RightClick(int x, int y, bool released = false, bool playSound = true)
         {
             if (!IsInitialized || Context.ScreenId != _screenId)
                 return false;
 
-            if (SearchField == null)
+            if (released)
                 return false;
 
-            SearchField.Selected = _searchArea.containsPoint(x, y);
-            if (!SearchField.Selected)
+            if (_searchField == null)
                 return false;
 
-            SearchField.Text = "";
-            _search.Invoke(SearchField.Text);
+            _searchField.Selected = _searchArea.containsPoint(x, y);
+            if (!_searchField.Selected)
+                return false;
+
+            _searchField.Text = "";
+            _search.Invoke(_searchField.Text);
             return true;
         }
 
@@ -312,9 +368,10 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
             if (!IsInitialized || Context.ScreenId != _screenId)
                 return;
 
-            UpArrow?.tryHover(x, y, 0.25f);
-            DownArrow?.tryHover(x, y, 0.25f);
-            SearchField?.Hover(x, y);
+            _upArrow?.tryHover(x, y, 0.25f);
+            _downArrow?.tryHover(x, y, 0.25f);
+            _searchField?.Hover(x, y);
+            _colorPicker?.performHoverAction(x, y);
 
             var tab = _tabs.FirstOrDefault(t => t.containsPoint(x, y));
             _hoverText = tab?.hoverText;
@@ -322,11 +379,16 @@ namespace ImJustMatt.ExpandedStorage.Framework.UI
 
         internal class Options
         {
+            internal Chest Chest;
+            internal bool ShowColor;
             internal bool ShowSearch;
+            internal string Text;
 
-            public Options()
+            public Options(Chest chest = null)
             {
                 ShowSearch = false;
+                ShowColor = false;
+                Chest = chest;
             }
         }
     }

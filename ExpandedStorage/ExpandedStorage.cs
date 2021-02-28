@@ -35,9 +35,6 @@ namespace ImJustMatt.ExpandedStorage
         /// <summary>Dictionary of Expanded Storage tabs</summary>
         private static readonly IDictionary<string, StorageTab> StorageTabs = new Dictionary<string, StorageTab>();
 
-        /// <summary>Default storage settings for unspecified options</summary>
-        internal static StorageConfig DefaultConfig;
-
         /// <summary>Dictionary of Expanded Storage content pack asset loaders</summary>
         public static readonly IDictionary<string, Func<string, Texture2D>> AssetLoaders = new Dictionary<string, Func<string, Texture2D>>();
 
@@ -57,7 +54,7 @@ namespace ImJustMatt.ExpandedStorage
         private ExpandedStorageAPI _expandedStorageAPI;
 
         /// <summary>Returns ExpandedStorageConfig by item name.</summary>
-        public static Storage GetConfig(object context)
+        public static Storage GetStorage(object context)
         {
             var storage = Storages
                 .Select(c => c.Value)
@@ -66,7 +63,7 @@ namespace ImJustMatt.ExpandedStorage
         }
 
         /// <summary>Returns true if item is an ExpandedStorage.</summary>
-        private static bool HasConfig(object context)
+        private static bool HasStorage(object context)
         {
             return Storages.Any(c => c.Value.MatchesContext(context));
         }
@@ -90,7 +87,7 @@ namespace ImJustMatt.ExpandedStorage
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
-            DefaultConfig = _config.DefaultStorage;
+            _config.DefaultStorage.SetDefault();
             Monitor.Log(_config.SummaryReport, LogLevel.Debug);
 
             _expandedStorageAPI = new ExpandedStorageAPI(Helper, Monitor, Storages, StorageTabs);
@@ -100,6 +97,7 @@ namespace ImJustMatt.ExpandedStorage
             ChestExtensions.Init(helper.Reflection);
             MenuViewModel.Init(helper.Events, helper.Input, _config);
             MenuModel.Init(_config);
+            HSLColorPicker.Init(helper.Content);
 
             // Events
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -127,7 +125,7 @@ namespace ImJustMatt.ExpandedStorage
                 new ItemGrabMenuPatch(Monitor, _config, helper.Reflection),
                 new InventoryMenuPatch(Monitor, _config),
                 new MenuWithInventoryPatch(Monitor, _config),
-                new DiscreteColorPickerPatch(Monitor, _config, helper.Content),
+                new DiscreteColorPickerPatch(Monitor, _config),
                 new DebrisPatch(Monitor, _config),
                 new UtilityPatch(Monitor, _config),
                 new AutomatePatch(Monitor, _config, helper.Reflection, helper.ModRegistry.IsLoaded("Pathoschild.Automate")));
@@ -157,9 +155,7 @@ namespace ImJustMatt.ExpandedStorage
                 _contentLoader.ReloadDefaultStorageConfigs();
             }
 
-            modConfigApi.RegisterModConfig(ModManifest,
-                DefaultConfig,
-                SaveConfig);
+            modConfigApi.RegisterModConfig(ModManifest, DefaultConfig, SaveConfig);
             ModConfig.RegisterModConfig(ModManifest, modConfigApi, config);
         }
 
@@ -172,12 +168,12 @@ namespace ImJustMatt.ExpandedStorage
                 return;
 
             var location = e.Location;
-            var removed = e.Removed.LastOrDefault(p => p.Value is Chest && HasConfig(p.Value));
+            var removed = e.Removed.LastOrDefault(p => p.Value is Chest && HasStorage(p.Value));
 
             if (removed.Value != null)
             {
-                var config = GetConfig(removed.Value);
-                if (config?.SpriteSheet is { } spriteSheet)
+                var storage = GetStorage(removed.Value);
+                if (storage?.SpriteSheet is {Texture: { }} spriteSheet)
                 {
                     var x = removed.Value.modData.TryGetValue("furyx639.ExpandedStorage/X", out var xStr)
                         ? int.Parse(xStr)
@@ -188,7 +184,7 @@ namespace ImJustMatt.ExpandedStorage
 
                     void RemoveObject(Vector2 pos)
                     {
-                        if (pos.Equals(removed.Key) || location.Objects.ContainsKey(pos))
+                        if (pos.Equals(removed.Key) || !location.Objects.ContainsKey(pos))
                             return;
                         location.Objects.Remove(pos);
                     }
@@ -203,7 +199,7 @@ namespace ImJustMatt.ExpandedStorage
             var chest = e.Added
                 .Select(p => p.Value)
                 .OfType<Chest>()
-                .LastOrDefault(HasConfig);
+                .LastOrDefault(HasStorage);
 
             if (oldChest == null || chest == null || chest.items.Any() || !ReferenceEquals(e.Location, Game1.currentLocation))
                 return;
@@ -228,7 +224,7 @@ namespace ImJustMatt.ExpandedStorage
             VacuumChests.Value = Game1.player.Items
                 .Take(_config.VacuumToFirstRow ? 12 : Game1.player.MaxItems)
                 .OfType<Chest>()
-                .ToDictionary(i => i, GetConfig)
+                .ToDictionary(i => i, GetStorage)
                 .Where(s => s.Value?.Option("VacuumItems") == StorageConfig.Choice.Enable)
                 .ToDictionary(s => s.Key, s => s.Value);
 
@@ -246,7 +242,7 @@ namespace ImJustMatt.ExpandedStorage
             VacuumChests.Value = e.Player.Items
                 .Take(_config.VacuumToFirstRow ? 12 : e.Player.MaxItems)
                 .OfType<Chest>()
-                .ToDictionary(i => i, GetConfig)
+                .ToDictionary(i => i, GetStorage)
                 .Where(s => s.Value?.Option("VacuumItems") == StorageConfig.Choice.Enable)
                 .ToDictionary(s => s.Key, s => s.Value);
 
@@ -305,7 +301,7 @@ namespace ImJustMatt.ExpandedStorage
 
             var location = Game1.currentLocation;
             var pos = _config.Controller ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
-            Storage config = null;
+            Storage storage;
             pos.X = (int) pos.X;
             pos.Y = (int) pos.Y;
             location.objects.TryGetValue(pos, out var obj);
@@ -313,14 +309,15 @@ namespace ImJustMatt.ExpandedStorage
             // Carry Chest
             if (obj != null && e.Button.IsUseToolButton())
             {
-                config = GetConfig(obj);
-                if (config?.Option("CanCarry") == StorageConfig.Choice.Disable
-                    || config?.Option("CanCarry") == StorageConfig.Choice.Unspecified
-                    && DefaultConfig.Option("CanCarry") != StorageConfig.Choice.Enable
+                storage = GetStorage(obj);
+                if (storage == null
+                    || storage.Option("CanCarry", true) != StorageConfig.Choice.Enable
                     || !Game1.player.addItemToInventoryBool(obj, true))
                     return;
 
                 obj!.TileLocation = Vector2.Zero;
+                if (!string.IsNullOrWhiteSpace(storage.CarrySound))
+                    location.playSound(storage.CarrySound);
                 location.objects.Remove(pos);
                 Helper.Input.Suppress(e.Button);
                 return;
@@ -329,8 +326,8 @@ namespace ImJustMatt.ExpandedStorage
             // Access Carried Chest
             if (obj == null && HeldChest.Value != null && e.Button.IsActionButton())
             {
-                config = GetConfig(HeldChest.Value);
-                if (config?.Option("AccessCarried") != StorageConfig.Choice.Enable)
+                storage = GetStorage(HeldChest.Value);
+                if (storage == null || storage.Option("AccessCarried", true) != StorageConfig.Choice.Enable)
                     return;
 
                 HeldChest.Value.GetMutex().RequestLock(delegate
@@ -339,7 +336,7 @@ namespace ImJustMatt.ExpandedStorage
                     HeldChest.Value.performOpenChest();
                     _currentLidFrameReflected.Value = Helper.Reflection.GetField<int>(HeldChest.Value, "currentLidFrame");
                     _currentLidFrame.Value = HeldChest.Value.startingLidFrame.Value;
-                    Game1.playSound(config.OpenSound);
+                    Game1.playSound(storage.OpenSound);
                     Game1.player.Halt();
                     Game1.player.freezePause = 1000;
                 });
@@ -356,8 +353,8 @@ namespace ImJustMatt.ExpandedStorage
             if (HeldChest.Value == null || Game1.activeClickableMenu != null || !_config.Controls.OpenCrafting.JustPressed())
                 return;
 
-            var config = GetConfig(HeldChest.Value);
-            if (config?.Option("AccessCarried") != StorageConfig.Choice.Enable)
+            var storage = GetStorage(HeldChest.Value);
+            if (storage == null || storage.Option("AccessCarried", true) != StorageConfig.Choice.Enable)
                 return;
 
             HeldChest.Value.GetMutex().RequestLock(delegate

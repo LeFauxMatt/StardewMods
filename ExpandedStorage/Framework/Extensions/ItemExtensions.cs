@@ -16,23 +16,23 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
         private const string DonateMuseum = "donate_museum";
         private const string DonateBundle = "donate_bundle";
 
-        public static Chest ToChest(this Item item, Storage config = null)
+        public static Chest ToChest(this Item item, Storage storage = null)
         {
             // Get config for chest
-            config ??= ExpandedStorage.GetConfig(item);
+            storage ??= ExpandedStorage.GetStorage(item);
 
             // Create Chest from Item
             var chest = new Chest(true, Vector2.Zero, item.ParentSheetIndex)
             {
                 name = item.Name,
-                SpecialChestType = Enum.TryParse(config.SpecialChestType, out Chest.SpecialChestTypes specialChestType)
+                SpecialChestType = Enum.TryParse(storage.SpecialChestType, out Chest.SpecialChestTypes specialChestType)
                     ? specialChestType
                     : Chest.SpecialChestTypes.None
             };
-            chest.fridge.Value = config.IsFridge;
+            chest.fridge.Value = storage.IsFridge;
 
-            if (string.IsNullOrWhiteSpace(config.Image))
-                chest.lidFrameCount.Value = Math.Max(config.Frames, 1);
+            if (string.IsNullOrWhiteSpace(storage.Image))
+                chest.lidFrameCount.Value = Math.Max(storage.Frames, 1);
             else if (item.ParentSheetIndex == 216)
                 chest.lidFrameCount.Value = 2;
 
@@ -41,7 +41,7 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
                 chest.modData.CopyFrom(modData);
 
             // Copy modData from config
-            foreach (var modData in config.ModData)
+            foreach (var modData in storage.ModData)
             {
                 if (!chest.modData.ContainsKey(modData.Key))
                     chest.modData.Add(modData.Key, modData.Value);

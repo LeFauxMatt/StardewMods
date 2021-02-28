@@ -4,7 +4,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
+
+// ReSharper disable InconsistentNaming
 
 namespace ImJustMatt.ExpandedStorage.Framework.Extensions
 {
@@ -19,19 +22,26 @@ namespace ImJustMatt.ExpandedStorage.Framework.Extensions
             _reflection = reflection;
         }
 
-        public static void Draw(this Chest chest, Storage config, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
+        public static InventoryMenu.highlightThisItem HighlightMethod(this Chest chest, Storage storage)
+        {
+            return item => !ReferenceEquals(item, chest) && storage.HighlightMethod(item);
+        }
+
+        public static void Draw(this Chest chest, Storage storage, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
             var currentLidFrameReflected = _reflection.GetField<int>(chest, "currentLidFrame");
             var currentLidFrame = currentLidFrameReflected.GetValue();
             if (currentLidFrame == 0)
                 currentLidFrame = chest.startingLidFrame.Value;
 
-            var drawColored = !chest.playerChoiceColor.Value.Equals(Color.Black) && !HideColorPickerIds.Contains(chest.ParentSheetIndex);
+            var drawColored = storage.PlayerColor
+                              && !chest.playerChoiceColor.Value.Equals(Color.Black)
+                              && !HideColorPickerIds.Contains(chest.ParentSheetIndex);
 
-            if (config.SpriteSheet is {Texture: { }} spriteSheet && scaleSize > 3f)
+            if (storage.SpriteSheet is {Texture: { }} spriteSheet)
             {
                 currentLidFrame -= chest.startingLidFrame.Value;
-                var startLayer = drawColored && config is {PlayerColor: true} ? 1 : 0;
+                var startLayer = drawColored && storage.PlayerColor ? 1 : 0;
                 var endLayer = startLayer == 0 ? 1 : 3;
 
                 for (var layer = startLayer; layer < endLayer; layer++)

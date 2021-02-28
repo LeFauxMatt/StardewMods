@@ -25,11 +25,11 @@ namespace ImJustMatt.ExpandedStorage.Framework.Patches
 
         public static bool AddItemToInventoryPrefix(Farmer __instance, ref Item __result, Item item, List<Item> affected_items_list)
         {
-            var config = ExpandedStorage.GetConfig(item);
-            if (config == null || item.Stack > 1)
+            var storage = ExpandedStorage.GetStorage(item);
+            if (storage == null || item.Stack > 1)
                 return true;
 
-            var chest = item.ToChest(config);
+            var chest = item.ToChest(storage);
 
             // Find first stackable slot
             for (var j = 0; j < __instance.MaxItems; j++)
