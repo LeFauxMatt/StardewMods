@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Extensions;
+using CommonHarmony;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,7 +12,9 @@ using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
+using StardewValley.Network;
 using StardewValley.Objects;
+using StardewValley.Tools;
 using SObject = StardewValley.Object;
 
 namespace XSLite
@@ -29,48 +32,31 @@ namespace XSLite
             Monitor = monitor;
             
             #region Chest Patches
-            // Update OpenNearby chests whenever a farmer enters a location.
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.actionOnPlayerEntry)),
-                postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_actionOnPlayerEntry_postfix))
-            );
-            
             // Use GetItemsForPlayer for all chest types.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 transpiler: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_addItem_transpiler))
             );
-            
-            // Play custom sound when chest is opened.
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_checkForAction_prefix))
-            );
-            
             // Draw bigger storages from the origin chest.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_draw_prefix))
             );
-            
             // Draw chest with playerChoiceColor and animation when held.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)}),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawLocal_prefix))
             );
-            
             // Draw chest with playerChoiceColor and animation in menu.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] {typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)}),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawInMenu_prefix))
             );
-            
             // Prevent OpenNearby chests from resetting their lid frame automatically.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.fixLidFrame)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_fixLidFrame_prefix))
             );
-            
             // Allow chests to hold more or less items than the default (36).
             if (Helper.ModRegistry.IsLoaded("furyx639.XSPlus"))
             {
@@ -79,19 +65,21 @@ namespace XSLite
                     postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_GetActualCapacity_postfix))
                 );
             }
-            
             // Return items from heldItem Chest.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_GetItemsForPlayer_postfix))
             );
-            
+            // Create expanded storage debris.
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
+                transpiler: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_performToolAction_transpiler))
+            );
             // Support calculating distance correctly for bigger chests.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_UpdateFarmerNearby_prefix))
             );
-            
             // Animate the lids for OpenNearby chests.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
@@ -109,53 +97,45 @@ namespace XSLite
             
             #region Object Patches
             // Check action at origin chest for bigger storages.
-            harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_checkForAction_prefix))
-            );
-            
+            // harmony.Patch(
+            //     original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
+            //     prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_checkForAction_prefix))
+            // );
             // Disable drawing extension objects for bigger storages.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_draw_prefix))
             );
-            
             // Draw bigger held storages.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_drawWhenHeld_prefix))
             );
-            
             // Draw placement bounds for bigger storages.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.drawPlacementBounds)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_drawPlacementBounds_prefix))
             );
-            
             // Return custom description for Object.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.getDescription)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_getDescription_prefix))
             );
-            
             // Return custom display name for Object.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), "loadDisplayName"),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_loadDisplayName_prefix))
             );
-            
             // Perform tool actions at origin chest for bigger storages.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.performToolAction)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_performToolAction_prefix))
             );
-            
             // Disallow invalid chest placement locations.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_placementAction_prefix))
             );
-            
             // Convert XS storages placed as objects into chests.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
@@ -169,7 +149,6 @@ namespace XSLite
                 original: AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Utility_iterateChestsAndStorage_postfix))
             );
-            
             // Check placement parameters for bigger storages.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Utility), nameof(Utility.playerCanPlaceItemHere)),
@@ -178,11 +157,6 @@ namespace XSLite
             #endregion
         }
         #region Chest Patches
-        private static void Chest_actionOnPlayerEntry_postfix(Chest __instance)
-        {
-            if (__instance.TryGetStorage(out var storage) && storage.OpenNearby > 0)
-                __instance.UpdateFarmerNearby(Game1.currentLocation, false);
-        }
         private static IEnumerable<CodeInstruction> Chest_addItem_transpiler(IEnumerable<CodeInstruction> instructions)
         {
             foreach (var instruction in instructions)
@@ -199,28 +173,6 @@ namespace XSLite
                 }
             }
         }
-        private static bool Chest_checkForAction_prefix(Chest __instance, ref bool __result, bool justCheckingForActivity)
-        {
-            if (justCheckingForActivity || !__instance.playerChest.Value || !Game1.didPlayerJustRightClick(true) || !__instance.TryGetStorage(out var storage))
-                return true;
-            if (storage.OpenNearby > 0 || storage.Frames <= 1)
-            {
-                Game1.playSound(storage.OpenSound);
-                __instance.ShowMenu();
-            }
-            else
-            {
-                __instance.GetMutex().RequestLock(delegate
-                {
-                    __instance.frameCounter.Value = 5;
-                    Game1.playSound(storage.OpenSound);
-                    Game1.player.Halt();
-                    Game1.player.freezePause = 1000;
-                });
-            }
-            __result = true;
-            return false;
-        }
         private static bool Chest_draw_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
             if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
@@ -235,7 +187,6 @@ namespace XSLite
                 if (x != xPos || y != yPos)
                     return false;
             }
-            
             var draw_x = (float) x;
             var draw_y = (float) y;
             if (__instance.localKickStartTile.HasValue)
@@ -243,10 +194,8 @@ namespace XSLite
                 draw_x = Utility.Lerp(__instance.localKickStartTile.Value.X, draw_x, __instance.kickProgress);
                 draw_y = Utility.Lerp(__instance.localKickStartTile.Value.Y, draw_y, __instance.kickProgress);
             }
-            
             var globalPosition = new Vector2(draw_x, (int) (draw_y - storage.Depth / 16f - 1f));
             var layerDepth = Math.Max(0.0f, ((draw_y + 1f) * 64f - 24f) / 10000f) + draw_x * 1E-05f;
-            
             return !storage.Draw(
                 __instance,
                 ___currentLidFrame,
@@ -261,7 +210,6 @@ namespace XSLite
         {
             if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
                 return true;
-            
             storage.Draw(
                 __instance,
                 ___currentLidFrame,
@@ -276,7 +224,6 @@ namespace XSLite
         {
             if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
                 return true;
-            
             var origin = new Vector2(storage.Width / 2f, storage.Height / 2f);
             var drawScaleSize = scaleSize * storage.ScaleSize;
             var draw = storage.Draw(
@@ -291,11 +238,9 @@ namespace XSLite
             );
             if (!draw)
                 return true;
-            
             // Draw Stack
             if (__instance.Stack > 1)
                 Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
-            
             // Draw Held Items
             var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
             if (items > 0)
@@ -328,6 +273,91 @@ namespace XSLite
             {
                 __result = chest.GetItemsForPlayer(id);
             }
+        }
+        private static IEnumerable<CodeInstruction> Chest_performToolAction_transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var patternPatches = new PatternPatches(instructions, Monitor);
+            
+            patternPatches
+                .Find(
+                    new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(NetMutex), nameof(NetMutex.RequestLock)))
+                )
+                .Log("Override create debris for Chest removeAction.")
+                .Patch(delegate(LinkedList<CodeInstruction> list)
+                {
+                    
+                    list.RemoveLast();
+                    list.RemoveLast();
+                    list.RemoveLast();
+                    list.RemoveLast();
+                    list.RemoveLast();
+                    list.RemoveLast();
+                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
+                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_2));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(Patches.Chest_performToolAction_delegate))));
+                });
+            
+            foreach (var patternPatch in patternPatches)
+                yield return patternPatch;
+            
+            if (!patternPatches.Done)
+                Monitor.Log($"Failed to apply all patches in {typeof(Patches)}::{nameof(Patches.Chest_performToolAction_transpiler)}", LogLevel.Warn);
+        }
+        private static void Chest_performToolAction_delegate(Chest chest, Tool tool, GameLocation location)
+        {
+            var player = tool.getLastFarmerToUse();
+            if (player == null)
+                return;
+            var c = chest.TileLocation;
+            if (c == Vector2.Zero)
+            {
+                var obj = location.Objects.Pairs.SingleOrDefault(obj => obj.Value == chest);
+                c = obj.Value is not null ? obj.Key : player.GetToolLocation() / 64;
+                c.X = (int)c.X;
+                c.Y = (int)c.Y;
+            }
+            chest.GetMutex().RequestLock(delegate
+            {
+                chest.clearNulls();
+                if (chest.isEmpty())
+                {
+                    chest.performRemoveAction(chest.TileLocation, location);
+                    if (location.Objects.Remove(c) && chest.Type.Equals("Crafting") && chest.Fragility != 2)
+                    {
+                        var debris = new Debris(
+                            objectIndex: chest.bigCraftable.Value ? -chest.ParentSheetIndex : chest.ParentSheetIndex,
+                            debrisOrigin: player.GetToolLocation(),
+                            playerPosition: new Vector2(player.GetBoundingBox().Center.X, player.GetBoundingBox().Center.Y)
+                        )
+                        {
+                            item = chest
+                        };
+                        location.debris.Add(debris);
+                    }
+                }
+                else if (tool.isHeavyHitter() && tool is not MeleeWeapon)
+                {
+                    location.playSound("hammer");
+                    chest.shakeTimer = 100;
+                    if (tool != player.CurrentTool)
+                    {
+                        //var zero = Vector2.Zero;
+                        var zero = player.FacingDirection switch
+                        {
+                            1 => new Vector2(1f, 0f),
+                            3 => new Vector2(-1f, 0f),
+                            0 => new Vector2(0f, -1f),
+                            _ => new Vector2(0f, 1f)
+                        };
+                        if (chest.TileLocation.X == 0f && chest.TileLocation.Y == 0f && location.getObjectAtTile((int) c.X, (int) c.Y) == chest)
+                        {
+                            chest.TileLocation = c;
+                        }
+                        chest.MoveToSafePosition(location, chest.TileLocation, 0, zero);
+                    }
+                }
+                chest.GetMutex().ReleaseLock();
+            });
         }
         private static bool Chest_UpdateFarmerNearby_prefix(Chest __instance, ref bool ____farmerNearby, ref int ____shippingBinFrameCounter, ref int ___currentLidFrame, GameLocation location, bool animate)
         {

@@ -22,27 +22,31 @@ namespace XSLite
         internal static readonly PerScreen<IReflectedField<int>> CurrentLidFrame = new();
         internal static readonly PerScreen<Chest> CurrentChest = new();
         private IXSLiteAPI _api;
+
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
             _api = new XSLiteAPI(Helper, Monitor);
-            
+
             // Events
             Helper.Events.GameLoop.DayStarted += OnDayStarted;
             Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             Helper.Events.GameLoop.UpdateTicking += OnUpdateTicking;
             Helper.Events.Input.ButtonPressed += OnButtonPressed;
             Helper.Events.Player.InventoryChanged += OnInventoryChanged;
+            Helper.Events.Player.Warped += OnWarped;
             Helper.Events.World.ObjectListChanged += OnObjectListChanged;
-            
+
             // Patches
             var unused = new Patches(Helper, Monitor, new Harmony(ModManifest.UniqueID));
         }
+
         /// <inheritdoc />
         public override object GetApi()
         {
             return _api;
         }
+
         /// <summary>Invalidate sprite cache for storages each in-game day</summary>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
@@ -51,6 +55,7 @@ namespace XSLite
                 storage.InvalidateCache(Helper.Content);
             }
         }
+
         /// <summary>Load Expanded Storage content packs</summary>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
@@ -60,6 +65,7 @@ namespace XSLite
                 _api.LoadContentPack(contentPack);
             }
         }
+
         /// <summary>Tick visible chests in inventory</summary>
         private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
         {
@@ -78,18 +84,20 @@ namespace XSLite
                     CurrentLidFrame.Value = null;
                 }
             }
+
             foreach (var chest in Game1.player.Items.Take(12).OfType<Chest>())
             {
                 chest.updateWhenCurrentLocation(Game1.currentGameTime, Game1.player.currentLocation);
             }
         }
+
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || Game1.player.CurrentItem is Tool)
+            if (!Context.IsPlayerFree || !e.Button.IsActionButton() && !e.Button.IsUseToolButton())
                 return;
-            var pos = e.Button == SButton.ControllerX ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
-            pos.X = (int) pos.X;
-            pos.Y = (int) pos.Y;
+            var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
+            pos.X = (int)pos.X;
+            pos.Y = (int)pos.Y;
             // Object exists at pos and is within reach of player
             if (!Utility.withinRadiusOfPlayer((int)(64 * pos.X), (int)(64 * pos.Y), 1, Game1.player)
                 || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
@@ -99,24 +107,51 @@ namespace XSLite
                 && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
                 && int.TryParse(xStr, out var xPos)
                 && int.TryParse(yStr, out var yPos)
-                && (xPos != (int) pos.X || yPos != (int) pos.Y)
+                && (xPos != (int)pos.X || yPos != (int)pos.Y)
                 && Game1.currentLocation.Objects.TryGetValue(new Vector2(xPos, yPos), out var sourceObj))
             {
                 obj = sourceObj;
                 pos = new Vector2(xPos, yPos);
             }
+
             // Object supports feature, and player can carry object
-            if (!obj.TryGetStorage(out var storage) || !storage.Config.EnabledFeatures.Contains("CanCarry") || !Game1.player.addItemToInventoryBool(obj, true))
+            if (!obj.TryGetStorage(out var storage))
                 return;
-            if (!string.IsNullOrWhiteSpace(storage.CarrySound))
-                Game1.currentLocation.playSound(storage.CarrySound);
-            obj.modData.Remove($"{XSLite.ModPrefix}/X");
-            obj.modData.Remove($"{XSLite.ModPrefix}/Y");
-            obj.TileLocation = Vector2.Zero;
-            Game1.currentLocation.Objects.Remove(pos);
-            Helper.Input.Suppress(e.Button);
+            // Check for chest action
+            if (e.Button.IsActionButton() && obj is Chest chest && chest.playerChest.Value)
+            {
+                if (storage.OpenNearby > 0 || storage.Frames <= 1)
+                {
+                    Game1.playSound(storage.OpenSound);
+                    chest.ShowMenu();
+                }
+                else
+                {
+                    chest.GetMutex().RequestLock(delegate
+                    {
+                        chest.frameCounter.Value = 5;
+                        Game1.playSound(storage.OpenSound);
+                        Game1.player.Halt();
+                        Game1.player.freezePause = 1000;
+                    });
+                }
+
+                Helper.Input.Suppress(e.Button);
+            }
+            // Object supports feature, and player can carry object
+            else if (e.Button.IsUseToolButton() && Game1.player.CurrentItem is not Tool && storage.Config.EnabledFeatures.Contains("CanCarry") && Game1.player.addItemToInventoryBool(obj, true))
+            {
+                if (!string.IsNullOrWhiteSpace(storage.CarrySound))
+                    Game1.currentLocation.playSound(storage.CarrySound);
+                obj.TileLocation = Vector2.Zero;
+                storage.ForEachPos(pos, innerPos => _objectListStack.Add(innerPos));
+                storage.Remove(Game1.currentLocation, obj);
+                Helper.Input.Suppress(e.Button);
+            }
         }
+
         private readonly HashSet<int> _inventoryStack = new();
+
         /// <summary>Replace Expanded Storage objects with modded Chest</summary>
         [EventPriority(EventPriority.Low)]
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
@@ -139,6 +174,14 @@ namespace XSLite
                 }
             }
         }
+        private static void OnWarped(object sender, WarpedEventArgs e)
+        {
+            foreach (var chest in e.NewLocation.Objects.Values.OfType<Chest>())
+            {
+                if (chest.TryGetStorage(out var storage) && storage.OpenNearby > 0)
+                    chest.UpdateFarmerNearby(e.NewLocation, false);
+            }
+        }
         private readonly HashSet<Vector2> _objectListStack = new();
         /// <summary>Remove extra objects for bigger storages</summary>
         [EventPriority(EventPriority.Low)]
@@ -148,22 +191,13 @@ namespace XSLite
                 return;
             foreach (var removed in e.Removed)
             {
-                if (!removed.Value.TryGetStorage(out var storage))
-                    continue;
-                storage.Remove(e.Location, removed.Key, removed.Value);
-            }
-            foreach (var added in e.Added)
-            {
-                if (!added.Value.TryGetStorage(out var storage))
-                    continue;
-                if (_objectListStack.Contains(added.Key))
-                {
-                    _objectListStack.Remove(added.Key);
-                }
+                if (_objectListStack.Contains(removed.Key))
+                    _objectListStack.Remove(removed.Key);
                 else
                 {
-                    _objectListStack.Add(added.Key);
-                    storage.Replace(e.Location, added.Key, added.Value);
+                    if (!removed.Value.TryGetStorage(out var storage))
+                        continue;
+                    storage.Remove(e.Location, removed.Value);
                 }
             }
         }

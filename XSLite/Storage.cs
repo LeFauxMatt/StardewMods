@@ -194,6 +194,10 @@ namespace XSLite
                 return;
             Texture = texture;
         }
+        public void ForEachPos(Vector2 origin, Action<Vector2> doAction)
+        {
+            ForEachPos((int) origin.X, (int) origin.Y, doAction);
+        }
         public void ForEachPos(int x, int y, Action<Vector2> doAction)
         {
             for (var i = 0; i < TileWidth; i++)
@@ -272,24 +276,20 @@ namespace XSLite
             var chest = Create(item);
             var index = player.getIndexOfInventoryItem(item);
             player.Items[index] = chest;
-            chest.modData.Remove($"{XSLite.ModPrefix}/X");
-            chest.modData.Remove($"{XSLite.ModPrefix}/Y");
         }
         public void Replace(GameLocation location, Vector2 pos, SObject obj)
         {
             var chest = Create(obj);
-            location.Objects.Remove(pos);
-            location.Objects.Add(pos, chest);
+            location.Objects[pos] = chest;
             chest.modData[$"{XSLite.ModPrefix}/X"] = pos.X.ToString(CultureInfo.InvariantCulture);
             chest.modData[$"{XSLite.ModPrefix}/Y"] = pos.Y.ToString(CultureInfo.InvariantCulture);
             if (TileHeight == 1 && TileWidth == 1)
                 return;
             // Add objects for extra Tile spaces
-            ForEachPos((int) pos.X, (int) pos.Y, innerPos =>
+            ForEachPos(pos, innerPos =>
             {
                 if (innerPos.Equals(pos) || location.Objects.ContainsKey(innerPos))
                     return;
-                
                 var extraObj = new SObject(Vector2.Zero, 130)
                 {
                     name = Name
@@ -300,23 +300,15 @@ namespace XSLite
                 location.Objects.Add(innerPos, extraObj);
             });
         }
-        public void Remove(GameLocation location, Vector2 pos, SObject obj)
+        public void Remove(GameLocation location, SObject obj)
         {
-            if (TileHeight == 1 && TileWidth == 1
-                || !obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+            if (!obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
                 || !obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
                 || !int.TryParse(xStr, out var xPos)
                 || !int.TryParse(yStr, out var yPos))
                 return;
             ForEachPos(xPos, yPos, innerPos =>
             {
-                if (innerPos.Equals(pos)
-                    || !location.Objects.TryGetValue(innerPos, out var innerObj)
-                    || !innerObj.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out var storageName)
-                    || storageName != Name)
-                    return;
-                innerObj.modData.Remove($"{XSLite.ModPrefix}/X");
-                innerObj.modData.Remove($"{XSLite.ModPrefix}/Y");
                 location.Objects.Remove(innerPos);
             });
         }
