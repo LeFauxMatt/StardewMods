@@ -1,0 +1,7 @@
+﻿[
+  {
+    "$ItemType": "BigCraftable",
+    "ID": "Garbage Can",
+    "Texture": "assets/GarbageCan.png:7"
+  }
+]

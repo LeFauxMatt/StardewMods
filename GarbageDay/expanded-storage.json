@@ -1,0 +1,13 @@
+﻿{
+  "Garbage Can": {
+    "Image": "assets/GarbageCan.png",
+    "Frames": 3,
+    "PlayerColor": true,
+    "PlayerConfig": false,
+    "OpenNearby": 1,
+    "OpenNearbySound": "trashcanlid",
+    "CloseNearbySound": "trashcanlid",
+    "OpenSound": "trashcan",
+    "Capacity": 12
+  }
+}

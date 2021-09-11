@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared" />
+    <PropertyGroup>
+        <Version>1.1.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Automate">
+            <HintPath>$(GameModsPath)\Automate\Automate.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+</Project>
