@@ -87,11 +87,14 @@ namespace XSPlus.Features
                 Helper.Events.Input.ButtonPressed -= OnButtonPressed;
                 _searchView.Value.DetachMenu();
             }
-            else if (!_searchView.Value.Attached)
+            else
             {
+                if (!_searchView.Value.Attached)
+                {
+                    Helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
+                    Helper.Events.Input.ButtonPressed += OnButtonPressed;
+                }
                 CommonHelper.HighlightMethods_ItemsToGrabMenu += HighlightMethod;
-                Helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
-                Helper.Events.Input.ButtonPressed += OnButtonPressed;
                 _searchView.Value.AttachMenu(itemGrabMenu);
             }
         }
