@@ -71,12 +71,15 @@ namespace XSPlus.Features
                 Helper.Events.Input.ButtonPressed -= OnButtonPressed;
                 _tabView.Value.DetachMenu();
             }
-            else if (!_tabView.Value.Attached)
+            else
             {
+                if (!_tabView.Value.Attached)
+                {
+                    Helper.Events.Display.RenderingActiveMenu += OnRenderingActiveMenu;
+                    Helper.Events.Input.ButtonsChanged += OnButtonsChanged;
+                    Helper.Events.Input.ButtonPressed += OnButtonPressed;
+                }
                 CommonHelper.HighlightMethods_ItemsToGrabMenu += HighlightMethod;
-                Helper.Events.Display.RenderingActiveMenu += OnRenderingActiveMenu;
-                Helper.Events.Input.ButtonsChanged += OnButtonsChanged;
-                Helper.Events.Input.ButtonPressed += OnButtonPressed;
                 _tabView.Value.AttachMenu(itemGrabMenu);
             }
         }
