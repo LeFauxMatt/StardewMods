@@ -53,8 +53,8 @@ namespace XSLite
                 }
                 localization.Add($"big-craftable.{jsonAsset.Name}.name", jsonAsset.Name);
                 localization.Add($"big-craftable.{jsonAsset.Name}.description", jsonAsset.Description);
-                localization.Add($"crafting.{jsonAsset.Name} Recipe.name", jsonAsset.Name);
-                localization.Add($"crafting.{jsonAsset.Name} Recipe.description", jsonAsset.Description);
+                localization.Add($"crafting.{jsonAsset.Name} recipe.name", jsonAsset.Name);
+                localization.Add($"crafting.{jsonAsset.Name} recipe.description", jsonAsset.Description);
                 // Add additional localizations
                 if (jsonAsset.NameLocalization != null)
                 {
@@ -66,7 +66,7 @@ namespace XSLite
                             i18n.Add(localizedText.Key, localization);
                         }
                         localization.Add($"big-craftable.{jsonAsset.Name}.name", localizedText.Value);
-                        localization.Add($"big-craftable.{jsonAsset.Name} Recipe.name", localizedText.Value);
+                        localization.Add($"big-craftable.{jsonAsset.Name} recipe.name", localizedText.Value);
                     }
                 }
                 if (jsonAsset.DescriptionLocalization != null)
@@ -79,7 +79,7 @@ namespace XSLite
                             i18n.Add(localizedText.Key, localization);
                         }
                         localization.Add($"crafting.{jsonAsset.Name}.description", localizedText.Value);
-                        localization.Add($"crafting.{jsonAsset.Name} Recipe.description", localizedText.Value);
+                        localization.Add($"crafting.{jsonAsset.Name} recipe.description", localizedText.Value);
                     }
                 }
                 // Add BigCraftable
@@ -96,7 +96,7 @@ namespace XSLite
                     var recipe = new Dictionary<string, object>
                     {
                         { "$ItemType", "CraftingRecipe" },
-                        { "ID", $"{jsonAsset.Name} Recipe" },
+                        { "ID", $"{jsonAsset.Name} recipe" },
                         { "IsCooking", false },
                         { "KnownByDefault", jsonAsset.Recipe.IsDefault },
                         {
@@ -132,7 +132,7 @@ namespace XSLite
                                     _ => jsonAsset.Recipe.PurchaseFrom
                                 }
                             },
-                            { "Item", new DGAItem("DGARecipe", $"{contentPack.Manifest.UniqueID}/{jsonAsset.Name} Recipe") },
+                            { "Item", new DGAItem("DGARecipe", $"{contentPack.Manifest.UniqueID}/{jsonAsset.Name} recipe") },
                             { "MaxSold", 1 },
                             { "Cost", jsonAsset.Recipe.PurchasePrice }
                         });
