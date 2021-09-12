@@ -66,6 +66,7 @@ namespace XSLite
         {
             if (!Context.IsPlayerFree)
                 return;
+            var a = Game1.player.craftingRecipes.Keys;
             if (!ReferenceEquals(Game1.player.CurrentItem, CurrentChest.Value))
             {
                 if (Game1.player.CurrentItem is Chest currentChest)

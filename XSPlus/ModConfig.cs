@@ -15,10 +15,10 @@ namespace XSPlus
         [DefaultValue(6)]
         public int MenuRows { get; set; }
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue("Inventory")]
+        [DefaultValue("Location")]
         public string CraftingRange { get; set; }
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue("Inventory")]
+        [DefaultValue("Location")]
         public string StashingRange { get; set; }
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(SButton.K)]
