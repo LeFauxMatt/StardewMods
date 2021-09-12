@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HarmonyLib;
 using StardewModdingAPI;
@@ -34,6 +35,12 @@ namespace XSPlus.Features
         }
         protected override void EnableFeature()
         {
+            // Patches
+            Harmony.Patch(
+                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                postfix: new HarmonyMethod(typeof(CraftFromChest), nameof(CraftFromChest_getContainerContents_postfix))
+            );
+            
             // Events
             Helper.Events.Player.InventoryChanged += OnInventoryChanged;
             Helper.Events.Player.Warped += OnWarped;
@@ -41,6 +48,12 @@ namespace XSPlus.Features
         }
         protected override void DisableFeature()
         {
+            // Patches
+            Harmony.Unpatch(
+                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                patch: AccessTools.Method(typeof(CraftFromChest), nameof(CraftFromChest_getContainerContents_postfix))
+            );
+            
             // Events
             Helper.Events.Player.InventoryChanged -= OnInventoryChanged;
             Helper.Events.Player.Warped -= OnWarped;
@@ -96,6 +109,20 @@ namespace XSPlus.Features
                 "World" => true,
                 _ => false
             };
+        }
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        private static void CraftFromChest_getContainerContents_postfix(CraftingPage __instance, ref IList<Item> __result)
+        {
+            if (__instance._materialContainers == null)
+                return;
+            __result.Clear();
+            var items = new List<Item>();
+            foreach (var chest in __instance._materialContainers)
+            {
+                items.AddRange(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+            }
+            __result = items;
         }
     }
 }
