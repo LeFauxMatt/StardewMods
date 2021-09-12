@@ -271,10 +271,9 @@ namespace XSLite
             }
             return chest;
         }
-        public void Replace(Farmer player, Item item)
+        public void Replace(Farmer player, Item item, int index)
         {
             var chest = Create(item);
-            var index = player.getIndexOfInventoryItem(item);
             player.Items[index] = chest;
         }
         public void Replace(GameLocation location, Vector2 pos, SObject obj)
@@ -300,17 +299,19 @@ namespace XSLite
                 location.Objects.Add(innerPos, extraObj);
             });
         }
-        public void Remove(GameLocation location, SObject obj)
+        public void Remove(GameLocation location, SObject obj, Vector2 pos)
         {
-            if (!obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
-                || !obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
-                || !int.TryParse(xStr, out var xPos)
-                || !int.TryParse(yStr, out var yPos))
-                return;
-            ForEachPos(xPos, yPos, innerPos =>
+            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
+                && int.TryParse(xStr, out var xPos)
+                && int.TryParse(yStr, out var yPos))
             {
-                location.Objects.Remove(innerPos);
-            });
+                ForEachPos(xPos, yPos, innerPos =>
+                {
+                    location.Objects.Remove(innerPos);
+                });
+            }
+            location.Objects.Remove(pos);
         }
         private static Vector2 ShakeOffset(SObject instance, int minValue, int maxValue)
         {

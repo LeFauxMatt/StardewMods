@@ -22,12 +22,10 @@ namespace XSLite
         internal static readonly PerScreen<IReflectedField<int>> CurrentLidFrame = new();
         internal static readonly PerScreen<Chest> CurrentChest = new();
         private IXSLiteAPI _api;
-
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
             _api = new XSLiteAPI(Helper, Monitor);
-
             // Events
             Helper.Events.GameLoop.DayStarted += OnDayStarted;
             Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -36,17 +34,14 @@ namespace XSLite
             Helper.Events.Player.InventoryChanged += OnInventoryChanged;
             Helper.Events.Player.Warped += OnWarped;
             Helper.Events.World.ObjectListChanged += OnObjectListChanged;
-
             // Patches
             var unused = new Patches(Helper, Monitor, new Harmony(ModManifest.UniqueID));
         }
-
         /// <inheritdoc />
         public override object GetApi()
         {
             return _api;
         }
-
         /// <summary>Invalidate sprite cache for storages each in-game day</summary>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
@@ -135,7 +130,6 @@ namespace XSLite
                         Game1.player.freezePause = 1000;
                     });
                 }
-
                 Helper.Input.Suppress(e.Button);
             }
             // Object supports feature, and player can carry object
@@ -145,7 +139,7 @@ namespace XSLite
                     Game1.currentLocation.playSound(storage.CarrySound);
                 obj.TileLocation = Vector2.Zero;
                 storage.ForEachPos(pos, innerPos => _objectListStack.Add(innerPos));
-                storage.Remove(Game1.currentLocation, obj);
+                storage.Remove(Game1.currentLocation, obj, pos);
                 Helper.Input.Suppress(e.Button);
             }
         }
@@ -170,7 +164,7 @@ namespace XSLite
                 else
                 {
                     _inventoryStack.Add(index);
-                    storage.Replace(e.Player, item);
+                    storage.Replace(e.Player, item, index);
                 }
             }
         }
@@ -197,7 +191,7 @@ namespace XSLite
                 {
                     if (!removed.Value.TryGetStorage(out var storage))
                         continue;
-                    storage.Remove(e.Location, removed.Value);
+                    storage.Remove(e.Location, removed.Value, removed.Key);
                 }
             }
         }
