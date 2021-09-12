@@ -12,6 +12,7 @@ using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
+using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Objects;
 using StardewValley.Tools;
@@ -36,6 +37,11 @@ namespace XSLite
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 transpiler: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_addItem_transpiler))
+            );
+            // Clear nulls for heldStorage items
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.clearNulls)),
+                postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_clearNulls_postfix))
             );
             // Draw bigger storages from the origin chest.
             harmony.Patch(
@@ -95,12 +101,20 @@ namespace XSLite
             );
             #endregion
             
+            #region ItemGrabMenu Patches
+            // Remove disabled components
+            harmony.Patch(
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), new []{ typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.ItemGrabMenu_constructor_postfix))
+            );
+            // Remove disabled components
+            harmony.Patch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.ItemGrabMenu_setSourceItem_postfix))
+            );
+            #endregion
+            
             #region Object Patches
-            // Check action at origin chest for bigger storages.
-            // harmony.Patch(
-            //     original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
-            //     prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_checkForAction_prefix))
-            // );
             // Disable drawing extension objects for bigger storages.
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
@@ -170,6 +184,17 @@ namespace XSLite
                 else
                 {
                     yield return instruction;
+                }
+            }
+        }
+        private static void Chest_clearNulls_postfix(Chest __instance)
+        {
+            var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+            for (var i = items.Count - 1; i >= 0; i--)
+            {
+                if (items[i] == null)
+                {
+                    items.RemoveAt(i);
                 }
             }
         }
@@ -534,22 +559,35 @@ namespace XSLite
         }
         #endregion
         
-        #region Object Patches
-        private static bool Object_checkForAction_prefix(SObject __instance, ref bool __result, Farmer who, bool justCheckingForActivity)
+        #region ItemGrabMenu Patches
+        private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {
-            if (justCheckingForActivity
-                || !Game1.didPlayerJustRightClick(true)
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out _)
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
-                || !int.TryParse(xStr, out var xPos)
-                || !int.TryParse(yStr, out var yPos)
-                || !Game1.currentLocation.Objects.TryGetValue(new Vector2(xPos, yPos), out var obj)
-                || obj is not Chest chest)
-                return true;
-            __result = chest.checkForAction(who);
-            return false;
+            if (__instance.context is not Chest chest || !chest.TryGetStorage(out var storage))
+                return;
+            if (!storage.PlayerColor)
+            {
+                __instance.chestColorPicker = null;
+                __instance.colorPickerToggleButton = null;
+                __instance.discreteColorPickerCC = null;
+                __instance.SetupBorderNeighbors();
+                __instance.RepositionSideButtons();
+            }
         }
+        private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
+        {
+            if (__instance.context is not Chest chest || !chest.TryGetStorage(out var storage))
+                return;
+            if (!storage.PlayerColor)
+            {
+                __instance.chestColorPicker = null;
+                __instance.colorPickerToggleButton = null;
+                __instance.discreteColorPickerCC = null;
+                __instance.RepositionSideButtons();
+            }
+        }
+        #endregion
+        
+        #region Object Patches
         private static bool Object_draw_prefix(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
             if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out _)
@@ -659,7 +697,7 @@ namespace XSLite
         private static void Object_placementAction_postfix(SObject __instance, ref bool __result, GameLocation location, int x, int y)
         {
             var placementTile = new Vector2((int)(x / 64f), (int)(y / 64f));
-            if (!location.Objects.TryGetValue(placementTile, out var obj) || obj is not Chest chest || !chest.playerChest.Value || !__instance.TryGetStorage(out var storage))
+            if (!location.Objects.TryGetValue(placementTile, out var obj) || !__instance.TryGetStorage(out var storage))
                 return;
             storage.Replace(location, placementTile, __instance);
         }
