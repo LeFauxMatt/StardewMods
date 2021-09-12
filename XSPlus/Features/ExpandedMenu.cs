@@ -50,6 +50,10 @@ namespace XSPlus.Features
                 transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_constructor_transpiler))
             );
             Harmony.Patch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
+                transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_draw_transpiler))
+            );
+            Harmony.Patch(
                 original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw),MenuWithInventory_draw_params),
                 transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuWithInventory_draw_transpiler))
             );
@@ -71,6 +75,10 @@ namespace XSPlus.Features
             Harmony.Unpatch(
                 original: AccessTools.Constructor(typeof(ItemGrabMenu), ItemGrabMenu_constructor_params),
                 patch: AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_constructor_transpiler))
+            );
+            Harmony.Unpatch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
+                patch: AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_draw_transpiler))
             );
             Harmony.Unpatch(
                 original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw),MenuWithInventory_draw_params),
@@ -231,6 +239,29 @@ namespace XSPlus.Features
             if (!patternPatches.Done)
                 _feature.Monitor.Log($"Failed to apply all patches in {typeof(ExpandedMenu)}::{nameof(ItemGrabMenu_constructor_transpiler)}", LogLevel.Warn);
         }
+        /// <summary>Move/resize backpack by expanded menu height</summary>
+        private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var patternPatches = new PatternPatches(instructions, _feature.Monitor);
+            
+            patternPatches
+                .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
+                .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
+                .Log("Moving backpack icon down by expanded menu extra height.")
+                .Patch(delegate(LinkedList<CodeInstruction> list)
+                {
+                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(MenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Add));
+                })
+                .Repeat(3);
+            
+            foreach (var patternPatch in patternPatches)
+                yield return patternPatch;
+            
+            if (!patternPatches.Done)
+                _feature.Monitor.Log($"Failed to apply all patches in {typeof(ItemGrabMenu)}::{nameof(ItemGrabMenu.draw)}.", LogLevel.Warn);
+        }
         /// <summary>Move/resize bottom dialogue box by search bar height</summary>
         private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -281,7 +312,10 @@ namespace XSPlus.Features
         {
             if (_feature._oldMenu.Value is not ItemGrabMenu { context: Chest chest } itemGrabMenu || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu, inventoryMenu))
                 return actualInventory;
-            return chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Skip(12 * _feature._scrolledAmount.Value).Take(inventoryMenu.capacity).ToList();
+            var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).AsEnumerable();
+            items = items.Skip(12 * _feature._scrolledAmount.Value);
+            items = items.Take(inventoryMenu.capacity);
+            return items.ToList();
         }
         private static int MenuCapacity(ItemGrabMenu menu)
         {
