@@ -1,26 +1,35 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using HarmonyLib;
-
-namespace CommonHarmony
+﻿namespace CommonHarmony
 {
+    using System;
+    using System.Linq;
+    using System.Reflection;
+    using HarmonyLib;
+
     internal class AssemblyPatch
     {
-        private readonly Assembly _assembly;
+        private readonly Assembly Assembly;
 
-        public AssemblyPatch(string name) : this(a => a.FullName.StartsWith($"{name},"))
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssemblyPatch"/> class.
+        /// </summary>
+        /// <param name="name"></param>
+        public AssemblyPatch(string name)
+            : this(a => a.FullName.StartsWith($"{name},"))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssemblyPatch"/> class.
+        /// </summary>
+        /// <param name="matcher"></param>
         public AssemblyPatch(Func<Assembly, bool> matcher)
         {
-            _assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(matcher);
+            this.Assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(matcher);
         }
 
         public AssemblyPatchType Type(string name)
         {
-            return _assembly != null ? new AssemblyPatchType(_assembly.GetType(name)) : null;
+            return this.Assembly != null ? new AssemblyPatchType(this.Assembly.GetType(name)) : null;
         }
 
         public MethodInfo Method(string type, string method)
@@ -30,21 +39,21 @@ namespace CommonHarmony
 
         internal class AssemblyPatchType
         {
-            private readonly Type _type;
+            private readonly Type Type;
 
             internal AssemblyPatchType(Type type)
             {
-                _type = type;
+                this.Type = type;
             }
 
             public MethodInfo Method(string name)
             {
-                return AccessTools.Method(_type, name);
+                return AccessTools.Method(this.Type, name);
             }
 
             public MethodInfo Method(Func<MethodInfo, bool> matcher)
             {
-                return AccessTools.GetDeclaredMethods(_type).FirstOrDefault(matcher);
+                return AccessTools.GetDeclaredMethods(this.Type).FirstOrDefault(matcher);
             }
         }
     }

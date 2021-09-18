@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using HarmonyLib;
-
-namespace CommonHarmony
+﻿namespace CommonHarmony
 {
+    using System;
+    using System.Collections.Generic;
+    using HarmonyLib;
+
     internal class PatternPatch
     {
         private readonly IList<Action<LinkedList<CodeInstruction>>> _patches = new List<Action<LinkedList<CodeInstruction>>>();
@@ -16,6 +16,10 @@ namespace CommonHarmony
         private int _loop;
         private int _startIndex;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PatternPatch"/> class.
+        /// </summary>
+        /// <param name="pattern"></param>
         public PatternPatch(ICollection<CodeInstruction> pattern)
         {
             if (pattern == null || pattern.Count == 0)
@@ -30,7 +34,9 @@ namespace CommonHarmony
         }
 
         public string Text { get; private set; }
+
         public int Skipped { get; private set; }
+
         public bool Loop => _patchType == PatchType.Replace && _loop == -1 || --_loop > 0;
 
         public PatternPatch Find(params CodeInstruction[] pattern)
@@ -116,7 +122,10 @@ namespace CommonHarmony
 
         public void Patches(LinkedList<CodeInstruction> rawStack)
         {
-            foreach (var patch in _patches) patch?.Invoke(rawStack);
+            foreach (var patch in _patches)
+            {
+                patch?.Invoke(rawStack);
+            }
         }
 
         private enum PatchType

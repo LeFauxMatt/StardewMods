@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Common.Integrations.JsonAssets
+﻿namespace Common.Integrations.JsonAssets
 {
+    using System;
+    using System.Collections.Generic;
+
     public interface IJsonAssetsAPI
     {
         void LoadAssets(string path);

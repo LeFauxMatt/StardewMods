@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using StardewModdingAPI;
-using StardewValley;
-using StardewValley.Objects;
-
-namespace Common.Integrations.XSLite
+﻿namespace Common.Integrations.XSLite
 {
+    using System.Collections.Generic;
+    using StardewModdingAPI;
+    using StardewValley;
+    using StardewValley.Objects;
+
     public interface IXSLiteAPI
     {
         /// <summary>Load a directory as an Expanded Storage content pack.</summary>

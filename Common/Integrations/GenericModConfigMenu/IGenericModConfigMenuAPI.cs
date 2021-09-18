@@ -1,11 +1,11 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
-using StardewModdingAPI.Utilities;
-
-namespace Common.Integrations.GenericModConfigMenu
+﻿namespace Common.Integrations.GenericModConfigMenu
 {
+    using System;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Utilities;
+
     public interface IGenericModConfigMenuAPI
     {
         void RegisterModConfig(IManifest mod, Action revertToDefault, Action saveToFile);

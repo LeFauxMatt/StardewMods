@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Common.Integrations.EvenBetterRNG
+﻿namespace Common.Integrations.EvenBetterRNG
 {
+    using System;
+
     public interface IEvenBetterRNGAPI
     {
         /// <summary>

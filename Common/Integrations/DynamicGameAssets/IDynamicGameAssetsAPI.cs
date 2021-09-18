@@ -1,7 +1,7 @@
-﻿using StardewModdingAPI;
-
-namespace Common.Integrations.DynamicGameAssets
+﻿namespace Common.Integrations.DynamicGameAssets
 {
+    using StardewModdingAPI;
+
     public interface IDynamicGameAssetsAPI
     {
         /// <summary>
