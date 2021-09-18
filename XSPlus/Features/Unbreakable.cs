@@ -1,40 +1,51 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using HarmonyLib;
-using StardewModdingAPI;
-using StardewValley.Objects;
-
-namespace XSPlus.Features
+﻿namespace XSPlus.Features
 {
+    using System.Diagnostics.CodeAnalysis;
+    using HarmonyLib;
+    using StardewModdingAPI.Events;
+    using StardewValley.Objects;
+
+    /// <inheritdoc />
     internal class Unbreakable : FeatureWithParam<bool>
     {
-        private static Unbreakable _feature;
-        public Unbreakable(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
+        private static Unbreakable Instance;
+
+        /// <summary>Initializes a new instance of the <see cref="Unbreakable"/> class.</summary>
+        public Unbreakable()
+            : base("Unbreakable")
         {
-            _feature = this;
+            Unbreakable.Instance = this;
         }
-        protected override void EnableFeature()
-        {
-            // Patches
-            Harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                prefix: new HarmonyMethod(typeof(Unbreakable), nameof(Unbreakable.Chest_performToolAction_prefix))
-            );
-        }
-        protected override void DisableFeature()
+
+        /// <inheritdoc/>
+        public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Patches
-            Harmony.Unpatch(
+            harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                patch: AccessTools.Method(typeof(Unbreakable), nameof(Unbreakable.Chest_performToolAction_prefix))
-            );
+                prefix: new HarmonyMethod(typeof(Unbreakable), nameof(Unbreakable.Chest_performToolAction_prefix)));
         }
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
+
+        /// <inheritdoc/>
+        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        {
+            // Patches
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
+                patch: AccessTools.Method(typeof(Unbreakable), nameof(Unbreakable.Chest_performToolAction_prefix)));
+        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         [HarmonyPriority(Priority.High)]
         private static bool Chest_performToolAction_prefix(Chest __instance, ref bool __result)
         {
-            if (!_feature.IsEnabled(__instance))
+            if (!Unbreakable.Instance.IsEnabledForItem(__instance))
+            {
                 return true;
+            }
+
             __result = false;
             return false;
         }

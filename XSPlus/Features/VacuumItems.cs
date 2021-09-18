@@ -1,111 +1,132 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using HarmonyLib;
-using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
-using StardewValley;
-using StardewValley.Objects;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI;
-using StardewValley.Tools;
-using Object = StardewValley.Object;
-
-namespace XSPlus.Features
+﻿namespace XSPlus.Features
 {
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Reflection.Emit;
+    using HarmonyLib;
+    using StardewModdingAPI.Events;
+    using StardewModdingAPI.Utilities;
+    using StardewValley;
+    using StardewValley.Objects;
+    using SObject = StardewValley.Object;
+
     internal class VacuumItems : BaseFeature
     {
-        private static VacuumItems _feature;
-        private IList<Chest> VacuumChests => _vacuumChests.Value ??= Game1.player.Items.Take(12).OfType<Chest>().Where(IsEnabled).ToList();
-        private readonly PerScreen<IList<Chest>> _vacuumChests = new();
-        private FilterItems _filterItems;
-        public VacuumItems(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
+        private static readonly PerScreen<bool> IsVacuuming = new();
+        private static VacuumItems Instance;
+        private readonly PerScreen<List<Chest>> CachedEnabledChests = new();
+
+        /// <summary>Initializes a new instance of the <see cref="VacuumItems"/> class.</summary>
+        public VacuumItems()
+            : base("VacuumItems")
         {
-            _feature = this;
+            VacuumItems.Instance = this;
         }
-        protected override void EnableFeature()
+
+        private List<Chest> EnabledChests
+        {
+            get => this.CachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
+                .Where(this.IsEnabledForItem)
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            Helper.Events.Player.InventoryChanged += OnInventoryChanged;
-            
+            modEvents.Player.InventoryChanged += this.OnInventoryChanged;
+
             // Patches
-            Harmony.Patch(
+            harmony.Patch(
                 original: AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                prefix: new HarmonyMethod(typeof(VacuumItems), nameof(VacuumItems.Debris_collect_prefix))
-            );
+                transpiler: new HarmonyMethod(typeof(VacuumItems), nameof(VacuumItems.Debris_collect_transpiler)));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
+                prefix: new HarmonyMethod(typeof(VacuumItems), nameof(VacuumItems.Farmer_addItemToInventory_prefix)));
         }
-        protected override void DisableFeature()
+
+        /// <inheritdoc/>
+        public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched -= OnGameLaunched;
-            Helper.Events.Player.InventoryChanged -= OnInventoryChanged;
-            
+            modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
+
             // Patches
-            Harmony.Unpatch(
+            harmony.Unpatch(
                 original: AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                patch: AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.Debris_collect_prefix))
-            );
+                patch: AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.Debris_collect_transpiler)));
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
+                patch: AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.Farmer_addItemToInventory_prefix)));
         }
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+
+        private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            _filterItems = XSPlus.Features["FilterItems"] as FilterItems;
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
+                {
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.AddItemToInventoryBool)));
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
         }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+        private static bool Farmer_addItemToInventory_prefix(ref Item __result, ref Item item)
+        {
+            if (!VacuumItems.IsVacuuming.Value)
+            {
+                return true;
+            }
+
+            Item remaining = null;
+            int stack = item.Stack;
+            foreach (Chest chest in VacuumItems.Instance.EnabledChests)
+            {
+                remaining = chest.addItem(item);
+                if (remaining == null)
+                {
+                    __result = null;
+                    return false;
+                }
+            }
+
+            if (remaining is not null && remaining.Stack != stack)
+            {
+                item = remaining;
+            }
+
+            return true;
+        }
+
+        private static bool AddItemToInventoryBool(Farmer farmer, Item item, bool makeActiveObject)
+        {
+            if (!VacuumItems.Instance.EnabledChests.Any())
+            {
+                return farmer.addItemToInventoryBool(item, makeActiveObject);
+            }
+
+            VacuumItems.IsVacuuming.Value = true;
+            bool success = farmer.addItemToInventoryBool(item, makeActiveObject);
+            VacuumItems.IsVacuuming.Value = false;
+            return success;
+        }
+
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
-            if (!e.IsLocalPlayer)
+            if (!e.IsLocalPlayer || (!e.Added.OfType<Chest>().Any() && !e.Removed.OfType<Chest>().Any()))
+            {
                 return;
-            _vacuumChests.Value = null;
-        }
-        private IEnumerable<Chest> GetVacuumChestsForItem(Item item = null)
-        {
-            return item is null
-                ? VacuumChests
-                : VacuumChests.Where(vacuumChest => _filterItems.TakesItem(vacuumChest, item)).ToList();
-        }
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        private static bool Debris_collect_prefix(Debris __instance, ref bool __result, Farmer farmer, Chunk chunk)
-        {
-            chunk ??= __instance.Chunks.FirstOrDefault();
-            if (chunk == null || !_feature.VacuumChests.Any())
-                return true;
-            var switcher = __instance.debrisType.Value.Equals(Debris.DebrisType.ARCHAEOLOGY) || __instance.debrisType.Value.Equals(Debris.DebrisType.OBJECT)
-                ? chunk.debrisType
-                : chunk.debrisType - chunk.debrisType % 2;
-            if (__instance.item == null && __instance.debrisType.Value == 0)
-                return true;
-            if (__instance.item != null)
-            {
-                // Golden Walnuts
-                if (Utility.IsNormalObjectAtParentSheetIndex(__instance.item, 73))
-                    return true;
-                // Lost Book
-                if (Utility.IsNormalObjectAtParentSheetIndex(__instance.item, 102))
-                    return true;
-                // Qi Gems
-                if (Utility.IsNormalObjectAtParentSheetIndex(__instance.item, 858))
-                    return true;
-                if (Utility.IsNormalObjectAtParentSheetIndex(__instance.item, 930))
-                    return true;
-                __instance.item = farmer.AddItemToInventory(__instance.item, _feature.GetVacuumChestsForItem(__instance.item));
-                __result = __instance.item == null;
-                return !__result;
             }
-            Item item = __instance.debrisType.Value switch
-            {
-                Debris.DebrisType.ARCHAEOLOGY => new Object(chunk.debrisType, 1),
-                _ when switcher <= -10000 => new MeleeWeapon(switcher),
-                _ when switcher <= 0 => new Object(Vector2.Zero, -switcher),
-                _ when switcher is 93 or 94 => new Torch(Vector2.Zero, 1, switcher)
-                {
-                    Quality = __instance.itemQuality
-                },
-                _ => new Object(Vector2.Zero, switcher, 1) {Quality = __instance.itemQuality}
-            };
-            item = farmer.AddItemToInventory(item, _feature.GetVacuumChestsForItem(item));
-            __result = item == null;
-            return !__result;
+
+            this.CachedEnabledChests.Value = null;
         }
     }
 }

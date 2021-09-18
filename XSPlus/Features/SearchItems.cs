@@ -1,141 +1,125 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text.RegularExpressions;
-using CommonHarmony;
-using HarmonyLib;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
-using StardewValley;
-using StardewValley.Menus;
-using StardewValley.Objects;
-
-namespace XSPlus.Features
+﻿namespace XSPlus.Features
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Reflection.Emit;
+    using System.Text.RegularExpressions;
+    using Common.Extensions;
+    using Common.Helpers;
+    using CommonHarmony;
+    using HarmonyLib;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
+    using StardewModdingAPI.Utilities;
+    using StardewValley;
+    using StardewValley.Menus;
+    using StardewValley.Objects;
+
+    /// <inheritdoc />
     internal class SearchItems : BaseFeature
     {
-        // ReSharper disable InconsistentNaming
-        private static readonly Type[] ItemGrabMenu_constructor_params = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
-        private static readonly Type[] MenuWithInventory_draw_params = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        // ReSharper restore InconsistentNaming
         private const int SearchBarHeight = 24;
-        private static SearchItems _feature;
-        private readonly PerScreen<SearchView> _searchView = new();
-        private readonly PerScreen<IClickableMenu> _oldMenu = new();
-        public SearchItems(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
+        private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
+        private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
+        private static readonly PerScreen<int> MenuPadding = new() { Value = -1 };
+        private static readonly Rectangle FilledHeart = new(211, 428, 7, 6);
+        private static readonly Rectangle EmptyHeart = new(218, 428, 7, 6);
+        private static SearchItems Instance;
+        private readonly IContentHelper ContentHelper;
+        private readonly IInputHelper InputHelper;
+        private readonly Func<string> GetSearchTagSymbol;
+        private readonly PerScreen<IClickableMenu> Menu = new();
+        private readonly PerScreen<Chest> Chest = new();
+        private readonly PerScreen<bool> Attached = new();
+        private readonly PerScreen<int> ScreenId = new() { Value = -1 };
+        private readonly PerScreen<ClickableComponent> SearchArea = new() { Value = new ClickableComponent(Rectangle.Empty, string.Empty) };
+        private readonly PerScreen<TextBox> SearchField = new();
+        private readonly PerScreen<ClickableTextureComponent> SearchIcon = new();
+        private readonly PerScreen<IList<ClickableTextureComponent>> Hearts = new() { Value = new List<ClickableTextureComponent>() };
+
+        /// <summary>Initializes a new instance of the <see cref="SearchItems"/> class.</summary>
+        /// <param name="contentHelper">Provides an API for loading content assets.</param>
+        /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="getSearchTagSymbol">Get method for configured search tag symbol.</param>
+        public SearchItems(IContentHelper contentHelper, IInputHelper inputHelper, Func<string> getSearchTagSymbol)
+            : base("SearchItems")
         {
-            _feature = this;
+            SearchItems.Instance = this;
+            this.ContentHelper = contentHelper;
+            this.InputHelper = inputHelper;
+            this.GetSearchTagSymbol = getSearchTagSymbol;
         }
-        protected override void EnableFeature()
+
+        /// <inheritdoc/>
+        public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            Helper.Events.Display.MenuChanged += OnMenuChanged;
-            
+            modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
+            modEvents.Display.MenuChanged += this.OnMenuChanged;
+            modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            modEvents.Input.ButtonPressed += this.OnButtonPressed;
+
             // Patches
-            Harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ItemGrabMenu_constructor_params),
-                postfix: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_constructor_postfix))
-            );
-            Harmony.Patch(
-                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
-                transpiler: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_draw_transpiler))
-            );
-            Harmony.Patch(
-                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw),MenuWithInventory_draw_params),
-                transpiler: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.MenuWithInventory_draw_transpiler))
-            );
+            harmony.Patch(
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), SearchItems.ItemGrabMenuConstructorParams),
+                postfix: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_constructor_postfix)));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                transpiler: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_draw_transpiler)));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItems.MenuWithInventoryDrawParams),
+                transpiler: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.MenuWithInventory_draw_transpiler)));
         }
-        protected override void DisableFeature()
+
+        /// <inheritdoc/>
+        public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched -= OnGameLaunched;
-            Helper.Events.Display.MenuChanged -= OnMenuChanged;
-            
+            modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
+            modEvents.Display.MenuChanged -= this.OnMenuChanged;
+            modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+            modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+
             // Patches
-            Harmony.Unpatch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ItemGrabMenu_constructor_params),
-                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_constructor_postfix))
-            );
-            Harmony.Unpatch(
-                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] {typeof(SpriteBatch)}),
-                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_draw_transpiler))
-            );
-            Harmony.Unpatch(
-                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw),MenuWithInventory_draw_params),
-                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.MenuWithInventory_draw_transpiler))
-            );
+            harmony.Unpatch(
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), SearchItems.ItemGrabMenuConstructorParams),
+                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_constructor_postfix)));
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_draw_transpiler)));
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItems.MenuWithInventoryDrawParams),
+                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.MenuWithInventory_draw_transpiler)));
         }
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-        {
-            _searchView.Value = new SearchView();
-        }
-        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
-        {
-            if (ReferenceEquals(e.NewMenu, _oldMenu.Value))
-                return;
-            _oldMenu.Value = e.NewMenu;
-            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !IsEnabled(chest))
-            {
-                CommonHelper.HighlightMethods_ItemsToGrabMenu -= HighlightMethod;
-                Helper.Events.Display.RenderedActiveMenu -= OnRenderedActiveMenu;
-                Helper.Events.Input.ButtonPressed -= OnButtonPressed;
-                _searchView.Value.DetachMenu();
-            }
-            else
-            {
-                if (!_searchView.Value.Attached)
-                {
-                    Helper.Events.Display.RenderedActiveMenu += OnRenderedActiveMenu;
-                    Helper.Events.Input.ButtonPressed += OnButtonPressed;
-                }
-                CommonHelper.HighlightMethods_ItemsToGrabMenu += HighlightMethod;
-                _searchView.Value.AttachMenu(itemGrabMenu);
-            }
-        }
-        private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
-        {
-            _searchView.Value.DrawComponents(e.SpriteBatch);
-        }
-        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-        {
-            var x = Game1.getMouseX(true);
-            var y = Game1.getMouseY(true);
-            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-            switch (e.Button)
-            {
-                case SButton.MouseLeft when _searchView.Value.LeftClick(x, y):
-                case SButton.MouseRight when _searchView.Value.RightClick(x, y):
-                    Helper.Input.Suppress(e.Button);
-                    break;
-                default:
-                    if (_searchView.Value.ReceiveKeyPress(e.Button))
-                        Helper.Input.Suppress(e.Button);
-                    break;
-            }
-        }
-        /// <summary>Expand menu height to accomodate the search bar</summary>
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
+
+        /// <summary>Expand menu height to accomodate the search bar.</summary>
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {
-            if (__instance.context is not Chest chest || !_feature.IsEnabled(chest))
+            if (__instance.context is not Chest chest || !SearchItems.Instance.IsEnabledForItem(chest))
+            {
                 return;
-            __instance.yPositionOnScreen -= SearchBarHeight;
-            __instance.height += SearchBarHeight;
+            }
+
+            __instance.yPositionOnScreen -= SearchItems.SearchBarHeight;
+            __instance.height += SearchItems.SearchBarHeight;
             if (__instance.chestColorPicker != null)
-                __instance.chestColorPicker.yPositionOnScreen -= SearchBarHeight;
+            {
+                __instance.chestColorPicker.yPositionOnScreen -= SearchItems.SearchBarHeight;
+            }
         }
-        /// <summary>Move/resize top dialogue box by search bar height</summary>
+
+        /// <summary>Move/resize top dialogue box by search bar height.</summary>
         private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, _feature.Monitor);
-            
+            var patternPatches = new PatternPatches(instructions, Log.Monitor);
+
             patternPatches
                 .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
                 .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
@@ -143,11 +127,11 @@ namespace XSPlus.Features
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(MenuPadding))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 })
                 .Repeat(3);
-            
+
             patternPatches
                 .Find(
                     new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
@@ -155,16 +139,15 @@ namespace XSPlus.Features
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
                     new CodeInstruction(OpCodes.Sub),
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                    new CodeInstruction(OpCodes.Sub)
-                )
+                    new CodeInstruction(OpCodes.Sub))
                 .Log("Moving top dialogue box up by search bar height.")
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(MenuPadding))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                     list.AddLast(new CodeInstruction(OpCodes.Sub));
                 });
-            
+
             patternPatches
                 .Find(
                     new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
@@ -174,27 +157,32 @@ namespace XSPlus.Features
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
                     new CodeInstruction(OpCodes.Ldc_I4_2),
                     new CodeInstruction(OpCodes.Mul),
-                    new CodeInstruction(OpCodes.Add)
-                )
+                    new CodeInstruction(OpCodes.Add))
                 .Log("Expanding top dialogue box height by search bar height.")
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(MenuPadding))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
-            
-            foreach (var patternPatch in patternPatches)
+
+            foreach (CodeInstruction patternPatch in patternPatches)
+            {
                 yield return patternPatch;
-            
+            }
+
             if (!patternPatches.Done)
-                _feature.Monitor.Log($"Failed to apply all patches in {typeof(ItemGrabMenu)}::{nameof(ItemGrabMenu.draw)}.", LogLevel.Warn);
+            {
+                Log.Warn($"Failed to apply all patches in {typeof(ItemGrabMenu)}::{nameof(ItemGrabMenu.draw)}.");
+            }
         }
-        /// <summary>Move/resize bottom dialogue box by search bar height</summary>
+
+        /// <summary>Move/resize bottom dialogue box by search bar height.</summary>
+        [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Boxing allocation is required for Harmony.")]
         private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, _feature.Monitor);
-            
+            var patternPatches = new PatternPatches(instructions, Log.Monitor);
+
             patternPatches
                 .Find(
                     new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
@@ -203,16 +191,15 @@ namespace XSPlus.Features
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
                     new CodeInstruction(OpCodes.Add),
                     new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)64),
-                    new CodeInstruction(OpCodes.Add)
-                )
+                    new CodeInstruction(OpCodes.Add))
                 .Log("Moving bottom dialogue box down by search bar height.")
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(MenuPadding))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
-            
+
             patternPatches
                 .Find(
                     new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
@@ -220,213 +207,283 @@ namespace XSPlus.Features
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
                     new CodeInstruction(OpCodes.Add),
                     new CodeInstruction(OpCodes.Ldc_I4, 192),
-                    new CodeInstruction(OpCodes.Add)
-                )
+                    new CodeInstruction(OpCodes.Add))
                 .Log("Shrinking bottom dialogue box height by search bar height.")
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(MenuPadding))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
-            
-            foreach (var patternPatch in patternPatches)
-                yield return patternPatch;
-            
-            if (!patternPatches.Done)
-                _feature.Monitor.Log($"Failed to apply all patches in {typeof(MenuWithInventory)}::{nameof(MenuWithInventory.draw)}.", LogLevel.Warn);
-        }
-        private static int MenuPadding(MenuWithInventory menu)
-        {
-            return menu is ItemGrabMenu { shippingBin: false, context: Chest chest } && _feature.IsEnabled(chest) ? SearchBarHeight : 0;
-        }
-        private bool HighlightMethod(Item item)
-        {
-            var currentSearch = _searchView.Value.CurrentSearch;
-            return currentSearch.Any(search => item.SearchTag(search, XSPlus.Config.SearchTagSymbol));
-        }
-        private class SearchView
-        {
-            public bool Attached { get; private set; }
-            public IEnumerable<string> CurrentSearch => Regex.Split(_searchField.Text, @"\s+");
-            /// <summary>Corresponds to the bounds of the searchField.</summary>
-            private readonly ClickableComponent _searchArea;
-            /// <summary>Input to filter items by name or context tags.</summary>
-            private readonly TextBox _searchField;
-            /// <summary>Icon to display next to search box.</summary>
-            private readonly ClickableTextureComponent _searchIcon;
-            private readonly IList<ClickableTextureComponent> _hearts;
-            private readonly Rectangle _emptyHeart;
-            private readonly Rectangle _filledHeart;
-            private ItemGrabMenu _menu;
-            private Chest _context;
-            private int _screenId = -1;
-            public SearchView()
-            {
-                var texture = _feature.Helper.Content.Load<Texture2D>("LooseSprites\\Cursors", ContentSource.GameContent);
-                _searchField = new TextBox(
-                    textBoxTexture: _feature.Helper.Content.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent),
-                    caretTexture: null,
-                    font: _feature.Helper.Content.Load<SpriteFont>("Fonts\\SmallFont", ContentSource.GameContent),
-                    textColor: Game1.textColor
-                );
-                _searchArea = new ClickableComponent(Rectangle.Empty, "");
-                _searchIcon = new ClickableTextureComponent(
-                    bounds: Rectangle.Empty,
-                    texture: texture,
-                    sourceRect: new Rectangle(80, 0, 13, 13),
-                    scale: 2.5f
-                );
-                _hearts = new List<ClickableTextureComponent>();
-                _emptyHeart = new Rectangle(218, 428, 7, 6);
-                _filledHeart = new Rectangle(211, 428, 7, 6);
-                for (var i = 0; i < 10; i++)
-                {
-                    var heart = new ClickableTextureComponent(
-                        bounds: Rectangle.Empty,
-                        texture: texture,
-                        sourceRect: Rectangle.Empty,
-                        scale: 2.5f
-                    );
-                    _hearts.Add(heart);
-                }
-            }
-            public void DetachMenu()
-            {
-                _menu = null;
-                Attached = false;
-                _screenId = -1;
-            }
-            public void AttachMenu(ItemGrabMenu menu)
-            {
-                Attached = true;
-                _menu = menu;
-                _screenId = Context.ScreenId;
-                
-                if (!ReferenceEquals(_menu.context, _context))
-                {
-                    _context = (Chest)_menu.context;
-                    _searchField.Text = "";                    
-                }
-                
-                var upperBounds = new Rectangle(
-                    _menu.ItemsToGrabMenu.xPositionOnScreen,
-                    _menu.ItemsToGrabMenu.yPositionOnScreen,
-                    _menu.ItemsToGrabMenu.width,
-                    _menu.ItemsToGrabMenu.height
-                );
-                _searchField.X = upperBounds.X;
-                _searchField.Y = upperBounds.Y - 14 * Game1.pixelZoom;
-                _searchField.Width = upperBounds.Width;
-                _searchField.Selected = false;
-                _searchArea.bounds = new Rectangle(_searchField.X, _searchField.Y, _searchField.Width, _searchField.Height);
-                _searchIcon.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - 14 * Game1.pixelZoom + 6, 32, 32);
 
-                var x = _menu.xPositionOnScreen + _menu.width + 96; 
-                var y = _menu.ItemsToGrabMenu.yPositionOnScreen + 10;
-                foreach (var heart in _hearts)
+            foreach (CodeInstruction patternPatch in patternPatches)
+            {
+                yield return patternPatch;
+            }
+
+            if (!patternPatches.Done)
+            {
+                Log.Warn($"Failed to apply all patches in {typeof(MenuWithInventory)}::{nameof(MenuWithInventory.draw)}.");
+            }
+        }
+
+        private static int GetMenuPadding(MenuWithInventory menu)
+        {
+            if (SearchItems.MenuPadding.Value != -1)
+            {
+                return SearchItems.MenuPadding.Value;
+            }
+
+            if (menu is not ItemGrabMenu { context: Chest chest } || !SearchItems.Instance.IsEnabledForItem(chest))
+            {
+                return SearchItems.MenuPadding.Value = 0; // Vanilla
+            }
+
+            return SearchItems.MenuPadding.Value = SearchItems.SearchBarHeight;
+        }
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            this.SearchField.Value = new TextBox(
+                textBoxTexture: this.ContentHelper.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent),
+                caretTexture: null,
+                font: Game1.smallFont,
+                textColor: Game1.textColor);
+            this.SearchIcon.Value = new ClickableTextureComponent(
+                bounds: Rectangle.Empty,
+                texture: Game1.mouseCursors,
+                sourceRect: new Rectangle(80, 0, 13, 13),
+                scale: 2.5f);
+            for (int i = 0; i < 10; i++)
+            {
+                this.Hearts.Value.Add(new ClickableTextureComponent(
+                    bounds: Rectangle.Empty,
+                    texture: Game1.mouseCursors,
+                    sourceRect: SearchItems.FilledHeart,
+                    scale: 2.5f));
+            }
+        }
+
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        {
+            if (ReferenceEquals(e.NewMenu, this.Menu.Value))
+            {
+                return;
+            }
+
+            this.Menu.Value = e.NewMenu;
+            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !this.IsEnabledForItem(chest))
+            {
+                CommonFeature.HighlightChestItems -= this.HighlightMethod;
+                this.Attached.Value = false;
+                this.ScreenId.Value = -1;
+                SearchItems.MenuPadding.Value = -1;
+                return;
+            }
+
+            if (!this.Attached.Value)
+            {
+                CommonFeature.HighlightChestItems += this.HighlightMethod;
+                this.Attached.Value = true;
+                this.ScreenId.Value = Context.ScreenId;
+                var upperBounds = new Rectangle(
+                    itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen,
+                    itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen,
+                    itemGrabMenu.ItemsToGrabMenu.width,
+                    itemGrabMenu.ItemsToGrabMenu.height);
+                this.SearchField.Value.X = upperBounds.X;
+                this.SearchField.Value.Y = upperBounds.Y - (14 * Game1.pixelZoom);
+                this.SearchField.Value.Width = upperBounds.Width;
+                this.SearchField.Value.Selected = false;
+                this.SearchArea.Value.bounds = new Rectangle(this.SearchField.Value.X, this.SearchField.Value.Y, this.SearchField.Value.Width, this.SearchField.Value.Height);
+                this.SearchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - (14 * Game1.pixelZoom) + 6, 32, 32);
+                int x = itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96;
+                int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
+                foreach (ClickableTextureComponent heart in this.Hearts.Value)
                 {
                     heart.bounds = new Rectangle(x, y, 16, 16);
                     y += 32;
                 }
             }
-            public void DrawComponents(SpriteBatch b)
+
+            if (!ReferenceEquals(this.Chest.Value, chest))
             {
-                if (_screenId != Context.ScreenId)
-                    return;
-                _searchField.Draw(b, false);
-                _searchIcon.draw(b);
-                
-                // Get labels from favorites and search history
-                if (!_context.GetModDataList("Search", out var searchHistory))
-                    return;
-                if (!_context.GetModDataList("Favorites", out var favorites))
-                    favorites = new List<string>();
-                var labels = favorites.Union(searchHistory).Distinct().ToList();
-                
-                // Draw hearts/labels to the right of the chest menu along a vertical axis
-                var x = _menu.xPositionOnScreen + _menu.width + 96;
-                var y = _menu.ItemsToGrabMenu.yPositionOnScreen;
-                for (var i = 0; i < _hearts.Count; i++)
-                {
-                    var heart = _hearts[i];
-                    var label = labels.ElementAtOrDefault(i);
-                    if (label is null)
-                        return;
-                    heart.sourceRect = favorites.Contains(label) ? _filledHeart : _emptyHeart;
-                    heart.draw(b);
-                    b.DrawString(Game1.smallFont, label, new Vector2(x + 32, y), Color.White);
-                    y += 32;
-                }
-                
-                _menu.drawMouse(b);
+                this.Chest.Value = chest;
             }
-            public bool ReceiveKeyPress(SButton button)
+        }
+
+        private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
+        {
+            if (!this.Attached.Value || this.ScreenId.Value != Context.ScreenId || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
             {
-                if (_screenId != Context.ScreenId)
-                    return false;
-                if (button == SButton.Enter)
+                return;
+            }
+
+            this.SearchField.Value.Draw(e.SpriteBatch, false);
+            this.SearchIcon.Value.draw(e.SpriteBatch);
+
+            // Get saved labels from search history
+            if (!this.Chest.Value.GetModDataList("Search", out var searchHistory))
+            {
+                return;
+            }
+
+            // Get saved labels from favorites
+            if (!this.Chest.Value.GetModDataList("Favorites", out var favorites))
+            {
+                favorites = new List<string>();
+            }
+
+            var labels = favorites.Union(searchHistory).Distinct().ToList();
+
+            // Draw hearts/labels to the right of the chest menu along a vertical axis
+            int x = itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96;
+            int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen;
+            for (int i = 0; i < this.Hearts.Value.Count; i++)
+            {
+                ClickableTextureComponent heart = this.Hearts.Value[i];
+                string label = labels.ElementAtOrDefault(i);
+                if (label is null)
                 {
-                    if (!_context.GetModDataList("Search", out var searchHistory))
-                        searchHistory = new List<string>();
-                    var currentSearch = CurrentSearch;
-                    searchHistory = searchHistory.Union(currentSearch).Reverse().Take(10).Reverse().ToList();
-                    _context.SetModDataList("Search", searchHistory);
+                    return;
                 }
-                if (button != SButton.Escape)
-                    return _searchField.Selected;
-                Game1.playSound("bigDeSelect");
-                Game1.activeClickableMenu = null;
+
+                heart.sourceRect = favorites.Contains(label) ? SearchItems.FilledHeart : SearchItems.EmptyHeart;
+                heart.draw(e.SpriteBatch);
+                e.SpriteBatch.DrawString(Game1.smallFont, label, new Vector2(x + 32, y), Color.White);
+                y += 32;
+            }
+
+            // Redraw mouse over everything else
+            itemGrabMenu.drawMouse(e.SpriteBatch);
+        }
+
+        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+        {
+            if (!this.Attached.Value || this.ScreenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
+            {
+                return;
+            }
+
+            // Check if search bar was clicked on
+            Point point = Game1.getMousePosition(true);
+            switch (e.Button)
+            {
+                case SButton.MouseLeft when this.LeftClick(point.X, point.Y):
+                case SButton.MouseRight when this.RightClick(point.X, point.Y):
+                    this.InputHelper.Suppress(e.Button);
+                    break;
+                default:
+                    if (this.KeyPress(e.Button))
+                    {
+                        this.InputHelper.Suppress(e.Button);
+                    }
+
+                    break;
+            }
+        }
+
+        private bool LeftClick(int x = -1, int y = -1)
+        {
+            if (x != -1 && y != -1)
+            {
+                this.SearchField.Value.Selected = this.SearchArea.Value.containsPoint(x, y);
+            }
+
+            if (this.SearchField.Value.Selected)
+            {
                 return true;
             }
-            public bool LeftClick(int x = -1, int y = -1)
+
+            // Check if any labels to heart
+            if (!this.Chest.Value.GetModDataList("Search", out var searchHistory))
             {
-                if (_screenId != Context.ScreenId)
-                    return false;
-                if (x != -1 && y != -1)
-                    _searchField.Selected = _searchArea.containsPoint(x, y);
-                if (_searchField.Selected)
-                    return true;
-                
-                // Check if any labels to heart
-                if (!_context.GetModDataList("Search", out var searchHistory))
+                searchHistory = new List<string>();
+            }
+
+            if (!this.Chest.Value.GetModDataList("Favorites", out var favorites))
+            {
+                favorites = new List<string>();
+            }
+
+            var labels = favorites.Union(searchHistory).Distinct().ToList();
+            if (labels.Count == 0)
+            {
+                return false;
+            }
+
+            // Check if any heart was clicked on
+            ClickableTextureComponent heart = this.Hearts.Value.FirstOrDefault(heart => heart.containsPoint(x, y));
+            if (heart is null)
+            {
+                return false;
+            }
+
+            // Check if clicked hearts corresponds to a label
+            int index = this.Hearts.Value.IndexOf(heart);
+            if (index >= labels.Count)
+            {
+                return false;
+            }
+
+            // Toggle label on/off by adding to or removing from favorites
+            string label = labels.ElementAt(index);
+            if (favorites.Contains(label))
+            {
+                favorites.Remove(label);
+            }
+            else
+            {
+                favorites.Add(label);
+            }
+
+            this.Chest.Value.SetModDataList("Favorites", favorites);
+            return true;
+        }
+
+        private bool RightClick(int x = -1, int y = -1)
+        {
+            if (x != -1 && y != -1)
+            {
+                this.SearchField.Value.Selected = this.SearchArea.Value.containsPoint(x, y);
+            }
+
+            if (!this.SearchField.Value.Selected)
+            {
+                return false;
+            }
+
+            this.SearchField.Value.Text = string.Empty;
+            return true;
+        }
+
+        private bool KeyPress(SButton button)
+        {
+            if (button == SButton.Enter)
+            {
+                if (!this.Chest.Value.GetModDataList("Search", out var searchHistory))
+                {
                     searchHistory = new List<string>();
-                if (!_context.GetModDataList("Favorites", out var favorites))
-                    favorites = new List<string>();
-                var labels = favorites.Union(searchHistory).Distinct().ToList();
-                if (labels.Count == 0)
-                    return false;
-                
-                // Check if any heart was clicked on
-                var heart = _hearts.FirstOrDefault(heart => heart.containsPoint(x, y));
-                if (heart is null)
-                    return false;
-                
-                // Check if clicked hearts corresponds to a label
-                var index = _hearts.IndexOf(heart);
-                if (index >= labels.Count)
-                    return false;
-                
-                // Toggle label on/off by adding to or removing from favorites
-                var label = labels.ElementAt(index);
-                if (favorites.Contains(label))
-                    favorites.Remove(label);
-                else
-                    favorites.Add(label);
-                _context.SetModDataList("Favorites", favorites);
-                return true;
+                }
+
+                string[] currentSearch = Regex.Split(this.SearchField.Value.Text, @"\s+");
+                searchHistory = searchHistory.Union(currentSearch).Reverse().Take(10).Reverse().ToList();
+                this.Chest.Value.SetModDataList("Search", searchHistory);
             }
-            public bool RightClick(int x = -1, int y = -1)
+
+            if (button != SButton.Escape)
             {
-                if (_screenId != Context.ScreenId)
-                    return false;
-                if (x != -1 && y != -1)
-                    _searchField.Selected = _searchArea.containsPoint(x, y);
-                if (!_searchField.Selected)
-                    return false;
-                _searchField.Text = "";
-                return true;
+                return this.SearchField.Value.Selected;
             }
+
+            Game1.playSound("bigDeSelect");
+            Game1.activeClickableMenu = null;
+            return true;
+        }
+
+        private bool HighlightMethod(Item item)
+        {
+            return string.IsNullOrWhiteSpace(this.SearchField.Value.Text) || item.SearchTags(Regex.Split(this.SearchField.Value.Text, @"\s+"), this.GetSearchTagSymbol());
         }
     }
 }

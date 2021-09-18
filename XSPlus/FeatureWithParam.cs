@@ -1,42 +1,55 @@
-﻿using System.Collections.Generic;
-using HarmonyLib;
-using StardewModdingAPI;
-using StardewValley;
-
-namespace XSPlus
+﻿namespace XSPlus
 {
+    using System.Collections.Generic;
+    using StardewValley;
+
+    /// <inheritdoc />
     internal abstract class FeatureWithParam<TParam> : BaseFeature
     {
-        private readonly IDictionary<string, TParam> _values = new Dictionary<string, TParam>();
-        protected FeatureWithParam(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
+        private readonly IDictionary<KeyValuePair<string, string>, TParam> Values = new Dictionary<KeyValuePair<string, string>, TParam>();
+
+        /// <summary>Initializes a new instance of the <see cref="FeatureWithParam{TParam}"/> class.</summary>
+        /// <param name="featureName">The name of the feature used for config/API.</param>
+        internal FeatureWithParam(string featureName)
+            : base(featureName)
         {
         }
-        public void EnableWithModData<T>(string key, string value, bool enable, T param)
+
+        /// <summary>Stores feature parameter value for items containing ModData.</summary>
+        /// <param name="key">The mod data key to enable feature for.</param>
+        /// <param name="value">The mod data value to enable feature for.</param>
+        /// <param name="param">The parameter value to store for this feature.</param>
+        public void StoreValueWithModData(string key, string value, TParam param)
         {
-            EnableWithModData(key, value, enable);
-            var modDataKey = $"{key}={value}";
-            if (_values.ContainsKey(modDataKey))
+            var modDataKey = new KeyValuePair<string, string>(key, value);
+            if (this.Values.ContainsKey(modDataKey))
             {
-                if (param is null || param is not TParam tParam)
-                    _values.Remove(modDataKey);
-                else
-                    _values[modDataKey] = tParam;
+                this.Values[modDataKey] = param;
             }
-            else if (param is TParam tParam)
-                _values.Add(modDataKey, tParam);
-        }
-        protected bool TryGetValue(Item item, out TParam param)
-        {
-            param = default;
-            foreach (var modDataValue in _values)
+            else
             {
-                var enabledKey = modDataValue.Key.Split('=')[0];
-                var enabledValue = modDataValue.Key.Split('=')[1];
-                if (!item.modData.TryGetValue(enabledKey, out var value) || value != enabledValue)
+                this.Values.Add(modDataKey, param);
+            }
+        }
+
+        /// <summary>Attempts to return the stored value for item based on ModData.</summary>
+        /// <param name="item">The item to test ModData against.</param>
+        /// <param name="param">The stored value for this item.</param>
+        /// <returns>Returns true if there is a stored value for this item.</returns>
+        protected virtual bool TryGetValueForItem(Item item, out TParam param)
+        {
+            foreach (var modData in this.Values)
+            {
+                if (!item.modData.TryGetValue(modData.Key.Key, out string value) || value != modData.Key.Value)
+                {
                     continue;
-                param = modDataValue.Value;
+                }
+
+                param = modData.Value;
                 return true;
             }
+
+            param = default;
             return false;
         }
     }

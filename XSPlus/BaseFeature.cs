@@ -1,65 +1,78 @@
-﻿using System.Collections.Generic;
-using HarmonyLib;
-using StardewModdingAPI;
-using StardewValley;
-
-namespace XSPlus
+﻿namespace XSPlus
 {
+    using System.Collections.Generic;
+    using HarmonyLib;
+    using StardewModdingAPI.Events;
+    using StardewValley;
+
+    /// <summary>Encapsulates logic for features added by this mod.</summary>
     internal abstract class BaseFeature
     {
-        protected readonly IModHelper Helper;
-        protected readonly IMonitor Monitor;
-        protected readonly Harmony Harmony;
-        private readonly string _featureName;
-        private readonly IDictionary<string, bool> _enabledByModData = new Dictionary<string, bool>();
-        private bool _isDisabled;
-        public bool IsDisabled
+        /// <summary>Gets the name of the feature used for config/API.</summary>
+        private readonly IDictionary<KeyValuePair<string, string>, bool> EnabledByModData = new Dictionary<KeyValuePair<string, string>, bool>();
+
+        /// <summary>Initializes a new instance of the <see cref="BaseFeature"/> class.</summary>
+        /// <param name="featureName">The name of the feature used for config/API.</param>
+        private protected BaseFeature(string featureName)
         {
-            get => _isDisabled;
-            set
-            {
-                if (_isDisabled == value)
-                    return;
-                _isDisabled = value;
-                if (_isDisabled)
-                    DisableFeature();
-                else
-                    EnableFeature();
-            }
+            this.FeatureName = featureName;
         }
-        protected BaseFeature(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony)
-        {
-            _featureName = featureName;
-            Helper = helper;
-            Monitor = monitor;
-            Harmony = harmony;
-            _isDisabled = true;
-        }
-        protected abstract void EnableFeature();
-        protected abstract void DisableFeature();
-        public virtual bool IsEnabled(Item item)
-        {
-            // Globally disabled
-            if (_isDisabled)
-                return false;
-            // Individually Enabled/Disabled
-            foreach (var enabledByModData in _enabledByModData)
-            {
-                var enabledKey = enabledByModData.Key.Split('=')[0];
-                var enabledValue = enabledByModData.Key.Split('=')[1];
-                if (item.modData.TryGetValue(enabledKey, out var value) && value == enabledValue)
-                    return enabledByModData.Value;
-            }
-            // Global enabled or by default disabled
-            return XSPlus.Config.Global.TryGetValue(_featureName, out var globalOverride) && globalOverride;
-        }
+
+        /// <summary>Gets the name of the feature used for config/API.</summary>
+        public string FeatureName { get; }
+
+        /// <summary>Add events and apply patches used to enable this feature.</summary>
+        /// <param name="modEvents">SMAPI's events API for mods.</param>
+        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
+        public abstract void Activate(IModEvents modEvents, Harmony harmony);
+
+        /// <summary>Disable events and reverse patches used by this feature.</summary>
+        /// <param name="modEvents">SMAPI's events API for mods.</param>
+        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
+        public abstract void Deactivate(IModEvents modEvents, Harmony harmony);
+
+        /// <summary>Allows items containing particular mod data to have feature enabled.</summary>
+        /// <param name="key">The mod data key to enable feature for.</param>
+        /// <param name="value">The mod data value to enable feature for.</param>
+        /// <param name="enable">Whether to enable or disable this feature.</param>
         public void EnableWithModData(string key, string value, bool enable)
         {
-            var modDataKey = $"{key}={value}";
-            if (_enabledByModData.ContainsKey(modDataKey))
-                _enabledByModData[modDataKey] = enable;
+            var modDataKey = new KeyValuePair<string, string>(key, value);
+
+            if (this.EnabledByModData.ContainsKey(modDataKey))
+            {
+                this.EnabledByModData[modDataKey] = enable;
+            }
             else
-                _enabledByModData.Add(modDataKey, enable);
+            {
+                this.EnabledByModData.Add(modDataKey, enable);
+            }
+        }
+
+        /// <summary>Checks whether a feature is currently enabled for an item.</summary>
+        /// <param name="item">The item to check if it supports this feature.</param>
+        /// <returns>Returns true if the feature is currently enabled for the item.</returns>
+        protected internal virtual bool IsEnabledForItem(Item item)
+        {
+            bool isEnabledByModData = FeatureManager.IsFeatureEnabledGlobally(this.FeatureName);
+
+            foreach (var modData in this.EnabledByModData)
+            {
+                if (!item.modData.TryGetValue(modData.Key.Key, out string value) || value != modData.Key.Value)
+                {
+                    continue;
+                }
+
+                // Disabled by ModData
+                if (!modData.Value)
+                {
+                    return false;
+                }
+
+                isEnabledByModData = true;
+            }
+
+            return isEnabledByModData;
         }
     }
 }

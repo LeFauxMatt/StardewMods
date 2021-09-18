@@ -1,122 +1,164 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using HarmonyLib;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
-using StardewValley;
-using StardewValley.Objects;
-
-namespace XSPlus.Features
+﻿namespace XSPlus.Features
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using Common.Extensions;
+    using HarmonyLib;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
+    using StardewModdingAPI.Utilities;
+    using StardewValley;
+    using StardewValley.Objects;
+
+    /// <inheritdoc />
     internal class StashToChest : FeatureWithParam<string>
     {
+        private static StashToChest Instance;
+        private readonly IInputHelper InputHelper;
+        private readonly Func<string> GetSearchTagSymbol;
+        private readonly Func<KeybindList> GetStashingButton;
+        private readonly Func<string> GetConfigRange;
+        private readonly PerScreen<List<Chest>> CachedEnabledChests = new();
+
+        /// <summary>Initializes a new instance of the <see cref="StashToChest"/> class.</summary>
+        /// <param name="inputHelper">API for changing state of input.</param>
+        /// <param name="getStashingButton">Get method for configured stashing button.</param>
+        /// <param name="getConfigRange">Get method for configured default range.</param>
+        /// <param name="getSearchTagSymbol">Get method for configured search tag symbol.</param>
+        public StashToChest(IInputHelper inputHelper, Func<KeybindList> getStashingButton, Func<string> getConfigRange, Func<string> getSearchTagSymbol)
+            : base("StashToChest")
+        {
+            StashToChest.Instance = this;
+            this.InputHelper = inputHelper;
+            this.GetStashingButton = getStashingButton;
+            this.GetConfigRange = getConfigRange;
+            this.GetSearchTagSymbol = getSearchTagSymbol;
+        }
+
         private List<Chest> EnabledChests
         {
-            get
-            {
-                if (_updated.Value)
-                    return _enabledChests.Value.ToList();
-                _carriedChests.Value ??= Game1.player.Items.OfType<Chest>().Where(IsEnabled);
-                _locationChests.Value ??= CommonHelper.GetChests(CommonHelper.GetAccessibleLocations(Helper.Multiplayer.GetActiveLocations)).Where(IsEnabled);
-                _enabledChests.Value = _carriedChests.Value.Union(_locationChests.Value).Distinct();
-                _updated.Value = true;
-                return _enabledChests.Value.ToList();
-            }
+            get => this.CachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
+                .Union(XSPlus.AccessibleChests)
+                .Where(this.IsEnabledForItem)
+                .Distinct()
+                .ToList();
         }
-        private readonly PerScreen<IEnumerable<Chest>> _enabledChests = new();
-        private readonly PerScreen<IEnumerable<Chest>> _carriedChests = new();
-        private readonly PerScreen<IEnumerable<Chest>> _locationChests = new();
-        private readonly PerScreen<bool> _updated = new();
-        private FilterItems _filterItems;
-        public StashToChest(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
-        {
-        }
-        protected override void EnableFeature()
+
+        /// <inheritdoc/>
+        public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            Helper.Events.Player.InventoryChanged += OnInventoryChanged;
-            Helper.Events.Player.Warped += OnWarped;
-            Helper.Events.Input.ButtonsChanged += OnButtonsChanged;
+            modEvents.Player.InventoryChanged += this.OnInventoryChanged;
+            modEvents.Player.Warped += this.OnWarped;
+            modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
         }
-        protected override void DisableFeature()
+
+        /// <inheritdoc/>
+        public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched -= OnGameLaunched;
-            Helper.Events.Player.InventoryChanged -= OnInventoryChanged;
-            Helper.Events.Player.Warped -= OnWarped;
-            Helper.Events.Input.ButtonsChanged -= OnButtonsChanged;
+            modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
+            modEvents.Player.Warped -= this.OnWarped;
+            modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
         }
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+
+        /// <inheritdoc/>
+        [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
+        protected internal override bool IsEnabledForItem(Item item)
         {
-            _filterItems = XSPlus.Features["FilterItems"] as FilterItems;
-        }
-        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
-        {
-            if (!e.IsLocalPlayer)
-                return;
-            _carriedChests.Value = null;
-            _updated.Value = false;
-        }
-        private void OnWarped(object sender, WarpedEventArgs e)
-        {
-            _locationChests.Value = null;
-            _updated.Value = false;
-        }
-        /// <summary>Stash inventory items into all supported chests</summary>
-        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
-        {
-            if (!Context.IsPlayerFree || !XSPlus.Config.StashItems.JustPressed() || !EnabledChests.Any())
-                return;
-            for (var i = 0; i < Game1.player.Items.Count; i++)
+            if (!base.IsEnabledForItem(item) || item is not Chest || !this.TryGetValueForItem(item, out string range))
             {
-                var item = Game1.player.Items[i];
-                if (item is null)
-                    continue;
-                var stack = (uint) item.Stack;
-                foreach (var chest in EnabledChests)
-                {
-                    var allowList = _filterItems.IsEnabled(chest);
-                    chest.GetModDataList("Favorites", out var favorites);
-                    // Skip chest if it has favorites and none are matched
-                    if (favorites.Count > 0 && !favorites.Any(search => item.SearchTag(search, XSPlus.Config.SearchTagSymbol)))
-                        continue;
-                    
-                    // Skip chest if no favorites and no built-in filter
-                    if (favorites.Count == 0 && !allowList)
-                        continue;
-                    
-                    // Attempt to add item into chest
-                    var tmp = chest.addItem(item);
-                    if (tmp == null)
-                    {
-                        Game1.player.Items[i] = null;
-                        break;
-                    }
-                    if (tmp.Stack != stack)
-                        item.Stack = tmp.Stack;
-                }
+                return false;
             }
-            Game1.playSound("Ship");
-            Helper.Input.SuppressActiveKeybinds(XSPlus.Config.StashItems);
-        }
-        public override bool IsEnabled(Item item)
-        {
-            if (!base.IsEnabled(item) || item is not Chest)
-                return false;
-            if (!TryGetValue(item, out var range))
-                range = XSPlus.Config.CraftingRange;
-            if (!_filterItems.IsEnabled(item) && (!item.GetModDataList("Favorites", out var favorites) || favorites.Count == 0))
-                return false;
+
             return range switch
             {
                 "Inventory" => Game1.player.Items.IndexOf(item) != -1,
                 "Location" => Game1.currentLocation.Objects.Values.Contains(item),
                 "World" => true,
-                _ => false
+                _ => false,
             };
+        }
+
+        /// <inheritdoc/>
+        protected override bool TryGetValueForItem(Item item, out string param)
+        {
+            if (base.TryGetValueForItem(item, out param))
+            {
+                return true;
+            }
+
+            param = this.GetConfigRange();
+            return string.IsNullOrWhiteSpace(param);
+        }
+
+        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+        {
+            if (!e.IsLocalPlayer)
+            {
+                return;
+            }
+
+            this.CachedEnabledChests.Value = null;
+        }
+
+        private void OnWarped(object sender, WarpedEventArgs e)
+        {
+            this.CachedEnabledChests.Value = null;
+        }
+
+        /// <summary>Stash inventory items into all supported chests.</summary>
+        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+        {
+            KeybindList stashingButton = this.GetStashingButton();
+
+            if (!Context.IsPlayerFree || !stashingButton.JustPressed() || !this.EnabledChests.Any())
+            {
+                return;
+            }
+
+            for (int i = Game1.player.Items.Count - 1; i >= 0; i--)
+            {
+                Item item = Game1.player.Items[i];
+                if (item is null)
+                {
+                    continue;
+                }
+
+                uint stack = (uint)item.Stack;
+                foreach (Chest chest in this.EnabledChests)
+                {
+                    bool allowList = FilterItems.Instance.IsEnabledForItem(chest);
+                    chest.GetModDataList("Favorites", out var favorites);
+
+                    switch (favorites.Count)
+                    {
+                        // Skip chest if it has favorites and none are matched
+                        case > 0 when !item.SearchTags(favorites, this.GetSearchTagSymbol()):
+                        // Skip chest if no favorites and no built-in filter
+                        case 0 when !allowList:
+                            continue;
+                    }
+
+                    // Attempt to add item into chest
+                    Item tmp = chest.addItem(item);
+                    if (tmp == null)
+                    {
+                        Game1.player.Items[i] = null;
+                        break;
+                    }
+
+                    if (tmp.Stack != stack)
+                    {
+                        item.Stack = tmp.Stack;
+                    }
+                }
+            }
+
+            Game1.playSound("Ship");
+            this.InputHelper.SuppressActiveKeybinds(stashingButton);
         }
     }
 }

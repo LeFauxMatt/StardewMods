@@ -1,225 +1,244 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using Common.Extensions;
-using HarmonyLib;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
-using StardewValley;
-using StardewValley.Menus;
-using StardewValley.Objects;
-
-namespace XSPlus.Features
+﻿namespace XSPlus.Features
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using Common.Extensions;
+    using HarmonyLib;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
+    using StardewModdingAPI.Utilities;
+    using StardewValley;
+    using StardewValley.Menus;
+    using StardewValley.Objects;
+
+    /// <inheritdoc />
     internal class InventoryTabs : FeatureWithParam<HashSet<string>>
     {
-        // ReSharper disable InconsistentNaming
-        private static readonly Type[] ItemGrabMenu_constructor_params = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
-        // ReSharper restore InconsistentNaming
-        private static InventoryTabs _feature;
-        private readonly PerScreen<TabView> _tabView = new();
-        private readonly PerScreen<IClickableMenu> _oldMenu = new();
+        private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
+        private static InventoryTabs Instance;
+        private readonly IContentHelper ContentHelper;
+        private readonly IInputHelper InputHelper;
+        private readonly Func<KeybindList> GetPreviousTab;
+        private readonly Func<KeybindList> GetNextTab;
+        private readonly PerScreen<IClickableMenu> Menu = new();
+        private readonly PerScreen<Chest> Chest = new();
+        private readonly PerScreen<bool> Attached = new();
+        private readonly PerScreen<int> TabIndex = new() { Value = -1 };
+        private readonly PerScreen<int> ScreenId = new() { Value = -1 };
+        private IList<Tab> Tabs;
+        private Texture2D Texture;
 
-        public InventoryTabs(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
+        /// <summary>Initializes a new instance of the <see cref="InventoryTabs"/> class.</summary>
+        /// <param name="contentHelper">Provides an API for loading content assets.</param>
+        /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="getPreviousTab">Get method for configured previous tab button.</param>
+        /// <param name="getNextTab">Get method for configured next tab button.</param>
+        public InventoryTabs(IContentHelper contentHelper, IInputHelper inputHelper, Func<KeybindList> getPreviousTab, Func<KeybindList> getNextTab)
+            : base("InventoryTabs")
         {
-            _feature = this;
+            InventoryTabs.Instance = this;
+            this.ContentHelper = contentHelper;
+            this.InputHelper = inputHelper;
+            this.GetPreviousTab = getPreviousTab;
+            this.GetNextTab = getNextTab;
         }
-        protected override void EnableFeature()
+
+        /// <inheritdoc/>
+        public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            Helper.Events.Display.MenuChanged += OnMenuChanged;
-            
+            modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
+            modEvents.Display.MenuChanged += this.OnMenuChanged;
+            modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
+            modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+            modEvents.Input.ButtonPressed += this.OnButtonPressed;
+
             // Patches
-            Harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ItemGrabMenu_constructor_params),
-                postfix: new HarmonyMethod(typeof(InventoryTabs), nameof(InventoryTabs.ItemGrabMenu_constructor_postfix))
-            );
+            harmony.Patch(
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), InventoryTabs.ItemGrabMenuConstructorParams),
+                postfix: new HarmonyMethod(typeof(InventoryTabs), nameof(InventoryTabs.ItemGrabMenu_constructor_postfix)));
         }
-        protected override void DisableFeature()
+
+        /// <inheritdoc/>
+        public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            Helper.Events.GameLoop.GameLaunched -= OnGameLaunched;
-            Helper.Events.Display.MenuChanged -= OnMenuChanged;
-            
+            modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
+            modEvents.Display.MenuChanged -= this.OnMenuChanged;
+            modEvents.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
+            modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+            modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+
             // Patches
-            Harmony.Unpatch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ItemGrabMenu_constructor_params),
-                patch: AccessTools.Method(typeof(InventoryTabs), nameof(InventoryTabs.ItemGrabMenu_constructor_postfix))
-            );
+            harmony.Unpatch(
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), InventoryTabs.ItemGrabMenuConstructorParams),
+                patch: AccessTools.Method(typeof(InventoryTabs), nameof(InventoryTabs.ItemGrabMenu_constructor_postfix)));
         }
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-        {
-            _tabView.Value = new TabView();
-        }
-        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
-        {
-            if (ReferenceEquals(e.NewMenu, _oldMenu.Value))
-                return;
-            _oldMenu.Value = e.NewMenu;
-            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !IsEnabled(chest))
-            {
-                CommonHelper.HighlightMethods_ItemsToGrabMenu -= HighlightMethod;
-                Helper.Events.Display.RenderingActiveMenu -= OnRenderingActiveMenu;
-                Helper.Events.Input.ButtonsChanged -= OnButtonsChanged;
-                Helper.Events.Input.ButtonPressed -= OnButtonPressed;
-                _tabView.Value.DetachMenu();
-            }
-            else
-            {
-                if (!_tabView.Value.Attached)
-                {
-                    Helper.Events.Display.RenderingActiveMenu += OnRenderingActiveMenu;
-                    Helper.Events.Input.ButtonsChanged += OnButtonsChanged;
-                    Helper.Events.Input.ButtonPressed += OnButtonPressed;
-                }
-                CommonHelper.HighlightMethods_ItemsToGrabMenu += HighlightMethod;
-                _tabView.Value.AttachMenu(itemGrabMenu);
-            }
-        }
-        private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
-        {
-            _tabView.Value.DrawComponents(e.SpriteBatch);
-        }
-        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
-        {
-            if (XSPlus.Config.NextTab.JustPressed())
-            {
-                _tabView.Value.TabIndex++;
-                _feature.Helper.Input.SuppressActiveKeybinds(XSPlus.Config.NextTab);
-            }
-            else if (XSPlus.Config.PreviousTab.JustPressed())
-            {
-                _tabView.Value.TabIndex--;
-                _feature.Helper.Input.SuppressActiveKeybinds(XSPlus.Config.PreviousTab);
-            }
-        }
-        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-        {
-            var x = Game1.getMouseX(true);
-            var y = Game1.getMouseY(true);
-            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-            if (e.Button == SButton.MouseLeft && _tabView.Value.LeftClick(x, y))
-            {
-                Helper.Input.Suppress(e.Button);
-            }
-        }
-        private bool HighlightMethod(Item item)
-        {
-            var currentTab = _tabView.Value.CurrentTab;
-            return currentTab is null || currentTab.Tags.Any(item.MatchesTagExt);
-        }
-        /// <summary>Remove background to render chest tabs under menu</summary>
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
+
+        /// <summary>Remove background to render chest tabs under menu.</summary>
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {
-            if (__instance.context is not Chest chest || !_feature.IsEnabled(chest))
+            if (__instance.context is not Chest chest || !InventoryTabs.Instance.IsEnabledForItem(chest))
+            {
                 return;
+            }
+
             __instance.setBackgroundTransparency(false);
         }
-        private class TabView
-        {
-            public bool Attached { get; private set; }
-            public Tab CurrentTab { get; private set; }
 
-            public int TabIndex
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            this.Tabs = this.ContentHelper.Load<List<Tab>>("assets/tabs.json");
+            this.Texture = this.ContentHelper.Load<Texture2D>("assets/tabs.png");
+
+            for (int i = 0; i < this.Tabs.Count; i++)
             {
-                get => _tabs.IndexOf(CurrentTab);
-                set
+                this.Tabs[i].Component = new ClickableTextureComponent(
+                    bounds: new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                    texture: this.Texture,
+                    sourceRect: new Rectangle(16 * i, 0, 16, 16),
+                    scale: Game1.pixelZoom);
+            }
+        }
+
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        {
+            if (ReferenceEquals(e.NewMenu, this.Menu.Value))
+            {
+                return;
+            }
+
+            this.Menu.Value = e.NewMenu;
+            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } || !this.IsEnabledForItem(chest))
+            {
+                CommonFeature.HighlightChestItems -= this.HighlightMethod;
+                this.Attached.Value = false;
+                this.ScreenId.Value = -1;
+                return;
+            }
+
+            if (!this.Attached.Value)
+            {
+                CommonFeature.HighlightChestItems += this.HighlightMethod;
+                this.Attached.Value = true;
+                this.ScreenId.Value = Context.ScreenId;
+            }
+
+            if (!ReferenceEquals(this.Chest.Value, chest))
+            {
+                this.Chest.Value = chest;
+                this.TabIndex.Value = -1;
+            }
+        }
+
+        private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
+        {
+            if (!this.Attached.Value || this.ScreenId.Value != Context.ScreenId || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+            {
+                return;
+            }
+
+            // Draw background behind tabs
+            e.SpriteBatch.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
+
+            // Draw tabs between inventory menus along a horizontal axis
+            int x = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen;
+            int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + itemGrabMenu.ItemsToGrabMenu.height + (1 * Game1.pixelZoom);
+            for (int i = 0; i < this.Tabs.Count; i++)
+            {
+                ClickableTextureComponent cc = this.Tabs[i].Component;
+                Color color;
+                cc.bounds.X = x;
+                if (i == this.TabIndex.Value)
                 {
-                    if (value < 0)
-                        value = value + _tabs.Count + 1;
-                    CurrentTab = value < _tabs.Count ? _tabs[value] : null;
+                    cc.bounds.Y = y + (1 * Game1.pixelZoom);
+                    color = Color.White;
                 }
-            }
-            private readonly IList<Tab> _tabs;
-            private ItemGrabMenu _menu;
-            private Chest _context;
-            private int _screenId = -1;
-            public TabView()
-            {
-                _tabs = _feature.Helper.Content.Load<List<Tab>>("assets/tabs.json", ContentSource.ModFolder);
-            }
-            public void DetachMenu()
-            {
-                _menu = null;
-                Attached = false;
-                _screenId = -1;
-            }
-            public void AttachMenu(ItemGrabMenu menu)
-            {
-                Attached = true;
-                _menu = menu;
-                _screenId = Context.ScreenId;
-                
-                if (!ReferenceEquals(_menu.context, _context))
+                else
                 {
-                    _context = (Chest)_menu.context;
+                    cc.bounds.Y = y;
+                    color = Color.Gray;
                 }
+
+                cc.draw(e.SpriteBatch, color, 0.86f + (cc.bounds.Y / 20000f));
+                x = cc.bounds.Right;
             }
-            public void DrawComponents(SpriteBatch b)
+        }
+
+        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+        {
+            if (!this.Attached.Value)
             {
-                if (_screenId != Context.ScreenId)
-                    return;
-                
-                b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
-                
-                // Draw tabs between inventory menus along a horizontal axis
-                var x = _menu.ItemsToGrabMenu.xPositionOnScreen;
-                var y = _menu.ItemsToGrabMenu.yPositionOnScreen + _menu.ItemsToGrabMenu.height + 1 * Game1.pixelZoom;
-                foreach (var tab in _tabs)
+                return;
+            }
+
+            KeybindList nextTabButton = this.GetNextTab();
+            if (nextTabButton.JustPressed())
+            {
+                this.TabIndex.Value++;
+                if (this.TabIndex.Value == this.Tabs.Count)
                 {
-                    Color color;
-                    tab.bounds.X = x;
-                    if (ReferenceEquals(CurrentTab, tab))
-                    {
-                        tab.bounds.Y = y + 1 * Game1.pixelZoom;
-                        color = Color.White;
-                    }
-                    else
-                    {
-                        tab.bounds.Y = y;
-                        color = Color.Gray;
-                    }
-                    tab.draw(b, color, 0.86f + tab.bounds.Y / 20000f);
-                    x = tab.bounds.Right;
+                    this.TabIndex.Value = -1;
                 }
+
+                this.InputHelper.SuppressActiveKeybinds(nextTabButton);
+                return;
             }
-            public bool LeftClick(int x = -1, int y = -1)
+
+            KeybindList previousTabButton = this.GetPreviousTab();
+            if (previousTabButton.JustPressed())
             {
-                if (_screenId != Context.ScreenId)
-                    return false;
-                // Check if any tab was clicked on
-                var tab = _tabs.FirstOrDefault(heart => heart.containsPoint(x, y));
-                if (tab is null)
-                    return false;
-                CurrentTab = ReferenceEquals(CurrentTab, tab) ? null : tab;
-                return true;
-            }
-            public class Tab : ClickableTextureComponent
-            {
-                public string Name { get; set; }
-                public string Image { get; set; }
-                public HashSet<string> Tags { get; set; }
-                [JsonConstructor]
-                public Tab(string name, string image) : base(
-                    new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    _feature.Helper.Content.Load<Texture2D>($"assets/{image}"),
-                    Rectangle.Empty,
-                    Game1.pixelZoom
-                )
+                this.TabIndex.Value--;
+                if (this.TabIndex.Value == -2)
                 {
-                    hoverText = name;
-                    Image = image;
+                    this.TabIndex.Value = this.Tabs.Count - 1;
                 }
+
+                this.InputHelper.SuppressActiveKeybinds(previousTabButton);
             }
+        }
+
+        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+        {
+            if (!this.Attached.Value || this.ScreenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
+            {
+                return;
+            }
+
+            // Check if any tab was clicked on.
+            Point point = Game1.getMousePosition(true);
+            Tab tab = this.Tabs.FirstOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
+            if (tab is null)
+            {
+                return;
+            }
+
+            // Toggle if currently active was clicked on.
+            int index = this.Tabs.IndexOf(tab);
+            this.TabIndex.Value = this.TabIndex.Value == index ? -1 : index;
+            this.InputHelper.Suppress(e.Button);
+        }
+
+        private bool HighlightMethod(Item item)
+        {
+            return this.TabIndex.Value == -1 || item.MatchesTagExt(this.Tabs[this.TabIndex.Value].Tags);
+        }
+
+        [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local", Justification = "Record is instantiated by ContentHelper.")]
+        private record Tab
+        {
+            public string Name { get; set; }
+
+            public string[] Tags { get; set; }
+
+            public ClickableTextureComponent Component { get; set; }
         }
     }
 }

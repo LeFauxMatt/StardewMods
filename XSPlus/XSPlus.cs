@@ -1,247 +1,216 @@
-﻿using System;
-using System.Collections.Generic;
-using Common.Integrations.GenericModConfigMenu;
-using Common.Integrations.XSPlus;
-using HarmonyLib;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewValley;
-using XSPlus.Features;
-
-namespace XSPlus
+﻿namespace XSPlus
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using Common.Helpers;
+    using Common.Integrations.GenericModConfigMenu;
+    using Common.Integrations.XSPlus;
+    using HarmonyLib;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
+    using StardewValley;
+    using StardewValley.Locations;
+    using StardewValley.Objects;
+
+    /// <inheritdoc cref="StardewModdingAPI.Mod" />
     public class XSPlus : Mod
     {
+        /// <summary>Mod-specific prefix for modData.</summary>
         internal const string ModPrefix = "furyx639.ExpandedStorage";
-        internal static readonly Dictionary<string, BaseFeature> Features = new();
-        internal static ModConfig Config;
-        private GenericModConfigMenuIntegration _modConfigMenu;
-        private readonly IXSPlusAPI _api = new XSPlusAPI();
+
+        private static Func<IEnumerable<GameLocation>> GetActiveLocations;
+        private readonly IXSPlusAPI API = new XSPlusAPI();
+        private FeatureManager FeatureManager;
+        private GenericModConfigMenuIntegration ModConfigMenu;
+
+        /// <summary>
+        /// Gets placed Chests that are accessible to the player.
+        /// </summary>
+        [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
+        public static IEnumerable<Chest> AccessibleChests
+        {
+            get => XSPlus.AccessibleLocations.SelectMany(location => location.Objects.Values.OfType<Chest>());
+        }
+
+        /// <summary>
+        /// Gets config options for mod.
+        /// </summary>
+        internal ModConfig Config { get; private set; }
+
+        private static IEnumerable<GameLocation> AccessibleLocations
+        {
+            get
+            {
+                if (Context.IsMainPlayer)
+                {
+                    return Game1.locations.Concat(
+                        Game1.locations.OfType<BuildableGameLocation>().SelectMany(
+                            location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
+                }
+
+                return XSPlus.GetActiveLocations();
+            }
+        }
+
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
-            Config = Helper.ReadConfig<ModConfig>();
-            _modConfigMenu = new GenericModConfigMenuIntegration(helper.ModRegistry);
-            
+            Log.Init(this.Monitor);
+            XSPlus.GetActiveLocations = this.Helper.Multiplayer.GetActiveLocations;
+            this.Config = this.Helper.ReadConfig<ModConfig>();
+            this.ModConfigMenu = new GenericModConfigMenuIntegration(helper.ModRegistry);
+
             // Events
-            Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            
-            // Patches
-            var harmony = new Harmony(ModManifest.UniqueID);
-            var unused = new Patches(Helper, Monitor, new Harmony(ModManifest.UniqueID));
-            var featureTypes = new[]
-            {
-                typeof(AccessCarried),
-                typeof(Capacity),
-                typeof(CraftFromChest),
-                typeof(ExpandedMenu),
-                typeof(FilterItems),
-                typeof(InventoryTabs),
-                typeof(SearchItems),
-                typeof(StashToChest),
-                typeof(Unbreakable),
-                typeof(Unplaceable),
-                typeof(VacuumItems)
-            };
-            foreach (var featureType in featureTypes)
-            {
-                var featureName = featureType.Name;
-                var feature = (BaseFeature) Activator.CreateInstance(featureType, featureName, Helper, Monitor, harmony);
-                if (feature is null)
-                    continue;
-                Features.Add(featureName, feature);
-                if (!Config.Global.TryGetValue(featureName, out var global) || global)
-                    feature.IsDisabled = false;
-            }
+            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+
+            // Features
+            this.FeatureManager = FeatureManager.Init(this.Helper, new Harmony(this.ModManifest.UniqueID), this.Config.Global);
+            this.FeatureManager.AddFeature(new Features.CommonFeature());
+            this.FeatureManager.AddFeature(new Features.AccessCarried(this.Helper.Input));
+            this.FeatureManager.AddFeature(new Features.Capacity(() => this.Config.Capacity));
+            this.FeatureManager.AddFeature(new Features.CraftFromChest(this.Helper.Input, () => this.Config.OpenCrafting, () => this.Config.CraftingRange));
+            this.FeatureManager.AddFeature(new Features.ExpandedMenu(this.Helper.Input, () => this.Config.ScrollUp, () => this.Config.ScrollDown, () => this.Config.MenuRows));
+            this.FeatureManager.AddFeature(new Features.FilterItems());
+            this.FeatureManager.AddFeature(new Features.InventoryTabs(this.Helper.Content, this.Helper.Input, () => this.Config.PreviousTab, () => this.Config.NextTab));
+            this.FeatureManager.AddFeature(new Features.SearchItems(this.Helper.Content, this.Helper.Input, () => this.Config.SearchTagSymbol));
+            this.FeatureManager.AddFeature(new Features.StashToChest(this.Helper.Input, () => this.Config.StashItems, () => this.Config.StashingRange, () => this.Config.SearchTagSymbol));
+            this.FeatureManager.AddFeature(new Features.Unbreakable());
+            this.FeatureManager.AddFeature(new Features.Unplaceable());
+            this.FeatureManager.AddFeature(new Features.VacuumItems());
+
+            // Activate
+            this.FeatureManager.ActivateFeatures();
         }
+
         /// <inheritdoc />
         public override object GetApi()
         {
-            return _api;
+            return this.API;
         }
+
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            var configChoices = new[] { "Default", "Enable", "Disable" };
-            if (!_modConfigMenu.IsLoaded)
+            string[] configChoices = { "Default", "Enable", "Disable" };
+            if (!this.ModConfigMenu.IsLoaded)
+            {
                 return;
-            
-            string GetConfig(string featureName)
-            {
-                if (!Config.Global.TryGetValue(featureName, out var global))
-                    return "Default";
-                return global ? "Enable" : "Disable";
             }
-            
-            void SetConfig(string featureName, string value)
-            {
-                if (!Features.TryGetValue(featureName, out var feature))
-                    return;
-                switch (value)
-                {
-                    case "Enable":
-                        Config.Global[featureName] = true;
-                        break;
-                    case "Disable":
-                        Config.Global[featureName] = false;
-                        break;
-                    default:
-                        Config.Global.Remove(featureName);
-                        break;
-                }
-                feature.IsDisabled = Config.Global.TryGetValue(featureName, out var global) && !global;
-            }
-            
+
             // Register mod configuration
-            _modConfigMenu.API.RegisterModConfig(
-                mod: ModManifest,
-                revertToDefault: () => Config = new ModConfig(),
-                saveToFile: () => Helper.WriteConfig(Config)
-            );
-            
+            this.ModConfigMenu.API.RegisterModConfig(
+                mod: this.ModManifest,
+                revertToDefault: () => this.Config = new ModConfig(),
+                saveToFile: () => this.Helper.WriteConfig(this.Config));
+
             // Allow config in game
-            _modConfigMenu.API.SetDefaultIngameOptinValue(ModManifest, true);
-            
+            this.ModConfigMenu.API.SetDefaultIngameOptinValue(this.ModManifest, true);
+
             // Config options
-            _modConfigMenu.API.RegisterLabel(ModManifest, "General", "");
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+            this.ModConfigMenu.API.RegisterLabel(this.ModManifest, "General", string.Empty);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Open Crafting Button",
                 optionDesc: "Key to open the crafting menu for accessible chests.",
-                optionGet: () => Config.OpenCrafting,
-                optionSet: value => Config.OpenCrafting = value
-            );
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.OpenCrafting,
+                optionSet: value => this.Config.OpenCrafting = value);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Stash Items Button",
                 optionDesc: "Key to stash items into accessible chests.",
-                optionGet: () => Config.StashItems,
-                optionSet: value => Config.StashItems = value
-            );
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.StashItems,
+                optionSet: value => this.Config.StashItems = value);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Scroll Up",
                 optionDesc: "Key to scroll up in expanded inventory menus.",
-                optionGet: () => Config.ScrollUp,
-                optionSet: value => Config.ScrollUp = value
-            );
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.ScrollUp,
+                optionSet: value => this.Config.ScrollUp = value);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Scroll Down",
                 optionDesc: "Key to scroll down in expanded inventory menus.",
-                optionGet: () => Config.ScrollDown,
-                optionSet: value => Config.ScrollDown = value
-            );
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.ScrollDown,
+                optionSet: value => this.Config.ScrollDown = value);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Previous Tab",
                 optionDesc: "Key to switch to previous tab.",
-                optionGet: () => Config.PreviousTab,
-                optionSet: value => Config.PreviousTab = value
-            );
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.PreviousTab,
+                optionSet: value => this.Config.PreviousTab = value);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Next Tab",
                 optionDesc: "Key to switch to next tab.",
-                optionGet: () => Config.NextTab,
-                optionSet: value => Config.NextTab = value
-            );
-            _modConfigMenu.API.RegisterSimpleOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.NextTab,
+                optionSet: value => this.Config.NextTab = value);
+            this.ModConfigMenu.API.RegisterSimpleOption(
+                mod: this.ModManifest,
                 optionName: "Capacity",
                 optionDesc: "How many items each chest will hold (use -1 for maximum capacity).",
-                optionGet: () => Config.Capacity,
-                optionSet: value =>
-                {
-                    Config.Capacity = value;
-                    if (value == 0)
-                        Config.Global.Remove("Capacity");
-                    else
-                        Config.Global["Capacity"] = true;
-                });
-            _modConfigMenu.API.RegisterClampedOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.Capacity,
+                optionSet: value => this.Config.Capacity = value);
+            this.ModConfigMenu.API.RegisterClampedOption(
+                mod: this.ModManifest,
                 optionName: "Menu Rows",
                 optionDesc: "The most number of rows that the menu can expand into.",
-                optionGet: () => Config.MenuRows,
-                optionSet: value => Config.MenuRows = value,
+                optionGet: () => this.Config.MenuRows,
+                optionSet: value => this.Config.MenuRows = value,
                 min: 3,
                 max: 6,
-                interval: 1
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                interval: 1);
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Crafting Range",
                 optionDesc: "The default range that chests can be remotely crafted from.",
-                optionGet: () => Config.CraftingRange,
-                optionSet: value => Config.CraftingRange = value,
-                choices: new[] { "Inventory", "Location", "World" }
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.CraftingRange,
+                optionSet: value => this.Config.CraftingRange = value,
+                choices: new[] { "Inventory", "Location", "World", "Default", "Disabled" });
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Stashing Range",
                 optionDesc: "The default range that chests can be remotely stashed into.",
-                optionGet: () => Config.StashingRange,
-                optionSet: value => Config.StashingRange = value,
-                choices: new[] { "Inventory", "Location", "World" }
-            );
-            
-            _modConfigMenu.API.RegisterLabel(ModManifest, "Global Overrides", "Enable/disable features for all chests");
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                optionGet: () => this.Config.StashingRange,
+                optionSet: value => this.Config.StashingRange = value,
+                choices: new[] { "Inventory", "Location", "World", "Default", "Disabled" });
+
+            this.ModConfigMenu.API.RegisterLabel(this.ModManifest, "Global Overrides", "Enable/disable features for all chests");
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Access Carried",
                 optionDesc: "Open the currently held chest in your inventory.",
-                optionGet: () => GetConfig("AccessCarried"),
-                optionSet: value => SetConfig("AccessCarried", value),
-                choices: configChoices
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
-                optionName: "Craft from Chest",
-                optionDesc: "Allows chest to be crafted from remotely.",
-                optionGet: () => GetConfig("CraftFromChest"),
-                optionSet: value => SetConfig("CraftFromChest", value),
-                choices: configChoices
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                optionGet: this.Config.GetConfig("AccessCarried"),
+                optionSet: this.Config.SetConfig("AccessCarried"),
+                choices: configChoices);
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Expanded Menu",
                 optionDesc: "Expands or shrinks the chest menu.",
-                optionGet: () => GetConfig("ExpandedMenu"),
-                optionSet: value => SetConfig("ExpandedMenu", value),
-                choices: configChoices
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                optionGet: this.Config.GetConfig("ExpandedMenu"),
+                optionSet: this.Config.SetConfig("ExpandedMenu"),
+                choices: configChoices);
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Inventory Tabs",
                 optionDesc: "Adds tabs to the chest menu.",
-                optionGet: () => GetConfig("InventoryTabs"),
-                optionSet: value => SetConfig("InventoryTabs", value),
-                choices: configChoices
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                optionGet: this.Config.GetConfig("InventoryTabs"),
+                optionSet: this.Config.SetConfig("InventoryTabs"),
+                choices: configChoices);
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Search Items",
                 optionDesc: "Adds a search bar to the chest menu.",
-                optionGet: () => GetConfig("SearchItems"),
-                optionSet: value => SetConfig("SearchItems", value),
-                choices: configChoices
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
-                optionName: "Stash to Chest",
-                optionDesc: "Allows chest to be stashed into remotely.",
-                optionGet: () => GetConfig("StashToChest"),
-                optionSet: value => SetConfig("StashToChest", value),
-                choices: configChoices
-            );
-            _modConfigMenu.API.RegisterChoiceOption(
-                mod: ModManifest,
+                optionGet: this.Config.GetConfig("SearchItems"),
+                optionSet: this.Config.SetConfig("SearchItems"),
+                choices: configChoices);
+            this.ModConfigMenu.API.RegisterChoiceOption(
+                mod: this.ModManifest,
                 optionName: "Vacuum Items",
                 optionDesc: "Allows chests in player inventory to pick up dropped items.",
-                optionGet: () => GetConfig("VacuumItems"),
-                optionSet: value => SetConfig("VacuumItems", value),
-                choices: configChoices
-            );
+                optionGet: this.Config.GetConfig("VacuumItems"),
+                optionSet: this.Config.SetConfig("VacuumItems"),
+                choices: configChoices);
         }
     }
 }

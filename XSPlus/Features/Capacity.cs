@@ -1,41 +1,72 @@
-﻿using HarmonyLib;
-using StardewModdingAPI;
-using StardewValley.Objects;
-
-namespace XSPlus.Features
+﻿namespace XSPlus.Features
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using HarmonyLib;
+    using StardewModdingAPI.Events;
+    using StardewValley;
+    using StardewValley.Objects;
+
+    /// <inheritdoc />
     internal class Capacity : FeatureWithParam<int>
     {
-        private static Capacity _feature;
-        public Capacity(string featureName, IModHelper helper, IMonitor monitor, Harmony harmony) : base(featureName, helper, monitor, harmony)
+        private static Capacity Instance;
+        private readonly Func<int> GetConfigCapacity;
+
+        /// <summary>Initializes a new instance of the <see cref="Capacity"/> class.</summary>
+        /// <param name="getConfigCapacity">Get method for configured default capacity.</param>
+        public Capacity(Func<int> getConfigCapacity)
+            : base("Capacity")
         {
-            _feature = this;
+            Capacity.Instance = this;
+            this.GetConfigCapacity = getConfigCapacity;
         }
-        protected override void EnableFeature()
+
+        /// <inheritdoc/>
+        public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Patches
-            Harmony.Patch(
+            harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                postfix: new HarmonyMethod(typeof(Capacity), nameof(Capacity.Chest_GetActualCapacity_postfix))
-            );
+                postfix: new HarmonyMethod(typeof(Capacity), nameof(Capacity.Chest_GetActualCapacity_postfix)));
         }
-        protected override void DisableFeature()
+
+        /// <inheritdoc/>
+        public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Patches
-            Harmony.Unpatch(
+            harmony.Unpatch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                patch: AccessTools.Method(typeof(Capacity), nameof(Capacity.Chest_GetActualCapacity_postfix))
-            );
+                patch: AccessTools.Method(typeof(Capacity), nameof(Capacity.Chest_GetActualCapacity_postfix)));
         }
+
+        /// <inheritdoc/>
+        protected override bool TryGetValueForItem(Item item, out int param)
+        {
+            if (base.TryGetValueForItem(item, out param))
+            {
+                return true;
+            }
+
+            param = this.GetConfigCapacity();
+            return param == 0;
+        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
         {
-            if (!_feature.IsEnabled(__instance) || XSPlus.Config.Capacity == 0)
+            if (!Capacity.Instance.IsEnabledForItem(__instance) || !Capacity.Instance.TryGetValueForItem(__instance, out int capacity))
+            {
                 return;
-            __result = XSPlus.Config.Capacity switch
+            }
+
+            __result = capacity switch
             {
                 -1 => int.MaxValue,
-                > 0 => XSPlus.Config.Capacity,
-                _ => __result
+                > 0 => capacity,
+                _ => __result,
             };
         }
     }
