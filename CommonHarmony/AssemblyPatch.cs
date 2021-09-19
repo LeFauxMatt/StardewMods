@@ -34,7 +34,7 @@
 
         public MethodInfo Method(string type, string method)
         {
-            return Type(type).Method(method);
+            return this.Type(type).Method(method);
         }
 
         internal class AssemblyPatchType

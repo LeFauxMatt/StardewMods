@@ -29,7 +29,7 @@
             int skipped = 0;
             bool done = false;
 
-            foreach (CodeInstruction instruction in _instructions)
+            foreach (CodeInstruction instruction in this._instructions)
             {
                 // Skipped instructions
                 if (skipped > 0)
@@ -86,7 +86,7 @@
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         public PatternPatch Find(params CodeInstruction[] pattern)
