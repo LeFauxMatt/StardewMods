@@ -17,15 +17,21 @@
     internal class CommonFeature : BaseFeature
     {
         private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
+        private static CommonFeature Instance;
         private readonly PerScreen<IClickableMenu> _menu = new();
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<Chest> _chest = new();
+        private readonly PerScreen<InventoryMenu.highlightThisItem> _vanillaHighlightChestItems = new();
+        private readonly PerScreen<InventoryMenu.highlightThisItem> _vanillaHighlightPlayerItems = new();
+        private readonly PerScreen<InventoryMenu.highlightThisItem> _expandedHighlightChestItems = new();
+        private readonly PerScreen<InventoryMenu.highlightThisItem> _expandedHighlightPlayerItems = new();
 
         /// <summary>Initializes a new instance of the <see cref="CommonFeature"/> class.</summary>
         internal CommonFeature()
             : base("Common")
         {
+            CommonFeature.Instance = this;
         }
 
         /// <summary>Render below the chest menu, but above the background.</summary>
@@ -41,10 +47,18 @@
         public static event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged;
 
         /// <summary>Gets or sets multicast delegate for highlighting items in chest inventory.</summary>
-        public static InventoryMenu.highlightThisItem HighlightChestItems { get; internal set; }
+        public static InventoryMenu.highlightThisItem HighlightChestItems
+        {
+            get => CommonFeature.Instance._vanillaHighlightChestItems.Value + CommonFeature.Instance._expandedHighlightChestItems.Value;
+            internal set => CommonFeature.Instance._expandedHighlightChestItems.Value = value;
+        }
 
         /// <summary>Gets or sets multicast delegate for highlighting items in player inventory.</summary>
-        public static InventoryMenu.highlightThisItem HighlightPlayerItems { get; internal set; }
+        public static InventoryMenu.highlightThisItem HighlightPlayerItems
+        {
+            get => CommonFeature.Instance._vanillaHighlightPlayerItems.Value + CommonFeature.Instance._expandedHighlightPlayerItems.Value;
+            internal set => CommonFeature.Instance._expandedHighlightPlayerItems.Value = value;
+        }
 
         /// <inheritdoc/>
         public override void Activate(IModEvents modEvents, Harmony harmony)
@@ -85,17 +99,15 @@
 
             if (__instance.inventory.highlightMethod != CommonFeature.OnHighlightPlayerItems)
             {
-                CommonFeature.HighlightPlayerItems = __instance.inventory.highlightMethod;
+                CommonFeature.Instance._vanillaHighlightPlayerItems.Value = __instance.inventory.highlightMethod;
                 __instance.inventory.highlightMethod = CommonFeature.OnHighlightPlayerItems;
             }
 
-            if (__instance.ItemsToGrabMenu.highlightMethod == CommonFeature.OnHighlightChestItems)
+            if (__instance.ItemsToGrabMenu.highlightMethod != CommonFeature.OnHighlightChestItems)
             {
-                return;
+                CommonFeature.Instance._vanillaHighlightChestItems.Value = __instance.ItemsToGrabMenu.highlightMethod;
+                __instance.ItemsToGrabMenu.highlightMethod = CommonFeature.OnHighlightChestItems;
             }
-
-            CommonFeature.HighlightChestItems = __instance.ItemsToGrabMenu.highlightMethod;
-            __instance.ItemsToGrabMenu.highlightMethod = CommonFeature.OnHighlightChestItems;
 
             __instance.setBackgroundTransparency(false);
 

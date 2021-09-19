@@ -53,12 +53,24 @@
                 case bool bParam:
                     feature.EnableWithModData(key, value, bParam);
                     break;
+                case float fParam when feature is FeatureWithParam<float> fFeature:
+                    fFeature.StoreValueWithModData(key, value, fParam);
+                    feature.EnableWithModData(key, value, true);
+                    break;
                 case int iParam when feature is FeatureWithParam<int> iFeature:
                     iFeature.StoreValueWithModData(key, value, iParam);
                     feature.EnableWithModData(key, value, true);
                     break;
                 case string sParam when feature is FeatureWithParam<string> sFeature:
                     sFeature.StoreValueWithModData(key, value, sParam);
+                    feature.EnableWithModData(key, value, true);
+                    break;
+                case HashSet<string> hParam when feature is FeatureWithParam<HashSet<string>> hFeature:
+                    hFeature.StoreValueWithModData(key, value, hParam);
+                    feature.EnableWithModData(key, value, true);
+                    break;
+                case Dictionary<string, bool> dParam when feature is FeatureWithParam<Dictionary<string, bool>> dFeature:
+                    dFeature.StoreValueWithModData(key, value, dParam);
                     feature.EnableWithModData(key, value, true);
                     break;
             }

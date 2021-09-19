@@ -22,10 +22,8 @@
         private readonly IInputHelper _inputHelper;
         private readonly Func<KeybindList> _getPreviousTab;
         private readonly Func<KeybindList> _getNextTab;
-        private readonly PerScreen<IClickableMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<int> _tabIndex = new() { Value = -1 };
         private IList<Tab> _tabs;
         private Texture2D _texture;
@@ -87,7 +85,6 @@
             {
                 CommonFeature.HighlightChestItems -= this.HighlightMethod;
                 this._attached.Value = false;
-                this._screenId.Value = -1;
                 return;
             }
 
@@ -95,7 +92,6 @@
             {
                 CommonFeature.HighlightChestItems += this.HighlightMethod;
                 this._attached.Value = true;
-                this._screenId.Value = e.ScreenId;
             }
 
             if (!ReferenceEquals(this._chest.Value, e.Chest))
@@ -171,7 +167,7 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!this._attached.Value || this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
+            if (!this._attached.Value || e.Button != SButton.MouseLeft)
             {
                 return;
             }

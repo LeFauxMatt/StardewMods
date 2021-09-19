@@ -11,6 +11,7 @@
     using StardewValley.Objects;
     using SObject = StardewValley.Object;
 
+    /// <inheritdoc />
     internal class VacuumItems : BaseFeature
     {
         private static readonly PerScreen<bool> IsVacuuming = new();

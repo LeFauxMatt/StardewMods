@@ -15,7 +15,6 @@
     /// <inheritdoc />
     internal class StashToChest : FeatureWithParam<string>
     {
-        private static StashToChest Instance;
         private readonly IInputHelper _inputHelper;
         private readonly Func<string> _getSearchTagSymbol;
         private readonly Func<KeybindList> _getStashingButton;
@@ -30,7 +29,6 @@
         public StashToChest(IInputHelper inputHelper, Func<KeybindList> getStashingButton, Func<string> getConfigRange, Func<string> getSearchTagSymbol)
             : base("StashToChest")
         {
-            StashToChest.Instance = this;
             this._inputHelper = inputHelper;
             this._getStashingButton = getStashingButton;
             this._getConfigRange = getConfigRange;

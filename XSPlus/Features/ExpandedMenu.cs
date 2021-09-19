@@ -10,6 +10,7 @@
     using CommonHarmony;
     using HarmonyLib;
     using Microsoft.Xna.Framework.Graphics;
+    using Netcode;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -22,18 +23,18 @@
     {
         private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private static readonly PerScreen<int> MenuCapacity = new();
-        private static readonly PerScreen<int> MenuRows = new();
-        private static readonly PerScreen<int> MenuOffset = new() { Value = -1 };
         private static ExpandedMenu Instance;
         private readonly IInputHelper _inputHelper;
         private readonly Func<KeybindList> _getScrollUp;
         private readonly Func<KeybindList> _getScrollDown;
         private readonly Func<int> _getMaxMenuRows;
-        private readonly PerScreen<IClickableMenu> _menu = new();
-        private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<bool> _attached = new();
+        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<int> _scrolledAmount = new();
+        private readonly PerScreen<int> _menuCapacity = new();
+        private readonly PerScreen<int> _menuRows = new();
+        private readonly PerScreen<int> _menuOffset = new() { Value = -1 };
 
         /// <summary>Initializes a new instance of the <see cref="ExpandedMenu"/> class.</summary>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
@@ -141,7 +142,7 @@
                 .Log("Changing jump condition from Beq 36 to Bge 10.")
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
-                    var jumpCode = list.Last.Value;
+                    CodeInstruction jumpCode = list.Last.Value;
                     list.RemoveLast();
                     list.RemoveLast();
                     list.AddLast(new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)10));
@@ -161,9 +162,9 @@
                     list.RemoveLast();
                     list.RemoveLast();
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.GetMenuCapacity))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuCapacity))));
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.GetMenuRows))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuRows))));
                 });
 
             foreach (var patternPatch in patternPatches)
@@ -189,7 +190,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.GetMenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuOffset))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 })
                 .Repeat(3);
@@ -224,7 +225,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.GetMenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuOffset))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
 
@@ -240,7 +241,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.GetMenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuOffset))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
 
@@ -255,62 +256,62 @@
             }
         }
 
-        private static int GetMenuCapacity(MenuWithInventory menu)
+        private static int MenuCapacity(MenuWithInventory menu)
         {
-            if (ExpandedMenu.MenuCapacity.Value != 0)
+            if (ExpandedMenu.Instance._menuCapacity.Value != 0)
             {
-                return ExpandedMenu.MenuCapacity.Value;
+                return ExpandedMenu.Instance._menuCapacity.Value;
             }
 
             if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenu.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenu.MenuCapacity.Value = -1; // Vanilla
+                return ExpandedMenu.Instance._menuCapacity.Value = -1; // Vanilla
             }
 
             int capacity = chest.GetActualCapacity();
             int maxMenuRows = ExpandedMenu.Instance._getMaxMenuRows();
-            return ExpandedMenu.MenuCapacity.Value = capacity switch
+            return ExpandedMenu.Instance._menuCapacity.Value = capacity switch
             {
                 < 72 => Math.Min(maxMenuRows * 12, capacity.RoundUp(12)), // Variable
                 _ => maxMenuRows * 12, // Large
             };
         }
 
-        private static int GetMenuRows(MenuWithInventory menu)
+        private static int MenuRows(MenuWithInventory menu)
         {
-            if (ExpandedMenu.MenuRows.Value != 0)
+            if (ExpandedMenu.Instance._menuRows.Value != 0)
             {
-                return ExpandedMenu.MenuRows.Value;
+                return ExpandedMenu.Instance._menuRows.Value;
             }
 
             if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenu.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenu.MenuCapacity.Value = 3; // Vanilla
+                return ExpandedMenu.Instance._menuCapacity.Value = 3; // Vanilla
             }
 
             int capacity = chest.GetActualCapacity();
             int maxMenuRows = ExpandedMenu.Instance._getMaxMenuRows();
-            return ExpandedMenu.MenuRows.Value = capacity switch
+            return ExpandedMenu.Instance._menuRows.Value = capacity switch
             {
                 < 72 => (int)Math.Min(maxMenuRows, Math.Ceiling(capacity / 12f)),
                 _ => maxMenuRows,
             };
         }
 
-        private static int GetMenuOffset(MenuWithInventory menu)
+        private static int MenuOffset(MenuWithInventory menu)
         {
-            if (ExpandedMenu.MenuOffset.Value != -1)
+            if (ExpandedMenu.Instance._menuOffset.Value != -1)
             {
-                return ExpandedMenu.MenuOffset.Value;
+                return ExpandedMenu.Instance._menuOffset.Value;
             }
 
             if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenu.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenu.MenuOffset.Value = 0; // Vanilla
+                return ExpandedMenu.Instance._menuOffset.Value = 0; // Vanilla
             }
 
-            int rows = ExpandedMenu.GetMenuRows(menu);
-            return ExpandedMenu.MenuOffset.Value = Game1.tileSize * (rows - 3);
+            int rows = ExpandedMenu.MenuRows(menu);
+            return ExpandedMenu.Instance._menuOffset.Value = Game1.tileSize * (rows - 3);
         }
 
         private static IList<Item> ScrollItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
@@ -320,28 +321,10 @@
                 return actualInventory;
             }
 
-            var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).AsEnumerable();
+            IEnumerable<Item> items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).AsEnumerable();
             items = items.Skip(12 * ExpandedMenu.Instance._scrolledAmount.Value);
             items = items.Take(inventoryMenu.capacity);
             return items.ToList();
-        }
-
-        private static void SyncInventory()
-        {
-            if (Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu)
-            {
-                return;
-            }
-
-            var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-            var filteredInventory = ExpandedMenu.ScrollItems(items, itemGrabMenu.ItemsToGrabMenu);
-            for (int i = 0; i < itemGrabMenu.ItemsToGrabMenu.inventory.Count; i++)
-            {
-                Item item = filteredInventory.ElementAtOrDefault(i);
-                itemGrabMenu.ItemsToGrabMenu.inventory[i].name = item is not null
-                    ? items.IndexOf(item).ToString()
-                    : items.Count.ToString();
-            }
         }
 
         private void OnItemGrabMenuConstructor(object sender, CommonFeature.ItemGrabMenuConstructorEventArgs e)
@@ -351,7 +334,7 @@
                 return;
             }
 
-            int offset = ExpandedMenu.GetMenuOffset(e.ItemGrabMenu);
+            int offset = ExpandedMenu.MenuOffset(e.ItemGrabMenu);
             e.ItemGrabMenu.height += offset;
             e.ItemGrabMenu.inventory.movePosition(0, offset);
             if (e.ItemGrabMenu.okButton != null)
@@ -377,11 +360,15 @@
             if (!e.Attached || !this.IsEnabledForItem(e.Chest))
             {
                 this._attached.Value = false;
-                ExpandedMenu.MenuCapacity.Value = 0;
-                ExpandedMenu.MenuRows.Value = 0;
-                ExpandedMenu.MenuOffset.Value = -1;
+                this._menu.Value = null;
+                this._menuCapacity.Value = 0;
+                this._menuRows.Value = 0;
+                this._menuOffset.Value = -1;
                 return;
             }
+
+            this._attached.Value = true;
+            this._menu.Value = e.ItemGrabMenu;
 
             if (!ReferenceEquals(this._chest.Value, e.Chest))
             {
@@ -389,40 +376,35 @@
                 this._scrolledAmount.Value = 0;
             }
 
-            if (!this._attached.Value)
-            {
-                this._attached.Value = true;
-            }
-
-            ExpandedMenu.SyncInventory();
+            this.SyncInventory();
         }
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (!this._attached.Value || Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu)
+            if (!this._attached.Value)
             {
                 return;
             }
 
-            int items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+            int items = this._chest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
             switch (e.Delta)
             {
                 case > 0 when this._scrolledAmount.Value > 0:
                     this._scrolledAmount.Value--;
                     break;
-                case < 0 when this._scrolledAmount.Value < Math.Max(0, (items.RoundUp(12) / 12) - itemGrabMenu.ItemsToGrabMenu.rows):
+                case < 0 when this._scrolledAmount.Value < Math.Max(0, (items.RoundUp(12) / 12) - this._menu.Value.ItemsToGrabMenu.rows):
                     this._scrolledAmount.Value++;
                     break;
                 default:
                     return;
             }
 
-            ExpandedMenu.SyncInventory();
+            this.SyncInventory();
         }
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            if (!this._attached.Value || Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu)
+            if (!this._attached.Value)
             {
                 return;
             }
@@ -431,17 +413,35 @@
             if (getScrollUp.JustPressed() && this._scrolledAmount.Value > 0)
             {
                 this._scrolledAmount.Value--;
-                ExpandedMenu.SyncInventory();
+                this.SyncInventory();
                 this._inputHelper.SuppressActiveKeybinds(getScrollUp);
                 return;
             }
 
             KeybindList getScrollDown = this._getScrollDown();
-            if (getScrollDown.JustPressed() && this._scrolledAmount.Value < Math.Max(0, (chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count.RoundUp(12) / 12) - itemGrabMenu.ItemsToGrabMenu.rows))
+            if (getScrollDown.JustPressed() && this._scrolledAmount.Value < Math.Max(0, (this._chest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count.RoundUp(12) / 12) - this._menu.Value.ItemsToGrabMenu.rows))
             {
                 this._scrolledAmount.Value++;
-                ExpandedMenu.SyncInventory();
+                this.SyncInventory();
                 this._inputHelper.SuppressActiveKeybinds(getScrollDown);
+            }
+        }
+
+        private void SyncInventory()
+        {
+            if (!this._attached.Value)
+            {
+                return;
+            }
+
+            NetObjectList<Item> items = this._chest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+            IList<Item> filteredInventory = ExpandedMenu.ScrollItems(items, this._menu.Value.ItemsToGrabMenu);
+            for (int i = 0; i < this._menu.Value.ItemsToGrabMenu.inventory.Count; i++)
+            {
+                Item item = filteredInventory.ElementAtOrDefault(i);
+                this._menu.Value.ItemsToGrabMenu.inventory[i].name = item is not null
+                    ? items.IndexOf(item).ToString()
+                    : items.Count.ToString();
             }
         }
     }

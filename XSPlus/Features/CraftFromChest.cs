@@ -16,7 +16,6 @@
     /// <inheritdoc />
     internal class CraftFromChest : FeatureWithParam<string>
     {
-        private static CraftFromChest Instance;
         private readonly IInputHelper _inputHelper;
         private readonly Func<KeybindList> _getCraftingButton;
         private readonly Func<string> _getConfigRange;
@@ -29,7 +28,6 @@
         public CraftFromChest(IInputHelper inputHelper, Func<KeybindList> getCraftingButton, Func<string> getConfigRange)
             : base("CraftFromChest")
         {
-            CraftFromChest.Instance = this;
             this._inputHelper = inputHelper;
             this._getCraftingButton = getCraftingButton;
             this._getConfigRange = getConfigRange;

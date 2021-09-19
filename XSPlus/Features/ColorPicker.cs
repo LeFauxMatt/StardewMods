@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using Common.Helpers;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
@@ -20,11 +21,11 @@
         private const int Cells = 16;
         private const int Gap = 6;
         private static readonly Rectangle SelectRect = new(412, 495, 5, 4);
+        private static ColorPicker Instance;
         private readonly IContentHelper _contentHelper;
-        private readonly PerScreen<IClickableMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
+        private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<Hold> _holding = new();
         private readonly PerScreen<Rectangle> _area = new();
         private readonly PerScreen<ClickableTextureComponent> _transparentBox = new();
@@ -51,6 +52,7 @@
         internal ColorPicker(IContentHelper contentHelper)
             : base("ColorPicker")
         {
+            ColorPicker.Instance = this;
             this._contentHelper = contentHelper;
         }
 
@@ -103,6 +105,7 @@
         public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
+            CommonFeature.ItemGrabMenuConstructor += this.OnItemGrabMenuConstructor;
             CommonFeature.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
             CommonFeature.RenderedActiveMenu += this.OnRenderedActiveMenu;
             modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -110,12 +113,18 @@
             modEvents.Input.ButtonReleased += this.OnButtonReleased;
             modEvents.Input.CursorMoved += this.OnCursorMoved;
             modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+
+            // Patches
+            harmony.Patch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                postfix: new HarmonyMethod(typeof(ColorPicker), nameof(ColorPicker.ItemGrabMenu_setSourceItem_postfix)));
         }
 
         /// <inheritdoc/>
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
+            CommonFeature.ItemGrabMenuConstructor -= this.OnItemGrabMenuConstructor;
             CommonFeature.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
             CommonFeature.RenderedActiveMenu -= this.OnRenderedActiveMenu;
             modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
@@ -123,6 +132,26 @@
             modEvents.Input.ButtonReleased -= this.OnButtonReleased;
             modEvents.Input.CursorMoved -= this.OnCursorMoved;
             modEvents.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+
+            // Patches
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                patch: AccessTools.Method(typeof(ColorPicker), nameof(ColorPicker.ItemGrabMenu_setSourceItem_postfix)));
+        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
+        {
+            if (__instance.context is not Chest chest || !ColorPicker.Instance.IsEnabledForItem(chest))
+            {
+                return;
+            }
+
+            __instance.chestColorPicker = null;
+            __instance.colorPickerToggleButton = null;
+            __instance.discreteColorPickerCC = null;
+            __instance.RepositionSideButtons();
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -149,17 +178,32 @@
             }
         }
 
+        private void OnItemGrabMenuConstructor(object sender, CommonFeature.ItemGrabMenuConstructorEventArgs e)
+        {
+            if (!this.IsEnabledForItem(e.Chest))
+            {
+                return;
+            }
+
+            // Remove vanilla color picker
+            e.ItemGrabMenu.colorPickerToggleButton = null;
+            e.ItemGrabMenu.chestColorPicker = null;
+            e.ItemGrabMenu.discreteColorPickerCC = null;
+            e.ItemGrabMenu.SetupBorderNeighbors();
+            e.ItemGrabMenu.RepositionSideButtons();
+        }
+
         private void OnItemGrabMenuChanged(object sender, CommonFeature.ItemGrabMenuChangedEventArgs e)
         {
             if (!e.Attached || !this.IsEnabledForItem(e.Chest))
             {
-                this._screenId.Value = -1;
                 this._attached.Value = false;
+                this._menu.Value = null;
                 return;
             }
 
             this._attached.Value = true;
-            this._screenId.Value = e.ScreenId;
+            this._menu.Value = e.ItemGrabMenu;
             this._holding.Value = Hold.None;
             this._chest.Value = new Chest(true, e.Chest.ParentSheetIndex)
             {
@@ -167,7 +211,7 @@
                 lidFrameCount = { Value = e.Chest.lidFrameCount.Value },
                 playerChoiceColor = { Value = e.Chest.playerChoiceColor.Value },
             };
-            foreach (var modData in e.Chest.modData)
+            foreach (SerializableDictionary<string, string> modData in e.Chest.modData)
             {
                 this._chest.Value.modData.CopyFrom(modData);
             }
@@ -180,7 +224,7 @@
             this._transparentBox.Value.bounds.Y = this._area.Value.Top;
             this._transparentBox.Value.bounds.Width = 7;
             this._transparentBox.Value.bounds.Height = 7;
-            HSLColor chestColor = HSLColor.FromColor(e.Chest.playerChoiceColor.Value);
+            var chestColor = HSLColor.FromColor(e.Chest.playerChoiceColor.Value);
             this.Hue = chestColor.H;
             this.Saturation = chestColor.S;
             this.Lightness = chestColor.L;
@@ -278,7 +322,7 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!this._attached.Value || this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft || this._holding.Value != Hold.None || Game1.activeClickableMenu is not ItemGrabMenu)
+            if (!this._attached.Value || e.Button != SButton.MouseLeft || this._holding.Value != Hold.None)
             {
                 return;
             }
@@ -329,18 +373,18 @@
 
         private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
         {
-            if (!this._attached.Value || this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft || this._holding.Value == Hold.None || Game1.activeClickableMenu is not ItemGrabMenu { context: Chest chest })
+            if (!this._attached.Value || e.Button != SButton.MouseLeft || this._holding.Value == Hold.None)
             {
                 return;
             }
 
             this._holding.Value = Hold.None;
-            chest.playerChoiceColor.Value = this._chest.Value.playerChoiceColor.Value;
+            ((Chest)this._menu.Value.context).playerChoiceColor.Value = this._chest.Value.playerChoiceColor.Value;
         }
 
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
-            if (!this._attached.Value || this._screenId.Value != Context.ScreenId || this._holding.Value is Hold.None or Hold.Transparent || Game1.activeClickableMenu is not ItemGrabMenu)
+            if (!this._attached.Value || this._holding.Value is Hold.None or Hold.Transparent)
             {
                 return;
             }
@@ -369,7 +413,7 @@
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (!this._attached.Value || this._screenId.Value != Context.ScreenId || Game1.activeClickableMenu is not ItemGrabMenu { context: Chest chest })
+            if (!this._attached.Value || Game1.activeClickableMenu is not ItemGrabMenu { context: Chest chest })
             {
                 return;
             }
