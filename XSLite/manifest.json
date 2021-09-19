@@ -10,8 +10,7 @@
   "Dependencies": [
     {
       "UniqueID": "spacechase0.DynamicGameAssets",
-      "IsRequired": true,
-      "MinimumVersion": "1.0.0-alpha"
+      "IsRequired": false
     },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",

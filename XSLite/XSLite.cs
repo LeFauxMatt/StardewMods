@@ -43,7 +43,7 @@
             this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
 
             // Patches
-            var unused = new Patches(this.Helper, this.Monitor, new Harmony(this.ModManifest.UniqueID));
+            var unused = new Patches(this.Helper, new Harmony(this.ModManifest.UniqueID));
         }
 
         /// <inheritdoc />
@@ -59,7 +59,7 @@
             return segments.Length == 3
                    && segments.ElementAt(0).Equals("ExpandedStorage", StringComparison.OrdinalIgnoreCase)
                    && segments.ElementAt(1).Equals("SpriteSheets", StringComparison.OrdinalIgnoreCase)
-                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out var storage)
+                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out Storage storage)
                    && storage.Format != Storage.AssetFormat.Vanilla;
         }
 
@@ -84,7 +84,7 @@
             return segments.Length == 3
                    && segments.ElementAt(0).Equals("ExpandedStorage", StringComparison.OrdinalIgnoreCase)
                    && segments.ElementAt(1).Equals("SpriteSheets", StringComparison.OrdinalIgnoreCase)
-                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out var storage)
+                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out Storage storage)
                    && storage.Format == Storage.AssetFormat.JsonAssets;
         }
 
@@ -103,7 +103,7 @@
                 for (int layer = 0; layer < 3; layer++)
                 {
                     // Base Layer
-                    if (!XSLite.Textures.TryGetValue($"{storageName}-{layer * 6}", out var texture) && !XSLite.Textures.TryGetValue($"{storageName}", out texture))
+                    if (!XSLite.Textures.TryGetValue($"{storageName}-{(layer * 6).ToString()}", out Texture2D texture) && !XSLite.Textures.TryGetValue($"{storageName}", out texture))
                     {
                         break;
                     }
@@ -113,7 +113,7 @@
                     editor.PatchImage(texture, sourceArea, targetArea);
 
                     // Lid Layer
-                    if (!XSLite.Textures.TryGetValue($"{storageName}-{frame + (layer * 6) + 1}", out texture) && !XSLite.Textures.TryGetValue($"{storageName}", out texture))
+                    if (!XSLite.Textures.TryGetValue($"{storageName}-{(frame + (layer * 6) + 1).ToString()}", out texture) && !XSLite.Textures.TryGetValue($"{storageName}", out texture))
                     {
                         break;
                     }
@@ -296,7 +296,7 @@
                 return;
             }
 
-            foreach (var removed in e.Removed)
+            foreach (KeyValuePair<Vector2, SObject> removed in e.Removed)
             {
                 if (this.ObjectListStack.Contains(removed.Key))
                 {

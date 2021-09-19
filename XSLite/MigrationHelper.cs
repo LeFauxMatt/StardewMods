@@ -7,7 +7,6 @@
     using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "<Pending>")]
     public static class MigrationHelper
     {
         public static bool CreateDynamicAsset(IContentPack contentPack)
@@ -23,13 +22,13 @@
 
             // Generate content.json and default.json
             var content = new List<Dictionary<string, object>>();
-            var i18n = new Dictionary<string, Dictionary<string, string>>();
+            var localizations = new Dictionary<string, Dictionary<string, string>>();
             foreach (string folder in Directory.GetDirectories(path))
             {
                 var folderInfo = new DirectoryInfo(folder);
                 string folderName = folderInfo.Name;
-                var jsonAsset = contentPack.ReadJsonFile<JsonAsset>($"BigCraftables/{folderName}/big-craftable.json");
-                if (string.IsNullOrWhiteSpace(jsonAsset.Name) || !XSLite.Storages.TryGetValue(jsonAsset.Name, out var storage))
+                JsonAsset jsonAsset = contentPack.ReadJsonFile<JsonAsset>($"BigCraftables/{folderName}/big-craftable.json");
+                if (string.IsNullOrWhiteSpace(jsonAsset.Name) || !XSLite.Storages.TryGetValue(jsonAsset.Name, out Storage storage))
                 {
                     continue;
                 }
@@ -40,7 +39,7 @@
                 {
                     storage.Image = texturePath;
                     storage.Format = Storage.AssetFormat.JsonAssets;
-                    var texture = contentPack.LoadAsset<Texture2D>(texturePath);
+                    Texture2D texture = contentPack.LoadAsset<Texture2D>(texturePath);
                     XSLite.Textures.Add(jsonAsset.Name, texture);
                     for (int frame = 1; frame <= jsonAsset.ReserveExtraIndexCount; frame++)
                     {
@@ -56,10 +55,10 @@
                 }
 
                 // Add to default localization
-                if (!i18n.TryGetValue("default", out var localization))
+                if (!localizations.TryGetValue("default", out Dictionary<string, string> localization))
                 {
                     localization = new Dictionary<string, string>();
-                    i18n.Add("default", localization);
+                    localizations.Add("default", localization);
                 }
 
                 localization.Add($"big-craftable.{jsonAsset.Name}.name", jsonAsset.Name);
@@ -70,12 +69,12 @@
                 // Add additional localizations
                 if (jsonAsset.NameLocalization != null)
                 {
-                    foreach (var localizedText in jsonAsset.NameLocalization)
+                    foreach (KeyValuePair<string, string> localizedText in jsonAsset.NameLocalization)
                     {
-                        if (!i18n.TryGetValue(localizedText.Key, out localization))
+                        if (!localizations.TryGetValue(localizedText.Key, out localization))
                         {
                             localization = new Dictionary<string, string>();
-                            i18n.Add(localizedText.Key, localization);
+                            localizations.Add(localizedText.Key, localization);
                         }
 
                         localization.Add($"big-craftable.{jsonAsset.Name}.name", localizedText.Value);
@@ -85,12 +84,12 @@
 
                 if (jsonAsset.DescriptionLocalization != null)
                 {
-                    foreach (var localizedText in jsonAsset.DescriptionLocalization)
+                    foreach (KeyValuePair<string, string> localizedText in jsonAsset.DescriptionLocalization)
                     {
-                        if (!i18n.TryGetValue(localizedText.Key, out localization))
+                        if (!localizations.TryGetValue(localizedText.Key, out localization))
                         {
                             localization = new Dictionary<string, string>();
-                            i18n.Add(localizedText.Key, localization);
+                            localizations.Add(localizedText.Key, localization);
                         }
 
                         localization.Add($"crafting.{jsonAsset.Name}.description", localizedText.Value);
@@ -186,7 +185,7 @@
             }
 
             contentPack.WriteJsonFile("content.json", content);
-            foreach (var localization in i18n)
+            foreach (KeyValuePair<string, Dictionary<string, string>> localization in localizations)
             {
                 contentPack.WriteJsonFile($"i18n/{localization.Key}.json", localization.Value);
             }

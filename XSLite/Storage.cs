@@ -14,6 +14,41 @@
     /// <summary>Custom storages that are managed by the Expanded Storage mod.</summary>
     internal class Storage
     {
+        private string _name;
+        private string _path;
+        private Texture2D _texture;
+
+        /// <summary>Initializes a new instance of the <see cref="Storage"/> class.</summary>
+        /// <param name="specialChestType">The type of chest this storage will be created as.</param>
+        /// <param name="modData">Mod data to add when this storage is created.</param>
+        /// <param name="allowList">Items this storage is able to accept.</param>
+        /// <param name="blockList">Items this storage is not able to accept.</param>
+        /// <param name="enabledFeatures">Special features to enable for this storage.</param>
+        [JsonConstructor]
+        public Storage(string specialChestType, IDictionary<string, string> modData, HashSet<string> allowList, HashSet<string> blockList, HashSet<string> enabledFeatures)
+        {
+            this.SpecialChestType = Enum.TryParse(specialChestType, out Chest.SpecialChestTypes specialChestTypes) ? specialChestTypes : Chest.SpecialChestTypes.None;
+            this.ModData = modData ?? new Dictionary<string, string>();
+            this.FilterItems = new Dictionary<string, bool>();
+            if (blockList is not null)
+            {
+                foreach (string blockItem in blockList)
+                {
+                    this.FilterItems.Add(blockItem, true);
+                }
+            }
+
+            if (allowList is not null)
+            {
+                foreach (string allowItem in allowList)
+                {
+                    this.FilterItems.Add(allowItem, true);
+                }
+            }
+
+            this.EnabledFeatures = enabledFeatures ?? new HashSet<string>();
+        }
+
         /// <summary>The asset loader used to add this object into the game.</summary>
         public enum AssetFormat
         {
@@ -31,11 +66,11 @@
 
         public string Name
         {
-            get => _name;
+            get => this._name;
             set
             {
-                _name = value;
-                _path = $"ExpandedStorage/SpriteSheets/{_name}";
+                this._name = value;
+                this._path = $"ExpandedStorage/SpriteSheets/{this._name}";
             }
         }
 
@@ -83,6 +118,18 @@
 
         public ModConfig Config { get; set; }
 
+        public int Width { get; private set; }
+
+        public int Height { get; private set; }
+
+        public int TileWidth { get; private set; } = 1;
+
+        public int TileHeight { get; private set; } = 1;
+
+        public float ScaleSize { get; private set; }
+
+        private Chest.SpecialChestTypes SpecialChestType { get; set; }
+
         private Texture2D Texture
         {
             get => this._texture;
@@ -115,63 +162,11 @@
             }
         }
 
-        public int Width { get; private set; }
-
-        public int Height { get; private set; }
-
-        public int TileWidth { get; private set; } = 1;
-
-        public int TileHeight { get; private set; } = 1;
-
-        public float ScaleSize { get; private set; }
-
-        private Chest.SpecialChestTypes SpecialChestType { get; set; }
-
-        private string _name;
-        private string _path;
-        private Texture2D _texture;
-
-        /// <summary>Initializes a new instance of the <see cref="Storage"/> class.</summary>
-        /// <param name="specialChestType">The type of chest this storage will be created as.</param>
-        /// <param name="modData">Mod data to add when this storage is created.</param>
-        /// <param name="allowList">Items this storage is able to accept.</param>
-        /// <param name="blockList">Items this storage is not able to accept.</param>
-        /// <param name="enabledFeatures">Special features to enable for this storage.</param>
-        [JsonConstructor]
-        public Storage(
-            string specialChestType,
-            IDictionary<string, string> modData,
-            HashSet<string> allowList,
-            HashSet<string> blockList,
-            HashSet<string> enabledFeatures)
-        {
-            this.SpecialChestType = Enum.TryParse(specialChestType, out Chest.SpecialChestTypes specialChestTypes) ? specialChestTypes : Chest.SpecialChestTypes.None;
-            this.ModData = modData ?? new Dictionary<string, string>();
-            this.FilterItems = new Dictionary<string, bool>();
-            if (blockList is not null)
-            {
-                foreach (string blockItem in blockList)
-                {
-                    this.FilterItems.Add(blockItem, true);
-                }
-            }
-
-            if (allowList is not null)
-            {
-                foreach (string allowItem in allowList)
-                {
-                    this.FilterItems.Add(allowItem, true);
-                }
-            }
-
-            this.EnabledFeatures = enabledFeatures ?? new HashSet<string>();
-        }
-
         /// <summary>Clears cached textures to reload them.</summary>
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
         public void InvalidateCache(IContentHelper contentHelper)
         {
-            var texture = contentHelper.Load<Texture2D>(this._path, ContentSource.GameContent);
+            Texture2D texture = contentHelper.Load<Texture2D>(this._path, ContentSource.GameContent);
             if (texture == null && !XSLite.Textures.TryGetValue(this._name, out texture))
             {
                 return;
@@ -236,16 +231,7 @@
                     ? chest.Tint
                     : chest?.playerChoiceColor.Value ?? Color.White;
 
-                spriteBatch.Draw(
-                    this.Texture,
-                    pos + Storage.ShakeOffset(obj, -1, 2),
-                    new Rectangle(this.Width * currentFrame, this.Height * layer, this.Width, this.Height),
-                    color * alpha,
-                    0f,
-                    origin,
-                    scaleSize,
-                    SpriteEffects.None,
-                    layerDepth + ((1 + layer - startLayer) * 1E-05f));
+                spriteBatch.Draw(this.Texture, pos + Storage.ShakeOffset(obj, -1, 2), new Rectangle(this.Width * currentFrame, this.Height * layer, this.Width, this.Height), color * alpha, 0f, origin, scaleSize, SpriteEffects.None, layerDepth + ((1 + layer - startLayer) * 1E-05f));
             }
 
             return true;
@@ -278,26 +264,28 @@
             }
 
             // Add objects for extra Tile spaces
-            this.ForEachPos(pos, innerPos =>
-            {
-                if (innerPos.Equals(pos) || location.Objects.ContainsKey(innerPos))
+            this.ForEachPos(
+                pos,
+                innerPos =>
                 {
-                    return;
-                }
+                    if (innerPos.Equals(pos) || location.Objects.ContainsKey(innerPos))
+                    {
+                        return;
+                    }
 
-                var extraObj = new SObject(Vector2.Zero, 130)
-                {
-                    name = this.Name,
-                };
+                    var extraObj = new SObject(Vector2.Zero, 130)
+                    {
+                        name = this.Name,
+                    };
 
-                // Copy modData from original item
-                foreach (var modData in chest.modData)
-                {
-                    extraObj.modData.CopyFrom(modData);
-                }
+                    // Copy modData from original item
+                    foreach (SerializableDictionary<string, string> modData in chest.modData)
+                    {
+                        extraObj.modData.CopyFrom(modData);
+                    }
 
-                location.Objects.Add(innerPos, extraObj);
-            });
+                    location.Objects.Add(innerPos, extraObj);
+                });
         }
 
         /// <summary>Removes chest and artifacts from location.</summary>
@@ -311,10 +299,7 @@
                 && int.TryParse(xStr, out int xPos)
                 && int.TryParse(yStr, out int yPos))
             {
-                this.ForEachPos(xPos, yPos, innerPos =>
-                {
-                    location.Objects.Remove(innerPos);
-                });
+                this.ForEachPos(xPos, yPos, innerPos => { location.Objects.Remove(innerPos); });
             }
 
             location.Objects.Remove(pos);
@@ -337,6 +322,7 @@
                 lidFrameCount = { Value = this.Frames },
                 modData = { [$"{XSLite.ModPrefix}/Storage"] = this.Name },
             };
+
             if (item is Chest oldChest)
             {
                 if (oldChest.items.Any())
@@ -358,13 +344,13 @@
             }
 
             // Copy modData from original item
-            foreach (var modData in item.modData)
+            foreach (SerializableDictionary<string, string> modData in item.modData)
             {
                 chest.modData.CopyFrom(modData);
             }
 
             // Copy modData from config
-            foreach (var modData in this.ModData)
+            foreach (KeyValuePair<string, string> modData in this.ModData)
             {
                 if (!chest.modData.ContainsKey(modData.Key))
                 {

@@ -56,7 +56,7 @@
         {
             Log.Info($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
 
-            var storages = contentPack.ReadJsonFile<IDictionary<string, Storage>>("expanded-storage.json");
+            IDictionary<string, Storage> storages = contentPack.ReadJsonFile<IDictionary<string, Storage>>("expanded-storage.json");
 
             if (storages == null)
             {
@@ -65,7 +65,7 @@
             }
 
             // Remove any duplicate storages
-            foreach (var storage in storages.Where(storage => XSLite.Storages.ContainsKey(storage.Key)))
+            foreach (KeyValuePair<string, Storage> storage in storages.Where(storage => XSLite.Storages.ContainsKey(storage.Key)))
             {
                 Log.Warn($"Duplicate storage {storage.Key} in {contentPack.Manifest.UniqueID}.");
                 storages.Remove(storage.Key);
@@ -85,7 +85,7 @@
                 {
                     void RevertToDefault()
                     {
-                        foreach (var storage in storages)
+                        foreach (KeyValuePair<string, Storage> storage in storages)
                         {
                             storage.Value.Config.Capacity = storage.Value.Capacity;
                             storage.Value.Config.EnabledFeatures = storage.Value.EnabledFeatures;
@@ -108,14 +108,13 @@
                         optedIn: true);
 
                     // Add a page for each storage
-                    foreach (var storage in storages)
+                    foreach (KeyValuePair<string, Storage> storage in storages)
                     {
                         this.ModConfigMenu.API.RegisterPageLabel(
                             mod: contentPack.Manifest,
                             labelName: storage.Key,
-                            labelDesc: "",
-                            newPage: storage.Key
-                        );
+                            labelDesc: string.Empty,
+                            newPage: storage.Key);
                     }
                 }
 
@@ -125,10 +124,11 @@
             config ??= new Dictionary<string, ModConfig>();
 
             // Load expanded storages
-            foreach (var storage in storages)
+            foreach (KeyValuePair<string, Storage> storage in storages)
             {
                 storage.Value.Name = storage.Key;
                 storage.Value.Manifest = contentPack.Manifest;
+                storage.Value.Format = XSLiteAPI.VanillaNames.Contains(storage.Value.Name) ? Storage.AssetFormat.Vanilla : Storage.AssetFormat.DynamicGameAssets;
 
                 // Load base texture
                 if (!string.IsNullOrWhiteSpace(storage.Value.Image) && !contentPack.HasFile($"{storage.Value.Image}") && contentPack.HasFile($"assets/{storage.Value.Image}"))
@@ -138,7 +138,7 @@
 
                 if (!string.IsNullOrWhiteSpace(storage.Value.Image) && contentPack.HasFile(storage.Value.Image))
                 {
-                    var texture = contentPack.LoadAsset<Texture2D>(storage.Value.Image);
+                    Texture2D texture = contentPack.LoadAsset<Texture2D>(storage.Value.Image);
                     XSLite.Textures.Add(storage.Key, texture);
                 }
 
@@ -165,6 +165,18 @@
                     if (storage.Value.FilterItems.Any())
                     {
                         this.XSPlus.API.EnableWithModData("FilterItems", $"{XSLite.ModPrefix}/Storage", storage.Key, storage.Value.FilterItems);
+                    }
+
+                    // Enable additional capacity
+                    if (storageConfig.Capacity != 0)
+                    {
+                        this.XSPlus.API.EnableWithModData("Capacity", $"{XSLite.ModPrefix}/Storage", storage.Key, storageConfig.Capacity);
+                    }
+
+                    // Disable color picker if storage does not support player color
+                    if (!storage.Value.PlayerColor)
+                    {
+                        this.XSPlus.API.EnableWithModData("ColorPicker", $"{XSLite.ModPrefix}/Storage", storage.Key, false);
                     }
 
                     // Enable other toggleable features
@@ -247,19 +259,15 @@
                 XSLite.Storages.Add(storage.Key, storage.Value);
             }
 
-            if (!contentPack.HasFile("content.json") && !MigrationHelper.CreateDynamicAsset(contentPack))
+            if (!this.DynamicAssets.IsLoaded || (!contentPack.HasFile("content.json") && !MigrationHelper.CreateDynamicAsset(contentPack)))
             {
                 return true;
             }
 
-            foreach (var storage in storages)
+            foreach (KeyValuePair<string, Storage> storage in storages)
             {
                 storage.Value.DisplayName = contentPack.Translation.Get($"big-craftable.{storage.Key}.name");
                 storage.Value.Description = contentPack.Translation.Get($"big-craftable.{storage.Key}.description");
-                if (storage.Value.Format == Storage.AssetFormat.Vanilla)
-                {
-                    storage.Value.Format = Storage.AssetFormat.DynamicGameAssets;
-                }
             }
 
             var manifest = new Manifest(contentPack.Manifest)
@@ -284,9 +292,9 @@
             return !chest.TryGetStorage(out Storage storage) || item.MatchesTagExt(storage.FilterItems);
         }
 
-        public IList<string> GetAllStorages()
+        public IEnumerable<string> GetAllStorages()
         {
-            return XSLite.Storages.Keys.ToList();
+            return XSLite.Storages.Keys;
         }
 
         public IList<string> GetOwnedStorages(IManifest manifest)

@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Reflection.Emit;
     using Common.Extensions;
+    using Common.Helpers;
     using CommonHarmony;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
@@ -26,12 +27,13 @@
     internal class Patches
     {
         private static IModHelper Helper;
-        private static IMonitor Monitor;
 
-        public Patches(IModHelper helper, IMonitor monitor, Harmony harmony)
+        /// <summary>Initializes a new instance of the <see cref="Patches"/> class.</summary>
+        /// <param name="helper"></param>
+        /// <param name="harmony"></param>
+        public Patches(IModHelper helper, Harmony harmony)
         {
             Patches.Helper = helper;
-            Patches.Monitor = monitor;
 
             // Use GetItemsForPlayer for all chest types.
             harmony.Patch(
@@ -45,31 +47,23 @@
 
             // Draw bigger storages from the origin chest.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)}),
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_draw_prefix)));
 
             // Draw chest with playerChoiceColor and animation when held.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] {typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)}),
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool) }),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawLocal_prefix)));
 
             // Draw chest with playerChoiceColor and animation in menu.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] {typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)}),
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawInMenu_prefix)));
 
             // Prevent OpenNearby chests from resetting their lid frame automatically.
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.fixLidFrame)),
                 prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_fixLidFrame_prefix)));
-
-            // Allow chests to hold more or less items than the default (36).
-            if (Patches.Helper.ModRegistry.IsLoaded("furyx639.XSPlus"))
-            {
-                harmony.Patch(
-                    original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                    postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_GetActualCapacity_postfix)));
-            }
 
             // Return items from heldItem Chest.
             harmony.Patch(
@@ -176,7 +170,7 @@
 
         private static void Chest_clearNulls_postfix(Chest __instance)
         {
-            var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+            NetObjectList<Item> items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
             for (int i = items.Count - 1; i >= 0; i--)
             {
                 if (items[i] == null)
@@ -188,7 +182,7 @@
 
         private static bool Chest_draw_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
-            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
@@ -287,7 +281,7 @@
 
         private static bool Chest_fixLidFrame_prefix(Chest __instance, ref int ___currentLidFrame)
         {
-            if (!__instance.TryGetStorage(out var storage) || storage.OpenNearby <= 0)
+            if (!__instance.TryGetStorage(out Storage storage) || storage.OpenNearby <= 0)
             {
                 return true;
             }
@@ -300,22 +294,6 @@
             return false;
         }
 
-        [HarmonyPriority(Priority.High)]
-        private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
-        {
-            if (!__instance.TryGetStorage(out var storage) || storage.Config.Capacity == 0)
-            {
-                return;
-            }
-
-            __result = storage.Config.Capacity switch
-            {
-                -1 => int.MaxValue,
-                > 0 => storage.Config.Capacity,
-                _ => __result,
-            };
-        }
-
         private static void Chest_GetItemsForPlayer_postfix(Chest __instance, ref NetObjectList<Item> __result, long id)
         {
             if (__instance.heldObject.Value is Chest chest)
@@ -326,7 +304,7 @@
 
         private static IEnumerable<CodeInstruction> Chest_performToolAction_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, Patches.Monitor);
+            var patternPatches = new PatternPatches(instructions, Log.Monitor);
 
             patternPatches
                 .Find(
@@ -352,7 +330,7 @@
 
             if (!patternPatches.Done)
             {
-                Patches.Monitor.Log($"Failed to apply all patches in {typeof(Patches)}::{nameof(Patches.Chest_performToolAction_transpiler)}", LogLevel.Warn);
+                Log.Warn($"Failed to apply all patches in {typeof(Patches)}::{nameof(Patches.Chest_performToolAction_transpiler)}");
             }
         }
 
@@ -367,7 +345,7 @@
             Vector2 c = chest.TileLocation;
             if (c == Vector2.Zero)
             {
-                var obj = location.Objects.Pairs.SingleOrDefault(obj => obj.Value == chest);
+                KeyValuePair<Vector2, SObject> obj = location.Objects.Pairs.SingleOrDefault(obj => obj.Value == chest);
                 c = obj.Value is not null ? obj.Key : player.GetToolLocation() / 64;
                 c.X = (int)c.X;
                 c.Y = (int)c.Y;
@@ -510,7 +488,7 @@
 
         private static bool Chest_updateWhenCurrentLocation_prefix(Chest __instance, ref int ___health, ref int ____shippingBinFrameCounter, ref bool ____farmerNearby, ref int ___currentLidFrame, GameTime time, GameLocation environment)
         {
-            if (!__instance.TryGetStorage(out var storage))
+            if (!__instance.TryGetStorage(out Storage storage))
             {
                 return true;
             }
@@ -635,9 +613,11 @@
             Chest chest = __instance is Chest chest1 ? chest1 : null;
             Chest otherChest = other is Chest chest2 ? chest2 : null;
             if (!__result || (chest is null && otherChest is null))
+            {
                 return;
+            }
 
-            // Block if either chest has any items 
+            // Block if either chest has any items
             if ((chest != null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
                 || (otherChest != null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
             {
