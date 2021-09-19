@@ -1,4 +1,6 @@
-﻿#region License
+﻿#pragma warning disable SA1124
+#pragma warning disable SA1515
+#region License
 // MIT License
 //
 // Copyright (c) 2018 CJBok
@@ -26,13 +28,15 @@
 // This implementation of SearchableItem was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
 #endregion
-
-using System;
-using StardewValley;
+#pragma warning restore SA1515
+#pragma warning restore SA1124
 
 // ReSharper disable All
 namespace Common.Helpers.ItemData
 {
+    using System;
+    using StardewValley;
+
     /// <summary>A game item with metadata.</summary>
     /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
     internal class SearchableItem
@@ -40,6 +44,7 @@ namespace Common.Helpers.ItemData
         /*********
         ** Public methods
         *********/
+
         /// <summary>Construct an instance.</summary>
         /// <param name="type">The item type.</param>
         /// <param name="id">The unique ID (if different from the item's parent sheet index).</param>
@@ -65,6 +70,7 @@ namespace Common.Helpers.ItemData
         /*********
         ** Accessors
         *********/
+
         /// <summary>The item type.</summary>
         public ItemType Type { get; }
 

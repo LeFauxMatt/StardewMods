@@ -22,8 +22,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRNG\IEvenBetterRNGAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuAPI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\JsonAssets\IJsonAssetsAPI.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\JsonAssets\JsonAssetsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\IXSLiteAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\XSLiteIntegration.cs" />

@@ -12,6 +12,14 @@
         string GetDGAItemId(object item);
 
         /// <summary>
+        /// Spawn a DGA item, referenced with its full ID ("mod.id/ItemId").
+        /// Some items, such as crafting recipes or crops, don't have an item representation.
+        /// </summary>
+        /// <param name="fullId">The full ID of the item to spawn.</param>
+        /// <returns></returns>
+        object SpawnDGAItem(string fullId);
+
+        /// <summary>
         /// Register a DGA pack embedded in another mod.
         /// Needs the standard DGA fields in the manifest. (See documentation.)
         /// Probably shouldn't use config-schema.json for these, because if you do it will overwrite your mod's config.json.

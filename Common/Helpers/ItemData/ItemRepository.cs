@@ -1,4 +1,6 @@
-﻿#region License
+﻿#pragma warning disable SA1124
+#pragma warning disable SA1515
+#region License
 // MIT License
 //
 // Copyright (c) 2018 CJBok
@@ -23,57 +25,52 @@
 #endregion
 
 #region README
+
 // This implementation of ItemData was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
 #endregion
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using StardewValley;
-using StardewValley.GameData.FishPond;
-using StardewValley.Menus;
-using StardewValley.Objects;
-using StardewValley.Tools;
-using Object = StardewValley.Object;
-
-// ReSharper disable All
+#pragma warning restore SA1515
+#pragma warning restore SA1124
 
 namespace Common.Helpers.ItemData
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Content;
+    using StardewValley;
+    using StardewValley.GameData.FishPond;
+    using StardewValley.Menus;
+    using StardewValley.Objects;
+    using StardewValley.Tools;
+    using Object = StardewValley.Object;
+
     /// <summary>Provides methods for searching and constructing items.</summary>
     /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
-    internal class 
-        ItemRepository
+    internal class ItemRepository
     {
         /*********
         ** Fields
         *********/
-        /// <summary>The custom ID offset for items don't have a unique ID in the game.</summary>
-        private readonly int CustomIDOffset = 1000;
 
+        /// <summary>The custom ID offset for items don't have a unique ID in the game.</summary>
+        private const int CustomIdOffset = 1000;
 
         /*********
         ** Public methods
         *********/
+
         /// <summary>Get all spawnable items.</summary>
         [SuppressMessage("ReSharper", "AccessToModifiedClosure", Justification = "TryCreate invokes the lambda immediately.")]
         public IEnumerable<SearchableItem> GetAll()
         {
-            //
-            //
             // Be careful about closure variable capture here!
             //
             // SearchableItem stores the Func<Item> to create new instances later. Loop variables passed into the
             // function will be captured, so every func in the loop will use the value from the last iteration. Use the
             // TryCreate(type, id, entity => item) form to avoid the issue, or create a local variable to pass in.
-            //
-            //
-
-
             IEnumerable<SearchableItem> GetAllRaw()
             {
                 // get tools
@@ -86,13 +83,15 @@ namespace Common.Helpers.ItemData
                     yield return this.TryCreate(ItemType.Tool, ToolFactory.pickAxe, _ => ToolFactory.getToolFromDescription(ToolFactory.pickAxe, quality));
                     yield return this.TryCreate(ItemType.Tool, ToolFactory.wateringCan, _ => ToolFactory.getToolFromDescription(ToolFactory.wateringCan, quality));
                     if (quality != Tool.iridium)
+                    {
                         yield return this.TryCreate(ItemType.Tool, ToolFactory.fishingRod, _ => ToolFactory.getToolFromDescription(ToolFactory.fishingRod, quality));
+                    }
                 }
 
-                yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset, _ => new MilkPail()); // these don't have any sort of ID, so we'll just assign some arbitrary ones
-                yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset + 1, _ => new Shears());
-                yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset + 2, _ => new Pan());
-                yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset + 3, _ => new Wand());
+                yield return this.TryCreate(ItemType.Tool, ItemRepository.CustomIdOffset, _ => new MilkPail()); // these don't have any sort of ID, so we'll just assign some arbitrary ones
+                yield return this.TryCreate(ItemType.Tool, ItemRepository.CustomIdOffset + 1, _ => new Shears());
+                yield return this.TryCreate(ItemType.Tool, ItemRepository.CustomIdOffset + 2, _ => new Pan());
+                yield return this.TryCreate(ItemType.Tool, ItemRepository.CustomIdOffset + 3, _ => new Wand());
 
                 // clothing
                 {
@@ -101,7 +100,9 @@ namespace Common.Helpers.ItemData
                     foreach (int id in Game1.clothingInformation.Keys)
                     {
                         if (id < 0)
+                        {
                             continue; // placeholder data for character customization clothing below
+                        }
 
                         clothingIds.Add(id);
                         yield return this.TryCreate(ItemType.Clothing, id, p => new Clothing(p.ID));
@@ -111,40 +112,54 @@ namespace Common.Helpers.ItemData
                     for (int id = 1000; id <= 1111; id++)
                     {
                         if (!clothingIds.Contains(id))
+                        {
                             yield return this.TryCreate(ItemType.Clothing, id, p => new Clothing(p.ID));
+                        }
                     }
                 }
 
                 // wallpapers
                 for (int id = 0; id < 112; id++)
-                    yield return this.TryCreate(ItemType.Wallpaper, id, p => new Wallpaper(p.ID) {Category = Object.furnitureCategory});
+                {
+                    yield return this.TryCreate(ItemType.Wallpaper, id, p => new Wallpaper(p.ID) { Category = Object.furnitureCategory });
+                }
 
                 // flooring
                 for (int id = 0; id < 56; id++)
-                    yield return this.TryCreate(ItemType.Flooring, id, p => new Wallpaper(p.ID, isFloor: true) {Category = Object.furnitureCategory});
+                {
+                    yield return this.TryCreate(ItemType.Flooring, id, p => new Wallpaper(p.ID, isFloor: true) { Category = Object.furnitureCategory });
+                }
 
                 // equipment
                 foreach (int id in this.TryLoad<int, string>("Data\\Boots").Keys)
+                {
                     yield return this.TryCreate(ItemType.Boots, id, p => new Boots(p.ID));
+                }
+
                 foreach (int id in this.TryLoad<int, string>("Data\\hats").Keys)
+                {
                     yield return this.TryCreate(ItemType.Hat, id, p => new Hat(p.ID));
+                }
 
                 // weapons
                 foreach (int id in this.TryLoad<int, string>("Data\\weapons").Keys)
                 {
                     yield return this.TryCreate(ItemType.Weapon, id, p => (p.ID >= 32 && p.ID <= 34)
-                        ? (Item) new Slingshot(p.ID)
-                        : new MeleeWeapon(p.ID)
-                    );
+                        ? new Slingshot(p.ID)
+                        : new MeleeWeapon(p.ID));
                 }
 
                 // furniture
                 foreach (int id in this.TryLoad<int, string>("Data\\Furniture").Keys)
+                {
                     yield return this.TryCreate(ItemType.Furniture, id, p => Furniture.GetFurnitureInstance(p.ID));
+                }
 
                 // craftables
                 foreach (int id in Game1.bigCraftablesInformation.Keys)
+                {
                     yield return this.TryCreate(ItemType.BigCraftable, id, p => new Object(Vector2.Zero, p.ID));
+                }
 
                 // objects
                 foreach (int id in Game1.objectInformation.Keys)
@@ -156,7 +171,7 @@ namespace Common.Helpers.ItemData
                     {
                         foreach (int secretNoteId in this.TryLoad<int, string>("Data\\SecretNotes").Keys)
                         {
-                            yield return this.TryCreate(ItemType.Object, this.CustomIDOffset + secretNoteId, _ =>
+                            yield return this.TryCreate(ItemType.Object, ItemRepository.CustomIdOffset + secretNoteId, _ =>
                             {
                                 Object note = new Object(79, 1);
                                 note.name = $"{note.name} #{secretNoteId}";
@@ -166,8 +181,11 @@ namespace Common.Helpers.ItemData
                     }
 
                     // ring
-                    else if (id != 801 && fields?.Length >= 4 && fields[3] == "Ring") // 801 = wedding ring, which isn't an equippable ring
+                    // 801 = wedding ring, which isn't an equippable ring
+                    else if (id != 801 && fields?.Length >= 4 && fields[3] == "Ring")
+                    {
                         yield return this.TryCreate(ItemType.Ring, id, p => new Ring(p.ID));
+                    }
 
                     // item
                     else
@@ -176,13 +194,15 @@ namespace Common.Helpers.ItemData
                         Object item = null;
                         yield return this.TryCreate(ItemType.Object, id, p =>
                         {
-                            return item = (p.ID == 812 // roe
+                            return item = p.ID == 812 // roe
                                     ? new ColoredObject(p.ID, 1, Color.White)
                                     : new Object(p.ID, 1)
-                                );
+                                ;
                         });
                         if (item == null)
+                        {
                             continue;
+                        }
 
                         // flavored items
                         switch (item.Category)
@@ -190,53 +210,53 @@ namespace Common.Helpers.ItemData
                             // fruit products
                             case Object.FruitsCategory:
                                 // wine
-                                yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 2 + item.ParentSheetIndex, _ => new Object(348, 1)
+                                yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 2) + item.ParentSheetIndex, _ => new Object(348, 1)
                                 {
                                     Name = $"{item.Name} Wine",
                                     Price = item.Price * 3,
-                                    preserve = {Object.PreserveType.Wine},
-                                    preservedParentSheetIndex = {item.ParentSheetIndex}
+                                    preserve = { Object.PreserveType.Wine },
+                                    preservedParentSheetIndex = { item.ParentSheetIndex },
                                 });
 
                                 // jelly
-                                yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 3 + item.ParentSheetIndex, _ => new Object(344, 1)
+                                yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 3) + item.ParentSheetIndex, _ => new Object(344, 1)
                                 {
                                     Name = $"{item.Name} Jelly",
-                                    Price = 50 + item.Price * 2,
-                                    preserve = {Object.PreserveType.Jelly},
-                                    preservedParentSheetIndex = {item.ParentSheetIndex}
+                                    Price = 50 + (item.Price * 2),
+                                    preserve = { Object.PreserveType.Jelly },
+                                    preservedParentSheetIndex = { item.ParentSheetIndex },
                                 });
                                 break;
 
                             // vegetable products
                             case Object.VegetableCategory:
                                 // juice
-                                yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 4 + item.ParentSheetIndex, _ => new Object(350, 1)
+                                yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 4) + item.ParentSheetIndex, _ => new Object(350, 1)
                                 {
                                     Name = $"{item.Name} Juice",
-                                    Price = (int) (item.Price * 2.25d),
-                                    preserve = {Object.PreserveType.Juice},
-                                    preservedParentSheetIndex = {item.ParentSheetIndex}
+                                    Price = (int)(item.Price * 2.25d),
+                                    preserve = { Object.PreserveType.Juice },
+                                    preservedParentSheetIndex = { item.ParentSheetIndex },
                                 });
 
                                 // pickled
-                                yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 5 + item.ParentSheetIndex, _ => new Object(342, 1)
+                                yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 5) + item.ParentSheetIndex, _ => new Object(342, 1)
                                 {
                                     Name = $"Pickled {item.Name}",
-                                    Price = 50 + item.Price * 2,
-                                    preserve = {Object.PreserveType.Pickle},
-                                    preservedParentSheetIndex = {item.ParentSheetIndex}
+                                    Price = 50 + (item.Price * 2),
+                                    preserve = { Object.PreserveType.Pickle },
+                                    preservedParentSheetIndex = { item.ParentSheetIndex },
                                 });
                                 break;
 
                             // flower honey
                             case Object.flowersCategory:
-                                yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 5 + item.ParentSheetIndex, _ =>
+                                yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 5) + item.ParentSheetIndex, _ =>
                                 {
-                                    Object honey = new Object(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
+                                    var honey = new Object(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
                                     {
                                         Name = $"{item.Name} Honey",
-                                        preservedParentSheetIndex = {item.ParentSheetIndex}
+                                        preservedParentSheetIndex = { item.ParentSheetIndex },
                                     };
                                     honey.Price += item.Price * 2;
                                     return honey;
@@ -245,50 +265,56 @@ namespace Common.Helpers.ItemData
 
                             // roe and aged roe (derived from FishPond.GetFishProduce)
                             case Object.sellAtFishShopCategory when item.ParentSheetIndex == 812:
-                            {
+                                {
                                 this.GetRoeContextTagLookups(out HashSet<string> simpleTags, out List<List<string>> complexTags);
 
-                                foreach (var pair in Game1.objectInformation)
+                                foreach (KeyValuePair<int, string> pair in Game1.objectInformation)
                                 {
                                     // get input
-                                    Object input = this.TryCreate(ItemType.Object, pair.Key, p => new Object(p.ID, 1))?.Item as Object;
-                                    var inputTags = input?.GetContextTags();
+                                    var input = this.TryCreate(ItemType.Object, pair.Key, p => new Object(p.ID, 1))?.Item as Object;
+                                    HashSet<string> inputTags = input?.GetContextTags();
                                     if (inputTags?.Any() != true)
+                                    {
                                         continue;
+                                    }
 
                                     // check if roe-producing fish
                                     if (!inputTags.Any(tag => simpleTags.Contains(tag)) && !complexTags.Any(set => set.All(tag => input.HasContextTag(tag))))
+                                    {
                                         continue;
+                                    }
 
                                     // yield roe
                                     Object roe = null;
                                     Color color = this.GetRoeColor(input);
-                                    yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 7 + item.ParentSheetIndex, _ =>
+                                    yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 7) + item.ParentSheetIndex, _ =>
                                     {
                                         roe = new ColoredObject(812, 1, color)
                                         {
                                             name = $"{input.Name} Roe",
-                                            preserve = {Value = Object.PreserveType.Roe},
-                                            preservedParentSheetIndex = {Value = input.ParentSheetIndex}
+                                            preserve = { Value = Object.PreserveType.Roe },
+                                            preservedParentSheetIndex = { Value = input.ParentSheetIndex },
                                         };
                                         roe.Price += input.Price / 2;
                                         return roe;
                                     });
 
                                     // aged roe
-                                    if (roe != null && pair.Key != 698) // aged sturgeon roe is caviar, which is a separate item
+                                    // aged sturgeon roe is caviar, which is a separate item
+                                    if (roe != null && pair.Key != 698)
                                     {
-                                        yield return this.TryCreate(ItemType.Object, this.CustomIDOffset * 7 + item.ParentSheetIndex, _ => new ColoredObject(447, 1, color)
+                                        yield return this.TryCreate(ItemType.Object, (ItemRepository.CustomIdOffset * 7) + item.ParentSheetIndex, _ => new ColoredObject(447, 1, color)
                                         {
                                             name = $"Aged {input.Name} Roe",
                                             Category = -27,
-                                            preserve = {Value = Object.PreserveType.AgedRoe},
-                                            preservedParentSheetIndex = {Value = input.ParentSheetIndex},
-                                            Price = roe.Price * 2
+                                            preserve = { Value = Object.PreserveType.AgedRoe },
+                                            preservedParentSheetIndex = { Value = input.ParentSheetIndex },
+                                            Price = roe.Price * 2,
                                         });
                                     }
                                 }
-                            }
+                                }
+
                                 break;
                         }
                     }
@@ -298,10 +324,10 @@ namespace Common.Helpers.ItemData
             return GetAllRaw().Where(p => p != null);
         }
 
-
         /*********
         ** Private methods
         *********/
+
         /// <summary>Get optimized lookups to match items which produce roe in a fish pond.</summary>
         /// <param name="simpleTags">A lookup of simple singular tags which match a roe-producing fish.</param>
         /// <param name="complexTags">A list of tag sets which match roe-producing fish.</param>
@@ -313,12 +339,18 @@ namespace Common.Helpers.ItemData
             foreach (FishPondData data in Game1.content.Load<List<FishPondData>>("Data\\FishPondData"))
             {
                 if (data.ProducedItems.All(p => p.ItemID != 812))
+                {
                     continue; // doesn't produce roe
+                }
 
                 if (data.RequiredTags.Count == 1 && !data.RequiredTags[0].StartsWith("!"))
+                {
                     simpleTags.Add(data.RequiredTags[0]);
+                }
                 else
+                {
                     complexTags.Add(data.RequiredTags);
+                }
             }
         }
 

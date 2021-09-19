@@ -7,7 +7,7 @@
 
     internal class AssemblyPatch
     {
-        private readonly Assembly Assembly;
+        private readonly Assembly _assembly;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssemblyPatch"/> class.
@@ -24,12 +24,12 @@
         /// <param name="matcher"></param>
         public AssemblyPatch(Func<Assembly, bool> matcher)
         {
-            this.Assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(matcher);
+            this._assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(matcher);
         }
 
         public AssemblyPatchType Type(string name)
         {
-            return this.Assembly != null ? new AssemblyPatchType(this.Assembly.GetType(name)) : null;
+            return this._assembly != null ? new AssemblyPatchType(this._assembly.GetType(name)) : null;
         }
 
         public MethodInfo Method(string type, string method)
@@ -39,21 +39,21 @@
 
         internal class AssemblyPatchType
         {
-            private readonly Type Type;
+            private readonly Type _type;
 
             internal AssemblyPatchType(Type type)
             {
-                this.Type = type;
+                this._type = type;
             }
 
             public MethodInfo Method(string name)
             {
-                return AccessTools.Method(this.Type, name);
+                return AccessTools.Method(this._type, name);
             }
 
             public MethodInfo Method(Func<MethodInfo, bool> matcher)
             {
-                return AccessTools.GetDeclaredMethods(this.Type).FirstOrDefault(matcher);
+                return AccessTools.GetDeclaredMethods(this._type).FirstOrDefault(matcher);
             }
         }
     }

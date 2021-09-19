@@ -1,4 +1,6 @@
-﻿#region License
+﻿#pragma warning disable SA1124
+#pragma warning disable SA1515
+#region License
 // MIT License
 //
 // Copyright (c) 2018 CJBok
@@ -26,6 +28,8 @@
 // This implementation of ItemType was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
 #endregion
+#pragma warning restore SA1515
+#pragma warning restore SA1124
 
 namespace Common.Helpers.ItemData
 {
@@ -63,6 +67,6 @@ namespace Common.Helpers.ItemData
         Wallpaper,
 
         /// <summary>A <see cref="StardewValley.Tools.MeleeWeapon"/> or <see cref="StardewValley.Tools.Slingshot"/> item.</summary>
-        Weapon
+        Weapon,
     }
 }

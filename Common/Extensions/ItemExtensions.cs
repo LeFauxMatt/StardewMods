@@ -38,7 +38,7 @@
 
             bool anyAllowed = false;
             bool allowed = true;
-            foreach (var filterItem in filterItems)
+            foreach (KeyValuePair<string, bool> filterItem in filterItems)
             {
                 bool match = item.MatchesTagExt(filterItem.Key, true);
 
@@ -75,9 +75,9 @@
             return item switch
             {
                 Furniture when ItemExtensions.TagEquals(search, ItemExtensions.CategoryFurniture, exactMatch) => true,
-                Object { Type: "Arch" } when TagEquals(search, ItemExtensions.CategoryArtifact, exactMatch) => true,
-                Object { Type: "Arch" } when TagEquals(search, ItemExtensions.DonateMuseum, exactMatch) => ItemExtensions.CanDonateToMuseum(item),
-                Object { Type: "Minerals" } when TagEquals(search, ItemExtensions.DonateMuseum, exactMatch) => ItemExtensions.CanDonateToMuseum(item),
+                Object { Type: "Arch" } when ItemExtensions.TagEquals(search, ItemExtensions.CategoryArtifact, exactMatch) => true,
+                Object { Type: "Arch" } when ItemExtensions.TagEquals(search, ItemExtensions.DonateMuseum, exactMatch) => ItemExtensions.CanDonateToMuseum(item),
+                Object { Type: "Minerals" } when ItemExtensions.TagEquals(search, ItemExtensions.DonateMuseum, exactMatch) => ItemExtensions.CanDonateToMuseum(item),
                 Object obj when ItemExtensions.TagEquals(search, ItemExtensions.DonateBundle, exactMatch) => ItemExtensions.CanDonateToBundle(obj),
                 _ => item.GetContextTags().Any(tag => ItemExtensions.TagEquals(search, tag, exactMatch)),
             };

@@ -16,9 +16,7 @@
         private int _loop;
         private int _startIndex;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PatternPatch"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="PatternPatch"/> class.</summary>
         /// <param name="pattern"></param>
         public PatternPatch(ICollection<CodeInstruction> pattern)
         {
@@ -33,12 +31,27 @@
             this._patternIndex.Enqueue(this._patterns.Count);
         }
 
+        private enum PatchType
+        {
+            Replace,
+            Prepend,
+        }
+
+        /// <summary></summary>
         public string Text { get; private set; }
 
+        /// <summary></summary>
         public int Skipped { get; private set; }
 
-        public bool Loop => this._patchType == PatchType.Replace && this._loop == -1 || --this._loop > 0;
+        /// <summary></summary>
+        public bool Loop
+        {
+            get => (this._patchType == PatchType.Replace && this._loop == -1) || --this._loop > 0;
+        }
 
+        /// <summary></summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
         public PatternPatch Find(params CodeInstruction[] pattern)
         {
             this._patterns.AddRange(pattern);
@@ -46,52 +59,73 @@
             return this;
         }
 
+        /// <summary></summary>
+        /// <param name="patch"></param>
+        /// <returns></returns>
         public PatternPatch Patch(Action<LinkedList<CodeInstruction>> patch)
         {
             this._patches.Add(patch);
             return this;
         }
 
-        // ReSharper disable once UnusedMethodReturnValue.Global
+        /// <summary></summary>
+        /// <param name="patches"></param>
+        /// <returns></returns>
         public PatternPatch Patch(params CodeInstruction[] patches)
         {
             this._patterns.AddRange(patches);
             return this;
         }
 
+        /// <summary></summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public PatternPatch Log(string text)
         {
             this.Text = text;
             return this;
         }
 
-        // ReSharper disable once UnusedMethodReturnValue.Global
+        /// <summary></summary>
+        /// <param name="skip"></param>
+        /// <returns></returns>
         public PatternPatch Skip(int skip)
         {
             this.Skipped = skip;
             return this;
         }
 
-        // ReSharper disable once UnusedMethodReturnValue.Global
+        /// <summary></summary>
+        /// <param name="loop"></param>
+        /// <returns></returns>
         public PatternPatch Repeat(int loop)
         {
             this._loop = loop;
             return this;
         }
 
+        /// <summary></summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         public bool Matches(CodeInstruction instruction)
         {
             // Return true if no pattern to match
             if (this._patchType == PatchType.Prepend)
+            {
                 return true;
+            }
 
             // Initialize end index
             if (this._startIndex == this._endIndex)
+            {
                 this._endIndex = this._patternIndex.Dequeue();
+            }
 
             // Reset on loop
             if (this._index == this._endIndex)
+            {
                 this._index = this._startIndex;
+            }
 
             // Opcode not matching
             if (!this._patterns[this._index].opcode.Equals(instruction.opcode))
@@ -109,29 +143,29 @@
 
             // Incomplete pattern search
             if (++this._index != this._endIndex)
+            {
                 return false;
+            }
 
             // Complete pattern search
             if (this._patternIndex.Count <= 0)
+            {
                 return true;
+            }
 
             // Incomplete pattern search
             this._startIndex = this._endIndex;
             return false;
         }
 
+        /// <summary>Applies patches to the code stack at current index.</summary>
+        /// <param name="rawStack"></param>
         public void Patches(LinkedList<CodeInstruction> rawStack)
         {
-            foreach (var patch in this._patches)
+            foreach (Action<LinkedList<CodeInstruction>> patch in this._patches)
             {
                 patch?.Invoke(rawStack);
             }
-        }
-
-        private enum PatchType
-        {
-            Replace,
-            Prepend
         }
     }
 }
