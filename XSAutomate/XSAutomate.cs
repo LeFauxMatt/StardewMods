@@ -1,43 +1,45 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Common.Integrations.XSLite;
-using CommonHarmony;
-using HarmonyLib;
-using Pathoschild.Stardew.Automate;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.Objects;
-
-namespace XSAutomate
+﻿namespace XSAutomate
 {
-    [SuppressMessage("ReSharper", "UnusedType.Global")]
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    using System.Diagnostics.CodeAnalysis;
+    using Common.Integrations.XSLite;
+    using CommonHarmony;
+    using HarmonyLib;
+    using Pathoschild.Stardew.Automate;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
+    using StardewValley;
+    using StardewValley.Objects;
+
     public class XSAutomate : Mod
     {
-        private static IReflectionHelper _reflection;
-        private static XSLiteIntegration _xsLite;
+        private static IReflectionHelper Reflection;
+        private static XSLiteIntegration XSLite;
+
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
-            _xsLite = new XSLiteIntegration(helper.ModRegistry);
-            _reflection = helper.Reflection;
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            Monitor.LogOnce("Patching Automate for Filtered Items");
-            var harmony = new Harmony(ModManifest.UniqueID);
+            XSAutomate.XSLite = new XSLiteIntegration(helper.ModRegistry);
+            XSAutomate.Reflection = helper.Reflection;
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            this.Monitor.LogOnce("Patching Automate for Filtered Items");
+            var harmony = new Harmony(this.ModManifest.UniqueID);
             harmony.Patch(
                 new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
-                new HarmonyMethod(typeof(XSAutomate), nameof(XSAutomate.StorePrefix))
-            );
+                new HarmonyMethod(typeof(XSAutomate), nameof(XSAutomate.StorePrefix)));
         }
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-        {
-            var automate = Helper.ModRegistry.GetApi<IAutomateAPI>("Pathoschild.Automate");
-            automate.AddFactory(new AutomationFactoryController());
-        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static bool StorePrefix(Chest ___Chest, object stack)
         {
-            var item = _reflection.GetProperty<Item>(stack, "Sample").GetValue();
-            return _xsLite.API.AcceptsItem(___Chest, item);
+            Item item = XSAutomate.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
+            return XSAutomate.XSLite.API.AcceptsItem(___Chest, item);
+        }
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            var automate = this.Helper.ModRegistry.GetApi<IAutomateAPI>("Pathoschild.Automate");
+            automate.AddFactory(new AutomationFactory());
         }
     }
 }
