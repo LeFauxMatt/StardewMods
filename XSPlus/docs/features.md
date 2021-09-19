@@ -3,11 +3,14 @@
 ### Features
 
 * [Access Carried](#access-carried)
+* [Capacity](#capacity)
+* [Color Picker](#color-picker)
 * [Craft From Chest](#craft-from-chest)
 * [Expanded Menu](#expanded-menu)
 * [Filter Items](#filter-items)
 * [Inventory Tabs](#inventory-tabs)
 * [Search Items](#search-items)
+* [Stash to Chest](#stash-to-chest)
 * [Unbreakable](#unbreakable)
 * [Unplaceable](#unplaceable)
 * [Vacuum Items](#vacuum-items)
@@ -33,6 +36,14 @@ VacuumItems     | null
 ### Access Carried
 
 Allows chest inventory to be accessed while held.
+
+### Capacity
+
+Allows chest to hold additional items.
+
+### Color Picker
+
+Adds a HSL-based color picker to the chest menu.
 
 ### Craft From Chest
 
