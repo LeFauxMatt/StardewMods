@@ -11,7 +11,7 @@
     internal class Capacity : FeatureWithParam<int>
     {
         private static Capacity Instance;
-        private readonly Func<int> GetConfigCapacity;
+        private readonly Func<int> _getConfigCapacity;
 
         /// <summary>Initializes a new instance of the <see cref="Capacity"/> class.</summary>
         /// <param name="getConfigCapacity">Get method for configured default capacity.</param>
@@ -19,7 +19,7 @@
             : base("Capacity")
         {
             Capacity.Instance = this;
-            this.GetConfigCapacity = getConfigCapacity;
+            this._getConfigCapacity = getConfigCapacity;
         }
 
         /// <inheritdoc/>
@@ -48,7 +48,7 @@
                 return true;
             }
 
-            param = this.GetConfigCapacity();
+            param = this._getConfigCapacity();
             return param == 0;
         }
 

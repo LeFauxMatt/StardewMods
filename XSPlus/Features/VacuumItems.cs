@@ -15,7 +15,7 @@
     {
         private static readonly PerScreen<bool> IsVacuuming = new();
         private static VacuumItems Instance;
-        private readonly PerScreen<List<Chest>> CachedEnabledChests = new();
+        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
 
         /// <summary>Initializes a new instance of the <see cref="VacuumItems"/> class.</summary>
         public VacuumItems()
@@ -26,7 +26,7 @@
 
         private List<Chest> EnabledChests
         {
-            get => this.CachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
+            get => this._cachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
                 .Where(this.IsEnabledForItem)
                 .ToList();
         }
@@ -126,7 +126,7 @@
                 return;
             }
 
-            this.CachedEnabledChests.Value = null;
+            this._cachedEnabledChests.Value = null;
         }
     }
 }

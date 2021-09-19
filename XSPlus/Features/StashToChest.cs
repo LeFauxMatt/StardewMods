@@ -16,11 +16,11 @@
     internal class StashToChest : FeatureWithParam<string>
     {
         private static StashToChest Instance;
-        private readonly IInputHelper InputHelper;
-        private readonly Func<string> GetSearchTagSymbol;
-        private readonly Func<KeybindList> GetStashingButton;
-        private readonly Func<string> GetConfigRange;
-        private readonly PerScreen<List<Chest>> CachedEnabledChests = new();
+        private readonly IInputHelper _inputHelper;
+        private readonly Func<string> _getSearchTagSymbol;
+        private readonly Func<KeybindList> _getStashingButton;
+        private readonly Func<string> _getConfigRange;
+        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
 
         /// <summary>Initializes a new instance of the <see cref="StashToChest"/> class.</summary>
         /// <param name="inputHelper">API for changing state of input.</param>
@@ -31,15 +31,15 @@
             : base("StashToChest")
         {
             StashToChest.Instance = this;
-            this.InputHelper = inputHelper;
-            this.GetStashingButton = getStashingButton;
-            this.GetConfigRange = getConfigRange;
-            this.GetSearchTagSymbol = getSearchTagSymbol;
+            this._inputHelper = inputHelper;
+            this._getStashingButton = getStashingButton;
+            this._getConfigRange = getConfigRange;
+            this._getSearchTagSymbol = getSearchTagSymbol;
         }
 
         private List<Chest> EnabledChests
         {
-            get => this.CachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
+            get => this._cachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
                 .Union(XSPlus.AccessibleChests)
                 .Where(this.IsEnabledForItem)
                 .Distinct()
@@ -90,8 +90,8 @@
                 return true;
             }
 
-            param = this.GetConfigRange();
-            return string.IsNullOrWhiteSpace(param);
+            param = this._getConfigRange();
+            return !string.IsNullOrWhiteSpace(param);
         }
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
@@ -101,18 +101,18 @@
                 return;
             }
 
-            this.CachedEnabledChests.Value = null;
+            this._cachedEnabledChests.Value = null;
         }
 
         private void OnWarped(object sender, WarpedEventArgs e)
         {
-            this.CachedEnabledChests.Value = null;
+            this._cachedEnabledChests.Value = null;
         }
 
         /// <summary>Stash inventory items into all supported chests.</summary>
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            KeybindList stashingButton = this.GetStashingButton();
+            KeybindList stashingButton = this._getStashingButton();
 
             if (!Context.IsPlayerFree || !stashingButton.JustPressed() || !this.EnabledChests.Any())
             {
@@ -136,7 +136,7 @@
                     switch (favorites.Count)
                     {
                         // Skip chest if it has favorites and none are matched
-                        case > 0 when !item.SearchTags(favorites, this.GetSearchTagSymbol()):
+                        case > 0 when !item.SearchTags(favorites, this._getSearchTagSymbol()):
                         // Skip chest if no favorites and no built-in filter
                         case 0 when !allowList:
                             continue;
@@ -158,7 +158,7 @@
             }
 
             Game1.playSound("Ship");
-            this.InputHelper.SuppressActiveKeybinds(stashingButton);
+            this._inputHelper.SuppressActiveKeybinds(stashingButton);
         }
     }
 }

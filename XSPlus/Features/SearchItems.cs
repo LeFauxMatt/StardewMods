@@ -23,23 +23,22 @@
     internal class SearchItems : BaseFeature
     {
         private const int SearchBarHeight = 24;
-        private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
         private static readonly PerScreen<int> MenuPadding = new() { Value = -1 };
         private static readonly Rectangle FilledHeart = new(211, 428, 7, 6);
         private static readonly Rectangle EmptyHeart = new(218, 428, 7, 6);
         private static SearchItems Instance;
-        private readonly IContentHelper ContentHelper;
-        private readonly IInputHelper InputHelper;
-        private readonly Func<string> GetSearchTagSymbol;
-        private readonly PerScreen<IClickableMenu> Menu = new();
-        private readonly PerScreen<Chest> Chest = new();
-        private readonly PerScreen<bool> Attached = new();
-        private readonly PerScreen<int> ScreenId = new() { Value = -1 };
-        private readonly PerScreen<ClickableComponent> SearchArea = new() { Value = new ClickableComponent(Rectangle.Empty, string.Empty) };
-        private readonly PerScreen<TextBox> SearchField = new();
-        private readonly PerScreen<ClickableTextureComponent> SearchIcon = new();
-        private readonly PerScreen<IList<ClickableTextureComponent>> Hearts = new() { Value = new List<ClickableTextureComponent>() };
+        private readonly IContentHelper _contentHelper;
+        private readonly IInputHelper _inputHelper;
+        private readonly Func<string> _getSearchTagSymbol;
+        private readonly PerScreen<IClickableMenu> _menu = new();
+        private readonly PerScreen<Chest> _chest = new();
+        private readonly PerScreen<bool> _attached = new();
+        private readonly PerScreen<int> _screenId = new() { Value = -1 };
+        private readonly PerScreen<ClickableComponent> _searchArea = new() { Value = new ClickableComponent(Rectangle.Empty, string.Empty) };
+        private readonly PerScreen<TextBox> _searchField = new();
+        private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
+        private readonly PerScreen<IList<ClickableTextureComponent>> _hearts = new() { Value = new List<ClickableTextureComponent>() };
 
         /// <summary>Initializes a new instance of the <see cref="SearchItems"/> class.</summary>
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
@@ -49,24 +48,22 @@
             : base("SearchItems")
         {
             SearchItems.Instance = this;
-            this.ContentHelper = contentHelper;
-            this.InputHelper = inputHelper;
-            this.GetSearchTagSymbol = getSearchTagSymbol;
+            this._contentHelper = contentHelper;
+            this._inputHelper = inputHelper;
+            this._getSearchTagSymbol = getSearchTagSymbol;
         }
 
         /// <inheritdoc/>
         public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
+            CommonFeature.ItemGrabMenuConstructor += this.OnItemGrabMenuConstructor;
+            CommonFeature.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+            CommonFeature.RenderedActiveMenu += this.OnRenderedActiveMenu;
             modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
-            modEvents.Display.MenuChanged += this.OnMenuChanged;
-            modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
             modEvents.Input.ButtonPressed += this.OnButtonPressed;
 
             // Patches
-            harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), SearchItems.ItemGrabMenuConstructorParams),
-                postfix: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_constructor_postfix)));
             harmony.Patch(
                 original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
                 transpiler: new HarmonyMethod(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_draw_transpiler)));
@@ -79,40 +76,19 @@
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
+            CommonFeature.ItemGrabMenuConstructor -= this.OnItemGrabMenuConstructor;
+            CommonFeature.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+            CommonFeature.RenderedActiveMenu -= this.OnRenderedActiveMenu;
             modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
-            modEvents.Display.MenuChanged -= this.OnMenuChanged;
-            modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
             modEvents.Input.ButtonPressed -= this.OnButtonPressed;
 
             // Patches
-            harmony.Unpatch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), SearchItems.ItemGrabMenuConstructorParams),
-                patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_constructor_postfix)));
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
                 patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.ItemGrabMenu_draw_transpiler)));
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItems.MenuWithInventoryDrawParams),
                 patch: AccessTools.Method(typeof(SearchItems), nameof(SearchItems.MenuWithInventory_draw_transpiler)));
-        }
-
-        /// <summary>Expand menu height to accomodate the search bar.</summary>
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-        private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
-        {
-            if (__instance.context is not Chest chest || !SearchItems.Instance.IsEnabledForItem(chest))
-            {
-                return;
-            }
-
-            __instance.yPositionOnScreen -= SearchItems.SearchBarHeight;
-            __instance.height += SearchItems.SearchBarHeight;
-            if (__instance.chestColorPicker != null)
-            {
-                __instance.chestColorPicker.yPositionOnScreen -= SearchItems.SearchBarHeight;
-            }
         }
 
         /// <summary>Move/resize top dialogue box by search bar height.</summary>
@@ -242,21 +218,36 @@
             return SearchItems.MenuPadding.Value = SearchItems.SearchBarHeight;
         }
 
+        private void OnItemGrabMenuConstructor(object sender, CommonFeature.ItemGrabMenuConstructorEventArgs e)
+        {
+            if (!this.IsEnabledForItem(e.Chest))
+            {
+                return;
+            }
+
+            e.ItemGrabMenu.yPositionOnScreen -= SearchItems.SearchBarHeight;
+            e.ItemGrabMenu.height += SearchItems.SearchBarHeight;
+            if (e.ItemGrabMenu.chestColorPicker != null)
+            {
+                e.ItemGrabMenu.chestColorPicker.yPositionOnScreen -= SearchItems.SearchBarHeight;
+            }
+        }
+
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            this.SearchField.Value = new TextBox(
-                textBoxTexture: this.ContentHelper.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent),
+            this._searchField.Value = new TextBox(
+                textBoxTexture: this._contentHelper.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent),
                 caretTexture: null,
                 font: Game1.smallFont,
                 textColor: Game1.textColor);
-            this.SearchIcon.Value = new ClickableTextureComponent(
+            this._searchIcon.Value = new ClickableTextureComponent(
                 bounds: Rectangle.Empty,
                 texture: Game1.mouseCursors,
                 sourceRect: new Rectangle(80, 0, 13, 13),
                 scale: 2.5f);
             for (int i = 0; i < 10; i++)
             {
-                this.Hearts.Value.Add(new ClickableTextureComponent(
+                this._hearts.Value.Add(new ClickableTextureComponent(
                     bounds: Rectangle.Empty,
                     texture: Game1.mouseCursors,
                     sourceRect: SearchItems.FilledHeart,
@@ -264,72 +255,66 @@
             }
         }
 
-        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        private void OnItemGrabMenuChanged(object sender, CommonFeature.ItemGrabMenuChangedEventArgs e)
         {
-            if (ReferenceEquals(e.NewMenu, this.Menu.Value))
-            {
-                return;
-            }
-
-            this.Menu.Value = e.NewMenu;
-            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !this.IsEnabledForItem(chest))
+            if (!e.Attached || !this.IsEnabledForItem(e.Chest))
             {
                 CommonFeature.HighlightChestItems -= this.HighlightMethod;
-                this.Attached.Value = false;
-                this.ScreenId.Value = -1;
+                this._attached.Value = false;
+                this._screenId.Value = -1;
                 SearchItems.MenuPadding.Value = -1;
                 return;
             }
 
-            if (!this.Attached.Value)
+            if (!this._attached.Value)
             {
                 CommonFeature.HighlightChestItems += this.HighlightMethod;
-                this.Attached.Value = true;
-                this.ScreenId.Value = Context.ScreenId;
+                this._attached.Value = true;
+                this._screenId.Value = Context.ScreenId;
                 var upperBounds = new Rectangle(
-                    itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen,
-                    itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen,
-                    itemGrabMenu.ItemsToGrabMenu.width,
-                    itemGrabMenu.ItemsToGrabMenu.height);
-                this.SearchField.Value.X = upperBounds.X;
-                this.SearchField.Value.Y = upperBounds.Y - (14 * Game1.pixelZoom);
-                this.SearchField.Value.Width = upperBounds.Width;
-                this.SearchField.Value.Selected = false;
-                this.SearchArea.Value.bounds = new Rectangle(this.SearchField.Value.X, this.SearchField.Value.Y, this.SearchField.Value.Width, this.SearchField.Value.Height);
-                this.SearchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - (14 * Game1.pixelZoom) + 6, 32, 32);
-                int x = itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96;
-                int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
-                foreach (ClickableTextureComponent heart in this.Hearts.Value)
+                    e.ItemGrabMenu.ItemsToGrabMenu.xPositionOnScreen,
+                    e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen,
+                    e.ItemGrabMenu.ItemsToGrabMenu.width,
+                    e.ItemGrabMenu.ItemsToGrabMenu.height);
+                this._searchField.Value.X = upperBounds.X;
+                this._searchField.Value.Y = upperBounds.Y - (14 * Game1.pixelZoom);
+                this._searchField.Value.Width = upperBounds.Width;
+                this._searchField.Value.Selected = false;
+                this._searchArea.Value.bounds = new Rectangle(this._searchField.Value.X, this._searchField.Value.Y, this._searchField.Value.Width, this._searchField.Value.Height);
+                this._searchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - (14 * Game1.pixelZoom) + 6, 32, 32);
+                int x = e.ItemGrabMenu.xPositionOnScreen - 480 - 8;
+                int y = e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
+                foreach (ClickableTextureComponent heart in this._hearts.Value)
                 {
                     heart.bounds = new Rectangle(x, y, 16, 16);
                     y += 32;
                 }
             }
 
-            if (!ReferenceEquals(this.Chest.Value, chest))
+            if (!ReferenceEquals(this._chest.Value, e.Chest))
             {
-                this.Chest.Value = chest;
+                this._chest.Value = e.Chest;
             }
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
-            if (!this.Attached.Value || this.ScreenId.Value != Context.ScreenId || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+            if (!this._attached.Value || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
             {
                 return;
             }
 
-            this.SearchField.Value.Draw(e.SpriteBatch, false);
-            this.SearchIcon.Value.draw(e.SpriteBatch);
+            this._searchField.Value.Draw(e.SpriteBatch, false);
+            this._searchIcon.Value.draw(e.SpriteBatch);
 
             // Get saved labels from search history
-            if (!this.Chest.Value.GetModDataList("Search", out var searchHistory))
+            if (!this._chest.Value.GetModDataList("Search", out var searchHistory))
             {
                 return;
             }
 
             // Get saved labels from favorites
-            if (!this.Chest.Value.GetModDataList("Favorites", out var favorites))
+            if (!this._chest.Value.GetModDataList("Favorites", out var favorites))
             {
                 favorites = new List<string>();
             }
@@ -337,11 +322,11 @@
             var labels = favorites.Union(searchHistory).Distinct().ToList();
 
             // Draw hearts/labels to the right of the chest menu along a vertical axis
-            int x = itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96;
+            int x = itemGrabMenu.xPositionOnScreen - 480;
             int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen;
-            for (int i = 0; i < this.Hearts.Value.Count; i++)
+            for (int i = 0; i < this._hearts.Value.Count; i++)
             {
-                ClickableTextureComponent heart = this.Hearts.Value[i];
+                ClickableTextureComponent heart = this._hearts.Value[i];
                 string label = labels.ElementAtOrDefault(i);
                 if (label is null)
                 {
@@ -353,14 +338,11 @@
                 e.SpriteBatch.DrawString(Game1.smallFont, label, new Vector2(x + 32, y), Color.White);
                 y += 32;
             }
-
-            // Redraw mouse over everything else
-            itemGrabMenu.drawMouse(e.SpriteBatch);
         }
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!this.Attached.Value || this.ScreenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
+            if (!this._attached.Value || this._screenId.Value != Context.ScreenId)
             {
                 return;
             }
@@ -371,12 +353,12 @@
             {
                 case SButton.MouseLeft when this.LeftClick(point.X, point.Y):
                 case SButton.MouseRight when this.RightClick(point.X, point.Y):
-                    this.InputHelper.Suppress(e.Button);
+                    this._inputHelper.Suppress(e.Button);
                     break;
                 default:
                     if (this.KeyPress(e.Button))
                     {
-                        this.InputHelper.Suppress(e.Button);
+                        this._inputHelper.Suppress(e.Button);
                     }
 
                     break;
@@ -387,21 +369,21 @@
         {
             if (x != -1 && y != -1)
             {
-                this.SearchField.Value.Selected = this.SearchArea.Value.containsPoint(x, y);
+                this._searchField.Value.Selected = this._searchArea.Value.containsPoint(x, y);
             }
 
-            if (this.SearchField.Value.Selected)
+            if (this._searchField.Value.Selected)
             {
                 return true;
             }
 
             // Check if any labels to heart
-            if (!this.Chest.Value.GetModDataList("Search", out var searchHistory))
+            if (!this._chest.Value.GetModDataList("Search", out var searchHistory))
             {
                 searchHistory = new List<string>();
             }
 
-            if (!this.Chest.Value.GetModDataList("Favorites", out var favorites))
+            if (!this._chest.Value.GetModDataList("Favorites", out var favorites))
             {
                 favorites = new List<string>();
             }
@@ -413,14 +395,14 @@
             }
 
             // Check if any heart was clicked on
-            ClickableTextureComponent heart = this.Hearts.Value.FirstOrDefault(heart => heart.containsPoint(x, y));
+            ClickableTextureComponent heart = this._hearts.Value.FirstOrDefault(heart => heart.containsPoint(x, y));
             if (heart is null)
             {
                 return false;
             }
 
             // Check if clicked hearts corresponds to a label
-            int index = this.Hearts.Value.IndexOf(heart);
+            int index = this._hearts.Value.IndexOf(heart);
             if (index >= labels.Count)
             {
                 return false;
@@ -437,7 +419,7 @@
                 favorites.Add(label);
             }
 
-            this.Chest.Value.SetModDataList("Favorites", favorites);
+            this._chest.Value.SetModDataList("Favorites", favorites);
             return true;
         }
 
@@ -445,15 +427,15 @@
         {
             if (x != -1 && y != -1)
             {
-                this.SearchField.Value.Selected = this.SearchArea.Value.containsPoint(x, y);
+                this._searchField.Value.Selected = this._searchArea.Value.containsPoint(x, y);
             }
 
-            if (!this.SearchField.Value.Selected)
+            if (!this._searchField.Value.Selected)
             {
                 return false;
             }
 
-            this.SearchField.Value.Text = string.Empty;
+            this._searchField.Value.Text = string.Empty;
             return true;
         }
 
@@ -461,19 +443,19 @@
         {
             if (button == SButton.Enter)
             {
-                if (!this.Chest.Value.GetModDataList("Search", out var searchHistory))
+                if (!this._chest.Value.GetModDataList("Search", out var searchHistory))
                 {
                     searchHistory = new List<string>();
                 }
 
-                string[] currentSearch = Regex.Split(this.SearchField.Value.Text, @"\s+");
+                string[] currentSearch = Regex.Split(this._searchField.Value.Text, @"\s+");
                 searchHistory = searchHistory.Union(currentSearch).Reverse().Take(10).Reverse().ToList();
-                this.Chest.Value.SetModDataList("Search", searchHistory);
+                this._chest.Value.SetModDataList("Search", searchHistory);
             }
 
             if (button != SButton.Escape)
             {
-                return this.SearchField.Value.Selected;
+                return this._searchField.Value.Selected;
             }
 
             Game1.playSound("bigDeSelect");
@@ -483,7 +465,7 @@
 
         private bool HighlightMethod(Item item)
         {
-            return string.IsNullOrWhiteSpace(this.SearchField.Value.Text) || item.SearchTags(Regex.Split(this.SearchField.Value.Text, @"\s+"), this.GetSearchTagSymbol());
+            return string.IsNullOrWhiteSpace(this._searchField.Value.Text) || item.SearchTags(Regex.Split(this._searchField.Value.Text, @"\s+"), this._getSearchTagSymbol());
         }
     }
 }

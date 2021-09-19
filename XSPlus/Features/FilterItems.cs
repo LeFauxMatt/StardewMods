@@ -13,8 +13,8 @@
     /// <inheritdoc />
     internal class FilterItems : FeatureWithParam<Dictionary<string, bool>>
     {
-        private readonly PerScreen<IClickableMenu> Menu = new();
-        private readonly PerScreen<Chest> Chest = new();
+        private readonly PerScreen<IClickableMenu> _menu = new();
+        private readonly PerScreen<Chest> _chest = new();
 
         /// <summary>Initializes a new instance of the <see cref="FilterItems"/> class.</summary>
         public FilterItems()
@@ -30,11 +30,11 @@
         public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            modEvents.Display.MenuChanged += this.OnMenuChanged;
+            CommonFeature.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
 
             // Patches
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(StardewValley.Objects.Chest.addItem)),
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 prefix: new HarmonyMethod(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
         }
 
@@ -42,11 +42,11 @@
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            modEvents.Display.MenuChanged -= this.OnMenuChanged;
+            CommonFeature.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
 
             // Patches
             harmony.Unpatch(
-                original: AccessTools.Method(typeof(Chest), nameof(StardewValley.Objects.Chest.addItem)),
+                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 patch: AccessTools.Method(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
         }
 
@@ -73,31 +73,25 @@
             return false;
         }
 
-        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        private void OnItemGrabMenuChanged(object sender, CommonFeature.ItemGrabMenuChangedEventArgs e)
         {
-            if (ReferenceEquals(e.NewMenu, this.Menu.Value))
-            {
-                return;
-            }
-
-            this.Menu.Value = e.NewMenu;
-            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } || !this.IsEnabledForItem(chest))
+            if (!e.Attached || !this.IsEnabledForItem(e.Chest))
             {
                 CommonFeature.HighlightPlayerItems -= this.HighlightMethod;
-                this.Chest.Value = null;
+                this._chest.Value = null;
                 return;
             }
 
-            if (this.Chest.Value is null)
+            if (this._chest.Value is null)
             {
                 CommonFeature.HighlightPlayerItems += this.HighlightMethod;
-                this.Chest.Value = chest;
+                this._chest.Value = e.Chest;
             }
         }
 
         private bool HighlightMethod(Item item)
         {
-            return this.Chest.Value is null || this.TakesItem(this.Chest.Value, item);
+            return this._chest.Value is null || this.TakesItem(this._chest.Value, item);
         }
     }
 }

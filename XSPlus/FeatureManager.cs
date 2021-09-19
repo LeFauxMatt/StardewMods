@@ -10,17 +10,17 @@
     internal class FeatureManager
     {
         private static FeatureManager Instance;
-        private readonly IDictionary<string, BaseFeature> Features = new Dictionary<string, BaseFeature>();
-        private readonly HashSet<string> ActivatedFeatures = new();
-        private readonly IModHelper Helper;
-        private readonly Harmony Harmony;
-        private readonly IDictionary<string, bool> Global;
+        private readonly IDictionary<string, BaseFeature> _features = new Dictionary<string, BaseFeature>();
+        private readonly HashSet<string> _activatedFeatures = new();
+        private readonly IModHelper _helper;
+        private readonly Harmony _harmony;
+        private readonly IDictionary<string, bool> _global;
 
         private FeatureManager(IModHelper helper, Harmony harmony, IDictionary<string, bool> global)
         {
-            this.Helper = helper;
-            this.Harmony = harmony;
-            this.Global = global;
+            this._helper = helper;
+            this._harmony = harmony;
+            this._global = global;
         }
 
         /// <summary>Returns and optionally creates the <see cref="FeatureManager"/> instance.</summary>
@@ -43,7 +43,7 @@
         [SuppressMessage("ReSharper", "HeapView.PossibleBoxingAllocation", Justification = "Support dynamic param types for API access.")]
         public static void EnableFeatureWithModData<T>(string featureName, string key, string value, T param)
         {
-            if (!FeatureManager.Instance.Features.TryGetValue(featureName, out BaseFeature feature))
+            if (!FeatureManager.Instance._features.TryGetValue(featureName, out BaseFeature feature))
             {
                 return;
             }
@@ -69,7 +69,7 @@
         /// <returns>Returns true if feature is enabled globally.</returns>
         public static bool IsFeatureEnabledGlobally(string featureName)
         {
-            return FeatureManager.Instance.Global.TryGetValue(featureName, out bool option) && option;
+            return FeatureManager.Instance._global.TryGetValue(featureName, out bool option) && option;
         }
 
         /// <summary>Allow feature to add its events and apply patches.</summary>
@@ -77,18 +77,18 @@
         /// <exception cref="InvalidOperationException">When a feature is unknown.</exception>
         public static void ActivateFeature(string featureName)
         {
-            if (!FeatureManager.Instance.Features.TryGetValue(featureName, out BaseFeature feature))
+            if (!FeatureManager.Instance._features.TryGetValue(featureName, out BaseFeature feature))
             {
                 throw new InvalidOperationException($"Unknown feature {featureName}");
             }
 
-            if (FeatureManager.Instance.ActivatedFeatures.Contains(featureName))
+            if (FeatureManager.Instance._activatedFeatures.Contains(featureName))
             {
                 return;
             }
 
-            FeatureManager.Instance.ActivatedFeatures.Add(featureName);
-            feature.Activate(FeatureManager.Instance.Helper.Events, FeatureManager.Instance.Harmony);
+            FeatureManager.Instance._activatedFeatures.Add(featureName);
+            feature.Activate(FeatureManager.Instance._helper.Events, FeatureManager.Instance._harmony);
         }
 
         /// <summary>Allow feature to remove its events and reverse patches.</summary>
@@ -96,27 +96,27 @@
         /// <exception cref="InvalidOperationException">When a feature is unknown.</exception>
         public static void DeactivateFeature(string featureName)
         {
-            if (!FeatureManager.Instance.Features.TryGetValue(featureName, out BaseFeature feature))
+            if (!FeatureManager.Instance._features.TryGetValue(featureName, out BaseFeature feature))
             {
                 throw new InvalidOperationException($"Unknown feature {featureName}");
             }
 
-            if (!FeatureManager.Instance.ActivatedFeatures.Contains(featureName))
+            if (!FeatureManager.Instance._activatedFeatures.Contains(featureName))
             {
                 return;
             }
 
-            FeatureManager.Instance.ActivatedFeatures.Remove(featureName);
-            feature.Deactivate(FeatureManager.Instance.Helper.Events, FeatureManager.Instance.Harmony);
+            FeatureManager.Instance._activatedFeatures.Remove(featureName);
+            feature.Deactivate(FeatureManager.Instance._helper.Events, FeatureManager.Instance._harmony);
         }
 
         /// <summary>Calls all feature activation methods for enabled/default features.</summary>
         public void ActivateFeatures()
         {
-            foreach (string featureName in this.Features.Keys)
+            foreach (string featureName in this._features.Keys)
             {
                 // Skip any feature that is globally disabled
-                if (this.Global.TryGetValue(featureName, out bool option) && !option)
+                if (this._global.TryGetValue(featureName, out bool option) && !option)
                 {
                     continue;
                 }
@@ -129,7 +129,7 @@
         /// <param name="feature">Instance of feature to add.</param>
         public void AddFeature(BaseFeature feature)
         {
-            this.Features.Add(feature.FeatureName, feature);
+            this._features.Add(feature.FeatureName, feature);
         }
     }
 }

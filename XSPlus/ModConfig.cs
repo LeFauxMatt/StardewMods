@@ -9,9 +9,9 @@
     /// <summary>Default values and config options for features.</summary>
     internal class ModConfig
     {
-        private int DefaultCapacity;
-        private string DefaultCraftingRange = "Location";
-        private string DefaultStashingRange = "Location";
+        private int _capacity;
+        private string _craftingRange = "Location";
+        private string _stashingRange = "Location";
 
         /// <summary>Initializes a new instance of the <see cref="ModConfig"/> class.</summary>
         /// <param name="global">Globally enabled/disabled features.</param>
@@ -39,10 +39,10 @@
         /// <summary>Gets or sets default slots that a <see cref="StardewValley.Objects.Chest"/> can store.</summary>
         public int Capacity
         {
-            get => this.DefaultCapacity;
+            get => this._capacity;
             set
             {
-                this.DefaultCapacity = value;
+                this._capacity = value;
                 if (value == 0)
                 {
                     this.Global.Remove("Capacity");
@@ -60,10 +60,10 @@
         /// <summary>Gets or sets default maximum range that a <see cref="StardewValley.Objects.Chest"/> can be crafted from.</summary>
         public string CraftingRange
         {
-            get => this.DefaultCraftingRange;
+            get => this._craftingRange;
             set
             {
-                this.DefaultCraftingRange = value;
+                this._craftingRange = value;
                 switch (value)
                 {
                     case "Default":
@@ -82,10 +82,10 @@
         /// <summary>Gets or sets default maximum range that a <see cref="StardewValley.Objects.Chest"/> can be stashed into.</summary>
         public string StashingRange
         {
-            get => this.DefaultStashingRange;
+            get => this._stashingRange;
             set
             {
-                this.DefaultStashingRange = value;
+                this._stashingRange = value;
                 switch (value)
                 {
                     case "Default":

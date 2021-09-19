@@ -9,7 +9,7 @@
     internal abstract class BaseFeature
     {
         /// <summary>Gets the name of the feature used for config/API.</summary>
-        private readonly IDictionary<KeyValuePair<string, string>, bool> EnabledByModData = new Dictionary<KeyValuePair<string, string>, bool>();
+        private readonly IDictionary<KeyValuePair<string, string>, bool> _enabledByModData = new Dictionary<KeyValuePair<string, string>, bool>();
 
         /// <summary>Initializes a new instance of the <see cref="BaseFeature"/> class.</summary>
         /// <param name="featureName">The name of the feature used for config/API.</param>
@@ -39,13 +39,13 @@
         {
             var modDataKey = new KeyValuePair<string, string>(key, value);
 
-            if (this.EnabledByModData.ContainsKey(modDataKey))
+            if (this._enabledByModData.ContainsKey(modDataKey))
             {
-                this.EnabledByModData[modDataKey] = enable;
+                this._enabledByModData[modDataKey] = enable;
             }
             else
             {
-                this.EnabledByModData.Add(modDataKey, enable);
+                this._enabledByModData.Add(modDataKey, enable);
             }
         }
 
@@ -56,7 +56,7 @@
         {
             bool isEnabledByModData = FeatureManager.IsFeatureEnabledGlobally(this.FeatureName);
 
-            foreach (var modData in this.EnabledByModData)
+            foreach (var modData in this._enabledByModData)
             {
                 if (!item.modData.TryGetValue(modData.Key.Key, out string value) || value != modData.Key.Value)
                 {

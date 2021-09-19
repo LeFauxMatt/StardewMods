@@ -10,14 +10,14 @@
     /// <inheritdoc />
     internal class AccessCarried : BaseFeature
     {
-        private readonly IInputHelper InputHelper;
+        private readonly IInputHelper _inputHelper;
 
         /// <summary>Initializes a new instance of the <see cref="AccessCarried"/> class.</summary>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
         public AccessCarried(IInputHelper inputHelper)
             : base("AccessCarried")
         {
-            this.InputHelper = inputHelper;
+            this._inputHelper = inputHelper;
         }
 
         /// <inheritdoc/>
@@ -68,7 +68,7 @@
             }
 
             chest.checkForAction(Game1.player);
-            this.InputHelper.Suppress(e.Button);
+            this._inputHelper.Suppress(e.Button);
         }
     }
 }

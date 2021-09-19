@@ -17,10 +17,10 @@
     internal class CraftFromChest : FeatureWithParam<string>
     {
         private static CraftFromChest Instance;
-        private readonly IInputHelper InputHelper;
-        private readonly Func<KeybindList> GetCraftingButton;
-        private readonly Func<string> GetConfigRange;
-        private readonly PerScreen<List<Chest>> CachedEnabledChests = new();
+        private readonly IInputHelper _inputHelper;
+        private readonly Func<KeybindList> _getCraftingButton;
+        private readonly Func<string> _getConfigRange;
+        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
 
         /// <summary>Initializes a new instance of the <see cref="CraftFromChest"/> class.</summary>
         /// <param name="inputHelper">API for changing state of input.</param>
@@ -30,14 +30,14 @@
             : base("CraftFromChest")
         {
             CraftFromChest.Instance = this;
-            this.InputHelper = inputHelper;
-            this.GetCraftingButton = getCraftingButton;
-            this.GetConfigRange = getConfigRange;
+            this._inputHelper = inputHelper;
+            this._getCraftingButton = getCraftingButton;
+            this._getConfigRange = getConfigRange;
         }
 
         private List<Chest> EnabledChests
         {
-            get => this.CachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
+            get => this._cachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
                 .Union(XSPlus.AccessibleChests)
                 .Where(this.IsEnabledForItem)
                 .ToList();
@@ -49,7 +49,7 @@
             // Patches
             harmony.Patch(
                 original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                postfix: new HarmonyMethod(typeof(CraftFromChest), nameof(CraftFromChest_getContainerContents_postfix)));
+                postfix: new HarmonyMethod(typeof(CraftFromChest), nameof(CraftFromChest.CraftFromChest_getContainerContents_postfix)));
 
             // Events
             modEvents.Player.InventoryChanged += this.OnInventoryChanged;
@@ -63,7 +63,7 @@
             // Patches
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                patch: AccessTools.Method(typeof(CraftFromChest), nameof(CraftFromChest_getContainerContents_postfix)));
+                patch: AccessTools.Method(typeof(CraftFromChest), nameof(CraftFromChest.CraftFromChest_getContainerContents_postfix)));
 
             // Events
             modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
@@ -97,8 +97,8 @@
                 return true;
             }
 
-            param = this.GetConfigRange();
-            return string.IsNullOrWhiteSpace(param);
+            param = this._getConfigRange();
+            return !string.IsNullOrWhiteSpace(param);
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
@@ -128,19 +128,19 @@
                 return;
             }
 
-            this.CachedEnabledChests.Value = null;
+            this._cachedEnabledChests.Value = null;
         }
 
         private void OnWarped(object sender, WarpedEventArgs e)
         {
-            this.CachedEnabledChests.Value = null;
+            this._cachedEnabledChests.Value = null;
         }
 
         /// <summary>Open crafting menu for all chests in inventory.</summary>
         [SuppressMessage("ReSharper", "AccessToModifiedClosure", Justification = "Needed for mutex release.")]
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            KeybindList craftingButton = this.GetCraftingButton();
+            KeybindList craftingButton = this._getCraftingButton();
 
             if (!Context.IsPlayerFree || !craftingButton.JustPressed() || !this.EnabledChests.Any())
             {
@@ -165,7 +165,7 @@
                 {
                     Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
                 });
-            this.InputHelper.SuppressActiveKeybinds(craftingButton);
+            this._inputHelper.SuppressActiveKeybinds(craftingButton);
         }
     }
 }
