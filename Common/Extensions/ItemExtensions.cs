@@ -29,7 +29,7 @@
         /// <param name="item">The item to test against.</param>
         /// <param name="filterItems">A dictionary of tags that are allowed or blocked.</param>
         /// <returns>Returns true when item matches any true tag and does not match any false tags.</returns>
-        public static bool MatchesTagExt(this Item item, Dictionary<string, bool> filterItems)
+        public static bool MatchesTagExt(this Item item, Dictionary<string, bool>? filterItems)
         {
             if (filterItems.Count == 0)
             {

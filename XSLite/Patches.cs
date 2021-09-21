@@ -7,6 +7,7 @@
     using System.Reflection.Emit;
     using Common.Extensions;
     using Common.Helpers;
+    using Common.Services;
     using CommonHarmony;
     using HarmonyLib;
     using Microsoft.Xna.Framework;

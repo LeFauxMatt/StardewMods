@@ -8,17 +8,17 @@
     using StardewValley.Objects;
 
     /// <inheritdoc />
-    internal class Capacity : FeatureWithParam<int>
+    internal class CapacityFeature : FeatureWithParam<int>
     {
-        private static Capacity Instance;
+        private static CapacityFeature Instance = null!;
         private readonly Func<int> _getConfigCapacity;
 
-        /// <summary>Initializes a new instance of the <see cref="Capacity"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="CapacityFeature"/> class.</summary>
         /// <param name="getConfigCapacity">Get method for configured default capacity.</param>
-        public Capacity(Func<int> getConfigCapacity)
+        public CapacityFeature(Func<int> getConfigCapacity)
             : base("Capacity")
         {
-            Capacity.Instance = this;
+            CapacityFeature.Instance = this;
             this._getConfigCapacity = getConfigCapacity;
         }
 
@@ -28,7 +28,7 @@
             // Patches
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                postfix: new HarmonyMethod(typeof(Capacity), nameof(Capacity.Chest_GetActualCapacity_postfix)));
+                postfix: new HarmonyMethod(typeof(CapacityFeature), nameof(CapacityFeature.Chest_GetActualCapacity_postfix)));
         }
 
         /// <inheritdoc/>
@@ -37,7 +37,7 @@
             // Patches
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                patch: AccessTools.Method(typeof(Capacity), nameof(Capacity.Chest_GetActualCapacity_postfix)));
+                patch: AccessTools.Method(typeof(CapacityFeature), nameof(CapacityFeature.Chest_GetActualCapacity_postfix)));
         }
 
         /// <inheritdoc/>
@@ -57,7 +57,7 @@
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
         {
-            if (!Capacity.Instance.IsEnabledForItem(__instance) || !Capacity.Instance.TryGetValueForItem(__instance, out int capacity))
+            if (!CapacityFeature.Instance.IsEnabledForItem(__instance) || !CapacityFeature.Instance.TryGetValueForItem(__instance, out int capacity))
             {
                 return;
             }

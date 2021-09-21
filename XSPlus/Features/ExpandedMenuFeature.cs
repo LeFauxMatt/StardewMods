@@ -7,10 +7,13 @@
     using System.Reflection.Emit;
     using Common.Extensions;
     using Common.Helpers;
+    using Common.Services;
     using CommonHarmony;
     using HarmonyLib;
     using Microsoft.Xna.Framework.Graphics;
+    using Models;
     using Netcode;
+    using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -19,33 +22,45 @@
     using StardewValley.Objects;
 
     /// <inheritdoc />
-    internal class ExpandedMenu : FeatureWithParam<int>
+    internal class ExpandedMenuFeature : FeatureWithParam<int>
     {
         private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private static ExpandedMenu Instance;
+        private static ExpandedMenuFeature Instance = null!;
         private readonly IInputHelper _inputHelper;
+        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly Func<KeybindList> _getScrollUp;
         private readonly Func<KeybindList> _getScrollDown;
         private readonly Func<int> _getMaxMenuRows;
         private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private readonly PerScreen<ItemGrabMenu?> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<int> _scrolledAmount = new();
         private readonly PerScreen<int> _menuCapacity = new();
         private readonly PerScreen<int> _menuRows = new();
         private readonly PerScreen<int> _menuOffset = new() { Value = -1 };
 
-        /// <summary>Initializes a new instance of the <see cref="ExpandedMenu"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="ExpandedMenuFeature"/> class.</summary>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
+        /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
         /// <param name="getScrollUp">Get method for configured scroll up button.</param>
         /// <param name="getScrollDown">Get method for configured scroll down button.</param>
         /// <param name="getMaxMenuRows">Get method for configured default menu rows.</param>
-        public ExpandedMenu(IInputHelper inputHelper, Func<KeybindList> getScrollUp, Func<KeybindList> getScrollDown, Func<int> getMaxMenuRows)
+        public ExpandedMenuFeature(
+            IInputHelper inputHelper,
+            ItemGrabMenuConstructedService itemGrabMenuConstructedService,
+            ItemGrabMenuChangedService itemGrabMenuChangedService,
+            Func<KeybindList> getScrollUp,
+            Func<KeybindList> getScrollDown,
+            Func<int> getMaxMenuRows)
             : base("ExpandedMenu")
         {
-            ExpandedMenu.Instance = this;
+            ExpandedMenuFeature.Instance = this;
             this._inputHelper = inputHelper;
+            this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
+            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._getScrollUp = getScrollUp;
             this._getScrollDown = getScrollDown;
             this._getMaxMenuRows = getMaxMenuRows;
@@ -55,48 +70,48 @@
         public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            CommonFeature.ItemGrabMenuConstructor += this.OnItemGrabMenuConstructor;
-            CommonFeature.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+            this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
+            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
             modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
             modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
             // Patches
             harmony.Patch(
                 AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.InventoryMenu_draw_transpiler)));
+                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.InventoryMenu_draw_transpiler)));
             harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenu.ItemGrabMenuConstructorParams),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_constructor_transpiler)));
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
+                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler)));
             harmony.Patch(
                 original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_draw_transpiler)));
+                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler)));
             harmony.Patch(
-                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenu.MenuWithInventoryDrawParams),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuWithInventory_draw_transpiler)));
+                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
+                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler)));
         }
 
         /// <inheritdoc/>
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            CommonFeature.ItemGrabMenuConstructor -= this.OnItemGrabMenuConstructor;
-            CommonFeature.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+            this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
+            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
             modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
             modEvents.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
 
             // Patches
             harmony.Unpatch(
                 AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
-                patch: AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.InventoryMenu_draw_transpiler)));
+                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.InventoryMenu_draw_transpiler)));
             harmony.Unpatch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenu.ItemGrabMenuConstructorParams),
-                patch: AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_constructor_transpiler)));
+                original: AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
+                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler)));
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                patch: AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.ItemGrabMenu_draw_transpiler)));
+                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler)));
             harmony.Unpatch(
-                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenu.MenuWithInventoryDrawParams),
-                patch: AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuWithInventory_draw_transpiler)));
+                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
+                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler)));
         }
 
         /// <summary>Filter actualInventory to offset by scrolled amount.</summary>
@@ -112,7 +127,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.ScrollItems))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ScrollItems))));
                 })
                 .Repeat(-1);
 
@@ -123,7 +138,7 @@
 
             if (!patternPatches.Done)
             {
-                Log.Warn($"Failed to apply all patches in {typeof(ExpandedMenu)}::{nameof(ExpandedMenu.InventoryMenu_draw_transpiler)}");
+                Log.Warn($"Failed to apply all patches in {typeof(ExpandedMenuFeature)}::{nameof(ExpandedMenuFeature.InventoryMenu_draw_transpiler)}");
             }
         }
 
@@ -162,9 +177,9 @@
                     list.RemoveLast();
                     list.RemoveLast();
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuCapacity))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuCapacity))));
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuRows))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuRows))));
                 });
 
             foreach (var patternPatch in patternPatches)
@@ -174,7 +189,7 @@
 
             if (!patternPatches.Done)
             {
-                Log.Warn($"Failed to apply all patches in {typeof(ExpandedMenu)}::{nameof(ExpandedMenu.ItemGrabMenu_constructor_transpiler)}");
+                Log.Warn($"Failed to apply all patches in {typeof(ExpandedMenuFeature)}::{nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler)}");
             }
         }
 
@@ -190,7 +205,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuOffset))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 })
                 .Repeat(3);
@@ -225,7 +240,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuOffset))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
 
@@ -241,7 +256,7 @@
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenu), nameof(ExpandedMenu.MenuOffset))));
+                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuOffset))));
                     list.AddLast(new CodeInstruction(OpCodes.Add));
                 });
 
@@ -258,19 +273,19 @@
 
         private static int MenuCapacity(MenuWithInventory menu)
         {
-            if (ExpandedMenu.Instance._menuCapacity.Value != 0)
+            if (ExpandedMenuFeature.Instance._menuCapacity.Value != 0)
             {
-                return ExpandedMenu.Instance._menuCapacity.Value;
+                return ExpandedMenuFeature.Instance._menuCapacity.Value;
             }
 
-            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenu.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenu.Instance._menuCapacity.Value = -1; // Vanilla
+                return ExpandedMenuFeature.Instance._menuCapacity.Value = -1; // Vanilla
             }
 
             int capacity = chest.GetActualCapacity();
-            int maxMenuRows = ExpandedMenu.Instance._getMaxMenuRows();
-            return ExpandedMenu.Instance._menuCapacity.Value = capacity switch
+            int maxMenuRows = ExpandedMenuFeature.Instance._getMaxMenuRows();
+            return ExpandedMenuFeature.Instance._menuCapacity.Value = capacity switch
             {
                 < 72 => Math.Min(maxMenuRows * 12, capacity.RoundUp(12)), // Variable
                 _ => maxMenuRows * 12, // Large
@@ -279,19 +294,19 @@
 
         private static int MenuRows(MenuWithInventory menu)
         {
-            if (ExpandedMenu.Instance._menuRows.Value != 0)
+            if (ExpandedMenuFeature.Instance._menuRows.Value != 0)
             {
-                return ExpandedMenu.Instance._menuRows.Value;
+                return ExpandedMenuFeature.Instance._menuRows.Value;
             }
 
-            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenu.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenu.Instance._menuCapacity.Value = 3; // Vanilla
+                return ExpandedMenuFeature.Instance._menuCapacity.Value = 3; // Vanilla
             }
 
             int capacity = chest.GetActualCapacity();
-            int maxMenuRows = ExpandedMenu.Instance._getMaxMenuRows();
-            return ExpandedMenu.Instance._menuRows.Value = capacity switch
+            int maxMenuRows = ExpandedMenuFeature.Instance._getMaxMenuRows();
+            return ExpandedMenuFeature.Instance._menuRows.Value = capacity switch
             {
                 < 72 => (int)Math.Min(maxMenuRows, Math.Ceiling(capacity / 12f)),
                 _ => maxMenuRows,
@@ -300,41 +315,41 @@
 
         private static int MenuOffset(MenuWithInventory menu)
         {
-            if (ExpandedMenu.Instance._menuOffset.Value != -1)
+            if (ExpandedMenuFeature.Instance._menuOffset.Value != -1)
             {
-                return ExpandedMenu.Instance._menuOffset.Value;
+                return ExpandedMenuFeature.Instance._menuOffset.Value;
             }
 
-            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenu.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenu.Instance._menuOffset.Value = 0; // Vanilla
+                return ExpandedMenuFeature.Instance._menuOffset.Value = 0; // Vanilla
             }
 
-            int rows = ExpandedMenu.MenuRows(menu);
-            return ExpandedMenu.Instance._menuOffset.Value = Game1.tileSize * (rows - 3);
+            int rows = ExpandedMenuFeature.MenuRows(menu);
+            return ExpandedMenuFeature.Instance._menuOffset.Value = Game1.tileSize * (rows - 3);
         }
 
         private static IList<Item> ScrollItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
         {
-            if (Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu, inventoryMenu) || !ExpandedMenu.Instance.IsEnabledForItem(chest))
+            if (Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu, inventoryMenu) || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
                 return actualInventory;
             }
 
             IEnumerable<Item> items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).AsEnumerable();
-            items = items.Skip(12 * ExpandedMenu.Instance._scrolledAmount.Value);
+            items = items.Skip(12 * ExpandedMenuFeature.Instance._scrolledAmount.Value);
             items = items.Take(inventoryMenu.capacity);
             return items.ToList();
         }
 
-        private void OnItemGrabMenuConstructor(object sender, CommonFeature.ItemGrabMenuConstructorEventArgs e)
+        private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
         {
-            if (!this.IsEnabledForItem(e.Chest))
+            if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
                 return;
             }
 
-            int offset = ExpandedMenu.MenuOffset(e.ItemGrabMenu);
+            int offset = ExpandedMenuFeature.MenuOffset(e.ItemGrabMenu);
             e.ItemGrabMenu.height += offset;
             e.ItemGrabMenu.inventory.movePosition(0, offset);
             if (e.ItemGrabMenu.okButton != null)
@@ -355,9 +370,9 @@
             e.ItemGrabMenu.RepositionSideButtons();
         }
 
-        private void OnItemGrabMenuChanged(object sender, CommonFeature.ItemGrabMenuChangedEventArgs e)
+        private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
-            if (!e.Attached || !this.IsEnabledForItem(e.Chest))
+            if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
                 this._attached.Value = false;
                 this._menu.Value = null;
@@ -392,7 +407,7 @@
                 case > 0 when this._scrolledAmount.Value > 0:
                     this._scrolledAmount.Value--;
                     break;
-                case < 0 when this._scrolledAmount.Value < Math.Max(0, (items.RoundUp(12) / 12) - this._menu.Value.ItemsToGrabMenu.rows):
+                case < 0 when this._scrolledAmount.Value < Math.Max(0, (items.RoundUp(12) / 12) - this._menu.Value!.ItemsToGrabMenu.rows):
                     this._scrolledAmount.Value++;
                     break;
                 default:
@@ -419,7 +434,7 @@
             }
 
             KeybindList getScrollDown = this._getScrollDown();
-            if (getScrollDown.JustPressed() && this._scrolledAmount.Value < Math.Max(0, (this._chest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count.RoundUp(12) / 12) - this._menu.Value.ItemsToGrabMenu.rows))
+            if (getScrollDown.JustPressed() && this._scrolledAmount.Value < Math.Max(0, (this._chest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count.RoundUp(12) / 12) - this._menu.Value!.ItemsToGrabMenu.rows))
             {
                 this._scrolledAmount.Value++;
                 this.SyncInventory();
@@ -435,10 +450,10 @@
             }
 
             NetObjectList<Item> items = this._chest.Value.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-            IList<Item> filteredInventory = ExpandedMenu.ScrollItems(items, this._menu.Value.ItemsToGrabMenu);
+            IList<Item> filteredInventory = ExpandedMenuFeature.ScrollItems(items, this._menu.Value!.ItemsToGrabMenu);
             for (int i = 0; i < this._menu.Value.ItemsToGrabMenu.inventory.Count; i++)
             {
-                Item item = filteredInventory.ElementAtOrDefault(i);
+                Item? item = filteredInventory.ElementAtOrDefault(i);
                 this._menu.Value.ItemsToGrabMenu.inventory[i].name = item is not null
                     ? items.IndexOf(item).ToString()
                     : items.Count.ToString();

@@ -8,13 +8,13 @@
     using StardewValley.Objects;
 
     /// <inheritdoc />
-    internal class AccessCarried : BaseFeature
+    internal class AccessCarriedFeature : BaseFeature
     {
         private readonly IInputHelper _inputHelper;
 
-        /// <summary>Initializes a new instance of the <see cref="AccessCarried"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="AccessCarriedFeature"/> class.</summary>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
-        public AccessCarried(IInputHelper inputHelper)
+        public AccessCarriedFeature(IInputHelper inputHelper)
             : base("AccessCarried")
         {
             this._inputHelper = inputHelper;
@@ -29,7 +29,7 @@
             // Patches
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                prefix: new HarmonyMethod(typeof(AccessCarried), nameof(AccessCarried.Chest_addItem_prefix)));
+                prefix: new HarmonyMethod(typeof(AccessCarriedFeature), nameof(AccessCarriedFeature.Chest_addItem_prefix)));
         }
 
         /// <inheritdoc/>
@@ -41,7 +41,7 @@
             // Patches
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                patch: AccessTools.Method(typeof(AccessCarried), nameof(AccessCarried.Chest_addItem_prefix)));
+                patch: AccessTools.Method(typeof(AccessCarriedFeature), nameof(AccessCarriedFeature.Chest_addItem_prefix)));
         }
 
         /// <summary>Prevent adding chest into itself.</summary>

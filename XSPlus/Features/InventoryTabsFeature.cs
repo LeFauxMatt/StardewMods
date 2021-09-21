@@ -2,12 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using Common.Extensions;
     using HarmonyLib;
+    using Interfaces;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using Models;
+    using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -15,29 +17,45 @@
     using StardewValley.Menus;
     using StardewValley.Objects;
 
-    /// <inheritdoc />
-    internal class InventoryTabs : FeatureWithParam<HashSet<string>>
+    /// <inheritdoc cref="FeatureWithParam{TParam}" />
+    internal class InventoryTabsFeature : FeatureWithParam<HashSet<string>>, IHighlightItemInterface
     {
         private readonly IContentHelper _contentHelper;
         private readonly IInputHelper _inputHelper;
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly HighlightItemsService _highlightChestItemsService;
+        private readonly RenderingActiveMenuService _renderingActiveMenuService;
         private readonly Func<KeybindList> _getPreviousTab;
         private readonly Func<KeybindList> _getNextTab;
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<int> _tabIndex = new() { Value = -1 };
-        private IList<Tab> _tabs;
-        private Texture2D _texture;
+        private IList<Tab> _tabs = null!;
+        private Texture2D _texture = null!;
 
-        /// <summary>Initializes a new instance of the <see cref="InventoryTabs"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="InventoryTabsFeature"/> class.</summary>
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
+        /// <param name="highlightChestItemsService">Service to handle creation/invocation of HighlightChestItems delegates.</param>
+        /// <param name="renderingActiveMenuService">Service to handle creation/invocation of RenderingActiveMenu event.</param>
         /// <param name="getPreviousTab">Get method for configured previous tab button.</param>
         /// <param name="getNextTab">Get method for configured next tab button.</param>
-        public InventoryTabs(IContentHelper contentHelper, IInputHelper inputHelper, Func<KeybindList> getPreviousTab, Func<KeybindList> getNextTab)
+        public InventoryTabsFeature(
+            IContentHelper contentHelper,
+            IInputHelper inputHelper,
+            ItemGrabMenuChangedService itemGrabMenuChangedService,
+            HighlightItemsService highlightChestItemsService,
+            RenderingActiveMenuService renderingActiveMenuService,
+            Func<KeybindList> getPreviousTab,
+            Func<KeybindList> getNextTab)
             : base("InventoryTabs")
         {
             this._contentHelper = contentHelper;
             this._inputHelper = inputHelper;
+            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
+            this._highlightChestItemsService = highlightChestItemsService;
+            this._renderingActiveMenuService = renderingActiveMenuService;
             this._getPreviousTab = getPreviousTab;
             this._getNextTab = getNextTab;
         }
@@ -46,8 +64,8 @@
         public override void Activate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            CommonFeature.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-            CommonFeature.RenderingActiveMenu += this.OnRenderingActiveMenu;
+            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
+            this._renderingActiveMenuService.AddHandler(this.OnRenderingActiveMenu);
             modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
             modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
             modEvents.Input.ButtonPressed += this.OnButtonPressed;
@@ -57,11 +75,17 @@
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
             // Events
-            CommonFeature.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-            CommonFeature.RenderingActiveMenu -= this.OnRenderingActiveMenu;
+            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
+            this._renderingActiveMenuService.RemoveHandler(this.OnRenderingActiveMenu);
             modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
             modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
             modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+        }
+
+        /// <inheritdoc/>
+        public bool HighlightMethod(Item item)
+        {
+            return this._tabIndex.Value == -1 || item.MatchesTagExt(this._tabs[this._tabIndex.Value].Tags);
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -75,22 +99,25 @@
                     bounds: new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
                     texture: this._texture,
                     sourceRect: new Rectangle(16 * i, 0, 16, 16),
-                    scale: Game1.pixelZoom);
+                    scale: Game1.pixelZoom)
+                {
+                    hoverText = this._tabs[i].Name,
+                };
             }
         }
 
-        private void OnItemGrabMenuChanged(object sender, CommonFeature.ItemGrabMenuChangedEventArgs e)
+        private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)
         {
-            if (!e.Attached || !this.IsEnabledForItem(e.Chest))
+            if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                CommonFeature.HighlightChestItems -= this.HighlightMethod;
+                this._highlightChestItemsService.RemoveHandler(this);
                 this._attached.Value = false;
                 return;
             }
 
             if (!this._attached.Value)
             {
-                CommonFeature.HighlightChestItems += this.HighlightMethod;
+                this._highlightChestItemsService.AddHandler(this);
                 this._attached.Value = true;
             }
 
@@ -113,7 +140,12 @@
             int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + itemGrabMenu.ItemsToGrabMenu.height + (1 * Game1.pixelZoom);
             for (int i = 0; i < this._tabs.Count; i++)
             {
-                ClickableTextureComponent cc = this._tabs[i].Component;
+                ClickableTextureComponent? cc = this._tabs[i].Component;
+                if (cc is null)
+                {
+                    continue;
+                }
+
                 Color color;
                 cc.bounds.X = x;
                 if (i == this._tabIndex.Value)
@@ -174,7 +206,7 @@
 
             // Check if any tab was clicked on.
             Point point = Game1.getMousePosition(true);
-            Tab tab = this._tabs.FirstOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
+            Tab? tab = this._tabs.FirstOrDefault(tab => tab.Component is not null && tab.Component.containsPoint(point.X, point.Y));
             if (tab is null)
             {
                 return;
@@ -184,21 +216,6 @@
             int index = this._tabs.IndexOf(tab);
             this._tabIndex.Value = this._tabIndex.Value == index ? -1 : index;
             this._inputHelper.Suppress(e.Button);
-        }
-
-        private bool HighlightMethod(Item item)
-        {
-            return this._tabIndex.Value == -1 || item.MatchesTagExt(this._tabs[this._tabIndex.Value].Tags);
-        }
-
-        [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local", Justification = "Record is instantiated by ContentHelper.")]
-        private record Tab
-        {
-            public string Name { get; set; }
-
-            public string[] Tags { get; set; }
-
-            public ClickableTextureComponent Component { get; set; }
         }
     }
 }

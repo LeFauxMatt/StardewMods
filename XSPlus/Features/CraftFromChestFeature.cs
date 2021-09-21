@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Reflection.Emit;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using StardewModdingAPI;
@@ -14,18 +15,18 @@
     using StardewValley.Objects;
 
     /// <inheritdoc />
-    internal class CraftFromChest : FeatureWithParam<string>
+    internal class CraftFromChestFeature : FeatureWithParam<string>
     {
         private readonly IInputHelper _inputHelper;
         private readonly Func<KeybindList> _getCraftingButton;
         private readonly Func<string> _getConfigRange;
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
 
-        /// <summary>Initializes a new instance of the <see cref="CraftFromChest"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="CraftFromChestFeature"/> class.</summary>
         /// <param name="inputHelper">API for changing state of input.</param>
         /// <param name="getCraftingButton">Get method for configured crafting button.</param>
         /// <param name="getConfigRange">Get method for configured default range.</param>
-        public CraftFromChest(IInputHelper inputHelper, Func<KeybindList> getCraftingButton, Func<string> getConfigRange)
+        public CraftFromChestFeature(IInputHelper inputHelper, Func<KeybindList> getCraftingButton, Func<string> getConfigRange)
             : base("CraftFromChest")
         {
             this._inputHelper = inputHelper;
@@ -44,29 +45,36 @@
         /// <inheritdoc/>
         public override void Activate(IModEvents modEvents, Harmony harmony)
         {
-            // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                postfix: new HarmonyMethod(typeof(CraftFromChest), nameof(CraftFromChest.CraftFromChest_getContainerContents_postfix)));
-
             // Events
             modEvents.Player.InventoryChanged += this.OnInventoryChanged;
             modEvents.Player.Warped += this.OnWarped;
             modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+
+            // Patches
+            harmony.Patch(
+                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                postfix: new HarmonyMethod(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingPage_getContainerContents_postfix)));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
+                transpiler: new HarmonyMethod(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingRecipe_consumeIngredients_transpiler)));
         }
 
         /// <inheritdoc/>
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
-            // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                patch: AccessTools.Method(typeof(CraftFromChest), nameof(CraftFromChest.CraftFromChest_getContainerContents_postfix)));
 
             // Events
             modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
             modEvents.Player.Warped -= this.OnWarped;
             modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+
+            // Patches
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                patch: AccessTools.Method(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingPage_getContainerContents_postfix)));
+            harmony.Unpatch(
+                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
+                patch: AccessTools.Method(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingRecipe_consumeIngredients_transpiler)));
         }
 
         /// <inheritdoc/>
@@ -102,7 +110,7 @@
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-        private static void CraftFromChest_getContainerContents_postfix(CraftingPage __instance, ref IList<Item> __result)
+        private static void CraftingPage_getContainerContents_postfix(CraftingPage __instance, ref IList<Item> __result)
         {
             if (__instance._materialContainers == null)
             {
@@ -117,6 +125,25 @@
             }
 
             __result = items;
+        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        private static IEnumerable<CodeInstruction> CraftingRecipe_consumeIngredients_transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            foreach (CodeInstruction instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Ldfld && instruction.operand.Equals(AccessTools.Field(typeof(Chest), nameof(Chest.items))))
+                {
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Property(typeof(Game1), nameof(Game1.player)).GetGetMethod());
+                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Property(typeof(Farmer), nameof(Farmer.UniqueMultiplayerID)).GetGetMethod());
+                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)));
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
         }
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)

@@ -12,17 +12,17 @@
     using SObject = StardewValley.Object;
 
     /// <inheritdoc />
-    internal class VacuumItems : BaseFeature
+    internal class VacuumItemsFeature : BaseFeature
     {
         private static readonly PerScreen<bool> IsVacuuming = new();
-        private static VacuumItems Instance;
+        private static VacuumItemsFeature Instance;
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
 
-        /// <summary>Initializes a new instance of the <see cref="VacuumItems"/> class.</summary>
-        public VacuumItems()
+        /// <summary>Initializes a new instance of the <see cref="VacuumItemsFeature"/> class.</summary>
+        public VacuumItemsFeature()
             : base("VacuumItems")
         {
-            VacuumItems.Instance = this;
+            VacuumItemsFeature.Instance = this;
         }
 
         private List<Chest> EnabledChests
@@ -41,10 +41,10 @@
             // Patches
             harmony.Patch(
                 original: AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                transpiler: new HarmonyMethod(typeof(VacuumItems), nameof(VacuumItems.Debris_collect_transpiler)));
+                transpiler: new HarmonyMethod(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Debris_collect_transpiler)));
             harmony.Patch(
                 original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
-                prefix: new HarmonyMethod(typeof(VacuumItems), nameof(VacuumItems.Farmer_addItemToInventory_prefix)));
+                prefix: new HarmonyMethod(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix)));
         }
 
         /// <inheritdoc/>
@@ -56,10 +56,10 @@
             // Patches
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                patch: AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.Debris_collect_transpiler)));
+                patch: AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Debris_collect_transpiler)));
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
-                patch: AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.Farmer_addItemToInventory_prefix)));
+                patch: AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix)));
         }
 
         private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -68,7 +68,7 @@
             {
                 if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
                 {
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.AddItemToInventoryBool)));
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.AddItemToInventoryBool)));
                 }
                 else
                 {
@@ -82,14 +82,14 @@
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static bool Farmer_addItemToInventory_prefix(ref Item __result, ref Item item)
         {
-            if (!VacuumItems.IsVacuuming.Value)
+            if (!VacuumItemsFeature.IsVacuuming.Value)
             {
                 return true;
             }
 
             Item remaining = null;
             int stack = item.Stack;
-            foreach (Chest chest in VacuumItems.Instance.EnabledChests)
+            foreach (Chest chest in VacuumItemsFeature.Instance.EnabledChests)
             {
                 remaining = chest.addItem(item);
                 if (remaining == null)
@@ -109,14 +109,14 @@
 
         private static bool AddItemToInventoryBool(Farmer farmer, Item item, bool makeActiveObject)
         {
-            if (!VacuumItems.Instance.EnabledChests.Any())
+            if (!VacuumItemsFeature.Instance.EnabledChests.Any())
             {
                 return farmer.addItemToInventoryBool(item, makeActiveObject);
             }
 
-            VacuumItems.IsVacuuming.Value = true;
+            VacuumItemsFeature.IsVacuuming.Value = true;
             bool success = farmer.addItemToInventoryBool(item, makeActiveObject);
-            VacuumItems.IsVacuuming.Value = false;
+            VacuumItemsFeature.IsVacuuming.Value = false;
             return success;
         }
 

@@ -1,4 +1,4 @@
-﻿namespace XSPlus
+﻿namespace XSPlus.Models
 {
     using System;
     using System.Collections.Generic;

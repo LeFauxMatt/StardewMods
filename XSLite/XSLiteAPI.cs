@@ -10,6 +10,7 @@
     using Common.Integrations.GenericModConfigMenu;
     using Common.Integrations.XSLite;
     using Common.Integrations.XSPlus;
+    using Common.Services;
     using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
     using StardewValley;
@@ -168,7 +169,7 @@
                     }
 
                     // Enable additional capacity
-                    if (storageConfig.Capacity != 0)
+                    else if (storageConfig.Capacity != 0)
                     {
                         this.XSPlus.API.EnableWithModData("Capacity", $"{XSLite.ModPrefix}/Storage", storage.Key, storageConfig.Capacity);
                     }
@@ -223,7 +224,11 @@
                         optionName: "Capacity",
                         optionDesc: "The carrying capacity for this chests.",
                         optionGet: () => storageConfig.Capacity,
-                        optionSet: value => storage.Value.Config.Capacity = value);
+                        optionSet: value =>
+                        {
+                            storageConfig.Capacity = value;
+                            this.XSPlus.API?.EnableWithModData("Capacity", $"{XSLite.ModPrefix}/Storage", storage.Key, value);
+                        });
                     this.ModConfigMenu.API.RegisterSimpleOption(
                         mod: contentPack.Manifest,
                         optionName: "Access Carried",

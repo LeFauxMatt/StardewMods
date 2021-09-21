@@ -13,7 +13,7 @@
     using StardewValley.Objects;
 
     /// <inheritdoc />
-    internal class StashToChest : FeatureWithParam<string>
+    internal class StashToChestFeature : FeatureWithParam<string>
     {
         private readonly IInputHelper _inputHelper;
         private readonly Func<string> _getSearchTagSymbol;
@@ -21,12 +21,12 @@
         private readonly Func<string> _getConfigRange;
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
 
-        /// <summary>Initializes a new instance of the <see cref="StashToChest"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="StashToChestFeature"/> class.</summary>
         /// <param name="inputHelper">API for changing state of input.</param>
         /// <param name="getStashingButton">Get method for configured stashing button.</param>
         /// <param name="getConfigRange">Get method for configured default range.</param>
         /// <param name="getSearchTagSymbol">Get method for configured search tag symbol.</param>
-        public StashToChest(IInputHelper inputHelper, Func<KeybindList> getStashingButton, Func<string> getConfigRange, Func<string> getSearchTagSymbol)
+        public StashToChestFeature(IInputHelper inputHelper, Func<KeybindList> getStashingButton, Func<string> getConfigRange, Func<string> getSearchTagSymbol)
             : base("StashToChest")
         {
             this._inputHelper = inputHelper;
@@ -128,7 +128,7 @@
                 uint stack = (uint)item.Stack;
                 foreach (Chest chest in this.EnabledChests)
                 {
-                    bool allowList = FilterItems.Instance.IsEnabledForItem(chest);
+                    bool allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
                     chest.GetModDataList("Favorites", out var favorites);
 
                     switch (favorites.Count)

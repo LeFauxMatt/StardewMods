@@ -6,15 +6,15 @@
     using SObject = StardewValley.Object;
 
     /// <inheritdoc />
-    internal class Unplaceable : FeatureWithParam<bool>
+    internal class UnplaceableFeature : FeatureWithParam<bool>
     {
-        private static Unplaceable Instance;
+        private static UnplaceableFeature Instance;
 
-        /// <summary>Initializes a new instance of the <see cref="Unplaceable"/> class.</summary>
-        public Unplaceable()
+        /// <summary>Initializes a new instance of the <see cref="UnplaceableFeature"/> class.</summary>
+        public UnplaceableFeature()
             : base("Unplaceable")
         {
-            Unplaceable.Instance = this;
+            UnplaceableFeature.Instance = this;
         }
 
         /// <inheritdoc/>
@@ -23,7 +23,7 @@
             // Patches
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                prefix: new HarmonyMethod(typeof(Unplaceable), nameof(Unplaceable.Object_placementAction_prefix)));
+                prefix: new HarmonyMethod(typeof(UnplaceableFeature), nameof(UnplaceableFeature.Object_placementAction_prefix)));
         }
 
         /// <inheritdoc/>
@@ -32,7 +32,7 @@
             // Patches
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                patch: AccessTools.Method(typeof(Unplaceable), nameof(Unplaceable.Object_placementAction_prefix)));
+                patch: AccessTools.Method(typeof(UnplaceableFeature), nameof(UnplaceableFeature.Object_placementAction_prefix)));
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
@@ -41,7 +41,7 @@
         [HarmonyPriority(Priority.High)]
         private static bool Object_placementAction_prefix(SObject __instance, ref bool __result)
         {
-            if (!Unplaceable.Instance.IsEnabledForItem(__instance))
+            if (!UnplaceableFeature.Instance.IsEnabledForItem(__instance))
             {
                 return true;
             }

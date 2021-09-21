@@ -6,15 +6,15 @@
     using StardewValley.Objects;
 
     /// <inheritdoc />
-    internal class Unbreakable : FeatureWithParam<bool>
+    internal class UnbreakableFeature : FeatureWithParam<bool>
     {
-        private static Unbreakable Instance;
+        private static UnbreakableFeature Instance;
 
-        /// <summary>Initializes a new instance of the <see cref="Unbreakable"/> class.</summary>
-        public Unbreakable()
+        /// <summary>Initializes a new instance of the <see cref="UnbreakableFeature"/> class.</summary>
+        public UnbreakableFeature()
             : base("Unbreakable")
         {
-            Unbreakable.Instance = this;
+            UnbreakableFeature.Instance = this;
         }
 
         /// <inheritdoc/>
@@ -23,7 +23,7 @@
             // Patches
             harmony.Patch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                prefix: new HarmonyMethod(typeof(Unbreakable), nameof(Unbreakable.Chest_performToolAction_prefix)));
+                prefix: new HarmonyMethod(typeof(UnbreakableFeature), nameof(UnbreakableFeature.Chest_performToolAction_prefix)));
         }
 
         /// <inheritdoc/>
@@ -32,7 +32,7 @@
             // Patches
             harmony.Unpatch(
                 original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                patch: AccessTools.Method(typeof(Unbreakable), nameof(Unbreakable.Chest_performToolAction_prefix)));
+                patch: AccessTools.Method(typeof(UnbreakableFeature), nameof(UnbreakableFeature.Chest_performToolAction_prefix)));
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
@@ -41,7 +41,7 @@
         [HarmonyPriority(Priority.High)]
         private static bool Chest_performToolAction_prefix(Chest __instance, ref bool __result)
         {
-            if (!Unbreakable.Instance.IsEnabledForItem(__instance))
+            if (!UnbreakableFeature.Instance.IsEnabledForItem(__instance))
             {
                 return true;
             }
