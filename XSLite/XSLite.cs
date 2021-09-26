@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Common.Helpers;
     using Common.Integrations.XSLite;
     using Common.Services;
     using HarmonyLib;
@@ -17,7 +16,7 @@
     using SObject = StardewValley.Object;
 
     /// <inheritdoc cref="StardewModdingAPI.Mod" />
-    public class XSLite : Mod, IAssetLoader, IAssetEditor
+    public class XSLite : Mod, IAssetLoader
     {
         internal const string ModPrefix = "furyx639.ExpandedStorage";
         internal static readonly IDictionary<string, Storage> Storages = new Dictionary<string, Storage>();
@@ -70,60 +69,12 @@
             string storageName = PathUtilities.GetSegments(asset.AssetName).ElementAt(2);
 
             // Load placeholder texture in case of failure
-            if ((XSLite.Storages.TryGetValue(storageName, out Storage storage) && storage.Format == Storage.AssetFormat.JsonAssets) || !XSLite.Textures.TryGetValue(storageName, out Texture2D texture))
+            if (!XSLite.Textures.TryGetValue(storageName, out Texture2D texture))
             {
                 texture = this.Helper.Content.Load<Texture2D>("assets/texture.png");
             }
 
             return (T)(object)texture;
-        }
-
-        /// <inheritdoc />
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            string[] segments = PathUtilities.GetSegments(asset.AssetName);
-            return segments.Length == 3
-                   && segments.ElementAt(0).Equals("ExpandedStorage", StringComparison.OrdinalIgnoreCase)
-                   && segments.ElementAt(1).Equals("SpriteSheets", StringComparison.OrdinalIgnoreCase)
-                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out Storage storage)
-                   && storage.Format == Storage.AssetFormat.JsonAssets;
-        }
-
-        /// <inheritdoc />
-        public void Edit<T>(IAssetData asset)
-        {
-            string storageName = PathUtilities.GetSegments(asset.AssetName).ElementAt(2);
-            if (!XSLite.Storages.ContainsKey(storageName))
-            {
-                return;
-            }
-
-            IAssetDataForImage editor = asset.AsImage();
-            for (int frame = 0; frame < 5; frame++)
-            {
-                for (int layer = 0; layer < 3; layer++)
-                {
-                    // Base Layer
-                    if (!XSLite.Textures.TryGetValue($"{storageName}-{(layer * 6).ToString()}", out Texture2D texture) && !XSLite.Textures.TryGetValue($"{storageName}", out texture))
-                    {
-                        break;
-                    }
-
-                    var sourceArea = new Rectangle(0, 0, 16, 32);
-                    var targetArea = new Rectangle(frame * 16, layer * 32, 16, 32);
-                    editor.PatchImage(texture, sourceArea, targetArea);
-
-                    // Lid Layer
-                    if (!XSLite.Textures.TryGetValue($"{storageName}-{(frame + (layer * 6) + 1).ToString()}", out texture) && !XSLite.Textures.TryGetValue($"{storageName}", out texture))
-                    {
-                        break;
-                    }
-
-                    sourceArea.Height = 21;
-                    targetArea.Height = 21;
-                    editor.PatchImage(texture, sourceArea, targetArea);
-                }
-            }
         }
 
         private static void OnWarped(object sender, WarpedEventArgs e)
@@ -140,7 +91,7 @@
         /// <summary>Invalidate sprite cache for storages each in-game day.</summary>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-            foreach (Storage storage in XSLite.Storages.Values.Where(storage => storage.Format == Storage.AssetFormat.DynamicGameAssets))
+            foreach (Storage storage in XSLite.Storages.Values.Where(storage => storage.Format != Storage.AssetFormat.Vanilla))
             {
                 storage.InvalidateCache(this.Helper.Content);
             }
