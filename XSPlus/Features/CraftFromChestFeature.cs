@@ -1,45 +1,51 @@
 ﻿namespace XSPlus.Features
 {
-    using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection.Emit;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
+    using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
+    using StardewValley.Network;
     using StardewValley.Objects;
 
     /// <inheritdoc />
     internal class CraftFromChestFeature : FeatureWithParam<string>
     {
+        private readonly IGameLoopEvents _gameLoopEvents;
         private readonly IInputHelper _inputHelper;
-        private readonly Func<KeybindList> _getCraftingButton;
-        private readonly Func<string> _getConfigRange;
-        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
+        private readonly ModConfigService _modConfigService;
+        private readonly PerScreen<List<Chest>?> _cachedEnabledChests = new();
+        private readonly PerScreen<IList<Chest>?> _cachedPlayerChests = new();
+        private readonly PerScreen<IList<Chest>?> _cachedGameChests = new();
+        private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
 
         /// <summary>Initializes a new instance of the <see cref="CraftFromChestFeature"/> class.</summary>
+        /// <param name="gameLoopEvents">Events linked to the game's update loop.</param>
         /// <param name="inputHelper">API for changing state of input.</param>
-        /// <param name="getCraftingButton">Get method for configured crafting button.</param>
-        /// <param name="getConfigRange">Get method for configured default range.</param>
-        public CraftFromChestFeature(IInputHelper inputHelper, Func<KeybindList> getCraftingButton, Func<string> getConfigRange)
+        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
+        public CraftFromChestFeature(IGameLoopEvents gameLoopEvents, IInputHelper inputHelper, ModConfigService modConfigService)
             : base("CraftFromChest")
         {
+            this._gameLoopEvents = gameLoopEvents;
             this._inputHelper = inputHelper;
-            this._getCraftingButton = getCraftingButton;
-            this._getConfigRange = getConfigRange;
+            this._modConfigService = modConfigService;
         }
 
         private List<Chest> EnabledChests
         {
-            get => this._cachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
-                .Union(XSPlus.AccessibleChests)
-                .Where(this.IsEnabledForItem)
-                .ToList();
+            get
+            {
+                this._cachedPlayerChests.Value ??= Game1.player.Items.OfType<Chest>().Where(this.IsEnabledForItem).ToList();
+                this._cachedGameChests.Value ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
+                return this._cachedEnabledChests.Value ??= this._cachedPlayerChests.Value.Union(this._cachedGameChests.Value).ToList();
+            }
         }
 
         /// <inheritdoc/>
@@ -62,7 +68,6 @@
         /// <inheritdoc/>
         public override void Deactivate(IModEvents modEvents, Harmony harmony)
         {
-
             // Events
             modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
             modEvents.Player.Warped -= this.OnWarped;
@@ -81,7 +86,7 @@
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
         protected internal override bool IsEnabledForItem(Item item)
         {
-            if (!base.IsEnabledForItem(item) || item is not Chest || !this.TryGetValueForItem(item, out string range))
+            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out string range))
             {
                 return false;
             }
@@ -103,7 +108,7 @@
                 return true;
             }
 
-            param = this._getConfigRange();
+            param = this._modConfigService.ModConfig.CraftingRange;
             return !string.IsNullOrWhiteSpace(param);
         }
 
@@ -112,7 +117,7 @@
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void CraftingPage_getContainerContents_postfix(CraftingPage __instance, ref IList<Item> __result)
         {
-            if (__instance._materialContainers == null)
+            if (__instance._materialContainers is null)
             {
                 return;
             }
@@ -146,6 +151,17 @@
             }
         }
 
+        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        {
+            if (this._multipleChestCraftingPage.Value.Exited)
+            {
+                this._gameLoopEvents.UpdateTicked -= this.OnUpdateTicked;
+                return;
+            }
+
+            this._multipleChestCraftingPage.Value.UpdateChests();
+        }
+
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
             if (!e.IsLocalPlayer)
@@ -153,44 +169,83 @@
                 return;
             }
 
+            this._cachedPlayerChests.Value = null;
             this._cachedEnabledChests.Value = null;
         }
 
         private void OnWarped(object sender, WarpedEventArgs e)
         {
+            this._cachedGameChests.Value = null;
             this._cachedEnabledChests.Value = null;
         }
 
         /// <summary>Open crafting menu for all chests in inventory.</summary>
-        [SuppressMessage("ReSharper", "AccessToModifiedClosure", Justification = "Needed for mutex release.")]
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            KeybindList craftingButton = this._getCraftingButton();
-
-            if (!Context.IsPlayerFree || !craftingButton.JustPressed() || !this.EnabledChests.Any())
+            if (!Context.IsPlayerFree || !this._modConfigService.ModConfig.OpenCrafting.JustPressed() || !this.EnabledChests.Any())
             {
                 return;
             }
 
-            var mutexes = this.EnabledChests.Select(chest => chest.mutex).ToList();
-            MultipleMutexRequest multipleMutexRequest = null;
-            multipleMutexRequest = new MultipleMutexRequest(
-                mutexes: mutexes,
-                success_callback: () =>
+            this._multipleChestCraftingPage.Value = new MultipleChestCraftingPage(this.EnabledChests);
+            this._gameLoopEvents.UpdateTicked += this.OnUpdateTicked;
+            this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.OpenCrafting);
+        }
+
+        private class MultipleChestCraftingPage
+        {
+            private const int TimeOut = 100;
+            private readonly List<Chest> _chests;
+            private readonly MultipleMutexRequest _multipleMutexRequest;
+            private int _timeOut = TimeOut;
+
+            public MultipleChestCraftingPage(List<Chest> chests)
+            {
+                this._chests = chests.Where(chest => !chest.mutex.IsLocked()).ToList();
+                List<NetMutex> mutexes = this._chests.Select(chest => chest.mutex).ToList();
+                this._multipleMutexRequest = new MultipleMutexRequest(
+                    mutexes: mutexes,
+                    success_callback: this.SuccessCallback,
+                    failure_callback: this.FailureCallback);
+            }
+
+            public bool Exited { get; private set; }
+
+            public void UpdateChests()
+            {
+                if (--this._timeOut <= 0)
                 {
-                    int width = 800 + (IClickableMenu.borderWidth * 2);
-                    int height = 600 + (IClickableMenu.borderWidth * 2);
-                    Vector2 pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
-                    Game1.activeClickableMenu = new CraftingPage((int)pos.X, (int)pos.Y, width, height, false, true, this.EnabledChests)
-                    {
-                        exitFunction = () => { multipleMutexRequest?.ReleaseLocks(); },
-                    };
-                },
-                failure_callback: () =>
+                    return;
+                }
+
+                foreach (Chest chest in this._chests)
                 {
-                    Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
-                });
-            this._inputHelper.SuppressActiveKeybinds(craftingButton);
+                    chest.mutex.Update(Game1.getOnlineFarmers());
+                }
+            }
+
+            private void SuccessCallback()
+            {
+                int width = 800 + (IClickableMenu.borderWidth * 2);
+                int height = 600 + (IClickableMenu.borderWidth * 2);
+                Vector2 pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
+                Game1.activeClickableMenu = new CraftingPage((int)pos.X, (int)pos.Y, width, height, false, true, this._chests)
+                {
+                    exitFunction = this.ExitFunction,
+                };
+            }
+
+            private void FailureCallback()
+            {
+                Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
+                this.Exited = true;
+            }
+
+            private void ExitFunction()
+            {
+                this._multipleMutexRequest.ReleaseLocks();
+                this.Exited = true;
+            }
         }
     }
 }

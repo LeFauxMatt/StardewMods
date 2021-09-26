@@ -1,7 +1,9 @@
 ﻿namespace XSPlus.Services
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Common.Enums;
     using Interfaces;
     using Models;
     using StardewModdingAPI.Utilities;
@@ -9,10 +11,10 @@
     using StardewValley.Menus;
 
     /// <inheritdoc />
-    internal class HighlightItemsService : IEventHandlerService<IHighlightItemInterface>
+    internal class HighlightItemsService : IEventHandlerService<Func<Item, bool>>
     {
         private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
-        private readonly PerScreen<IList<IHighlightItemInterface>> _highlightItemHandlers = new() { Value = new List<IHighlightItemInterface>() };
+        private readonly PerScreen<IList<Func<Item, bool>>> _highlightItemHandlers = new() { Value = new List<Func<Item, bool>>() };
         private readonly InventoryType _inventoryType;
 
         /// <summary>
@@ -27,26 +29,14 @@
             this._inventoryType = inventoryType;
         }
 
-        /// <summary>
-        /// The type of inventory that HighlightItems will apply to.
-        /// </summary>
-        public enum InventoryType
-        {
-            /// <summary>The players inventory.</summary>
-            Player,
-
-            /// <summary>The chest inventory.</summary>
-            Chest,
-        }
-
         /// <inheritdoc/>
-        public void AddHandler(IHighlightItemInterface handler)
+        public void AddHandler(Func<Item, bool> handler)
         {
             this._highlightItemHandlers.Value.Add(handler);
         }
 
         /// <inheritdoc/>
-        public void RemoveHandler(IHighlightItemInterface handler)
+        public void RemoveHandler(Func<Item, bool> handler)
         {
             this._highlightItemHandlers.Value.Remove(handler);
         }
@@ -72,7 +62,7 @@
 
         private bool HighlightMethod(Item item)
         {
-            return this._highlightMethod.Value.Invoke(item) && this._highlightItemHandlers.Value.All(highlightMethod => highlightMethod.HighlightMethod(item));
+            return this._highlightMethod.Value.Invoke(item) && this._highlightItemHandlers.Value.All(highlightMethod => highlightMethod(item));
         }
     }
 }

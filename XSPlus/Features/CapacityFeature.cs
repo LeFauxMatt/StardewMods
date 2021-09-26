@@ -1,8 +1,8 @@
 ﻿namespace XSPlus.Features
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
     using HarmonyLib;
+    using Services;
     using StardewModdingAPI.Events;
     using StardewValley;
     using StardewValley.Objects;
@@ -11,15 +11,15 @@
     internal class CapacityFeature : FeatureWithParam<int>
     {
         private static CapacityFeature Instance = null!;
-        private readonly Func<int> _getConfigCapacity;
+        private readonly ModConfigService _modConfigService;
 
         /// <summary>Initializes a new instance of the <see cref="CapacityFeature"/> class.</summary>
-        /// <param name="getConfigCapacity">Get method for configured default capacity.</param>
-        public CapacityFeature(Func<int> getConfigCapacity)
+        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
+        public CapacityFeature(ModConfigService modConfigService)
             : base("Capacity")
         {
             CapacityFeature.Instance = this;
-            this._getConfigCapacity = getConfigCapacity;
+            this._modConfigService = modConfigService;
         }
 
         /// <inheritdoc/>
@@ -48,7 +48,7 @@
                 return true;
             }
 
-            param = this._getConfigCapacity();
+            param = this._modConfigService.ModConfig.Capacity;
             return param == 0;
         }
 

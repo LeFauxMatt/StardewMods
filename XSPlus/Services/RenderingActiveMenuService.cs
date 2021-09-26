@@ -70,13 +70,8 @@
             // Draw background
             e.SpriteBatch.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
 
-            if (this.RenderingActiveMenu != null)
-            {
-                foreach (Delegate @delegate in this.RenderingActiveMenu.GetInvocationList())
-                {
-                    @delegate.DynamicInvoke(this, e);
-                }
-            }
+            // Draw rendered items above background
+            this.RenderingActiveMenu?.Invoke(this, e);
         }
     }
 }

@@ -5,7 +5,7 @@
     using StardewValley.Objects;
 
     /// <summary>
-    /// Service to handle creation/invocation of ItemGrabMenuChanged event.
+    /// Arguments for ItemGrabMenu events.
     /// </summary>
     internal class ItemGrabMenuEventArgs : EventArgs
     {
@@ -20,10 +20,14 @@
             this.Chest = chest;
         }
 
-        /// <summary>Gets the ItemGrabMenu if it is the currently active menu.</summary>
+        /// <summary>
+        /// Gets the ItemGrabMenu if it is the currently active menu.
+        /// </summary>
         public ItemGrabMenu? ItemGrabMenu { get; }
 
-        /// <summary>Gets the Chest for which the ItemGrabMenu was opened.</summary>
+        /// <summary>
+        /// Gets the Chest for which the ItemGrabMenu was opened.
+        /// </summary>
         public Chest? Chest { get; }
     }
 }

@@ -62,18 +62,16 @@
         [EventPriority(EventPriority.Low)]
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || this.RenderedActiveMenu == null || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+            if (this._screenId.Value != Context.ScreenId || this.RenderedActiveMenu is null || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
             {
                 return;
             }
 
-            foreach (Delegate @delegate in this.RenderedActiveMenu.GetInvocationList())
-            {
-                @delegate.DynamicInvoke(this, e);
-            }
+            // Draw render items below foreground
+            this.RenderedActiveMenu?.Invoke(this, e);
 
             // Draw foreground
-            if (itemGrabMenu.hoverText != null && (itemGrabMenu.hoveredItem is null or null || itemGrabMenu.ItemsToGrabMenu == null))
+            if (itemGrabMenu.hoverText is not null && (itemGrabMenu.hoveredItem is null or null || itemGrabMenu.ItemsToGrabMenu is null))
             {
                 if (itemGrabMenu.hoverAmount > 0)
                 {
@@ -85,13 +83,13 @@
                 }
             }
 
-            if (itemGrabMenu.hoveredItem != null)
+            if (itemGrabMenu.hoveredItem is not null)
             {
-                IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.hoveredItem.getDescription(), itemGrabMenu.hoveredItem.DisplayName, itemGrabMenu.hoveredItem, itemGrabMenu.heldItem != null);
+                IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.hoveredItem.getDescription(), itemGrabMenu.hoveredItem.DisplayName, itemGrabMenu.hoveredItem, itemGrabMenu.heldItem is not null);
             }
-            else if (itemGrabMenu.hoveredItem != null && itemGrabMenu.ItemsToGrabMenu != null)
+            else if (itemGrabMenu.hoveredItem is not null && itemGrabMenu.ItemsToGrabMenu is not null)
             {
-                IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.ItemsToGrabMenu.descriptionText, itemGrabMenu.ItemsToGrabMenu.descriptionTitle, itemGrabMenu.hoveredItem, itemGrabMenu.heldItem != null);
+                IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.ItemsToGrabMenu.descriptionText, itemGrabMenu.ItemsToGrabMenu.descriptionTitle, itemGrabMenu.hoveredItem, itemGrabMenu.heldItem is not null);
             }
 
             itemGrabMenu.heldItem?.drawInMenu(e.SpriteBatch, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);

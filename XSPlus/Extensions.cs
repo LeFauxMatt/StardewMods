@@ -61,7 +61,7 @@
             foreach (Chest chest in chests)
             {
                 tmp = chest.addItem(item);
-                if (tmp == null)
+                if (tmp is null)
                 {
                     break;
                 }
@@ -101,11 +101,11 @@
 
                     if (!obj.HasBeenPickedUpByFarmer)
                     {
-                        if (obj.Category == -2 || (obj.Type != null && obj.Type.Contains("Mineral")))
+                        if (obj.Category == -2 || (obj.Type is not null && obj.Type.Contains("Mineral")))
                         {
                             farmer.foundMineral(obj.ParentSheetIndex);
                         }
-                        else if (item is not Furniture && obj.Type != null && obj.Type.Contains("Arch"))
+                        else if (item is not Furniture && obj.Type is not null && obj.Type.Contains("Arch"))
                         {
                             farmer.foundArtifact(obj.ParentSheetIndex, 1);
                         }

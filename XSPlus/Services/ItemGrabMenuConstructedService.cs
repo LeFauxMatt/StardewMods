@@ -60,13 +60,7 @@
         private void InvokeAll(ItemGrabMenu itemGrabMenu, Chest chest)
         {
             var eventArgs = new ItemGrabMenuEventArgs(itemGrabMenu, chest);
-            if (this.ItemGrabMenuConstructed != null)
-            {
-                foreach (Delegate @delegate in this.ItemGrabMenuConstructed.GetInvocationList())
-                {
-                    @delegate.DynamicInvoke(this, eventArgs);
-                }
-            }
+            this.ItemGrabMenuConstructed?.Invoke(this, eventArgs);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
-    using Common.Widgets;
+    using Common.UI;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Models;
@@ -16,6 +16,7 @@
     /// <inheritdoc />
     internal class ColorPickerFeature : BaseFeature
     {
+        // TODO: Add toggle button
         private const int Width = 58;
         private const int Height = 558;
         private static ColorPickerFeature Instance = null!;

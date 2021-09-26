@@ -1,11 +1,9 @@
 ﻿namespace XSPlus.Features
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Common.Extensions;
+    using Common.Helpers.ItemMatcher;
     using HarmonyLib;
-    using Interfaces;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Models;
@@ -18,46 +16,43 @@
     using StardewValley.Objects;
 
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
-    internal class InventoryTabsFeature : FeatureWithParam<HashSet<string>>, IHighlightItemInterface
+    internal class InventoryTabsFeature : FeatureWithParam<HashSet<string>>
     {
         private readonly IContentHelper _contentHelper;
         private readonly IInputHelper _inputHelper;
+        private readonly ModConfigService _modConfigService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly HighlightItemsService _highlightChestItemsService;
+        private readonly DisplayedInventoryService _displayedChestInventoryService;
         private readonly RenderingActiveMenuService _renderingActiveMenuService;
-        private readonly Func<KeybindList> _getPreviousTab;
-        private readonly Func<KeybindList> _getNextTab;
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<int> _tabIndex = new() { Value = -1 };
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new() { Value = new ItemMatcher(string.Empty, true) };
         private IList<Tab> _tabs = null!;
         private Texture2D _texture = null!;
 
         /// <summary>Initializes a new instance of the <see cref="InventoryTabsFeature"/> class.</summary>
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
         /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
-        /// <param name="highlightChestItemsService">Service to handle creation/invocation of HighlightChestItems delegates.</param>
+        /// <param name="displayedChestInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
         /// <param name="renderingActiveMenuService">Service to handle creation/invocation of RenderingActiveMenu event.</param>
-        /// <param name="getPreviousTab">Get method for configured previous tab button.</param>
-        /// <param name="getNextTab">Get method for configured next tab button.</param>
         public InventoryTabsFeature(
             IContentHelper contentHelper,
             IInputHelper inputHelper,
+            ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            HighlightItemsService highlightChestItemsService,
-            RenderingActiveMenuService renderingActiveMenuService,
-            Func<KeybindList> getPreviousTab,
-            Func<KeybindList> getNextTab)
+            DisplayedInventoryService displayedChestInventoryService,
+            RenderingActiveMenuService renderingActiveMenuService)
             : base("InventoryTabs")
         {
             this._contentHelper = contentHelper;
             this._inputHelper = inputHelper;
+            this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._highlightChestItemsService = highlightChestItemsService;
+            this._displayedChestInventoryService = displayedChestInventoryService;
             this._renderingActiveMenuService = renderingActiveMenuService;
-            this._getPreviousTab = getPreviousTab;
-            this._getNextTab = getNextTab;
         }
 
         /// <inheritdoc/>
@@ -82,12 +77,6 @@
             modEvents.Input.ButtonPressed -= this.OnButtonPressed;
         }
 
-        /// <inheritdoc/>
-        public bool HighlightMethod(Item item)
-        {
-            return this._tabIndex.Value == -1 || item.MatchesTagExt(this._tabs[this._tabIndex.Value].Tags);
-        }
-
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this._tabs = this._contentHelper.Load<List<Tab>>("assets/tabs.json");
@@ -110,21 +99,21 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._highlightChestItemsService.RemoveHandler(this);
+                this._displayedChestInventoryService.RemoveHandler(this.FilterMethod);
                 this._attached.Value = false;
                 return;
-            }
-
-            if (!this._attached.Value)
-            {
-                this._highlightChestItemsService.AddHandler(this);
-                this._attached.Value = true;
             }
 
             if (!ReferenceEquals(this._chest.Value, e.Chest))
             {
                 this._chest.Value = e.Chest;
-                this._tabIndex.Value = -1;
+                this.SetTab(-1);
+            }
+
+            if (!this._attached.Value)
+            {
+                this._displayedChestInventoryService.AddHandler(this.FilterMethod);
+                this._attached.Value = true;
             }
         }
 
@@ -140,27 +129,21 @@
             int y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + itemGrabMenu.ItemsToGrabMenu.height + (1 * Game1.pixelZoom);
             for (int i = 0; i < this._tabs.Count; i++)
             {
-                ClickableTextureComponent? cc = this._tabs[i].Component;
-                if (cc is null)
-                {
-                    continue;
-                }
-
                 Color color;
-                cc.bounds.X = x;
+                this._tabs[i].Component.bounds.X = x;
                 if (i == this._tabIndex.Value)
                 {
-                    cc.bounds.Y = y + (1 * Game1.pixelZoom);
+                    this._tabs[i].Component.bounds.Y = y + (1 * Game1.pixelZoom);
                     color = Color.White;
                 }
                 else
                 {
-                    cc.bounds.Y = y;
+                    this._tabs[i].Component.bounds.Y = y;
                     color = Color.Gray;
                 }
 
-                cc.draw(e.SpriteBatch, color, 0.86f + (cc.bounds.Y / 20000f));
-                x = cc.bounds.Right;
+                this._tabs[i].Component.draw(e.SpriteBatch, color, 0.86f + (this._tabs[i].Component.bounds.Y / 20000f));
+                x = this._tabs[i].Component.bounds.Right;
             }
         }
 
@@ -171,29 +154,23 @@
                 return;
             }
 
-            KeybindList nextTabButton = this._getNextTab();
-            if (nextTabButton.JustPressed())
+            if (this._modConfigService.ModConfig.NextTab.JustPressed())
             {
+                this.SetTab(this._tabIndex.Value == this._tabs.Count ? -1 : this._tabIndex.Value + 1);
                 this._tabIndex.Value++;
                 if (this._tabIndex.Value == this._tabs.Count)
                 {
                     this._tabIndex.Value = -1;
                 }
 
-                this._inputHelper.SuppressActiveKeybinds(nextTabButton);
+                this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.NextTab);
                 return;
             }
 
-            KeybindList previousTabButton = this._getPreviousTab();
-            if (previousTabButton.JustPressed())
+            if (this._modConfigService.ModConfig.PreviousTab.JustPressed())
             {
-                this._tabIndex.Value--;
-                if (this._tabIndex.Value == -2)
-                {
-                    this._tabIndex.Value = this._tabs.Count - 1;
-                }
-
-                this._inputHelper.SuppressActiveKeybinds(previousTabButton);
+                this.SetTab(this._tabIndex.Value == -1 ? this._tabs.Count - 1 : this._tabIndex.Value - 1);
+                this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.PreviousTab);
             }
         }
 
@@ -206,16 +183,33 @@
 
             // Check if any tab was clicked on.
             Point point = Game1.getMousePosition(true);
-            Tab? tab = this._tabs.FirstOrDefault(tab => tab.Component is not null && tab.Component.containsPoint(point.X, point.Y));
-            if (tab is null)
+            for (int i = 0; i < this._tabs.Count; i++)
             {
-                return;
+                if (this._tabs[i].Component.containsPoint(point.X, point.Y))
+                {
+                    this.SetTab(this._tabIndex.Value == i ? -1 : i);
+                    this._inputHelper.Suppress(e.Button);
+                }
             }
+        }
 
-            // Toggle if currently active was clicked on.
-            int index = this._tabs.IndexOf(tab);
-            this._tabIndex.Value = this._tabIndex.Value == index ? -1 : index;
-            this._inputHelper.Suppress(e.Button);
+        private void SetTab(int index)
+        {
+            this._tabIndex.Value = index;
+            Tab? tab = this._tabs.ElementAtOrDefault(index);
+            if (tab is not null)
+            {
+                this._itemMatcher.Value.SetSearch(tab.Tags);
+            }
+            else
+            {
+                this._itemMatcher.Value.SetSearch(string.Empty);
+            }
+        }
+
+        private bool FilterMethod(Item item)
+        {
+            return this._itemMatcher.Value.Matches(item);
         }
     }
 }

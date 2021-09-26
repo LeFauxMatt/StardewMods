@@ -15,8 +15,8 @@
     internal class VacuumItemsFeature : BaseFeature
     {
         private static readonly PerScreen<bool> IsVacuuming = new();
-        private static VacuumItemsFeature Instance;
-        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
+        private static VacuumItemsFeature Instance = null!;
+        private readonly PerScreen<List<Chest>?> _cachedEnabledChests = new();
 
         /// <summary>Initializes a new instance of the <see cref="VacuumItemsFeature"/> class.</summary>
         public VacuumItemsFeature()
@@ -87,14 +87,14 @@
                 return true;
             }
 
-            Item remaining = null;
+            Item? remaining = null;
             int stack = item.Stack;
             foreach (Chest chest in VacuumItemsFeature.Instance.EnabledChests)
             {
                 remaining = chest.addItem(item);
-                if (remaining == null)
+                if (remaining is null)
                 {
-                    __result = null;
+                    __result = null!;
                     return false;
                 }
             }

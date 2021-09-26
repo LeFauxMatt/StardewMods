@@ -2,9 +2,8 @@
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using Common.Extensions;
+    using Common.Helpers.ItemMatcher;
     using HarmonyLib;
-    using Interfaces;
     using Models;
     using Services;
     using StardewModdingAPI.Events;
@@ -13,13 +12,14 @@
     using StardewValley.Objects;
 
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
-    internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>, IHighlightItemInterface
+    internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>
     {
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly HighlightItemsService _highlightPlayerItemsService;
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<Dictionary<string, bool>?> _filterItems = new();
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new() { Value = new ItemMatcher(string.Empty, true) };
 
         /// <summary>Initializes a new instance of the <see cref="FilterItemsFeature"/> class.</summary>
         /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
@@ -64,15 +64,23 @@
         /// <inheritdoc/>
         public bool HighlightMethod(Item item)
         {
-            return this._filterItems.Value is null || item.MatchesTagExt(this._filterItems.Value);
+            return this._itemMatcher.Value.Matches(item);
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         [HarmonyPriority(Priority.High)]
-        private static bool Chest_addItem_prefix(ref Item __result, Item item)
+        private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
         {
-            if (FilterItemsFeature.Instance._filterItems.Value is null || !item.MatchesTagExt(FilterItemsFeature.Instance._filterItems.Value))
+            if (!FilterItemsFeature.Instance.TryGetValueForItem(__instance, out Dictionary<string, bool> filterItems))
+            {
+                return true;
+            }
+
+            var itemMatcher = new ItemMatcher(string.Empty, true);
+            itemMatcher.SetSearch(filterItems);
+            if (itemMatcher.Matches(item))
             {
                 return true;
             }
@@ -85,22 +93,30 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._highlightPlayerItemsService.RemoveHandler(this);
+                this._highlightPlayerItemsService.RemoveHandler(this.HighlightMethod);
                 this._attached.Value = false;
                 this._filterItems.Value = null;
+                this._itemMatcher.Value.SetSearch(string.Empty);
                 return;
             }
 
             if (!this._attached.Value)
             {
-                this._highlightPlayerItemsService.AddHandler(this);
+                this._highlightPlayerItemsService.AddHandler(this.HighlightMethod);
                 this._attached.Value = true;
             }
 
             if (!ReferenceEquals(this._chest.Value, e.Chest))
             {
                 this._chest.Value = e.Chest;
-                this._filterItems.Value = this.TryGetValueForItem(e.Chest, out Dictionary<string, bool>? filterItems) ? filterItems : null;
+                if (this.TryGetValueForItem(e.Chest, out Dictionary<string, bool> filterItems))
+                {
+                    this._itemMatcher.Value.SetSearch(filterItems);
+                }
+                else
+                {
+                    this._itemMatcher.Value.SetSearch(string.Empty);
+                }
             }
         }
     }
