@@ -32,6 +32,6 @@
         /// <summary>Returns owned Expanded Storage by name.</summary>
         /// <param name="manifest">Mod manifest.</param>
         /// <returns>List of storages.</returns>
-        IList<string> GetOwnedStorages(IManifest manifest);
+        IEnumerable<string> GetOwnedStorages(IManifest manifest);
     }
 }

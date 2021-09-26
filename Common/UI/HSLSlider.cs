@@ -1,10 +1,10 @@
-﻿namespace Common.Widgets
+﻿namespace Common.UI
 {
     using System;
-    using Enums;
+    using Common.Enums;
+    using Common.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using Models;
     using StardewModdingAPI;
     using StardewValley;
     using StardewValley.Menus;
@@ -103,8 +103,8 @@
             b.Draw(this._texture, this._hueSlider.Area, Color.White);
 
             // Gradient Bars
-            this._saturationBar.GetBars((rectangle, color) => b.Draw(Game1.staminaRect, rectangle, color));
-            this._luminanceBar.GetBars((rectangle, color) => b.Draw(Game1.staminaRect, rectangle, color));
+            this._saturationBar.Draw(b);
+            this._luminanceBar.Draw(b);
 
             if (this._isBlack)
             {
@@ -309,8 +309,28 @@
                 };
             }
 
-            this._saturationBar.SetColors(f => new HSLColor { H = this._color.H, S = f, L = Math.Max(0.01f, this._color.L) }.ToRgbColor());
-            this._luminanceBar.SetColors(f => new HSLColor { H = this._color.H, S = this._color.S, L = f }.ToRgbColor());
+            this._saturationBar.SetColors(this.GetSaturationShade);
+            this._luminanceBar.SetColors(this.GetLuminanceShade);
+        }
+
+        private Color GetSaturationShade(float value)
+        {
+            return new HSLColor
+            {
+                H = this._color.H,
+                S = value,
+                L = Math.Max(0.01f, this._color.L),
+            }.ToRgbColor();
+        }
+
+        private Color GetLuminanceShade(float value)
+        {
+            return new HSLColor
+            {
+                H = this._color.H,
+                S = this._color.S,
+                L = value,
+            }.ToRgbColor();
         }
     }
 }

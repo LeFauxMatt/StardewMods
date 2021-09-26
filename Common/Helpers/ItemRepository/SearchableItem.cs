@@ -1,5 +1,6 @@
-﻿#pragma warning disable SA1124
-#pragma warning disable SA1515
+﻿// ReSharper disable All
+#pragma warning disable
+
 #region License
 // MIT License
 //
@@ -28,11 +29,8 @@
 // This implementation of SearchableItem was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
 #endregion
-#pragma warning restore SA1515
-#pragma warning restore SA1124
 
-// ReSharper disable All
-namespace Common.Helpers.ItemData
+namespace Common.Helpers.ItemRepository
 {
     using System;
     using StardewValley;
@@ -42,9 +40,30 @@ namespace Common.Helpers.ItemData
     internal class SearchableItem
     {
         /*********
+        ** Accessors
+        *********/
+        /// <summary>The item type.</summary>
+        public ItemType Type { get; }
+
+        /// <summary>A sample item instance.</summary>
+        public Item Item { get; }
+
+        /// <summary>Create an item instance.</summary>
+        public Func<Item> CreateItem { get; }
+
+        /// <summary>The item's unique ID for its type.</summary>
+        public int ID { get; }
+
+        /// <summary>The item's default name.</summary>
+        public string Name => this.Item.Name;
+
+        /// <summary>The item's display name for the current language.</summary>
+        public string DisplayName => this.Item.DisplayName;
+
+
+        /*********
         ** Public methods
         *********/
-
         /// <summary>Construct an instance.</summary>
         /// <param name="type">The item type.</param>
         /// <param name="id">The unique ID (if different from the item's parent sheet index).</param>
@@ -66,28 +85,6 @@ namespace Common.Helpers.ItemData
             this.CreateItem = item.CreateItem;
             this.Item = item.Item;
         }
-
-        /*********
-        ** Accessors
-        *********/
-
-        /// <summary>The item type.</summary>
-        public ItemType Type { get; }
-
-        /// <summary>A sample item instance.</summary>
-        public Item Item { get; }
-
-        /// <summary>Create an item instance.</summary>
-        public Func<Item> CreateItem { get; }
-
-        /// <summary>The item's unique ID for its type.</summary>
-        public int ID { get; }
-
-        /// <summary>The item's default name.</summary>
-        public string Name => this.Item.Name;
-
-        /// <summary>The item's display name for the current language.</summary>
-        public string DisplayName => this.Item.DisplayName;
 
         /// <summary>Get whether the item name contains a case-insensitive substring.</summary>
         /// <param name="substring">The substring to find.</param>

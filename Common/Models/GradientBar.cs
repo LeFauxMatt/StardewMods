@@ -1,8 +1,10 @@
 ﻿namespace Common.Models
 {
     using System;
-    using Enums;
+    using Common.Enums;
     using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using StardewValley;
 
     /// <summary>
     /// Represents a gradient bar as a list of rectangles and colors.
@@ -63,14 +65,14 @@
         }
 
         /// <summary>
-        /// Retrieve colors and rectangles from the gradient.
+        /// Draws color bars from the gradient.
         /// </summary>
-        /// <param name="getBar">An action that is invoked for each cell which passes the Rectangle and Color as arguments.</param>
-        public void GetBars(Action<Rectangle, Color> getBar)
+        /// <param name="spriteBatch">The SpriteBatch to draw bars to.</param>
+        public void Draw(SpriteBatch spriteBatch)
         {
             for (int i = 0; i < this._totalCells; i++)
             {
-                getBar(this._bars[i], this._colors[i]);
+                spriteBatch.Draw(Game1.staminaRect, this._bars[i], this._colors[i]);
             }
         }
     }

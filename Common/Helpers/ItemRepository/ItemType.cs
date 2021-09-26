@@ -1,5 +1,6 @@
-﻿#pragma warning disable SA1124
-#pragma warning disable SA1515
+﻿// ReSharper disable All
+#pragma warning disable
+
 #region License
 // MIT License
 //
@@ -28,10 +29,8 @@
 // This implementation of ItemType was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
 #endregion
-#pragma warning restore SA1515
-#pragma warning restore SA1124
 
-namespace Common.Helpers.ItemData
+namespace Common.Helpers.ItemRepository
 {
     /// <summary>An item type that can be searched and added to the player through the console.</summary>
     internal enum ItemType

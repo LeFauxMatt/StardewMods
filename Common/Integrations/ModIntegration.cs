@@ -9,7 +9,9 @@
     {
         private readonly IModRegistry _modRegistry;
         private readonly string _modUniqueId;
-        private T _modAPI;
+        private T _modAPI = null!;
+        private bool _isInitialized;
+        private bool _isLoaded;
 
         /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}"/> class.</summary>
         /// <param name="modRegistry">SMAPI's mod registry.</param>
@@ -23,13 +25,22 @@
         /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
         protected internal T API
         {
-            get => this._modAPI ??= this._modRegistry.GetApi<T>(this._modUniqueId);
+            get
+            {
+                if (!this._isInitialized)
+                {
+                    this._modAPI = this._modRegistry.GetApi<T>(this._modUniqueId);
+                    this._isInitialized = true;
+                }
+
+                return this._modAPI;
+            }
         }
 
         /// <summary>Gets the loaded status of the mod.</summary>
         protected internal bool IsLoaded
         {
-            get => this._modRegistry.IsLoaded(this._modUniqueId);
+            get => this._isLoaded = this._isLoaded || this._modRegistry.IsLoaded(this._modUniqueId);
         }
     }
 }

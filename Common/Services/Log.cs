@@ -6,7 +6,7 @@
     internal static class Log
     {
         /// <inheritdoc cref="IMonitor"/>
-        public static IMonitor Monitor { get; private set; }
+        private static IMonitor Monitor { get; set; } = null!;
 
         /// <summary>Return and optionally create an instance of the <see cref="Log"/> class.</summary>
         /// <param name="monitor">The instance of Monitor from the Mod.</param>

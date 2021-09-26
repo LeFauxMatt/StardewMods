@@ -1,6 +1,6 @@
 ﻿namespace Common.Models
 {
-    using Enums;
+    using Common.Enums;
     using Microsoft.Xna.Framework;
 
     /// <summary>
