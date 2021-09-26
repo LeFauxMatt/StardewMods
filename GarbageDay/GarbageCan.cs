@@ -4,19 +4,23 @@
     using System.Collections.Generic;
     using System.Linq;
     using Common.Extensions;
-    using Common.Helpers.ItemData;
+    using Common.Helpers.ItemMatcher;
+    using Common.Helpers.ItemRepository;
     using Microsoft.Xna.Framework;
     using StardewValley;
     using StardewValley.Objects;
     using Object = StardewValley.Object;
 
-    /// <summary>Encapsulates logic for each Garbage Can managed by this mod.</summary>
+    /// <summary>
+    /// Encapsulates logic for each Garbage Can managed by this mod.
+    /// </summary>
     internal class GarbageCan
     {
-        private static Random _randomizer;
         private readonly IDictionary<string, float> _customLoot = new Dictionary<string, float>();
+        private readonly ItemMatcher _itemMatcher = new(string.Empty, true);
         private readonly string _whichCan;
         private readonly int _vanillaCan;
+        private Random _randomizer;
         private Chest _chest;
         private bool _checked;
         private bool _dropQiBeans;
@@ -35,12 +39,24 @@
             this._vanillaCan = int.TryParse(whichCan, out int vanillaCan) ? vanillaCan : 0;
         }
 
+        /// <summary>
+        /// Gets the name of the Map asset.
+        /// </summary>
         public string MapName { get; }
 
+        /// <summary>
+        /// Gets the tile where this garbage can is placed.
+        /// </summary>
         public Vector2 Tile { get; }
 
+        /// <summary>
+        /// Gets or sets the Location where the garbage can is placed.
+        /// </summary>
         public GameLocation Location { get; set; }
 
+        /// <summary>
+        /// Gets the actual placed Chest object.
+        /// </summary>
         public Chest Chest
         {
             get
@@ -50,7 +66,7 @@
                     return this._chest;
                 }
 
-                if (this.Location == null)
+                if (this.Location is null)
                 {
                     return null;
                 }
@@ -64,7 +80,7 @@
                     return this._chest;
                 }
 
-                if (obj != null)
+                if (obj is not null)
                 {
                     return null;
                 }
@@ -92,60 +108,33 @@
             {
                 foreach (Item item in this.Chest.items.Shuffle())
                 {
-                    if (item.MatchesTagExt("color_red", true) || item.MatchesTagExt("color_dark_red", true))
+                    string colorTag = item.GetContextTags().Where(tag => tag.StartsWith("color")).Shuffle().FirstOrDefault();
+                    if (colorTag is null)
                     {
-                        return Color.DarkRed;
+                        continue;
                     }
 
-                    if (item.MatchesTagExt("color_pale_violet_red", true))
+                    return colorTag switch
                     {
-                        return Color.DarkViolet;
-                    }
-
-                    if (item.MatchesTagExt("color_blue", true))
-                    {
-                        return Color.DarkBlue;
-                    }
-
-                    if (item.MatchesTagExt("color_green", true) || item.MatchesTagExt("color_dark_green", true) || item.MatchesTagExt("color_jade", true))
-                    {
-                        return Color.DarkGreen;
-                    }
-
-                    if (item.MatchesTagExt("color_brown", true) || item.MatchesTagExt("color_dark_brown", true))
-                    {
-                        return Color.Brown;
-                    }
-
-                    if (item.MatchesTagExt("color_yellow", true) || item.MatchesTagExt("color_dark_yellow", true))
-                    {
-                        return Color.Yellow;
-                    }
-
-                    if (item.MatchesTagExt("color_aquamarine", true))
-                    {
-                        return Color.Aquamarine;
-                    }
-
-                    if (item.MatchesTagExt("color_purple", true) || item.MatchesTagExt("color_dark_purple", true))
-                    {
-                        return Color.Purple;
-                    }
-
-                    if (item.MatchesTagExt("color_cyan", true))
-                    {
-                        return Color.DarkCyan;
-                    }
-
-                    if (item.MatchesTagExt("color_pink", true))
-                    {
-                        return Color.Pink;
-                    }
-
-                    if (item.MatchesTagExt("color_orange", true))
-                    {
-                        return Color.DarkOrange;
-                    }
+                        "color_red" => Color.Red,
+                        "color_dark_red" => Color.DarkRed,
+                        "color_pale_violet_red" => Color.PaleVioletRed,
+                        "color_blue" => Color.Blue,
+                        "color_green" => Color.Green,
+                        "color_dark_green" => Color.DarkGreen,
+                        "color_jade" => Color.Teal,
+                        "color_brown" => Color.Brown,
+                        "color_dark_brown" => Color.Maroon,
+                        "color_yellow" => Color.Yellow,
+                        "color_dark_yellow" => Color.Goldenrod,
+                        "color_aquamarine" => Color.Aquamarine,
+                        "color_purple" => Color.Purple,
+                        "color_dark_purple" => Color.Indigo,
+                        "color_cyan" => Color.Cyan,
+                        "color_pink" => Color.Pink,
+                        "color_orange" => Color.Orange,
+                        _ => Color.Gray,
+                    };
                 }
 
                 return Color.Gray;
@@ -156,35 +145,15 @@
         {
             get
             {
-                if (GarbageCan._randomizer is not null)
-                {
-                    return GarbageCan._randomizer;
-                }
-
-                if (GarbageDay.BetterRng.IsLoaded)
-                {
-                    GarbageCan._randomizer = GarbageDay.BetterRng.API.GetNamedRandom(this._whichCan, (int)Game1.uniqueIDForThisGame);
-                }
-                else
-                {
-                    GarbageCan._randomizer = new Random(((int)Game1.uniqueIDForThisGame / 2) + (int)Game1.stats.DaysPlayed + 777 + (this._vanillaCan * 77));
-                    int prewarm = GarbageCan._randomizer.Next(0, 100);
-                    for (int k = 0; k < prewarm; k++)
-                    {
-                        GarbageCan._randomizer.NextDouble();
-                    }
-
-                    prewarm = GarbageCan._randomizer.Next(0, 100);
-                    for (int j = 0; j < prewarm; j++)
-                    {
-                        GarbageCan._randomizer.NextDouble();
-                    }
-                }
-
-                return GarbageCan._randomizer;
+                return this._randomizer ??= GarbageDay.BetterRng.IsLoaded
+                    ? GarbageDay.BetterRng.API.GetNamedRandom(this._whichCan, (int)Game1.uniqueIDForThisGame)
+                    : GarbageCan.VanillaRandomizer(this._vanillaCan);
             }
         }
 
+        /// <summary>
+        /// Called when a player attempts to open the garbage can.
+        /// </summary>
         public void CheckAction()
         {
             if (this._checked)
@@ -218,6 +187,9 @@
             }
         }
 
+        /// <summary>
+        /// Adds an item to the garbage can determined by luck and mirroring vanilla chances.
+        /// </summary>
         public void AddLoot()
         {
             // Reset daily state
@@ -246,7 +218,7 @@
                 {
                     3 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => this.Randomizer.NextDouble() < 0.05 ? 749 : 535,
                     4 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 378 + (this.Randomizer.Next(3) * 2),
-                    5 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck && Game1.dishOfTheDay != null => Game1.dishOfTheDay.ParentSheetIndex != 217 ? Game1.dishOfTheDay.ParentSheetIndex : 216,
+                    5 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck && Game1.dishOfTheDay is not null => Game1.dishOfTheDay.ParentSheetIndex != 217 ? Game1.dishOfTheDay.ParentSheetIndex : 216,
                     6 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 223,
                     7 when this.Randomizer.NextDouble() < 0.2 => !Utility.HasAnyPlayerSeenEvent(191393) ? 167 : Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheater") && !Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheaterJoja") ? !(this.Randomizer.NextDouble() < 0.25) ? 270 : 809 : -1,
                     _ => -1,
@@ -287,7 +259,7 @@
             float totalWeight = this._customLoot.Values.Sum();
             double targetIndex = this.Randomizer.NextDouble() * totalWeight;
             double currentIndex = 0;
-            foreach (var lootItem in this._customLoot)
+            foreach (KeyValuePair<string, float> lootItem in this._customLoot)
             {
                 currentIndex += lootItem.Value;
                 if (currentIndex < targetIndex)
@@ -295,11 +267,12 @@
                     continue;
                 }
 
+                this._itemMatcher.SetSearch(lootItem.Key);
                 SearchableItem customLoot = GarbageDay.Items
-                    .Where(entry => entry.Item.MatchesTagExt(lootItem.Key, true))
+                    .Where(entry => this._itemMatcher.Matches(entry.Item))
                     .Shuffle()
                     .FirstOrDefault();
-                if (customLoot != null)
+                if (customLoot is not null)
                 {
                     this.Chest.addItem(customLoot.CreateItem());
                     this.Chest.playerChoiceColor.Value = this.Color;
@@ -309,14 +282,32 @@
             }
         }
 
+        private static Random VanillaRandomizer(int whichCan)
+        {
+            var randomizer = new Random(((int)Game1.uniqueIDForThisGame / 2) + (int)Game1.stats.DaysPlayed + 777 + (whichCan * 77));
+            int prewarm = randomizer.Next(0, 100);
+            for (int k = 0; k < prewarm; k++)
+            {
+                randomizer.NextDouble();
+            }
+
+            prewarm = randomizer.Next(0, 100);
+            for (int j = 0; j < prewarm; j++)
+            {
+                randomizer.NextDouble();
+            }
+
+            return randomizer;
+        }
+
         private void AddToCustomLoot(string key)
         {
-            if (!GarbageDay.Loot.TryGetValue(key, out var lootTable))
+            if (!GarbageDay.Loot.TryGetValue(key, out IDictionary<string, float> lootTable))
             {
                 return;
             }
 
-            foreach (var lootItem in lootTable)
+            foreach (KeyValuePair<string, float> lootItem in lootTable)
             {
                 this._customLoot.Add(lootItem.Key, lootItem.Value);
             }

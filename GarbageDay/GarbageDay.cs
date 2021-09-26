@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Common.Helpers.ItemData;
+    using Common.Helpers.ItemRepository;
     using Common.Integrations.EvenBetterRNG;
     using Common.Integrations.XSLite;
     using Common.Integrations.XSPlus;
@@ -103,14 +103,14 @@
                 {
                     Layer layer = map.GetLayer("Buildings");
                     Tile tile = layer.PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size);
-                    if (tile == null)
+                    if (tile is null)
                     {
                         continue;
                     }
 
                     // Look for Action: Garbage [WhichCan]
                     tile.Properties.TryGetValue("Action", out PropertyValue property);
-                    if (property == null)
+                    if (property is null)
                     {
                         continue;
                     }
@@ -134,14 +134,14 @@
                     }
 
                     // Remove base tile
-                    if (layer.Tiles[x, y] != null && layer.Tiles[x, y].TileSheet.Id == "Town" && layer.Tiles[x, y].TileIndex == 78)
+                    if (layer.Tiles[x, y] is not null && layer.Tiles[x, y].TileSheet.Id == "Town" && layer.Tiles[x, y].TileIndex == 78)
                     {
                         layer.Tiles[x, y] = null;
                     }
 
                     // Remove Lid tile
                     layer = map.GetLayer("Front");
-                    if (layer.Tiles[x, y] != null && layer.Tiles[x, y].TileSheet.Id == "Town" && layer.Tiles[x, y].TileIndex == 46)
+                    if (layer.Tiles[x, y] is not null && layer.Tiles[x, y].TileSheet.Id == "Town" && layer.Tiles[x, y].TileIndex == 46)
                     {
                         layer.Tiles[x, y] = null;
                     }
@@ -161,7 +161,7 @@
 
             foreach (var garbageCan in this._garbageCans)
             {
-                if (garbageCan.Value.Chest == null)
+                if (garbageCan.Value.Chest is null)
                 {
                     continue;
                 }
@@ -215,7 +215,7 @@
             GarbageDay.Loot = this.Helper.Content.Load<IDictionary<string, IDictionary<string, float>>>("GarbageDay/Loot", ContentSource.GameContent);
             foreach (var garbageCan in this._garbageCans)
             {
-                if (garbageCan.Value.Chest == null)
+                if (garbageCan.Value.Chest is null)
                 {
                     continue;
                 }
@@ -277,7 +277,7 @@
             }
 
             // Close Can
-            else if (e.OldMenu is ItemGrabMenu && this._npc.Value != null)
+            else if (e.OldMenu is ItemGrabMenu && this._npc.Value is not null)
             {
                 Game1.drawDialogue(this._npc.Value);
                 if (!this._chest.Value.items.Any() && !this._chest.Value.playerChoiceColor.Value.Equals(Color.Black))
