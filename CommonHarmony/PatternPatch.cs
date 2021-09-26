@@ -18,27 +18,10 @@
 
         /// <summary>Initializes a new instance of the <see cref="PatternPatch"/> class.</summary>
         /// <param name="pattern"></param>
-        public PatternPatch(ICollection<CodeInstruction> pattern)
+        public PatternPatch(PatchType patchType)
         {
-            if (pattern == null || pattern.Count == 0)
-            {
-                this._patchType = PatchType.Prepend;
-                return;
-            }
-
-            this._patchType = PatchType.Replace;
-            this._patterns.AddRange(pattern);
-            this._patternIndex.Enqueue(this._patterns.Count);
+            this._patchType = patchType;
         }
-
-        private enum PatchType
-        {
-            Replace,
-            Prepend,
-        }
-
-        /// <summary></summary>
-        public string Text { get; private set; }
 
         /// <summary></summary>
         public int Skipped { get; private set; }
@@ -52,9 +35,19 @@
         /// <summary></summary>
         /// <param name="pattern"></param>
         /// <returns></returns>
-        public PatternPatch Find(params CodeInstruction[] pattern)
+        public PatternPatch Find(IEnumerable<CodeInstruction> pattern)
         {
             this._patterns.AddRange(pattern);
+            this._patternIndex.Enqueue(this._patterns.Count);
+            return this;
+        }
+
+        /// <summary></summary>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        public PatternPatch Find(CodeInstruction pattern)
+        {
+            this._patterns.Add(pattern);
             this._patternIndex.Enqueue(this._patterns.Count);
             return this;
         }
@@ -65,24 +58,6 @@
         public PatternPatch Patch(Action<LinkedList<CodeInstruction>> patch)
         {
             this._patches.Add(patch);
-            return this;
-        }
-
-        /// <summary></summary>
-        /// <param name="patches"></param>
-        /// <returns></returns>
-        public PatternPatch Patch(params CodeInstruction[] patches)
-        {
-            this._patterns.AddRange(patches);
-            return this;
-        }
-
-        /// <summary></summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        public PatternPatch Log(string text)
-        {
-            this.Text = text;
             return this;
         }
 
@@ -135,7 +110,7 @@
             }
 
             // Operand not matching
-            if (this._patterns[this._index].operand != null && !this._patterns[this._index].operand.Equals(instruction.operand))
+            if (this._patterns[this._index].operand is not null && !this._patterns[this._index].operand.Equals(instruction.operand))
             {
                 this._index = this._startIndex;
                 return false;

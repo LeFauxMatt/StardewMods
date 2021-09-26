@@ -3,25 +3,34 @@
     using System.Collections;
     using System.Collections.Generic;
     using HarmonyLib;
-    using StardewModdingAPI;
 
     /// <inheritdoc />
     internal class PatternPatches : IEnumerable<CodeInstruction>
     {
-        private static IMonitor Monitor;
         private readonly IEnumerable<CodeInstruction> _instructions;
         private readonly Queue<PatternPatch> _patternPatches = new();
 
         /// <summary></summary>
         /// <param name="instructions"></param>
-        /// <param name="monitor"></param>
-        public PatternPatches(IEnumerable<CodeInstruction> instructions, IMonitor monitor)
+        public PatternPatches(IEnumerable<CodeInstruction> instructions)
         {
             this._instructions = instructions;
-            PatternPatches.Monitor = monitor;
+            this._patternPatches = new();
         }
 
-        /// <summary></summary>
+        public PatternPatches(IEnumerable<CodeInstruction> instructions, params PatternPatch[] patches)
+        {
+            this._instructions = instructions;
+            this._patternPatches = new(patches);
+        }
+
+        public PatternPatches(IEnumerable<CodeInstruction> instructions, PatternPatch patch)
+        {
+            this._instructions = instructions;
+            this._patternPatches = new Queue<PatternPatch>(new[] { patch });
+        }
+
+        /// <summary>Gets a value indicating whether gets whether all patches were successfully applied.</summary>
         public bool Done
         {
             get => this._patternPatches.Count == 0;
@@ -49,12 +58,6 @@
                 {
                     rawStack.AddLast(instruction);
                     continue;
-                }
-
-                // Return patched code
-                if (currentOperation.Text != null)
-                {
-                    PatternPatches.Monitor.LogOnce(currentOperation.Text);
                 }
 
                 rawStack.AddLast(instruction);
@@ -96,14 +99,9 @@
             return this.GetEnumerator();
         }
 
-        /// <summary></summary>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
-        public PatternPatch Find(params CodeInstruction[] pattern)
+        public void AddPatch(PatternPatch patch)
         {
-            var operation = new PatternPatch(pattern);
-            this._patternPatches.Enqueue(operation);
-            return operation;
+            this._patternPatches.Enqueue(patch);
         }
     }
 }

@@ -29,7 +29,7 @@
 
         public AssemblyPatchType Type(string name)
         {
-            return this._assembly != null ? new AssemblyPatchType(this._assembly.GetType(name)) : null;
+            return this._assembly is not null ? new AssemblyPatchType(this._assembly.GetType(name)) : null;
         }
 
         public MethodInfo Method(string type, string method)

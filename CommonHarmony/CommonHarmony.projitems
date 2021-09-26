@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PatchType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches.cs" />
   </ItemGroup>
