@@ -6,7 +6,6 @@
     using System.Linq;
     using System.Reflection.Emit;
     using Common.Extensions;
-    using Common.Helpers;
     using Common.Services;
     using CommonHarmony;
     using HarmonyLib;
@@ -22,16 +21,19 @@
     using StardewValley.Tools;
     using SObject = StardewValley.Object;
 
+    /// <summary>
+    /// Encompasses all patches required by this mod.
+    /// </summary>
     [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     internal class Patches
     {
-        private static IModHelper Helper;
+        private static IModHelper Helper = null!;
 
         /// <summary>Initializes a new instance of the <see cref="Patches"/> class.</summary>
-        /// <param name="helper"></param>
-        /// <param name="harmony"></param>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        /// <param name="harmony">The harmony instance to apply patches.</param>
         public Patches(IModHelper helper, Harmony harmony)
         {
             Patches.Helper = helper;
@@ -154,18 +156,41 @@
 
         private static IEnumerable<CodeInstruction> Chest_addItem_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (CodeInstruction instruction in instructions)
+            Log.Trace("Using getItemsForPlayer for all items.");
+            var getItemsPatch = new PatternPatch(PatchType.Replace);
+            getItemsPatch
+                .Find(
+                    new[]
+                    {
+                        new CodeInstruction(OpCodes.Call, AccessTools.Property(typeof(Chest), nameof(Chest.SpecialChestType)).GetGetMethod()),
+                        new CodeInstruction(OpCodes.Ldc_I4_2),
+                        new CodeInstruction(OpCodes.Bne_Un_S),
+                    })
+                .Patch(
+                    list =>
+                    {
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                    });
+
+            var patternPatches = new PatternPatches(instructions, getItemsPatch);
+            foreach (CodeInstruction patternPatch in patternPatches)
             {
-                if (instruction.opcode == OpCodes.Ldfld && instruction.operand.Equals(AccessTools.Field(typeof(Chest), nameof(Chest.items))))
-                {
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Property(typeof(Game1), nameof(Game1.player)).GetGetMethod());
-                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Property(typeof(Farmer), nameof(Farmer.UniqueMultiplayerID)).GetGetMethod());
-                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)));
-                }
-                else
-                {
-                    yield return instruction;
-                }
+                yield return patternPatch;
+            }
+
+            if (!patternPatches.Done)
+            {
+                Log.Warn($"Failed to apply all patches in {typeof(Chest)}::{nameof(Chest.addItem)}.");
             }
         }
 
@@ -174,7 +199,7 @@
             NetObjectList<Item> items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
             for (int i = items.Count - 1; i >= 0; i--)
             {
-                if (items[i] == null)
+                if (items[i] is null)
                 {
                     items.RemoveAt(i);
                 }
@@ -305,13 +330,11 @@
 
         private static IEnumerable<CodeInstruction> Chest_performToolAction_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var patternPatches = new PatternPatches(instructions, Log.Monitor);
-
-            patternPatches
-                .Find(
-                    new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(NetMutex), nameof(NetMutex.RequestLock))))
-                .Log("Override create debris for Chest removeAction.")
-                .Patch(delegate(LinkedList<CodeInstruction> list)
+            Log.Trace("Override create debris for Chest removeAction.");
+            var createDebrisPatch = new PatternPatch(PatchType.Replace);
+            createDebrisPatch
+                .Find(new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(NetMutex), nameof(NetMutex.RequestLock))))
+                .Patch(list =>
                 {
                     list.RemoveLast();
                     list.RemoveLast();
@@ -323,6 +346,9 @@
                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_2));
                     list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(Patches.Chest_performToolAction_delegate))));
                 });
+
+            var patternPatches = new PatternPatches(instructions);
+            patternPatches.AddPatch(createDebrisPatch);
 
             foreach (CodeInstruction patternPatch in patternPatches)
             {
@@ -338,7 +364,7 @@
         private static void Chest_performToolAction_delegate(Chest chest, Tool tool, GameLocation location)
         {
             Farmer player = tool.getLastFarmerToUse();
-            if (player == null)
+            if (player is null)
             {
                 return;
             }
@@ -566,7 +592,7 @@
                         ___currentLidFrame++;
                     }
                 }
-                else if (((__instance.frameCounter.Value == -1 && ___currentLidFrame > __instance.startingLidFrame.Value) || ___currentLidFrame >= __instance.getLastLidFrame()) && Game1.activeClickableMenu == null && __instance.GetMutex().IsLockHeld())
+                else if (((__instance.frameCounter.Value == -1 && ___currentLidFrame > __instance.startingLidFrame.Value) || ___currentLidFrame >= __instance.getLastLidFrame()) && Game1.activeClickableMenu is null && __instance.GetMutex().IsLockHeld())
                 {
                     __instance.GetMutex().ReleaseLock();
                     ___currentLidFrame = __instance.getLastLidFrame();
@@ -601,7 +627,7 @@
                 }
             }
 
-            if (Game1.activeClickableMenu == null && __instance.GetMutex().IsLockHeld())
+            if (Game1.activeClickableMenu is null && __instance.GetMutex().IsLockHeld())
             {
                 __instance.GetMutex().ReleaseLock();
             }
@@ -619,14 +645,14 @@
             }
 
             // Block if either chest has any items
-            if ((chest != null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
-                || (otherChest != null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
+            if ((chest is not null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+                || (otherChest is not null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
             {
                 __result = false;
                 return;
             }
 
-            if (chest == null || otherChest == null)
+            if (chest is null || otherChest is null)
             {
                 return;
             }
@@ -875,7 +901,7 @@
                 {
                     var tileLocation = new Vector2((x / 64) + i, (y / 64) + j);
                     if (item.canBePlacedHere(location, tileLocation)
-                        && location.getObjectAtTile((int)tileLocation.X, (int)tileLocation.Y) == null
+                        && location.getObjectAtTile((int)tileLocation.X, (int)tileLocation.Y) is null
                         && location.isTilePlaceable(tileLocation, item))
                     {
                         continue;

@@ -130,7 +130,7 @@
 
         private Chest.SpecialChestTypes SpecialChestType { get; set; }
 
-        private Texture2D Texture
+        private Texture2D? Texture
         {
             get => this._texture;
             set
@@ -167,7 +167,7 @@
         public void InvalidateCache(IContentHelper contentHelper)
         {
             Texture2D texture = contentHelper.Load<Texture2D>(this._path, ContentSource.GameContent);
-            if (texture == null && !XSLite.Textures.TryGetValue(this._name, out texture))
+            if (texture is null && !XSLite.Textures.TryGetValue(this._name, out texture))
             {
                 return;
             }
@@ -211,7 +211,7 @@
         /// <returns>Returns true if the object could be drawn.</returns>
         public bool Draw(SObject obj, int currentFrame, SpriteBatch spriteBatch, Vector2 pos, Vector2 origin, float alpha = 1f, float layerDepth = 0.89f, float scaleSize = 4f)
         {
-            if (this.Texture == null)
+            if (this.Texture is null)
             {
                 return false;
             }
@@ -222,12 +222,12 @@
                 currentFrame -= chest?.startingLidFrame.Value ?? 0;
             }
 
-            bool drawColored = this.PlayerColor && chest != null && !chest.playerChoiceColor.Value.Equals(Color.Black);
+            bool drawColored = this.PlayerColor && chest is not null && !chest.playerChoiceColor.Value.Equals(Color.Black);
             int startLayer = drawColored && this.PlayerColor ? 1 : 0;
             int endLayer = startLayer == 0 ? 1 : 3;
             for (int layer = startLayer; layer < endLayer; layer++)
             {
-                Color color = (layer % 2 == 0 || !drawColored) && chest != null
+                Color color = (layer % 2 == 0 || !drawColored) && chest is not null
                     ? chest.Tint
                     : chest?.playerChoiceColor.Value ?? Color.White;
 
@@ -335,9 +335,14 @@
 
             if (this.HeldStorage)
             {
-                if (item is not SObject obj || obj.heldObject.Value is not Chest heldChest)
+                var heldChest = new Chest(true, Vector2.Zero)
                 {
-                    heldChest = new Chest(true, Vector2.Zero);
+                    modData = { [$"{XSLite.ModPrefix}/Storage"] = this.Name },
+                };
+
+                if (item is SObject { heldObject: { Value: Chest oldHeldChest } } && oldHeldChest.items.Any())
+                {
+                    heldChest.items.CopyFrom(oldHeldChest.items);
                 }
 
                 chest.heldObject.Value = heldChest;
