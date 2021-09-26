@@ -1,6 +1,7 @@
 ﻿namespace XSAutomate
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.Xna.Framework;
     using Pathoschild.Stardew.Automate;
     using StardewValley;
@@ -12,18 +13,10 @@
     /// <inheritdoc />
     internal class AutomationFactory : IAutomationFactory
     {
-        private const string ConnectorType = "Pathoschild.Stardew.Automate.Framework.Connector, Automate";
-        private static readonly Type Connector = Type.GetType(AutomationFactory.ConnectorType);
-
         /// <inheritdoc />
         public IAutomatable GetFor(Object obj, GameLocation location, in Vector2 tile)
         {
-            if (obj.modData.ContainsKey("furyx639.ExpandedStorage/Storage"))
-            {
-                return (IAutomatable)Activator.CreateInstance(AutomationFactory.Connector, location, tile);
-            }
-
-            return null;
+            return obj.modData.ContainsKey("furyx639.ExpandedStorage/Storage") ? new Connector(location, tile) : null;
         }
 
         /// <inheritdoc />
