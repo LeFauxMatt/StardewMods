@@ -1,5 +1,6 @@
 ﻿namespace XSPlus.Features
 {
+    using Common.UI;
     using HarmonyLib;
     using Models;
     using Services;
@@ -9,7 +10,6 @@
     using StardewValley;
     using StardewValley.Menus;
     using StardewValley.Objects;
-    using UI;
 
     /// <inheritdoc />
     internal class CategorizeChestFeature : BaseFeature
@@ -79,7 +79,17 @@
         {
             if (e.Button == SButton.F9)
             {
-                Game1.activeClickableMenu = new CategorizeItemsMenu(this._helper, this._modConfigService, this.ReturnToMenu, this._chest.Value);
+                if (!this._chest.Value.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems))
+                {
+                    filterItems = string.Empty;
+                }
+
+                Game1.activeClickableMenu = new ItemSelectionMenu(
+                    this._helper,
+                    this._modConfigService.ModConfig.SearchTagSymbol,
+                    this.ReturnToMenu,
+                    filterItems,
+                    value => this._chest.Value.modData[$"{XSPlus.ModPrefix}/FilterItems"] = value);
             }
         }
 

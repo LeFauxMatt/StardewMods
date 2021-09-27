@@ -61,12 +61,6 @@
                 patch: AccessTools.Method(typeof(FilterItemsFeature), nameof(FilterItemsFeature.Chest_addItem_prefix)));
         }
 
-        /// <inheritdoc/>
-        public bool HighlightMethod(Item item)
-        {
-            return this._itemMatcher.Value.Matches(item);
-        }
-
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
@@ -118,6 +112,11 @@
                     this._itemMatcher.Value.SetSearch(string.Empty);
                 }
             }
+        }
+
+        private bool HighlightMethod(Item item)
+        {
+            return this._itemMatcher.Value.Matches(item);
         }
     }
 }

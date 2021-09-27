@@ -130,6 +130,13 @@
                 choices: this._configChoices);
             this._modConfigMenu.API.RegisterChoiceOption(
                 mod: this._manifest,
+                optionName: "Categorized Chest",
+                optionDesc: "Organize chests by assigning categories of items.",
+                optionGet: this.GetConfig("CategorizedChest"),
+                optionSet: this.SetConfig("CategorizedChest"),
+                choices: this._configChoices);
+            this._modConfigMenu.API.RegisterChoiceOption(
+                mod: this._manifest,
                 optionName: "Color Picker",
                 optionDesc: "Adds an HSL Color Picker to the chest menu.",
                 optionGet: this.GetConfig("ColorPicker"),

@@ -35,5 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\Slider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\HSLSlider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />
   </ItemGroup>
 </Project>

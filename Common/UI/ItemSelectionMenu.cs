@@ -1,91 +1,83 @@
-﻿namespace XSPlus.UI
+﻿namespace Common.UI
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Common.Extensions;
-    using Common.Helpers.ItemMatcher;
-    using Common.Helpers.ItemRepository;
-    using Common.Models;
+    using Extensions;
+    using Helpers.ItemMatcher;
+    using Helpers.ItemRepository;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
-    using Services;
+    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
-    using StardewValley.Objects;
 
     /// <summary>
     /// A menu for selecting items.
     /// </summary>
-    internal class CategorizeItemsMenu : ItemGrabMenu
+    internal class ItemSelectionMenu : ItemGrabMenu
     {
-        private static readonly PerScreen<CategorizeItemsMenu> Instance = new();
+        private static readonly PerScreen<ItemSelectionMenu> Instance = new();
+        private static IEnumerable<Item>? AllItems;
         private readonly IModHelper _helper;
+        private readonly Action<string> _returnValue;
         private readonly ClickableComponent _searchArea;
         private readonly TextBox _searchField;
         private readonly ClickableTextureComponent _searchIcon;
         private readonly ItemMatcher _itemFilter;
         private readonly ItemMatcher _itemSelector;
-        private readonly IEnumerable<Item> _allItems;
         private readonly List<Item> _sortedItems = new();
         private readonly IList<Item> _items;
         private readonly IList<ClickableComponent> _tags;
         private readonly Range<int> _range;
         private readonly InventoryMenu _menu;
-        private readonly Chest _chest;
         private readonly int _columns;
         private IEnumerable<Item>? _filteredItems;
         private int _offset;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategorizeItemsMenu"/> class.
+        /// Initializes a new instance of the <see cref="ItemSelectionMenu"/> class.
         /// </summary>
         /// <param name="modHelper">Provides simplified APIs for writing mods.</param>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
+        /// <param name="searchTagSymbol">Character that will be used to denote tags in search.</param>
         /// <param name="exitFunction">The method to run when exiting this menu.</param>
-        /// <param name="chest">The chest that is being configured.</param>
-        public CategorizeItemsMenu(
-            IModHelper modHelper,
-            ModConfigService modConfigService,
-            onExit exitFunction,
-            Chest chest)
+        /// <param name="initialValue">The initial search expression that will be used.</param>
+        /// <param name="returnValue">An action that will accept the return value on exit.</param>
+        public ItemSelectionMenu(IModHelper modHelper, string searchTagSymbol, onExit exitFunction, string initialValue, Action<string> returnValue)
             : base(
                 inventory: new List<Item>(),
                 reverseGrab: false,
                 showReceivingMenu: true,
-                highlightFunction: CategorizeItemsMenu.HighlightMethod,
+                highlightFunction: ItemSelectionMenu.HighlightMethod,
                 behaviorOnItemSelectFunction: (item, who) => { },
                 message: null,
                 behaviorOnItemGrab: (item, who) => { },
-                canBeExitedWithKey: true,
-                source: CategorizeItemsMenu.source_none)
+                canBeExitedWithKey: false,
+                source: ItemSelectionMenu.source_none)
         {
-            CategorizeItemsMenu.Instance.Value = this;
+            ItemSelectionMenu.Instance.Value = this;
+            ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().Select(i => i.CreateItem()).ToList();
             this._helper = modHelper;
+            this._returnValue = returnValue;
             this.exitFunction = exitFunction;
-            this._chest = chest;
             this.behaviorBeforeCleanup = this.BehaviorBeforeCleanup;
             this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this._allItems = new ItemRepository().GetAll().Select(i => i.CreateItem()).ToList();
             this._items = this.ItemsToGrabMenu.actualInventory;
             this._tags = this.inventory.inventory;
             this._menu = this.ItemsToGrabMenu;
             this._columns = this._menu.capacity / this._menu.rows;
             this._offset = 0;
-            this._range = new Range<int>(0, (this._allItems.Count().RoundUp(this._columns) / this._columns) - this._menu.rows);
-            this._itemFilter = new ItemMatcher(modConfigService.ModConfig.SearchTagSymbol);
-            this._itemSelector = new ItemMatcher(modConfigService.ModConfig.SearchTagSymbol);
+            this._range = new Range<int>(0, (ItemSelectionMenu.AllItems.Count().RoundUp(this._columns) / this._columns) - this._menu.rows);
+            this._itemFilter = new ItemMatcher(searchTagSymbol);
+            this._itemSelector = new ItemMatcher(searchTagSymbol);
 
             // Get saved labels from favorites
-            if (this._chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out string filterItems))
-            {
-                this._itemSelector.SetSearch(filterItems);
-            }
+            this._itemSelector.SetSearch(initialValue);
 
             this.ReSyncInventory();
 
@@ -113,7 +105,7 @@
             get
             {
                 // Filter for searched items
-                this._filteredItems ??= this._allItems.Where(item => this._itemFilter.Matches(item));
+                this._filteredItems ??= ItemSelectionMenu.AllItems!.Where(item => this._itemFilter.Matches(item));
 
                 // Bring selected items to top
                 if (this._sortedItems.Count == 0)
@@ -151,7 +143,7 @@
             if (this.okButton.containsPoint(x, y) && this.readyToClose())
             {
                 this.exitThisMenu();
-                if (Game1.currentLocation.currentEvent is { CurrentCommand: > 0 })
+                if (Game1.currentLocation.currentEvent is {CurrentCommand: > 0})
                 {
                     Game1.currentLocation.currentEvent.CurrentCommand++;
                 }
@@ -269,8 +261,6 @@
 
             this.hoveredItem = null;
             this.hoverText = string.Empty;
-
-            // TODO: Hover okButton
         }
 
         /// <inheritdoc/>
@@ -288,18 +278,18 @@
             }
 
             Game1.drawDialogueBox(
-                this.ItemsToGrabMenu.xPositionOnScreen - CategorizeItemsMenu.borderWidth - CategorizeItemsMenu.spaceToClearSideBorder,
-                this.ItemsToGrabMenu.yPositionOnScreen - CategorizeItemsMenu.borderWidth - CategorizeItemsMenu.spaceToClearTopBorder - 24,
-                this.ItemsToGrabMenu.width + (CategorizeItemsMenu.borderWidth * 2) + (CategorizeItemsMenu.spaceToClearSideBorder * 2),
-                this.ItemsToGrabMenu.height + CategorizeItemsMenu.spaceToClearTopBorder + (CategorizeItemsMenu.borderWidth * 2) + 24,
+                this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
+                this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
+                this.ItemsToGrabMenu.width + (ItemSelectionMenu.borderWidth * 2) + (ItemSelectionMenu.spaceToClearSideBorder * 2),
+                this.ItemsToGrabMenu.height + ItemSelectionMenu.spaceToClearTopBorder + (ItemSelectionMenu.borderWidth * 2) + 24,
                 false,
                 true);
 
             Game1.drawDialogueBox(
-                this.inventory.xPositionOnScreen - CategorizeItemsMenu.borderWidth - CategorizeItemsMenu.spaceToClearSideBorder,
-                this.inventory.yPositionOnScreen - CategorizeItemsMenu.borderWidth - CategorizeItemsMenu.spaceToClearTopBorder,
-                this.inventory.width + (CategorizeItemsMenu.borderWidth * 2) + (CategorizeItemsMenu.spaceToClearSideBorder * 2),
-                this.inventory.height + CategorizeItemsMenu.spaceToClearTopBorder + (CategorizeItemsMenu.borderWidth * 2),
+                this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
+                this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder,
+                this.inventory.width + (ItemSelectionMenu.borderWidth * 2) + (ItemSelectionMenu.spaceToClearSideBorder * 2),
+                this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + (ItemSelectionMenu.borderWidth * 2),
                 false,
                 true);
 
@@ -343,7 +333,7 @@
 
             if (this.hoveredItem != null)
             {
-                CategorizeItemsMenu.drawHoverText(
+                ItemSelectionMenu.drawHoverText(
                     b,
                     $"#{string.Join("\n#", SearchPhrase.GetContextTags(this.hoveredItem).ToList())}",
                     Game1.smallFont,
@@ -359,7 +349,7 @@
 
         private static bool HighlightMethod(Item item)
         {
-            return CategorizeItemsMenu.Instance.Value._itemSelector.Matches(item);
+            return ItemSelectionMenu.Instance.Value._itemSelector.Matches(item);
         }
 
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
@@ -377,7 +367,12 @@
         {
             switch (e.Button)
             {
+                case SButton.Escape when this.readyToClose():
+                    this.exitThisMenu();
+                    this._helper.Input.Suppress(e.Button);
+                    return;
                 case SButton.Escape:
+                    this._helper.Input.Suppress(e.Button);
                     return;
                 case SButton.Enter when !string.IsNullOrWhiteSpace(this._itemFilter.Search):
                     this._itemSelector.AddSearch(this._itemFilter.Search);
@@ -410,7 +405,7 @@
         {
             this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
             this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-            this._chest.modData[$"{XSPlus.ModPrefix}/FilterItems"] = this._itemSelector.Search;
+            this._returnValue(this._itemSelector.Search);
         }
 
         private void ReSyncInventory(bool clearFiltered = false, bool clearSorted = false)

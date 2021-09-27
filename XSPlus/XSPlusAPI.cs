@@ -21,14 +21,7 @@
         /// <inheritdoc/>
         public void EnableWithModData(string featureName, string key, string value, int param)
         {
-            if (value == "Auto-Grabber")
-            {
-                FeatureManager.EnableFeatureWithModData(featureName, key, value, param);
-            }
-            else
-            {
-                FeatureManager.EnableFeatureWithModData(featureName, key, value, param);
-            }
+            FeatureManager.EnableFeatureWithModData(featureName, key, value, param);
         }
 
         /// <inheritdoc/>

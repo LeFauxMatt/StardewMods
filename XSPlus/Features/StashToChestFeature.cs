@@ -15,7 +15,6 @@
     /// <inheritdoc />
     internal class StashToChestFeature : FeatureWithParam<string>
     {
-        // TODO: Add overlay menu for configuring chest accepted items with ghost items and search bar
         private readonly IInputHelper _inputHelper;
         private readonly ModConfigService _modConfigService;
         private readonly PerScreen<List<Chest>?> _cachedEnabledChests = new();
@@ -130,28 +129,27 @@
 
         private Item? TryAddItem(Item item)
         {
-            var itemMatcher = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol, true);
+            var itemMatcher = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol);
             uint stack = (uint)item.Stack;
             foreach (Chest chest in this.EnabledChests)
             {
                 bool allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
-                // chest.GetModDataList("Favorites", out var favorites);
-                //
-                // switch (favorites.Count)
-                // {
-                //     // Skip chest if no favorites and no built-in filter
-                //     case 0 when !allowList:
-                //         continue;
-                //     case > 0:
-                //         // Skip chest if no favorites are matched
-                //         itemMatcher.SetSearch(favorites);
-                //         if (!itemMatcher.Matches(item))
-                //         {
-                //             continue;
-                //         }
-                //
-                //         break;
-                // }
+
+                if (chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out string filterItems))
+                {
+                    itemMatcher.SetSearch(filterItems);
+
+                    // Skip chest if per-chest filter does not match
+                    if (!itemMatcher.Matches(item))
+                    {
+                        continue;
+                    }
+                }
+                else if (!allowList)
+                {
+                    // Skip chest if no built-in filter and no per-chest filter
+                    continue;
+                }
 
                 // Attempt to add item into chest
                 Item tmp = chest.addItem(item);

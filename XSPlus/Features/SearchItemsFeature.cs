@@ -25,8 +25,6 @@
     {
         private const int SearchBarHeight = 24;
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private static readonly Rectangle FilledHeart = new(211, 428, 7, 6);
-        private static readonly Rectangle EmptyHeart = new(218, 428, 7, 6);
         private static SearchItemsFeature Instance = null!;
         private readonly IContentHelper _contentHelper;
         private readonly IInputHelper _inputHelper;
@@ -42,7 +40,6 @@
         private readonly PerScreen<ClickableComponent> _searchArea = new() { Value = new ClickableComponent(Rectangle.Empty, string.Empty) };
         private readonly PerScreen<TextBox> _searchField = new();
         private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
-        private readonly PerScreen<IList<ClickableTextureComponent>> _hearts = new() { Value = new List<ClickableTextureComponent>() };
         private readonly PerScreen<int> _menuPadding = new() { Value = -1 };
         private readonly PerScreen<ItemMatcher> _itemMatcher = new();
 
@@ -315,11 +312,6 @@
             this._searchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - (14 * Game1.pixelZoom) + 6, 32, 32);
             int x = e.ItemGrabMenu.xPositionOnScreen - 480 - 8;
             int y = e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
-            foreach (ClickableTextureComponent heart in this._hearts.Value)
-            {
-                heart.bounds = new Rectangle(x, y, 16, 16);
-                y += 32;
-            }
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -334,14 +326,6 @@
                 texture: Game1.mouseCursors,
                 sourceRect: new Rectangle(80, 0, 13, 13),
                 scale: 2.5f);
-            for (int i = 0; i < 10; i++)
-            {
-                this._hearts.Value.Add(new ClickableTextureComponent(
-                    bounds: Rectangle.Empty,
-                    texture: Game1.mouseCursors,
-                    sourceRect: SearchItemsFeature.FilledHeart,
-                    scale: 2.5f));
-            }
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
@@ -388,7 +372,7 @@
                 this._searchField.Value.Selected = this._searchArea.Value.containsPoint(x, y);
             }
 
-            return this._searchField.Value.Selected || true;
+            return this._searchField.Value.Selected;
         }
 
         private bool RightClick(int x = -1, int y = -1)

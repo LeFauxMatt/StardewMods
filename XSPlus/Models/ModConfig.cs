@@ -11,7 +11,7 @@
         public int Capacity { get; set; }
 
         /// <summary>Gets or sets maximum number of rows to show in the <see cref="StardewValley.Menus.ItemGrabMenu"/>.</summary>
-        public int MenuRows { get; set; } = 3;
+        public int MenuRows { get; set; } = 4;
 
         /// <summary>Gets or sets default maximum range that a <see cref="StardewValley.Objects.Chest"/> can be crafted from.</summary>
         public string CraftingRange { get; set; } = "Location";
@@ -43,8 +43,13 @@
         /// <summary>Gets or sets globally enabled/disabled features.</summary>
         public IDictionary<string, bool> Global { get; set; } = new Dictionary<string, bool>
         {
+            { "CategorizeChest", true },
+            { "ColorPicker", true },
+            { "CraftFromChest", true },
+            { "ExpandedMenu", true },
             { "InventoryTabs", true },
             { "SearchItems", true },
+            { "StashToChest", true },
         };
     }
 }
