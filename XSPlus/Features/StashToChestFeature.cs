@@ -135,23 +135,23 @@
             foreach (Chest chest in this.EnabledChests)
             {
                 bool allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
-                chest.GetModDataList("Favorites", out var favorites);
-
-                switch (favorites.Count)
-                {
-                    // Skip chest if no favorites and no built-in filter
-                    case 0 when !allowList:
-                        continue;
-                    case > 0:
-                        // Skip chest if no favorites are matched
-                        itemMatcher.SetSearch(favorites);
-                        if (!itemMatcher.Matches(item))
-                        {
-                            continue;
-                        }
-
-                        break;
-                }
+                // chest.GetModDataList("Favorites", out var favorites);
+                //
+                // switch (favorites.Count)
+                // {
+                //     // Skip chest if no favorites and no built-in filter
+                //     case 0 when !allowList:
+                //         continue;
+                //     case > 0:
+                //         // Skip chest if no favorites are matched
+                //         itemMatcher.SetSearch(favorites);
+                //         if (!itemMatcher.Matches(item))
+                //         {
+                //             continue;
+                //         }
+                //
+                //         break;
+                // }
 
                 // Attempt to add item into chest
                 Item tmp = chest.addItem(item);

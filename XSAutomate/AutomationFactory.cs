@@ -1,7 +1,5 @@
 ﻿namespace XSAutomate
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
     using Microsoft.Xna.Framework;
     using Pathoschild.Stardew.Automate;
     using StardewValley;

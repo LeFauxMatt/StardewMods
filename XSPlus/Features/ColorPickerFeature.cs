@@ -4,7 +4,6 @@
     using Common.UI;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Input;
     using Models;
     using Services;
     using StardewModdingAPI;
