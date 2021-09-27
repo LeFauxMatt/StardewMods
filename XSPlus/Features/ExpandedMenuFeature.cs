@@ -40,7 +40,7 @@
         /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
         /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
         /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
-        /// <param name="displayedInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
+        /// <param name="displayedChestInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
         public ExpandedMenuFeature(
             IInputHelper inputHelper,
             ModConfigService modConfigService,
