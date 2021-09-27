@@ -1,5 +1,8 @@
 ﻿# Release Notes
 
+## Unreleased
+- Added hover text to tabs
+
 ## Latest Changes
 - Fixed remote crafting not working for chests placed in world
 - Fixed stash into chests not working for chests placed in world
