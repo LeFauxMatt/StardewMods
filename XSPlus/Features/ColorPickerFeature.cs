@@ -4,6 +4,7 @@
     using Common.UI;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Input;
     using Models;
     using Services;
     using StardewModdingAPI;
@@ -21,22 +22,24 @@
         private const int Height = 558;
         private static ColorPickerFeature Instance = null!;
         private readonly IContentHelper _contentHelper;
+        private readonly IInputEvents _inputEvents;
         private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly PerScreen<Chest> _fakeChest = new();
-        private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<ItemGrabMenu?> _menu = new();
-        private readonly PerScreen<bool> _attached = new();
+        private readonly PerScreen<Chest> _chest = new();
+        private readonly PerScreen<Chest> _fakeChest = new();
         private readonly PerScreen<HSLSlider> _hslSlider = new();
 
         /// <summary>Initializes a new instance of the <see cref="ColorPickerFeature"/> class.</summary>
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
+        /// <param name="inputEvents">Events raised when player provides input.</param>
         /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
         /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
         /// <param name="renderedActiveMenuService">Service to handle creation/invocation of RenderedActiveMenu event.</param>
         internal ColorPickerFeature(
             IContentHelper contentHelper,
+            IInputEvents inputEvents,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             RenderedActiveMenuService renderedActiveMenuService)
@@ -44,6 +47,7 @@
         {
             ColorPickerFeature.Instance = this;
             this._contentHelper = contentHelper;
+            this._inputEvents = inputEvents;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._renderedActiveMenuService = renderedActiveMenuService;
@@ -55,12 +59,7 @@
             // Events
             this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
             modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
-            modEvents.Input.ButtonPressed += this.OnButtonPressed;
-            modEvents.Input.ButtonReleased += this.OnButtonReleased;
-            modEvents.Input.CursorMoved += this.OnCursorMoved;
-            modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
             // Patches
             harmony.Patch(
@@ -74,12 +73,7 @@
             // Events
             this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
-            this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
             modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
-            modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-            modEvents.Input.ButtonReleased -= this.OnButtonReleased;
-            modEvents.Input.CursorMoved -= this.OnCursorMoved;
-            modEvents.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
 
             // Patches
             harmony.Unpatch(
@@ -126,12 +120,20 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._attached.Value = false;
+                this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
+                this._inputEvents.ButtonPressed -= this.OnButtonPressed;
+                this._inputEvents.ButtonReleased -= this.OnButtonReleased;
+                this._inputEvents.CursorMoved -= this.OnCursorMoved;
+                this._inputEvents.MouseWheelScrolled -= this.OnMouseWheelScrolled;
                 this._menu.Value = null;
                 return;
             }
 
-            this._attached.Value = true;
+            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
+            this._inputEvents.ButtonPressed += this.OnButtonPressed;
+            this._inputEvents.ButtonReleased += this.OnButtonReleased;
+            this._inputEvents.CursorMoved += this.OnCursorMoved;
+            this._inputEvents.MouseWheelScrolled += this.OnMouseWheelScrolled;
             this._menu.Value = e.ItemGrabMenu;
             this._chest.Value = e.Chest;
             this._fakeChest.Value = new Chest(true, e.Chest.ParentSheetIndex)
@@ -153,11 +155,6 @@
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
-            if (!this._attached.Value)
-            {
-                return;
-            }
-
             int x = this._hslSlider.Value.Area.Left;
             int y = this._hslSlider.Value.Area.Top - (IClickableMenu.borderWidth / 2) - Game1.tileSize;
             this._fakeChest.Value.draw(e.SpriteBatch, x, y, 1f, true);
@@ -166,12 +163,7 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!this._attached.Value || e.Button != SButton.MouseLeft)
-            {
-                return;
-            }
-
-            if (this._hslSlider.Value.MouseLeftButtonPressed())
+            if (e.Button == SButton.MouseLeft && this._hslSlider.Value.MouseLeftButtonPressed())
             {
                 Game1.playSound("coin");
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
@@ -180,12 +172,7 @@
 
         private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
         {
-            if (!this._attached.Value || e.Button != SButton.MouseLeft)
-            {
-                return;
-            }
-
-            if (this._hslSlider.Value.MouseLeftButtonReleased())
+            if (e.Button == SButton.MouseLeft && this._hslSlider.Value.MouseLeftButtonReleased())
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
                 this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
@@ -194,11 +181,6 @@
 
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
-            if (!this._attached.Value)
-            {
-                return;
-            }
-
             if (this._hslSlider.Value.MouseHover())
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
@@ -207,11 +189,6 @@
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (!this._attached.Value)
-            {
-                return;
-            }
-
             if (this._hslSlider.Value.MouseWheelScroll(e.Delta))
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
