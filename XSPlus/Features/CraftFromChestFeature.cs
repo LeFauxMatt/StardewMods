@@ -27,14 +27,14 @@
         private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
 
         /// <summary>Initializes a new instance of the <see cref="CraftFromChestFeature"/> class.</summary>
-        /// <param name="gameLoopEvents">Events linked to the game's update loop.</param>
         /// <param name="inputHelper">API for changing state of input.</param>
+        /// <param name="gameLoopEvents">Events linked to the game's update loop.</param>
         /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
-        public CraftFromChestFeature(IGameLoopEvents gameLoopEvents, IInputHelper inputHelper, ModConfigService modConfigService)
+        public CraftFromChestFeature(IInputHelper inputHelper, IGameLoopEvents gameLoopEvents, ModConfigService modConfigService)
             : base("CraftFromChest")
         {
-            this._gameLoopEvents = gameLoopEvents;
             this._inputHelper = inputHelper;
+            this._gameLoopEvents = gameLoopEvents;
             this._modConfigService = modConfigService;
         }
 
