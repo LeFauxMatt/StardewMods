@@ -298,6 +298,12 @@
                 this._saturationSlider.Value = this._color.S;
                 this._luminanceSlider.Value = this._color.L;
             }
+            else if (this._isBlack)
+            {
+                this._hueSlider.Value = 0;
+                this._saturationSlider.Value = 0;
+                this._luminanceSlider.Value = 0;
+            }
             else
             {
                 this._isBlack = false;
