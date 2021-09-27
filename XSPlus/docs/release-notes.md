@@ -1,5 +1,10 @@
 ﻿# Release Notes
 
+## Latest Changes
+- Fixed remote crafting not working for chests placed in world
+- Fixed stash into chests not working for chests placed in world
+- Fixed memory leak with inventory tabs causing slowness over time
+
 ## 1.0.0
 - Initial Version
 - Added features:
