@@ -82,7 +82,7 @@
             this._featureManager.AddFeature(new CraftFromChestFeature(this.Helper.Events.GameLoop, this.Helper.Input, modConfigService));
             this._featureManager.AddFeature(new ExpandedMenuFeature(this.Helper.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService));
             this._featureManager.AddFeature(new FilterItemsFeature(itemGrabMenuChangedService, highlightPlayerItemsService));
-            this._featureManager.AddFeature(new InventoryTabsFeature(this.Helper.Content, this.Helper.Input, modConfigService, itemGrabMenuChangedService, displayedChestInventoryService, renderingActiveMenuService));
+            this._featureManager.AddFeature(new InventoryTabsFeature(this.Helper.Content, this.Helper.Input, this.Helper.Translation, modConfigService, itemGrabMenuChangedService, displayedChestInventoryService, renderingActiveMenuService, renderedActiveMenuService));
             this._featureManager.AddFeature(new SearchItemsFeature(this.Helper.Content, this.Helper.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService, renderedActiveMenuService));
             this._featureManager.AddFeature(new StashToChestFeature(this.Helper.Input, modConfigService));
             this._featureManager.AddFeature(new UnbreakableFeature());

@@ -20,39 +20,48 @@
     {
         private readonly IContentHelper _contentHelper;
         private readonly IInputHelper _inputHelper;
+        private readonly ITranslationHelper _translationHelper;
         private readonly ModConfigService _modConfigService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly DisplayedInventoryService _displayedChestInventoryService;
         private readonly RenderingActiveMenuService _renderingActiveMenuService;
+        private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<int> _tabIndex = new() { Value = -1 };
         private readonly PerScreen<ItemMatcher> _itemMatcher = new() { Value = new ItemMatcher(string.Empty, true) };
+        private readonly PerScreen<string> _hoverText = new();
         private IList<Tab> _tabs = null!;
         private Texture2D _texture = null!;
 
         /// <summary>Initializes a new instance of the <see cref="InventoryTabsFeature"/> class.</summary>
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="translationHelper">Provides translations stored in the mod's i18n folder.</param>
         /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
         /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
         /// <param name="displayedChestInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
         /// <param name="renderingActiveMenuService">Service to handle creation/invocation of RenderingActiveMenu event.</param>
+        /// <param name="renderedActiveMenuService">Service to handle creation/invocation of RenderedActiveMenu event.</param>
         public InventoryTabsFeature(
             IContentHelper contentHelper,
             IInputHelper inputHelper,
+            ITranslationHelper translationHelper,
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             DisplayedInventoryService displayedChestInventoryService,
-            RenderingActiveMenuService renderingActiveMenuService)
+            RenderingActiveMenuService renderingActiveMenuService,
+            RenderedActiveMenuService renderedActiveMenuService)
             : base("InventoryTabs")
         {
             this._contentHelper = contentHelper;
             this._inputHelper = inputHelper;
+            this._translationHelper = translationHelper;
             this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._displayedChestInventoryService = displayedChestInventoryService;
             this._renderingActiveMenuService = renderingActiveMenuService;
+            this._renderedActiveMenuService = renderedActiveMenuService;
         }
 
         /// <inheritdoc/>
@@ -61,9 +70,11 @@
             // Events
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
             this._renderingActiveMenuService.AddHandler(this.OnRenderingActiveMenu);
+            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
             modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
             modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
             modEvents.Input.ButtonPressed += this.OnButtonPressed;
+            modEvents.Input.CursorMoved += this.OnCursorMoved;
         }
 
         /// <inheritdoc/>
@@ -72,9 +83,11 @@
             // Events
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
             this._renderingActiveMenuService.RemoveHandler(this.OnRenderingActiveMenu);
+            this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
             modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
             modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
             modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+            modEvents.Input.CursorMoved -= this.OnCursorMoved;
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -147,6 +160,19 @@
             }
         }
 
+        private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
+        {
+            if (!this._attached.Value || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(itemGrabMenu.hoverText) && !string.IsNullOrWhiteSpace(this._hoverText.Value))
+            {
+                itemGrabMenu.hoverText = this._hoverText.Value;
+            }
+        }
+
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
             if (!this._attached.Value)
@@ -191,6 +217,19 @@
                     this._inputHelper.Suppress(e.Button);
                 }
             }
+        }
+
+        private void OnCursorMoved(object sender, CursorMovedEventArgs e)
+        {
+            if (!this._attached.Value)
+            {
+                return;
+            }
+
+            // Check if any tab is hovered.
+            Point point = Game1.getMousePosition(true);
+            Tab? tab = this._tabs.SingleOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
+            this._hoverText.Value = tab is not null ? this._translationHelper.Get($"tabs.{tab.Name}.name") : string.Empty;
         }
 
         private void SetTab(int index)
