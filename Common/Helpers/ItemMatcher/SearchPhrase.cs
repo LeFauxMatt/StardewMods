@@ -1,6 +1,7 @@
 ﻿namespace Common.Helpers.ItemMatcher
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using StardewValley;
     using StardewValley.Locations;
@@ -50,6 +51,22 @@
         /// </summary>
         public bool NotMatch { get; }
 
+        public static HashSet<string> GetContextTags(Item item)
+        {
+            HashSet<string> contextTags = item.GetContextTags();
+            if (item is SObject obj && SearchPhrase.CanDonateToBundle(obj))
+            {
+                contextTags.Add(SearchPhrase.DonateBundle);
+            }
+
+            if (SearchPhrase.CanDonateToMuseum(item))
+            {
+                contextTags.Add(SearchPhrase.DonateMuseum);
+            }
+
+            return contextTags;
+        }
+
         /// <summary>
         /// Checks if item matches this search phrase.
         /// </summary>
@@ -59,7 +76,7 @@
         {
             if (!this._tag)
             {
-                return this.Matches(item.Name);
+                return this.Matches(item.Name) != this.NotMatch;
             }
 
             return item switch
@@ -69,7 +86,7 @@
                 SObject { Type: "Arch" } when this.Matches(SearchPhrase.DonateMuseum) => SearchPhrase.CanDonateToMuseum(item),
                 SObject { Type: "Minerals" } when this.Matches(SearchPhrase.DonateMuseum) => SearchPhrase.CanDonateToMuseum(item),
                 SObject obj when this.Matches(SearchPhrase.DonateBundle) => SearchPhrase.CanDonateToBundle(obj),
-                _ => item.GetContextTags().Any(this.Matches),
+                _ => item.GetContextTags().Any(this.Matches) != this.NotMatch,
             };
         }
 
@@ -91,8 +108,7 @@
 
         private bool Matches(string match)
         {
-            bool matches = this._exact ? this._search == match : match.IndexOf(this._search, StringComparison.OrdinalIgnoreCase) > -1;
-            return matches != this.NotMatch;
+            return this._exact ? this._search == match : match.IndexOf(this._search, StringComparison.OrdinalIgnoreCase) > -1;
         }
     }
 }
