@@ -46,7 +46,7 @@
             };
 
             int totalHeight = layers * TextureMigrator.Height;
-            Color[] pixels = new Color[TextureMigrator.TotalWidth * totalHeight];
+            var pixels = new Color[TextureMigrator.TotalWidth * totalHeight];
 
             for (int frame = 0; frame < TextureMigrator.Frames; frame++)
             {
@@ -60,7 +60,7 @@
                         sourceTexture = baseTexture;
                     }
 
-                    Color[] subPixels = new Color[TextureMigrator.Width * TextureMigrator.Height];
+                    var subPixels = new Color[TextureMigrator.Width * TextureMigrator.Height];
                     sourceTexture.GetData(subPixels);
                     for (int i = 0; i < subPixels.Length; i++)
                     {

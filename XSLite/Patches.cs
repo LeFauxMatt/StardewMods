@@ -190,7 +190,7 @@
 
             if (!patternPatches.Done)
             {
-                Log.Warn($"Failed to apply all patches in {typeof(Chest)}::{nameof(Chest.addItem)}.");
+                Log.Warn($"Failed to apply all patches in {typeof(Patches)}::{nameof(Patches.Chest_addItem_transpiler)}.");
             }
         }
 

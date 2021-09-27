@@ -20,21 +20,18 @@
 
         /// <summary>Initializes a new instance of the <see cref="Storage"/> class.</summary>
         /// <param name="specialChestType">The type of chest this storage will be created as.</param>
-        /// <param name="modData">Mod data to add when this storage is created.</param>
         /// <param name="allowList">Items this storage is able to accept.</param>
         /// <param name="blockList">Items this storage is not able to accept.</param>
-        /// <param name="enabledFeatures">Special features to enable for this storage.</param>
         [JsonConstructor]
-        public Storage(string specialChestType, IDictionary<string, string> modData, HashSet<string> allowList, HashSet<string> blockList, HashSet<string> enabledFeatures)
+        public Storage(string specialChestType, HashSet<string> allowList, HashSet<string> blockList)
         {
             this.SpecialChestType = Enum.TryParse(specialChestType, out Chest.SpecialChestTypes specialChestTypes) ? specialChestTypes : Chest.SpecialChestTypes.None;
-            this.ModData = modData ?? new Dictionary<string, string>();
             this.FilterItems = new Dictionary<string, bool>();
             if (blockList is not null)
             {
                 foreach (string blockItem in blockList)
                 {
-                    this.FilterItems.Add(blockItem, true);
+                    this.FilterItems.Add(blockItem, false);
                 }
             }
 
@@ -45,8 +42,6 @@
                     this.FilterItems.Add(allowItem, true);
                 }
             }
-
-            this.EnabledFeatures = enabledFeatures ?? new HashSet<string>();
         }
 
         /// <summary>The asset loader used to add this object into the game.</summary>
@@ -104,11 +99,11 @@
 
         public string CloseNearbySound { get; set; } = "doorCreakReverse";
 
-        public HashSet<string> EnabledFeatures { get; set; }
+        public HashSet<string> EnabledFeatures { get; set; } = new();
 
         public Dictionary<string, bool> FilterItems { get; set; }
 
-        public IDictionary<string, string> ModData { get; set; }
+        public IDictionary<string, string> ModData { get; set; } = new Dictionary<string, string>();
 
         public string DisplayName { get; set; }
 

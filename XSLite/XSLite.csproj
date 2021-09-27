@@ -5,7 +5,6 @@
     <PropertyGroup>
         <Version>1.7.1</Version>
         <EnableHarmony>true</EnableHarmony>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="ClrHeapAllocationAnalyzer" Version="3.0.0" />

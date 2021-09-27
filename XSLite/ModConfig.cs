@@ -4,7 +4,7 @@
 
     internal class ModConfig
     {
-        public int Capacity { get; set; } = 0;
+        public int Capacity { get; set; }
 
         public HashSet<string> EnabledFeatures { get; set; } = new();
     }

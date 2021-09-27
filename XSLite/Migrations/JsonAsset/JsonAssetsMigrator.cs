@@ -22,7 +22,7 @@
         /// </summary>
         public IList<TextureMigrator> Textures { get; } = new List<TextureMigrator>();
 
-        public static JsonAssetsMigrator? FromContentPack(IContentPack contentPack)
+        public static JsonAssetsMigrator FromContentPack(IContentPack contentPack)
         {
             string path = Path.Combine(contentPack.DirectoryPath, "BigCraftables");
             if (!Directory.Exists(path))
@@ -101,8 +101,8 @@
                 // Additional Localizations
                 if (jsonAsset.NameLocalization is not null && jsonAsset.DescriptionLocalization is not null)
                 {
-                    IEnumerable<string>? localizationKeys = jsonAsset.NameLocalization.Keys.Union(jsonAsset.DescriptionLocalization.Keys).Distinct();
-                    foreach (var localizationKey in localizationKeys)
+                    IEnumerable<string> localizationKeys = jsonAsset.NameLocalization.Keys.Union(jsonAsset.DescriptionLocalization.Keys).Distinct();
+                    foreach (string localizationKey in localizationKeys)
                     {
                         if (!jsonFiles.TryGetValue(localizationKey, out var jsonFile))
                         {
@@ -182,7 +182,7 @@
             ""Type"": ""DGARecipe"",
             ""Value"": ""{contentPack.Manifest.UniqueID}/{jsonAsset.Name} recipe""
         }},
-        ""Cost"": {jsonAsset.Recipe.PurchasePrice.ToString()}
+        ""Cost"": {jsonAsset.Recipe.PurchasePrice.ToString()},
     }},");
                     }
 
@@ -238,7 +238,7 @@
                 Directory.CreateDirectory(path);
             }
 
-            foreach (var texture in this.Textures)
+            foreach (TextureMigrator texture in this.Textures)
             {
                 texture.UpdateTextureFormat();
             }
