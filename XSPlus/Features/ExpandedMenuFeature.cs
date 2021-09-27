@@ -25,24 +25,23 @@
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
         private static ExpandedMenuFeature Instance = null!;
         private readonly IInputHelper _inputHelper;
+        private readonly IInputEvents _inputEvents;
         private readonly ModConfigService _modConfigService;
         private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly DisplayedInventoryService _displayedChestInventoryService;
         private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<int> _menuCapacity = new();
-        private readonly PerScreen<int> _menuRows = new();
-        private readonly PerScreen<int> _menuOffset = new() { Value = -1 };
 
         /// <summary>Initializes a new instance of the <see cref="ExpandedMenuFeature"/> class.</summary>
         /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
+        /// <param name="inputEvents">Events raised when player provides input.</param>
         /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
         /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
         /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
         /// <param name="displayedChestInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
         public ExpandedMenuFeature(
             IInputHelper inputHelper,
+            IInputEvents inputEvents,
             ModConfigService modConfigService,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
@@ -51,6 +50,7 @@
         {
             ExpandedMenuFeature.Instance = this;
             this._inputHelper = inputHelper;
+            this._inputEvents = inputEvents;
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
@@ -63,8 +63,6 @@
             // Events
             this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-            modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
             // Patches
             harmony.Patch(
@@ -84,8 +82,6 @@
             // Events
             this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
-            modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-            modEvents.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
 
             // Patches
             harmony.Unpatch(
@@ -196,7 +192,7 @@
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Boxing allocation is required for Harmony.")]
         private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            Log.Trace("Moving bottom dialogue box down by search bar height.");
+            Log.Trace("Moving bottom dialogue box down by expanded menu height.");
             var moveDialogueBoxPatch = new PatternPatch(PatchType.Replace);
             moveDialogueBoxPatch
                 .Find(
@@ -216,7 +212,7 @@
                         list.AddLast(new CodeInstruction(OpCodes.Add));
                     });
 
-            Log.Trace("Shrinking bottom dialogue box height by search bar height.");
+            Log.Trace("Shrinking bottom dialogue box height by expanded menu height.");
             var resizeDialogueBoxPatch = new PatternPatch(PatchType.Replace);
             resizeDialogueBoxPatch
                 .Find(
@@ -254,19 +250,14 @@
 
         private static int MenuCapacity(MenuWithInventory menu)
         {
-            if (ExpandedMenuFeature.Instance._menuCapacity.Value != 0)
+            if (menu is not ItemGrabMenu { context: Chest { playerChest: { Value: true } } chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenuFeature.Instance._menuCapacity.Value;
-            }
-
-            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
-            {
-                return ExpandedMenuFeature.Instance._menuCapacity.Value = -1; // Vanilla
+                return -1; // Vanilla
             }
 
             int capacity = chest.GetActualCapacity();
             int maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
-            return ExpandedMenuFeature.Instance._menuCapacity.Value = capacity switch
+            return capacity switch
             {
                 < 72 => Math.Min(maxMenuRows * 12, capacity.RoundUp(12)), // Variable
                 _ => maxMenuRows * 12, // Large
@@ -275,19 +266,14 @@
 
         private static int MenuRows(MenuWithInventory menu)
         {
-            if (ExpandedMenuFeature.Instance._menuRows.Value != 0)
+            if (menu is not ItemGrabMenu { context: Chest { playerChest: { Value: true } } chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenuFeature.Instance._menuRows.Value;
-            }
-
-            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
-            {
-                return ExpandedMenuFeature.Instance._menuRows.Value = 3; // Vanilla
+                return 3; // Vanilla
             }
 
             int capacity = chest.GetActualCapacity();
             int maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
-            return ExpandedMenuFeature.Instance._menuRows.Value = capacity switch
+            return capacity switch
             {
                 < 72 => (int)Math.Min(maxMenuRows, Math.Ceiling(capacity / 12f)),
                 _ => maxMenuRows,
@@ -296,18 +282,13 @@
 
         private static int MenuOffset(MenuWithInventory menu)
         {
-            if (ExpandedMenuFeature.Instance._menuOffset.Value != -1)
+            if (menu is not ItemGrabMenu { context: Chest { playerChest: { Value: true } } chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
-                return ExpandedMenuFeature.Instance._menuOffset.Value;
-            }
-
-            if (menu is not ItemGrabMenu { context: Chest chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
-            {
-                return ExpandedMenuFeature.Instance._menuOffset.Value = 0; // Vanilla
+                return 0; // Vanilla
             }
 
             int rows = ExpandedMenuFeature.MenuRows(menu);
-            return ExpandedMenuFeature.Instance._menuOffset.Value = Game1.tileSize * (rows - 3);
+            return Game1.tileSize * (rows - 3);
         }
 
         private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
@@ -320,10 +301,6 @@
             if (!ReferenceEquals(this._chest.Value, e.Chest))
             {
                 this._chest.Value = e.Chest;
-                this._attached.Value = false;
-                this._menuCapacity.Value = 0;
-                this._menuRows.Value = 0;
-                this._menuOffset.Value = -1;
             }
 
             int offset = ExpandedMenuFeature.MenuOffset(e.ItemGrabMenu);
@@ -351,23 +328,17 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._attached.Value = false;
-                this._menuCapacity.Value = 0;
-                this._menuRows.Value = 0;
-                this._menuOffset.Value = -1;
+                this._inputEvents.ButtonsChanged -= this.OnButtonsChanged;
+                this._inputEvents.MouseWheelScrolled -= this.OnMouseWheelScrolled;
                 return;
             }
 
-            this._attached.Value = true;
+            this._inputEvents.ButtonsChanged += this.OnButtonsChanged;
+            this._inputEvents.MouseWheelScrolled += this.OnMouseWheelScrolled;
         }
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (!this._attached.Value)
-            {
-                return;
-            }
-
             switch (e.Delta)
             {
                 case > 0:
@@ -383,11 +354,6 @@
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            if (!this._attached.Value)
-            {
-                return;
-            }
-
             if (this._modConfigService.ModConfig.ScrollUp.JustPressed())
             {
                 this._displayedChestInventoryService.Offset--;
