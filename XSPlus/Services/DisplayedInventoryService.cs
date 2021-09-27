@@ -54,6 +54,51 @@
         }
 
         /// <summary>
+        /// Gets or sets the number of rows the currently displayed items are offset by.
+        /// </summary>
+        public int Offset
+        {
+            get => this._offset.Value;
+            set
+            {
+                this._range.Value.Maximum = Math.Max(0, (this._items.Value.Count.RoundUp(this._columns.Value) / this._columns.Value) - this._menu.Value.rows);
+                value = this._range.Value.Clamp(value);
+                if (this._offset.Value != value)
+                {
+                    this._offset.Value = value;
+                    this.ReSyncInventory();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the displayed items.
+        /// </summary>
+        private IEnumerable<Item> Items
+        {
+            get
+            {
+                int offset = this._offset.Value * this._columns.Value;
+                for (int i = 0; i < this._items.Value.Count; i++)
+                {
+                    Item? item = this._items.Value.ElementAtOrDefault(i);
+                    if (item is null || !this.FilterMethod(item))
+                    {
+                        continue;
+                    }
+
+                    if (offset > 0)
+                    {
+                        offset--;
+                        continue;
+                    }
+
+                    yield return item;
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns and creates if needed an instance of the <see cref="DisplayedInventoryService"/> class.
         /// </summary>
         /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
@@ -83,51 +128,6 @@
         public void RemoveHandler(Func<Item, bool> handler)
         {
             this._filterItemHandlers.Value.Remove(handler);
-        }
-
-        /// <summary>
-        /// Gets the displayed items.
-        /// </summary>
-        public IEnumerable<Item> Items
-        {
-            get
-            {
-                int offset = this._offset.Value * this._columns.Value;
-                for (int i = 0; i < this._items.Value.Count; i++)
-                {
-                    Item? item = this._items.Value.ElementAtOrDefault(i);
-                    if (item is null || !this.FilterMethod(item))
-                    {
-                        continue;
-                    }
-
-                    if (offset > 0)
-                    {
-                        offset--;
-                        continue;
-                    }
-
-                    yield return item;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the number of rows the currently displayed items are offset by.
-        /// </summary>
-        public int Offset
-        {
-            get => this._offset.Value;
-            set
-            {
-                this._range.Value.Maximum = Math.Max(0, (this._items.Value.Count.RoundUp(this._columns.Value) / this._columns.Value) - this._menu.Value.rows);
-                value = this._range.Value.Clamp(value);
-                if (this._offset.Value != value)
-                {
-                    this._offset.Value = value;
-                    this.ReSyncInventory();
-                }
-            }
         }
 
         /// <summary>
@@ -176,7 +176,7 @@
 
         private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
         {
-            if (Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest chest } itemGrabMenu || !chest.playerChest.Value)
+            if (Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest { playerChest: { Value: true } } } itemGrabMenu)
             {
                 return actualInventory;
             }

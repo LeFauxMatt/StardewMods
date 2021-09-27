@@ -47,8 +47,9 @@
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {
-            if (__instance.context is not Chest chest || !chest.playerChest.Value)
+            if (__instance.context is not Chest { playerChest: { Value: true } } chest)
             {
+                ItemGrabMenuConstructedService.Instance.InvokeAll(__instance, null);
                 return;
             }
 
@@ -57,7 +58,7 @@
             ItemGrabMenuConstructedService.Instance.InvokeAll(__instance, chest);
         }
 
-        private void InvokeAll(ItemGrabMenu itemGrabMenu, Chest chest)
+        private void InvokeAll(ItemGrabMenu itemGrabMenu, Chest? chest)
         {
             var eventArgs = new ItemGrabMenuEventArgs(itemGrabMenu, chest);
             this.ItemGrabMenuConstructed?.Invoke(this, eventArgs);
