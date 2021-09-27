@@ -1,6 +1,5 @@
 ﻿namespace XSPlus
 {
-    using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
@@ -78,12 +77,13 @@
             this._featureManager = FeatureManager.Init(this.Helper, harmony, modConfigService);
             this._featureManager.AddFeature(new AccessCarriedFeature(this.Helper.Input));
             this._featureManager.AddFeature(new CapacityFeature(modConfigService));
-            this._featureManager.AddFeature(new ColorPickerFeature(this.Helper.Content, itemGrabMenuConstructedService, itemGrabMenuChangedService, renderedActiveMenuService));
-            this._featureManager.AddFeature(new CraftFromChestFeature(this.Helper.Events.GameLoop, this.Helper.Input, modConfigService));
-            this._featureManager.AddFeature(new ExpandedMenuFeature(this.Helper.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService));
+            this._featureManager.AddFeature(new CategorizeChestFeature(this.Helper, modConfigService, itemGrabMenuChangedService, renderedActiveMenuService));
+            this._featureManager.AddFeature(new ColorPickerFeature(this.Helper.Content, this.Helper.Events.Input, itemGrabMenuConstructedService, itemGrabMenuChangedService, renderedActiveMenuService));
+            this._featureManager.AddFeature(new CraftFromChestFeature(this.Helper.Input, this.Helper.Events.GameLoop, modConfigService));
+            this._featureManager.AddFeature(new ExpandedMenuFeature(this.Helper.Input, this.Helper.Events.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService));
             this._featureManager.AddFeature(new FilterItemsFeature(itemGrabMenuChangedService, highlightPlayerItemsService));
-            this._featureManager.AddFeature(new InventoryTabsFeature(this.Helper.Content, this.Helper.Input, this.Helper.Translation, modConfigService, itemGrabMenuChangedService, displayedChestInventoryService, renderingActiveMenuService, renderedActiveMenuService));
-            this._featureManager.AddFeature(new SearchItemsFeature(this.Helper.Content, this.Helper.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService, renderedActiveMenuService));
+            this._featureManager.AddFeature(new InventoryTabsFeature(this.Helper.Content, this.Helper.Input, this.Helper.Translation, this.Helper.Events.Input, modConfigService, itemGrabMenuChangedService, displayedChestInventoryService, renderingActiveMenuService, renderedActiveMenuService));
+            this._featureManager.AddFeature(new SearchItemsFeature(this.Helper.Content, this.Helper.Input, this.Helper.Events.GameLoop, this.Helper.Events.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService, renderedActiveMenuService));
             this._featureManager.AddFeature(new StashToChestFeature(this.Helper.Input, modConfigService));
             this._featureManager.AddFeature(new UnbreakableFeature());
             this._featureManager.AddFeature(new UnplaceableFeature());

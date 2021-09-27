@@ -4,6 +4,7 @@
 
 * [Access Carried](#access-carried)
 * [Capacity](#capacity)
+* [Categorize Chest](#categorize-chest)
 * [Color Picker](#color-picker)
 * [Craft From Chest](#craft-from-chest)
 * [Expanded Menu](#expanded-menu)
@@ -40,6 +41,11 @@ Allows chest inventory to be accessed while held.
 ### Capacity
 
 Allows chest to hold additional items.
+
+### Categorize Chest
+
+Assign categories to chests used with the stash to chest feature, and with Automate to only accept
+items that are part of the chest's assigned categories.
 
 ### Color Picker
 
