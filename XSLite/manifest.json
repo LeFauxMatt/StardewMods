@@ -2,7 +2,7 @@
   "Name": "eXpanded Storage (Lite)",
   "Author": "furyx639",
   "Version": "1.7.1-beta.8",
-  "Description": "Mod which allows Content Packs to add custom storage.",
+  "Description": "Framework that adds new chests.",
   "UniqueID": "furyx639.ExpandedStorage",
   "EntryDll": "XSLite.dll",
   "MinimumApiVersion": "3.12.6",
