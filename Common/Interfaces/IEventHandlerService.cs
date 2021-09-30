@@ -1,4 +1,4 @@
-﻿namespace XSPlus.Interfaces
+﻿namespace Common.Interfaces
 {
     /// <summary>
     /// Service to handle creation/invocation of an event.

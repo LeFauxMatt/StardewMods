@@ -2,11 +2,12 @@
 {
     using System.Diagnostics.CodeAnalysis;
     using Common.Helpers;
+    using Common.Models;
+    using Common.Services;
     using Common.UI;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
-    using Models;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -32,10 +33,11 @@
         private MixInfo _setSourceItemPatch;
 
         private ColorPickerFeature(
+            ModConfigService modConfigService,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             RenderedActiveMenuService renderedActiveMenuService)
-            : base("ColorPicker")
+            : base("ColorPicker", modConfigService)
         {
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
@@ -46,6 +48,24 @@
         /// Gets or sets the instance of <see cref="ColorPickerFeature"/>.
         /// </summary>
         private static ColorPickerFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="ColorPickerFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ColorPickerFeature"/> class.</returns>
+        public static ColorPickerFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
+            return ColorPickerFeature.Instance ??= new ColorPickerFeature(
+                modConfigService,
+                itemGrabMenuConstructedService,
+                itemGrabMenuChangedService,
+                renderedActiveMenuService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -84,22 +104,6 @@
             Mixin.Unpatch(this._setSourceItemPatch);
         }
 
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ColorPickerFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ColorPickerFeature"/> class.</returns>
-        public static ColorPickerFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return ColorPickerFeature.Instance ??= new ColorPickerFeature(
-                itemGrabMenuConstructedService,
-                itemGrabMenuChangedService,
-                renderedActiveMenuService);
-        }
-
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
@@ -109,10 +113,8 @@
                 return;
             }
 
-            __instance.chestColorPicker = null;
             __instance.colorPickerToggleButton = null;
             __instance.discreteColorPickerCC = null;
-            __instance.RepositionSideButtons();
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -128,11 +130,8 @@
             }
 
             // Remove vanilla color picker
-            e.ItemGrabMenu.colorPickerToggleButton = null;
             e.ItemGrabMenu.chestColorPicker = null;
             e.ItemGrabMenu.discreteColorPickerCC = null;
-            e.ItemGrabMenu.SetupBorderNeighbors();
-            e.ItemGrabMenu.RepositionSideButtons();
         }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
@@ -166,34 +165,44 @@
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }
 
-            int x = this._hslSlider.Value.Area.Left;
-            int y = this._hslSlider.Value.Area.Top - (IClickableMenu.borderWidth / 2) - Game1.tileSize;
+            var x = this._hslSlider.Value.Area.Left;
+            var y = this._hslSlider.Value.Area.Top - (IClickableMenu.borderWidth / 2) - Game1.tileSize;
             this._fakeChest.Value.draw(e.SpriteBatch, x, y, 1f, true);
             this._hslSlider.Value.Draw(e.SpriteBatch);
         }
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
             {
                 return;
             }
 
-            if (e.Button == SButton.MouseLeft && this._hslSlider.Value.MouseLeftButtonPressed())
+            if (Game1.player.showChestColorPicker && this._hslSlider.Value.MouseLeftButtonPressed())
             {
                 Game1.playSound("coin");
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
+                return;
+            }
+
+            // Override color picker
+            var point = Game1.getMousePosition(true);
+            if (this._menu.Value.colorPickerToggleButton.containsPoint(point.X, point.Y))
+            {
+                Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
+                Game1.playSound("drumkit6");
+                Input.Suppress(SButton.MouseLeft);
             }
         }
 
         private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker || e.Button != SButton.MouseLeft)
             {
                 return;
             }
@@ -207,7 +216,7 @@
 
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }
@@ -220,7 +229,7 @@
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }

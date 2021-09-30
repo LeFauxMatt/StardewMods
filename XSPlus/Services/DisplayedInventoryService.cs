@@ -7,13 +7,13 @@
     using Common.Enums;
     using Common.Extensions;
     using Common.Helpers;
+    using Common.Interfaces;
     using Common.Models;
+    using Common.Services;
     using CommonHarmony;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Interfaces;
     using Microsoft.Xna.Framework.Graphics;
-    using Models;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
@@ -75,8 +75,8 @@
         {
             get
             {
-                int offset = this._offset.Value * this._columns.Value;
-                for (int i = 0; i < this._items.Value.Count; i++)
+                var offset = this._offset.Value * this._columns.Value;
+                for (var i = 0; i < this._items.Value.Count; i++)
                 {
                     var item = this._items.Value.ElementAtOrDefault(i);
                     if (item is null || !this.FilterMethod(item))
@@ -131,10 +131,10 @@
         public void ReSyncInventory()
         {
             IList<Item> items = this.Items.Take(this._menu.Value.inventory.Count).ToList();
-            for (int i = 0; i < this._menu.Value.inventory.Count; i++)
+            for (var i = 0; i < this._menu.Value.inventory.Count; i++)
             {
                 var item = items.ElementAtOrDefault(i);
-                int index = item is not null ? this._items.Value.IndexOf(item) : int.MaxValue;
+                var index = item is not null ? this._items.Value.IndexOf(item) : int.MaxValue;
                 this._menu.Value.inventory[i].name = index.ToString();
             }
         }

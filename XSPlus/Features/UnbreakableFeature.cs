@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
@@ -11,8 +12,8 @@
     {
         private MixInfo _performToolActionPatch;
 
-        private UnbreakableFeature()
-            : base("Unbreakable")
+        private UnbreakableFeature(ModConfigService modConfigService)
+            : base("Unbreakable", modConfigService)
         {
         }
 
@@ -20,6 +21,17 @@
         /// Gets or sets the instance of <see cref="UnbreakableFeature"/>.
         /// </summary>
         private static UnbreakableFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="UnbreakableFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="UnbreakableFeature"/> class.</returns>
+        public static UnbreakableFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return UnbreakableFeature.Instance ??= new UnbreakableFeature(modConfigService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -36,16 +48,6 @@
         {
             // Patches
             Mixin.Unpatch(this._performToolActionPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="UnbreakableFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="UnbreakableFeature"/> class.</returns>
-        public static UnbreakableFeature GetSingleton(ServiceManager serviceManager)
-        {
-            return UnbreakableFeature.Instance ??= new UnbreakableFeature();
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

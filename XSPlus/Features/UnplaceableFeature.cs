@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
@@ -11,8 +12,8 @@
     {
         private MixInfo _placementActionPatch;
 
-        private UnplaceableFeature()
-            : base("Unplaceable")
+        private UnplaceableFeature(ModConfigService modConfigService)
+            : base("Unplaceable", modConfigService)
         {
         }
 
@@ -20,6 +21,17 @@
         /// Gets or sets the instance of <see cref="UnplaceableFeature"/>.
         /// </summary>
         private static UnplaceableFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="UnplaceableFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="UnplaceableFeature"/> class.</returns>
+        public static UnplaceableFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return UnplaceableFeature.Instance ??= new UnplaceableFeature(modConfigService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -36,16 +48,6 @@
         {
             // Patches
             Mixin.Unpatch(this._placementActionPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="UnplaceableFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="UnplaceableFeature"/> class.</returns>
-        public static UnplaceableFeature GetSingleton(ServiceManager serviceManager)
-        {
-            return UnplaceableFeature.Instance ??= new UnplaceableFeature();
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

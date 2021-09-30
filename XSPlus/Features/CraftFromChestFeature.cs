@@ -5,16 +5,15 @@
     using System.Linq;
     using System.Reflection.Emit;
     using Common.Helpers;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Microsoft.Xna.Framework;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
-    using StardewValley.Network;
     using StardewValley.Objects;
 
     /// <inheritdoc />
@@ -29,7 +28,7 @@
         private MixInfo _consumeIngredientsPatch;
 
         private CraftFromChestFeature(ModConfigService modConfigService)
-            : base("CraftFromChest")
+            : base("CraftFromChest", modConfigService)
         {
             this._modConfigService = modConfigService;
         }
@@ -47,6 +46,17 @@
                 this._cachedGameChests.Value ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
                 return this._cachedEnabledChests.Value ??= this._cachedPlayerChests.Value.Union(this._cachedGameChests.Value).ToList();
             }
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="CraftFromChestFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="CraftFromChestFeature"/> class.</returns>
+        public static CraftFromChestFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return CraftFromChestFeature.Instance ??= new CraftFromChestFeature(modConfigService);
         }
 
         /// <inheritdoc/>
@@ -83,22 +93,11 @@
             Mixin.Unpatch(this._consumeIngredientsPatch);
         }
 
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="CraftFromChestFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CraftFromChestFeature"/> class.</returns>
-        public static CraftFromChestFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return CraftFromChestFeature.Instance ??= new CraftFromChestFeature(modConfigService);
-        }
-
         /// <inheritdoc/>
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
         protected internal override bool IsEnabledForItem(Item item)
         {
-            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out string range))
+            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range))
             {
                 return false;
             }
@@ -237,8 +236,8 @@
             private void SuccessCallback()
             {
                 this.Exited = false;
-                int width = 800 + (IClickableMenu.borderWidth * 2);
-                int height = 600 + (IClickableMenu.borderWidth * 2);
+                var width = 800 + (IClickableMenu.borderWidth * 2);
+                var height = 600 + (IClickableMenu.borderWidth * 2);
                 var pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
                 Game1.activeClickableMenu = new CraftingPage((int)pos.X, (int)pos.Y, width, height, false, true, this._chests)
                 {

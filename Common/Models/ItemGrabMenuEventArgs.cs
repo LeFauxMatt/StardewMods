@@ -1,4 +1,4 @@
-﻿namespace XSPlus.Models
+﻿namespace Common.Models
 {
     using System;
     using StardewValley.Menus;

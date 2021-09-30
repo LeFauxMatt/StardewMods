@@ -5,8 +5,10 @@
     using System.Linq;
     using System.Reflection.Emit;
     using Common.Helpers;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
+    using Services;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
@@ -21,8 +23,8 @@
         private MixInfo _collectPatch;
         private MixInfo _addItemToInventoryPatch;
 
-        private VacuumItemsFeature()
-            : base("VacuumItems")
+        private VacuumItemsFeature(ModConfigService modConfigService)
+            : base("VacuumItems", modConfigService)
         {
         }
 
@@ -36,6 +38,17 @@
             get => this._cachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
                 .Where(this.IsEnabledForItem)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="VacuumItemsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="VacuumItemsFeature"/> class.</returns>
+        public static VacuumItemsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return VacuumItemsFeature.Instance ??= new VacuumItemsFeature(modConfigService);
         }
 
         /// <inheritdoc/>
@@ -66,16 +79,6 @@
             Mixin.Unpatch(this._addItemToInventoryPatch);
         }
 
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="VacuumItemsFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="VacuumItemsFeature"/> class.</returns>
-        public static VacuumItemsFeature GetSingleton(ServiceManager serviceManager)
-        {
-            return VacuumItemsFeature.Instance ??= new VacuumItemsFeature();
-        }
-
         private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
         {
             foreach (var instruction in instructions)
@@ -102,7 +105,7 @@
             }
 
             Item? remaining = null;
-            int stack = item.Stack;
+            var stack = item.Stack;
             foreach (var chest in VacuumItemsFeature.Instance.EnabledChests)
             {
                 remaining = chest.addItem(item);
@@ -129,7 +132,7 @@
             }
 
             VacuumItemsFeature.IsVacuuming.Value = true;
-            bool success = farmer.addItemToInventoryBool(item, makeActiveObject);
+            var success = farmer.addItemToInventoryBool(item, makeActiveObject);
             VacuumItemsFeature.IsVacuuming.Value = false;
             return success;
         }

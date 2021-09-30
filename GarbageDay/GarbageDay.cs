@@ -17,10 +17,6 @@
     using StardewValley.Objects;
     using xTile;
     using xTile.Dimensions;
-    using xTile.Layers;
-    using xTile.ObjectModel;
-    using xTile.Tiles;
-    using Object = StardewValley.Object;
 
     public class GarbageDay : Mod, IAssetEditor, IAssetLoader
     {

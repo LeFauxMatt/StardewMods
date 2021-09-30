@@ -1,21 +1,26 @@
 ﻿namespace XSPlus
 {
     using System.Collections.Generic;
+    using Common.Services;
+    using Services;
     using StardewValley;
 
     /// <summary>
     /// Encapsulates logic for features added by this mod.
     /// </summary>
-    internal abstract class BaseFeature
+    internal abstract class BaseFeature : BaseService
     {
-        /// <summary>Gets the name of the feature used for config/API.</summary>
         private readonly IDictionary<KeyValuePair<string, string>, bool> _enabledByModData = new Dictionary<KeyValuePair<string, string>, bool>();
+        private readonly ModConfigService _modConfigService;
 
         /// <summary>Initializes a new instance of the <see cref="BaseFeature"/> class.</summary>
         /// <param name="featureName">The name of the feature used for config/API.</param>
-        private protected BaseFeature(string featureName)
+        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig"/>.</param>
+        private protected BaseFeature(string featureName, ModConfigService modConfigService)
+            : base(featureName)
         {
             this.FeatureName = featureName;
+            this._modConfigService = modConfigService;
         }
 
         /// <summary>Gets the name of the feature used for config/API.</summary>
@@ -50,11 +55,11 @@
         /// <returns>Returns true if the feature is currently enabled for the item.</returns>
         protected internal virtual bool IsEnabledForItem(Item item)
         {
-            bool isEnabledByModData = FeatureManager.IsFeatureEnabledGlobally(this.FeatureName);
+            var isEnabledByModData = this._modConfigService.ModConfig.Global.TryGetValue(this.FeatureName, out var option) && option;
 
             foreach (var modData in this._enabledByModData)
             {
-                if (!item.modData.TryGetValue(modData.Key.Key, out string value) || value != modData.Key.Value)
+                if (!item.modData.TryGetValue(modData.Key.Key, out var value) || value != modData.Key.Value)
                 {
                     continue;
                 }

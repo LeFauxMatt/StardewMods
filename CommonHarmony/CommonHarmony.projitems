@@ -10,10 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Mixin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MixInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatchType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Mixin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\MixInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemGrabMenuConstructedService.cs" />
   </ItemGroup>
 </Project>

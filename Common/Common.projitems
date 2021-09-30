@@ -34,11 +34,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\XSLiteIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\IXSPlusAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\XSPlusIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventHandlerService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\GradientBar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ItemGrabMenuEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Slider.cs" />
-    <Folder Include="$(MSBuildThisFileDirectory)Services" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemGrabMenuChangedService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\RenderedActiveMenuService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\RenderingActiveMenuService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ServiceManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\HSLSlider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />
   </ItemGroup>

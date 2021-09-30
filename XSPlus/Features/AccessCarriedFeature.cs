@@ -2,8 +2,10 @@
 {
     using System.Diagnostics.CodeAnalysis;
     using Common.Helpers;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
+    using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewValley;
@@ -14,8 +16,8 @@
     {
         private MixInfo _addItemPatch;
 
-        private AccessCarriedFeature()
-            : base("AccessCarried")
+        private AccessCarriedFeature(ModConfigService modConfigService)
+            : base("AccessCarried", modConfigService)
         {
         }
 
@@ -23,6 +25,17 @@
         /// Gets or sets the instance of <see cref="AccessCarriedFeature"/>.
         /// </summary>
         private static AccessCarriedFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="AccessCarriedFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="AccessCarriedFeature"/> class.</returns>
+        public static AccessCarriedFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return AccessCarriedFeature.Instance ??= new AccessCarriedFeature(modConfigService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -45,16 +58,6 @@
 
             // Patches
             Mixin.Unpatch(this._addItemPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="AccessCarriedFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="AccessCarriedFeature"/> class.</returns>
-        public static AccessCarriedFeature GetSingleton(ServiceManager serviceManager)
-        {
-            return AccessCarriedFeature.Instance ??= new AccessCarriedFeature();
         }
 
         /// <summary>Prevent adding chest into itself.</summary>

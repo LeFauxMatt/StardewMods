@@ -6,6 +6,7 @@
     using Common.Enums;
     using Common.Helpers;
     using Common.Integrations.XSPlus;
+    using Common.Services;
     using CommonHarmony.Services;
     using Features;
     using Services;
@@ -20,10 +21,8 @@
         /// <summary>Mod-specific prefix for modData.</summary>
         internal const string ModPrefix = "furyx639.ExpandedStorage";
 
-        private static XSPlus Instance = default!;
-        private readonly IXSPlusAPI _api = new XSPlusAPI();
-        private ServiceManager _serviceManager = default!;
-        private FeatureManager _featureManager = default!;
+        private static XSPlus Instance;
+        private IXSPlusAPI _api;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XSPlus"/> class.
@@ -74,36 +73,37 @@
             Locale.Init(this.Helper.Translation);
 
             // Services
-            this._serviceManager = new ServiceManager();
-            this._serviceManager.AddSingleton<ModConfigService>(this.Helper, this.ModManifest);
-            this._serviceManager.AddSingleton<ItemGrabMenuConstructedService>();
-            this._serviceManager.AddSingleton<ItemGrabMenuChangedService>();
-            this._serviceManager.AddSingleton<ItemGrabMenuSideButtonsService>();
-            this._serviceManager.AddSingleton<RenderingActiveMenuService>();
-            this._serviceManager.AddSingleton<RenderedActiveMenuService>();
-            this._serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Chest);
-            this._serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Player);
-            this._serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Chest);
-            this._serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Player);
+            var serviceManager = ServiceManager.GetSingleton();
+            serviceManager.AddSingleton<ModConfigService>(this.Helper, this.ModManifest);
+            serviceManager.AddSingleton<ItemGrabMenuConstructedService>();
+            serviceManager.AddSingleton<ItemGrabMenuChangedService>();
+            serviceManager.AddSingleton<ItemGrabMenuSideButtonsService>();
+            serviceManager.AddSingleton<RenderingActiveMenuService>();
+            serviceManager.AddSingleton<RenderedActiveMenuService>();
+            serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Chest);
+            serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Player);
+            serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Chest);
+            serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Player);
 
             // Features
-            this._featureManager = FeatureManager.GetSingleton(this._serviceManager);
-            this._featureManager.AddSingleton<AccessCarriedFeature>();
-            this._featureManager.AddSingleton<CapacityFeature>();
-            this._featureManager.AddSingleton<CategorizeChestFeature>();
-            this._featureManager.AddSingleton<ColorPickerFeature>();
-            this._featureManager.AddSingleton<CraftFromChestFeature>();
-            this._featureManager.AddSingleton<ExpandedMenuFeature>();
-            this._featureManager.AddSingleton<FilterItemsFeature>();
-            this._featureManager.AddSingleton<InventoryTabsFeature>();
-            this._featureManager.AddSingleton<SearchItemsFeature>();
-            this._featureManager.AddSingleton<StashToChestFeature>();
-            this._featureManager.AddSingleton<UnbreakableFeature>();
-            this._featureManager.AddSingleton<UnplaceableFeature>();
-            this._featureManager.AddSingleton<VacuumItemsFeature>();
+            serviceManager.AddSingleton<AccessCarriedFeature>();
+            serviceManager.AddSingleton<CapacityFeature>();
+            serviceManager.AddSingleton<CategorizeChestFeature>();
+            serviceManager.AddSingleton<ColorPickerFeature>();
+            serviceManager.AddSingleton<CraftFromChestFeature>();
+            serviceManager.AddSingleton<ExpandedMenuFeature>();
+            serviceManager.AddSingleton<FilterItemsFeature>();
+            serviceManager.AddSingleton<InventoryTabsFeature>();
+            serviceManager.AddSingleton<SearchItemsFeature>();
+            serviceManager.AddSingleton<StashToChestFeature>();
+            serviceManager.AddSingleton<UnbreakableFeature>();
+            serviceManager.AddSingleton<UnplaceableFeature>();
+            serviceManager.AddSingleton<VacuumItemsFeature>();
 
             // Activate
-            this._featureManager.ActivateFeatures();
+            serviceManager.ActivateFeatures();
+
+            this._api = new XSPlusAPI(serviceManager);
         }
 
         /// <inheritdoc />

@@ -6,12 +6,13 @@
     using System.Reflection.Emit;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
+    using Common.Models;
+    using Common.Services;
     using CommonHarmony;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using Models;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -48,7 +49,7 @@
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             DisplayedInventoryService displayedChestInventoryService,
             RenderedActiveMenuService renderedActiveMenuService)
-            : base("SearchItems")
+            : base("SearchItems", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
@@ -61,6 +62,26 @@
         /// Gets or sets the instance of <see cref="SearchItemsFeature"/>.
         /// </summary>
         private static SearchItemsFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="SearchItemsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="SearchItemsFeature"/> class.</returns>
+        public static SearchItemsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
+            return SearchItemsFeature.Instance ??= new SearchItemsFeature(
+                modConfigService,
+                itemGrabMenuConstructedService,
+                itemGrabMenuChangedService,
+                displayedChestInventoryService,
+                renderedActiveMenuService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -100,26 +121,6 @@
             // Patches
             Mixin.Unpatch(this._itemGrabMenuDrawPatch);
             Mixin.Unpatch(this._menuWithInventoryDrawPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="SearchItemsFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="SearchItemsFeature"/> class.</returns>
-        public static SearchItemsFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return SearchItemsFeature.Instance ??= new SearchItemsFeature(
-                modConfigService,
-                itemGrabMenuConstructedService,
-                itemGrabMenuChangedService,
-                displayedChestInventoryService,
-                renderedActiveMenuService);
         }
 
         /// <summary>Move/resize top dialogue box by search bar height.</summary>
@@ -315,8 +316,8 @@
             this._searchField.Value.Selected = false;
             this._searchArea.Value.bounds = new Rectangle(this._searchField.Value.X, this._searchField.Value.Y, this._searchField.Value.Width, this._searchField.Value.Height);
             this._searchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - (14 * Game1.pixelZoom) + 6, 32, 32);
-            int x = e.ItemGrabMenu.xPositionOnScreen - 480 - 8;
-            int y = e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
+            var x = e.ItemGrabMenu.xPositionOnScreen - 480 - 8;
+            var y = e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)

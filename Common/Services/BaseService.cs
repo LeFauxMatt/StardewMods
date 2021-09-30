@@ -1,4 +1,4 @@
-﻿namespace XSPlus
+﻿namespace Common.Services
 {
     /// <summary>
     /// Encapsulates services that support the features of this mod.

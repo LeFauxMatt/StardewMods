@@ -3,6 +3,7 @@
     using System;
     using Common.Helpers;
     using Common.Integrations.GenericModConfigMenu;
+    using Common.Services;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -15,13 +16,18 @@
         private static ModConfigService Instance;
         private readonly string[] _configChoices = { "Default", "Enable", "Disable" };
         private readonly string[] _rangeChoices = { "Inventory", "Location", "World", "Default", "Disabled" };
+        private readonly ServiceManager _serviceManager;
         private readonly IModHelper _helper;
         private readonly GenericModConfigMenuIntegration _modConfigMenu;
         private readonly IManifest _manifest;
 
-        private ModConfigService(IModHelper helper, IManifest manifest)
+        private ModConfigService(
+            ServiceManager serviceManager,
+            IModHelper helper,
+            IManifest manifest)
             : base("ModConfig")
         {
+            this._serviceManager = serviceManager;
             this._helper = helper;
             this._manifest = manifest;
             this._modConfigMenu = new GenericModConfigMenuIntegration(this._helper.ModRegistry);
@@ -40,7 +46,7 @@
         /// <returns>Returns an instance of the <see cref="ModConfigService"/> class.</returns>
         public static ModConfigService GetSingleton(ServiceManager serviceManager, IModHelper helper, IManifest manifest)
         {
-            return ModConfigService.Instance ??= new ModConfigService(helper, manifest);
+            return ModConfigService.Instance ??= new ModConfigService(serviceManager, helper, manifest);
         }
 
         /// <summary>
@@ -187,7 +193,7 @@
 
         private Func<string> GetConfig(string featureName)
         {
-            return () => this.ModConfig.Global.TryGetValue(featureName, out bool global)
+            return () => this.ModConfig.Global.TryGetValue(featureName, out var global)
                 ? (global ? "Enable" : "Disable")
                 : "Default";
         }
@@ -200,15 +206,15 @@
                 {
                     case "Enable":
                         this.ModConfig.Global[featureName] = true;
-                        FeatureManager.ActivateFeature(featureName);
+                        this._serviceManager.ActivateFeature(featureName);
                         break;
                     case "Disable":
                         this.ModConfig.Global[featureName] = false;
-                        FeatureManager.DeactivateFeature(featureName);
+                        this._serviceManager.DeactivateFeature(featureName);
                         break;
                     default:
                         this.ModConfig.Global.Remove(featureName);
-                        FeatureManager.ActivateFeature(featureName);
+                        this._serviceManager.ActivateFeature(featureName);
                         break;
                 }
             };

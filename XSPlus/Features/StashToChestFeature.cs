@@ -5,6 +5,7 @@
     using System.Linq;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
+    using Common.Services;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -21,7 +22,7 @@
         private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
 
         private StashToChestFeature(ModConfigService modConfigService)
-            : base("StashToChest")
+            : base("StashToChest", modConfigService)
         {
             this._modConfigService = modConfigService;
         }
@@ -39,6 +40,17 @@
                 this._cachedGameChests.Value ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
                 return this._cachedEnabledChests.Value ??= this._cachedPlayerChests.Value.Union(this._cachedGameChests.Value).ToList();
             }
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="StashToChestFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="StashToChestFeature"/> class.</returns>
+        public static StashToChestFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return StashToChestFeature.Instance ??= new StashToChestFeature(modConfigService);
         }
 
         /// <inheritdoc/>
@@ -59,22 +71,11 @@
             Events.Player.Warped -= this.OnWarped;
         }
 
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="StashToChestFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="StashToChestFeature"/> class.</returns>
-        public static StashToChestFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return StashToChestFeature.Instance ??= new StashToChestFeature(modConfigService);
-        }
-
         /// <inheritdoc/>
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
         protected internal override bool IsEnabledForItem(Item item)
         {
-            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out string range))
+            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range))
             {
                 return false;
             }
@@ -125,7 +126,7 @@
                 return;
             }
 
-            for (int i = Game1.player.Items.Count - 1; i >= 0; i--)
+            for (var i = Game1.player.Items.Count - 1; i >= 0; i--)
             {
                 var item = Game1.player.Items[i];
                 if (item is not null)
@@ -141,12 +142,12 @@
         private Item TryAddItem(Item item)
         {
             var itemMatcher = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol);
-            uint stack = (uint)item.Stack;
+            var stack = (uint)item.Stack;
             foreach (var chest in this.EnabledChests)
             {
-                bool allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
+                var allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
 
-                if (chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out string filterItems))
+                if (chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems))
                 {
                     itemMatcher.SetSearch(filterItems);
 

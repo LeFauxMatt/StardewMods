@@ -6,11 +6,12 @@
     using System.Reflection.Emit;
     using Common.Extensions;
     using Common.Helpers;
+    using Common.Models;
+    using Common.Services;
     using CommonHarmony;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework.Graphics;
-    using Models;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -39,7 +40,7 @@
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             DisplayedInventoryService displayedChestInventoryService)
-            : base("ExpandedMenu")
+            : base("ExpandedMenu", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
@@ -51,6 +52,24 @@
         /// Gets or sets the instance of <see cref="ExpandedMenuFeature"/>.
         /// </summary>
         private static ExpandedMenuFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="ExpandedMenuFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature"/> class.</returns>
+        public static ExpandedMenuFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            return ExpandedMenuFeature.Instance ??= new ExpandedMenuFeature(
+                modConfigService,
+                itemGrabMenuConstructedService,
+                itemGrabMenuChangedService,
+                displayedChestInventoryService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -89,24 +108,6 @@
             Mixin.Unpatch(this._itemGrabMenuConstructorPatch);
             Mixin.Unpatch(this._itemGrabMenuDrawPatch);
             Mixin.Unpatch(this._menuWithInventoryDrawPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ExpandedMenuFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature"/> class.</returns>
-        public static ExpandedMenuFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
-            return ExpandedMenuFeature.Instance ??= new ExpandedMenuFeature(
-                modConfigService,
-                itemGrabMenuConstructedService,
-                itemGrabMenuChangedService,
-                displayedChestInventoryService);
         }
 
         /// <summary>Generate additional slots/rows for top inventory menu.</summary>
@@ -269,8 +270,8 @@
                 return -1; // Vanilla
             }
 
-            int capacity = chest.GetActualCapacity();
-            int maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
+            var capacity = chest.GetActualCapacity();
+            var maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
             return capacity switch
             {
                 < 72 => Math.Min(maxMenuRows * 12, capacity.RoundUp(12)), // Variable
@@ -285,8 +286,8 @@
                 return 3; // Vanilla
             }
 
-            int capacity = chest.GetActualCapacity();
-            int maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
+            var capacity = chest.GetActualCapacity();
+            var maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
             return capacity switch
             {
                 < 72 => (int)Math.Min(maxMenuRows, Math.Ceiling(capacity / 12f)),
@@ -301,7 +302,7 @@
                 return 0; // Vanilla
             }
 
-            int rows = ExpandedMenuFeature.MenuRows(menu);
+            var rows = ExpandedMenuFeature.MenuRows(menu);
             return Game1.tileSize * (rows - 3);
         }
 
@@ -317,7 +318,7 @@
                 this._chest.Value = e.Chest;
             }
 
-            int offset = ExpandedMenuFeature.MenuOffset(e.ItemGrabMenu);
+            var offset = ExpandedMenuFeature.MenuOffset(e.ItemGrabMenu);
             e.ItemGrabMenu.height += offset;
             e.ItemGrabMenu.inventory.movePosition(0, offset);
             if (e.ItemGrabMenu.okButton is not null)

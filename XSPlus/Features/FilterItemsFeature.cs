@@ -3,9 +3,10 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Common.Helpers.ItemMatcher;
+    using Common.Models;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Models;
     using Services;
     using StardewModdingAPI.Utilities;
     using StardewValley;
@@ -23,9 +24,10 @@
         private MixInfo _addItemPatch;
 
         private FilterItemsFeature(
+            ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             HighlightItemsService highlightPlayerItemsService)
-            : base("FilterItems")
+            : base("FilterItems", modConfigService)
         {
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._highlightPlayerItemsService = highlightPlayerItemsService;
@@ -35,6 +37,22 @@
         /// Gets the instance of <see cref="FilterItemsFeature"/>.
         /// </summary>
         protected internal static FilterItemsFeature Instance { get; private set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="FilterItemsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="FilterItemsFeature"/> class.</returns>
+        public static FilterItemsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var highlightPlayerItemsService = serviceManager.RequestService<HighlightItemsService>("HighlightPlayerItems");
+            return FilterItemsFeature.Instance ??= new FilterItemsFeature(
+                modConfigService,
+                itemGrabMenuChangedService,
+                highlightPlayerItemsService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -59,20 +77,6 @@
 
             // Patches
             Mixin.Unpatch(this._addItemPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="FilterItemsFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="FilterItemsFeature"/> class.</returns>
-        public static FilterItemsFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var highlightPlayerItemsService = serviceManager.RequestService<HighlightItemsService>("HighlightPlayerItems");
-            return FilterItemsFeature.Instance ??= new FilterItemsFeature(
-                itemGrabMenuChangedService,
-                highlightPlayerItemsService);
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

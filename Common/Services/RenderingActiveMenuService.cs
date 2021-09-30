@@ -1,8 +1,8 @@
-﻿namespace XSPlus.Services
+﻿namespace Common.Services
 {
     using System;
-    using Common.Helpers;
-    using Interfaces;
+    using Common.Interfaces;
+    using Helpers;
     using Microsoft.Xna.Framework;
     using Models;
     using StardewModdingAPI;

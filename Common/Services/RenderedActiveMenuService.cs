@@ -1,8 +1,8 @@
-﻿namespace XSPlus.Services
+﻿namespace Common.Services
 {
     using System;
-    using Common.Helpers;
-    using Interfaces;
+    using Common.Interfaces;
+    using Helpers;
     using Microsoft.Xna.Framework;
     using Models;
     using StardewModdingAPI;
@@ -24,7 +24,7 @@
             itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
         }
 
-        private event EventHandler<RenderedActiveMenuEventArgs>? RenderedActiveMenu;
+        private event EventHandler<RenderedActiveMenuEventArgs> RenderedActiveMenu;
 
         /// <inheritdoc/>
         public void AddHandler(EventHandler<RenderedActiveMenuEventArgs> eventHandler)

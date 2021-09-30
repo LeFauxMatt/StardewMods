@@ -5,7 +5,6 @@
     using System.Linq;
     using Common.Extensions;
     using Common.Helpers.ItemMatcher;
-    using Common.Helpers.ItemRepository;
     using Microsoft.Xna.Framework;
     using StardewValley;
     using StardewValley.Objects;

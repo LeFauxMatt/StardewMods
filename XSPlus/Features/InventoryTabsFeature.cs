@@ -4,6 +4,8 @@
     using System.Linq;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
+    using Common.Models;
+    using Common.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Models;
@@ -38,7 +40,7 @@
             DisplayedInventoryService displayedChestInventoryService,
             RenderingActiveMenuService renderingActiveMenuService,
             RenderedActiveMenuService renderedActiveMenuService)
-            : base("InventoryTabs")
+            : base("InventoryTabs", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
@@ -51,6 +53,26 @@
         /// Gets or sets the instance of <see cref="InventoryTabsFeature"/>.
         /// </summary>
         private static InventoryTabsFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="InventoryTabsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="InventoryTabsFeature"/> class.</returns>
+        public static InventoryTabsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            var renderingActiveMenuService = serviceManager.RequestService<RenderingActiveMenuService>();
+            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
+            return InventoryTabsFeature.Instance ??= new InventoryTabsFeature(
+                modConfigService,
+                itemGrabMenuChangedService,
+                displayedChestInventoryService,
+                renderingActiveMenuService,
+                renderedActiveMenuService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -80,32 +102,12 @@
             Events.Input.CursorMoved -= this.OnCursorMoved;
         }
 
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="InventoryTabsFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="InventoryTabsFeature"/> class.</returns>
-        public static InventoryTabsFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
-            var renderingActiveMenuService = serviceManager.RequestService<RenderingActiveMenuService>();
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return InventoryTabsFeature.Instance ??= new InventoryTabsFeature(
-                modConfigService,
-                itemGrabMenuChangedService,
-                displayedChestInventoryService,
-                renderingActiveMenuService,
-                renderedActiveMenuService);
-        }
-
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this._tabs = Content.FromMod<List<Tab>>("assets/tabs.json");
             this._texture = Content.FromMod<Texture2D>("assets/tabs.png");
 
-            for (int i = 0; i < this._tabs.Count; i++)
+            for (var i = 0; i < this._tabs.Count; i++)
             {
                 this._tabs[i].Component = new ClickableTextureComponent(
                     bounds: new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
@@ -144,9 +146,9 @@
             }
 
             // Draw tabs between inventory menus along a horizontal axis
-            int x = this._menu.Value.ItemsToGrabMenu.xPositionOnScreen;
-            int y = this._menu.Value.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemsToGrabMenu.height + (1 * Game1.pixelZoom);
-            for (int i = 0; i < this._tabs.Count; i++)
+            var x = this._menu.Value.ItemsToGrabMenu.xPositionOnScreen;
+            var y = this._menu.Value.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemsToGrabMenu.height + (1 * Game1.pixelZoom);
+            for (var i = 0; i < this._tabs.Count; i++)
             {
                 Color color;
                 this._tabs[i].Component.bounds.X = x;
@@ -220,7 +222,7 @@
 
             // Check if any tab was clicked on.
             var point = Game1.getMousePosition(true);
-            for (int i = 0; i < this._tabs.Count; i++)
+            for (var i = 0; i < this._tabs.Count; i++)
             {
                 if (this._tabs[i].Component.containsPoint(point.X, point.Y))
                 {

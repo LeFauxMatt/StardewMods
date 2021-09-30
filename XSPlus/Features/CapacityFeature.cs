@@ -1,12 +1,12 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
     using StardewValley;
     using StardewValley.Objects;
-    using PatchInfo = HarmonyLib.PatchInfo;
 
     /// <inheritdoc />
     internal class CapacityFeature : FeatureWithParam<int>
@@ -15,7 +15,7 @@
         private MixInfo _capacityPatch;
 
         private CapacityFeature(ModConfigService modConfigService)
-            : base("Capacity")
+            : base("Capacity", modConfigService)
         {
             this._modConfigService = modConfigService;
         }
@@ -24,6 +24,17 @@
         /// Gets or sets the instance of <see cref="CapacityFeature"/>.
         /// </summary>
         private static CapacityFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="CapacityFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="CapacityFeature"/> class.</returns>
+        public static CapacityFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>("ModConfig");
+            return CapacityFeature.Instance ??= new CapacityFeature(modConfigService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -40,17 +51,6 @@
         {
             // Patches
             Mixin.Unpatch(this._capacityPatch);
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="CapacityFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CapacityFeature"/> class.</returns>
-        public static CapacityFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>("ModConfig");
-            return CapacityFeature.Instance ??= new CapacityFeature(modConfigService);
         }
 
         /// <inheritdoc/>
@@ -70,7 +70,7 @@
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
         {
-            if (!CapacityFeature.Instance.IsEnabledForItem(__instance) || !CapacityFeature.Instance.TryGetValueForItem(__instance, out int capacity))
+            if (!CapacityFeature.Instance.IsEnabledForItem(__instance) || !CapacityFeature.Instance.TryGetValueForItem(__instance, out var capacity))
             {
                 return;
             }

@@ -1,8 +1,9 @@
 ﻿namespace XSPlus.Features
 {
     using Common.Helpers;
+    using Common.Models;
+    using Common.Services;
     using Common.UI;
-    using Models;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -25,7 +26,7 @@
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             RenderedActiveMenuService renderedActiveMenuService)
-            : base("CategorizeChest")
+            : base("CategorizeChest", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
@@ -36,6 +37,20 @@
         /// Gets or sets the instance of <see cref="CategorizeChestFeature"/>.
         /// </summary>
         private static CategorizeChestFeature Instance { get; set; }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="CategorizeChestFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="CategorizeChestFeature"/> class.</returns>
+        public static CategorizeChestFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var itemGrabMenuSideButtonsService = serviceManager.RequestService<ItemGrabMenuSideButtonsService>();
+            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
+            return CategorizeChestFeature.Instance ??= new CategorizeChestFeature(modConfigService, itemGrabMenuChangedService, renderedActiveMenuService);
+        }
 
         /// <inheritdoc/>
         public override void Activate()
@@ -51,19 +66,6 @@
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
             this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
             Events.Input.ButtonPressed -= this.OnButtonPressed;
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="CategorizeChestFeature"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CategorizeChestFeature"/> class.</returns>
-        public static CategorizeChestFeature GetSingleton(ServiceManager serviceManager)
-        {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return CategorizeChestFeature.Instance ??= new CategorizeChestFeature(modConfigService, itemGrabMenuChangedService, renderedActiveMenuService);
         }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)

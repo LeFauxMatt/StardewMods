@@ -1,13 +1,13 @@
-﻿namespace XSPlus.Services
+﻿namespace CommonHarmony.Services
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
-    using CommonHarmony.Services;
+    using Common.Interfaces;
+    using Common.Models;
+    using Common.Services;
     using HarmonyLib;
-    using Interfaces;
-    using Models;
     using StardewValley;
     using StardewValley.Menus;
     using StardewValley.Objects;
@@ -27,7 +27,7 @@
                 nameof(ItemGrabMenuConstructedService.ItemGrabMenu_constructor_postfix));
         }
 
-        private event EventHandler<ItemGrabMenuEventArgs>? ItemGrabMenuConstructed;
+        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuConstructed;
 
         /// <inheritdoc/>
         public void AddHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)

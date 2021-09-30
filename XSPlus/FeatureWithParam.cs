@@ -1,6 +1,7 @@
 ﻿namespace XSPlus
 {
     using System.Collections.Generic;
+    using Services;
     using StardewValley;
 
     /// <inheritdoc />
@@ -10,8 +11,9 @@
 
         /// <summary>Initializes a new instance of the <see cref="FeatureWithParam{TParam}"/> class.</summary>
         /// <param name="featureName">The name of the feature used for config/API.</param>
-        internal FeatureWithParam(string featureName)
-            : base(featureName)
+        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig"/>.</param>
+        internal FeatureWithParam(string featureName, ModConfigService modConfigService)
+            : base(featureName, modConfigService)
         {
         }
 
@@ -40,7 +42,7 @@
         {
             foreach (var modData in this._values)
             {
-                if (!item.modData.TryGetValue(modData.Key.Key, out string value) || value != modData.Key.Value)
+                if (!item.modData.TryGetValue(modData.Key.Key, out var value) || value != modData.Key.Value)
                 {
                     continue;
                 }
