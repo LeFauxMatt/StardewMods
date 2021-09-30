@@ -69,7 +69,7 @@
         /// <inheritdoc/>
         public bool CanLoad<T>(IAssetInfo asset)
         {
-            string[] segments = PathUtilities.GetSegments(asset.AssetName);
+            var segments = PathUtilities.GetSegments(asset.AssetName);
             return segments.Length == 2
                    && segments.ElementAt(0).Equals("GarbageDay", StringComparison.OrdinalIgnoreCase)
                    && segments.ElementAt(1).Equals("Loot", StringComparison.OrdinalIgnoreCase);
@@ -97,9 +97,9 @@
                 return;
             }
 
-            for (int x = 0; x < map.Layers[0].LayerWidth; x++)
+            for (var x = 0; x < map.Layers[0].LayerWidth; x++)
             {
-                for (int y = 0; y < map.Layers[0].LayerHeight; y++)
+                for (var y = 0; y < map.Layers[0].LayerHeight; y++)
                 {
                     var layer = map.GetLayer("Buildings");
                     var tile = layer.PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size);
@@ -115,13 +115,13 @@
                         continue;
                     }
 
-                    string[] parts = property.ToString().Split(' ');
+                    var parts = property.ToString().Split(' ');
                     if (parts.Length != 2 || parts[0] != "Garbage")
                     {
                         continue;
                     }
 
-                    string whichCan = parts[1];
+                    var whichCan = parts[1];
                     if (string.IsNullOrWhiteSpace(whichCan))
                     {
                         continue;
@@ -154,7 +154,7 @@
 
         private void GarbageFill(string command, string[] args)
         {
-            if (args.Length < 1 || !int.TryParse(args[0], out int amount))
+            if (args.Length < 1 || !int.TryParse(args[0], out var amount))
             {
                 amount = 1;
             }
@@ -166,7 +166,7 @@
                     continue;
                 }
 
-                for (int i = 0; i < amount; i++)
+                for (var i = 0; i < amount; i++)
                 {
                     garbageCan.Value.AddLoot();
                 }
@@ -202,7 +202,7 @@
         {
             Utility.ForAllLocations(delegate(GameLocation location)
             {
-                string mapPath = PathUtilities.NormalizeAssetName(location.mapPath.Value);
+                var mapPath = PathUtilities.NormalizeAssetName(location.mapPath.Value);
                 foreach (var garbageCan in this._garbageCans.Where(gc => gc.Value.MapName.Equals(mapPath)))
                 {
                     garbageCan.Value.Location = location;
@@ -233,7 +233,7 @@
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             // Open Can
-            if (e.NewMenu is ItemGrabMenu { context: Chest chest } && chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out string whichCan) && this._garbageCans.TryGetValue(whichCan, out var garbageCan))
+            if (e.NewMenu is ItemGrabMenu { context: Chest chest } && chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan) && this._garbageCans.TryGetValue(whichCan, out var garbageCan))
             {
                 var character = Utility.isThereAFarmerOrCharacterWithinDistance(garbageCan.Tile, 7, garbageCan.Location);
                 if (character is not (NPC npc and not Horse))

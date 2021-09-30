@@ -36,7 +36,7 @@
             this.MapName = mapName;
             this._whichCan = whichCan;
             this.Tile = tile;
-            this._vanillaCan = int.TryParse(whichCan, out int vanillaCan) ? vanillaCan : 0;
+            this._vanillaCan = int.TryParse(whichCan, out var vanillaCan) ? vanillaCan : 0;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@
             {
                 foreach (var item in this.Chest.items.Shuffle())
                 {
-                    string colorTag = item.GetContextTags().Where(tag => tag.StartsWith("color")).Shuffle().FirstOrDefault();
+                    var colorTag = item.GetContextTags().Where(tag => tag.StartsWith("color")).Shuffle().FirstOrDefault();
                     if (colorTag is null)
                     {
                         continue;
@@ -146,7 +146,7 @@
             get
             {
                 return this._randomizer ??= GarbageDay.BetterRng.IsLoaded
-                    ? GarbageDay.BetterRng.API.GetNamedRandom(this._whichCan, (int)Game1.uniqueIDForThisGame)
+                    ? GarbageDay.BetterRng.API.GetNamedRandom(this._whichCan)
                     : GarbageCan.VanillaRandomizer(this._vanillaCan);
             }
         }
@@ -199,7 +199,7 @@
             // Mega/Double-Mega
             this._mega = Game1.stats.getStat("trashCansChecked") > 20 && this.Randomizer.NextDouble() < 0.01;
             this._doubleMega = Game1.stats.getStat("trashCansChecked") > 20 && this.Randomizer.NextDouble() < 0.002;
-            if (this._doubleMega || (!this._mega && !(this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck)))
+            if (this._doubleMega || !(this._mega || this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck))
             {
                 return;
             }
@@ -214,7 +214,7 @@
             // Vanilla Loot
             if (this._vanillaCan is >= 3 and <= 7)
             {
-                int localLoot = this._vanillaCan switch
+                var localLoot = this._vanillaCan switch
                 {
                     3 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => this.Randomizer.NextDouble() < 0.05 ? 749 : 535,
                     4 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 378 + (this.Randomizer.Next(3) * 2),
@@ -232,10 +232,10 @@
             }
 
             // Seasonal Loot
-            string season = Game1.currentLocation.GetSeasonForLocation();
+            var season = Game1.currentLocation.GetSeasonForLocation();
             if (this.Randomizer.NextDouble() < 0.1)
             {
-                int globalLoot = Utility.getRandomItemFromSeason(season, (int)((this.Tile.X * 653) + (this.Tile.Y * 777)), false);
+                var globalLoot = Utility.getRandomItemFromSeason(season, (int)((this.Tile.X * 653) + (this.Tile.Y * 777)), false);
                 if (globalLoot != -1)
                 {
                     this.Chest.addItem(new Object(globalLoot, 1));
@@ -256,8 +256,8 @@
                 return;
             }
 
-            float totalWeight = this._customLoot.Values.Sum();
-            double targetIndex = this.Randomizer.NextDouble() * totalWeight;
+            var totalWeight = this._customLoot.Values.Sum();
+            var targetIndex = this.Randomizer.NextDouble() * totalWeight;
             double currentIndex = 0;
             foreach (KeyValuePair<string, float> lootItem in this._customLoot)
             {
@@ -285,14 +285,14 @@
         private static Random VanillaRandomizer(int whichCan)
         {
             var randomizer = new Random(((int)Game1.uniqueIDForThisGame / 2) + (int)Game1.stats.DaysPlayed + 777 + (whichCan * 77));
-            int prewarm = randomizer.Next(0, 100);
-            for (int k = 0; k < prewarm; k++)
+            var prewarm = randomizer.Next(0, 100);
+            for (var k = 0; k < prewarm; k++)
             {
                 randomizer.NextDouble();
             }
 
             prewarm = randomizer.Next(0, 100);
-            for (int j = 0; j < prewarm; j++)
+            for (var j = 0; j < prewarm; j++)
             {
                 randomizer.NextDouble();
             }
