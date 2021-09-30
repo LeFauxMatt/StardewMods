@@ -67,7 +67,7 @@
 
             Log.Init(this.Monitor);
             Mixin.Init(this.ModManifest);
-            Content.init(this.Helper.Content);
+            Content.Init(this.Helper.Content);
             Events.Init(this.Helper.Events);
             Input.Init(this.Helper.Input);
             Locale.Init(this.Helper.Translation);

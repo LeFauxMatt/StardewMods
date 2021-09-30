@@ -1,10 +1,10 @@
 ﻿namespace Common.Services
 {
     using System;
+    using Common.Helpers;
     using Common.Interfaces;
-    using Helpers;
+    using Common.Models;
     using Microsoft.Xna.Framework;
-    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -25,6 +25,17 @@
 
         private event EventHandler<RenderingActiveMenuEventArgs> RenderingActiveMenu;
 
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="RenderingActiveMenuService"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="RenderingActiveMenuService"/> class.</returns>
+        public static RenderingActiveMenuService GetSingleton(ServiceManager serviceManager)
+        {
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            return RenderingActiveMenuService.Instance ??= new RenderingActiveMenuService(itemGrabMenuChangedService);
+        }
+
         /// <inheritdoc/>
         public void AddHandler(EventHandler<RenderingActiveMenuEventArgs> handler)
         {
@@ -35,17 +46,6 @@
         public void RemoveHandler(EventHandler<RenderingActiveMenuEventArgs> handler)
         {
             this.RenderingActiveMenu -= handler;
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="RenderingActiveMenuService"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="RenderingActiveMenuService"/> class.</returns>
-        public static RenderingActiveMenuService GetSingleton(ServiceManager serviceManager)
-        {
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return RenderingActiveMenuService.Instance ??= new RenderingActiveMenuService(itemGrabMenuChangedService);
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)

@@ -1,10 +1,10 @@
 ﻿namespace Common.Services
 {
     using System;
+    using Common.Helpers;
     using Common.Interfaces;
-    using Helpers;
+    using Common.Models;
     using Microsoft.Xna.Framework;
-    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -26,12 +26,6 @@
 
         private event EventHandler<RenderedActiveMenuEventArgs> RenderedActiveMenu;
 
-        /// <inheritdoc/>
-        public void AddHandler(EventHandler<RenderedActiveMenuEventArgs> eventHandler)
-        {
-            this.RenderedActiveMenu += eventHandler;
-        }
-
         /// <summary>
         /// Returns and creates if needed an instance of the <see cref="RenderedActiveMenuService"/> class.
         /// </summary>
@@ -41,6 +35,12 @@
         {
             var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
             return RenderedActiveMenuService.Instance ??= new RenderedActiveMenuService(itemGrabMenuChangedService);
+        }
+
+        /// <inheritdoc/>
+        public void AddHandler(EventHandler<RenderedActiveMenuEventArgs> eventHandler)
+        {
+            this.RenderedActiveMenu += eventHandler;
         }
 
         /// <inheritdoc/>

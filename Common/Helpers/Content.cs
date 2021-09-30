@@ -9,7 +9,7 @@
 
         /// <summary>Initializes the <see cref="Content"/> class.</summary>
         /// <param name="contentHelper">The instance of IContentHelper from the Mod.</param>
-        public static void init(IContentHelper contentHelper)
+        public static void Init(IContentHelper contentHelper)
         {
             Content.Helper = contentHelper;
         }

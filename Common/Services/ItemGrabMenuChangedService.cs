@@ -1,9 +1,9 @@
 ﻿namespace Common.Services
 {
     using System;
+    using Common.Helpers;
     using Common.Interfaces;
-    using Helpers;
-    using Models;
+    using Common.Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -26,6 +26,16 @@
 
         private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuChanged;
 
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="ItemGrabMenuChangedService"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService"/> class.</returns>
+        public static ItemGrabMenuChangedService GetSingleton(ServiceManager serviceManager)
+        {
+            return ItemGrabMenuChangedService.Instance ??= new ItemGrabMenuChangedService();
+        }
+
         /// <inheritdoc/>
         public void AddHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
@@ -36,16 +46,6 @@
         public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuChanged -= eventHandler;
-        }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ItemGrabMenuChangedService"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService"/> class.</returns>
-        public static ItemGrabMenuChangedService GetSingleton(ServiceManager serviceManager)
-        {
-            return ItemGrabMenuChangedService.Instance ??= new ItemGrabMenuChangedService();
         }
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)

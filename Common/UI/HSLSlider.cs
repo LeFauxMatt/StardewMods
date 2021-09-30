@@ -39,7 +39,7 @@
             this._texture = Content.FromMod<Texture2D>("assets/hue.png");
             this._colors = new Color[this._texture.Width * this._texture.Height];
             this._texture.GetData(this._colors);
-            this._transparentBox = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(295, 503, 7, 7), 4f);
+            this._transparentBox = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(295, 503, 7, 7), Game1.pixelZoom);
         }
 
         private enum Hold
