@@ -3,10 +3,10 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Common.Helpers.ItemMatcher;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Models;
     using Services;
-    using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Objects;
@@ -18,47 +18,61 @@
         private readonly HighlightItemsService _highlightPlayerItemsService;
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<Dictionary<string, bool>?> _filterItems = new();
+        private readonly PerScreen<Dictionary<string, bool>> _filterItems = new();
         private readonly PerScreen<ItemMatcher> _itemMatcher = new() { Value = new ItemMatcher(string.Empty, true) };
+        private MixInfo _addItemPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="FilterItemsFeature"/> class.</summary>
-        /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
-        /// <param name="highlightPlayerItemsService">Service to handle creation/invocation of HighlightPlayerItems delegates.</param>
-        public FilterItemsFeature(
+        private FilterItemsFeature(
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             HighlightItemsService highlightPlayerItemsService)
             : base("FilterItems")
         {
-            FilterItemsFeature.Instance = this;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._highlightPlayerItemsService = highlightPlayerItemsService;
         }
 
-        /// <summary>Gets the instance of <see cref="FilterItemsFeature"/>.</summary>
-        protected internal static FilterItemsFeature Instance { get; private set; } = null!;
+        /// <summary>
+        /// Gets the instance of <see cref="FilterItemsFeature"/>.
+        /// </summary>
+        protected internal static FilterItemsFeature Instance { get; private set; }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Events
+            this._highlightPlayerItemsService.AddHandler(this.HighlightMethod);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
 
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                prefix: new HarmonyMethod(typeof(FilterItemsFeature), nameof(FilterItemsFeature.Chest_addItem_prefix)));
+            this._addItemPatch = Mixin.Prefix(
+                AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                typeof(FilterItemsFeature),
+                nameof(FilterItemsFeature.Chest_addItem_prefix));
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
+            this._highlightPlayerItemsService.RemoveHandler(this.HighlightMethod);
 
             // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                patch: AccessTools.Method(typeof(FilterItemsFeature), nameof(FilterItemsFeature.Chest_addItem_prefix)));
+            Mixin.Unpatch(this._addItemPatch);
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="FilterItemsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="FilterItemsFeature"/> class.</returns>
+        public static FilterItemsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var highlightPlayerItemsService = serviceManager.RequestService<HighlightItemsService>("HighlightPlayerItems");
+            return FilterItemsFeature.Instance ??= new FilterItemsFeature(
+                itemGrabMenuChangedService,
+                highlightPlayerItemsService);
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
@@ -87,7 +101,6 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._highlightPlayerItemsService.RemoveHandler(this.HighlightMethod);
                 this._attached.Value = false;
                 this._filterItems.Value = null;
                 this._itemMatcher.Value.SetSearch(string.Empty);
@@ -96,7 +109,6 @@
 
             if (!this._attached.Value)
             {
-                this._highlightPlayerItemsService.AddHandler(this.HighlightMethod);
                 this._attached.Value = true;
             }
 
@@ -116,7 +128,7 @@
 
         private bool HighlightMethod(Item item)
         {
-            return this._itemMatcher.Value.Matches(item);
+            return !this._attached.Value || this._itemMatcher.Value.Matches(item);
         }
     }
 }

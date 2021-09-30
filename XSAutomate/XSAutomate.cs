@@ -32,7 +32,7 @@
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static bool StorePrefix(Chest ___Chest, object stack)
         {
-            Item item = XSAutomate.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
+            var item = XSAutomate.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
             return XSAutomate.XSLite.API.AcceptsItem(___Chest, item);
         }
 

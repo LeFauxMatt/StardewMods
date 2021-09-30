@@ -1,14 +1,16 @@
-﻿namespace Common.Services
+﻿namespace Common.Helpers
 {
     using StardewModdingAPI;
 
-    /// <summary>Mediator for logging across mod.</summary>
+    /// <summary>
+    /// Provides logging across mods.
+    /// </summary>
     internal static class Log
     {
         /// <inheritdoc cref="IMonitor"/>
         private static IMonitor Monitor { get; set; } = null!;
 
-        /// <summary>Return and optionally create an instance of the <see cref="Log"/> class.</summary>
+        /// <summary>Initializes the <see cref="Log"/> class.</summary>
         /// <param name="monitor">The instance of Monitor from the Mod.</param>
         public static void Init(IMonitor monitor)
         {

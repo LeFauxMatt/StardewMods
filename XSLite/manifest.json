@@ -20,6 +20,10 @@
       "UniqueID": "furyx639.XSPlus",
       "IsRequired": false,
       "MinimumVersion": "1.0.0-beta"
+    },
+    {
+      "UniqueID": "furyx639.MoreChests",
+      "IsRequired": false
     }
   ]
 }

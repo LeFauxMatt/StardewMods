@@ -3,8 +3,8 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
-    using HarmonyLib;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -15,21 +15,21 @@
     /// <inheritdoc />
     internal class StashToChestFeature : FeatureWithParam<string>
     {
-        private readonly IInputHelper _inputHelper;
         private readonly ModConfigService _modConfigService;
-        private readonly PerScreen<List<Chest>?> _cachedEnabledChests = new();
-        private readonly PerScreen<IList<Chest>?> _cachedPlayerChests = new();
-        private readonly PerScreen<IList<Chest>?> _cachedGameChests = new();
+        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
+        private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
+        private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
 
-        /// <summary>Initializes a new instance of the <see cref="StashToChestFeature"/> class.</summary>
-        /// <param name="inputHelper">API for changing state of input.</param>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
-        public StashToChestFeature(IInputHelper inputHelper, ModConfigService modConfigService)
+        private StashToChestFeature(ModConfigService modConfigService)
             : base("StashToChest")
         {
-            this._inputHelper = inputHelper;
             this._modConfigService = modConfigService;
         }
+
+        /// <summary>
+        /// Gets or sets the instance of <see cref="StashToChestFeature"/>.
+        /// </summary>
+        private static StashToChestFeature Instance { get; set; }
 
         private List<Chest> EnabledChests
         {
@@ -42,21 +42,32 @@
         }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Events
-            modEvents.Player.InventoryChanged += this.OnInventoryChanged;
-            modEvents.Player.Warped += this.OnWarped;
-            modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+            Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            Events.Player.InventoryChanged += this.OnInventoryChanged;
+            Events.Player.Warped += this.OnWarped;
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
-            modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
-            modEvents.Player.Warped -= this.OnWarped;
-            modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+            Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            Events.Player.InventoryChanged -= this.OnInventoryChanged;
+            Events.Player.Warped -= this.OnWarped;
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="StashToChestFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="StashToChestFeature"/> class.</returns>
+        public static StashToChestFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return StashToChestFeature.Instance ??= new StashToChestFeature(modConfigService);
         }
 
         /// <inheritdoc/>
@@ -116,7 +127,7 @@
 
             for (int i = Game1.player.Items.Count - 1; i >= 0; i--)
             {
-                Item item = Game1.player.Items[i];
+                var item = Game1.player.Items[i];
                 if (item is not null)
                 {
                     Game1.player.Items[i] = this.TryAddItem(item);
@@ -124,14 +135,14 @@
             }
 
             Game1.playSound("Ship");
-            this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.StashItems);
+            Input.Suppress(this._modConfigService.ModConfig.StashItems);
         }
 
-        private Item? TryAddItem(Item item)
+        private Item TryAddItem(Item item)
         {
             var itemMatcher = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol);
             uint stack = (uint)item.Stack;
-            foreach (Chest chest in this.EnabledChests)
+            foreach (var chest in this.EnabledChests)
             {
                 bool allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
 
@@ -152,7 +163,7 @@
                 }
 
                 // Attempt to add item into chest
-                Item tmp = chest.addItem(item);
+                var tmp = chest.addItem(item);
                 if (tmp is null || tmp.Stack <= 0)
                 {
                     return null;

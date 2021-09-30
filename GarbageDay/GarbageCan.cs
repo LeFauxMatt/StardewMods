@@ -71,7 +71,7 @@
                     return null;
                 }
 
-                if (this.Location.Objects.TryGetValue(this.Tile, out Object obj) && obj is Chest chest)
+                if (this.Location.Objects.TryGetValue(this.Tile, out var obj) && obj is Chest chest)
                 {
                     chest.modData["furyx639.ExpandedStorage/Storage"] = "Garbage Can";
                     chest.modData["furyx639.GarbageDay/WhichCan"] = this._whichCan;
@@ -106,7 +106,7 @@
         {
             get
             {
-                foreach (Item item in this.Chest.items.Shuffle())
+                foreach (var item in this.Chest.items.Shuffle())
                 {
                     string colorTag = item.GetContextTags().Where(tag => tag.StartsWith("color")).Shuffle().FirstOrDefault();
                     if (colorTag is null)
@@ -167,7 +167,7 @@
             // Drop Item
             if (this._dropQiBeans)
             {
-                Vector2 origin = Game1.tileSize * (this.Tile + new Vector2(0.5f, -1));
+                var origin = Game1.tileSize * (this.Tile + new Vector2(0.5f, -1));
                 Game1.createItemDebris(new Object(890, 1), origin, 2, this.Location, (int)origin.Y + 64);
                 return;
             }
@@ -268,10 +268,10 @@
                 }
 
                 this._itemMatcher.SetSearch(lootItem.Key);
-                SearchableItem customLoot = GarbageDay.Items
-                    .Where(entry => this._itemMatcher.Matches(entry.Item))
-                    .Shuffle()
-                    .FirstOrDefault();
+                var customLoot = GarbageDay.Items
+                                           .Where(entry => this._itemMatcher.Matches(entry.Item))
+                                           .Shuffle()
+                                           .FirstOrDefault();
                 if (customLoot is not null)
                 {
                     this.Chest.addItem(customLoot.CreateItem());

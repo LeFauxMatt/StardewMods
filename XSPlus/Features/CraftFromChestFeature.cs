@@ -4,6 +4,8 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection.Emit;
+    using Common.Helpers;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Services;
@@ -18,25 +20,24 @@
     /// <inheritdoc />
     internal class CraftFromChestFeature : FeatureWithParam<string>
     {
-        private readonly IGameLoopEvents _gameLoopEvents;
-        private readonly IInputHelper _inputHelper;
         private readonly ModConfigService _modConfigService;
-        private readonly PerScreen<List<Chest>?> _cachedEnabledChests = new();
-        private readonly PerScreen<IList<Chest>?> _cachedPlayerChests = new();
-        private readonly PerScreen<IList<Chest>?> _cachedGameChests = new();
+        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
+        private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
+        private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
         private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
+        private MixInfo _getContainerContentsPatch;
+        private MixInfo _consumeIngredientsPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="CraftFromChestFeature"/> class.</summary>
-        /// <param name="inputHelper">API for changing state of input.</param>
-        /// <param name="gameLoopEvents">Events linked to the game's update loop.</param>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
-        public CraftFromChestFeature(IInputHelper inputHelper, IGameLoopEvents gameLoopEvents, ModConfigService modConfigService)
+        private CraftFromChestFeature(ModConfigService modConfigService)
             : base("CraftFromChest")
         {
-            this._inputHelper = inputHelper;
-            this._gameLoopEvents = gameLoopEvents;
             this._modConfigService = modConfigService;
         }
+
+        /// <summary>
+        /// Gets or sets the instance of <see cref="CraftFromChestFeature"/>.
+        /// </summary>
+        private static CraftFromChestFeature Instance { get; set; }
 
         private List<Chest> EnabledChests
         {
@@ -49,37 +50,48 @@
         }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Events
-            modEvents.Player.InventoryChanged += this.OnInventoryChanged;
-            modEvents.Player.Warped += this.OnWarped;
-            modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+            Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            Events.Player.InventoryChanged += this.OnInventoryChanged;
+            Events.Player.Warped += this.OnWarped;
+            Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                postfix: new HarmonyMethod(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingPage_getContainerContents_postfix)));
-            harmony.Patch(
-                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
-                transpiler: new HarmonyMethod(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingRecipe_consumeIngredients_transpiler)));
+            this._getContainerContentsPatch = Mixin.Postfix(
+                AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                typeof(CraftFromChestFeature),
+                nameof(CraftFromChestFeature.CraftingPage_getContainerContents_postfix));
+            this._consumeIngredientsPatch = Mixin.Transpiler(
+                AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
+                typeof(CraftFromChestFeature),
+                nameof(CraftFromChestFeature.CraftingRecipe_consumeIngredients_transpiler));
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
-            modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
-            modEvents.Player.Warped -= this.OnWarped;
-            modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+            Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+            Events.Player.InventoryChanged -= this.OnInventoryChanged;
+            Events.Player.Warped -= this.OnWarped;
+            Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
             // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                patch: AccessTools.Method(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingPage_getContainerContents_postfix)));
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
-                patch: AccessTools.Method(typeof(CraftFromChestFeature), nameof(CraftFromChestFeature.CraftingRecipe_consumeIngredients_transpiler)));
+            Mixin.Unpatch(this._getContainerContentsPatch);
+            Mixin.Unpatch(this._consumeIngredientsPatch);
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="CraftFromChestFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="CraftFromChestFeature"/> class.</returns>
+        public static CraftFromChestFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            return CraftFromChestFeature.Instance ??= new CraftFromChestFeature(modConfigService);
         }
 
         /// <inheritdoc/>
@@ -124,7 +136,7 @@
 
             __result.Clear();
             var items = new List<Item>();
-            foreach (Chest chest in __instance._materialContainers)
+            foreach (var chest in __instance._materialContainers)
             {
                 items.AddRange(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
             }
@@ -136,7 +148,7 @@
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static IEnumerable<CodeInstruction> CraftingRecipe_consumeIngredients_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (CodeInstruction instruction in instructions)
+            foreach (var instruction in instructions)
             {
                 if (instruction.opcode == OpCodes.Ldfld && instruction.operand.Equals(AccessTools.Field(typeof(Chest), nameof(Chest.items))))
                 {
@@ -153,9 +165,8 @@
 
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
-            if (this._multipleChestCraftingPage.Value.Exited)
+            if (this._multipleChestCraftingPage.Value is null || this._multipleChestCraftingPage.Value.Exited)
             {
-                this._gameLoopEvents.UpdateTicked -= this.OnUpdateTicked;
                 return;
             }
 
@@ -188,8 +199,7 @@
             }
 
             this._multipleChestCraftingPage.Value = new MultipleChestCraftingPage(this.EnabledChests);
-            this._gameLoopEvents.UpdateTicked += this.OnUpdateTicked;
-            this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.OpenCrafting);
+            Input.Suppress(this._modConfigService.ModConfig.OpenCrafting);
         }
 
         private class MultipleChestCraftingPage
@@ -202,14 +212,14 @@
             public MultipleChestCraftingPage(List<Chest> chests)
             {
                 this._chests = chests.Where(chest => !chest.mutex.IsLocked()).ToList();
-                List<NetMutex> mutexes = this._chests.Select(chest => chest.mutex).ToList();
+                var mutexes = this._chests.Select(chest => chest.mutex).ToList();
                 this._multipleMutexRequest = new MultipleMutexRequest(
                     mutexes: mutexes,
                     success_callback: this.SuccessCallback,
                     failure_callback: this.FailureCallback);
             }
 
-            public bool Exited { get; private set; }
+            public bool Exited { get; private set; } = true;
 
             public void UpdateChests()
             {
@@ -218,7 +228,7 @@
                     return;
                 }
 
-                foreach (Chest chest in this._chests)
+                foreach (var chest in this._chests)
                 {
                     chest.mutex.Update(Game1.getOnlineFarmers());
                 }
@@ -226,9 +236,10 @@
 
             private void SuccessCallback()
             {
+                this.Exited = false;
                 int width = 800 + (IClickableMenu.borderWidth * 2);
                 int height = 600 + (IClickableMenu.borderWidth * 2);
-                Vector2 pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
+                var pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
                 Game1.activeClickableMenu = new CraftingPage((int)pos.X, (int)pos.Y, width, height, false, true, this._chests)
                 {
                     exitFunction = this.ExitFunction,

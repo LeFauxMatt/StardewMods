@@ -4,12 +4,12 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
     using Common.Integrations.DynamicGameAssets;
     using Common.Integrations.GenericModConfigMenu;
     using Common.Integrations.XSLite;
     using Common.Integrations.XSPlus;
-    using Common.Services;
     using Microsoft.Xna.Framework.Graphics;
     using Migrations.JsonAsset;
     using StardewModdingAPI;
@@ -50,7 +50,7 @@
         /// <inheritdoc/>
         public bool LoadContentPack(IManifest manifest, string path)
         {
-            IContentPack contentPack = this._helper.ContentPacks.CreateTemporary(
+            var contentPack = this._helper.ContentPacks.CreateTemporary(
                 path,
                 manifest.UniqueID,
                 manifest.Name,
@@ -147,12 +147,12 @@
 
                 if (!string.IsNullOrWhiteSpace(storage.Value.Image) && contentPack.HasFile(storage.Value.Image))
                 {
-                    Texture2D texture = contentPack.LoadAsset<Texture2D>(storage.Value.Image);
+                    var texture = contentPack.LoadAsset<Texture2D>(storage.Value.Image);
                     XSLite.Textures.Add(storage.Key, texture);
                 }
 
                 // Add to config
-                if (!config.TryGetValue(storage.Key, out ModConfig storageConfig))
+                if (!config.TryGetValue(storage.Key, out var storageConfig))
                 {
                     storageConfig = new ModConfig
                     {
@@ -189,7 +189,7 @@
                     }
 
                     // Enable other toggleable features
-                    foreach (string featureName in storageConfig.EnabledFeatures)
+                    foreach (var featureName in storageConfig.EnabledFeatures)
                     {
                         this._xsPlus.API.EnableWithModData(featureName, $"{XSLite.ModPrefix}/Storage", storage.Key, true);
                     }
@@ -289,7 +289,7 @@
                 {
                     foreach (var jsonAsset in migrator.JsonAssets)
                     {
-                        if (!storages.TryGetValue(jsonAsset.Name, out Storage storage) || !string.IsNullOrWhiteSpace(storage.Image))
+                        if (!storages.TryGetValue(jsonAsset.Name, out var storage) || !string.IsNullOrWhiteSpace(storage.Image))
                         {
                             continue;
                         }
@@ -299,7 +299,7 @@
                             continue;
                         }
 
-                        Texture2D texture = contentPack.LoadAsset<Texture2D>($"assets/{jsonAsset.Name}.png");
+                        var texture = contentPack.LoadAsset<Texture2D>($"assets/{jsonAsset.Name}.png");
                         XSLite.Textures.Add(jsonAsset.Name, texture);
                         storage.Format = Storage.AssetFormat.JsonAssets;
                         storage.Frames = texture.Width / 16;
@@ -334,7 +334,7 @@
         /// <inheritdoc/>
         public bool AcceptsItem(Chest chest, Item item)
         {
-            if (!chest.TryGetStorage(out Storage storage))
+            if (!chest.TryGetStorage(out var storage))
             {
                 return true;
             }

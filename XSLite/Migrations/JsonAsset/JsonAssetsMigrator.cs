@@ -24,7 +24,7 @@
 
         public static JsonAssetsMigrator FromContentPack(IContentPack contentPack)
         {
-            string path = Path.Combine(contentPack.DirectoryPath, "BigCraftables");
+            var path = Path.Combine(contentPack.DirectoryPath, "BigCraftables");
             if (!Directory.Exists(path))
             {
                 return null;
@@ -32,12 +32,12 @@
 
             // Generate content.json and default.json
             var jsonAssets = new JsonAssetsMigrator();
-            foreach (string folder in Directory.GetDirectories(path))
+            foreach (var folder in Directory.GetDirectories(path))
             {
                 var folderInfo = new DirectoryInfo(folder);
-                string folderName = folderInfo.Name;
-                JsonAsset jsonAsset = contentPack.ReadJsonFile<JsonAsset>($"BigCraftables/{folderName}/big-craftable.json");
-                string texturePath = $"BigCraftables/{folderName}/big-craftable.png";
+                var folderName = folderInfo.Name;
+                var jsonAsset = contentPack.ReadJsonFile<JsonAsset>($"BigCraftables/{folderName}/big-craftable.json");
+                var texturePath = $"BigCraftables/{folderName}/big-craftable.png";
                 if (string.IsNullOrWhiteSpace(jsonAsset.Name) || string.IsNullOrWhiteSpace(jsonAsset.Description) || !contentPack.HasFile(texturePath))
                 {
                     continue;
@@ -45,10 +45,10 @@
 
                 jsonAssets.JsonAssets.Add(jsonAsset);
                 var textureMigrator = new TextureMigrator(contentPack, jsonAsset.Name);
-                Texture2D texture = contentPack.LoadAsset<Texture2D>(texturePath);
+                var texture = contentPack.LoadAsset<Texture2D>(texturePath);
                 textureMigrator.AddTexture("big-craftable.png", texture);
 
-                for (int frame = 1; frame <= 18; frame++)
+                for (var frame = 1; frame <= 18; frame++)
                 {
                     texturePath = $"BigCraftables/{folderName}/big-craftable-{frame.ToString()}.png";
                     if (!contentPack.HasFile(texturePath))
@@ -102,7 +102,7 @@
                 if (jsonAsset.NameLocalization is not null && jsonAsset.DescriptionLocalization is not null)
                 {
                     IEnumerable<string> localizationKeys = jsonAsset.NameLocalization.Keys.Union(jsonAsset.DescriptionLocalization.Keys).Distinct();
-                    foreach (string localizationKey in localizationKeys)
+                    foreach (var localizationKey in localizationKeys)
                     {
                         if (!jsonFiles.TryGetValue(localizationKey, out var jsonFile))
                         {
@@ -217,7 +217,7 @@
             File.WriteAllText(Path.Combine(contentPack.DirectoryPath, "content.json"), contentJson.ToString());
 
             // Complete localization and write file(s)
-            string path = Path.Combine(contentPack.DirectoryPath, "i18n");
+            var path = Path.Combine(contentPack.DirectoryPath, "i18n");
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -238,7 +238,7 @@
                 Directory.CreateDirectory(path);
             }
 
-            foreach (TextureMigrator texture in this.Textures)
+            foreach (var texture in this.Textures)
             {
                 texture.UpdateTextureFormat();
             }

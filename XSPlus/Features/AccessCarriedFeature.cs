@@ -1,6 +1,8 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using Common.Helpers;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -10,38 +12,49 @@
     /// <inheritdoc />
     internal class AccessCarriedFeature : BaseFeature
     {
-        private readonly IInputHelper _inputHelper;
+        private MixInfo _addItemPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="AccessCarriedFeature"/> class.</summary>
-        /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
-        public AccessCarriedFeature(IInputHelper inputHelper)
+        private AccessCarriedFeature()
             : base("AccessCarried")
         {
-            this._inputHelper = inputHelper;
+        }
+
+        /// <summary>
+        /// Gets or sets the instance of <see cref="AccessCarriedFeature"/>.
+        /// </summary>
+        private static AccessCarriedFeature Instance { get; set; }
+
+        /// <inheritdoc/>
+        public override void Activate()
+        {
+            // Events
+            Events.Input.ButtonPressed += this.OnButtonPressed;
+
+            // Patches
+            this._addItemPatch = Mixin.Prefix(
+                AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                typeof(AccessCarriedFeature),
+                nameof(AccessCarriedFeature.Chest_addItem_prefix));
         }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
-            modEvents.Input.ButtonPressed += this.OnButtonPressed;
+            Events.Input.ButtonPressed -= this.OnButtonPressed;
 
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                prefix: new HarmonyMethod(typeof(AccessCarriedFeature), nameof(AccessCarriedFeature.Chest_addItem_prefix)));
+            Mixin.Unpatch(this._addItemPatch);
         }
 
-        /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="AccessCarriedFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="AccessCarriedFeature"/> class.</returns>
+        public static AccessCarriedFeature GetSingleton(ServiceManager serviceManager)
         {
-            // Events
-            modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-
-            // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                patch: AccessTools.Method(typeof(AccessCarriedFeature), nameof(AccessCarriedFeature.Chest_addItem_prefix)));
+            return AccessCarriedFeature.Instance ??= new AccessCarriedFeature();
         }
 
         /// <summary>Prevent adding chest into itself.</summary>
@@ -68,7 +81,7 @@
             }
 
             chest.checkForAction(Game1.player);
-            this._inputHelper.Suppress(e.Button);
+            Input.Suppress(e.Button);
         }
     }
 }

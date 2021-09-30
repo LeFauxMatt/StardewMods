@@ -15,7 +15,7 @@
         {
             if (item is Chest { SpecialChestType: Chest.SpecialChestTypes.None } chest)
             {
-                foreach (Item chestItem in chest.items.Where(chestItem => chestItem is not null))
+                foreach (var chestItem in chest.items.Where(chestItem => chestItem is not null))
                 {
                     chestItem.RecursiveIterate(action);
                 }

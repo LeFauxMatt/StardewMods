@@ -48,12 +48,12 @@
             hsl.S = 0;
             hsl.L = 0;
 
-            float fR = r / 255f;
-            float fG = g / 255f;
-            float fB = b / 255f;
-            float min = Math.Min(Math.Min(fR, fG), fB);
-            float max = Math.Max(Math.Max(fR, fG), fB);
-            float delta = max - min;
+            var fR = r / 255f;
+            var fG = g / 255f;
+            var fB = b / 255f;
+            var min = Math.Min(Math.Min(fR, fG), fB);
+            var max = Math.Max(Math.Max(fR, fG), fB);
+            var delta = max - min;
 
             // luminance is the ave of max and min
             hsl.L = (max + min) / 2f;
@@ -69,9 +69,9 @@
                     hsl.S = delta / (2 - max - min);
                 }
 
-                float deltaR = (((max - fR) / 6f) + (delta / 2f)) / delta;
-                float deltaG = (((max - fG) / 6f) + (delta / 2f)) / delta;
-                float deltaB = (((max - fB) / 6f) + (delta / 2f)) / delta;
+                var deltaR = (((max - fR) / 6f) + (delta / 2f)) / delta;
+                var deltaG = (((max - fG) / 6f) + (delta / 2f)) / delta;
+                var deltaB = (((max - fB) / 6f) + (delta / 2f)) / delta;
 
                 if (Math.Abs(fR - max) < HSLColor.Tolerance)
                 {
@@ -105,7 +105,7 @@
             // complementary colors are across the color wheel
             // which is 180 degrees or 50% of the way around the
             // wheel. Add 50% to our hue and wrap large/small values
-            float h = this.H + 0.5f;
+            var h = this.H + 0.5f;
             if (h > 1)
             {
                 h -= 1;
@@ -126,13 +126,13 @@
             }
             else
             {
-                float v2 = this.L + this.S - (this.S * this.L);
+                var v2 = this.L + this.S - (this.S * this.L);
                 if (this.L < 0.5f)
                 {
                     v2 = this.L * (1 + this.S);
                 }
 
-                float v1 = (2f * this.L) - v2;
+                var v1 = (2f * this.L) - v2;
 
                 c.R = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H + (1f / 3f)));
                 c.G = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H));
@@ -147,7 +147,7 @@
         {
             vH += vH < 0 ? 1 : 0;
             vH -= vH > 1 ? 1 : 0;
-            float ret = v1;
+            var ret = v1;
 
             if (6 * vH < 1)
             {

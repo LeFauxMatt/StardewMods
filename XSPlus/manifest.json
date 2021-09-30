@@ -11,6 +11,10 @@
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "IsRequired": false
+    },
+    {
+      "UniqueID": "furyx639.BetterChests",
+      "IsRequired": false
     }
   ]
 }

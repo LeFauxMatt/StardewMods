@@ -2,10 +2,10 @@
 {
     using System;
     using Common.Enums;
+    using Common.Helpers;
     using Common.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using StardewModdingAPI;
     using StardewValley;
     using StardewValley.Menus;
 
@@ -34,10 +34,9 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="HSLSlider"/> class.
         /// </summary>
-        /// <param name="contentHelper">Provides an API for loading content assets.</param>
-        public HSLSlider(IContentHelper contentHelper)
+        public HSLSlider()
         {
-            this._texture = contentHelper.Load<Texture2D>("assets/hue.png");
+            this._texture = Content.FromMod<Texture2D>("assets/hue.png");
             this._colors = new Color[this._texture.Width * this._texture.Height];
             this._texture.GetData(this._colors);
             this._transparentBox = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(295, 503, 7, 7), 4f);
@@ -61,8 +60,8 @@
             set
             {
                 this._area = value;
-                int barWidth = (value.Width / 2) - HSLSlider.Gap;
-                int barHeight = (value.Height - HSLSlider.Gap - 36) / 2;
+                var barWidth = (value.Width / 2) - HSLSlider.Gap;
+                var barHeight = (value.Height - HSLSlider.Gap - 36) / 2;
                 this._hueSlider.Area = new Rectangle(value.Left, value.Top + 36, barWidth, value.Height - 36);
                 this._saturationSlider.Area = new Rectangle(value.Center.X + (HSLSlider.Gap / 2), value.Top + 36, barWidth, barHeight);
                 this._luminanceSlider.Area = new Rectangle(value.Center.X + (HSLSlider.Gap / 2), value.Top + 36 + barHeight + HSLSlider.Gap, barWidth, barHeight);
@@ -161,7 +160,7 @@
         /// <returns>Returns true if the color was updated.</returns>
         public bool MouseLeftButtonPressed()
         {
-            Point point = Game1.getMousePosition(true);
+            var point = Game1.getMousePosition(true);
             if (this._holding is not Hold.None || !this._area.Contains(point))
             {
                 return false;
@@ -225,7 +224,7 @@
         /// <returns>Returns true if the color was updated.</returns>
         public bool MouseHover()
         {
-            Point point = Game1.getMousePosition(true);
+            var point = Game1.getMousePosition(true);
             switch (this._holding)
             {
                 case Hold.Hue:
@@ -258,7 +257,7 @@
         /// <returns>Returns true if the color was updated.</returns>
         public bool MouseWheelScroll(int delta)
         {
-            Point point = Game1.getMousePosition(true);
+            var point = Game1.getMousePosition(true);
             if (this._holding is not Hold.None || !this._area.Contains(point))
             {
                 return false;

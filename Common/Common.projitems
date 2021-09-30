@@ -13,6 +13,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\InventoryType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ItemExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Content.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Input.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Locale.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemMatcher\ItemMatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemMatcher\SearchPhrase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemRepository.cs" />
@@ -33,7 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Slider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Log.cs" />
+    <Folder Include="$(MSBuildThisFileDirectory)Services" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\HSLSlider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />
   </ItemGroup>

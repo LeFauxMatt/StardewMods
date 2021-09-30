@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
     using HarmonyLib;
     using Services;
     using StardewModdingAPI;
@@ -11,27 +12,24 @@
     internal class FeatureManager
     {
         private static FeatureManager? Instance;
+        private readonly ServiceManager _serviceManager;
+        private readonly ModConfigService _modConfigService;
         private readonly IDictionary<string, BaseFeature> _features = new Dictionary<string, BaseFeature>();
         private readonly HashSet<string> _activatedFeatures = new();
-        private readonly IModHelper _helper;
-        private readonly Harmony _harmony;
-        private readonly ModConfigService _modConfigService;
 
-        private FeatureManager(IModHelper helper, Harmony harmony, ModConfigService modConfigService)
+        private FeatureManager(ServiceManager serviceManager, ModConfigService modConfigService)
         {
-            this._helper = helper;
-            this._harmony = harmony;
+            this._serviceManager = serviceManager;
             this._modConfigService = modConfigService;
         }
 
         /// <summary>Returns and creates if needed an instance of the <see cref="FeatureManager"/> class.</summary>
-        /// <param name="modHelper">SMAPIs APIs for events, content, input, etc.</param>
-        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>An instance of <see cref="FeatureManager"/> class.</returns>
-        public static FeatureManager Init(IModHelper modHelper, Harmony harmony, ModConfigService modConfigService)
+        public static FeatureManager GetSingleton(ServiceManager serviceManager)
         {
-            return FeatureManager.Instance ??= new FeatureManager(modHelper, harmony, modConfigService);
+            var modConfigService = serviceManager.RequestService<ModConfigService>("ModConfig");
+            return FeatureManager.Instance ??= new FeatureManager(serviceManager, modConfigService);
         }
 
         /// <summary>Allows items containing particular mod data to have feature enabled.</summary>
@@ -44,7 +42,7 @@
         [SuppressMessage("ReSharper", "HeapView.PossibleBoxingAllocation", Justification = "Support dynamic param types for API access.")]
         public static void EnableFeatureWithModData<T>(string featureName, string key, string value, T param)
         {
-            if (!FeatureManager.Instance!._features.TryGetValue(featureName, out BaseFeature feature))
+            if (!FeatureManager.Instance!._features.TryGetValue(featureName, out var feature))
             {
                 return;
             }
@@ -90,7 +88,7 @@
         /// <exception cref="InvalidOperationException">When a feature is unknown.</exception>
         public static void ActivateFeature(string featureName)
         {
-            if (!FeatureManager.Instance!._features.TryGetValue(featureName, out BaseFeature feature))
+            if (!FeatureManager.Instance!._features.TryGetValue(featureName, out var feature))
             {
                 throw new InvalidOperationException($"Unknown feature {featureName}");
             }
@@ -101,7 +99,7 @@
             }
 
             FeatureManager.Instance._activatedFeatures.Add(featureName);
-            feature.Activate(FeatureManager.Instance._helper.Events, FeatureManager.Instance._harmony);
+            feature.Activate();
         }
 
         /// <summary>Allow feature to remove its events and reverse patches.</summary>
@@ -109,7 +107,7 @@
         /// <exception cref="InvalidOperationException">When a feature is unknown.</exception>
         public static void DeactivateFeature(string featureName)
         {
-            if (!FeatureManager.Instance!._features.TryGetValue(featureName, out BaseFeature feature))
+            if (!FeatureManager.Instance!._features.TryGetValue(featureName, out var feature))
             {
                 throw new InvalidOperationException($"Unknown feature {featureName}");
             }
@@ -120,7 +118,7 @@
             }
 
             FeatureManager.Instance._activatedFeatures.Remove(featureName);
-            feature.Deactivate(FeatureManager.Instance._helper.Events, FeatureManager.Instance._harmony);
+            feature.Deactivate();
         }
 
         /// <summary>Calls all feature activation methods for enabled/default features.</summary>
@@ -139,10 +137,14 @@
         }
 
         /// <summary>Add to collection of active feature instances.</summary>
-        /// <param name="feature">Instance of feature to add.</param>
-        public void AddFeature(BaseFeature feature)
+        /// <typeparam name="TFeatureType">Type of feature to add.</typeparam>
+        public void AddSingleton<TFeatureType>()
         {
-            this._features.Add(feature.FeatureName, feature);
+            var feature = (BaseFeature)typeof(TFeatureType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { this._serviceManager });
+            if (feature != null)
+            {
+                this._features.Add(feature.FeatureName, feature);
+            }
         }
     }
 }

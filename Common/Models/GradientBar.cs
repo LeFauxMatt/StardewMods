@@ -41,7 +41,7 @@
             {
                 this._area = value;
                 this._cellSize = this._area.Height / this._totalCells;
-                for (int i = 0; i < this._totalCells; i++)
+                for (var i = 0; i < this._totalCells; i++)
                 {
                     this._bars[i] = new Rectangle(
                         this._area.Left + this._axis switch { Axis.Horizontal => i * this._cellSize, Axis.Vertical => 0, _ => 0 },
@@ -58,7 +58,7 @@
         /// <param name="setColor">Setter method that returns a Color based on a value between 0 and 1 representing the cell's position in the gradient.</param>
         public void SetColors(Func<float, Color> setColor)
         {
-            for (int i = 0; i < this._totalCells; i++)
+            for (var i = 0; i < this._totalCells; i++)
             {
                 this._colors[i] = setColor((float)i / this._totalCells);
             }
@@ -70,7 +70,7 @@
         /// <param name="spriteBatch">The SpriteBatch to draw bars to.</param>
         public void Draw(SpriteBatch spriteBatch)
         {
-            for (int i = 0; i < this._totalCells; i++)
+            for (var i = 0; i < this._totalCells; i++)
             {
                 spriteBatch.Draw(Game1.staminaRect, this._bars[i], this._colors[i]);
             }

@@ -1,11 +1,11 @@
 ﻿namespace XSPlus
 {
     using System.Collections.Generic;
-    using HarmonyLib;
-    using StardewModdingAPI.Events;
     using StardewValley;
 
-    /// <summary>Encapsulates logic for features added by this mod.</summary>
+    /// <summary>
+    /// Encapsulates logic for features added by this mod.
+    /// </summary>
     internal abstract class BaseFeature
     {
         /// <summary>Gets the name of the feature used for config/API.</summary>
@@ -22,14 +22,10 @@
         public string FeatureName { get; }
 
         /// <summary>Add events and apply patches used to enable this feature.</summary>
-        /// <param name="modEvents">SMAPI's events API for mods.</param>
-        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
-        public abstract void Activate(IModEvents modEvents, Harmony harmony);
+        public abstract void Activate();
 
         /// <summary>Disable events and reverse patches used by this feature.</summary>
-        /// <param name="modEvents">SMAPI's events API for mods.</param>
-        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
-        public abstract void Deactivate(IModEvents modEvents, Harmony harmony);
+        public abstract void Deactivate();
 
         /// <summary>Allows items containing particular mod data to have feature enabled.</summary>
         /// <param name="key">The mod data key to enable feature for.</param>

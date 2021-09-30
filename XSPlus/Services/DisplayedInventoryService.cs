@@ -6,9 +6,10 @@
     using System.Reflection.Emit;
     using Common.Enums;
     using Common.Extensions;
+    using Common.Helpers;
     using Common.Models;
-    using Common.Services;
     using CommonHarmony;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Interfaces;
     using Microsoft.Xna.Framework.Graphics;
@@ -21,10 +22,10 @@
     /// <summary>
     /// Service for manipulating the displayed items in an inventory menu.
     /// </summary>
-    internal class DisplayedInventoryService : IEventHandlerService<Func<Item, bool>>
+    internal class DisplayedInventoryService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
-        private static DisplayedInventoryService? ChestInstance;
-        private static DisplayedInventoryService? PlayerInstance;
+        private static DisplayedInventoryService ChestInstance;
+        private static DisplayedInventoryService PlayerInstance;
         private readonly PerScreen<IList<Func<Item, bool>>> _filterItemHandlers = new() { Value = new List<Func<Item, bool>>() };
         private readonly InventoryType _inventoryType;
         private readonly PerScreen<object> _context = new();
@@ -34,13 +35,8 @@
         private readonly PerScreen<int> _columns = new();
         private readonly PerScreen<int> _offset = new();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DisplayedInventoryService"/> class.
-        /// </summary>
-        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
-        /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
-        /// <param name="inventoryType">The type of inventory that DisplayedInventory will apply to.</param>
-        private DisplayedInventoryService(Harmony harmony, ItemGrabMenuConstructedService itemGrabMenuConstructedService, InventoryType inventoryType)
+        private DisplayedInventoryService(ItemGrabMenuConstructedService itemGrabMenuConstructedService, InventoryType inventoryType, string serviceName)
+            : base(serviceName)
         {
             this._inventoryType = inventoryType;
 
@@ -48,9 +44,10 @@
             itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
 
             // Patches
-            harmony.Patch(
+            Mixin.Transpiler(
                 AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
-                transpiler: new HarmonyMethod(typeof(DisplayedInventoryService), nameof(DisplayedInventoryService.InventoryMenu_draw_transpiler)));
+                typeof(DisplayedInventoryService),
+                nameof(DisplayedInventoryService.InventoryMenu_draw_transpiler));
         }
 
         /// <summary>
@@ -81,7 +78,7 @@
                 int offset = this._offset.Value * this._columns.Value;
                 for (int i = 0; i < this._items.Value.Count; i++)
                 {
-                    Item? item = this._items.Value.ElementAtOrDefault(i);
+                    var item = this._items.Value.ElementAtOrDefault(i);
                     if (item is null || !this.FilterMethod(item))
                     {
                         continue;
@@ -101,21 +98,19 @@
         /// <summary>
         /// Returns and creates if needed an instance of the <see cref="DisplayedInventoryService"/> class.
         /// </summary>
-        /// <param name="harmony">The Harmony instance for patching the games internal code.</param>
-        /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <param name="inventoryType">The type of inventory that DisplayedInventory will apply to.</param>
         /// <returns>An instance of the <see cref="DisplayedInventoryService"/> class.</returns>
-        public static DisplayedInventoryService Init(Harmony harmony, ItemGrabMenuConstructedService itemGrabMenuConstructedService, InventoryType inventoryType)
+        public static DisplayedInventoryService GetSingleton(ServiceManager serviceManager, InventoryType inventoryType)
         {
-            switch (inventoryType)
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+
+            return inventoryType switch
             {
-                case InventoryType.Chest:
-                    return DisplayedInventoryService.ChestInstance ??= new DisplayedInventoryService(harmony, itemGrabMenuConstructedService, inventoryType);
-                case InventoryType.Player:
-                    return DisplayedInventoryService.PlayerInstance ??= new DisplayedInventoryService(harmony, itemGrabMenuConstructedService, inventoryType);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(inventoryType), inventoryType, null);
-            }
+                InventoryType.Chest => DisplayedInventoryService.ChestInstance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, inventoryType, "DisplayedChestInventory"),
+                InventoryType.Player => DisplayedInventoryService.PlayerInstance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, inventoryType, "DisplayedPlayerInventory"),
+                _ => throw new ArgumentOutOfRangeException(nameof(inventoryType), inventoryType, null),
+            };
         }
 
         /// <inheritdoc/>
@@ -138,7 +133,7 @@
             IList<Item> items = this.Items.Take(this._menu.Value.inventory.Count).ToList();
             for (int i = 0; i < this._menu.Value.inventory.Count; i++)
             {
-                Item? item = items.ElementAtOrDefault(i);
+                var item = items.ElementAtOrDefault(i);
                 int index = item is not null ? this._items.Value.IndexOf(item) : int.MaxValue;
                 this._menu.Value.inventory[i].name = index.ToString();
             }
@@ -163,7 +158,7 @@
                 .Repeat(-1);
 
             var patternPatches = new PatternPatches(instructions, scrollItemsPatch);
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -201,7 +196,7 @@
                 return;
             }
 
-            InventoryMenu menu = this._inventoryType switch
+            var menu = this._inventoryType switch
             {
                 InventoryType.Chest => e.ItemGrabMenu.ItemsToGrabMenu,
                 InventoryType.Player => e.ItemGrabMenu.inventory,

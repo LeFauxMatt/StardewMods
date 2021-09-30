@@ -10,23 +10,25 @@
     using StardewValley;
     using StardewValley.Menus;
 
-    /// <inheritdoc />
-    internal class HighlightItemsService : IEventHandlerService<Func<Item, bool>>
+    /// <inheritdoc cref="BaseService" />
+    internal class HighlightItemsService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
+        private static HighlightItemsService ChestInstance;
+        private static HighlightItemsService PlayerInstance;
         private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
         private readonly PerScreen<IList<Func<Item, bool>>> _highlightItemHandlers = new() { Value = new List<Func<Item, bool>>() };
         private readonly InventoryType _inventoryType;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HighlightItemsService"/> class.
-        /// </summary>
-        /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
-        /// <param name="inventoryType">The type of inventory that HighlightItems will apply to.</param>
-        /// <returns>Returns a new instance of the <see cref="HighlightItemsService"/> class.</returns>
-        public HighlightItemsService(ItemGrabMenuConstructedService itemGrabMenuConstructedService, InventoryType inventoryType)
+        private HighlightItemsService(
+            ItemGrabMenuConstructedService itemGrabMenuConstructedService,
+            ItemGrabMenuChangedService itemGrabMenuChangedService,
+            InventoryType inventoryType,
+            string serviceName)
+            : base(serviceName)
         {
-            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._inventoryType = inventoryType;
+            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuEvent);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuEvent);
         }
 
         /// <inheritdoc/>
@@ -42,20 +44,44 @@
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="HighlightItemsService"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <param name="inventoryType">The type of inventory that HighlightItems will apply to.</param>
+        /// <returns>Returns a new instance of the <see cref="HighlightItemsService"/> class.</returns>
+        public static HighlightItemsService GetSingleton(ServiceManager serviceManager, InventoryType inventoryType)
+        {
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+
+            return inventoryType switch
+            {
+                InventoryType.Chest => HighlightItemsService.ChestInstance ??= new HighlightItemsService(itemGrabMenuConstructedService, itemGrabMenuChangedService, inventoryType, "HighlightChestItems"),
+                InventoryType.Player => HighlightItemsService.PlayerInstance ??= new HighlightItemsService(itemGrabMenuConstructedService, itemGrabMenuChangedService, inventoryType, "HighlightPlayerItems"),
+                _ => throw new ArgumentOutOfRangeException(nameof(inventoryType), inventoryType, null),
+            };
+        }
+
+        /// <summary>
         /// Provides logic for reassigning the default highlight method.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
+        private void OnItemGrabMenuEvent(object sender, ItemGrabMenuEventArgs e)
         {
-            InventoryMenu inventoryMenu = this._inventoryType switch
+            if (e.ItemGrabMenu is null)
             {
-                InventoryType.Chest => e.ItemGrabMenu!.ItemsToGrabMenu,
-                InventoryType.Player => e.ItemGrabMenu!.inventory,
+                return;
+            }
+
+            var inventoryMenu = this._inventoryType switch
+            {
+                InventoryType.Chest => e.ItemGrabMenu.ItemsToGrabMenu,
+                InventoryType.Player => e.ItemGrabMenu.inventory,
             };
             if (inventoryMenu.highlightMethod != this.HighlightMethod)
             {
-                this._highlightMethod.Value = e.ItemGrabMenu.inventory.highlightMethod;
+                this._highlightMethod.Value = inventoryMenu.highlightMethod;
                 inventoryMenu.highlightMethod = this.HighlightMethod;
             }
         }

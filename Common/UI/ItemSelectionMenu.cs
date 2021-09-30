@@ -3,13 +3,14 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Extensions;
-    using Helpers.ItemMatcher;
-    using Helpers.ItemRepository;
+    using Common.Extensions;
+    using Common.Helpers;
+    using Common.Helpers.ItemMatcher;
+    using Common.Helpers.ItemRepository;
+    using Common.Models;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
-    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -22,8 +23,7 @@
     internal class ItemSelectionMenu : ItemGrabMenu
     {
         private static readonly PerScreen<ItemSelectionMenu> Instance = new();
-        private static IEnumerable<Item>? AllItems;
-        private readonly IModHelper _helper;
+        private static IEnumerable<Item> AllItems;
         private readonly Action<string> _returnValue;
         private readonly ClickableComponent _searchArea;
         private readonly TextBox _searchField;
@@ -36,18 +36,17 @@
         private readonly Range<int> _range;
         private readonly InventoryMenu _menu;
         private readonly int _columns;
-        private IEnumerable<Item>? _filteredItems;
+        private IEnumerable<Item> _filteredItems;
         private int _offset;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemSelectionMenu"/> class.
         /// </summary>
-        /// <param name="modHelper">Provides simplified APIs for writing mods.</param>
         /// <param name="searchTagSymbol">Character that will be used to denote tags in search.</param>
         /// <param name="exitFunction">The method to run when exiting this menu.</param>
         /// <param name="initialValue">The initial search expression that will be used.</param>
         /// <param name="returnValue">An action that will accept the return value on exit.</param>
-        public ItemSelectionMenu(IModHelper modHelper, string searchTagSymbol, onExit exitFunction, string initialValue, Action<string> returnValue)
+        public ItemSelectionMenu(string searchTagSymbol, onExit exitFunction, string initialValue, Action<string> returnValue)
             : base(
                 inventory: new List<Item>(),
                 reverseGrab: false,
@@ -61,12 +60,11 @@
         {
             ItemSelectionMenu.Instance.Value = this;
             ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().Select(i => i.CreateItem()).ToList();
-            this._helper = modHelper;
             this._returnValue = returnValue;
             this.exitFunction = exitFunction;
             this.behaviorBeforeCleanup = this.BehaviorBeforeCleanup;
-            this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            Events.Input.ButtonPressed += this.OnButtonPressed;
             this._items = this.ItemsToGrabMenu.actualInventory;
             this._tags = this.inventory.inventory;
             this._menu = this.ItemsToGrabMenu;
@@ -81,7 +79,7 @@
 
             this.ReSyncInventory();
 
-            this._searchField = new TextBox(this._helper.Content.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent), null, Game1.smallFont, Game1.textColor)
+            this._searchField = new TextBox(Content.FromGame<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
             {
                 X = this.ItemsToGrabMenu.xPositionOnScreen,
                 Y = this.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom),
@@ -151,14 +149,14 @@
                 Game1.playSound("bigDeSelect");
             }
 
-            ClickableComponent? cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+            var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
             if (cc is not null)
             {
-                int slotNumber = Convert.ToInt32(cc.name);
-                Item? item = this.Items.ElementAtOrDefault(slotNumber);
+                var slotNumber = Convert.ToInt32(cc.name);
+                var item = this.Items.ElementAtOrDefault(slotNumber);
                 if (item is not null)
                 {
-                    string? tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
+                    var tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
                     if (tag is not null)
                     {
                         this._itemSelector.AddSearch($"#{tag}");
@@ -181,14 +179,14 @@
         /// <inheritdoc/>
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
-            ClickableComponent? cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+            var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
             if (cc is not null)
             {
-                int slotNumber = Convert.ToInt32(cc.name);
-                Item? item = this.Items.ElementAtOrDefault(slotNumber);
+                var slotNumber = Convert.ToInt32(cc.name);
+                var item = this.Items.ElementAtOrDefault(slotNumber);
                 if (item is not null)
                 {
-                    string? tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
+                    var tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
                     if (tag is not null)
                     {
                         this._itemSelector.AddSearch($"!#{tag}");
@@ -215,7 +213,7 @@
         /// <inheritdoc/>
         public override void receiveScrollWheelAction(int direction)
         {
-            Point point = Game1.getMousePosition(true);
+            var point = Game1.getMousePosition(true);
             if (!this.ItemsToGrabMenu.isWithinBounds(point.X, point.Y))
             {
                 return;
@@ -242,10 +240,10 @@
                 ? Math.Min(1.1f, this.okButton.scale + 0.05f)
                 : Math.Max(1f, this.okButton.scale - 0.05f);
 
-            ClickableComponent? cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+            var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
             if (cc is not null)
             {
-                int slotNumber = Convert.ToInt32(cc.name);
+                var slotNumber = Convert.ToInt32(cc.name);
                 this.hoveredItem = this.Items.ElementAtOrDefault(slotNumber);
                 this.hoverText = string.Empty;
                 return;
@@ -295,14 +293,14 @@
 
             this.ItemsToGrabMenu.draw(b);
 
-            for (int i = 0; i < this.ItemsToGrabMenu.capacity; i++)
+            for (var i = 0; i < this.ItemsToGrabMenu.capacity; i++)
             {
-                Item? item = this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(i);
+                var item = this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(i);
                 if (item is not null)
                 {
-                    bool highlight = this.ItemsToGrabMenu.highlightMethod(item);
-                    int x = this.ItemsToGrabMenu.xPositionOnScreen + ((this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (i % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)));
-                    int y = this.yPositionOnScreen + ((this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (i / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows))) - 4;
+                    var highlight = this.ItemsToGrabMenu.highlightMethod(item);
+                    var x = this.ItemsToGrabMenu.xPositionOnScreen + ((this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (i % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)));
+                    var y = this.yPositionOnScreen + ((this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (i / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows))) - 4;
                     item.drawInMenu(
                         b,
                         new Vector2(x, y),
@@ -317,9 +315,9 @@
 
             this._searchField.Draw(b, false);
             this._searchIcon.draw(b);
-            this.okButton?.draw(b);
+            this.okButton.draw(b);
 
-            foreach (ClickableComponent tag in this._tags)
+            foreach (var tag in this._tags)
             {
                 var textPos = new Vector2(tag.bounds.X, tag.bounds.Y);
                 if (this.hoverText == tag.name)
@@ -369,21 +367,21 @@
             {
                 case SButton.Escape when this.readyToClose():
                     this.exitThisMenu();
-                    this._helper.Input.Suppress(e.Button);
+                    Input.Suppress(e.Button);
                     return;
                 case SButton.Escape:
-                    this._helper.Input.Suppress(e.Button);
+                    Input.Suppress(e.Button);
                     return;
                 case SButton.Enter when !string.IsNullOrWhiteSpace(this._itemFilter.Search):
                     this._itemSelector.AddSearch(this._itemFilter.Search);
                     this._searchField.Text = string.Empty;
                     this.Offset = 0;
                     this.ReSyncInventory(true);
-                    this._helper.Input.Suppress(e.Button);
+                    Input.Suppress(e.Button);
                     break;
                 case SButton.MouseLeft or SButton.MouseRight:
                 {
-                    Point point = Game1.getMousePosition(true);
+                    var point = Game1.getMousePosition(true);
                     this._searchField.Selected = this._searchArea.containsPoint(point.X, point.Y);
                     break;
                 }
@@ -397,14 +395,14 @@
                     this.Offset = 0;
                 }
 
-                this._helper.Input.Suppress(e.Button);
+                Input.Suppress(e.Button);
             }
         }
 
         private void BehaviorBeforeCleanup(IClickableMenu menu)
         {
-            this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-            this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+            Events.Input.ButtonPressed -= this.OnButtonPressed;
             this._returnValue(this._itemSelector.Search);
         }
 
@@ -422,9 +420,9 @@
             }
 
             this._range.Maximum = Math.Max(0, (this.Items.Count().RoundUp(this._columns) / this._columns) - this._menu.rows);
-            for (int i = 0; i < this.ItemsToGrabMenu.capacity; i++)
+            for (var i = 0; i < this.ItemsToGrabMenu.capacity; i++)
             {
-                Item? item = this.Items.ElementAtOrDefault(i);
+                var item = this.Items.ElementAtOrDefault(i);
                 if (item is null)
                 {
                     break;
@@ -438,11 +436,11 @@
             const float verticalSpacing = 5;
             var areaBounds = new Rectangle(this.inventory.xPositionOnScreen, this.inventory.yPositionOnScreen, this.inventory.width, this.inventory.height);
             var textPos = new Vector2(areaBounds.X, areaBounds.Y);
-            int textHeight = (int)Game1.smallFont.MeasureString("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789").Y;
-            foreach (string searchValue in this._itemSelector.SearchValues)
+            var textHeight = (int)Game1.smallFont.MeasureString("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789").Y;
+            foreach (var searchValue in this._itemSelector.SearchValues)
             {
-                int textWidth = (int)Game1.smallFont.MeasureString(searchValue).X;
-                int nextX = (int)(textPos.X + textWidth + horizontalSpacing);
+                var textWidth = (int)Game1.smallFont.MeasureString(searchValue).X;
+                var nextX = (int)(textPos.X + textWidth + horizontalSpacing);
                 if (!areaBounds.Contains(nextX, (int)textPos.Y))
                 {
                     textPos.X = areaBounds.X;

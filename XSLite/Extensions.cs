@@ -6,7 +6,7 @@
     {
         public static bool TryGetStorage(this Item item, out Storage storage)
         {
-            if (!item.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out string storageName))
+            if (!item.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out var storageName))
             {
                 storageName = item.Name;
             }

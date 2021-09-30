@@ -55,10 +55,10 @@
                 return true;
             }
 
-            bool matchesAny = false;
-            foreach (string searchValue in this._searchValues)
+            var matchesAny = false;
+            foreach (var searchValue in this._searchValues)
             {
-                if (!this._searchPhrases.TryGetValue(searchValue, out SearchPhrase searchPhrase))
+                if (!this._searchPhrases.TryGetValue(searchValue, out var searchPhrase))
                 {
                     searchPhrase = new SearchPhrase(searchValue, this._searchTagSymbol, this._exact);
                     this._searchPhrases.Add(searchValue, searchPhrase);
@@ -86,7 +86,7 @@
         /// <param name="searchParts">The search expression represented as a list of parts.</param>
         public void AddSearch(IEnumerable<string> searchParts)
         {
-            foreach (string searchPart in searchParts)
+            foreach (var searchPart in searchParts)
             {
                 if (string.IsNullOrWhiteSpace(searchPart) || this._searchValues.Contains(searchPart))
                 {
@@ -115,7 +115,7 @@
         /// <param name="searchParts">The search expressions to remove as a list of parts.</param>
         public void RemoveSearch(IEnumerable<string> searchParts)
         {
-            foreach (string searchPart in searchParts)
+            foreach (var searchPart in searchParts)
             {
                 this._searchValues.Remove(searchPart);
             }
@@ -140,7 +140,7 @@
         public void SetSearch(IEnumerable<string> searchParts)
         {
             IList<string> searchValues = searchParts.ToList();
-            string search = string.Join(" ", searchValues);
+            var search = string.Join(" ", searchValues);
             if (this._search == search)
             {
                 return;
@@ -153,7 +153,7 @@
                 return;
             }
 
-            foreach (string searchValue in searchValues)
+            foreach (var searchValue in searchValues)
             {
                 if (!string.IsNullOrWhiteSpace(searchValue))
                 {
@@ -162,7 +162,7 @@
             }
 
             searchValues = this._searchPhrases.Keys.ToList();
-            foreach (string searchValue in searchValues)
+            foreach (var searchValue in searchValues)
             {
                 if (!this._searchValues.Contains(searchValue))
                 {

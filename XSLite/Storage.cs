@@ -29,7 +29,7 @@
             this.FilterItems = new Dictionary<string, bool>();
             if (blockList is not null)
             {
-                foreach (string blockItem in blockList)
+                foreach (var blockItem in blockList)
                 {
                     this.FilterItems.Add(blockItem, false);
                 }
@@ -37,7 +37,7 @@
 
             if (allowList is not null)
             {
-                foreach (string allowItem in allowList)
+                foreach (var allowItem in allowList)
                 {
                     this.FilterItems.Add(allowItem, true);
                 }
@@ -135,8 +135,8 @@
                 this.Height = this.PlayerColor ? this._texture.Height / 3 : this._texture.Height;
                 this.TileWidth = this.Width / 16;
                 this.TileHeight = (this.Depth > 0 ? this.Depth : this.Height - 16) / 16;
-                float tilesWide = this.Width / 16f;
-                float tilesHigh = this.Height / 16f;
+                var tilesWide = this.Width / 16f;
+                var tilesHigh = this.Height / 16f;
                 this.ScaleSize = tilesWide switch
                 {
                     >= 7 => 0.5f,
@@ -161,7 +161,7 @@
         /// <param name="contentHelper">Provides an API for loading content assets.</param>
         public void InvalidateCache(IContentHelper contentHelper)
         {
-            Texture2D texture = contentHelper.Load<Texture2D>(this._path, ContentSource.GameContent);
+            var texture = contentHelper.Load<Texture2D>(this._path, ContentSource.GameContent);
             if (texture is null && !XSLite.Textures.TryGetValue(this._name, out texture))
             {
                 return;
@@ -184,9 +184,9 @@
         /// <param name="doAction">The action to perform for each tile.</param>
         public void ForEachPos(int x, int y, Action<Vector2> doAction)
         {
-            for (int i = 0; i < this.TileWidth; i++)
+            for (var i = 0; i < this.TileWidth; i++)
             {
-                for (int j = 0; j < this.TileHeight; j++)
+                for (var j = 0; j < this.TileHeight; j++)
                 {
                     var pos = new Vector2(x + i, y + j);
                     doAction.Invoke(pos);
@@ -217,12 +217,12 @@
                 currentFrame -= chest?.startingLidFrame.Value ?? 0;
             }
 
-            bool drawColored = this.PlayerColor && chest is not null && !chest.playerChoiceColor.Value.Equals(Color.Black);
-            int startLayer = drawColored && this.PlayerColor ? 1 : 0;
-            int endLayer = startLayer == 0 ? 1 : 3;
-            for (int layer = startLayer; layer < endLayer; layer++)
+            var drawColored = this.PlayerColor && chest is not null && !chest.playerChoiceColor.Value.Equals(Color.Black);
+            var startLayer = drawColored && this.PlayerColor ? 1 : 0;
+            var endLayer = startLayer == 0 ? 1 : 3;
+            for (var layer = startLayer; layer < endLayer; layer++)
             {
-                Color color = (layer % 2 == 0 || !drawColored) && chest is not null
+                var color = (layer % 2 == 0 || !drawColored) && chest is not null
                     ? chest.Tint
                     : chest?.playerChoiceColor.Value ?? Color.White;
 
@@ -238,7 +238,7 @@
         /// <param name="item">The item to replace.</param>
         public void Replace(Farmer player, int index, Item item)
         {
-            int stack = item.Stack;
+            var stack = item.Stack;
             player.Items[index] = this.Create(item);
             player.Items[index].Stack = stack;
         }
@@ -249,7 +249,7 @@
         /// <param name="obj">The object to replace.</param>
         public void Replace(GameLocation location, Vector2 pos, SObject obj)
         {
-            Chest chest = this.Create(obj);
+            var chest = this.Create(obj);
             location.Objects[pos] = chest;
             chest.modData[$"{XSLite.ModPrefix}/X"] = pos.X.ToString(CultureInfo.InvariantCulture);
             chest.modData[$"{XSLite.ModPrefix}/Y"] = pos.Y.ToString(CultureInfo.InvariantCulture);
@@ -289,10 +289,10 @@
         /// <param name="obj">The object to remove.</param>
         public void Remove(GameLocation location, Vector2 pos, SObject obj)
         {
-            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out string xStr)
-                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out string yStr)
-                && int.TryParse(xStr, out int xPos)
-                && int.TryParse(yStr, out int yPos))
+            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
+                && int.TryParse(xStr, out var xPos)
+                && int.TryParse(yStr, out var yPos))
             {
                 this.ForEachPos(xPos, yPos, innerPos => { location.Objects.Remove(innerPos); });
             }

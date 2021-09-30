@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Services
 {
     using System;
+    using Common.Helpers;
     using Interfaces;
     using Models;
     using StardewModdingAPI;
@@ -9,20 +10,18 @@
     using StardewValley.Menus;
     using StardewValley.Objects;
 
-    /// <inheritdoc/>
-    internal class ItemGrabMenuChangedService : IEventHandlerService<EventHandler<ItemGrabMenuEventArgs>>
+    /// <inheritdoc cref="BaseService" />
+    internal class ItemGrabMenuChangedService : BaseService, IEventHandlerService<EventHandler<ItemGrabMenuEventArgs>>
     {
+        private static ItemGrabMenuChangedService Instance;
         private readonly PerScreen<IClickableMenu> _menu = new();
         private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<int> _screenId = new();
+        private readonly PerScreen<int> _screenId = new() { Value = -1 };
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ItemGrabMenuChangedService"/> class.
-        /// </summary>
-        /// <param name="displayEvents">Events related to UI and drawing to the screen.</param>
-        public ItemGrabMenuChangedService(IDisplayEvents displayEvents)
+        private ItemGrabMenuChangedService()
+            : base("ItemGrabMenuChanged")
         {
-            displayEvents.MenuChanged += this.OnMenuChanged;
+            Events.Display.MenuChanged += this.OnMenuChanged;
         }
 
         private event EventHandler<ItemGrabMenuEventArgs>? ItemGrabMenuChanged;
@@ -37,6 +36,16 @@
         public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuChanged -= eventHandler;
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="ItemGrabMenuChangedService"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService"/> class.</returns>
+        public static ItemGrabMenuChangedService GetSingleton(ServiceManager serviceManager)
+        {
+            return ItemGrabMenuChangedService.Instance ??= new ItemGrabMenuChangedService();
         }
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
@@ -60,7 +69,7 @@
             this.InvokeAll(itemGrabMenu, chest);
         }
 
-        private void InvokeAll(ItemGrabMenu? itemGrabMenu, Chest? chest)
+        private void InvokeAll(ItemGrabMenu itemGrabMenu, Chest chest)
         {
             var eventArgs = new ItemGrabMenuEventArgs(itemGrabMenu, chest);
             this.ItemGrabMenuChanged?.Invoke(this, eventArgs);

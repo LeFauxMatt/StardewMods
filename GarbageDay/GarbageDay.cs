@@ -90,7 +90,7 @@
         /// <inheritdoc />
         public void Edit<T>(IAssetData asset)
         {
-            Map map = asset.AsMap().Data;
+            var map = asset.AsMap().Data;
             if (!asset.AssetNameEquals(@"Maps\Town") && !map.Properties.ContainsKey("GarbageDay"))
             {
                 this._excludedAssets.Add(asset.AssetName);
@@ -101,15 +101,15 @@
             {
                 for (int y = 0; y < map.Layers[0].LayerHeight; y++)
                 {
-                    Layer layer = map.GetLayer("Buildings");
-                    Tile tile = layer.PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size);
+                    var layer = map.GetLayer("Buildings");
+                    var tile = layer.PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size);
                     if (tile is null)
                     {
                         continue;
                     }
 
                     // Look for Action: Garbage [WhichCan]
-                    tile.Properties.TryGetValue("Action", out PropertyValue property);
+                    tile.Properties.TryGetValue("Action", out var property);
                     if (property is null)
                     {
                         continue;
@@ -127,7 +127,7 @@
                         continue;
                     }
 
-                    if (!this._garbageCans.TryGetValue(whichCan, out GarbageCan garbageCan))
+                    if (!this._garbageCans.TryGetValue(whichCan, out var garbageCan))
                     {
                         garbageCan = new GarbageCan(PathUtilities.NormalizeAssetName(asset.AssetName), whichCan, new Vector2(x, y));
                         this._garbageCans.Add(whichCan, garbageCan);
@@ -177,7 +177,7 @@
         {
             foreach (var garbageCan in this._garbageCans)
             {
-                if (garbageCan.Value.Location.Objects.TryGetValue(garbageCan.Value.Tile, out Object obj) && obj is Chest)
+                if (garbageCan.Value.Location.Objects.TryGetValue(garbageCan.Value.Tile, out var obj) && obj is Chest)
                 {
                     garbageCan.Value.Location.Objects.Remove(garbageCan.Value.Tile);
                 }
@@ -233,9 +233,9 @@
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             // Open Can
-            if (e.NewMenu is ItemGrabMenu { context: Chest chest } && chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out string whichCan) && this._garbageCans.TryGetValue(whichCan, out GarbageCan garbageCan))
+            if (e.NewMenu is ItemGrabMenu { context: Chest chest } && chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out string whichCan) && this._garbageCans.TryGetValue(whichCan, out var garbageCan))
             {
-                Character character = Utility.isThereAFarmerOrCharacterWithinDistance(garbageCan.Tile, 7, garbageCan.Location);
+                var character = Utility.isThereAFarmerOrCharacterWithinDistance(garbageCan.Tile, 7, garbageCan.Location);
                 if (character is not (NPC npc and not Horse))
                 {
                     return;

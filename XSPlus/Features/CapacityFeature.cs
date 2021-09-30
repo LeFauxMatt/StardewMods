@@ -1,43 +1,56 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
-    using StardewModdingAPI.Events;
     using StardewValley;
     using StardewValley.Objects;
+    using PatchInfo = HarmonyLib.PatchInfo;
 
     /// <inheritdoc />
     internal class CapacityFeature : FeatureWithParam<int>
     {
-        private static CapacityFeature Instance = null!;
         private readonly ModConfigService _modConfigService;
+        private MixInfo _capacityPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="CapacityFeature"/> class.</summary>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
-        public CapacityFeature(ModConfigService modConfigService)
+        private CapacityFeature(ModConfigService modConfigService)
             : base("Capacity")
         {
-            CapacityFeature.Instance = this;
             this._modConfigService = modConfigService;
         }
 
+        /// <summary>
+        /// Gets or sets the instance of <see cref="CapacityFeature"/>.
+        /// </summary>
+        private static CapacityFeature Instance { get; set; }
+
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                postfix: new HarmonyMethod(typeof(CapacityFeature), nameof(CapacityFeature.Chest_GetActualCapacity_postfix)));
+            this._capacityPatch = Mixin.Postfix(
+                AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                typeof(CapacityFeature),
+                nameof(CapacityFeature.Chest_GetActualCapacity_postfix));
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                patch: AccessTools.Method(typeof(CapacityFeature), nameof(CapacityFeature.Chest_GetActualCapacity_postfix)));
+            Mixin.Unpatch(this._capacityPatch);
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="CapacityFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="CapacityFeature"/> class.</returns>
+        public static CapacityFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>("ModConfig");
+            return CapacityFeature.Instance ??= new CapacityFeature(modConfigService);
         }
 
         /// <inheritdoc/>

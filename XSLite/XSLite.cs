@@ -3,8 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Common.Helpers;
     using Common.Integrations.XSLite;
-    using Common.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -31,6 +31,13 @@
         public override void Entry(IModHelper helper)
         {
             Log.Init(this.Monitor);
+
+            if (this.Helper.ModRegistry.IsLoaded("furyx639.MoreChests"))
+            {
+                this.Monitor.Log("MoreChests deprecates eXpanded Storage (Lite).\nRemove XSLite from your mods folder!", LogLevel.Warn);
+                return;
+            }
+
             this.API = new XSLiteAPI(this.Helper);
 
             // Events
@@ -55,21 +62,21 @@
         /// <inheritdoc />
         public bool CanLoad<T>(IAssetInfo asset)
         {
-            string[] segments = PathUtilities.GetSegments(asset.AssetName);
+            var segments = PathUtilities.GetSegments(asset.AssetName);
             return segments.Length == 3
                    && segments.ElementAt(0).Equals("ExpandedStorage", StringComparison.OrdinalIgnoreCase)
                    && segments.ElementAt(1).Equals("SpriteSheets", StringComparison.OrdinalIgnoreCase)
-                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out Storage storage)
+                   && XSLite.Storages.TryGetValue(segments.ElementAt(2), out var storage)
                    && storage.Format != Storage.AssetFormat.Vanilla;
         }
 
         /// <inheritdoc />
         public T Load<T>(IAssetInfo asset)
         {
-            string storageName = PathUtilities.GetSegments(asset.AssetName).ElementAt(2);
+            var storageName = PathUtilities.GetSegments(asset.AssetName).ElementAt(2);
 
             // Load placeholder texture in case of failure
-            if (!XSLite.Textures.TryGetValue(storageName, out Texture2D texture))
+            if (!XSLite.Textures.TryGetValue(storageName, out var texture))
             {
                 texture = this.Helper.Content.Load<Texture2D>("assets/texture.png");
             }
@@ -79,9 +86,9 @@
 
         private static void OnWarped(object sender, WarpedEventArgs e)
         {
-            foreach (Chest chest in e.NewLocation.Objects.Values.OfType<Chest>())
+            foreach (var chest in e.NewLocation.Objects.Values.OfType<Chest>())
             {
-                if (chest.TryGetStorage(out Storage storage) && storage.OpenNearby > 0)
+                if (chest.TryGetStorage(out var storage) && storage.OpenNearby > 0)
                 {
                     chest.UpdateFarmerNearby(e.NewLocation, false);
                 }
@@ -91,7 +98,7 @@
         /// <summary>Invalidate sprite cache for storages each in-game day.</summary>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-            foreach (Storage storage in XSLite.Storages.Values.Where(storage => storage.Format != Storage.AssetFormat.Vanilla))
+            foreach (var storage in XSLite.Storages.Values.Where(storage => storage.Format != Storage.AssetFormat.Vanilla))
             {
                 storage.InvalidateCache(this.Helper.Content);
             }
@@ -101,7 +108,7 @@
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this.Monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
-            foreach (IContentPack contentPack in this.Helper.ContentPacks.GetOwned())
+            foreach (var contentPack in this.Helper.ContentPacks.GetOwned())
             {
                 this.API.LoadContentPack(contentPack);
             }
@@ -129,7 +136,7 @@
                 }
             }
 
-            foreach (Chest chest in Game1.player.Items.Take(12).OfType<Chest>())
+            foreach (var chest in Game1.player.Items.Take(12).OfType<Chest>())
             {
                 chest.updateWhenCurrentLocation(Game1.currentGameTime, Game1.player.currentLocation);
             }
@@ -142,36 +149,36 @@
                 return;
             }
 
-            Vector2 pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
+            var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
             pos.X = (int)pos.X;
             pos.Y = (int)pos.Y;
 
             // Object exists at pos and is within reach of player
             if (!Utility.withinRadiusOfPlayer((int)(64 * pos.X), (int)(64 * pos.Y), 1, Game1.player)
-                || !Game1.currentLocation.Objects.TryGetValue(pos, out SObject obj))
+                || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
             {
                 return;
             }
 
             // Reassign to origin object if applicable
-            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out string xStr)
-                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out string yStr)
-                && int.TryParse(xStr, out int xPos)
-                && int.TryParse(yStr, out int yPos)
+            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
+                && int.TryParse(xStr, out var xPos)
+                && int.TryParse(yStr, out var yPos)
                 && (xPos != (int)pos.X || yPos != (int)pos.Y)
-                && Game1.currentLocation.Objects.TryGetValue(new Vector2(xPos, yPos), out SObject sourceObj))
+                && Game1.currentLocation.Objects.TryGetValue(new Vector2(xPos, yPos), out var sourceObj))
             {
                 obj = sourceObj;
                 pos = new Vector2(xPos, yPos);
             }
 
             // Object supports feature
-            if (!obj.TryGetStorage(out Storage storage))
+            if (!obj.TryGetStorage(out var storage))
             {
                 return;
             }
 
-            Chest chest = obj as Chest ?? obj.heldObject.Value as Chest;
+            var chest = obj as Chest ?? obj.heldObject.Value as Chest;
 
             // Check for chest action
             if (e.Button.IsActionButton() && chest is not null && chest.playerChest.Value)
@@ -219,14 +226,14 @@
                 return;
             }
 
-            foreach (Item item in e.Added)
+            foreach (var item in e.Added)
             {
-                if (!item.TryGetStorage(out Storage storage))
+                if (!item.TryGetStorage(out var storage))
                 {
                     continue;
                 }
 
-                int index = e.Player.getIndexOfInventoryItem(item);
+                var index = e.Player.getIndexOfInventoryItem(item);
                 if (this.InventoryStack.Contains(index))
                 {
                     this.InventoryStack.Remove(index);
@@ -256,7 +263,7 @@
                 }
                 else
                 {
-                    if (!removed.Value.TryGetStorage(out Storage storage))
+                    if (!removed.Value.TryGetStorage(out var storage))
                     {
                         continue;
                     }

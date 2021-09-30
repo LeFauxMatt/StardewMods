@@ -6,7 +6,7 @@
     using System.Linq;
     using System.Reflection.Emit;
     using Common.Extensions;
-    using Common.Services;
+    using Common.Helpers;
     using CommonHarmony;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
@@ -183,7 +183,7 @@
                     });
 
             var patternPatches = new PatternPatches(instructions, getItemsPatch);
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -197,7 +197,7 @@
         private static void Chest_clearNulls_postfix(Chest __instance)
         {
             NetObjectList<Item> items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-            for (int i = items.Count - 1; i >= 0; i--)
+            for (var i = items.Count - 1; i >= 0; i--)
             {
                 if (items[i] is null)
                 {
@@ -208,17 +208,17 @@
 
         private static bool Chest_draw_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
 
             if (storage.TileHeight > 1 || storage.TileWidth > 1)
             {
-                if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out string xStr)
-                    || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out string yStr)
-                    || !int.TryParse(xStr, out int xPos)
-                    || !int.TryParse(yStr, out int yPos))
+                if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+                    || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
+                    || !int.TryParse(xStr, out var xPos)
+                    || !int.TryParse(yStr, out var yPos))
                 {
                     return true;
                 }
@@ -238,7 +238,7 @@
             }
 
             var globalPosition = new Vector2(draw_x, (int)(draw_y - (storage.Depth / 16f) - 1f));
-            float layerDepth = Math.Max(0.0f, (((draw_y + 1f) * 64f) - 24f) / 10000f) + (draw_x * 1E-05f);
+            var layerDepth = Math.Max(0.0f, (((draw_y + 1f) * 64f) - 24f) / 10000f) + (draw_x * 1E-05f);
             return !storage.Draw(
                 __instance,
                 ___currentLidFrame,
@@ -251,7 +251,7 @@
 
         private static bool Chest_drawLocal_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
@@ -268,14 +268,14 @@
 
         private static bool Chest_drawInMenu_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, Color color)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
 
             var origin = new Vector2(storage.Width / 2f, storage.Height / 2f);
-            float drawScaleSize = scaleSize * storage.ScaleSize;
-            bool draw = storage.Draw(
+            var drawScaleSize = scaleSize * storage.ScaleSize;
+            var draw = storage.Draw(
                 __instance,
                 ___currentLidFrame,
                 spriteBatch,
@@ -296,7 +296,7 @@
             }
 
             // Draw Held Items
-            int items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+            var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
             if (items > 0)
             {
                 Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize), 2f * scaleSize), 3f * scaleSize, 1f, color);
@@ -307,7 +307,7 @@
 
         private static bool Chest_fixLidFrame_prefix(Chest __instance, ref int ___currentLidFrame)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.OpenNearby <= 0)
+            if (!__instance.TryGetStorage(out var storage) || storage.OpenNearby <= 0)
             {
                 return true;
             }
@@ -350,7 +350,7 @@
             var patternPatches = new PatternPatches(instructions);
             patternPatches.AddPatch(createDebrisPatch);
 
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -363,13 +363,13 @@
 
         private static void Chest_performToolAction_delegate(Chest chest, Tool tool, GameLocation location)
         {
-            Farmer player = tool.getLastFarmerToUse();
+            var player = tool.getLastFarmerToUse();
             if (player is null)
             {
                 return;
             }
 
-            Vector2 c = chest.TileLocation;
+            var c = chest.TileLocation;
             if (c == Vector2.Zero)
             {
                 KeyValuePair<Vector2, SObject> obj = location.Objects.Pairs.SingleOrDefault(obj => obj.Value == chest);
@@ -403,7 +403,7 @@
                     if (tool != player.CurrentTool)
                     {
                         // var zero = Vector2.Zero;
-                        Vector2 zero = player.FacingDirection switch
+                        var zero = player.FacingDirection switch
                         {
                             1 => new Vector2(1f, 0f),
                             3 => new Vector2(-1f, 0f),
@@ -425,7 +425,7 @@
 
         private static bool Chest_UpdateFarmerNearby_prefix(Chest __instance, ref bool ____farmerNearby, ref int ____shippingBinFrameCounter, ref int ___currentLidFrame, GameLocation location, bool animate)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.OpenNearby <= 0)
+            if (!__instance.TryGetStorage(out var storage) || storage.OpenNearby <= 0)
             {
                 return true;
             }
@@ -454,22 +454,22 @@
                 return false;
             }
 
-            bool shouldOpen = false;
-            if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out string xStr) || !int.TryParse(xStr, out int xPos) || xPos == 0)
+            var shouldOpen = false;
+            if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr) || !int.TryParse(xStr, out var xPos) || xPos == 0)
             {
                 xPos = (int)__instance.TileLocation.X;
             }
 
-            if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out string yStr) || !int.TryParse(yStr, out int yPos) || yPos == 0)
+            if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr) || !int.TryParse(yStr, out var yPos) || yPos == 0)
             {
                 yPos = (int)__instance.TileLocation.Y;
             }
 
-            int tileHeight = storage.TileHeight >= 1 ? storage.TileHeight : 1;
-            int tileWidth = storage.TileWidth >= 1 ? storage.TileWidth : 1;
-            for (int i = 0; i < tileHeight; i++)
+            var tileHeight = storage.TileHeight >= 1 ? storage.TileHeight : 1;
+            var tileWidth = storage.TileWidth >= 1 ? storage.TileWidth : 1;
+            for (var i = 0; i < tileHeight; i++)
             {
-                for (int j = 0; j < tileWidth; j++)
+                for (var j = 0; j < tileWidth; j++)
                 {
                     var pos = new Vector2(xPos + j, yPos + i);
                     shouldOpen = location.farmers.Any(farmer => Math.Abs(farmer.getTileX() - pos.X) <= storage.OpenNearby && Math.Abs(farmer.getTileY() - pos.Y) <= storage.OpenNearby);
@@ -515,7 +515,7 @@
 
         private static bool Chest_updateWhenCurrentLocation_prefix(Chest __instance, ref int ___health, ref int ____shippingBinFrameCounter, ref bool ____farmerNearby, ref int ___currentLidFrame, GameTime time, GameLocation environment)
         {
-            if (!__instance.TryGetStorage(out Storage storage))
+            if (!__instance.TryGetStorage(out var storage))
             {
                 return true;
             }
@@ -637,8 +637,8 @@
 
         private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
         {
-            Chest chest = __instance is Chest chest1 ? chest1 : null;
-            Chest otherChest = other is Chest chest2 ? chest2 : null;
+            var chest = __instance is Chest chest1 ? chest1 : null;
+            var otherChest = other is Chest chest2 ? chest2 : null;
             if (!__result || (chest is null && otherChest is null))
             {
                 return;
@@ -659,8 +659,8 @@
 
             // Block if mismatched data
             if (chest.playerChoiceColor.Value != otherChest.playerChoiceColor.Value
-                || !chest.modData.Keys.All(key => otherChest.modData.TryGetValue(key, out string value) && chest.modData[key] == value)
-                || !otherChest.modData.Keys.All(key => chest.modData.TryGetValue(key, out string value) && otherChest.modData[key] == value))
+                || !chest.modData.Keys.All(key => otherChest.modData.TryGetValue(key, out var value) && chest.modData[key] == value)
+                || !otherChest.modData.Keys.All(key => chest.modData.TryGetValue(key, out var value) && otherChest.modData[key] == value))
             {
                 __result = false;
             }
@@ -668,7 +668,7 @@
 
         private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {
-            if (__instance.context is not Chest chest || !chest.TryGetStorage(out Storage storage))
+            if (__instance.context is not Chest chest || !chest.TryGetStorage(out var storage))
             {
                 return;
             }
@@ -685,7 +685,7 @@
 
         private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
         {
-            if (__instance.context is not Chest chest || !chest.TryGetStorage(out Storage storage))
+            if (__instance.context is not Chest chest || !chest.TryGetStorage(out var storage))
             {
                 return;
             }
@@ -702,10 +702,10 @@
         private static bool Object_draw_prefix(SObject __instance, int x, int y)
         {
             if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out _)
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out string xStr)
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out string yStr)
-                || !int.TryParse(xStr, out int xPos)
-                || !int.TryParse(yStr, out int yPos))
+                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
+                || !int.TryParse(xStr, out var xPos)
+                || !int.TryParse(yStr, out var yPos))
             {
                 return true;
             }
@@ -715,39 +715,39 @@
 
         private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
 
             objectPosition.X -= (storage.Width * 2f) - 32;
             objectPosition.Y -= (storage.Height * 2f) - 64;
-            int currentFrame = XSLite.CurrentLidFrame.Value?.GetValue() ?? 0;
+            var currentFrame = XSLite.CurrentLidFrame.Value?.GetValue() ?? 0;
             return !storage.Draw(__instance, currentFrame, spriteBatch, objectPosition, Vector2.Zero);
         }
 
         private static bool Object_drawPlacementBounds_prefix(SObject __instance, SpriteBatch spriteBatch, GameLocation location)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
 
-            Vector2 tile = 64 * Game1.GetPlacementGrabTile();
-            int x = (int)tile.X;
-            int y = (int)tile.Y;
+            var tile = 64 * Game1.GetPlacementGrabTile();
+            var x = (int)tile.X;
+            var y = (int)tile.Y;
 
             Game1.isCheckingNonMousePlacement = !Game1.IsPerformingMousePlacement();
             if (Game1.isCheckingNonMousePlacement)
             {
-                Vector2 pos = Utility.GetNearbyValidPlacementPosition(Game1.player, location, __instance, x, y);
+                var pos = Utility.GetNearbyValidPlacementPosition(Game1.player, location, __instance, x, y);
                 x = (int)pos.X;
                 y = (int)pos.Y;
             }
 
-            bool canPlaceHere = Utility.playerCanPlaceItemHere(location, __instance, x, y, Game1.player)
-                                || (Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
-                                && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player));
+            var canPlaceHere = Utility.playerCanPlaceItemHere(location, __instance, x, y, Game1.player)
+                               || (Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
+                                   && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player));
 
             Game1.isCheckingNonMousePlacement = false;
 
@@ -771,7 +771,7 @@
 
         private static bool Object_getDescription_prefix(SObject __instance, ref string __result)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla || string.IsNullOrWhiteSpace(storage.Description))
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla || string.IsNullOrWhiteSpace(storage.Description))
             {
                 return true;
             }
@@ -782,7 +782,7 @@
 
         private static bool Object_loadDisplayName_prefix(SObject __instance, ref string __result)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla || string.IsNullOrWhiteSpace(storage.Name))
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla || string.IsNullOrWhiteSpace(storage.Name))
             {
                 return true;
             }
@@ -794,11 +794,11 @@
         private static bool Object_performToolAction_prefix(SObject __instance, Tool t, GameLocation location)
         {
             if (!__instance.modData.ContainsKey($"{XSLite.ModPrefix}/Storage")
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out string xStr)
-                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out string yStr)
-                || !int.TryParse(xStr, out int xPos)
-                || !int.TryParse(yStr, out int yPos)
-                || !location.Objects.TryGetValue(new Vector2(xPos, yPos), out SObject obj)
+                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
+                || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
+                || !int.TryParse(xStr, out var xPos)
+                || !int.TryParse(yStr, out var yPos)
+                || !location.Objects.TryGetValue(new Vector2(xPos, yPos), out var obj)
                 || obj == __instance
                 || obj is not Chest chest)
             {
@@ -811,7 +811,7 @@
         [HarmonyPriority(Priority.High)]
         private static bool Object_placementAction_prefix(SObject __instance, ref bool __result, GameLocation location, int x, int y)
         {
-            if (!__instance.TryGetStorage(out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla)
+            if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
             {
                 return true;
             }
@@ -837,7 +837,7 @@
         private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y)
         {
             var placementTile = new Vector2((int)(x / 64f), (int)(y / 64f));
-            if (!location.Objects.TryGetValue(placementTile, out SObject _) || !__instance.TryGetStorage(out Storage storage))
+            if (!location.Objects.TryGetValue(placementTile, out var _) || !__instance.TryGetStorage(out var storage))
             {
                 return;
             }
@@ -847,9 +847,9 @@
 
         private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
         {
-            foreach (Farmer farmer in Game1.getAllFarmers())
+            foreach (var farmer in Game1.getAllFarmers())
             {
-                foreach (Chest chest in farmer.Items.OfType<Chest>())
+                foreach (var chest in farmer.Items.OfType<Chest>())
                 {
                     chest.RecursiveIterate(action);
                 }
@@ -858,7 +858,7 @@
 
         private static void Utility_playerCanPlaceItemHere_postfix(ref bool __result, GameLocation location, Item item, int x, int y, Farmer f)
         {
-            if (!XSLite.Storages.TryGetValue(item.Name, out Storage storage) || storage.Format == Storage.AssetFormat.Vanilla || (storage.TileWidth == 1 && storage.TileHeight == 1))
+            if (!XSLite.Storages.TryGetValue(item.Name, out var storage) || storage.Format == Storage.AssetFormat.Vanilla || (storage.TileWidth == 1 && storage.TileHeight == 1))
             {
                 return;
             }
@@ -895,9 +895,9 @@
                 return;
             }
 
-            for (int i = 0; i < storage.TileWidth; i++)
+            for (var i = 0; i < storage.TileWidth; i++)
             {
-                for (int j = 0; j < storage.TileHeight; j++)
+                for (var j = 0; j < storage.TileHeight; j++)
                 {
                     var tileLocation = new Vector2((x / 64) + i, (y / 64) + j);
                     if (item.canBePlacedHere(location, tileLocation)

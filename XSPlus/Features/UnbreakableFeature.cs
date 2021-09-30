@@ -1,38 +1,51 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using CommonHarmony.Services;
     using HarmonyLib;
-    using StardewModdingAPI.Events;
+    using Services;
     using StardewValley.Objects;
 
     /// <inheritdoc />
     internal class UnbreakableFeature : FeatureWithParam<bool>
     {
-        private static UnbreakableFeature Instance;
+        private MixInfo _performToolActionPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="UnbreakableFeature"/> class.</summary>
-        public UnbreakableFeature()
+        private UnbreakableFeature()
             : base("Unbreakable")
         {
-            UnbreakableFeature.Instance = this;
+        }
+
+        /// <summary>
+        /// Gets or sets the instance of <see cref="UnbreakableFeature"/>.
+        /// </summary>
+        private static UnbreakableFeature Instance { get; set; }
+
+        /// <inheritdoc/>
+        public override void Activate()
+        {
+            // Patches
+            this._performToolActionPatch = Mixin.Prefix(
+                AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
+                typeof(UnbreakableFeature),
+                nameof(UnbreakableFeature.Chest_performToolAction_prefix));
         }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                prefix: new HarmonyMethod(typeof(UnbreakableFeature), nameof(UnbreakableFeature.Chest_performToolAction_prefix)));
+            Mixin.Unpatch(this._performToolActionPatch);
         }
 
-        /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="UnbreakableFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="UnbreakableFeature"/> class.</returns>
+        public static UnbreakableFeature GetSingleton(ServiceManager serviceManager)
         {
-            // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                patch: AccessTools.Method(typeof(UnbreakableFeature), nameof(UnbreakableFeature.Chest_performToolAction_prefix)));
+            return UnbreakableFeature.Instance ??= new UnbreakableFeature();
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

@@ -4,11 +4,10 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using Common.Enums;
-    using Common.Integrations.GenericModConfigMenu;
+    using Common.Helpers;
     using Common.Integrations.XSPlus;
-    using Common.Services;
+    using CommonHarmony.Services;
     using Features;
-    using HarmonyLib;
     using Services;
     using StardewModdingAPI;
     using StardewValley;
@@ -23,6 +22,7 @@
 
         private static XSPlus Instance = default!;
         private readonly IXSPlusAPI _api = new XSPlusAPI();
+        private ServiceManager _serviceManager = default!;
         private FeatureManager _featureManager = default!;
 
         /// <summary>
@@ -60,34 +60,47 @@
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
+            if (this.Helper.ModRegistry.IsLoaded("furyx639.BetterChests"))
+            {
+                this.Monitor.Log("BetterChests deprecates eXpanded Storage (Plus).\nRemove XSPlus from your mods folder!", LogLevel.Warn);
+                return;
+            }
+
             Log.Init(this.Monitor);
+            Mixin.Init(this.ModManifest);
+            Content.init(this.Helper.Content);
+            Events.Init(this.Helper.Events);
+            Input.Init(this.Helper.Input);
+            Locale.Init(this.Helper.Translation);
 
             // Services
-            var harmony = new Harmony(this.ModManifest.UniqueID);
-            var modConfigMenu = new GenericModConfigMenuIntegration(helper.ModRegistry);
-            var modConfigService = new ModConfigService(this.Helper, modConfigMenu, this.ModManifest);
-            var itemGrabMenuConstructedService = new ItemGrabMenuConstructedService(harmony);
-            var itemGrabMenuChangedService = new ItemGrabMenuChangedService(this.Helper.Events.Display);
-            var renderingActiveMenuService = new RenderingActiveMenuService(this.Helper.Events.Display, itemGrabMenuChangedService);
-            var renderedActiveMenuService = new RenderedActiveMenuService(this.Helper.Events.Display, itemGrabMenuChangedService);
-            var highlightPlayerItemsService = new HighlightItemsService(itemGrabMenuConstructedService, InventoryType.Player);
-            var displayedChestInventoryService = DisplayedInventoryService.Init(harmony, itemGrabMenuConstructedService, InventoryType.Chest);
+            this._serviceManager = new ServiceManager();
+            this._serviceManager.AddSingleton<ModConfigService>(this.Helper, this.ModManifest);
+            this._serviceManager.AddSingleton<ItemGrabMenuConstructedService>();
+            this._serviceManager.AddSingleton<ItemGrabMenuChangedService>();
+            this._serviceManager.AddSingleton<ItemGrabMenuSideButtonsService>();
+            this._serviceManager.AddSingleton<RenderingActiveMenuService>();
+            this._serviceManager.AddSingleton<RenderedActiveMenuService>();
+            this._serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Chest);
+            this._serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Player);
+            this._serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Chest);
+            this._serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Player);
 
             // Features
-            this._featureManager = FeatureManager.Init(this.Helper, harmony, modConfigService);
-            this._featureManager.AddFeature(new AccessCarriedFeature(this.Helper.Input));
-            this._featureManager.AddFeature(new CapacityFeature(modConfigService));
-            this._featureManager.AddFeature(new CategorizeChestFeature(this.Helper, modConfigService, itemGrabMenuChangedService, renderedActiveMenuService));
-            this._featureManager.AddFeature(new ColorPickerFeature(this.Helper.Content, this.Helper.Events.Input, itemGrabMenuConstructedService, itemGrabMenuChangedService, renderedActiveMenuService));
-            this._featureManager.AddFeature(new CraftFromChestFeature(this.Helper.Input, this.Helper.Events.GameLoop, modConfigService));
-            this._featureManager.AddFeature(new ExpandedMenuFeature(this.Helper.Input, this.Helper.Events.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService));
-            this._featureManager.AddFeature(new FilterItemsFeature(itemGrabMenuChangedService, highlightPlayerItemsService));
-            this._featureManager.AddFeature(new InventoryTabsFeature(this.Helper.Content, this.Helper.Input, this.Helper.Translation, this.Helper.Events.Input, modConfigService, itemGrabMenuChangedService, displayedChestInventoryService, renderingActiveMenuService, renderedActiveMenuService));
-            this._featureManager.AddFeature(new SearchItemsFeature(this.Helper.Content, this.Helper.Input, this.Helper.Events.GameLoop, this.Helper.Events.Input, modConfigService, itemGrabMenuConstructedService, itemGrabMenuChangedService, displayedChestInventoryService, renderedActiveMenuService));
-            this._featureManager.AddFeature(new StashToChestFeature(this.Helper.Input, modConfigService));
-            this._featureManager.AddFeature(new UnbreakableFeature());
-            this._featureManager.AddFeature(new UnplaceableFeature());
-            this._featureManager.AddFeature(new VacuumItemsFeature());
+            this._featureManager = FeatureManager.GetSingleton(this._serviceManager);
+            this._featureManager.AddSingleton<AccessCarriedFeature>();
+            this._featureManager.AddSingleton<CapacityFeature>();
+            this._featureManager.AddSingleton<CategorizeChestFeature>();
+            this._featureManager.AddSingleton<ColorPickerFeature>();
+            this._featureManager.AddSingleton<CraftFromChestFeature>();
+            this._featureManager.AddSingleton<ExpandedMenuFeature>();
+            this._featureManager.AddSingleton<FilterItemsFeature>();
+            this._featureManager.AddSingleton<InventoryTabsFeature>();
+            this._featureManager.AddSingleton<SearchItemsFeature>();
+            this._featureManager.AddSingleton<StashToChestFeature>();
+            this._featureManager.AddSingleton<UnbreakableFeature>();
+            this._featureManager.AddSingleton<UnplaceableFeature>();
+            this._featureManager.AddSingleton<VacuumItemsFeature>();
 
             // Activate
             this._featureManager.ActivateFeatures();

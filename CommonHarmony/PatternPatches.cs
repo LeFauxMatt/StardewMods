@@ -39,12 +39,12 @@
         /// <inheritdoc/>
         public IEnumerator<CodeInstruction> GetEnumerator()
         {
-            PatternPatch currentOperation = this._patternPatches.Dequeue();
+            var currentOperation = this._patternPatches.Dequeue();
             var rawStack = new LinkedList<CodeInstruction>();
-            int skipped = 0;
-            bool done = false;
+            var skipped = 0;
+            var done = false;
 
-            foreach (CodeInstruction instruction in this._instructions)
+            foreach (var instruction in this._instructions)
             {
                 // Skipped instructions
                 if (skipped > 0)
@@ -62,7 +62,7 @@
 
                 rawStack.AddLast(instruction);
                 currentOperation.Patches(rawStack);
-                foreach (CodeInstruction patch in rawStack)
+                foreach (var patch in rawStack)
                 {
                     yield return patch;
                 }
@@ -87,7 +87,7 @@
                 }
             }
 
-            foreach (CodeInstruction instruction in rawStack)
+            foreach (var instruction in rawStack)
             {
                 yield return instruction;
             }

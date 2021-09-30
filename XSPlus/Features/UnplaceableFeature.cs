@@ -1,38 +1,51 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using CommonHarmony.Services;
     using HarmonyLib;
-    using StardewModdingAPI.Events;
+    using Services;
     using SObject = StardewValley.Object;
 
     /// <inheritdoc />
     internal class UnplaceableFeature : FeatureWithParam<bool>
     {
-        private static UnplaceableFeature Instance;
+        private MixInfo _placementActionPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="UnplaceableFeature"/> class.</summary>
-        public UnplaceableFeature()
+        private UnplaceableFeature()
             : base("Unplaceable")
         {
-            UnplaceableFeature.Instance = this;
+        }
+
+        /// <summary>
+        /// Gets or sets the instance of <see cref="UnplaceableFeature"/>.
+        /// </summary>
+        private static UnplaceableFeature Instance { get; set; }
+
+        /// <inheritdoc/>
+        public override void Activate()
+        {
+            // Patches
+            this._placementActionPatch = Mixin.Prefix(
+                AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+                typeof(UnplaceableFeature),
+                nameof(UnplaceableFeature.Object_placementAction_prefix));
         }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                prefix: new HarmonyMethod(typeof(UnplaceableFeature), nameof(UnplaceableFeature.Object_placementAction_prefix)));
+            Mixin.Unpatch(this._placementActionPatch);
         }
 
-        /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="UnplaceableFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="UnplaceableFeature"/> class.</returns>
+        public static UnplaceableFeature GetSingleton(ServiceManager serviceManager)
         {
-            // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                patch: AccessTools.Method(typeof(UnplaceableFeature), nameof(UnplaceableFeature.Object_placementAction_prefix)));
+            return UnplaceableFeature.Instance ??= new UnplaceableFeature();
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

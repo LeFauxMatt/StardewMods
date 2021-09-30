@@ -5,8 +5,9 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection.Emit;
     using Common.Extensions;
-    using Common.Services;
+    using Common.Helpers;
     using CommonHarmony;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework.Graphics;
     using Models;
@@ -23,76 +24,89 @@
     {
         private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private static ExpandedMenuFeature Instance = null!;
-        private readonly IInputHelper _inputHelper;
-        private readonly IInputEvents _inputEvents;
         private readonly ModConfigService _modConfigService;
         private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly DisplayedInventoryService _displayedChestInventoryService;
+        private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<Chest> _chest = new();
+        private MixInfo _itemGrabMenuConstructorPatch;
+        private MixInfo _itemGrabMenuDrawPatch;
+        private MixInfo _menuWithInventoryDrawPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="ExpandedMenuFeature"/> class.</summary>
-        /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
-        /// <param name="inputEvents">Events raised when player provides input.</param>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
-        /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
-        /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
-        /// <param name="displayedChestInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
-        public ExpandedMenuFeature(
-            IInputHelper inputHelper,
-            IInputEvents inputEvents,
+        private ExpandedMenuFeature(
             ModConfigService modConfigService,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             DisplayedInventoryService displayedChestInventoryService)
             : base("ExpandedMenu")
         {
-            ExpandedMenuFeature.Instance = this;
-            this._inputHelper = inputHelper;
-            this._inputEvents = inputEvents;
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._displayedChestInventoryService = displayedChestInventoryService;
         }
 
+        /// <summary>
+        /// Gets or sets the instance of <see cref="ExpandedMenuFeature"/>.
+        /// </summary>
+        private static ExpandedMenuFeature Instance { get; set; }
+
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Events
             this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
+            Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
             // Patches
-            harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler)));
-            harmony.Patch(
-                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler)));
-            harmony.Patch(
-                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
-                transpiler: new HarmonyMethod(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler)));
+            this._itemGrabMenuConstructorPatch = Mixin.Transpiler(
+                AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
+                typeof(ExpandedMenuFeature),
+                nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler));
+            this._itemGrabMenuDrawPatch = Mixin.Transpiler(
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                typeof(ExpandedMenuFeature),
+                nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler));
+            this._menuWithInventoryDrawPatch = Mixin.Transpiler(
+                AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
+                typeof(ExpandedMenuFeature),
+                nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler));
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
             this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
+            Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
 
             // Patches
-            harmony.Unpatch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
-                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler)));
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler)));
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
-                patch: AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler)));
+            Mixin.Unpatch(this._itemGrabMenuConstructorPatch);
+            Mixin.Unpatch(this._itemGrabMenuDrawPatch);
+            Mixin.Unpatch(this._menuWithInventoryDrawPatch);
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="ExpandedMenuFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature"/> class.</returns>
+        public static ExpandedMenuFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            return ExpandedMenuFeature.Instance ??= new ExpandedMenuFeature(
+                modConfigService,
+                itemGrabMenuConstructedService,
+                itemGrabMenuChangedService,
+                displayedChestInventoryService);
         }
 
         /// <summary>Generate additional slots/rows for top inventory menu.</summary>
@@ -112,7 +126,7 @@
                     })
                 .Patch(delegate(LinkedList<CodeInstruction> list)
                 {
-                    CodeInstruction jumpCode = list.Last.Value;
+                    var jumpCode = list.Last.Value;
                     list.RemoveLast();
                     list.RemoveLast();
                     list.AddLast(new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)10));
@@ -177,7 +191,7 @@
 
             var patternPatches = new PatternPatches(instructions, moveBackpackPatch);
 
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -237,7 +251,7 @@
             patternPatches.AddPatch(moveDialogueBoxPatch);
             patternPatches.AddPatch(resizeDialogueBoxPatch);
 
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -328,17 +342,20 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._inputEvents.ButtonsChanged -= this.OnButtonsChanged;
-                this._inputEvents.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+                this._screenId.Value = -1;
                 return;
             }
 
-            this._inputEvents.ButtonsChanged += this.OnButtonsChanged;
-            this._inputEvents.MouseWheelScrolled += this.OnMouseWheelScrolled;
+            this._screenId.Value = Context.ScreenId;
         }
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
+            if (this._screenId.Value != Context.ScreenId)
+            {
+                return;
+            }
+
             switch (e.Delta)
             {
                 case > 0:
@@ -354,17 +371,22 @@
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
+            if (this._screenId.Value != Context.ScreenId)
+            {
+                return;
+            }
+
             if (this._modConfigService.ModConfig.ScrollUp.JustPressed())
             {
                 this._displayedChestInventoryService.Offset--;
-                this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.ScrollUp);
+                Input.Suppress(this._modConfigService.ModConfig.ScrollUp);
                 return;
             }
 
             if (this._modConfigService.ModConfig.ScrollDown.JustPressed())
             {
                 this._displayedChestInventoryService.Offset++;
-                this._inputHelper.SuppressActiveKeybinds(this._modConfigService.ModConfig.ScrollDown);
+                Input.Suppress(this._modConfigService.ModConfig.ScrollDown);
             }
         }
     }

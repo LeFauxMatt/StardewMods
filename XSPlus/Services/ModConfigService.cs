@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Services
 {
     using System;
+    using Common.Helpers;
     using Common.Integrations.GenericModConfigMenu;
     using Models;
     using StardewModdingAPI;
@@ -9,29 +10,37 @@
     /// <summary>
     /// Service to handle read/write to <see cref="Models.ModConfig"/>.
     /// </summary>
-    internal class ModConfigService
+    internal class ModConfigService : BaseService
     {
+        private static ModConfigService Instance;
         private readonly string[] _configChoices = { "Default", "Enable", "Disable" };
         private readonly string[] _rangeChoices = { "Inventory", "Location", "World", "Default", "Disabled" };
         private readonly IModHelper _helper;
         private readonly GenericModConfigMenuIntegration _modConfigMenu;
         private readonly IManifest _manifest;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ModConfigService"/> class.
-        /// </summary>
-        /// <param name="modHelper">Provides simplified APIs for writing mods.</param>
-        /// <param name="modConfigMenu">Provides an integration point for using GenericModConfigMenu.</param>
-        /// <param name="manifest">The XSPlus ModManifest.</param>
-        public ModConfigService(IModHelper modHelper, GenericModConfigMenuIntegration modConfigMenu, IManifest manifest)
+        private ModConfigService(IModHelper helper, IManifest manifest)
+            : base("ModConfig")
         {
-            this._helper = modHelper;
-            this._modConfigMenu = modConfigMenu;
+            this._helper = helper;
             this._manifest = manifest;
+            this._modConfigMenu = new GenericModConfigMenuIntegration(this._helper.ModRegistry);
 
             this.ModConfig = this._helper.ReadConfig<ModConfig>();
 
-            this._helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="ModConfigService"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        /// <param name="manifest">A manifest which describes a mod for SMAPI.</param>
+        /// <returns>Returns an instance of the <see cref="ModConfigService"/> class.</returns>
+        public static ModConfigService GetSingleton(ServiceManager serviceManager, IModHelper helper, IManifest manifest)
+        {
+            return ModConfigService.Instance ??= new ModConfigService(helper, manifest);
         }
 
         /// <summary>

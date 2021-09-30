@@ -4,6 +4,8 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection.Emit;
+    using Common.Helpers;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -15,15 +17,19 @@
     internal class VacuumItemsFeature : BaseFeature
     {
         private static readonly PerScreen<bool> IsVacuuming = new();
-        private static VacuumItemsFeature Instance = null!;
-        private readonly PerScreen<List<Chest>?> _cachedEnabledChests = new();
+        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
+        private MixInfo _collectPatch;
+        private MixInfo _addItemToInventoryPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="VacuumItemsFeature"/> class.</summary>
-        public VacuumItemsFeature()
+        private VacuumItemsFeature()
             : base("VacuumItems")
         {
-            VacuumItemsFeature.Instance = this;
         }
+
+        /// <summary>
+        /// Gets or sets the instance of <see cref="VacuumItemsFeature"/>.
+        /// </summary>
+        private static VacuumItemsFeature Instance { get; set; }
 
         private List<Chest> EnabledChests
         {
@@ -33,38 +39,46 @@
         }
 
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Events
-            modEvents.Player.InventoryChanged += this.OnInventoryChanged;
+            Events.Player.InventoryChanged += this.OnInventoryChanged;
 
             // Patches
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                transpiler: new HarmonyMethod(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Debris_collect_transpiler)));
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
-                prefix: new HarmonyMethod(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix)));
+            this._collectPatch = Mixin.Transpiler(
+                AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
+                typeof(VacuumItemsFeature),
+                nameof(VacuumItemsFeature.Debris_collect_transpiler));
+            this._addItemToInventoryPatch = Mixin.Prefix(
+                AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
+                typeof(VacuumItemsFeature),
+                nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix));
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
-            modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
+            Events.Player.InventoryChanged -= this.OnInventoryChanged;
 
             // Patches
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                patch: AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Debris_collect_transpiler)));
-            harmony.Unpatch(
-                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
-                patch: AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix)));
+            Mixin.Unpatch(this._collectPatch);
+            Mixin.Unpatch(this._addItemToInventoryPatch);
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="VacuumItemsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="VacuumItemsFeature"/> class.</returns>
+        public static VacuumItemsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            return VacuumItemsFeature.Instance ??= new VacuumItemsFeature();
         }
 
         private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            foreach (CodeInstruction instruction in instructions)
+            foreach (var instruction in instructions)
             {
                 if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
                 {
@@ -89,7 +103,7 @@
 
             Item? remaining = null;
             int stack = item.Stack;
-            foreach (Chest chest in VacuumItemsFeature.Instance.EnabledChests)
+            foreach (var chest in VacuumItemsFeature.Instance.EnabledChests)
             {
                 remaining = chest.addItem(item);
                 if (remaining is null)

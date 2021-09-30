@@ -4,9 +4,10 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection.Emit;
+    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
-    using Common.Services;
     using CommonHarmony;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -25,16 +26,12 @@
     {
         private const int SearchBarHeight = 24;
         private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private static SearchItemsFeature Instance = null!;
-        private readonly IContentHelper _contentHelper;
-        private readonly IInputHelper _inputHelper;
-        private readonly IGameLoopEvents _gameLoopEvents;
-        private readonly IInputEvents _inputEvents;
         private readonly ModConfigService _modConfigService;
         private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly DisplayedInventoryService _displayedChestInventoryService;
+        private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<ClickableComponent> _searchArea = new() { Value = new ClickableComponent(Rectangle.Empty, string.Empty) };
@@ -42,22 +39,10 @@
         private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
         private readonly PerScreen<int> _menuPadding = new() { Value = -1 };
         private readonly PerScreen<ItemMatcher> _itemMatcher = new();
+        private MixInfo _itemGrabMenuDrawPatch;
+        private MixInfo _menuWithInventoryDrawPatch;
 
-        /// <summary>Initializes a new instance of the <see cref="SearchItemsFeature"/> class.</summary>
-        /// <param name="contentHelper">Provides an API for loading content assets.</param>
-        /// <param name="inputHelper">Provides an API for checking and changing input state.</param>
-        /// <param name="gameLoopEvents">Events linked to the game's update loop.</param>
-        /// <param name="inputEvents">Events raised when player provides input.</param>
-        /// <param name="modConfigService">Service to handle read/write to ModConfig.</param>
-        /// <param name="itemGrabMenuConstructedService">Service to handle creation/invocation of ItemGrabMenuConstructed event.</param>
-        /// <param name="itemGrabMenuChangedService">Service to handle creation/invocation of ItemGrabMenuChanged event.</param>
-        /// <param name="displayedChestInventoryService">Service for manipulating the displayed items in an inventory menu.</param>
-        /// <param name="renderedActiveMenuService">Service to handle creation/invocation of RenderedActiveMenu event.</param>
-        public SearchItemsFeature(
-            IContentHelper contentHelper,
-            IInputHelper inputHelper,
-            IGameLoopEvents gameLoopEvents,
-            IInputEvents inputEvents,
+        private SearchItemsFeature(
             ModConfigService modConfigService,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
@@ -65,11 +50,6 @@
             RenderedActiveMenuService renderedActiveMenuService)
             : base("SearchItems")
         {
-            SearchItemsFeature.Instance = this;
-            this._contentHelper = contentHelper;
-            this._inputHelper = inputHelper;
-            this._gameLoopEvents = gameLoopEvents;
-            this._inputEvents = inputEvents;
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
@@ -77,38 +57,69 @@
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
 
+        /// <summary>
+        /// Gets or sets the instance of <see cref="SearchItemsFeature"/>.
+        /// </summary>
+        private static SearchItemsFeature Instance { get; set; }
+
         /// <inheritdoc/>
-        public override void Activate(IModEvents modEvents, Harmony harmony)
+        public override void Activate()
         {
             // Events
             this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
-            modEvents.GameLoop.GameLaunched += this.OnGameLaunched;
+            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
+            this._displayedChestInventoryService.AddHandler(this.FilterMethod);
+            Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            Events.Input.ButtonPressed += this.OnButtonPressed;
 
             // Patches
-            harmony.Patch(
-                original: Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                transpiler: new HarmonyMethod(typeof(SearchItemsFeature), nameof(SearchItemsFeature.ItemGrabMenu_draw_transpiler)));
-            harmony.Patch(
-                original: Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItemsFeature.MenuWithInventoryDrawParams),
-                transpiler: new HarmonyMethod(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuWithInventory_draw_transpiler)));
+            this._itemGrabMenuDrawPatch = Mixin.Transpiler(
+                Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                typeof(SearchItemsFeature),
+                nameof(SearchItemsFeature.ItemGrabMenu_draw_transpiler));
+            this._menuWithInventoryDrawPatch = Mixin.Transpiler(
+                Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItemsFeature.MenuWithInventoryDrawParams),
+                typeof(SearchItemsFeature),
+                nameof(SearchItemsFeature.MenuWithInventory_draw_transpiler));
         }
 
         /// <inheritdoc/>
-        public override void Deactivate(IModEvents modEvents, Harmony harmony)
+        public override void Deactivate()
         {
             // Events
             this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
-            modEvents.GameLoop.GameLaunched -= this.OnGameLaunched;
+            this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
+            this._displayedChestInventoryService.RemoveHandler(this.FilterMethod);
+            Events.GameLoop.GameLaunched -= this.OnGameLaunched;
+            Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+            Events.Input.ButtonPressed -= this.OnButtonPressed;
 
             // Patches
-            harmony.Unpatch(
-                original: Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                patch: Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.ItemGrabMenu_draw_transpiler)));
-            harmony.Unpatch(
-                original: Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItemsFeature.MenuWithInventoryDrawParams),
-                patch: Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuWithInventory_draw_transpiler)));
+            Mixin.Unpatch(this._itemGrabMenuDrawPatch);
+            Mixin.Unpatch(this._menuWithInventoryDrawPatch);
+        }
+
+        /// <summary>
+        /// Returns and creates if needed an instance of the <see cref="SearchItemsFeature"/> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="SearchItemsFeature"/> class.</returns>
+        public static SearchItemsFeature GetSingleton(ServiceManager serviceManager)
+        {
+            var modConfigService = serviceManager.RequestService<ModConfigService>();
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
+            return SearchItemsFeature.Instance ??= new SearchItemsFeature(
+                modConfigService,
+                itemGrabMenuConstructedService,
+                itemGrabMenuChangedService,
+                displayedChestInventoryService,
+                renderedActiveMenuService);
         }
 
         /// <summary>Move/resize top dialogue box by search bar height.</summary>
@@ -173,7 +184,7 @@
             patternPatches.AddPatch(moveDialogueBoxPatch);
             patternPatches.AddPatch(resizeDialogueBoxPatch);
 
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -233,7 +244,7 @@
             patternPatches.AddPatch(moveDialogueBoxPatch);
             patternPatches.AddPatch(resizeDialogueBoxPatch);
 
-            foreach (CodeInstruction patternPatch in patternPatches)
+            foreach (var patternPatch in patternPatches)
             {
                 yield return patternPatch;
             }
@@ -278,10 +289,7 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
-                this._displayedChestInventoryService.RemoveHandler(this.FilterMethod);
-                this._gameLoopEvents.UpdateTicked -= this.OnUpdateTicked;
-                this._inputEvents.ButtonPressed -= this.OnButtonPressed;
+                this._screenId.Value = -1;
                 this._menuPadding.Value = 0;
                 return;
             }
@@ -292,10 +300,7 @@
                 this._searchField.Value.Text = string.Empty;
             }
 
-            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
-            this._displayedChestInventoryService.AddHandler(this.FilterMethod);
-            this._gameLoopEvents.UpdateTicked += this.OnUpdateTicked;
-            this._inputEvents.ButtonPressed += this.OnButtonPressed;
+            this._screenId.Value = Context.ScreenId;
             this._menu.Value = e.ItemGrabMenu;
             this._menuPadding.Value = SearchItemsFeature.SearchBarHeight;
             this._itemMatcher.Value = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol);
@@ -317,7 +322,7 @@
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this._searchField.Value = new TextBox(
-                textBoxTexture: this._contentHelper.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent),
+                textBoxTexture: Content.FromGame<Texture2D>("LooseSprites\\textBox"),
                 caretTexture: null,
                 font: Game1.smallFont,
                 textColor: Game1.textColor);
@@ -330,13 +335,18 @@
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
+            if (this._screenId.Value != Context.ScreenId)
+            {
+                return;
+            }
+
             this._searchField.Value.Draw(e.SpriteBatch, false);
             this._searchIcon.Value.draw(e.SpriteBatch);
         }
 
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
-            if (this._itemMatcher.Value.Search == this._searchField.Value.Text)
+            if (this._screenId.Value != Context.ScreenId || this._itemMatcher.Value.Search == this._searchField.Value.Text)
             {
                 return;
             }
@@ -347,18 +357,23 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
+            if (this._screenId.Value != Context.ScreenId)
+            {
+                return;
+            }
+
             // Check if search bar was clicked on
-            Point point = Game1.getMousePosition(true);
+            var point = Game1.getMousePosition(true);
             switch (e.Button)
             {
                 case SButton.MouseLeft when this.LeftClick(point.X, point.Y):
                 case SButton.MouseRight when this.RightClick(point.X, point.Y):
-                    this._inputHelper.Suppress(e.Button);
+                    Input.Suppress(e.Button);
                     break;
                 default:
                     if (this.KeyPress(e.Button))
                     {
-                        this._inputHelper.Suppress(e.Button);
+                        Input.Suppress(e.Button);
                     }
 
                     break;
@@ -406,7 +421,7 @@
 
         private bool FilterMethod(Item item)
         {
-            return this._itemMatcher.Value.Matches(item);
+            return this._screenId.Value != Context.ScreenId || this._itemMatcher.Value.Matches(item);
         }
     }
 }
