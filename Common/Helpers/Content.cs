@@ -4,8 +4,8 @@
 
     internal static class Content
     {
-        /// <inheritdoc cref="IMonitor" />
-        private static IContentHelper Helper { get; set; } = null!;
+        /// <inheritdoc cref="IContentHelper" />
+        private static IContentHelper Helper { get; set; }
 
         /// <summary>Initializes the <see cref="Content" /> class.</summary>
         /// <param name="contentHelper">The instance of IContentHelper from the Mod.</param>

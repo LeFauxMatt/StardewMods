@@ -4,21 +4,21 @@
 
     /// <summary>
     /// </summary>
-    internal static class Locale
+    internal static class Translations
     {
         /// <inheritdoc cref="ITranslationHelper" />
-        private static ITranslationHelper Helper { get; set; } = null!;
+        private static ITranslationHelper Helper { get; set; }
 
-        /// <summary>Initializes the <see cref="Locale" /> class.</summary>
+        /// <summary>Initializes the <see cref="Translations" /> class.</summary>
         /// <param name="helper">The instance of ITranslationHelper from the Mod.</param>
         public static void Init(ITranslationHelper helper)
         {
-            Locale.Helper = helper;
+            Translations.Helper = helper;
         }
 
         public static Translation Get(string key)
         {
-            return Locale.Helper.Get(key);
+            return Translations.Helper.Get(key);
         }
     }
 }

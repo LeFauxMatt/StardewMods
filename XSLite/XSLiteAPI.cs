@@ -198,6 +198,12 @@
                     {
                         this._xsPlus.API.EnableWithModData(featureName, $"{XSLite.ModPrefix}/Storage", storage.Key, true);
                     }
+
+                    // Disable features from
+                    foreach (var featureName in storage.Value.DisabledFeatures)
+                    {
+                        this._xsPlus.API.EnableWithModData(featureName, $"{XSLite.ModPrefix}/Storage", storage.Key, false);
+                    }
                 }
 
                 // Add GMCM page for storage

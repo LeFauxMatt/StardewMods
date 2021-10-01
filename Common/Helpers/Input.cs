@@ -6,7 +6,7 @@
     internal static class Input
     {
         /// <inheritdoc cref="IInputHelper" />
-        private static IInputHelper Helper { get; set; } = null!;
+        private static IInputHelper Helper { get; set; }
 
         /// <summary>Initializes the <see cref="Input" /> class.</summary>
         /// <param name="inputHelper">The instance of IInputHelper from the Mod.</param>

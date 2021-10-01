@@ -8,7 +8,7 @@
     internal static class Log
     {
         /// <inheritdoc cref="IMonitor" />
-        private static IMonitor Monitor { get; set; } = null!;
+        private static IMonitor Monitor { get; set; }
 
         /// <summary>Initializes the <see cref="Log" /> class.</summary>
         /// <param name="monitor">The instance of Monitor from the Mod.</param>

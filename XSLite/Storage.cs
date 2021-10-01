@@ -100,6 +100,8 @@
 
         public HashSet<string> EnabledFeatures { get; set; } = new();
 
+        public HashSet<string> DisabledFeatures { get; set; } = new();
+
         public Dictionary<string, bool> FilterItems { get; set; }
 
         public IDictionary<string, string> ModData { get; set; } = new Dictionary<string, string>();

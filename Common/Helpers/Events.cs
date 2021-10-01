@@ -7,8 +7,6 @@
     /// </summary>
     internal static class Events
     {
-        /// <inheritdoc cref="IModEvents" />
-
         public static IDisplayEvents Display
         {
             get => Events.ModEvents.Display;
@@ -44,7 +42,8 @@
             get => Events.ModEvents.GameLoop;
         }
 
-        private static IModEvents ModEvents { get; set; } = null!;
+        /// <inheritdoc cref="IModEvents" />
+        private static IModEvents ModEvents { get; set; }
 
         /// <summary>Initializes the <see cref="Events" /> class.</summary>
         /// <param name="events">The instance of IModEvents from the Mod.</param>
