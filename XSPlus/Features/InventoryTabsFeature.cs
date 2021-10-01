@@ -24,7 +24,7 @@
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly RenderingActiveMenuService _renderingActiveMenuService;
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly DisplayedInventoryService _displayedChestInventoryService;
+        private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
@@ -37,14 +37,14 @@
         private InventoryTabsFeature(
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            DisplayedInventoryService displayedChestInventoryService,
+            DisplayedInventoryService displayedInventoryService,
             RenderingActiveMenuService renderingActiveMenuService,
             RenderedActiveMenuService renderedActiveMenuService)
             : base("InventoryTabs", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._displayedChestInventoryService = displayedChestInventoryService;
+            this._displayedInventoryService = displayedInventoryService;
             this._renderingActiveMenuService = renderingActiveMenuService;
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
@@ -63,13 +63,13 @@
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            var displayedInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedInventory");
             var renderingActiveMenuService = serviceManager.RequestService<RenderingActiveMenuService>();
             var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
             return InventoryTabsFeature.Instance ??= new InventoryTabsFeature(
                 modConfigService,
                 itemGrabMenuChangedService,
-                displayedChestInventoryService,
+                displayedInventoryService,
                 renderingActiveMenuService,
                 renderedActiveMenuService);
         }
@@ -81,7 +81,7 @@
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
             this._renderingActiveMenuService.AddHandler(this.OnRenderingActiveMenu);
             this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
-            this._displayedChestInventoryService.AddHandler(this.FilterMethod);
+            this._displayedInventoryService.AddHandler(this.FilterMethod);
             Events.GameLoop.GameLaunched += this.OnGameLaunched;
             Events.Input.ButtonsChanged += this.OnButtonsChanged;
             Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -95,7 +95,7 @@
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
             this._renderingActiveMenuService.RemoveHandler(this.OnRenderingActiveMenu);
             this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
-            this._displayedChestInventoryService.RemoveHandler(this.FilterMethod);
+            this._displayedInventoryService.RemoveHandler(this.FilterMethod);
             Events.GameLoop.GameLaunched -= this.OnGameLaunched;
             Events.Input.ButtonsChanged -= this.OnButtonsChanged;
             Events.Input.ButtonPressed -= this.OnButtonPressed;

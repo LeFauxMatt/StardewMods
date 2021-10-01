@@ -3,7 +3,6 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using Common.Enums;
     using Common.Helpers;
     using Common.Integrations.XSPlus;
     using Common.Services;
@@ -80,10 +79,8 @@
             serviceManager.AddSingleton<ItemGrabMenuSideButtonsService>();
             serviceManager.AddSingleton<RenderingActiveMenuService>();
             serviceManager.AddSingleton<RenderedActiveMenuService>();
-            serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Chest);
-            serviceManager.AddSingleton<HighlightItemsService>(InventoryType.Player);
-            serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Chest);
-            serviceManager.AddSingleton<DisplayedInventoryService>(InventoryType.Player);
+            serviceManager.AddSingleton<DisplayedInventoryService>();
+            serviceManager.AddSingleton<HighlightItemsService>();
 
             // Features
             serviceManager.AddSingleton<AccessCarriedFeature>();

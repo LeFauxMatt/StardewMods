@@ -16,7 +16,7 @@
     internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>
     {
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly HighlightItemsService _highlightPlayerItemsService;
+        private readonly HighlightItemsService _highlightItemsService;
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<Dictionary<string, bool>> _filterItems = new();
@@ -26,11 +26,11 @@
         private FilterItemsFeature(
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            HighlightItemsService highlightPlayerItemsService)
+            HighlightItemsService highlightItemsService)
             : base("FilterItems", modConfigService)
         {
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._highlightPlayerItemsService = highlightPlayerItemsService;
+            this._highlightItemsService = highlightItemsService;
         }
 
         /// <summary>
@@ -47,18 +47,18 @@
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var highlightPlayerItemsService = serviceManager.RequestService<HighlightItemsService>("HighlightPlayerItems");
+            var highlightItemsService = serviceManager.RequestService<HighlightItemsService>("HighlightItems");
             return FilterItemsFeature.Instance ??= new FilterItemsFeature(
                 modConfigService,
                 itemGrabMenuChangedService,
-                highlightPlayerItemsService);
+                highlightItemsService);
         }
 
         /// <inheritdoc/>
         public override void Activate()
         {
             // Events
-            this._highlightPlayerItemsService.AddHandler(this.HighlightMethod);
+            this._highlightItemsService.AddHandler(this.HighlightMethod);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
 
             // Patches
@@ -73,7 +73,7 @@
         {
             // Events
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
-            this._highlightPlayerItemsService.RemoveHandler(this.HighlightMethod);
+            this._highlightItemsService.RemoveHandler(this.HighlightMethod);
 
             // Patches
             Mixin.Unpatch(this._addItemPatch);

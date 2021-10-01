@@ -164,7 +164,7 @@
 
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
-            if (this._multipleChestCraftingPage.Value is null || this._multipleChestCraftingPage.Value.Exited)
+            if (this._multipleChestCraftingPage.Value is null || this._multipleChestCraftingPage.Value.Timeout)
             {
                 return;
             }
@@ -206,7 +206,7 @@
             private const int TimeOut = 100;
             private readonly List<Chest> _chests;
             private readonly MultipleMutexRequest _multipleMutexRequest;
-            private int _timeOut = TimeOut;
+            private int _timeOut = MultipleChestCraftingPage.TimeOut;
 
             public MultipleChestCraftingPage(List<Chest> chests)
             {
@@ -218,7 +218,10 @@
                     failure_callback: this.FailureCallback);
             }
 
-            public bool Exited { get; private set; } = true;
+            public bool Timeout
+            {
+                get => this._timeOut <= 0;
+            }
 
             public void UpdateChests()
             {
@@ -235,7 +238,7 @@
 
             private void SuccessCallback()
             {
-                this.Exited = false;
+                this._timeOut = 0;
                 var width = 800 + (IClickableMenu.borderWidth * 2);
                 var height = 600 + (IClickableMenu.borderWidth * 2);
                 var pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
@@ -248,13 +251,13 @@
             private void FailureCallback()
             {
                 Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
-                this.Exited = true;
+                this._timeOut = 0;
             }
 
             private void ExitFunction()
             {
                 this._multipleMutexRequest.ReleaseLocks();
-                this.Exited = true;
+                this._timeOut = 0;
             }
         }
     }

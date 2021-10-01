@@ -113,7 +113,7 @@
                 return;
             }
 
-            __instance.colorPickerToggleButton = null;
+            __instance.chestColorPicker = null;
             __instance.discreteColorPickerCC = null;
         }
 
@@ -192,7 +192,7 @@
 
             // Override color picker
             var point = Game1.getMousePosition(true);
-            if (this._menu.Value.colorPickerToggleButton.containsPoint(point.X, point.Y))
+            if (this._menu.Value.colorPickerToggleButton is not null && this._menu.Value.colorPickerToggleButton.containsPoint(point.X, point.Y))
             {
                 Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
                 Game1.playSound("drumkit6");

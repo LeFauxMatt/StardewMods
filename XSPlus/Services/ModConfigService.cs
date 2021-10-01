@@ -147,8 +147,8 @@
                 mod: this._manifest,
                 optionName: "Categorized Chest",
                 optionDesc: "Organize chests by assigning categories of items.",
-                optionGet: this.GetConfig("CategorizedChest"),
-                optionSet: this.SetConfig("CategorizedChest"),
+                optionGet: this.GetConfig("CategorizeChest"),
+                optionSet: this.SetConfig("CategorizeChest"),
                 choices: this._configChoices);
             this._modConfigMenu.API.RegisterChoiceOption(
                 mod: this._manifest,

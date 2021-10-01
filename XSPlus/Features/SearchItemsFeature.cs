@@ -31,7 +31,7 @@
         private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly DisplayedInventoryService _displayedChestInventoryService;
+        private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
@@ -47,14 +47,14 @@
             ModConfigService modConfigService,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            DisplayedInventoryService displayedChestInventoryService,
+            DisplayedInventoryService displayedInventoryService,
             RenderedActiveMenuService renderedActiveMenuService)
             : base("SearchItems", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._displayedChestInventoryService = displayedChestInventoryService;
+            this._displayedInventoryService = displayedInventoryService;
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
 
@@ -73,13 +73,13 @@
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
             var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            var displayedInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedInventory");
             var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
             return SearchItemsFeature.Instance ??= new SearchItemsFeature(
                 modConfigService,
                 itemGrabMenuConstructedService,
                 itemGrabMenuChangedService,
-                displayedChestInventoryService,
+                displayedInventoryService,
                 renderedActiveMenuService);
         }
 
@@ -90,7 +90,7 @@
             this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
             this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
-            this._displayedChestInventoryService.AddHandler(this.FilterMethod);
+            this._displayedInventoryService.AddHandler(this.FilterMethod);
             Events.GameLoop.GameLaunched += this.OnGameLaunched;
             Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -113,7 +113,7 @@
             this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
             this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
-            this._displayedChestInventoryService.RemoveHandler(this.FilterMethod);
+            this._displayedInventoryService.RemoveHandler(this.FilterMethod);
             Events.GameLoop.GameLaunched -= this.OnGameLaunched;
             Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
             Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -353,7 +353,7 @@
             }
 
             this._itemMatcher.Value.SetSearch(this._searchField.Value.Text);
-            this._displayedChestInventoryService.ReSyncInventory();
+            this._displayedInventoryService.ReSyncInventory();
         }
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)

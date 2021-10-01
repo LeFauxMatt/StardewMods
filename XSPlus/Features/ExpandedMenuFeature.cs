@@ -28,7 +28,7 @@
         private readonly ModConfigService _modConfigService;
         private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly DisplayedInventoryService _displayedChestInventoryService;
+        private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<Chest> _chest = new();
         private MixInfo _itemGrabMenuConstructorPatch;
@@ -39,13 +39,13 @@
             ModConfigService modConfigService,
             ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            DisplayedInventoryService displayedChestInventoryService)
+            DisplayedInventoryService displayedInventoryService)
             : base("ExpandedMenu", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._displayedChestInventoryService = displayedChestInventoryService;
+            this._displayedInventoryService = displayedInventoryService;
         }
 
         /// <summary>
@@ -63,12 +63,12 @@
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
             var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedChestInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedChestInventory");
+            var displayedInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedInventory");
             return ExpandedMenuFeature.Instance ??= new ExpandedMenuFeature(
                 modConfigService,
                 itemGrabMenuConstructedService,
                 itemGrabMenuChangedService,
-                displayedChestInventoryService);
+                displayedInventoryService);
         }
 
         /// <inheritdoc/>
@@ -360,10 +360,10 @@
             switch (e.Delta)
             {
                 case > 0:
-                    this._displayedChestInventoryService.Offset--;
+                    this._displayedInventoryService.Offset--;
                     break;
                 case < 0:
-                    this._displayedChestInventoryService.Offset++;
+                    this._displayedInventoryService.Offset++;
                     break;
                 default:
                     return;
@@ -379,14 +379,14 @@
 
             if (this._modConfigService.ModConfig.ScrollUp.JustPressed())
             {
-                this._displayedChestInventoryService.Offset--;
+                this._displayedInventoryService.Offset--;
                 Input.Suppress(this._modConfigService.ModConfig.ScrollUp);
                 return;
             }
 
             if (this._modConfigService.ModConfig.ScrollDown.JustPressed())
             {
-                this._displayedChestInventoryService.Offset++;
+                this._displayedInventoryService.Offset++;
                 Input.Suppress(this._modConfigService.ModConfig.ScrollDown);
             }
         }

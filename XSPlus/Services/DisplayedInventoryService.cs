@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection.Emit;
-    using Common.Enums;
     using Common.Extensions;
     using Common.Helpers;
     using Common.Interfaces;
@@ -14,34 +13,31 @@
     using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework.Graphics;
+    using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
-    using StardewValley.Objects;
 
     /// <summary>
     /// Service for manipulating the displayed items in an inventory menu.
     /// </summary>
     internal class DisplayedInventoryService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
-        private static DisplayedInventoryService ChestInstance;
-        private static DisplayedInventoryService PlayerInstance;
+        private static DisplayedInventoryService Instance;
         private readonly PerScreen<IList<Func<Item, bool>>> _filterItemHandlers = new() { Value = new List<Func<Item, bool>>() };
-        private readonly InventoryType _inventoryType;
-        private readonly PerScreen<object> _context = new();
         private readonly PerScreen<IList<Item>> _items = new();
         private readonly PerScreen<Range<int>> _range = new() { Value = new Range<int>() };
         private readonly PerScreen<InventoryMenu> _menu = new();
         private readonly PerScreen<int> _columns = new();
         private readonly PerScreen<int> _offset = new();
 
-        private DisplayedInventoryService(ItemGrabMenuConstructedService itemGrabMenuConstructedService, InventoryType inventoryType, string serviceName)
-            : base(serviceName)
+        private DisplayedInventoryService(ItemGrabMenuConstructedService itemGrabMenuConstructedService, ItemGrabMenuChangedService itemGrabMenuChangedService)
+            : base("DisplayedInventory")
         {
-            this._inventoryType = inventoryType;
-
             // Events
-            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
+            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuEvent);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuEvent);
+            Events.Player.InventoryChanged += this.OnInventoryChanged;
 
             // Patches
             Mixin.Transpiler(
@@ -99,18 +95,12 @@
         /// Returns and creates if needed an instance of the <see cref="DisplayedInventoryService"/> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <param name="inventoryType">The type of inventory that DisplayedInventory will apply to.</param>
         /// <returns>An instance of the <see cref="DisplayedInventoryService"/> class.</returns>
-        public static DisplayedInventoryService GetSingleton(ServiceManager serviceManager, InventoryType inventoryType)
+        public static DisplayedInventoryService GetSingleton(ServiceManager serviceManager)
         {
             var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-
-            return inventoryType switch
-            {
-                InventoryType.Chest => DisplayedInventoryService.ChestInstance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, inventoryType, "DisplayedChestInventory"),
-                InventoryType.Player => DisplayedInventoryService.PlayerInstance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, inventoryType, "DisplayedPlayerInventory"),
-                _ => throw new ArgumentOutOfRangeException(nameof(inventoryType), inventoryType, null),
-            };
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            return DisplayedInventoryService.Instance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, itemGrabMenuChangedService);
         }
 
         /// <inheritdoc/>
@@ -134,8 +124,13 @@
             for (var i = 0; i < this._menu.Value.inventory.Count; i++)
             {
                 var item = items.ElementAtOrDefault(i);
-                var index = item is not null ? this._items.Value.IndexOf(item) : int.MaxValue;
-                this._menu.Value.inventory[i].name = index.ToString();
+                if (item is not null)
+                {
+                    this._menu.Value.inventory[i].name = this._items.Value.IndexOf(item).ToString();
+                    return;
+                }
+
+                this._menu.Value.inventory[i].name = (i < this._items.Value.Count ? int.MaxValue : i).ToString();
             }
         }
 
@@ -171,46 +166,27 @@
 
         private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
         {
-            if (Game1.activeClickableMenu is not ItemGrabMenu { shippingBin: false, context: Chest { playerChest: { Value: true } } } itemGrabMenu)
-            {
-                return actualInventory;
-            }
-
-            if (ReferenceEquals(itemGrabMenu.ItemsToGrabMenu, inventoryMenu) && DisplayedInventoryService.ChestInstance is not null)
-            {
-                return DisplayedInventoryService.ChestInstance.Items.Take(inventoryMenu.capacity).ToList();
-            }
-
-            if (ReferenceEquals(itemGrabMenu.inventory, inventoryMenu) && DisplayedInventoryService.PlayerInstance is not null)
-            {
-                return DisplayedInventoryService.PlayerInstance.Items.Take(inventoryMenu.capacity).ToList();
-            }
-
-            return actualInventory;
+            return ReferenceEquals(DisplayedInventoryService.Instance._menu.Value, inventoryMenu)
+                ? DisplayedInventoryService.Instance.Items.Take(inventoryMenu.capacity).ToList()
+                : actualInventory;
         }
 
-        private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
+        private void OnItemGrabMenuEvent(object sender, ItemGrabMenuEventArgs e)
         {
-            if (e.ItemGrabMenu is null || e.Chest is null)
+            if (e.ItemGrabMenu is null)
             {
+                this._menu.Value = null;
                 return;
             }
 
-            var menu = this._inventoryType switch
-            {
-                InventoryType.Chest => e.ItemGrabMenu.ItemsToGrabMenu,
-                InventoryType.Player => e.ItemGrabMenu.inventory,
-                _ => throw new ArgumentOutOfRangeException(),
-            };
+            this._menu.Value = e.ItemGrabMenu.ItemsToGrabMenu;
+            this._columns.Value = e.ItemGrabMenu.ItemsToGrabMenu.capacity / e.ItemGrabMenu.ItemsToGrabMenu.rows;
+            this._items.Value = e.ItemGrabMenu.ItemsToGrabMenu.actualInventory;
+            this.ReSyncInventory();
+        }
 
-            if (!ReferenceEquals(this._context.Value, e.ItemGrabMenu.context))
-            {
-                this._context.Value = e.ItemGrabMenu.context;
-                this._items.Value = menu.actualInventory;
-            }
-
-            this._menu.Value = menu;
-            this._columns.Value = menu.capacity / menu.rows;
+        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+        {
             this.ReSyncInventory();
         }
 
