@@ -2,9 +2,11 @@
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
     using Common.Models;
     using Common.Services;
+    using CommonHarmony;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
@@ -25,6 +27,7 @@
             Value = new ItemMatcher(string.Empty, true),
         };
         private MixInfo _addItemPatch;
+        private MixInfo _automatePatch;
 
         private FilterItemsFeature(
             ModConfigService modConfigService,
@@ -69,6 +72,10 @@
                 AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 typeof(FilterItemsFeature),
                 nameof(FilterItemsFeature.Chest_addItem_prefix));
+            this._automatePatch = Mixin.Prefix(
+                new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
+                typeof(FilterItemsFeature),
+                nameof(FilterItemsFeature.Automate_Store_prefix));
         }
 
         /// <inheritdoc />
@@ -80,6 +87,7 @@
 
             // Patches
             Mixin.Unpatch(this._addItemPatch);
+            Mixin.Unpatch(this._automatePatch);
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
@@ -102,6 +110,21 @@
 
             __result = item;
             return false;
+        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+        private static bool Automate_Store_prefix(Chest ___Chest, object stack)
+        {
+            if (!FilterItemsFeature.Instance.TryGetValueForItem(___Chest, out var filterItems))
+            {
+                return true;
+            }
+            var itemMatcher = new ItemMatcher(string.Empty, true);
+            itemMatcher.SetSearch(filterItems);
+            var item = Reflection.Property<Item>(stack, "Sample").GetValue();
+            return itemMatcher.Matches(item);
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)

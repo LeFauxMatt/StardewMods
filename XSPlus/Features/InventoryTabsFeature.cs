@@ -251,7 +251,7 @@
             // Check if any tab is hovered.
             var point = Game1.getMousePosition(true);
             var tab = this._tabs.SingleOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
-            this._hoverText.Value = tab is not null ? Locale.Get($"tabs.{tab.Name}.name") : string.Empty;
+            this._hoverText.Value = tab is not null ? Translations.Get($"tabs.{tab.Name}.name") : string.Empty;
         }
 
         private void SetTab(int index)

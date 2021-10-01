@@ -68,7 +68,8 @@
             Content.Init(this.Helper.Content);
             Events.Init(this.Helper.Events);
             Input.Init(this.Helper.Input);
-            Locale.Init(this.Helper.Translation);
+            Translations.Init(this.Helper.Translation);
+            Reflection.Init(this.Helper.Reflection);
 
             // Services
             var serviceManager = ServiceManager.GetSingleton();

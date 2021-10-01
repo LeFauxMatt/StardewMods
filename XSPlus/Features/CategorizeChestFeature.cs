@@ -1,9 +1,13 @@
 ﻿namespace XSPlus.Features
 {
+    using System.Diagnostics.CodeAnalysis;
     using Common.Helpers;
+    using Common.Helpers.ItemMatcher;
     using Common.Models;
     using Common.Services;
     using Common.UI;
+    using CommonHarmony;
+    using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Services;
@@ -28,6 +32,7 @@
         {
             Value = -1,
         };
+        private MixInfo _automatePatch;
 
         private CategorizeChestFeature(
             ModConfigService modConfigService,
@@ -67,19 +72,46 @@
         /// <inheritdoc />
         public override void Activate()
         {
+            // Events
             this._itemGrabMenuSideButtonsService.AddHandler(this.SetupSideButtons);
             this._renderedActiveMenuService.AddHandler(this.DrawSideButtons);
             Events.Input.ButtonPressed += this.OnButtonPressed;
             Events.Input.CursorMoved += this.OnCursorMoved;
+
+            // Patches
+            this._automatePatch = Mixin.Prefix(
+                new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
+                typeof(CategorizeChestFeature),
+                nameof(CategorizeChestFeature.Automate_Store_prefix));
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
+            // Events
             this._itemGrabMenuSideButtonsService.RemoveHandler(this.SetupSideButtons);
             this._renderedActiveMenuService.RemoveHandler(this.DrawSideButtons);
             Events.Input.ButtonPressed -= this.OnButtonPressed;
             Events.Input.CursorMoved -= this.OnCursorMoved;
+
+            // Patches
+            Mixin.Unpatch(this._automatePatch);
+        }
+
+        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+        private static bool Automate_Store_prefix(Chest ___Chest, object stack)
+        {
+            if (!___Chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems))
+            {
+                return true;
+            }
+            var itemMatcher = new ItemMatcher(CategorizeChestFeature.Instance._modConfigService.ModConfig.SearchTagSymbol, true);
+            itemMatcher.SetSearch(filterItems);
+            var item = Reflection.Property<Item>(stack, "Sample").GetValue();
+            var matched = itemMatcher.Matches(item);
+            return matched;
         }
 
         private void SetupSideButtons(object sender, ItemGrabMenuEventArgs e)
@@ -147,7 +179,7 @@
 
             var point = Game1.getMousePosition(true);
             this._configButton.Value.tryHover(point.X, point.Y, 0.25f);
-            this._hoverText.Value = this._configButton.Value.containsPoint(point.X, point.Y) ? Locale.Get("button.Configure.name") : string.Empty;
+            this._hoverText.Value = this._configButton.Value.containsPoint(point.X, point.Y) ? Translations.Get("button.Configure.name") : string.Empty;
         }
 
         private void ReturnToMenu()
