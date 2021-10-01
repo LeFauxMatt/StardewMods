@@ -12,7 +12,7 @@
 
         public Recipe Recipe { get; set; } = null;
 
-        public string? PurchaseFrom { get; set; } = null;
+        public string PurchaseFrom { get; set; } = null;
 
         public int PurchasePrice { get; set; } = 0;
 

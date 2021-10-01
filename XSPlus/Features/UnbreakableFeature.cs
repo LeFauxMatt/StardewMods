@@ -18,22 +18,22 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="UnbreakableFeature"/>.
+        ///     Gets or sets the instance of <see cref="UnbreakableFeature" />.
         /// </summary>
         private static UnbreakableFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="UnbreakableFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="UnbreakableFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="UnbreakableFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="UnbreakableFeature" /> class.</returns>
         public static UnbreakableFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             return UnbreakableFeature.Instance ??= new UnbreakableFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Patches
@@ -43,7 +43,7 @@
                 nameof(UnbreakableFeature.Chest_performToolAction_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Patches

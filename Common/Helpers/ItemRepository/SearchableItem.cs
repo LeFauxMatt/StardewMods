@@ -1,4 +1,5 @@
 ﻿// ReSharper disable All
+
 #pragma warning disable
 
 #region License
@@ -40,28 +41,6 @@ namespace Common.Helpers.ItemRepository
     internal class SearchableItem
     {
         /*********
-        ** Accessors
-        *********/
-        /// <summary>The item type.</summary>
-        public ItemType Type { get; }
-
-        /// <summary>A sample item instance.</summary>
-        public Item Item { get; }
-
-        /// <summary>Create an item instance.</summary>
-        public Func<Item> CreateItem { get; }
-
-        /// <summary>The item's unique ID for its type.</summary>
-        public int ID { get; }
-
-        /// <summary>The item's default name.</summary>
-        public string Name => this.Item.Name;
-
-        /// <summary>The item's display name for the current language.</summary>
-        public string DisplayName => this.Item.DisplayName;
-
-
-        /*********
         ** Public methods
         *********/
         /// <summary>Construct an instance.</summary>
@@ -85,6 +64,27 @@ namespace Common.Helpers.ItemRepository
             this.CreateItem = item.CreateItem;
             this.Item = item.Item;
         }
+
+        /*********
+        ** Accessors
+        *********/
+        /// <summary>The item type.</summary>
+        public ItemType Type { get; }
+
+        /// <summary>A sample item instance.</summary>
+        public Item Item { get; }
+
+        /// <summary>Create an item instance.</summary>
+        public Func<Item> CreateItem { get; }
+
+        /// <summary>The item's unique ID for its type.</summary>
+        public int ID { get; }
+
+        /// <summary>The item's default name.</summary>
+        public string Name => this.Item.Name;
+
+        /// <summary>The item's display name for the current language.</summary>
+        public string DisplayName => this.Item.DisplayName;
 
         /// <summary>Get whether the item name contains a case-insensitive substring.</summary>
         /// <param name="substring">The substring to find.</param>

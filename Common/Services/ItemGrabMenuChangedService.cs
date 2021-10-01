@@ -1,9 +1,9 @@
 ﻿namespace Common.Services
 {
     using System;
-    using Common.Helpers;
-    using Common.Interfaces;
-    using Common.Models;
+    using Helpers;
+    using Interfaces;
+    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -14,9 +14,12 @@
     internal class ItemGrabMenuChangedService : BaseService, IEventHandlerService<EventHandler<ItemGrabMenuEventArgs>>
     {
         private static ItemGrabMenuChangedService Instance;
-        private readonly PerScreen<IClickableMenu> _menu = new();
         private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
+        private readonly PerScreen<IClickableMenu> _menu = new();
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
 
         private ItemGrabMenuChangedService()
             : base("ItemGrabMenuChanged")
@@ -24,28 +27,28 @@
             Events.Display.MenuChanged += this.OnMenuChanged;
         }
 
-        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuChanged;
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ItemGrabMenuChangedService"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService"/> class.</returns>
-        public static ItemGrabMenuChangedService GetSingleton(ServiceManager serviceManager)
-        {
-            return ItemGrabMenuChangedService.Instance ??= new ItemGrabMenuChangedService();
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void AddHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuChanged += eventHandler;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuChanged -= eventHandler;
+        }
+
+        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuChanged;
+
+        /// <summary>
+        ///     Returns and creates if needed an instance of the <see cref="ItemGrabMenuChangedService" /> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService" /> class.</returns>
+        public static ItemGrabMenuChangedService GetSingleton(ServiceManager serviceManager)
+        {
+            return ItemGrabMenuChangedService.Instance ??= new ItemGrabMenuChangedService();
         }
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
@@ -56,7 +59,7 @@
             }
 
             this._menu.Value = e.NewMenu;
-            if (e.NewMenu is not ItemGrabMenu { shippingBin: false, context: Chest { playerChest: { Value: true } } chest } itemGrabMenu)
+            if (e.NewMenu is not ItemGrabMenu {shippingBin: false, context: Chest {playerChest: {Value: true}} chest} itemGrabMenu)
             {
                 this._attached.Value = false;
                 this._screenId.Value = -1;

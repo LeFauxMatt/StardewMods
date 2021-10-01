@@ -3,11 +3,11 @@
     using StardewModdingAPI.Events;
 
     /// <summary>
-    /// Provides mod events across mods.
+    ///     Provides mod events across mods.
     /// </summary>
     internal static class Events
     {
-        /// <inheritdoc cref="IModEvents"/>
+        /// <inheritdoc cref="IModEvents" />
 
         public static IDisplayEvents Display
         {
@@ -46,7 +46,7 @@
 
         private static IModEvents ModEvents { get; set; } = null!;
 
-        /// <summary>Initializes the <see cref="Events"/> class.</summary>
+        /// <summary>Initializes the <see cref="Events" /> class.</summary>
         /// <param name="events">The instance of IModEvents from the Mod.</param>
         public static void Init(IModEvents events)
         {

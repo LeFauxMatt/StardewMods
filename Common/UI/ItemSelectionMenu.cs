@@ -3,14 +3,14 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Common.Extensions;
-    using Common.Helpers;
-    using Common.Helpers.ItemMatcher;
-    using Common.Helpers.ItemRepository;
-    using Common.Models;
+    using Extensions;
+    using Helpers;
+    using Helpers.ItemMatcher;
+    using Helpers.ItemRepository;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
+    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -18,29 +18,29 @@
     using StardewValley.Menus;
 
     /// <summary>
-    /// A menu for selecting items.
+    ///     A menu for selecting items.
     /// </summary>
     internal class ItemSelectionMenu : ItemGrabMenu
     {
         private static readonly PerScreen<ItemSelectionMenu> Instance = new();
         private static IEnumerable<Item> AllItems;
+        private readonly int _columns;
+        private readonly ItemMatcher _itemFilter;
+        private readonly IList<Item> _items;
+        private readonly ItemMatcher _itemSelector;
+        private readonly InventoryMenu _menu;
+        private readonly Range<int> _range;
         private readonly Action<string> _returnValue;
         private readonly ClickableComponent _searchArea;
         private readonly TextBox _searchField;
         private readonly ClickableTextureComponent _searchIcon;
-        private readonly ItemMatcher _itemFilter;
-        private readonly ItemMatcher _itemSelector;
         private readonly List<Item> _sortedItems = new();
-        private readonly IList<Item> _items;
         private readonly IList<ClickableComponent> _tags;
-        private readonly Range<int> _range;
-        private readonly InventoryMenu _menu;
-        private readonly int _columns;
         private IEnumerable<Item> _filteredItems;
         private int _offset;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemSelectionMenu"/> class.
+        ///     Initializes a new instance of the <see cref="ItemSelectionMenu" /> class.
         /// </summary>
         /// <param name="searchTagSymbol">Character that will be used to denote tags in search.</param>
         /// <param name="exitFunction">The method to run when exiting this menu.</param>
@@ -48,13 +48,13 @@
         /// <param name="returnValue">An action that will accept the return value on exit.</param>
         public ItemSelectionMenu(string searchTagSymbol, onExit exitFunction, string initialValue, Action<string> returnValue)
             : base(
-                inventory: new List<Item>(),
-                reverseGrab: false,
-                showReceivingMenu: true,
-                highlightFunction: ItemSelectionMenu.HighlightMethod,
-                behaviorOnItemSelectFunction: (item, who) => { },
-                message: null,
-                behaviorOnItemGrab: (item, who) => { },
+                new List<Item>(),
+                false,
+                true,
+                ItemSelectionMenu.HighlightMethod,
+                (item, who) => { },
+                null,
+                (item, who) => { },
                 canBeExitedWithKey: false,
                 source: ItemSelectionMenu.source_none)
         {
@@ -63,14 +63,13 @@
             this._returnValue = returnValue;
             this.exitFunction = exitFunction;
             this.behaviorBeforeCleanup = this.BehaviorBeforeCleanup;
-            Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             Events.Input.ButtonPressed += this.OnButtonPressed;
             this._items = this.ItemsToGrabMenu.actualInventory;
             this._tags = this.inventory.inventory;
             this._menu = this.ItemsToGrabMenu;
             this._columns = this._menu.capacity / this._menu.rows;
             this._offset = 0;
-            this._range = new Range<int>(0, (ItemSelectionMenu.AllItems.Count().RoundUp(this._columns) / this._columns) - this._menu.rows);
+            this._range = new Range<int>(0, ItemSelectionMenu.AllItems.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
             this._itemFilter = new ItemMatcher(searchTagSymbol);
             this._itemSelector = new ItemMatcher(searchTagSymbol);
 
@@ -82,21 +81,21 @@
             this._searchField = new TextBox(Content.FromGame<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
             {
                 X = this.ItemsToGrabMenu.xPositionOnScreen,
-                Y = this.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom),
+                Y = this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom,
                 Width = this.ItemsToGrabMenu.width,
                 Selected = false,
             };
 
             this._searchIcon = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(80, 0, 13, 13), 2.5f)
             {
-                bounds = new Rectangle(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom) + 6, 32, 32),
+                bounds = new Rectangle(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32),
             };
 
             this._searchArea = new ClickableComponent(new Rectangle(this._searchField.X, this._searchField.Y, this._searchField.Width, this._searchField.Height), string.Empty);
         }
 
         /// <summary>
-        /// Gets the displayed items.
+        ///     Gets the displayed items.
         /// </summary>
         private IEnumerable<Item> Items
         {
@@ -112,14 +111,14 @@
                 }
 
                 // Skip scrolled items
-                IEnumerable<Item> items = this._sortedItems.Skip(this.Offset * this._columns);
+                var items = this._sortedItems.Skip(this.Offset * this._columns);
 
                 return items;
             }
         }
 
         /// <summary>
-        /// Gets or sets the number of rows the currently displayed items are offset by.
+        ///     Gets or sets the number of rows the currently displayed items are offset by.
         /// </summary>
         private int Offset
         {
@@ -135,7 +134,7 @@
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
             if (this.okButton.containsPoint(x, y) && this.readyToClose())
@@ -172,11 +171,10 @@
             {
                 this._itemSelector.RemoveSearch(cc.name);
                 this.ReSyncInventory(false, true);
-                return;
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
             var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
@@ -193,24 +191,22 @@
                         this.ReSyncInventory(false, true);
                     }
                 }
-
-                return;
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void receiveKeyPress(Keys key)
         {
             base.receiveKeyPress(key);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void receiveGamePadButton(Buttons b)
         {
             base.receiveGamePadButton(b);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void receiveScrollWheelAction(int direction)
         {
             var point = Game1.getMousePosition(true);
@@ -233,7 +229,7 @@
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void performHoverAction(int x, int y)
         {
             this.okButton.scale = this.okButton.containsPoint(x, y)
@@ -261,13 +257,21 @@
             this.hoverText = string.Empty;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void update(GameTime time)
         {
+            if (this._itemFilter.Search == this._searchField.Text)
+            {
+                base.update(time);
+                return;
+            }
+
+            this._itemFilter.SetSearch(this._searchField.Text);
+            this.ReSyncInventory(false, true);
             base.update(time);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void draw(SpriteBatch b)
         {
             if (this.drawBG)
@@ -278,16 +282,16 @@
             Game1.drawDialogueBox(
                 this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
                 this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
-                this.ItemsToGrabMenu.width + (ItemSelectionMenu.borderWidth * 2) + (ItemSelectionMenu.spaceToClearSideBorder * 2),
-                this.ItemsToGrabMenu.height + ItemSelectionMenu.spaceToClearTopBorder + (ItemSelectionMenu.borderWidth * 2) + 24,
+                this.ItemsToGrabMenu.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
+                this.ItemsToGrabMenu.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 + 24,
                 false,
                 true);
 
             Game1.drawDialogueBox(
                 this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
                 this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder,
-                this.inventory.width + (ItemSelectionMenu.borderWidth * 2) + (ItemSelectionMenu.spaceToClearSideBorder * 2),
-                this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + (ItemSelectionMenu.borderWidth * 2),
+                this.inventory.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
+                this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2,
                 false,
                 true);
 
@@ -299,8 +303,8 @@
                 if (item is not null)
                 {
                     var highlight = this.ItemsToGrabMenu.highlightMethod(item);
-                    var x = this.ItemsToGrabMenu.xPositionOnScreen + ((this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (i % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)));
-                    var y = this.yPositionOnScreen + ((this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (i / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows))) - 4;
+                    var x = this.ItemsToGrabMenu.xPositionOnScreen + (this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (i % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows));
+                    var y = this.yPositionOnScreen + (this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (i / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)) - 4;
                     item.drawInMenu(
                         b,
                         new Vector2(x, y),
@@ -350,17 +354,6 @@
             return ItemSelectionMenu.Instance.Value._itemSelector.Matches(item);
         }
 
-        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
-        {
-            if (this._itemFilter.Search == this._searchField.Text)
-            {
-                return;
-            }
-
-            this._itemFilter.SetSearch(this._searchField.Text);
-            this.ReSyncInventory(false, true);
-        }
-
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             switch (e.Button)
@@ -401,7 +394,6 @@
 
         private void BehaviorBeforeCleanup(IClickableMenu menu)
         {
-            Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
             Events.Input.ButtonPressed -= this.OnButtonPressed;
             this._returnValue(this._itemSelector.Search);
         }

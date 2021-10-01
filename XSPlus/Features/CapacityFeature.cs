@@ -21,22 +21,22 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="CapacityFeature"/>.
+        ///     Gets or sets the instance of <see cref="CapacityFeature" />.
         /// </summary>
         private static CapacityFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="CapacityFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="CapacityFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CapacityFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="CapacityFeature" /> class.</returns>
         public static CapacityFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>("ModConfig");
             return CapacityFeature.Instance ??= new CapacityFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Patches
@@ -46,14 +46,14 @@
                 nameof(CapacityFeature.Chest_GetActualCapacity_postfix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Patches
             Mixin.Unpatch(this._capacityPatch);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override bool TryGetValueForItem(Item item, out int param)
         {
             if (base.TryGetValueForItem(item, out param))

@@ -13,7 +13,7 @@
         // Helpful color math can be found here:
         // https://www.easyrgb.com/en/math.php
 
-        /// <summary>Initializes a new instance of the <see cref="HSLColor"/> struct.</summary>
+        /// <summary>Initializes a new instance of the <see cref="HSLColor" /> struct.</summary>
         /// <param name="h">The hue.</param>
         /// <param name="s">The saturation.</param>
         /// <param name="l">The luminance.</param>
@@ -25,7 +25,7 @@
         }
 
         /// <summary>
-        /// Gets or sets hue: the 'color' of the color!
+        ///     Gets or sets hue: the 'color' of the color!
         /// </summary>
         public float H { get; set; }
 
@@ -69,9 +69,9 @@
                     hsl.S = delta / (2 - max - min);
                 }
 
-                var deltaR = (((max - fR) / 6f) + (delta / 2f)) / delta;
-                var deltaG = (((max - fG) / 6f) + (delta / 2f)) / delta;
-                var deltaB = (((max - fB) / 6f) + (delta / 2f)) / delta;
+                var deltaR = ((max - fR) / 6f + delta / 2f) / delta;
+                var deltaG = ((max - fG) / 6f + delta / 2f) / delta;
+                var deltaB = ((max - fB) / 6f + delta / 2f) / delta;
 
                 if (Math.Abs(fR - max) < HSLColor.Tolerance)
                 {
@@ -79,11 +79,11 @@
                 }
                 else if (Math.Abs(fG - max) < HSLColor.Tolerance)
                 {
-                    hsl.H = (1f / 3f) + deltaR - deltaB;
+                    hsl.H = 1f / 3f + deltaR - deltaB;
                 }
                 else if (Math.Abs(fB - max) < HSLColor.Tolerance)
                 {
-                    hsl.H = (2f / 3f) + deltaG - deltaR;
+                    hsl.H = 2f / 3f + deltaG - deltaR;
                 }
 
                 if (hsl.H < 0)
@@ -126,17 +126,17 @@
             }
             else
             {
-                var v2 = this.L + this.S - (this.S * this.L);
+                var v2 = this.L + this.S - this.S * this.L;
                 if (this.L < 0.5f)
                 {
                     v2 = this.L * (1 + this.S);
                 }
 
-                var v1 = (2f * this.L) - v2;
+                var v1 = 2f * this.L - v2;
 
-                c.R = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H + (1f / 3f)));
+                c.R = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H + 1f / 3f));
                 c.G = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H));
-                c.B = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H - (1f / 3f)));
+                c.B = (byte)(255f * HSLColor.HueToRgb(v1, v2, this.H - 1f / 3f));
             }
 
             c.A = 255;
@@ -151,7 +151,7 @@
 
             if (6 * vH < 1)
             {
-                ret = v1 + ((v2 - v1) * 6 * vH);
+                ret = v1 + (v2 - v1) * 6 * vH;
             }
             else if (2 * vH < 1)
             {
@@ -159,7 +159,7 @@
             }
             else if (3 * vH < 2)
             {
-                ret = v1 + ((v2 - v1) * ((2f / 3f) - vH) * 6f);
+                ret = v1 + (v2 - v1) * (2f / 3f - vH) * 6f;
             }
 
             return MathHelper.Clamp(ret, 0, 1);

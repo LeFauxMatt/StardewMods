@@ -15,19 +15,23 @@
         public PatternPatches(IEnumerable<CodeInstruction> instructions)
         {
             this._instructions = instructions;
-            this._patternPatches = new();
+            this._patternPatches = new Queue<PatternPatch>();
         }
 
         public PatternPatches(IEnumerable<CodeInstruction> instructions, params PatternPatch[] patches)
         {
             this._instructions = instructions;
-            this._patternPatches = new(patches);
+            this._patternPatches = new Queue<PatternPatch>(patches);
         }
 
         public PatternPatches(IEnumerable<CodeInstruction> instructions, PatternPatch patch)
         {
             this._instructions = instructions;
-            this._patternPatches = new Queue<PatternPatch>(new[] { patch });
+            this._patternPatches = new Queue<PatternPatch>(
+                new[]
+                {
+                    patch,
+                });
         }
 
         /// <summary>Gets a value indicating whether gets whether all patches were successfully applied.</summary>
@@ -36,7 +40,7 @@
             get => this._patternPatches.Count == 0;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public IEnumerator<CodeInstruction> GetEnumerator()
         {
             var currentOperation = this._patternPatches.Dequeue();
@@ -93,7 +97,7 @@
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();

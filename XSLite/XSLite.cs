@@ -12,6 +12,7 @@
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
+    using StardewValley.Locations;
     using StardewValley.Objects;
     using SObject = StardewValley.Object;
 
@@ -26,38 +27,6 @@
         private readonly HashSet<int> InventoryStack = new();
         private readonly HashSet<Vector2> ObjectListStack = new();
         private IXSLiteAPI API;
-
-        /// <inheritdoc />
-        public override void Entry(IModHelper helper)
-        {
-            Log.Init(this.Monitor);
-
-            if (this.Helper.ModRegistry.IsLoaded("furyx639.MoreChests"))
-            {
-                this.Monitor.Log("MoreChests deprecates eXpanded Storage (Lite).\nRemove XSLite from your mods folder!", LogLevel.Warn);
-                return;
-            }
-
-            this.API = new XSLiteAPI(this.Helper);
-
-            // Events
-            this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
-            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-            this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-            this.Helper.Events.Player.Warped += XSLite.OnWarped;
-            this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
-
-            // Patches
-            var unused = new Patches(this.Helper, new Harmony(this.ModManifest.UniqueID));
-        }
-
-        /// <inheritdoc />
-        public override object GetApi()
-        {
-            return this.API;
-        }
 
         /// <inheritdoc />
         public bool CanLoad<T>(IAssetInfo asset)
@@ -84,7 +53,40 @@
             return (T)(object)texture;
         }
 
-        private static void OnWarped(object sender, WarpedEventArgs e)
+        /// <inheritdoc />
+        public override void Entry(IModHelper helper)
+        {
+            Log.Init(this.Monitor);
+
+            if (this.Helper.ModRegistry.IsLoaded("furyx639.MoreChests"))
+            {
+                this.Monitor.Log("MoreChests deprecates eXpanded Storage (Lite).\nRemove XSLite from your mods folder!", LogLevel.Warn);
+                return;
+            }
+
+            this.API = new XSLiteAPI(this.Helper);
+
+            // Events
+            this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
+            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+            this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+            this.Helper.Events.Player.Warped += this.OnWarped;
+            this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
+
+            // Patches
+            var unused = new Patches(this.Helper, new Harmony(this.ModManifest.UniqueID));
+        }
+
+        /// <inheritdoc />
+        public override object GetApi()
+        {
+            return this.API;
+        }
+
+        private void OnWarped(object sender, WarpedEventArgs e)
         {
             foreach (var chest in e.NewLocation.Objects.Values.OfType<Chest>())
             {
@@ -111,6 +113,29 @@
             foreach (var contentPack in this.Helper.ContentPacks.GetOwned())
             {
                 this.API.LoadContentPack(contentPack);
+            }
+        }
+
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            if (!Context.IsMainPlayer)
+            {
+                return;
+            }
+
+            var locations = Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
+            foreach (var location in locations)
+            {
+                var objects = location.Objects.Pairs.Where(obj => obj.Value is Chest chest && chest.playerChest.Value && XSLite.Storages.ContainsKey(chest.Name));
+                foreach (var obj in objects)
+                {
+                    if (obj.Value.modData.ContainsKey($"{XSLite.ModPrefix}/Storage") || !obj.Value.TryGetStorage(out var storage))
+                    {
+                        continue;
+                    }
+
+                    storage.Replace(location, obj.Key, obj.Value);
+                }
             }
         }
 
@@ -144,7 +169,7 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsPlayerFree || (!e.Button.IsActionButton() && !e.Button.IsUseToolButton()))
+            if (!Context.IsPlayerFree || !e.Button.IsActionButton() && !e.Button.IsUseToolButton())
             {
                 return;
             }
@@ -190,13 +215,14 @@
                 }
                 else
                 {
-                    chest.GetMutex().RequestLock(() =>
-                    {
-                        chest.frameCounter.Value = 5;
-                        Game1.playSound(storage.OpenSound);
-                        Game1.player.Halt();
-                        Game1.player.freezePause = 1000;
-                    });
+                    chest.GetMutex().RequestLock(
+                        () =>
+                        {
+                            chest.frameCounter.Value = 5;
+                            Game1.playSound(storage.OpenSound);
+                            Game1.player.Halt();
+                            Game1.player.freezePause = 1000;
+                        });
                 }
 
                 this.Helper.Input.Suppress(e.Button);
@@ -255,7 +281,7 @@
                 return;
             }
 
-            foreach (KeyValuePair<Vector2, SObject> removed in e.Removed)
+            foreach (var removed in e.Removed)
             {
                 if (this.ObjectListStack.Contains(removed.Key))
                 {

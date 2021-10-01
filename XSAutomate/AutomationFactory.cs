@@ -6,7 +6,6 @@
     using StardewValley.Buildings;
     using StardewValley.Locations;
     using StardewValley.TerrainFeatures;
-    using Object = StardewValley.Object;
 
     /// <inheritdoc />
     internal class AutomationFactory : IAutomationFactory

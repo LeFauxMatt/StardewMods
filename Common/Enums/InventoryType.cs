@@ -1,7 +1,7 @@
 ﻿namespace Common.Enums
 {
     /// <summary>
-    /// The type of inventory.
+    ///     The type of inventory.
     /// </summary>
     internal enum InventoryType
     {

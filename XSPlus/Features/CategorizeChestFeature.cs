@@ -17,14 +17,17 @@
     /// <inheritdoc />
     internal class CategorizeChestFeature : BaseFeature
     {
-        private readonly ModConfigService _modConfigService;
-        private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
-        private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
         private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<string> _hoverText = new();
         private readonly PerScreen<ClickableTextureComponent> _configButton = new();
+        private readonly PerScreen<string> _hoverText = new();
+        private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
+        private readonly ModConfigService _modConfigService;
+        private readonly RenderedActiveMenuService _renderedActiveMenuService;
+        private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
 
         private CategorizeChestFeature(
             ModConfigService modConfigService,
@@ -37,21 +40,22 @@
                 Content.FromMod<Texture2D>("assets/configure.png"),
                 Rectangle.Empty,
                 Game1.pixelZoom);
+
             this._modConfigService = modConfigService;
             this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="CategorizeChestFeature"/>.
+        ///     Gets or sets the instance of <see cref="CategorizeChestFeature" />.
         /// </summary>
         private static CategorizeChestFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="CategorizeChestFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="CategorizeChestFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CategorizeChestFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="CategorizeChestFeature" /> class.</returns>
         public static CategorizeChestFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
@@ -60,7 +64,7 @@
             return CategorizeChestFeature.Instance ??= new CategorizeChestFeature(modConfigService, itemGrabMenuSideButtonsService, renderedActiveMenuService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             this._itemGrabMenuSideButtonsService.AddHandler(this.SetupSideButtons);
@@ -69,7 +73,7 @@
             Events.Input.CursorMoved += this.OnCursorMoved;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             this._itemGrabMenuSideButtonsService.RemoveHandler(this.SetupSideButtons);

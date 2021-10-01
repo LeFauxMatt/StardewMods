@@ -16,8 +16,12 @@
     internal class HighlightItemsService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
         private static HighlightItemsService Instance;
+        private readonly PerScreen<IList<Func<Item, bool>>> _highlightItemHandlers = new()
+        {
+            Value = new List<Func<Item, bool>>(),
+        };
+
         private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
-        private readonly PerScreen<IList<Func<Item, bool>>> _highlightItemHandlers = new() { Value = new List<Func<Item, bool>>() };
 
         private HighlightItemsService()
             : base("HighlightItems")
@@ -29,23 +33,23 @@
                 nameof(HighlightItemsService.InventoryMenu_highlightAllItems_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void AddHandler(Func<Item, bool> handler)
         {
             this._highlightItemHandlers.Value.Add(handler);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void RemoveHandler(Func<Item, bool> handler)
         {
             this._highlightItemHandlers.Value.Remove(handler);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HighlightItemsService"/> class.
+        ///     Initializes a new instance of the <see cref="HighlightItemsService" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns a new instance of the <see cref="HighlightItemsService"/> class.</returns>
+        /// <returns>Returns a new instance of the <see cref="HighlightItemsService" /> class.</returns>
         public static HighlightItemsService GetSingleton(ServiceManager serviceManager)
         {
             return HighlightItemsService.Instance ??= new HighlightItemsService();
@@ -55,7 +59,7 @@
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static void InventoryMenu_highlightAllItems_prefix(InventoryMenu __instance, ref bool __result, Item i)
         {
-            if (Game1.activeClickableMenu is not ItemGrabMenu { inventory: { } inventoryMenu } || !ReferenceEquals(inventoryMenu, __instance))
+            if (Game1.activeClickableMenu is not ItemGrabMenu {inventory: { } inventoryMenu} || !ReferenceEquals(inventoryMenu, __instance))
             {
                 return;
             }

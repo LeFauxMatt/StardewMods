@@ -8,17 +8,17 @@
     using StardewModdingAPI;
 
     /// <summary>
-    /// Migrate XS content packs created from JA to DGA
+    ///     Migrate XS content packs created from JA to DGA
     /// </summary>
     internal class JsonAssetsMigrator
     {
         /// <summary>
-        /// Gets a list of JsonAsset objects.
+        ///     Gets a list of JsonAsset objects.
         /// </summary>
         public IList<JsonAsset> JsonAssets { get; } = new List<JsonAsset>();
 
         /// <summary>
-        /// Gets textures for each JsonAsset object.
+        ///     Gets textures for each JsonAsset object.
         /// </summary>
         public IList<TextureMigrator> Textures { get; } = new List<TextureMigrator>();
 
@@ -101,7 +101,7 @@
                 // Additional Localizations
                 if (jsonAsset.NameLocalization is not null && jsonAsset.DescriptionLocalization is not null)
                 {
-                    IEnumerable<string> localizationKeys = jsonAsset.NameLocalization.Keys.Union(jsonAsset.DescriptionLocalization.Keys).Distinct();
+                    var localizationKeys = jsonAsset.NameLocalization.Keys.Union(jsonAsset.DescriptionLocalization.Keys).Distinct();
                     foreach (var localizationKey in localizationKeys)
                     {
                         if (!jsonFiles.TryGetValue(localizationKey, out var jsonFile))
@@ -223,11 +223,12 @@
                 Directory.CreateDirectory(path);
             }
 
-            foreach (KeyValuePair<string, StringBuilder> jsonFile in jsonFiles)
+            foreach (var jsonFile in jsonFiles)
             {
                 jsonFile.Value.Append(
                     @"
 }");
+
                 File.WriteAllText(Path.Combine(contentPack.DirectoryPath, "i18n", $"{jsonFile.Key}.json"), jsonFile.Value.ToString());
             }
 
@@ -262,5 +263,5 @@
                 _ => jaShop,
             };
         }
-        }
+    }
 }

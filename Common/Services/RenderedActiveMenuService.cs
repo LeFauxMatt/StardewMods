@@ -1,10 +1,10 @@
 ﻿namespace Common.Services
 {
     using System;
-    using Common.Helpers;
-    using Common.Interfaces;
-    using Common.Models;
+    using Helpers;
+    using Interfaces;
     using Microsoft.Xna.Framework;
+    using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -15,8 +15,11 @@
     internal class RenderedActiveMenuService : BaseService, IEventHandlerService<EventHandler<RenderedActiveMenuEventArgs>>
     {
         private static RenderedActiveMenuService Instance;
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
         private readonly PerScreen<bool> _attached = new();
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
 
         private RenderedActiveMenuService(ItemGrabMenuChangedService itemGrabMenuChangedService)
             : base("RenderedActiveMenu")
@@ -24,29 +27,29 @@
             itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
         }
 
-        private event EventHandler<RenderedActiveMenuEventArgs> RenderedActiveMenu;
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="RenderedActiveMenuService"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="RenderedActiveMenuService"/> class.</returns>
-        public static RenderedActiveMenuService GetSingleton(ServiceManager serviceManager)
-        {
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return RenderedActiveMenuService.Instance ??= new RenderedActiveMenuService(itemGrabMenuChangedService);
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void AddHandler(EventHandler<RenderedActiveMenuEventArgs> eventHandler)
         {
             this.RenderedActiveMenu += eventHandler;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void RemoveHandler(EventHandler<RenderedActiveMenuEventArgs> eventHandler)
         {
             this.RenderedActiveMenu -= eventHandler;
+        }
+
+        private event EventHandler<RenderedActiveMenuEventArgs> RenderedActiveMenu;
+
+        /// <summary>
+        ///     Returns and creates if needed an instance of the <see cref="RenderedActiveMenuService" /> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="RenderedActiveMenuService" /> class.</returns>
+        public static RenderedActiveMenuService GetSingleton(ServiceManager serviceManager)
+        {
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            return RenderedActiveMenuService.Instance ??= new RenderedActiveMenuService(itemGrabMenuChangedService);
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)
@@ -82,7 +85,7 @@
             {
                 if (itemGrabMenu.hoverAmount > 0)
                 {
-                    IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.hoverText, string.Empty, null, heldItem: true, -1, 0, -1, -1, null, itemGrabMenu.hoverAmount);
+                    IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.hoverText, string.Empty, null, true, -1, 0, -1, -1, null, itemGrabMenu.hoverAmount);
                 }
                 else
                 {

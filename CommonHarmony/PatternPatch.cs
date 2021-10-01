@@ -16,7 +16,7 @@
         private int _loop;
         private int _startIndex;
 
-        /// <summary>Initializes a new instance of the <see cref="PatternPatch"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="PatternPatch" /> class.</summary>
         /// <param name="pattern"></param>
         public PatternPatch(PatchType patchType)
         {
@@ -29,7 +29,7 @@
         /// <summary></summary>
         public bool Loop
         {
-            get => (this._patchType == PatchType.Replace && this._loop == -1) || --this._loop > 0;
+            get => this._patchType == PatchType.Replace && this._loop == -1 || --this._loop > 0;
         }
 
         /// <summary></summary>
@@ -137,7 +137,7 @@
         /// <param name="rawStack"></param>
         public void Patches(LinkedList<CodeInstruction> rawStack)
         {
-            foreach (Action<LinkedList<CodeInstruction>> patch in this._patches)
+            foreach (var patch in this._patches)
             {
                 patch?.Invoke(rawStack);
             }

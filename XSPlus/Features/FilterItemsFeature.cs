@@ -15,12 +15,15 @@
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
     internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>
     {
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly HighlightItemsService _highlightItemsService;
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<Dictionary<string, bool>> _filterItems = new();
-        private readonly PerScreen<ItemMatcher> _itemMatcher = new() { Value = new ItemMatcher(string.Empty, true) };
+        private readonly HighlightItemsService _highlightItemsService;
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new()
+        {
+            Value = new ItemMatcher(string.Empty, true),
+        };
         private MixInfo _addItemPatch;
 
         private FilterItemsFeature(
@@ -34,15 +37,15 @@
         }
 
         /// <summary>
-        /// Gets the instance of <see cref="FilterItemsFeature"/>.
+        ///     Gets the instance of <see cref="FilterItemsFeature" />.
         /// </summary>
         protected internal static FilterItemsFeature Instance { get; private set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="FilterItemsFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="FilterItemsFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="FilterItemsFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="FilterItemsFeature" /> class.</returns>
         public static FilterItemsFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
@@ -54,7 +57,7 @@
                 highlightItemsService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -68,7 +71,7 @@
                 nameof(FilterItemsFeature.Chest_addItem_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -85,7 +88,7 @@
         [HarmonyPriority(Priority.High)]
         private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
         {
-            if (!FilterItemsFeature.Instance.TryGetValueForItem(__instance, out Dictionary<string, bool> filterItems))
+            if (!FilterItemsFeature.Instance.TryGetValueForItem(__instance, out var filterItems))
             {
                 return true;
             }
@@ -119,7 +122,7 @@
             if (!ReferenceEquals(this._chest.Value, e.Chest))
             {
                 this._chest.Value = e.Chest;
-                if (this.TryGetValueForItem(e.Chest, out Dictionary<string, bool> filterItems))
+                if (this.TryGetValueForItem(e.Chest, out var filterItems))
                 {
                     this._itemMatcher.Value.SetSearch(filterItems);
                 }

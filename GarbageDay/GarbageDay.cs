@@ -21,14 +21,14 @@
     public class GarbageDay : Mod, IAssetEditor, IAssetLoader
     {
         private static readonly ItemRepository ItemRepository = new();
-        private readonly IDictionary<string, GarbageCan> _garbageCans = new Dictionary<string, GarbageCan>();
-        private readonly HashSet<string> _excludedAssets = new();
-        private readonly PerScreen<NPC> _npc = new();
         private readonly PerScreen<Chest> _chest = new();
+        private readonly HashSet<string> _excludedAssets = new();
+        private readonly IDictionary<string, GarbageCan> _garbageCans = new Dictionary<string, GarbageCan>();
+        private readonly PerScreen<NPC> _npc = new();
+        private ModConfig _config;
         private Multiplayer _multiplayer;
         private XSLiteIntegration _xsLite;
         private XSPlusIntegration _xsPlus;
-        private ModConfig _config;
 
         internal static IDictionary<string, IDictionary<string, float>> Loot { get; private set; }
 
@@ -38,44 +38,6 @@
         }
 
         internal static EvenBetterRngIntegration BetterRng { get; private set; }
-
-        /// <inheritdoc />
-        public override void Entry(IModHelper helper)
-        {
-            this._xsLite = new XSLiteIntegration(this.Helper.ModRegistry);
-            this._xsPlus = new XSPlusIntegration(this.Helper.ModRegistry);
-            GarbageDay.BetterRng = new EvenBetterRngIntegration(this.Helper.ModRegistry);
-            this._config = this.Helper.ReadConfig<ModConfig>();
-
-            // Console Commands
-            this.Helper.ConsoleCommands.Add("garbage_fill", "Adds loot to all Garbage Cans.", this.GarbageFill);
-            this.Helper.ConsoleCommands.Add("garbage_kill", "Removes all Garbage Cans.", this.GarbageKill);
-
-            // Events
-            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-            if (Context.IsMainPlayer)
-            {
-                helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-                helper.Events.GameLoop.DayStarted += this.OnDayStarted;
-            }
-
-            helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        }
-
-        /// <inheritdoc/>
-        public bool CanLoad<T>(IAssetInfo asset)
-        {
-            var segments = PathUtilities.GetSegments(asset.AssetName);
-            return segments.Length == 2
-                   && segments.ElementAt(0).Equals("GarbageDay", StringComparison.OrdinalIgnoreCase)
-                   && segments.ElementAt(1).Equals("Loot", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <inheritdoc/>
-        public T Load<T>(IAssetInfo asset)
-        {
-            return (T)this.Helper.Content.Load<IDictionary<string, IDictionary<string, float>>>("assets/loot.json");
-        }
 
         /// <inheritdoc />
         public bool CanEdit<T>(IAssetInfo asset)
@@ -148,6 +110,44 @@
             }
         }
 
+        /// <inheritdoc />
+        public bool CanLoad<T>(IAssetInfo asset)
+        {
+            var segments = PathUtilities.GetSegments(asset.AssetName);
+            return segments.Length == 2
+                   && segments.ElementAt(0).Equals("GarbageDay", StringComparison.OrdinalIgnoreCase)
+                   && segments.ElementAt(1).Equals("Loot", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <inheritdoc />
+        public T Load<T>(IAssetInfo asset)
+        {
+            return (T)this.Helper.Content.Load<IDictionary<string, IDictionary<string, float>>>("assets/loot.json");
+        }
+
+        /// <inheritdoc />
+        public override void Entry(IModHelper helper)
+        {
+            this._xsLite = new XSLiteIntegration(this.Helper.ModRegistry);
+            this._xsPlus = new XSPlusIntegration(this.Helper.ModRegistry);
+            GarbageDay.BetterRng = new EvenBetterRngIntegration(this.Helper.ModRegistry);
+            this._config = this.Helper.ReadConfig<ModConfig>();
+
+            // Console Commands
+            this.Helper.ConsoleCommands.Add("garbage_fill", "Adds loot to all Garbage Cans.", this.GarbageFill);
+            this.Helper.ConsoleCommands.Add("garbage_kill", "Removes all Garbage Cans.", this.GarbageKill);
+
+            // Events
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            if (Context.IsMainPlayer)
+            {
+                helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+                helper.Events.GameLoop.DayStarted += this.OnDayStarted;
+            }
+
+            helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        }
+
         private void GarbageFill(string command, string[] args)
         {
             if (args.Length < 1 || !int.TryParse(args[0], out var amount))
@@ -196,14 +196,15 @@
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            Utility.ForAllLocations(delegate(GameLocation location)
-            {
-                var mapPath = PathUtilities.NormalizeAssetName(location.mapPath.Value);
-                foreach (var garbageCan in this._garbageCans.Where(gc => gc.Value.MapName.Equals(mapPath)))
+            Utility.ForAllLocations(
+                delegate(GameLocation location)
                 {
-                    garbageCan.Value.Location = location;
-                }
-            });
+                    var mapPath = PathUtilities.NormalizeAssetName(location.mapPath.Value);
+                    foreach (var garbageCan in this._garbageCans.Where(gc => gc.Value.MapName.Equals(mapPath)))
+                    {
+                        garbageCan.Value.Location = location;
+                    }
+                });
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e)
@@ -229,7 +230,7 @@
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             // Open Can
-            if (e.NewMenu is ItemGrabMenu { context: Chest chest } && chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan) && this._garbageCans.TryGetValue(whichCan, out var garbageCan))
+            if (e.NewMenu is ItemGrabMenu {context: Chest chest} && chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan) && this._garbageCans.TryGetValue(whichCan, out var garbageCan))
             {
                 var character = Utility.isThereAFarmerOrCharacterWithinDistance(garbageCan.Tile, 7, garbageCan.Location);
                 if (character is not (NPC npc and not Horse))

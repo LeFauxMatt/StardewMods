@@ -14,11 +14,23 @@
     /// <summary>Custom storages that are managed by the Expanded Storage mod.</summary>
     internal class Storage
     {
+        /// <summary>The asset loader used to add this object into the game.</summary>
+        public enum AssetFormat
+        {
+            /// <summary>Assets loaded by Dynamic Game Assets.</summary>
+            DynamicGameAssets,
+
+            /// <summary>Assets loaded by Json Assets.</summary>
+            JsonAssets,
+
+            /// <summary>Assets loaded through the standard Content Pipeline without DGA or JA.</summary>
+            Vanilla,
+        }
         private string _name;
         private string _path;
         private Texture2D _texture;
 
-        /// <summary>Initializes a new instance of the <see cref="Storage"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="Storage" /> class.</summary>
         /// <param name="specialChestType">The type of chest this storage will be created as.</param>
         /// <param name="allowList">Items this storage is able to accept.</param>
         /// <param name="blockList">Items this storage is not able to accept.</param>
@@ -42,19 +54,6 @@
                     this.FilterItems.Add(allowItem, true);
                 }
             }
-        }
-
-        /// <summary>The asset loader used to add this object into the game.</summary>
-        public enum AssetFormat
-        {
-            /// <summary>Assets loaded by Dynamic Game Assets.</summary>
-            DynamicGameAssets,
-
-            /// <summary>Assets loaded by Json Assets.</summary>
-            JsonAssets,
-
-            /// <summary>Assets loaded through the standard Content Pipeline without DGA or JA.</summary>
-            Vanilla,
         }
 
         public AssetFormat Format { get; set; } = AssetFormat.Vanilla;
@@ -123,9 +122,9 @@
 
         public float ScaleSize { get; private set; }
 
-        private Chest.SpecialChestTypes SpecialChestType { get; set; }
+        private Chest.SpecialChestTypes SpecialChestType { get; }
 
-        private Texture2D? Texture
+        private Texture2D Texture
         {
             get => this._texture;
             set
@@ -226,7 +225,7 @@
                     ? chest.Tint
                     : chest?.playerChoiceColor.Value ?? Color.White;
 
-                spriteBatch.Draw(this.Texture, pos + Storage.ShakeOffset(obj, -1, 2), new Rectangle(this.Width * currentFrame, this.Height * layer, this.Width, this.Height), color * alpha, 0f, origin, scaleSize, SpriteEffects.None, layerDepth + ((1 + layer - startLayer) * 1E-05f));
+                spriteBatch.Draw(this.Texture, pos + Storage.ShakeOffset(obj, -1, 2), new Rectangle(this.Width * currentFrame, this.Height * layer, this.Width, this.Height), color * alpha, 0f, origin, scaleSize, SpriteEffects.None, layerDepth + (1 + layer - startLayer) * 1E-05f);
             }
 
             return true;
@@ -274,7 +273,7 @@
                     };
 
                     // Copy modData from original item
-                    foreach (SerializableDictionary<string, string> modData in chest.modData)
+                    foreach (var modData in chest.modData)
                     {
                         extraObj.modData.CopyFrom(modData);
                     }
@@ -313,9 +312,18 @@
             {
                 Name = this.Name,
                 SpecialChestType = this.SpecialChestType,
-                fridge = { Value = this.IsFridge },
-                lidFrameCount = { Value = this.Frames },
-                modData = { [$"{XSLite.ModPrefix}/Storage"] = this.Name },
+                fridge =
+                {
+                    Value = this.IsFridge,
+                },
+                lidFrameCount =
+                {
+                    Value = this.Frames,
+                },
+                modData =
+                {
+                    [$"{XSLite.ModPrefix}/Storage"] = this.Name,
+                },
             };
 
             if (item is Chest oldChest)
@@ -332,10 +340,13 @@
             {
                 var heldChest = new Chest(true, Vector2.Zero)
                 {
-                    modData = { [$"{XSLite.ModPrefix}/Storage"] = this.Name },
+                    modData =
+                    {
+                        [$"{XSLite.ModPrefix}/Storage"] = this.Name,
+                    },
                 };
 
-                if (item is SObject { heldObject: { Value: Chest oldHeldChest } } && oldHeldChest.items.Any())
+                if (item is SObject {heldObject: {Value: Chest oldHeldChest}} && oldHeldChest.items.Any())
                 {
                     heldChest.items.CopyFrom(oldHeldChest.items);
                 }
@@ -344,13 +355,13 @@
             }
 
             // Copy modData from original item
-            foreach (SerializableDictionary<string, string> modData in item.modData)
+            foreach (var modData in item.modData)
             {
                 chest.modData.CopyFrom(modData);
             }
 
             // Copy modData from config
-            foreach (KeyValuePair<string, string> modData in this.ModData)
+            foreach (var modData in this.ModData)
             {
                 if (!chest.modData.ContainsKey(modData.Key))
                 {

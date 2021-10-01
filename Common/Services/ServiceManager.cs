@@ -6,7 +6,7 @@
     using System.Reflection;
 
     /// <summary>
-    /// Service manager to request shared services.
+    ///     Service manager to request shared services.
     /// </summary>
     public class ServiceManager
     {
@@ -17,8 +17,8 @@
         {
         }
 
-        /// <summary>Returns and creates if needed an instance of the <see cref="ServiceManager"/> class.</summary>
-        /// <returns>An instance of <see cref="ServiceManager"/> class.</returns>
+        /// <summary>Returns and creates if needed an instance of the <see cref="ServiceManager" /> class.</summary>
+        /// <returns>An instance of <see cref="ServiceManager" /> class.</returns>
         public static ServiceManager GetSingleton()
         {
             return ServiceManager.Instance ??= new ServiceManager();
@@ -28,7 +28,13 @@
         /// <typeparam name="TServiceType">Type of service to add.</typeparam>
         public void AddSingleton<TServiceType>()
         {
-            var service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { this });
+            var service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(
+                null,
+                new object[]
+                {
+                    this,
+                });
+
             if (service != null)
             {
                 this._services.Add(service.ServiceName, service);
@@ -51,7 +57,12 @@
             }
             else
             {
-                service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { this });
+                service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(
+                    null,
+                    new object[]
+                    {
+                        this,
+                    });
             }
 
             if (service != null)
@@ -61,7 +72,7 @@
         }
 
         /// <summary>
-        /// Request a service by name and type.
+        ///     Request a service by name and type.
         /// </summary>
         /// <param name="serviceName">The name of the service to request.</param>
         /// <typeparam name="TServiceType">The type of service to request.</typeparam>
@@ -78,7 +89,7 @@
         }
 
         /// <summary>
-        /// Request a service by type.
+        ///     Request a service by type.
         /// </summary>
         /// <typeparam name="TServiceType">The type of service to request.</typeparam>
         /// <returns>Returns a service of the given type.</returns>
@@ -90,7 +101,7 @@
         }
 
         /// <summary>
-        /// Request a service by type.
+        ///     Request a service by type.
         /// </summary>
         /// <typeparam name="TServiceType">The type of service to request.</typeparam>
         /// <returns>Returns a service of the given type.</returns>

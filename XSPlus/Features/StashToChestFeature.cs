@@ -16,10 +16,10 @@
     /// <inheritdoc />
     internal class StashToChestFeature : FeatureWithParam<string>
     {
-        private readonly ModConfigService _modConfigService;
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
-        private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
         private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
+        private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
+        private readonly ModConfigService _modConfigService;
 
         private StashToChestFeature(ModConfigService modConfigService)
             : base("StashToChest", modConfigService)
@@ -28,7 +28,7 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="StashToChestFeature"/>.
+        ///     Gets or sets the instance of <see cref="StashToChestFeature" />.
         /// </summary>
         private static StashToChestFeature Instance { get; set; }
 
@@ -43,17 +43,17 @@
         }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="StashToChestFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="StashToChestFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="StashToChestFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="StashToChestFeature" /> class.</returns>
         public static StashToChestFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             return StashToChestFeature.Instance ??= new StashToChestFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -62,7 +62,7 @@
             Events.Player.Warped += this.OnWarped;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -71,7 +71,7 @@
             Events.Player.Warped -= this.OnWarped;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
         protected internal override bool IsEnabledForItem(Item item)
         {
@@ -89,7 +89,7 @@
             };
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override bool TryGetValueForItem(Item item, out string param)
         {
             if (base.TryGetValueForItem(item, out param))

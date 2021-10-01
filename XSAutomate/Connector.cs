@@ -7,7 +7,7 @@
     /// <summary>An entity which connects machines and chests in a machine group, but otherwise has no logic of its own.</summary>
     internal class Connector : IAutomatable
     {
-        /// <summary>Initializes a new instance of the <see cref="Connector"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="Connector" /> class.</summary>
         /// <param name="location">The location which contains the machine.</param>
         /// <param name="tile">The tile covered by the machine.</param>
         public Connector(GameLocation location, Vector2 tile)
@@ -15,7 +15,7 @@
         {
         }
 
-        /// <summary>Initializes a new instance of the <see cref="Connector"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="Connector" /> class.</summary>
         /// <param name="location">The location which contains the machine.</param>
         /// <param name="tileArea">The tile area covered by the machine.</param>
         private Connector(GameLocation location, Rectangle tileArea)

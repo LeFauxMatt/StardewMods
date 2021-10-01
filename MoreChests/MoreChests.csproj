@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common_beta.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared"/>
+    <PropertyGroup>
+        <Version>1.0.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+    </PropertyGroup>
+</Project>

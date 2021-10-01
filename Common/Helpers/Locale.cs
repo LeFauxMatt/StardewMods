@@ -3,14 +3,13 @@
     using StardewModdingAPI;
 
     /// <summary>
-    /// 
     /// </summary>
     internal static class Locale
     {
-        /// <inheritdoc cref="ITranslationHelper"/>
+        /// <inheritdoc cref="ITranslationHelper" />
         private static ITranslationHelper Helper { get; set; } = null!;
 
-        /// <summary>Initializes the <see cref="Locale"/> class.</summary>
+        /// <summary>Initializes the <see cref="Locale" /> class.</summary>
         /// <param name="helper">The instance of ITranslationHelper from the Mod.</param>
         public static void Init(ITranslationHelper helper)
         {

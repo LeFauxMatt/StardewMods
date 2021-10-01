@@ -22,14 +22,17 @@
         // TODO: Add toggle button
         private const int Width = 58;
         private const int Height = 558;
-        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<Chest> _fakeChest = new();
         private readonly PerScreen<HSLSlider> _hslSlider = new();
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
+        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private readonly RenderedActiveMenuService _renderedActiveMenuService;
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
         private MixInfo _setSourceItemPatch;
 
         private ColorPickerFeature(
@@ -45,15 +48,15 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="ColorPickerFeature"/>.
+        ///     Gets or sets the instance of <see cref="ColorPickerFeature" />.
         /// </summary>
         private static ColorPickerFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ColorPickerFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="ColorPickerFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ColorPickerFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="ColorPickerFeature" /> class.</returns>
         public static ColorPickerFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
@@ -67,7 +70,7 @@
                 renderedActiveMenuService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -87,7 +90,7 @@
                 nameof(ColorPickerFeature.ItemGrabMenu_setSourceItem_postfix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -149,17 +152,24 @@
             this._fakeChest.Value = new Chest(true, e.Chest.ParentSheetIndex)
             {
                 Name = e.Chest.Name,
-                lidFrameCount = { Value = e.Chest.lidFrameCount.Value },
-                playerChoiceColor = { Value = e.Chest.playerChoiceColor.Value },
+                lidFrameCount =
+                {
+                    Value = e.Chest.lidFrameCount.Value,
+                },
+                playerChoiceColor =
+                {
+                    Value = e.Chest.playerChoiceColor.Value,
+                },
             };
-            foreach (SerializableDictionary<string, string> modData in e.Chest.modData)
+
+            foreach (var modData in e.Chest.modData)
             {
                 this._fakeChest.Value.modData.CopyFrom(modData);
             }
 
             this._fakeChest.Value.resetLidFrame();
 
-            this._hslSlider.Value.Area = new Rectangle(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + (IClickableMenu.borderWidth / 2), e.ItemGrabMenu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2), ColorPickerFeature.Width, ColorPickerFeature.Height);
+            this._hslSlider.Value.Area = new Rectangle(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2, e.ItemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2, ColorPickerFeature.Width, ColorPickerFeature.Height);
             this._hslSlider.Value.Color = e.Chest.playerChoiceColor.Value;
         }
 
@@ -171,7 +181,7 @@
             }
 
             var x = this._hslSlider.Value.Area.Left;
-            var y = this._hslSlider.Value.Area.Top - (IClickableMenu.borderWidth / 2) - Game1.tileSize;
+            var y = this._hslSlider.Value.Area.Top - IClickableMenu.borderWidth / 2 - Game1.tileSize;
             this._fakeChest.Value.draw(e.SpriteBatch, x, y, 1f, true);
             this._hslSlider.Value.Draw(e.SpriteBatch);
         }

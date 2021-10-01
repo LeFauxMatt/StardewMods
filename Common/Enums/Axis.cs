@@ -1,7 +1,7 @@
 ﻿namespace Common.Enums
 {
     /// <summary>
-    /// Describes an axis in a 2-dimensional coordinate system.
+    ///     Describes an axis in a 2-dimensional coordinate system.
     /// </summary>
     internal enum Axis
     {

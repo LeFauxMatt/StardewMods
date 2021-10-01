@@ -11,6 +11,6 @@
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.4.0-beta.20210813" />
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.4.0-beta.20210813"/>
     </ItemGroup>
 </Project>

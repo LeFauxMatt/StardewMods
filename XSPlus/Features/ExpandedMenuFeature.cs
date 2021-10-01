@@ -23,14 +23,23 @@
     /// <inheritdoc />
     internal class ExpandedMenuFeature : FeatureWithParam<int>
     {
-        private static readonly Type[] ItemGrabMenuConstructorParams = { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) };
-        private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private readonly ModConfigService _modConfigService;
-        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly DisplayedInventoryService _displayedInventoryService;
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
+        private static readonly Type[] ItemGrabMenuConstructorParams =
+        {
+            typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+        };
+        private static readonly Type[] MenuWithInventoryDrawParams =
+        {
+            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+        };
         private readonly PerScreen<Chest> _chest = new();
+        private readonly DisplayedInventoryService _displayedInventoryService;
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
+        private readonly ModConfigService _modConfigService;
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
         private MixInfo _itemGrabMenuConstructorPatch;
         private MixInfo _itemGrabMenuDrawPatch;
         private MixInfo _menuWithInventoryDrawPatch;
@@ -49,15 +58,15 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="ExpandedMenuFeature"/>.
+        ///     Gets or sets the instance of <see cref="ExpandedMenuFeature" />.
         /// </summary>
         private static ExpandedMenuFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ExpandedMenuFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="ExpandedMenuFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature" /> class.</returns>
         public static ExpandedMenuFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
@@ -71,7 +80,7 @@
                 displayedInventoryService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -85,17 +94,25 @@
                 AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
                 typeof(ExpandedMenuFeature),
                 nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler));
+
             this._itemGrabMenuDrawPatch = Mixin.Transpiler(
-                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                AccessTools.Method(
+                    typeof(ItemGrabMenu),
+                    nameof(ItemGrabMenu.draw),
+                    new[]
+                    {
+                        typeof(SpriteBatch),
+                    }),
                 typeof(ExpandedMenuFeature),
                 nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler));
+
             this._menuWithInventoryDrawPatch = Mixin.Transpiler(
                 AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
                 typeof(ExpandedMenuFeature),
                 nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -120,19 +137,17 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Isinst, typeof(Chest)),
-                        new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity))),
-                        new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)36),
-                        new CodeInstruction(OpCodes.Beq_S),
+                        new CodeInstruction(OpCodes.Isinst, typeof(Chest)), new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity))), new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)36), new CodeInstruction(OpCodes.Beq_S),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    var jumpCode = list.Last.Value;
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.AddLast(new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)10));
-                    list.AddLast(new CodeInstruction(OpCodes.Bge_S, jumpCode.operand));
-                });
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        var jumpCode = list.Last.Value;
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.AddLast(new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)10));
+                        list.AddLast(new CodeInstruction(OpCodes.Bge_S, jumpCode.operand));
+                    });
 
             Log.Trace("Overriding default values for capacity and rows.");
             var capacityPatch = new PatternPatch(PatchType.Replace);
@@ -140,24 +155,31 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Newobj, AccessTools.Constructor(typeof(InventoryMenu), new[] { typeof(int), typeof(int), typeof(bool), typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) })),
+                        new CodeInstruction(
+                            OpCodes.Newobj,
+                            AccessTools.Constructor(
+                                typeof(InventoryMenu),
+                                new[]
+                                {
+                                    typeof(int), typeof(int), typeof(bool), typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool),
+                                })),
                         new CodeInstruction(OpCodes.Stfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
                     })
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldc_I4_M1),
-                        new CodeInstruction(OpCodes.Ldc_I4_3),
+                        new CodeInstruction(OpCodes.Ldc_I4_M1), new CodeInstruction(OpCodes.Ldc_I4_3),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuCapacity))));
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuRows))));
-                });
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuCapacity))));
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuRows))));
+                    });
 
             var patternPatches = new PatternPatches(instructions);
             patternPatches.AddPatch(jumpPatch);
@@ -182,12 +204,13 @@
             moveBackpackPatch
                 .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
                 .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuOffset))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                })
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ExpandedMenuFeature), nameof(ExpandedMenuFeature.MenuOffset))));
+                        list.AddLast(new CodeInstruction(OpCodes.Add));
+                    })
                 .Repeat(3);
 
             var patternPatches = new PatternPatches(instructions, moveBackpackPatch);
@@ -213,11 +236,7 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                        new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)64), new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)64), new CodeInstruction(OpCodes.Add),
                     })
                 .Patch(
                     list =>
@@ -233,12 +252,7 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldc_I4, 192),
-                        new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4, 192), new CodeInstruction(OpCodes.Add),
                     })
                 .Patch(
                     list =>
@@ -265,7 +279,7 @@
 
         private static int MenuCapacity(MenuWithInventory menu)
         {
-            if (menu is not ItemGrabMenu { context: Chest { playerChest: { Value: true } } chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu {context: Chest {playerChest: {Value: true}} chest} || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
                 return -1; // Vanilla
             }
@@ -281,7 +295,7 @@
 
         private static int MenuRows(MenuWithInventory menu)
         {
-            if (menu is not ItemGrabMenu { context: Chest { playerChest: { Value: true } } chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu {context: Chest {playerChest: {Value: true}} chest} || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
                 return 3; // Vanilla
             }
@@ -297,7 +311,7 @@
 
         private static int MenuOffset(MenuWithInventory menu)
         {
-            if (menu is not ItemGrabMenu { context: Chest { playerChest: { Value: true } } chest } || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu {context: Chest {playerChest: {Value: true}} chest} || !ExpandedMenuFeature.Instance.IsEnabledForItem(chest))
             {
                 return 0; // Vanilla
             }

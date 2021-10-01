@@ -6,7 +6,9 @@
   "UniqueID": "furyx639.XSAutomate",
   "EntryDll": "XSAutomate.dll",
   "MinimumApiVersion": "3.12.6",
-  "UpdateKeys": [ "Nexus:7431@Automate" ],
+  "UpdateKeys": [
+    "Nexus:7431@Automate"
+  ],
   "Dependencies": [
     {
       "UniqueID": "Pathoschild.Automate",

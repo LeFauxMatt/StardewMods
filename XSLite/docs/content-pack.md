@@ -46,11 +46,13 @@ See more on manifest [here](https://stardewvalleywiki.com/Modding:Modder_Guide/A
   }
 }
 ```
+
 See more on the supported fields [below](#expanded-storage).
 
 #### content.json
 
-`content.json` follows [Dynamic Game Assets format](https://github.com/spacechase0/StardewValleyMods/tree/develop/DynamicGameAssets#big-craftables)
+`content.json`
+follows [Dynamic Game Assets format](https://github.com/spacechase0/StardewValleyMods/tree/develop/DynamicGameAssets#big-craftables)
 for loading big craftables.
 
 ```json
@@ -60,7 +62,6 @@ for loading big craftables.
   "Texture": "assets/MyStorage.png:0"
 }
 ```
-
 
 ### Expanded Storage
 
@@ -120,11 +121,13 @@ field               | description
 `EnabledFeatures`   | List of features to enable. (default `[]`) <sup>[4](#features)</sup>
 
 <span id="handyheadphones">1.</span> I recommend
-[Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen
-to sounds available to play from in-game.  
+[Handy Headphones](https://www.nexusmods.com/stardewvalley/mods/7936) to listen to sounds available to play from
+in-game.  
 <span id="spritesheet">2.</span> Refer to the [Sprite Sheets](#sprite-sheets) section for arranging sprites correctly.  
 <span id="storagecapacity">3.</span> Assign a capacity of at least one row (12) to avoid visual glitches.  
-<span id="features">4.</span> Refer to [XSPlus](https://github.com/ImJustMatt/StardewMods/tree/develop/XSPlus/docs/features.md) for documentation on features.
+<span id="features">4.</span> Refer
+to [XSPlus](https://github.com/ImJustMatt/StardewMods/tree/develop/XSPlus/docs/features.md) for documentation on
+features.
 
 ### Sprite Sheet
 
@@ -153,10 +156,13 @@ row | sprites
 2   | Base layer that will be rendered with the player's color choice.
 3   | Drawn over the Base layer, but without the player's color choice.
 
-
 ### Context Tags
 
-The game adds various [context tags](https://stardewcommunitywiki.com/Modding:Context_tags) to every item. The recommended way to find what context tags are supported by which items is to install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541) and enable it's [ShowDataMiningFields](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) option. Then simply press `F1` while hovered over any item to find it's data.
+The game adds various [context tags](https://stardewcommunitywiki.com/Modding:Context_tags) to every item. The
+recommended way to find what context tags are supported by which items is to
+install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541) and enable
+it's [ShowDataMiningFields](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) option.
+Then simply press `F1` while hovered over any item to find it's data.
 
 Below are some of the more useful tags:
 
@@ -181,7 +187,9 @@ tag                 | description
 
 ### Mod Data
 
-All items support a key-value store known as Mod Data. You can initialize values for your storage to integrate with features from mods. This will only add the modData when the item is originally obtained or crafted, and it will not override if a value already exists.
+All items support a key-value store known as Mod Data. You can initialize values for your storage to integrate with
+features from mods. This will only add the modData when the item is originally obtained or crafted, and it will not
+override if a value already exists.
 
 Of course Mod Data opens a world of possibilities depending on the mod, but here are a few notable examples:
 

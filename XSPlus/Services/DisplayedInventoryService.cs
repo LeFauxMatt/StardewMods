@@ -19,17 +19,24 @@
     using StardewValley.Menus;
 
     /// <summary>
-    /// Service for manipulating the displayed items in an inventory menu.
+    ///     Service for manipulating the displayed items in an inventory menu.
     /// </summary>
     internal class DisplayedInventoryService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
         private static DisplayedInventoryService Instance;
-        private readonly PerScreen<IList<Func<Item, bool>>> _filterItemHandlers = new() { Value = new List<Func<Item, bool>>() };
-        private readonly PerScreen<IList<Item>> _items = new();
-        private readonly PerScreen<Range<int>> _range = new() { Value = new Range<int>() };
-        private readonly PerScreen<InventoryMenu> _menu = new();
         private readonly PerScreen<int> _columns = new();
+        private readonly PerScreen<IList<Func<Item, bool>>> _filterItemHandlers = new()
+        {
+            Value = new List<Func<Item, bool>>(),
+        };
+
+        private readonly PerScreen<IList<Item>> _items = new();
+        private readonly PerScreen<InventoryMenu> _menu = new();
         private readonly PerScreen<int> _offset = new();
+        private readonly PerScreen<Range<int>> _range = new()
+        {
+            Value = new Range<int>(),
+        };
 
         private DisplayedInventoryService(ItemGrabMenuConstructedService itemGrabMenuConstructedService, ItemGrabMenuChangedService itemGrabMenuChangedService)
             : base("DisplayedInventory")
@@ -41,20 +48,26 @@
 
             // Patches
             Mixin.Transpiler(
-                AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                AccessTools.Method(
+                    typeof(InventoryMenu),
+                    nameof(InventoryMenu.draw),
+                    new[]
+                    {
+                        typeof(SpriteBatch), typeof(int), typeof(int), typeof(int),
+                    }),
                 typeof(DisplayedInventoryService),
                 nameof(DisplayedInventoryService.InventoryMenu_draw_transpiler));
         }
 
         /// <summary>
-        /// Gets or sets the number of rows the currently displayed items are offset by.
+        ///     Gets or sets the number of rows the currently displayed items are offset by.
         /// </summary>
         public int Offset
         {
             get => this._offset.Value;
             set
             {
-                this._range.Value.Maximum = Math.Max(0, (this._items.Value.Count.RoundUp(this._columns.Value) / this._columns.Value) - this._menu.Value.rows);
+                this._range.Value.Maximum = Math.Max(0, this._items.Value.Count.RoundUp(this._columns.Value) / this._columns.Value - this._menu.Value.rows);
                 value = this._range.Value.Clamp(value);
                 if (this._offset.Value != value)
                 {
@@ -65,7 +78,7 @@
         }
 
         /// <summary>
-        /// Gets the displayed items.
+        ///     Gets the displayed items.
         /// </summary>
         private IEnumerable<Item> Items
         {
@@ -91,11 +104,23 @@
             }
         }
 
+        /// <inheritdoc />
+        public void AddHandler(Func<Item, bool> handler)
+        {
+            this._filterItemHandlers.Value.Add(handler);
+        }
+
+        /// <inheritdoc />
+        public void RemoveHandler(Func<Item, bool> handler)
+        {
+            this._filterItemHandlers.Value.Remove(handler);
+        }
+
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="DisplayedInventoryService"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="DisplayedInventoryService" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>An instance of the <see cref="DisplayedInventoryService"/> class.</returns>
+        /// <returns>An instance of the <see cref="DisplayedInventoryService" /> class.</returns>
         public static DisplayedInventoryService GetSingleton(ServiceManager serviceManager)
         {
             var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
@@ -103,20 +128,8 @@
             return DisplayedInventoryService.Instance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, itemGrabMenuChangedService);
         }
 
-        /// <inheritdoc/>
-        public void AddHandler(Func<Item, bool> handler)
-        {
-            this._filterItemHandlers.Value.Add(handler);
-        }
-
-        /// <inheritdoc/>
-        public void RemoveHandler(Func<Item, bool> handler)
-        {
-            this._filterItemHandlers.Value.Remove(handler);
-        }
-
         /// <summary>
-        /// Forces displayed inventory to resync.
+        ///     Forces displayed inventory to resync.
         /// </summary>
         public void ReSyncInventory()
         {
@@ -142,14 +155,14 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldarg_0),
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
+                        new CodeInstruction(OpCodes.Ldarg_0), new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DisplayedInventoryService), nameof(DisplayedInventoryService.DisplayedItems))));
-                })
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DisplayedInventoryService), nameof(DisplayedInventoryService.DisplayedItems))));
+                    })
                 .Repeat(-1);
 
             var patternPatches = new PatternPatches(instructions, scrollItemsPatch);
@@ -187,7 +200,10 @@
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
-            this.ReSyncInventory();
+            if (this._menu.Value is not null)
+            {
+                this.ReSyncInventory();
+            }
         }
 
         private bool FilterMethod(Item item)

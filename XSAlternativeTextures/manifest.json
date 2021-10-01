@@ -6,7 +6,9 @@
   "UniqueID": "furyx639.XSAlternativeTextures",
   "EntryDll": "XSAlternativeTextures.dll",
   "MinimumApiVersion": "3.12.6",
-  "UpdateKeys": [ "Nexus:7431@AlternativeTextures" ],
+  "UpdateKeys": [
+    "Nexus:7431@AlternativeTextures"
+  ],
   "Dependencies": [
     {
       "UniqueID": "furyx639.ExpandedStorage",

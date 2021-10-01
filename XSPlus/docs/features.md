@@ -18,21 +18,21 @@
 
 feature         | parameter(s)
 ----------------|--------------
-AccessCarried   | null 
+AccessCarried   | null
 CraftFromChest  | Distance <sup>[1](#distance)</sup>
 ExpandedMenu    | Rows <sup>[2](#rows)</sup>
 FilterItems     | Filters <sup>[3](#filters)</sup>
 InventoryTabs   | Tabs <sup>[4](#tabs)</sup>
 SearchItems     | null
 StashToChest    | Distance <sup>[1](#distance)</sup>
-Unbreakable     | null 
-Unplaceable     | null 
-VacuumItems     | null 
+Unbreakable     | null
+Unplaceable     | null
+VacuumItems     | null
 
 <span id="distance">1.</span> Distance - Inventory, Location, or World.  
 <span id="rows">2.</span> Rows - Max rows to show on expanded menu.  
 <span id="filters">3.</span> Filters - List of items/tags to allow or block.  
-<span id="tabs">4.</span> Tabs - List of tabs to show.  
+<span id="tabs">4.</span> Tabs - List of tabs to show.
 
 ### Access Carried
 
@@ -44,8 +44,8 @@ Allows chest to hold additional items.
 
 ### Categorize Chest
 
-Assign categories to chests used with the stash to chest feature, and with Automate to only accept
-items that are part of the chest's assigned categories.
+Assign categories to chests used with the stash to chest feature, and with Automate to only accept items that are part
+of the chest's assigned categories.
 
 ### Color Picker
 
@@ -75,7 +75,8 @@ Rows - Menu will expand up to a maximum number of rows from 3 (vanilla) up to 6.
 
 ### Filter Items
 
-Restricts what items can be added to the chest [context tags](https://github.com/ImJustMatt/StardewMods/blob/develop/XSLite/docs/content-pack.md#context-tags).
+Restricts what items can be added to the
+chest [context tags](https://github.com/ImJustMatt/StardewMods/blob/develop/XSLite/docs/content-pack.md#context-tags).
 
 #### Parameter(s)
 
@@ -95,7 +96,8 @@ If there are no blocked items specified, then no items are blocked by default.
 
 ### Inventory Tabs
 
-Adds tabs to chest inventory menu for quick filtering by category. Tabs can be customized in XSPlus by editing tabs.json, by default these are:
+Adds tabs to chest inventory menu for quick filtering by category. Tabs can be customized in XSPlus by editing
+tabs.json, by default these are:
 
 #### Parameter(s)
 
@@ -112,7 +114,8 @@ Adds tabs to chest inventory menu for quick filtering by category. Tabs can be c
 ]
 ```
 
-Tabs in tabs.json filter items based on [context tags](https://github.com/ImJustMatt/StardewMods/blob/develop/XSLite/docs/content-pack.md#context-tags).
+Tabs in tabs.json filter items based
+on [context tags](https://github.com/ImJustMatt/StardewMods/blob/develop/XSLite/docs/content-pack.md#context-tags).
 
 ### Search Items
 
@@ -127,7 +130,6 @@ Distance    | Description
 Inventory   | Accessible when player is carrying the chest.
 Location    | Accessible when chest is placed in same location as the player.
 World       | Accessible anywhere the player has access to.
-
 
 ### Unbreakable
 

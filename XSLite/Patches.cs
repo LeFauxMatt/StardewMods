@@ -22,7 +22,7 @@
     using SObject = StardewValley.Object;
 
     /// <summary>
-    /// Encompasses all patches required by this mod.
+    ///     Encompasses all patches required by this mod.
     /// </summary>
     [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -31,7 +31,7 @@
     {
         private static IModHelper Helper = null!;
 
-        /// <summary>Initializes a new instance of the <see cref="Patches"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="Patches" /> class.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         /// <param name="harmony">The harmony instance to apply patches.</param>
         public Patches(IModHelper helper, Harmony harmony)
@@ -40,117 +40,146 @@
 
             // Use GetItemsForPlayer for all chest types.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 transpiler: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_addItem_transpiler)));
 
             // Clear nulls for heldStorage items
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.clearNulls)),
+                AccessTools.Method(typeof(Chest), nameof(Chest.clearNulls)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_clearNulls_postfix)));
 
             // Draw bigger storages from the origin chest.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_draw_prefix)));
+                AccessTools.Method(
+                    typeof(Chest),
+                    nameof(Chest.draw),
+                    new[]
+                    {
+                        typeof(SpriteBatch), typeof(int), typeof(int), typeof(float),
+                    }),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_draw_prefix)));
 
             // Draw chest with playerChoiceColor and animation when held.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool) }),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawLocal_prefix)));
+                AccessTools.Method(
+                    typeof(Chest),
+                    nameof(Chest.draw),
+                    new[]
+                    {
+                        typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool),
+                    }),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawLocal_prefix)));
 
             // Draw chest with playerChoiceColor and animation in menu.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawInMenu_prefix)));
+                AccessTools.Method(
+                    typeof(Chest),
+                    nameof(Chest.drawInMenu),
+                    new[]
+                    {
+                        typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool),
+                    }),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_drawInMenu_prefix)));
 
             // Prevent OpenNearby chests from resetting their lid frame automatically.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.fixLidFrame)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_fixLidFrame_prefix)));
+                AccessTools.Method(typeof(Chest), nameof(Chest.fixLidFrame)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_fixLidFrame_prefix)));
 
             // Return items from heldItem Chest.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)),
+                AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_GetItemsForPlayer_postfix)));
 
             // Create expanded storage debris.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
+                AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
                 transpiler: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_performToolAction_transpiler)));
 
             // Support calculating distance correctly for bigger chests.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_UpdateFarmerNearby_prefix)));
+                AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_UpdateFarmerNearby_prefix)));
 
             // Animate the lids for OpenNearby chests.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_updateWhenCurrentLocation_prefix)));
+                AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Chest_updateWhenCurrentLocation_prefix)));
 
             // Disallow stacking Chests holding items.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
+                AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Item_canStackWith_postfix)));
 
             // Remove disabled components
             harmony.Patch(
-                original: AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                AccessTools.Constructor(
+                    typeof(ItemGrabMenu),
+                    new[]
+                    {
+                        typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+                    }),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.ItemGrabMenu_constructor_postfix)));
 
             // Remove disabled components
             harmony.Patch(
-                original: AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.ItemGrabMenu_setSourceItem_postfix)));
 
             // Disable drawing extension objects for bigger storages.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_draw_prefix)));
+                AccessTools.Method(
+                    typeof(SObject),
+                    nameof(SObject.draw),
+                    new[]
+                    {
+                        typeof(SpriteBatch), typeof(int), typeof(int), typeof(float),
+                    }),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_draw_prefix)));
 
             // Draw bigger held storages.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_drawWhenHeld_prefix)));
+                AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_drawWhenHeld_prefix)));
 
             // Draw placement bounds for bigger storages.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.drawPlacementBounds)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_drawPlacementBounds_prefix)));
+                AccessTools.Method(typeof(SObject), nameof(SObject.drawPlacementBounds)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_drawPlacementBounds_prefix)));
 
             // Return custom description for Object.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.getDescription)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_getDescription_prefix)));
+                AccessTools.Method(typeof(SObject), nameof(SObject.getDescription)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_getDescription_prefix)));
 
             // Return custom display name for Object.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), "loadDisplayName"),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_loadDisplayName_prefix)));
+                AccessTools.Method(typeof(SObject), "loadDisplayName"),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_loadDisplayName_prefix)));
 
             // Perform tool actions at origin chest for bigger storages.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.performToolAction)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_performToolAction_prefix)));
+                AccessTools.Method(typeof(SObject), nameof(SObject.performToolAction)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_performToolAction_prefix)));
 
             // Disallow invalid chest placement locations.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                prefix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_placementAction_prefix)));
+                AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+                new HarmonyMethod(typeof(Patches), nameof(Patches.Object_placementAction_prefix)));
 
             // Convert XS storages placed as objects into chests.
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+                AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Object_placementAction_postfix)));
 
             // Include chests in player inventory for iterateChestsAndStorage.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
+                AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Utility_iterateChestsAndStorage_postfix)));
 
             // Check placement parameters for bigger storages.
             harmony.Patch(
-                original: AccessTools.Method(typeof(Utility), nameof(Utility.playerCanPlaceItemHere)),
+                AccessTools.Method(typeof(Utility), nameof(Utility.playerCanPlaceItemHere)),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.Utility_playerCanPlaceItemHere_postfix)));
         }
 
@@ -162,9 +191,7 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Call, AccessTools.Property(typeof(Chest), nameof(Chest.SpecialChestType)).GetGetMethod()),
-                        new CodeInstruction(OpCodes.Ldc_I4_2),
-                        new CodeInstruction(OpCodes.Bne_Un_S),
+                        new CodeInstruction(OpCodes.Call, AccessTools.Property(typeof(Chest), nameof(Chest.SpecialChestType)).GetGetMethod()), new CodeInstruction(OpCodes.Ldc_I4_2), new CodeInstruction(OpCodes.Bne_Un_S),
                     })
                 .Patch(
                     list =>
@@ -196,7 +223,7 @@
 
         private static void Chest_clearNulls_postfix(Chest __instance)
         {
-            NetObjectList<Item> items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+            var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
             for (var i = items.Count - 1; i >= 0; i--)
             {
                 if (items[i] is null)
@@ -237,8 +264,8 @@
                 draw_y = Utility.Lerp(__instance.localKickStartTile.Value.Y, draw_y, __instance.kickProgress);
             }
 
-            var globalPosition = new Vector2(draw_x, (int)(draw_y - (storage.Depth / 16f) - 1f));
-            var layerDepth = Math.Max(0.0f, (((draw_y + 1f) * 64f) - 24f) / 10000f) + (draw_x * 1E-05f);
+            var globalPosition = new Vector2(draw_x, (int)(draw_y - storage.Depth / 16f - 1f));
+            var layerDepth = Math.Max(0.0f, ((draw_y + 1f) * 64f - 24f) / 10000f) + draw_x * 1E-05f;
             return !storage.Draw(
                 __instance,
                 ___currentLidFrame,
@@ -263,6 +290,7 @@
                 new Vector2(x, y - 64),
                 Vector2.Zero,
                 alpha);
+
             return false;
         }
 
@@ -284,6 +312,7 @@
                 transparency,
                 layerDepth,
                 drawScaleSize);
+
             if (!draw)
             {
                 return true;
@@ -292,14 +321,14 @@
             // Draw Stack
             if (__instance.Stack > 1)
             {
-                Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - (3f * scaleSize), 64f - (18f * scaleSize) + 2f), 3f * scaleSize, 1f, color);
+                Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) - 3f * scaleSize, 64f - 18f * scaleSize + 2f), 3f * scaleSize, 1f, color);
             }
 
             // Draw Held Items
             var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
             if (items > 0)
             {
-                Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize), 2f * scaleSize), 3f * scaleSize, 1f, color);
+                Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
             }
 
             return false;
@@ -334,18 +363,19 @@
             var createDebrisPatch = new PatternPatch(PatchType.Replace);
             createDebrisPatch
                 .Find(new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(NetMutex), nameof(NetMutex.RequestLock))))
-                .Patch(list =>
-                {
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_2));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(Patches.Chest_performToolAction_delegate))));
-                });
+                .Patch(
+                    list =>
+                    {
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.RemoveLast();
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_1));
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_2));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(Patches.Chest_performToolAction_delegate))));
+                    });
 
             var patternPatches = new PatternPatches(instructions);
             patternPatches.AddPatch(createDebrisPatch);
@@ -372,55 +402,58 @@
             var c = chest.TileLocation;
             if (c == Vector2.Zero)
             {
-                KeyValuePair<Vector2, SObject> obj = location.Objects.Pairs.SingleOrDefault(obj => obj.Value == chest);
+                var obj = location.Objects.Pairs.SingleOrDefault(obj => obj.Value == chest);
                 c = obj.Value is not null ? obj.Key : player.GetToolLocation() / 64;
                 c.X = (int)c.X;
                 c.Y = (int)c.Y;
             }
 
-            chest.GetMutex().RequestLock(() =>
-            {
-                chest.clearNulls();
-                if (chest.isEmpty())
+            chest.GetMutex().RequestLock(
+                () =>
                 {
-                    chest.performRemoveAction(chest.TileLocation, location);
-                    if (location.Objects.Remove(c) && chest.Type.Equals("Crafting") && chest.Fragility != 2)
+                    chest.clearNulls();
+                    if (chest.isEmpty())
                     {
-                        var debris = new Debris(
-                            objectIndex: chest.bigCraftable.Value ? -chest.ParentSheetIndex : chest.ParentSheetIndex,
-                            debrisOrigin: player.GetToolLocation(),
-                            playerPosition: new Vector2(player.GetBoundingBox().Center.X, player.GetBoundingBox().Center.Y))
+                        chest.performRemoveAction(chest.TileLocation, location);
+                        if (location.Objects.Remove(c) && chest.Type.Equals("Crafting") && chest.Fragility != 2)
                         {
-                            item = chest,
-                        };
-                        location.debris.Add(debris);
-                    }
-                }
-                else if (tool.isHeavyHitter() && tool is not MeleeWeapon)
-                {
-                    location.playSound("hammer");
-                    chest.shakeTimer = 100;
-                    if (tool != player.CurrentTool)
-                    {
-                        // var zero = Vector2.Zero;
-                        var zero = player.FacingDirection switch
-                        {
-                            1 => new Vector2(1f, 0f),
-                            3 => new Vector2(-1f, 0f),
-                            0 => new Vector2(0f, -1f),
-                            _ => new Vector2(0f, 1f),
-                        };
-                        if (chest.TileLocation.X == 0f && chest.TileLocation.Y == 0f && location.getObjectAtTile((int)c.X, (int)c.Y) == chest)
-                        {
-                            chest.TileLocation = c;
+                            var debris = new Debris(
+                                chest.bigCraftable.Value ? -chest.ParentSheetIndex : chest.ParentSheetIndex,
+                                player.GetToolLocation(),
+                                new Vector2(player.GetBoundingBox().Center.X, player.GetBoundingBox().Center.Y))
+                            {
+                                item = chest,
+                            };
+
+                            location.debris.Add(debris);
                         }
-
-                        chest.MoveToSafePosition(location, chest.TileLocation, 0, zero);
                     }
-                }
+                    else if (tool.isHeavyHitter() && tool is not MeleeWeapon)
+                    {
+                        location.playSound("hammer");
+                        chest.shakeTimer = 100;
+                        if (tool != player.CurrentTool)
+                        {
+                            // var zero = Vector2.Zero;
+                            var zero = player.FacingDirection switch
+                            {
+                                1 => new Vector2(1f, 0f),
+                                3 => new Vector2(-1f, 0f),
+                                0 => new Vector2(0f, -1f),
+                                _ => new Vector2(0f, 1f),
+                            };
 
-                chest.GetMutex().ReleaseLock();
-            });
+                            if (chest.TileLocation.X == 0f && chest.TileLocation.Y == 0f && location.getObjectAtTile((int)c.X, (int)c.Y) == chest)
+                            {
+                                chest.TileLocation = c;
+                            }
+
+                            chest.MoveToSafePosition(location, chest.TileLocation, 0, zero);
+                        }
+                    }
+
+                    chest.GetMutex().ReleaseLock();
+                });
         }
 
         private static bool Chest_UpdateFarmerNearby_prefix(Chest __instance, ref bool ____farmerNearby, ref int ____shippingBinFrameCounter, ref int ___currentLidFrame, GameLocation location, bool animate)
@@ -592,7 +625,7 @@
                         ___currentLidFrame++;
                     }
                 }
-                else if (((__instance.frameCounter.Value == -1 && ___currentLidFrame > __instance.startingLidFrame.Value) || ___currentLidFrame >= __instance.getLastLidFrame()) && Game1.activeClickableMenu is null && __instance.GetMutex().IsLockHeld())
+                else if ((__instance.frameCounter.Value == -1 && ___currentLidFrame > __instance.startingLidFrame.Value || ___currentLidFrame >= __instance.getLastLidFrame()) && Game1.activeClickableMenu is null && __instance.GetMutex().IsLockHeld())
                 {
                     __instance.GetMutex().ReleaseLock();
                     ___currentLidFrame = __instance.getLastLidFrame();
@@ -639,14 +672,14 @@
         {
             var chest = __instance is Chest chest1 ? chest1 : null;
             var otherChest = other is Chest chest2 ? chest2 : null;
-            if (!__result || (chest is null && otherChest is null))
+            if (!__result || chest is null && otherChest is null)
             {
                 return;
             }
 
             // Block if either chest has any items
-            if ((chest is not null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
-                || (otherChest is not null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
+            if (chest is not null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()
+                || otherChest is not null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
             {
                 __result = false;
                 return;
@@ -720,8 +753,8 @@
                 return true;
             }
 
-            objectPosition.X -= (storage.Width * 2f) - 32;
-            objectPosition.Y -= (storage.Height * 2f) - 64;
+            objectPosition.X -= storage.Width * 2f - 32;
+            objectPosition.Y -= storage.Height * 2f - 64;
             var currentFrame = XSLite.CurrentLidFrame.Value?.GetValue() ?? 0;
             return !storage.Draw(__instance, currentFrame, spriteBatch, objectPosition, Vector2.Zero);
         }
@@ -746,26 +779,29 @@
             }
 
             var canPlaceHere = Utility.playerCanPlaceItemHere(location, __instance, x, y, Game1.player)
-                               || (Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
-                                   && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player));
+                               || Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
+                               && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player);
 
             Game1.isCheckingNonMousePlacement = false;
 
-            storage.ForEachPos(x / 64, y / 64, delegate(Vector2 pos)
-            {
-                spriteBatch.Draw(
-                    Game1.mouseCursors,
-                    (pos * 64) - new Vector2(Game1.viewport.X, Game1.viewport.Y),
-                    new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
-                    Color.White,
-                    0f,
-                    Vector2.Zero,
-                    4f,
-                    SpriteEffects.None,
-                    0.01f);
-            });
+            storage.ForEachPos(
+                x / 64,
+                y / 64,
+                delegate(Vector2 pos)
+                {
+                    spriteBatch.Draw(
+                        Game1.mouseCursors,
+                        pos * 64 - new Vector2(Game1.viewport.X, Game1.viewport.Y),
+                        new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
+                        Color.White,
+                        0f,
+                        Vector2.Zero,
+                        4f,
+                        SpriteEffects.None,
+                        0.01f);
+                });
 
-            var globalPosition = new Vector2((int)(x / 64f), (int)((y / 64f) - (storage.Depth / 16f) - 1f));
+            var globalPosition = new Vector2((int)(x / 64f), (int)(y / 64f - storage.Depth / 16f - 1f));
             return !storage.Draw(__instance, 0, spriteBatch, Game1.GlobalToLocal(Game1.viewport, globalPosition * 64), Vector2.Zero, 0.5f);
         }
 
@@ -818,13 +854,13 @@
 
             __result = false;
             var placementTile = new Vector2((int)(x / 64f), (int)(y / 64f));
-            if (location.objects.ContainsKey(placementTile) || location is MineShaft or VolcanoDungeon || (storage.IsFridge && location is not FarmHouse && location is not IslandFarmHouse))
+            if (location.objects.ContainsKey(placementTile) || location is MineShaft or VolcanoDungeon || storage.IsFridge && location is not FarmHouse && location is not IslandFarmHouse)
             {
                 Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.13053"));
                 return false;
             }
 
-            if (storage.IsFridge && location is FarmHouse { upgradeLevel: < 1 })
+            if (storage.IsFridge && location is FarmHouse {upgradeLevel: < 1})
             {
                 Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:MiniFridge_NoKitchen"));
                 return false;
@@ -858,7 +894,7 @@
 
         private static void Utility_playerCanPlaceItemHere_postfix(ref bool __result, GameLocation location, Item item, int x, int y, Farmer f)
         {
-            if (!XSLite.Storages.TryGetValue(item.Name, out var storage) || storage.Format == Storage.AssetFormat.Vanilla || (storage.TileWidth == 1 && storage.TileHeight == 1))
+            if (!XSLite.Storages.TryGetValue(item.Name, out var storage) || storage.Format == Storage.AssetFormat.Vanilla || storage.TileWidth == 1 && storage.TileHeight == 1)
             {
                 return;
             }
@@ -899,7 +935,7 @@
             {
                 for (var j = 0; j < storage.TileHeight; j++)
                 {
-                    var tileLocation = new Vector2((x / 64) + i, (y / 64) + j);
+                    var tileLocation = new Vector2(x / 64 + i, y / 64 + j);
                     if (item.canBePlacedHere(location, tileLocation)
                         && location.getObjectAtTile((int)tileLocation.X, (int)tileLocation.Y) is null
                         && location.isTilePlaceable(tileLocation, item))

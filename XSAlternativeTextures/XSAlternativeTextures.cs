@@ -19,13 +19,6 @@
         private XSLiteIntegration _xsLite = null!;
 
         /// <inheritdoc />
-        public override void Entry(IModHelper helper)
-        {
-            this._xsLite = new XSLiteIntegration(helper.ModRegistry);
-            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-        }
-
-        /// <inheritdoc />
         public bool CanEdit<T>(IAssetInfo asset)
         {
             return asset.AssetName.StartsWith("AlternativeTextures") && asset.AssetName.Contains("ExpandedStorage");
@@ -34,14 +27,21 @@
         /// <inheritdoc />
         public void Edit<T>(IAssetData asset)
         {
-            IAssetDataForImage editor = asset.AsImage();
+            var editor = asset.AsImage();
             editor.ExtendImage(80, this._storages.Count * 32);
-            for (int i = 0; i < this._storages.Count; i++)
+            for (var i = 0; i < this._storages.Count; i++)
             {
                 var texture = this.Helper.Content.Load<Texture2D>($"ExpandedStorage/SpriteSheets/{this._storages[i]}", ContentSource.GameContent);
-                editor.PatchImage(texture, new Rectangle(0, 0, 16, 32), new Rectangle(0,  i * 32, 16, 32));
-                editor.PatchImage(texture, new Rectangle(0, 0, 80, 32), new Rectangle(16,  i * 32, 80, 32));
+                editor.PatchImage(texture, new Rectangle(0, 0, 16, 32), new Rectangle(0, i * 32, 16, 32));
+                editor.PatchImage(texture, new Rectangle(0, 0, 80, 32), new Rectangle(16, i * 32, 80, 32));
             }
+        }
+
+        /// <inheritdoc />
+        public override void Entry(IModHelper helper)
+        {
+            this._xsLite = new XSLiteIntegration(helper.ModRegistry);
+            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -56,9 +56,10 @@
                 Variations = this._storages.Count,
                 EnableContentPatcherCheck = true,
             };
+
             var textures = new List<Texture2D>();
-            Texture2D placeholder = this.Helper.Content.Load<Texture2D>("assets/texture.png");
-            foreach (string storageName in this._xsLite.API.GetAllStorages().OrderBy(storageName => storageName))
+            var placeholder = this.Helper.Content.Load<Texture2D>("assets/texture.png");
+            foreach (var storageName in this._xsLite.API.GetAllStorages().OrderBy(storageName => storageName))
             {
                 Texture2D texture = null!;
                 try
@@ -70,18 +71,22 @@
                     // ignored
                 }
 
-                if (texture is null || texture.Width != 80 || (texture.Height != 32 && texture.Height != 96))
+                if (texture is null || texture.Width != 80 || texture.Height != 32 && texture.Height != 96)
                 {
                     continue;
                 }
 
                 textures.Add(placeholder);
                 this._storages.Add(storageName);
-                model.ManualVariations.Add(new VariationModel
-                {
-                    Id = this._storages.Count - 1,
-                    Keywords = new List<string> { storageName },
-                });
+                model.ManualVariations.Add(
+                    new VariationModel
+                    {
+                        Id = this._storages.Count - 1,
+                        Keywords = new List<string>
+                        {
+                            storageName,
+                        },
+                    });
             }
 
             this._alternativeTexturesAPI.AddAlternativeTexture(model, "ExpandedStorage", textures);

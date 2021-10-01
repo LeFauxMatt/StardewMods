@@ -20,17 +20,26 @@
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
     internal class InventoryTabsFeature : FeatureWithParam<HashSet<string>>
     {
-        private readonly ModConfigService _modConfigService;
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly RenderingActiveMenuService _renderingActiveMenuService;
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly DisplayedInventoryService _displayedInventoryService;
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<int> _tabIndex = new() { Value = -1 };
-        private readonly PerScreen<ItemMatcher> _itemMatcher = new() { Value = new ItemMatcher(string.Empty, true) };
+        private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly PerScreen<string> _hoverText = new();
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new()
+        {
+            Value = new ItemMatcher(string.Empty, true),
+        };
+        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private readonly ModConfigService _modConfigService;
+        private readonly RenderedActiveMenuService _renderedActiveMenuService;
+        private readonly RenderingActiveMenuService _renderingActiveMenuService;
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
+        private readonly PerScreen<int> _tabIndex = new()
+        {
+            Value = -1,
+        };
         private IList<Tab> _tabs = null!;
         private Texture2D _texture = null!;
 
@@ -50,15 +59,15 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="InventoryTabsFeature"/>.
+        ///     Gets or sets the instance of <see cref="InventoryTabsFeature" />.
         /// </summary>
         private static InventoryTabsFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="InventoryTabsFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="InventoryTabsFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="InventoryTabsFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="InventoryTabsFeature" /> class.</returns>
         public static InventoryTabsFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
@@ -74,7 +83,7 @@
                 renderedActiveMenuService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -88,7 +97,7 @@
             Events.Input.CursorMoved += this.OnCursorMoved;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -110,10 +119,10 @@
             for (var i = 0; i < this._tabs.Count; i++)
             {
                 this._tabs[i].Component = new ClickableTextureComponent(
-                    bounds: new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    texture: this._texture,
-                    sourceRect: new Rectangle(16 * i, 0, 16, 16),
-                    scale: Game1.pixelZoom)
+                    new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                    this._texture,
+                    new Rectangle(16 * i, 0, 16, 16),
+                    Game1.pixelZoom)
                 {
                     hoverText = this._tabs[i].Name,
                 };
@@ -147,14 +156,14 @@
 
             // Draw tabs between inventory menus along a horizontal axis
             var x = this._menu.Value.ItemsToGrabMenu.xPositionOnScreen;
-            var y = this._menu.Value.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemsToGrabMenu.height + (1 * Game1.pixelZoom);
+            var y = this._menu.Value.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemsToGrabMenu.height + 1 * Game1.pixelZoom;
             for (var i = 0; i < this._tabs.Count; i++)
             {
                 Color color;
                 this._tabs[i].Component.bounds.X = x;
                 if (i == this._tabIndex.Value)
                 {
-                    this._tabs[i].Component.bounds.Y = y + (1 * Game1.pixelZoom);
+                    this._tabs[i].Component.bounds.Y = y + 1 * Game1.pixelZoom;
                     color = Color.White;
                 }
                 else
@@ -163,7 +172,7 @@
                     color = Color.Gray;
                 }
 
-                this._tabs[i].Component.draw(e.SpriteBatch, color, 0.86f + (this._tabs[i].Component.bounds.Y / 20000f));
+                this._tabs[i].Component.draw(e.SpriteBatch, color, 0.86f + this._tabs[i].Component.bounds.Y / 20000f);
                 x = this._tabs[i].Component.bounds.Right;
             }
         }

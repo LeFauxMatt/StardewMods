@@ -20,8 +20,8 @@
     {
         private static readonly PerScreen<bool> IsVacuuming = new();
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
-        private MixInfo _collectPatch;
         private MixInfo _addItemToInventoryPatch;
+        private MixInfo _collectPatch;
 
         private VacuumItemsFeature(ModConfigService modConfigService)
             : base("VacuumItems", modConfigService)
@@ -29,29 +29,29 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="VacuumItemsFeature"/>.
+        ///     Gets or sets the instance of <see cref="VacuumItemsFeature" />.
         /// </summary>
         private static VacuumItemsFeature Instance { get; set; }
 
         private List<Chest> EnabledChests
         {
             get => this._cachedEnabledChests.Value ??= Game1.player.Items.OfType<Chest>()
-                .Where(this.IsEnabledForItem)
-                .ToList();
+                                                            .Where(this.IsEnabledForItem)
+                                                            .ToList();
         }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="VacuumItemsFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="VacuumItemsFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="VacuumItemsFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="VacuumItemsFeature" /> class.</returns>
         public static VacuumItemsFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             return VacuumItemsFeature.Instance ??= new VacuumItemsFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -62,13 +62,20 @@
                 AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
                 typeof(VacuumItemsFeature),
                 nameof(VacuumItemsFeature.Debris_collect_transpiler));
+
             this._addItemToInventoryPatch = Mixin.Prefix(
-                AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventory), new[] { typeof(Item), typeof(List<Item>) }),
+                AccessTools.Method(
+                    typeof(Farmer),
+                    nameof(Farmer.addItemToInventory),
+                    new[]
+                    {
+                        typeof(Item), typeof(List<Item>),
+                    }),
                 typeof(VacuumItemsFeature),
                 nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -104,7 +111,7 @@
                 return true;
             }
 
-            Item? remaining = null;
+            Item remaining = null;
             var stack = item.Stack;
             foreach (var chest in VacuumItemsFeature.Instance.EnabledChests)
             {
@@ -139,7 +146,7 @@
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
-            if (!e.IsLocalPlayer || (!e.Added.OfType<Chest>().Any() && !e.Removed.OfType<Chest>().Any()))
+            if (!e.IsLocalPlayer || !e.Added.OfType<Chest>().Any() && !e.Removed.OfType<Chest>().Any())
             {
                 return;
             }

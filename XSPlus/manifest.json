@@ -6,7 +6,9 @@
   "UniqueID": "furyx639.XSPlus",
   "EntryDll": "XSPlus.dll",
   "MinimumApiVersion": "3.12.6",
-  "UpdateKeys": [ "Nexus:7431@XSPlus" ],
+  "UpdateKeys": [
+    "Nexus:7431@XSPlus"
+  ],
   "Dependencies": [
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",

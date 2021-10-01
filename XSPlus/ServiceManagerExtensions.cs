@@ -7,7 +7,7 @@
     using Services;
 
     /// <summary>
-    /// Adds methods to handle feature instances.
+    ///     Adds methods to handle feature instances.
     /// </summary>
     internal static class ServiceManagerExtensions
     {

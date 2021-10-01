@@ -24,7 +24,7 @@
         private IXSPlusAPI _api;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="XSPlus"/> class.
+        ///     Initializes a new instance of the <see cref="XSPlus" /> class.
         /// </summary>
         public XSPlus()
         {
@@ -46,11 +46,10 @@
         {
             get
             {
-                IEnumerable<GameLocation> locations = Context.IsMainPlayer
-                    ? Game1.locations.Concat(
-                        Game1.locations.OfType<BuildableGameLocation>().SelectMany(
-                            location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)))
+                var locations = Context.IsMainPlayer
+                    ? Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)))
                     : this.Helper.Multiplayer.GetActiveLocations();
+
                 return locations;
             }
         }

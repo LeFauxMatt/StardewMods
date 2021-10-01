@@ -6,7 +6,9 @@
   "UniqueID": "furyx639.ExpandedStorage",
   "EntryDll": "XSLite.dll",
   "MinimumApiVersion": "3.12.6",
-  "UpdateKeys": [ "Nexus:7431@XSLite" ],
+  "UpdateKeys": [
+    "Nexus:7431@XSLite"
+  ],
   "Dependencies": [
     {
       "UniqueID": "spacechase0.DynamicGameAssets",

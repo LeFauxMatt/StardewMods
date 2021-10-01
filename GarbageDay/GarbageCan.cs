@@ -11,22 +11,22 @@
     using Object = StardewValley.Object;
 
     /// <summary>
-    /// Encapsulates logic for each Garbage Can managed by this mod.
+    ///     Encapsulates logic for each Garbage Can managed by this mod.
     /// </summary>
     internal class GarbageCan
     {
         private readonly IDictionary<string, float> _customLoot = new Dictionary<string, float>();
         private readonly ItemMatcher _itemMatcher = new(string.Empty, true);
-        private readonly string _whichCan;
         private readonly int _vanillaCan;
-        private Random _randomizer;
-        private Chest _chest;
+        private readonly string _whichCan;
         private bool _checked;
-        private bool _dropQiBeans;
+        private Chest _chest;
         private bool _doubleMega;
+        private bool _dropQiBeans;
         private bool _mega;
+        private Random _randomizer;
 
-        /// <summary>Initializes a new instance of the <see cref="GarbageCan"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="GarbageCan" /> class.</summary>
         /// <param name="mapName">The name of the Map asset.</param>
         /// <param name="whichCan">A name given to the garbage can for its loot table.</param>
         /// <param name="tile">The tile where this garbage can is placed.</param>
@@ -39,22 +39,22 @@
         }
 
         /// <summary>
-        /// Gets the name of the Map asset.
+        ///     Gets the name of the Map asset.
         /// </summary>
         public string MapName { get; }
 
         /// <summary>
-        /// Gets the tile where this garbage can is placed.
+        ///     Gets the tile where this garbage can is placed.
         /// </summary>
         public Vector2 Tile { get; }
 
         /// <summary>
-        /// Gets or sets the Location where the garbage can is placed.
+        ///     Gets or sets the Location where the garbage can is placed.
         /// </summary>
         public GameLocation Location { get; set; }
 
         /// <summary>
-        /// Gets the actual placed Chest object.
+        ///     Gets the actual placed Chest object.
         /// </summary>
         public Chest Chest
         {
@@ -87,7 +87,10 @@
                 chest = new Chest(true, Vector2.Zero)
                 {
                     Name = "Garbage Can",
-                    playerChoiceColor = { Value = Color.DarkGray },
+                    playerChoiceColor =
+                    {
+                        Value = Color.DarkGray,
+                    },
                     modData =
                     {
                         ["furyx639.ExpandedStorage/Storage"] = "Garbage Can",
@@ -95,6 +98,7 @@
                         ["Pathoschild.ChestsAnywhere/IsIgnored"] = "true",
                     },
                 };
+
                 this.Location.Objects.Add(this.Tile, chest);
                 this._chest = chest;
                 return this._chest;
@@ -151,7 +155,7 @@
         }
 
         /// <summary>
-        /// Called when a player attempts to open the garbage can.
+        ///     Called when a player attempts to open the garbage can.
         /// </summary>
         public void CheckAction()
         {
@@ -187,7 +191,7 @@
         }
 
         /// <summary>
-        /// Adds an item to the garbage can determined by luck and mirroring vanilla chances.
+        ///     Adds an item to the garbage can determined by luck and mirroring vanilla chances.
         /// </summary>
         public void AddLoot()
         {
@@ -216,12 +220,13 @@
                 var localLoot = this._vanillaCan switch
                 {
                     3 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => this.Randomizer.NextDouble() < 0.05 ? 749 : 535,
-                    4 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 378 + (this.Randomizer.Next(3) * 2),
+                    4 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 378 + this.Randomizer.Next(3) * 2,
                     5 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck && Game1.dishOfTheDay is not null => Game1.dishOfTheDay.ParentSheetIndex != 217 ? Game1.dishOfTheDay.ParentSheetIndex : 216,
                     6 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 223,
                     7 when this.Randomizer.NextDouble() < 0.2 => !Utility.HasAnyPlayerSeenEvent(191393) ? 167 : Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheater") && !Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheaterJoja") ? !(this.Randomizer.NextDouble() < 0.25) ? 270 : 809 : -1,
                     _ => -1,
                 };
+
                 if (localLoot != -1)
                 {
                     this.Chest.addItem(new Object(localLoot, 1));
@@ -234,7 +239,7 @@
             var season = Game1.currentLocation.GetSeasonForLocation();
             if (this.Randomizer.NextDouble() < 0.1)
             {
-                var globalLoot = Utility.getRandomItemFromSeason(season, (int)((this.Tile.X * 653) + (this.Tile.Y * 777)), false);
+                var globalLoot = Utility.getRandomItemFromSeason(season, (int)(this.Tile.X * 653 + this.Tile.Y * 777), false);
                 if (globalLoot != -1)
                 {
                     this.Chest.addItem(new Object(globalLoot, 1));
@@ -258,7 +263,7 @@
             var totalWeight = this._customLoot.Values.Sum();
             var targetIndex = this.Randomizer.NextDouble() * totalWeight;
             double currentIndex = 0;
-            foreach (KeyValuePair<string, float> lootItem in this._customLoot)
+            foreach (var lootItem in this._customLoot)
             {
                 currentIndex += lootItem.Value;
                 if (currentIndex < targetIndex)
@@ -271,6 +276,7 @@
                                            .Where(entry => this._itemMatcher.Matches(entry.Item))
                                            .Shuffle()
                                            .FirstOrDefault();
+
                 if (customLoot is not null)
                 {
                     this.Chest.addItem(customLoot.CreateItem());
@@ -283,7 +289,7 @@
 
         private static Random VanillaRandomizer(int whichCan)
         {
-            var randomizer = new Random(((int)Game1.uniqueIDForThisGame / 2) + (int)Game1.stats.DaysPlayed + 777 + (whichCan * 77));
+            var randomizer = new Random((int)Game1.uniqueIDForThisGame / 2 + (int)Game1.stats.DaysPlayed + 777 + whichCan * 77);
             var prewarm = randomizer.Next(0, 100);
             for (var k = 0; k < prewarm; k++)
             {
@@ -301,12 +307,12 @@
 
         private void AddToCustomLoot(string key)
         {
-            if (!GarbageDay.Loot.TryGetValue(key, out IDictionary<string, float> lootTable))
+            if (!GarbageDay.Loot.TryGetValue(key, out var lootTable))
             {
                 return;
             }
 
-            foreach (KeyValuePair<string, float> lootItem in lootTable)
+            foreach (var lootItem in lootTable)
             {
                 this._customLoot.Add(lootItem.Key, lootItem.Value);
             }

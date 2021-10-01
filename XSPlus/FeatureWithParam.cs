@@ -9,9 +9,9 @@
     {
         private readonly IDictionary<KeyValuePair<string, string>, TParam> _values = new Dictionary<KeyValuePair<string, string>, TParam>();
 
-        /// <summary>Initializes a new instance of the <see cref="FeatureWithParam{TParam}"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="FeatureWithParam{TParam}" /> class.</summary>
         /// <param name="featureName">The name of the feature used for config/API.</param>
-        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig"/>.</param>
+        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig" />.</param>
         internal FeatureWithParam(string featureName, ModConfigService modConfigService)
             : base(featureName, modConfigService)
         {

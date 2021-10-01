@@ -4,7 +4,7 @@
     "Tags": [
       "category_clothing",
       "category_boots",
-      "category_hat",
+      "category_hat"
     ]
   },
   {
@@ -18,7 +18,7 @@
       "category_meat",
       "category_cooking",
       "category_milk",
-      "category_egg",
+      "category_egg"
     ]
   },
   {
@@ -27,7 +27,7 @@
       "category_greens",
       "category_flowers",
       "category_fruits",
-      "category_vegetable",
+      "category_vegetable"
     ]
   },
   {
@@ -36,7 +36,7 @@
       "category_equipment",
       "category_ring",
       "category_tool",
-      "category_weapon",
+      "category_weapon"
     ]
   },
   {
@@ -45,7 +45,7 @@
       "category_bait",
       "category_fish",
       "category_tackle",
-      "category_sell_at_fish_shop",
+      "category_sell_at_fish_shop"
     ]
   },
   {
@@ -56,7 +56,7 @@
       "category_building_resources",
       "category_minerals",
       "category_crafting",
-      "category_gem",
+      "category_gem"
     ]
   },
   {
@@ -64,14 +64,14 @@
     "Tags": [
       "category_big_craftable",
       "category_furniture",
-      "category_junk",
+      "category_junk"
     ]
   },
   {
     "Name": "Seeds",
     "Tags": [
       "category_seeds",
-      "category_fertilizer",
+      "category_fertilizer"
     ]
-  },
+  }
 ]

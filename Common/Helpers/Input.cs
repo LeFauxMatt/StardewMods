@@ -5,10 +5,10 @@
 
     internal static class Input
     {
-        /// <inheritdoc cref="IInputHelper"/>
+        /// <inheritdoc cref="IInputHelper" />
         private static IInputHelper Helper { get; set; } = null!;
 
-        /// <summary>Initializes the <see cref="Input"/> class.</summary>
+        /// <summary>Initializes the <see cref="Input" /> class.</summary>
         /// <param name="inputHelper">The instance of IInputHelper from the Mod.</param>
         public static void Init(IInputHelper inputHelper)
         {

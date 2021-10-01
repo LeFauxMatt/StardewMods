@@ -3,14 +3,14 @@
     using System;
 
     /// <summary>
-    /// Represents a range of values.
+    ///     Represents a range of values.
     /// </summary>
     /// <typeparam name="T">The value type for the range.</typeparam>
     internal class Range<T>
         where T : IComparable<T>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Range{T}"/> class.
+        ///     Initializes a new instance of the <see cref="Range{T}" /> class.
         /// </summary>
         public Range()
         {
@@ -19,7 +19,7 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Range{T}"/> class.
+        ///     Initializes a new instance of the <see cref="Range{T}" /> class.
         /// </summary>
         /// <param name="minimum">The minimum value of the range.</param>
         /// <param name="maximum">The maximum value of the range.</param>
@@ -30,17 +30,17 @@
         }
 
         /// <summary>
-        /// Gets or sets the minimum value of the range.
+        ///     Gets or sets the minimum value of the range.
         /// </summary>
         public T Minimum { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum value of the range.
+        ///     Gets or sets the maximum value of the range.
         /// </summary>
         public T Maximum { get; set; }
 
         /// <summary>
-        /// Clamps a value based on the range.
+        ///     Clamps a value based on the range.
         /// </summary>
         /// <param name="value">The value to clamp.</param>
         /// <returns>Returns the clamped value.</returns>

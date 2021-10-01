@@ -22,22 +22,22 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="AccessCarriedFeature"/>.
+        ///     Gets or sets the instance of <see cref="AccessCarriedFeature" />.
         /// </summary>
         private static AccessCarriedFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="AccessCarriedFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="AccessCarriedFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="AccessCarriedFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="AccessCarriedFeature" /> class.</returns>
         public static AccessCarriedFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             return AccessCarriedFeature.Instance ??= new AccessCarriedFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -50,7 +50,7 @@
                 nameof(AccessCarriedFeature.Chest_addItem_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events

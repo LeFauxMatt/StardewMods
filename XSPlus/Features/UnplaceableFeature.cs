@@ -18,22 +18,22 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="UnplaceableFeature"/>.
+        ///     Gets or sets the instance of <see cref="UnplaceableFeature" />.
         /// </summary>
         private static UnplaceableFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="UnplaceableFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="UnplaceableFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="UnplaceableFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="UnplaceableFeature" /> class.</returns>
         public static UnplaceableFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             return UnplaceableFeature.Instance ??= new UnplaceableFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Patches
@@ -43,7 +43,7 @@
                 nameof(UnplaceableFeature.Object_placementAction_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Patches

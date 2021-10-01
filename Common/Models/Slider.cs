@@ -1,21 +1,21 @@
 ﻿namespace Common.Models
 {
-    using Common.Enums;
+    using Enums;
     using Microsoft.Xna.Framework;
 
     /// <summary>
-    /// A slider that relates a positional value to a floating value between 0 and 1.
+    ///     A slider that relates a positional value to a floating value between 0 and 1.
     /// </summary>
     internal class Slider
     {
-        private readonly Range<float> _valueRange = new(0, 1);
-        private readonly Range<int> _coordinateRange = new();
         private readonly Axis _axis;
+        private readonly Range<int> _coordinateRange = new();
+        private readonly Range<float> _valueRange = new(0, 1);
         private Rectangle _area;
         private int _coordinate;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Slider"/> class.
+        ///     Initializes a new instance of the <see cref="Slider" /> class.
         /// </summary>
         /// <param name="axis">The axis that the slider is aligned to.</param>
         public Slider(Axis axis)
@@ -36,6 +36,7 @@
                     Axis.Vertical => value.Top,
                     _ => 0,
                 };
+
                 this._coordinateRange.Maximum = this._axis switch
                 {
                     Axis.Horizontal => value.Right - 1,
@@ -49,7 +50,7 @@
         public float Value
         {
             get => this._valueRange.Clamp(((float)this._coordinate - this._coordinateRange.Minimum) / (this._coordinateRange.Maximum - this._coordinateRange.Minimum));
-            set => this.Coordinate = (int)((value * (this._coordinateRange.Maximum - this._coordinateRange.Minimum)) + this._coordinateRange.Minimum);
+            set => this.Coordinate = (int)(value * (this._coordinateRange.Maximum - this._coordinateRange.Minimum) + this._coordinateRange.Minimum);
         }
 
         /// <summary>Gets or sets the position of the slider along its axis.</summary>

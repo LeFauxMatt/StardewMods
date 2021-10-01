@@ -15,31 +15,8 @@
     /// <inheritdoc cref="Common.Services.BaseService" />
     internal class ItemGrabMenuSideButtonsService : BaseService, IEventHandlerService<EventHandler<ItemGrabMenuEventArgs>>
     {
-        private static ItemGrabMenuSideButtonsService Instance;
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
-        private readonly PerScreen<IList<ClickableComponent>> _buttons = new() { Value = new List<ClickableComponent>() };
-        private readonly PerScreen<HashSet<VanillaButton>> _hideButtons = new() { Value = new HashSet<VanillaButton>() };
-
-        private ItemGrabMenuSideButtonsService(
-            ItemGrabMenuConstructedService itemGrabMenuConstructedService,
-            ItemGrabMenuChangedService itemGrabMenuChangedService)
-            : base("ItemGrabMenuSideButtons")
-        {
-            // Events
-            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuEvent);
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuEvent);
-
-            // Patches
-            Mixin.Prefix(
-                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-                typeof(ItemGrabMenuSideButtonsService),
-                nameof(ItemGrabMenuSideButtonsService.ItemGrabMenu_RepositionSideButtons_prefix));
-        }
-
-        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuChanged;
-
         /// <summary>
-        /// Default side buttons alongside the <see cref="ItemGrabMenu"/>
+        ///     Default side buttons alongside the <see cref="ItemGrabMenu" />
         /// </summary>
         public enum VanillaButton
         {
@@ -58,29 +35,57 @@
             /// <summary>The Junimo Note Icon.</summary>
             JunimoNoteIcon,
         }
-
-        /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ItemGrabMenuSideButtonsService"/> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ItemGrabMenuSideButtonsService"/> class.</returns>
-        public static ItemGrabMenuSideButtonsService GetSingleton(ServiceManager serviceManager)
+        private static ItemGrabMenuSideButtonsService Instance;
+        private readonly PerScreen<IList<ClickableComponent>> _buttons = new()
         {
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return ItemGrabMenuSideButtonsService.Instance ??= new ItemGrabMenuSideButtonsService(itemGrabMenuConstructedService, itemGrabMenuChangedService);
+            Value = new List<ClickableComponent>(),
+        };
+        private readonly PerScreen<HashSet<VanillaButton>> _hideButtons = new()
+        {
+            Value = new HashSet<VanillaButton>(),
+        };
+        private readonly PerScreen<ItemGrabMenu> _menu = new();
+
+        private ItemGrabMenuSideButtonsService(
+            ItemGrabMenuConstructedService itemGrabMenuConstructedService,
+            ItemGrabMenuChangedService itemGrabMenuChangedService)
+            : base("ItemGrabMenuSideButtons")
+        {
+            // Events
+            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuEvent);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuEvent);
+
+            // Patches
+            Mixin.Prefix(
+                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
+                typeof(ItemGrabMenuSideButtonsService),
+                nameof(ItemGrabMenuSideButtonsService.ItemGrabMenu_RepositionSideButtons_prefix));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void AddHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuChanged += eventHandler;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuChanged -= eventHandler;
+        }
+
+        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuChanged;
+
+        /// <summary>
+        ///     Returns and creates if needed an instance of the <see cref="ItemGrabMenuSideButtonsService" /> class.
+        /// </summary>
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        /// <returns>Returns an instance of the <see cref="ItemGrabMenuSideButtonsService" /> class.</returns>
+        public static ItemGrabMenuSideButtonsService GetSingleton(ServiceManager serviceManager)
+        {
+            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
+            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
+            return ItemGrabMenuSideButtonsService.Instance ??= new ItemGrabMenuSideButtonsService(itemGrabMenuConstructedService, itemGrabMenuChangedService);
         }
 
         public void AddButton(ClickableComponent clickableComponent)
@@ -130,7 +135,7 @@
 
             sideButtons.AddRange(ItemGrabMenuSideButtonsService.Instance._buttons.Value);
 
-            var stepSize = (sideButtons.Count >= 4) ? 72 : 80;
+            var stepSize = sideButtons.Count >= 4 ? 72 : 80;
             for (var i = 0; i < sideButtons.Count; i++)
             {
                 var button = sideButtons[i];
@@ -145,7 +150,7 @@
                 }
 
                 button.bounds.X = __instance.xPositionOnScreen + __instance.width;
-                button.bounds.Y = __instance.yPositionOnScreen + (__instance.height / 3) - 64 - (stepSize * i);
+                button.bounds.Y = __instance.yPositionOnScreen + __instance.height / 3 - 64 - stepSize * i;
             }
 
             return false;

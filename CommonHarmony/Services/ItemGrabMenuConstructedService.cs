@@ -15,7 +15,12 @@
     /// <inheritdoc cref="BaseService" />
     internal class ItemGrabMenuConstructedService : BaseService, IEventHandlerService<EventHandler<ItemGrabMenuEventArgs>>
     {
-        private static readonly ConstructorInfo ItemGrabMenuConstructor = AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) });
+        private static readonly ConstructorInfo ItemGrabMenuConstructor = AccessTools.Constructor(
+            typeof(ItemGrabMenu),
+            new[]
+            {
+                typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+            });
         private static ItemGrabMenuConstructedService Instance;
 
         private ItemGrabMenuConstructedService()
@@ -27,25 +32,25 @@
                 nameof(ItemGrabMenuConstructedService.ItemGrabMenu_constructor_postfix));
         }
 
-        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuConstructed;
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void AddHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuConstructed += eventHandler;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
         {
             this.ItemGrabMenuConstructed -= eventHandler;
         }
 
+        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuConstructed;
+
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="ItemGrabMenuConstructedService"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="ItemGrabMenuConstructedService" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ItemGrabMenuConstructedService"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="ItemGrabMenuConstructedService" /> class.</returns>
         public static ItemGrabMenuConstructedService GetSingleton(ServiceManager serviceManager)
         {
             return ItemGrabMenuConstructedService.Instance ??= new ItemGrabMenuConstructedService();
@@ -55,7 +60,7 @@
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {
-            if (__instance.context is not Chest { playerChest: { Value: true } } chest)
+            if (__instance.context is not Chest {playerChest: {Value: true}} chest)
             {
                 ItemGrabMenuConstructedService.Instance.InvokeAll(__instance, null);
                 return;

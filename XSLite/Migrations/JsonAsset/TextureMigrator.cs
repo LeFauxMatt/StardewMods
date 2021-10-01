@@ -13,9 +13,9 @@
         private const int Width = 16;
         private const int Height = 32;
         private const int TotalWidth = 80;
+        private readonly string _path;
 
         private readonly Dictionary<string, Texture2D> _textures = new();
-        private readonly string _path;
 
         public TextureMigrator(IContentPack contentPack, string name)
         {
@@ -52,10 +52,10 @@
             {
                 for (var layer = 0; layer < layers; layer++)
                 {
-                    var baseOffset = (frame * TextureMigrator.Width) + (layer * TextureMigrator.TotalWidth * TextureMigrator.Height);
+                    var baseOffset = frame * TextureMigrator.Width + layer * TextureMigrator.TotalWidth * TextureMigrator.Height;
 
                     // Base Layer
-                    if (!this._textures.TryGetValue($"big-craftable-{(1 + (layer * 6)).ToString()}", out var sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
+                    if (!this._textures.TryGetValue($"big-craftable-{(1 + layer * 6).ToString()}", out var sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
                     {
                         sourceTexture = baseTexture;
                     }
@@ -64,12 +64,12 @@
                     sourceTexture.GetData(subPixels);
                     for (var i = 0; i < subPixels.Length; i++)
                     {
-                        var targetOffset = baseOffset + (i % TextureMigrator.Width) + (i / TextureMigrator.Width * TextureMigrator.TotalWidth);
+                        var targetOffset = baseOffset + i % TextureMigrator.Width + i / TextureMigrator.Width * TextureMigrator.TotalWidth;
                         pixels[targetOffset] = subPixels[i];
                     }
 
                     // Lid Layer
-                    if (!this._textures.TryGetValue($"big-craftable-{(2 + frame + (layer * 6)).ToString()}.png", out sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
+                    if (!this._textures.TryGetValue($"big-craftable-{(2 + frame + layer * 6).ToString()}.png", out sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
                     {
                         continue;
                     }
@@ -82,7 +82,7 @@
                             continue;
                         }
 
-                        var targetOffset = baseOffset + (i % TextureMigrator.Width) + (i / TextureMigrator.Width * TextureMigrator.TotalWidth);
+                        var targetOffset = baseOffset + i % TextureMigrator.Width + i / TextureMigrator.Width * TextureMigrator.TotalWidth;
                         pixels[targetOffset] = subPixels[i];
                     }
                 }

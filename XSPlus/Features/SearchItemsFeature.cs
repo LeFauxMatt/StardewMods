@@ -26,20 +26,32 @@
     internal class SearchItemsFeature : BaseFeature
     {
         private const int SearchBarHeight = 24;
-        private static readonly Type[] MenuWithInventoryDrawParams = { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) };
-        private readonly ModConfigService _modConfigService;
-        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly DisplayedInventoryService _displayedInventoryService;
-        private readonly PerScreen<int> _screenId = new() { Value = -1 };
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private static readonly Type[] MenuWithInventoryDrawParams =
+        {
+            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+        };
         private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<ClickableComponent> _searchArea = new() { Value = new ClickableComponent(Rectangle.Empty, string.Empty) };
+        private readonly DisplayedInventoryService _displayedInventoryService;
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new();
+        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private readonly PerScreen<int> _menuPadding = new()
+        {
+            Value = -1,
+        };
+        private readonly ModConfigService _modConfigService;
+        private readonly RenderedActiveMenuService _renderedActiveMenuService;
+        private readonly PerScreen<int> _screenId = new()
+        {
+            Value = -1,
+        };
+        private readonly PerScreen<ClickableComponent> _searchArea = new()
+        {
+            Value = new ClickableComponent(Rectangle.Empty, string.Empty),
+        };
         private readonly PerScreen<TextBox> _searchField = new();
         private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
-        private readonly PerScreen<int> _menuPadding = new() { Value = -1 };
-        private readonly PerScreen<ItemMatcher> _itemMatcher = new();
         private MixInfo _itemGrabMenuDrawPatch;
         private MixInfo _menuWithInventoryDrawPatch;
 
@@ -59,15 +71,15 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="SearchItemsFeature"/>.
+        ///     Gets or sets the instance of <see cref="SearchItemsFeature" />.
         /// </summary>
         private static SearchItemsFeature Instance { get; set; }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="SearchItemsFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="SearchItemsFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="SearchItemsFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="SearchItemsFeature" /> class.</returns>
         public static SearchItemsFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
@@ -83,7 +95,7 @@
                 renderedActiveMenuService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -97,16 +109,23 @@
 
             // Patches
             this._itemGrabMenuDrawPatch = Mixin.Transpiler(
-                Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                Method(
+                    typeof(ItemGrabMenu),
+                    nameof(ItemGrabMenu.draw),
+                    new[]
+                    {
+                        typeof(SpriteBatch),
+                    }),
                 typeof(SearchItemsFeature),
                 nameof(SearchItemsFeature.ItemGrabMenu_draw_transpiler));
+
             this._menuWithInventoryDrawPatch = Mixin.Transpiler(
                 Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), SearchItemsFeature.MenuWithInventoryDrawParams),
                 typeof(SearchItemsFeature),
                 nameof(SearchItemsFeature.MenuWithInventory_draw_transpiler));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -130,12 +149,13 @@
             var moveBackpackPatch = new PatternPatch(PatchType.Replace);
             moveBackpackPatch.Find(new CodeInstruction(OpCodes.Ldfld, Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
                              .Find(new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
-                             .Patch(delegate(LinkedList<CodeInstruction> list)
-                             {
-                                 list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                                 list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
-                                 list.AddLast(new CodeInstruction(OpCodes.Add));
-                             })
+                             .Patch(
+                                 delegate(LinkedList<CodeInstruction> list)
+                                 {
+                                     list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                                     list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
+                                     list.AddLast(new CodeInstruction(OpCodes.Add));
+                                 })
                              .Repeat(3);
 
             Log.Trace("Moving top dialogue box up by search bar height.");
@@ -144,19 +164,15 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                        new CodeInstruction(OpCodes.Sub),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                        new CodeInstruction(OpCodes.Sub),
+                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))), new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Sub), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Sub),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
-                    list.AddLast(new CodeInstruction(OpCodes.Sub));
-                });
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
+                        list.AddLast(new CodeInstruction(OpCodes.Sub));
+                    });
 
             Log.Trace("Expanding top dialogue box by search bar height.");
             var resizeDialogueBoxPatch = new PatternPatch(PatchType.Replace);
@@ -164,21 +180,15 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                        new CodeInstruction(OpCodes.Ldc_I4_2),
-                        new CodeInstruction(OpCodes.Mul),
-                        new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))), new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.height))), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Ldc_I4_2), new CodeInstruction(OpCodes.Mul), new CodeInstruction(OpCodes.Add),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                });
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
+                        list.AddLast(new CodeInstruction(OpCodes.Add));
+                    });
 
             var patternPatches = new PatternPatches(instructions);
             patternPatches.AddPatch(moveBackpackPatch);
@@ -206,20 +216,15 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)64),
-                        new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)64), new CodeInstruction(OpCodes.Add),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                });
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
+                        list.AddLast(new CodeInstruction(OpCodes.Add));
+                    });
 
             Log.Trace("Shrinking bottom dialogue box height by search bar height.");
             var resizeDialogueBoxPatch = new PatternPatch(PatchType.Replace);
@@ -227,19 +232,15 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                        new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                        new CodeInstruction(OpCodes.Add),
-                        new CodeInstruction(OpCodes.Ldc_I4, 192),
-                        new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(OpCodes.Ldfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.height))), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Ldsfld, Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4, 192), new CodeInstruction(OpCodes.Add),
                     })
-                .Patch(delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                });
+                .Patch(
+                    delegate(LinkedList<CodeInstruction> list)
+                    {
+                        list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
+                        list.AddLast(new CodeInstruction(OpCodes.Call, Method(typeof(SearchItemsFeature), nameof(SearchItemsFeature.MenuPadding))));
+                        list.AddLast(new CodeInstruction(OpCodes.Add));
+                    });
 
             var patternPatches = new PatternPatches(instructions);
             patternPatches.AddPatch(moveDialogueBoxPatch);
@@ -263,7 +264,7 @@
                 return SearchItemsFeature.Instance._menuPadding.Value;
             }
 
-            if (menu is not ItemGrabMenu { context: Chest chest } || !SearchItemsFeature.Instance.IsEnabledForItem(chest))
+            if (menu is not ItemGrabMenu {context: Chest chest} || !SearchItemsFeature.Instance.IsEnabledForItem(chest))
             {
                 return SearchItemsFeature.Instance._menuPadding.Value = 0; // Vanilla
             }
@@ -310,12 +311,13 @@
                 e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen,
                 e.ItemGrabMenu.ItemsToGrabMenu.width,
                 e.ItemGrabMenu.ItemsToGrabMenu.height);
+
             this._searchField.Value.X = upperBounds.X;
-            this._searchField.Value.Y = upperBounds.Y - (14 * Game1.pixelZoom);
+            this._searchField.Value.Y = upperBounds.Y - 14 * Game1.pixelZoom;
             this._searchField.Value.Width = upperBounds.Width;
             this._searchField.Value.Selected = false;
             this._searchArea.Value.bounds = new Rectangle(this._searchField.Value.X, this._searchField.Value.Y, this._searchField.Value.Width, this._searchField.Value.Height);
-            this._searchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - (14 * Game1.pixelZoom) + 6, 32, 32);
+            this._searchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - 14 * Game1.pixelZoom + 6, 32, 32);
             var x = e.ItemGrabMenu.xPositionOnScreen - 480 - 8;
             var y = e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
         }
@@ -323,15 +325,16 @@
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this._searchField.Value = new TextBox(
-                textBoxTexture: Content.FromGame<Texture2D>("LooseSprites\\textBox"),
-                caretTexture: null,
-                font: Game1.smallFont,
-                textColor: Game1.textColor);
+                Content.FromGame<Texture2D>("LooseSprites\\textBox"),
+                null,
+                Game1.smallFont,
+                Game1.textColor);
+
             this._searchIcon.Value = new ClickableTextureComponent(
-                bounds: Rectangle.Empty,
-                texture: Game1.mouseCursors,
-                sourceRect: new Rectangle(80, 0, 13, 13),
-                scale: 2.5f);
+                Rectangle.Empty,
+                Game1.mouseCursors,
+                new Rectangle(80, 0, 13, 13),
+                2.5f);
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)

@@ -19,13 +19,13 @@
     /// <inheritdoc />
     internal class CraftFromChestFeature : FeatureWithParam<string>
     {
-        private readonly ModConfigService _modConfigService;
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
-        private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
         private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
+        private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
+        private readonly ModConfigService _modConfigService;
         private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
-        private MixInfo _getContainerContentsPatch;
         private MixInfo _consumeIngredientsPatch;
+        private MixInfo _getContainerContentsPatch;
 
         private CraftFromChestFeature(ModConfigService modConfigService)
             : base("CraftFromChest", modConfigService)
@@ -34,7 +34,7 @@
         }
 
         /// <summary>
-        /// Gets or sets the instance of <see cref="CraftFromChestFeature"/>.
+        ///     Gets or sets the instance of <see cref="CraftFromChestFeature" />.
         /// </summary>
         private static CraftFromChestFeature Instance { get; set; }
 
@@ -49,17 +49,17 @@
         }
 
         /// <summary>
-        /// Returns and creates if needed an instance of the <see cref="CraftFromChestFeature"/> class.
+        ///     Returns and creates if needed an instance of the <see cref="CraftFromChestFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CraftFromChestFeature"/> class.</returns>
+        /// <returns>Returns an instance of the <see cref="CraftFromChestFeature" /> class.</returns>
         public static CraftFromChestFeature GetSingleton(ServiceManager serviceManager)
         {
             var modConfigService = serviceManager.RequestService<ModConfigService>();
             return CraftFromChestFeature.Instance ??= new CraftFromChestFeature(modConfigService);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Activate()
         {
             // Events
@@ -73,13 +73,14 @@
                 AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
                 typeof(CraftFromChestFeature),
                 nameof(CraftFromChestFeature.CraftingPage_getContainerContents_postfix));
+
             this._consumeIngredientsPatch = Mixin.Transpiler(
                 AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
                 typeof(CraftFromChestFeature),
                 nameof(CraftFromChestFeature.CraftingRecipe_consumeIngredients_transpiler));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
@@ -93,7 +94,7 @@
             Mixin.Unpatch(this._consumeIngredientsPatch);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
         protected internal override bool IsEnabledForItem(Item item)
         {
@@ -111,7 +112,7 @@
             };
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override bool TryGetValueForItem(Item item, out string param)
         {
             if (base.TryGetValueForItem(item, out param))
@@ -213,9 +214,9 @@
                 this._chests = chests.Where(chest => !chest.mutex.IsLocked()).ToList();
                 var mutexes = this._chests.Select(chest => chest.mutex).ToList();
                 this._multipleMutexRequest = new MultipleMutexRequest(
-                    mutexes: mutexes,
-                    success_callback: this.SuccessCallback,
-                    failure_callback: this.FailureCallback);
+                    mutexes,
+                    this.SuccessCallback,
+                    this.FailureCallback);
             }
 
             public bool Timeout
@@ -239,8 +240,8 @@
             private void SuccessCallback()
             {
                 this._timeOut = 0;
-                var width = 800 + (IClickableMenu.borderWidth * 2);
-                var height = 600 + (IClickableMenu.borderWidth * 2);
+                var width = 800 + IClickableMenu.borderWidth * 2;
+                var height = 600 + IClickableMenu.borderWidth * 2;
                 var pos = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
                 Game1.activeClickableMenu = new CraftingPage((int)pos.X, (int)pos.Y, width, height, false, true, this._chests)
                 {

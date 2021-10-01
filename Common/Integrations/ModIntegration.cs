@@ -9,11 +9,11 @@
     {
         private readonly IModRegistry _modRegistry;
         private readonly string _modUniqueId;
-        private T _modAPI = null!;
         private bool _isInitialized;
         private bool _isLoaded;
+        private T _modAPI = null!;
 
-        /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
         /// <param name="modRegistry">SMAPI's mod registry.</param>
         /// <param name="modUniqueId">The unique id of the external mod.</param>
         internal ModIntegration(IModRegistry modRegistry, string modUniqueId)

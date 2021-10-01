@@ -6,16 +6,16 @@
     using StardewValley;
 
     /// <summary>
-    /// Encapsulates logic for features added by this mod.
+    ///     Encapsulates logic for features added by this mod.
     /// </summary>
     internal abstract class BaseFeature : BaseService
     {
         private readonly IDictionary<KeyValuePair<string, string>, bool> _enabledByModData = new Dictionary<KeyValuePair<string, string>, bool>();
         private readonly ModConfigService _modConfigService;
 
-        /// <summary>Initializes a new instance of the <see cref="BaseFeature"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="BaseFeature" /> class.</summary>
         /// <param name="featureName">The name of the feature used for config/API.</param>
-        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig"/>.</param>
+        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig" />.</param>
         private protected BaseFeature(string featureName, ModConfigService modConfigService)
             : base(featureName)
         {

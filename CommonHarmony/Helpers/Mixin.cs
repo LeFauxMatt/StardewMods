@@ -6,14 +6,14 @@
     using StardewModdingAPI;
 
     /// <summary>
-    /// Provides Harmony Patching across mods.
+    ///     Provides Harmony Patching across mods.
     /// </summary>
     internal static class Mixin
     {
-        /// <inheritdoc cref="Harmony"/>
+        /// <inheritdoc cref="Harmony" />
         private static Harmony Harmony { get; set; } = null!;
 
-        /// <summary>Initializes the <see cref="Mixin"/> class.</summary>
+        /// <summary>Initializes the <see cref="Mixin" /> class.</summary>
         /// <param name="manifest">The ModManifest to create the harmony instance with.</param>
         public static void Init(IManifest manifest)
         {
