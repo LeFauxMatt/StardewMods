@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Services;
+    using CommonHarmony.Services;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -16,7 +16,6 @@
     /// <inheritdoc />
     internal class StashToChestFeature : FeatureWithParam<string>
     {
-        private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
         private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
         private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
         private readonly FilterItemsFeature _filterItems;
@@ -33,16 +32,6 @@
         ///     Gets or sets the instance of <see cref="StashToChestFeature" />.
         /// </summary>
         private static StashToChestFeature Instance { get; set; }
-
-        private List<Chest> EnabledChests
-        {
-            get
-            {
-                this._cachedPlayerChests.Value ??= Game1.player.Items.OfType<Chest>().Where(this.IsEnabledForItem).ToList();
-                this._cachedGameChests.Value ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
-                return this._cachedEnabledChests.Value ??= this._cachedPlayerChests.Value.Union(this._cachedGameChests.Value).ToList();
-            }
-        }
 
         /// <summary>
         ///     Returns and creates if needed an instance of the <see cref="StashToChestFeature" /> class.
@@ -78,7 +67,7 @@
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
         protected override bool IsEnabledForItem(Item item)
         {
-            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range))
+            if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range) || !this._filterItems.HasFilterItems(chest))
             {
                 return false;
             }
@@ -112,29 +101,48 @@
             }
 
             this._cachedPlayerChests.Value = null;
-            this._cachedEnabledChests.Value = null;
         }
 
         private void OnWarped(object sender, WarpedEventArgs e)
         {
             this._cachedGameChests.Value = null;
-            this._cachedEnabledChests.Value = null;
         }
 
         /// <summary>Stash inventory items into all supported chests.</summary>
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            if (!Context.IsPlayerFree || !this._modConfigService.ModConfig.StashItems.JustPressed() || !this.EnabledChests.Any())
+            if (!Context.IsPlayerFree || !this._modConfigService.ModConfig.StashItems.JustPressed())
             {
                 return;
             }
 
+            this._cachedPlayerChests.Value ??= Game1.player.Items.OfType<Chest>().Where(this.IsEnabledForItem).ToList();
+            this._cachedGameChests.Value ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
+
+            if (!this._cachedGameChests.Value.Any() && !this._cachedPlayerChests.Value.Any())
+            {
+                Log.Trace("No eligible chests found to stash items into");
+                return;
+            }
+
+            Log.Trace("Trying to stash items into chest");
             for (var i = Game1.player.Items.Count - 1; i >= 0; i--)
             {
                 var item = Game1.player.Items[i];
                 if (item is not null)
                 {
                     Game1.player.Items[i] = this.TryAddItem(item);
+                    if (Game1.player.Items[i] is not null)
+                    {
+                        if (Game1.player.Items[i].Stack != item.Stack)
+                        {
+                            Log.Trace($"Ran out of available space for {item.Name}");
+                        }
+                        else
+                        {
+                            Log.Trace($"No eligible storage found for {item.Name}");
+                        }
+                    }
                 }
             }
 
@@ -145,7 +153,8 @@
         private Item TryAddItem(Item item)
         {
             var stack = (uint)item.Stack;
-            foreach (var chest in this.EnabledChests)
+
+            foreach (var chest in this._cachedPlayerChests.Value)
             {
                 if (!this._filterItems.Matches(chest, item))
                 {
@@ -153,6 +162,28 @@
                 }
 
                 // Attempt to add item into chest
+                Log.Trace($"Adding {item.Name} to chest in player inventory: {chest.DisplayName}");
+                var tmp = chest.addItem(item);
+                if (tmp is null || tmp.Stack <= 0)
+                {
+                    return null;
+                }
+
+                if (tmp.Stack != stack)
+                {
+                    item.Stack = tmp.Stack;
+                }
+            }
+
+            foreach (var chest in this._cachedGameChests.Value)
+            {
+                if (!this._filterItems.Matches(chest, item))
+                {
+                    continue;
+                }
+
+                // Attempt to add item into chest
+                Log.Trace($"Adding {item.Name} to chest at location: {chest.DisplayName}");
                 var tmp = chest.addItem(item);
                 if (tmp is null || tmp.Stack <= 0)
                 {

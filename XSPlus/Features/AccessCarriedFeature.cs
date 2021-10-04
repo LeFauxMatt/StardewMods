@@ -3,7 +3,6 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
@@ -83,6 +82,7 @@
                 return;
             }
 
+            Log.Trace("Opening Menu for Carried Chest.");
             chest.checkForAction(Game1.player);
             Input.Suppress(e.Button);
         }

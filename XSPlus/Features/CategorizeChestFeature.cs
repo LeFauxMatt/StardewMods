@@ -2,14 +2,12 @@
 {
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Models;
-    using Common.Services;
     using Common.UI;
+    using CommonHarmony.Models;
+    using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Services;
-    using StardewModdingAPI;
-    using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
@@ -20,29 +18,27 @@
     {
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<ClickableTextureComponent> _configButton = new();
-        private readonly PerScreen<string> _hoverText = new();
+        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
-        private readonly PerScreen<int> _screenId = new()
-        {
-            Value = -1,
-        };
 
         private CategorizeChestFeature(
             ModConfigService modConfigService,
-            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService,
-            RenderedActiveMenuService renderedActiveMenuService)
+            ItemGrabMenuChangedService itemGrabMenuChangedService,
+            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService)
             : base("CategorizeChest", modConfigService)
         {
             this._configButton.Value = new(
                 new(0, 0, 64, 64),
                 Content.FromMod<Texture2D>("assets/configure.png"),
                 Rectangle.Empty,
-                Game1.pixelZoom);
+                Game1.pixelZoom)
+            {
+                name = "Configure",
+            };
 
+            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
-            this._renderedActiveMenuService = renderedActiveMenuService;
         }
 
         /// <summary>
@@ -59,96 +55,49 @@
         {
             return CategorizeChestFeature.Instance ??= new(
                 await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuSideButtonsService>(),
-                await serviceManager.Get<RenderedActiveMenuService>());
+                await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<ItemGrabMenuSideButtonsService>());
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuSideButtonsService.AddHandler(this.SetupSideButtons);
-            this._renderedActiveMenuService.AddHandler(this.DrawSideButtons);
-            Events.Input.ButtonPressed += this.OnButtonPressed;
-            Events.Input.CursorMoved += this.OnCursorMoved;
+            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtonsService.AddHandler(this.OnSideButtonPressed);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuSideButtonsService.RemoveHandler(this.SetupSideButtons);
-            this._renderedActiveMenuService.RemoveHandler(this.DrawSideButtons);
-            Events.Input.ButtonPressed -= this.OnButtonPressed;
-            Events.Input.CursorMoved -= this.OnCursorMoved;
+            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtonsService.RemoveHandler(this.OnSideButtonPressed);
         }
 
-        private void SetupSideButtons(object sender, ItemGrabMenuEventArgs e)
+        private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._screenId.Value = -1;
                 return;
             }
 
             this._itemGrabMenuSideButtonsService.AddButton(this._configButton.Value);
-            this._screenId.Value = Context.ScreenId;
             this._returnMenu.Value = e.ItemGrabMenu;
             this._chest.Value = e.Chest;
         }
 
-        private void DrawSideButtons(object sender, RenderedActiveMenuEventArgs e)
+        private void OnSideButtonPressed(object sender, SideButtonPressed e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (e.Button.name == "Configure")
             {
-                return;
-            }
-
-            // Draw config button
-            this._configButton.Value.draw(e.SpriteBatch);
-
-            // Draw hover text
-            if (string.IsNullOrWhiteSpace(this._returnMenu.Value.hoverText) && !string.IsNullOrWhiteSpace(this._hoverText.Value))
-            {
-                this._returnMenu.Value.hoverText = this._hoverText.Value;
-            }
-        }
-
-        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-        {
-            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
-            {
-                return;
-            }
-
-            var point = Game1.getMousePosition(true);
-            if (this._configButton.Value.containsPoint(point.X, point.Y))
-            {
-                Game1.playSound("drumkit6");
-
-                if (!this._chest.Value.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems))
-                {
-                    filterItems = string.Empty;
-                }
-
+                var filterItems = this._chest.Value.GetFilterItems();
                 Game1.activeClickableMenu = new ItemSelectionMenu(
                     string.Empty,
                     this.ReturnToMenu,
                     filterItems,
-                    value => this._chest.Value.modData[$"{XSPlus.ModPrefix}/FilterItems"] = value);
+                    this._chest.Value.SetFilterItems);
             }
-        }
-
-        private void OnCursorMoved(object sender, CursorMovedEventArgs e)
-        {
-            if (this._screenId.Value != Context.ScreenId)
-            {
-                return;
-            }
-
-            var point = Game1.getMousePosition(true);
-            this._configButton.Value.tryHover(point.X, point.Y, 0.25f);
-            this._hoverText.Value = this._configButton.Value.containsPoint(point.X, point.Y) ? Translations.Get("button.Configure.name") : string.Empty;
         }
 
         private void ReturnToMenu()

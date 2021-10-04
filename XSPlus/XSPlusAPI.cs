@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
     using Common.Integrations.XSPlus;
-    using Common.Services;
+    using CommonHarmony.Services;
 
     /// <inheritdoc />
     public class XSPlusAPI : IXSPlusAPI

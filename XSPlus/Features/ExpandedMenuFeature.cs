@@ -7,9 +7,8 @@
     using System.Threading.Tasks;
     using Common.Extensions;
     using Common.Helpers;
-    using Common.Models;
-    using Common.Services;
     using CommonHarmony;
+    using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework.Graphics;
@@ -32,28 +31,21 @@
         {
             typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
         };
-        private readonly PerScreen<Chest> _chest = new();
         private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
+        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
         private readonly ModConfigService _modConfigService;
-        private readonly PerScreen<int> _screenId = new()
-        {
-            Value = -1,
-        };
         private MixInfo _itemGrabMenuConstructorPatch;
         private MixInfo _itemGrabMenuDrawPatch;
         private MixInfo _menuWithInventoryDrawPatch;
 
         private ExpandedMenuFeature(
             ModConfigService modConfigService,
-            ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             DisplayedInventoryService displayedInventoryService)
             : base("ExpandedMenu", modConfigService)
         {
             this._modConfigService = modConfigService;
-            this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._displayedInventoryService = displayedInventoryService;
         }
@@ -72,7 +64,6 @@
         {
             return ExpandedMenuFeature.Instance ??= new(
                 await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuConstructedService>(),
                 await serviceManager.Get<ItemGrabMenuChangedService>(),
                 await serviceManager.Get<DisplayedInventoryService>());
         }
@@ -81,7 +72,6 @@
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
             Events.Input.ButtonsChanged += this.OnButtonsChanged;
             Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
@@ -113,7 +103,6 @@
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
             Events.Input.ButtonsChanged -= this.OnButtonsChanged;
             Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
@@ -317,53 +306,43 @@
             return Game1.tileSize * (rows - 3);
         }
 
-        private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
-        {
-            if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
-            {
-                return;
-            }
-
-            if (!ReferenceEquals(this._chest.Value, e.Chest))
-            {
-                this._chest.Value = e.Chest;
-            }
-
-            var offset = ExpandedMenuFeature.MenuOffset(e.ItemGrabMenu);
-            e.ItemGrabMenu.height += offset;
-            e.ItemGrabMenu.inventory.movePosition(0, offset);
-            if (e.ItemGrabMenu.okButton is not null)
-            {
-                e.ItemGrabMenu.okButton.bounds.Y += offset;
-            }
-
-            if (e.ItemGrabMenu.trashCan is not null)
-            {
-                e.ItemGrabMenu.trashCan.bounds.Y += offset;
-            }
-
-            if (e.ItemGrabMenu.dropItemInvisibleButton is not null)
-            {
-                e.ItemGrabMenu.dropItemInvisibleButton.bounds.Y += offset;
-            }
-
-            e.ItemGrabMenu.RepositionSideButtons();
-        }
-
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._screenId.Value = -1;
+                this._menu.Value = null;
                 return;
             }
 
-            this._screenId.Value = Context.ScreenId;
+            if (e.IsNew)
+            {
+                var offset = ExpandedMenuFeature.MenuOffset(e.ItemGrabMenu);
+                e.ItemGrabMenu.height += offset;
+                e.ItemGrabMenu.inventory.movePosition(0, offset);
+                if (e.ItemGrabMenu.okButton is not null)
+                {
+                    e.ItemGrabMenu.okButton.bounds.Y += offset;
+                }
+
+                if (e.ItemGrabMenu.trashCan is not null)
+                {
+                    e.ItemGrabMenu.trashCan.bounds.Y += offset;
+                }
+
+                if (e.ItemGrabMenu.dropItemInvisibleButton is not null)
+                {
+                    e.ItemGrabMenu.dropItemInvisibleButton.bounds.Y += offset;
+                }
+
+                e.ItemGrabMenu.RepositionSideButtons();
+            }
+
+            this._menu.Value = e;
         }
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }
@@ -383,7 +362,7 @@
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }

@@ -4,13 +4,14 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
-    using Common.Services;
+    using CommonHarmony.Services;
     using Services;
+    using StardewValley.Objects;
 
     /// <summary>
     ///     Adds methods to handle feature instances.
     /// </summary>
-    internal static class ServiceManagerExtensions
+    internal static class Extensions
     {
         private static readonly HashSet<string> ActivatedFeatures = new();
         private static readonly HashSet<string> ValidFeatures = new()
@@ -41,7 +42,7 @@
         [SuppressMessage("ReSharper", "HeapView.PossibleBoxingAllocation", Justification = "Support dynamic param types for API access.")]
         public static void EnableFeatureWithModData<T>(this ServiceManager serviceManager, string featureName, string key, string value, T param)
         {
-            if (!ServiceManagerExtensions.ValidFeatures.Contains(featureName))
+            if (!Extensions.ValidFeatures.Contains(featureName))
             {
                 return;
             }
@@ -102,12 +103,12 @@
                 throw new InvalidOperationException($"Unknown feature {featureName}");
             }
 
-            if (ServiceManagerExtensions.ActivatedFeatures.Contains(featureName))
+            if (Extensions.ActivatedFeatures.Contains(featureName))
             {
                 return;
             }
 
-            ServiceManagerExtensions.ActivatedFeatures.Add(featureName);
+            Extensions.ActivatedFeatures.Add(featureName);
             feature.Activate();
         }
 
@@ -123,12 +124,12 @@
                 throw new InvalidOperationException($"Unknown feature {featureName}");
             }
 
-            if (!ServiceManagerExtensions.ActivatedFeatures.Contains(featureName))
+            if (!Extensions.ActivatedFeatures.Contains(featureName))
             {
                 return;
             }
 
-            ServiceManagerExtensions.ActivatedFeatures.Remove(featureName);
+            Extensions.ActivatedFeatures.Remove(featureName);
             feature.Deactivate();
         }
 
@@ -146,6 +147,26 @@
                 }
 
                 serviceManager.ActivateFeature(feature.FeatureName);
+            }
+        }
+
+        public static string GetFilterItems(this Chest chest)
+        {
+            return chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems)
+                ? filterItems.Replace("#", string.Empty)
+                : string.Empty;
+        }
+
+        public static void SetFilterItems(this Chest chest, string value)
+        {
+            value = value.Replace("#", string.Empty);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                chest.modData.Remove($"{XSPlus.ModPrefix}/FilterItems");
+            }
+            else
+            {
+                chest.modData[$"{XSPlus.ModPrefix}/FilterItems"] = value;
             }
         }
     }

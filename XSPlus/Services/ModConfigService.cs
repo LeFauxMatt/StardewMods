@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Integrations.GenericModConfigMenu;
-    using Common.Services;
+    using CommonHarmony.Services;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;

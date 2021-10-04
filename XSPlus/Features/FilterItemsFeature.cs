@@ -5,12 +5,12 @@
     using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
-    using Common.Models;
-    using Common.Services;
     using CommonHarmony;
+    using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
+    using StardewModdingAPI;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Objects;
@@ -19,15 +19,13 @@
     internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>
     {
         private readonly ItemMatcher _addItemMatcher = new(string.Empty, true);
-        private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<Dictionary<string, bool>> _filterItems = new();
         private readonly HighlightItemsService _highlightItemsService;
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly PerScreen<ItemMatcher> _itemMatcher = new()
         {
             Value = new(string.Empty, true),
         };
+        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
         private MixInfo _addItemPatch;
         private MixInfo _automatePatch;
 
@@ -93,11 +91,21 @@
         /// <inheritdoc />
         protected override bool IsEnabledForItem(Item item)
         {
-            return base.IsEnabledForItem(item) || item is Chest chest && chest.playerChest.Value && chest.modData.ContainsKey($"{XSPlus.ModPrefix}/FilterItems");
+            return base.IsEnabledForItem(item) || item is Chest chest && chest.playerChest.Value && chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems) && !string.IsNullOrWhiteSpace(filterItems);
+        }
+
+        public bool HasFilterItems(Chest chest)
+        {
+            return this.IsEnabledForItem(chest);
         }
 
         public bool Matches(Chest chest, Item item, ItemMatcher itemMatcher = null)
         {
+            if (!this.IsEnabledForItem(chest))
+            {
+                return true;
+            }
+
             itemMatcher ??= this._addItemMatcher;
 
             // Mod configured filter
@@ -111,10 +119,7 @@
             }
 
             // Player configured filter
-            if (chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var playerFilterItems))
-            {
-                itemMatcher.AddSearch(playerFilterItems);
-            }
+            itemMatcher.AddSearch(chest.GetFilterItems());
 
             return itemMatcher.Matches(item);
         }
@@ -147,22 +152,16 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._attached.Value = false;
-                this._filterItems.Value = null;
+                this._menu.Value = null;
                 return;
             }
 
-            if (!this._attached.Value)
-            {
-                this._attached.Value = true;
-            }
-
-            this._chest.Value = e.Chest;
+            this._menu.Value = e;
         }
 
         private bool HighlightMethod(Item item)
         {
-            return !this._attached.Value || this.Matches(this._chest.Value, item, this._itemMatcher.Value);
+            return this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || this.Matches(this._menu.Value.Chest, item, this._itemMatcher.Value);
         }
     }
 }

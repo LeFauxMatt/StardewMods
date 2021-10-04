@@ -1,7 +1,7 @@
 ﻿namespace XSPlus
 {
     using System.Collections.Generic;
-    using Common.Services;
+    using CommonHarmony.Services;
     using Services;
     using StardewValley;
 

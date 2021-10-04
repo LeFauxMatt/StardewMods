@@ -5,8 +5,8 @@
     using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
-    using Common.Models;
-    using Common.Services;
+    using CommonHarmony.Models;
+    using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Models;
@@ -15,13 +15,10 @@
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
-    using StardewValley.Menus;
-    using StardewValley.Objects;
 
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
     internal class InventoryTabsFeature : FeatureWithParam<HashSet<string>>
     {
-        private readonly PerScreen<Chest> _chest = new();
         private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly PerScreen<string> _hoverText = new();
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
@@ -29,14 +26,10 @@
         {
             Value = new(string.Empty, true),
         };
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
+        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
         private readonly ModConfigService _modConfigService;
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly RenderingActiveMenuService _renderingActiveMenuService;
-        private readonly PerScreen<int> _screenId = new()
-        {
-            Value = -1,
-        };
         private readonly PerScreen<int> _tabIndex = new()
         {
             Value = -1,
@@ -47,16 +40,16 @@
         private InventoryTabsFeature(
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            DisplayedInventoryService displayedInventoryService,
             RenderingActiveMenuService renderingActiveMenuService,
-            RenderedActiveMenuService renderedActiveMenuService)
+            RenderedActiveMenuService renderedActiveMenuService,
+            DisplayedInventoryService displayedInventoryService)
             : base("InventoryTabs", modConfigService)
         {
             this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._displayedInventoryService = displayedInventoryService;
             this._renderingActiveMenuService = renderingActiveMenuService;
             this._renderedActiveMenuService = renderedActiveMenuService;
+            this._displayedInventoryService = displayedInventoryService;
         }
 
         /// <summary>
@@ -74,9 +67,9 @@
             return InventoryTabsFeature.Instance ??= new(
                 await serviceManager.Get<ModConfigService>(),
                 await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<DisplayedInventoryService>(),
                 await serviceManager.Get<RenderingActiveMenuService>(),
-                await serviceManager.Get<RenderedActiveMenuService>());
+                await serviceManager.Get<RenderedActiveMenuService>(),
+                await serviceManager.Get<DisplayedInventoryService>());
         }
 
         /// <inheritdoc />
@@ -129,30 +122,31 @@
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._screenId.Value = -1;
+                this._menu.Value = null;
                 return;
             }
 
-            if (!ReferenceEquals(this._chest.Value, e.Chest))
+            if (this._menu.Value is null || !ReferenceEquals(e.Chest, this._menu.Value.Chest))
             {
-                this._chest.Value = e.Chest;
+                this._menu.Value = e;
                 this.SetTab(-1);
             }
-
-            this._screenId.Value = Context.ScreenId;
-            this._menu.Value = e.ItemGrabMenu;
+            else
+            {
+                this._menu.Value = e;
+            }
         }
 
         private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }
 
             // Draw tabs between inventory menus along a horizontal axis
-            var x = this._menu.Value.ItemsToGrabMenu.xPositionOnScreen;
-            var y = this._menu.Value.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemsToGrabMenu.height + 1 * Game1.pixelZoom;
+            var x = this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.xPositionOnScreen;
+            var y = this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.height + 1 * Game1.pixelZoom;
             for (var i = 0; i < this._tabs.Count; i++)
             {
                 Color color;
@@ -175,20 +169,20 @@
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(this._menu.Value.hoverText) && !string.IsNullOrWhiteSpace(this._hoverText.Value))
+            if (string.IsNullOrWhiteSpace(this._menu.Value.ItemGrabMenu.hoverText) && !string.IsNullOrWhiteSpace(this._hoverText.Value))
             {
-                this._menu.Value.hoverText = this._hoverText.Value;
+                this._menu.Value.ItemGrabMenu.hoverText = this._hoverText.Value;
             }
         }
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }
@@ -215,7 +209,7 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }
@@ -239,7 +233,7 @@
 
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }
@@ -262,11 +256,13 @@
             {
                 this._itemMatcher.Value.SetSearch(string.Empty);
             }
+
+            this._displayedInventoryService.ReSyncInventory(this._menu.Value.ItemGrabMenu.ItemsToGrabMenu, true);
         }
 
         private bool FilterMethod(Item item)
         {
-            return this._screenId.Value != Context.ScreenId || this._itemMatcher.Value.Matches(item);
+            return this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || this._itemMatcher.Value.Matches(item);
         }
     }
 }

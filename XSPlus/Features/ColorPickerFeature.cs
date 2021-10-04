@@ -3,9 +3,8 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Models;
-    using Common.Services;
     using Common.UI;
+    using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
@@ -25,7 +24,6 @@
         private readonly PerScreen<Chest> _fakeChest = new();
         private readonly PerScreen<HSLSlider> _hslSlider = new();
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly ItemGrabMenuConstructedService _itemGrabMenuConstructedService;
         private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly PerScreen<int> _screenId = new()
@@ -36,12 +34,10 @@
 
         private ColorPickerFeature(
             ModConfigService modConfigService,
-            ItemGrabMenuConstructedService itemGrabMenuConstructedService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
             RenderedActiveMenuService renderedActiveMenuService)
             : base("ColorPicker", modConfigService)
         {
-            this._itemGrabMenuConstructedService = itemGrabMenuConstructedService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
@@ -60,7 +56,6 @@
         {
             return ColorPickerFeature.Instance ??= new(
                 await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuConstructedService>(),
                 await serviceManager.Get<ItemGrabMenuChangedService>(),
                 await serviceManager.Get<RenderedActiveMenuService>());
         }
@@ -69,7 +64,6 @@
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
             this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
             Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -89,7 +83,6 @@
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuConstructedService.RemoveHandler(this.OnItemGrabMenuConstructedEvent);
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
             this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
             Events.GameLoop.GameLaunched -= this.OnGameLaunched;
@@ -118,18 +111,6 @@
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this._hslSlider.Value = new();
-        }
-
-        private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
-        {
-            if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
-            {
-                return;
-            }
-
-            // Remove vanilla color picker
-            e.ItemGrabMenu.chestColorPicker = null;
-            e.ItemGrabMenu.discreteColorPickerCC = null;
         }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
@@ -166,6 +147,10 @@
 
             this._hslSlider.Value.Area = new(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2, e.ItemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2, ColorPickerFeature.Width, ColorPickerFeature.Height);
             this._hslSlider.Value.CurrentColor = e.Chest.playerChoiceColor.Value;
+
+            // Remove vanilla color picker
+            e.ItemGrabMenu.chestColorPicker = null;
+            e.ItemGrabMenu.discreteColorPickerCC = null;
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)

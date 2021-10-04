@@ -6,7 +6,6 @@
     using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Integrations.XSPlus;
-    using Common.Services;
     using CommonHarmony.Services;
     using Features;
     using Services;
@@ -77,7 +76,6 @@
             // Services
             Task.WaitAll(
                 serviceManager.Create<ModConfigService>(),
-                serviceManager.Create<ItemGrabMenuConstructedService>(),
                 serviceManager.Create<ItemGrabMenuChangedService>(),
                 serviceManager.Create<ItemGrabMenuSideButtonsService>(),
                 serviceManager.Create<RenderingActiveMenuService>(),
