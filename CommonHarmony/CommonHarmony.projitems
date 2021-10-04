@@ -12,10 +12,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Mixin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\MixInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ItemGrabMenuEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\SideButtonPressedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatchType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\DisplayedInventoryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\HighlightItemsService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemGrabMenuConstructedService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemGrabMenuChangedService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ItemGrabMenuSideButtonsService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\RenderedActiveMenuService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\RenderingActiveMenuService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ServiceManager.cs" />
   </ItemGroup>
 </Project>

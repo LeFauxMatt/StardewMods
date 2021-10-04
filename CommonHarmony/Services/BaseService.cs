@@ -1,4 +1,4 @@
-﻿namespace Common.Services
+﻿namespace CommonHarmony.Services
 {
     /// <summary>
     ///     Encapsulates services that support the features of this mod.

@@ -1,10 +1,11 @@
-﻿namespace Common.Services
+﻿namespace CommonHarmony.Services
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Common.Helpers;
     using StardewModdingAPI;
 
     /// <summary>
@@ -31,14 +32,6 @@
         public static ServiceManager Create(IModHelper helper, IManifest manifest)
         {
             return ServiceManager.Instance ??= new(helper, manifest);
-        }
-
-        /// <summary>Add to collection of active service instances.</summary>
-        /// <typeparam name="TServiceType">Type of service to add.</typeparam>
-        internal async void Add<TServiceType>() where TServiceType : BaseService
-        {
-            var service = await this.Create<TServiceType>();
-            this._services.Add(service.ServiceName, service);
         }
 
         /// <summary>
@@ -86,6 +79,7 @@
                 });
 
             service = await (task ?? throw new NullReferenceException(nameof(TServiceType)));
+            Log.Verbose($"Registering service {service.ServiceName}.");
             this._services.Add(service.ServiceName, service);
             return service;
         }

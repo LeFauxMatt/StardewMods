@@ -1,9 +1,9 @@
-﻿namespace Common.Services
+﻿namespace CommonHarmony.Services
 {
     using System;
     using System.Threading.Tasks;
-    using Helpers;
-    using Interfaces;
+    using Common.Helpers;
+    using Common.Interfaces;
     using Microsoft.Xna.Framework;
     using Models;
     using StardewModdingAPI;
@@ -15,16 +15,13 @@
     internal class RenderingActiveMenuService : BaseService, IEventHandlerService<EventHandler<RenderingActiveMenuEventArgs>>
     {
         private static RenderingActiveMenuService Instance;
-        private readonly PerScreen<bool> _attached = new();
-        private readonly PerScreen<int> _screenId = new()
-        {
-            Value = -1,
-        };
+        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
 
         private RenderingActiveMenuService(ItemGrabMenuChangedService itemGrabMenuChangedService)
             : base("RenderingActiveMenu")
         {
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
+            Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         }
 
         /// <inheritdoc />
@@ -51,28 +48,21 @@
             return RenderingActiveMenuService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
         }
 
-        private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)
+        private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
-            if (e.ItemGrabMenu is not null && !this._attached.Value)
+            if (e.ItemGrabMenu is null)
             {
-                Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
-                this._screenId.Value = Context.ScreenId;
-                this._attached.Value = true;
+                this._menu.Value = null;
                 return;
             }
 
-            if (e.ItemGrabMenu is null)
-            {
-                Events.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
-                this._screenId.Value = -1;
-                this._attached.Value = false;
-            }
+            this._menu.Value = e;
         }
 
         [EventPriority(EventPriority.High)]
         private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
             {
                 return;
             }

@@ -5,8 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Common.Interfaces;
-    using Common.Models;
-    using Common.Services;
+    using Models;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
@@ -21,11 +20,11 @@
         };
         private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
 
-        private HighlightItemsService(ItemGrabMenuConstructedService itemGrabMenuConstructedService)
+        private HighlightItemsService(ItemGrabMenuChangedService itemGrabMenuChangedService)
             : base("HighlightItems")
         {
             // Events
-            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructed);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
         }
 
         /// <inheritdoc />
@@ -47,11 +46,16 @@
         /// <returns>Returns a new instance of the <see cref="HighlightItemsService" /> class.</returns>
         public static async Task<HighlightItemsService> Create(ServiceManager serviceManager)
         {
-            return HighlightItemsService.Instance ??= new(await serviceManager.Get<ItemGrabMenuConstructedService>());
+            return HighlightItemsService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
         }
 
-        private void OnItemGrabMenuConstructed(object sender, ItemGrabMenuEventArgs e)
+        private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
+            if (e.ItemGrabMenu is null)
+            {
+                return;
+            }
+
             if (e.ItemGrabMenu.inventory.highlightMethod != this.HighlightMethod)
             {
                 this._highlightMethod.Value = e.ItemGrabMenu.inventory.highlightMethod;
