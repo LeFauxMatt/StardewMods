@@ -70,10 +70,13 @@
                 typeof(FilterItemsFeature),
                 nameof(FilterItemsFeature.Chest_addItem_prefix));
 
-            this._automatePatch = Mixin.Prefix(
-                new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
-                typeof(FilterItemsFeature),
-                nameof(FilterItemsFeature.Automate_Store_prefix));
+            if (ModRegistry.IsLoaded("Pathochild.Automate"))
+            {
+                this._automatePatch = Mixin.Prefix(
+                    new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
+                    typeof(FilterItemsFeature),
+                    nameof(FilterItemsFeature.Automate_Store_prefix));
+            }
         }
 
         /// <inheritdoc />
@@ -85,7 +88,10 @@
 
             // Patches
             Mixin.Unpatch(this._addItemPatch);
-            Mixin.Unpatch(this._automatePatch);
+            if (this._automatePatch is not null)
+            {
+                Mixin.Unpatch(this._automatePatch);
+            }
         }
 
         /// <inheritdoc />

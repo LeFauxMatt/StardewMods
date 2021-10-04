@@ -63,13 +63,14 @@
                 return;
             }
 
-            Log.Init(this.Monitor);
-            Mixin.Init(this.ModManifest);
             Content.Init(this.Helper.Content);
             Events.Init(this.Helper.Events);
             Input.Init(this.Helper.Input);
-            Translations.Init(this.Helper.Translation);
+            Log.Init(this.Monitor);
+            ModRegistry.Init(this.Helper.ModRegistry);
+            Mixin.Init(this.ModManifest);
             Reflection.Init(this.Helper.Reflection);
+            Translations.Init(this.Helper.Translation);
 
             var serviceManager = ServiceManager.Create(this.Helper, this.ModManifest);
 
