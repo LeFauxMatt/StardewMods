@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\Axis.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ItemExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Content.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Input.cs" />

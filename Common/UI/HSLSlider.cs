@@ -66,7 +66,7 @@
         /// <summary>
         ///     Gets or sets the currently selected color.
         /// </summary>
-        public Color Color
+        public Color CurrentColor
         {
             get => this._isBlack ? Color.Black : this._color.ToRgbColor();
             set

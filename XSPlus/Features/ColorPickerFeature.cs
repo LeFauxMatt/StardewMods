@@ -165,7 +165,7 @@
             this._fakeChest.Value.resetLidFrame();
 
             this._hslSlider.Value.Area = new(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2, e.ItemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2, ColorPickerFeature.Width, ColorPickerFeature.Height);
-            this._hslSlider.Value.Color = e.Chest.playerChoiceColor.Value;
+            this._hslSlider.Value.CurrentColor = e.Chest.playerChoiceColor.Value;
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
@@ -191,7 +191,7 @@
             if (Game1.player.showChestColorPicker && this._hslSlider.Value.LeftClick())
             {
                 Game1.playSound("coin");
-                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
+                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
                 return;
             }
 
@@ -214,7 +214,7 @@
 
             if (e.Button == SButton.MouseLeft && this._hslSlider.Value.LeftClick())
             {
-                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
+                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
                 this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
             }
         }
@@ -228,7 +228,7 @@
 
             if (this._hslSlider.Value.OnHover())
             {
-                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
+                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
             }
         }
 
@@ -241,7 +241,7 @@
 
             if (this._hslSlider.Value.OnScroll(e.Delta))
             {
-                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
+                this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
                 this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
             }
         }
