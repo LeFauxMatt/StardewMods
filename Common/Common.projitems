@@ -45,6 +45,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\RenderedActiveMenuService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\RenderingActiveMenuService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ServiceManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ContextMenu.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\HSLSlider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />
   </ItemGroup>

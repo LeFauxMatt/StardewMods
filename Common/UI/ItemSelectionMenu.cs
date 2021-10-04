@@ -36,6 +36,7 @@
         private readonly ClickableTextureComponent _searchIcon;
         private readonly List<Item> _sortedItems = new();
         private readonly IList<ClickableComponent> _tags;
+        private ContextMenu _dropDown;
         private IEnumerable<Item> _filteredItems;
         private int _offset;
 
@@ -69,16 +70,16 @@
             this._menu = this.ItemsToGrabMenu;
             this._columns = this._menu.capacity / this._menu.rows;
             this._offset = 0;
-            this._range = new Range<int>(0, ItemSelectionMenu.AllItems.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
-            this._itemFilter = new ItemMatcher(searchTagSymbol);
-            this._itemSelector = new ItemMatcher(searchTagSymbol);
+            this._range = new(0, ItemSelectionMenu.AllItems.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
+            this._itemFilter = new(searchTagSymbol);
+            this._itemSelector = new(searchTagSymbol);
 
             // Get saved labels from favorites
             this._itemSelector.SetSearch(initialValue);
 
             this.ReSyncInventory();
 
-            this._searchField = new TextBox(Content.FromGame<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
+            this._searchField = new(Content.FromGame<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
             {
                 X = this.ItemsToGrabMenu.xPositionOnScreen,
                 Y = this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom,
@@ -86,12 +87,12 @@
                 Selected = false,
             };
 
-            this._searchIcon = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(80, 0, 13, 13), 2.5f)
+            this._searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
             {
-                bounds = new Rectangle(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32),
+                bounds = new(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32),
             };
 
-            this._searchArea = new ClickableComponent(new Rectangle(this._searchField.X, this._searchField.Y, this._searchField.Width, this._searchField.Height), string.Empty);
+            this._searchArea = new(new(this._searchField.X, this._searchField.Y, this._searchField.Width, this._searchField.Height), string.Empty);
         }
 
         /// <summary>
@@ -137,6 +138,16 @@
         /// <inheritdoc />
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
+            if (this._dropDown is not null)
+            {
+                if (this._dropDown.LeftClick(x, y))
+                {
+                    return;
+                }
+
+                this._dropDown = null;
+            }
+
             if (this.okButton.containsPoint(x, y) && this.readyToClose())
             {
                 this.exitThisMenu();
@@ -158,7 +169,7 @@
                     var tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
                     if (tag is not null)
                     {
-                        this._itemSelector.AddSearch($"#{tag}");
+                        this._itemSelector.AddSearch(tag);
                         this.ReSyncInventory(false, true);
                     }
                 }
@@ -184,12 +195,7 @@
                 var item = this.Items.ElementAtOrDefault(slotNumber);
                 if (item is not null)
                 {
-                    var tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
-                    if (tag is not null)
-                    {
-                        this._itemSelector.AddSearch($"!#{tag}");
-                        this.ReSyncInventory(false, true);
-                    }
+                    this._dropDown = new(SearchPhrase.GetContextTags(item).ToList(), x, y, this.AddTag);
                 }
             }
         }
@@ -236,6 +242,11 @@
                 ? Math.Min(1.1f, this.okButton.scale + 0.05f)
                 : Math.Max(1f, this.okButton.scale - 0.05f);
 
+            if (this._dropDown is not null && this._dropDown.OnHover(x, y))
+            {
+                return;
+            }
+
             var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
             if (cc is not null)
             {
@@ -249,7 +260,7 @@
             if (cc is not null)
             {
                 this.hoveredItem = null;
-                this.hoverText = cc?.name ?? string.Empty;
+                this.hoverText = cc.name ?? string.Empty;
                 return;
             }
 
@@ -307,7 +318,7 @@
                     var y = this.yPositionOnScreen + (this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (i / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)) - 4;
                     item.drawInMenu(
                         b,
-                        new Vector2(x, y),
+                        new(x, y),
                         this.ItemsToGrabMenu.inventory[i].scale,
                         highlight ? 1f : 0.25f,
                         0.865f,
@@ -323,26 +334,23 @@
 
             foreach (var tag in this._tags)
             {
-                var textPos = new Vector2(tag.bounds.X, tag.bounds.Y);
                 if (this.hoverText == tag.name)
                 {
-                    b.DrawString(Game1.smallFont, tag.name, textPos + new Vector2(2f, 2f), Game1.textShadowColor);
-                    b.DrawString(Game1.smallFont, tag.name, textPos + new Vector2(0f, 2f), Game1.textShadowColor);
+                    Utility.drawTextWithShadow(b, tag.name, Game1.smallFont, new(tag.bounds.X, tag.bounds.Y), Game1.textColor, 1f, 0.1f);
                 }
-
-                b.DrawString(Game1.smallFont, tag.name, textPos, Game1.textColor);
+                else
+                {
+                    b.DrawString(Game1.smallFont, tag.name, new(tag.bounds.X, tag.bounds.Y), Game1.textColor);
+                }
             }
 
-            if (this.hoveredItem != null)
+            if (this._dropDown is not null)
             {
-                ItemSelectionMenu.drawHoverText(
-                    b,
-                    $"#{string.Join("\n#", SearchPhrase.GetContextTags(this.hoveredItem).ToList())}",
-                    Game1.smallFont,
-                    0,
-                    0,
-                    -1,
-                    this.hoveredItem.DisplayName);
+                this._dropDown.Draw(b);
+            }
+            else if (this.hoveredItem != null)
+            {
+                ItemSelectionMenu.drawToolTip(b, this.hoveredItem.getDescription(), this.hoveredItem.DisplayName, this.hoveredItem);
             }
 
             Game1.mouseCursorTransparency = 1f;
@@ -365,13 +373,6 @@
                 case SButton.Escape:
                     Input.Suppress(e.Button);
                     return;
-                case SButton.Enter when !string.IsNullOrWhiteSpace(this._itemFilter.Search):
-                    this._itemSelector.AddSearch(this._itemFilter.Search);
-                    this._searchField.Text = string.Empty;
-                    this.Offset = 0;
-                    this.ReSyncInventory(true);
-                    Input.Suppress(e.Button);
-                    break;
                 case SButton.MouseLeft or SButton.MouseRight:
                 {
                     var point = Game1.getMousePosition(true);
@@ -388,6 +389,7 @@
                     this.Offset = 0;
                 }
 
+                this._dropDown = null;
                 Input.Suppress(e.Button);
             }
         }
@@ -396,6 +398,22 @@
         {
             Events.Input.ButtonPressed -= this.OnButtonPressed;
             this._returnValue(this._itemSelector.Search);
+        }
+
+        private void AddTag(string name)
+        {
+            if (Input.IsDown(SButton.LeftShift) || Input.IsDown(SButton.RightShift))
+            {
+                name = name.StartsWith("!")
+                    ? name.Substring(1)
+                    : $"!{name}";
+            }
+
+            this._itemSelector.AddSearch(name);
+            this._dropDown = null;
+            this._searchField.Text = string.Empty;
+            this.Offset = 0;
+            this.ReSyncInventory(true, true);
         }
 
         private void ReSyncInventory(bool clearFiltered = false, bool clearSorted = false)
@@ -411,7 +429,7 @@
                 this._sortedItems.Clear();
             }
 
-            this._range.Maximum = Math.Max(0, (this.Items.Count().RoundUp(this._columns) / this._columns) - this._menu.rows);
+            this._range.Maximum = Math.Max(0, this.Items.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
             for (var i = 0; i < this.ItemsToGrabMenu.capacity; i++)
             {
                 var item = this.Items.ElementAtOrDefault(i);
@@ -439,7 +457,7 @@
                     textPos.Y += textHeight + verticalSpacing;
                 }
 
-                var tag = new ClickableComponent(new Rectangle((int)textPos.X, (int)textPos.Y, textWidth, textHeight), searchValue);
+                var tag = new ClickableComponent(new((int)textPos.X, (int)textPos.Y, textWidth, textHeight), searchValue);
                 this._tags.Add(tag);
                 textPos.X += textWidth + horizontalSpacing;
             }
