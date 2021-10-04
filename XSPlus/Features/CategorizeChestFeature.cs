@@ -1,13 +1,10 @@
 ﻿namespace XSPlus.Features
 {
-    using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Helpers.ItemMatcher;
     using Common.Models;
     using Common.Services;
     using Common.UI;
-    using CommonHarmony;
-    using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Services;
@@ -25,14 +22,12 @@
         private readonly PerScreen<ClickableTextureComponent> _configButton = new();
         private readonly PerScreen<string> _hoverText = new();
         private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
-        private readonly ModConfigService _modConfigService;
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
         private readonly PerScreen<int> _screenId = new()
         {
             Value = -1,
         };
-        private MixInfo _automatePatch;
 
         private CategorizeChestFeature(
             ModConfigService modConfigService,
@@ -40,13 +35,12 @@
             RenderedActiveMenuService renderedActiveMenuService)
             : base("CategorizeChest", modConfigService)
         {
-            this._configButton.Value = new ClickableTextureComponent(
-                new Rectangle(0, 0, 64, 64),
+            this._configButton.Value = new(
+                new(0, 0, 64, 64),
                 Content.FromMod<Texture2D>("assets/configure.png"),
                 Rectangle.Empty,
                 Game1.pixelZoom);
 
-            this._modConfigService = modConfigService;
             this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
@@ -61,12 +55,12 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="CategorizeChestFeature" /> class.</returns>
-        public static CategorizeChestFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<CategorizeChestFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuSideButtonsService = serviceManager.RequestService<ItemGrabMenuSideButtonsService>();
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return CategorizeChestFeature.Instance ??= new CategorizeChestFeature(modConfigService, itemGrabMenuSideButtonsService, renderedActiveMenuService);
+            return CategorizeChestFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<ItemGrabMenuSideButtonsService>(),
+                await serviceManager.Get<RenderedActiveMenuService>());
         }
 
         /// <inheritdoc />
@@ -77,12 +71,6 @@
             this._renderedActiveMenuService.AddHandler(this.DrawSideButtons);
             Events.Input.ButtonPressed += this.OnButtonPressed;
             Events.Input.CursorMoved += this.OnCursorMoved;
-
-            // Patches
-            this._automatePatch = Mixin.Prefix(
-                new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
-                typeof(CategorizeChestFeature),
-                nameof(CategorizeChestFeature.Automate_Store_prefix));
         }
 
         /// <inheritdoc />
@@ -93,25 +81,6 @@
             this._renderedActiveMenuService.RemoveHandler(this.DrawSideButtons);
             Events.Input.ButtonPressed -= this.OnButtonPressed;
             Events.Input.CursorMoved -= this.OnCursorMoved;
-
-            // Patches
-            Mixin.Unpatch(this._automatePatch);
-        }
-
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-        private static bool Automate_Store_prefix(Chest ___Chest, object stack)
-        {
-            if (!___Chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems))
-            {
-                return true;
-            }
-            var itemMatcher = new ItemMatcher(CategorizeChestFeature.Instance._modConfigService.ModConfig.SearchTagSymbol, true);
-            itemMatcher.SetSearch(filterItems);
-            var item = Reflection.Property<Item>(stack, "Sample").GetValue();
-            var matched = itemMatcher.Matches(item);
-            return matched;
         }
 
         private void SetupSideButtons(object sender, ItemGrabMenuEventArgs e)
@@ -163,7 +132,7 @@
                 }
 
                 Game1.activeClickableMenu = new ItemSelectionMenu(
-                    this._modConfigService.ModConfig.SearchTagSymbol,
+                    string.Empty,
                     this.ReturnToMenu,
                     filterItems,
                     value => this._chest.Value.modData[$"{XSPlus.ModPrefix}/FilterItems"] = value);

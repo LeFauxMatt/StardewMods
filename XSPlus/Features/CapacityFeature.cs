@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
@@ -30,10 +31,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="CapacityFeature" /> class.</returns>
-        public static CapacityFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<CapacityFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>("ModConfig");
-            return CapacityFeature.Instance ??= new CapacityFeature(modConfigService);
+            return CapacityFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
         }
 
         /// <inheritdoc />

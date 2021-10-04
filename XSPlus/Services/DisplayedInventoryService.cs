@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection.Emit;
+    using System.Threading.Tasks;
     using Common.Extensions;
     using Common.Helpers;
     using Common.Interfaces;
@@ -17,6 +18,7 @@
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
+    using StardewValley.Objects;
 
     /// <summary>
     ///     Service for manipulating the displayed items in an inventory menu.
@@ -24,18 +26,18 @@
     internal class DisplayedInventoryService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
         private static DisplayedInventoryService Instance;
+        private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<int> _columns = new();
         private readonly PerScreen<IList<Func<Item, bool>>> _filterItemHandlers = new()
         {
             Value = new List<Func<Item, bool>>(),
         };
-
         private readonly PerScreen<IList<Item>> _items = new();
         private readonly PerScreen<InventoryMenu> _menu = new();
         private readonly PerScreen<int> _offset = new();
         private readonly PerScreen<Range<int>> _range = new()
         {
-            Value = new Range<int>(),
+            Value = new(),
         };
 
         private DisplayedInventoryService(ItemGrabMenuConstructedService itemGrabMenuConstructedService, ItemGrabMenuChangedService itemGrabMenuChangedService)
@@ -64,7 +66,7 @@
         /// </summary>
         public int Offset
         {
-            get => this._offset.Value;
+            get => this._range.Value.Clamp(this._offset.Value);
             set
             {
                 this._range.Value.Maximum = Math.Max(0, this._items.Value.Count.RoundUp(this._columns.Value) / this._columns.Value - this._menu.Value.rows);
@@ -84,7 +86,7 @@
         {
             get
             {
-                var offset = this._offset.Value * this._columns.Value;
+                var offset = this.Offset * this._columns.Value;
                 for (var i = 0; i < this._items.Value.Count; i++)
                 {
                     var item = this._items.Value.ElementAtOrDefault(i);
@@ -121,11 +123,11 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>An instance of the <see cref="DisplayedInventoryService" /> class.</returns>
-        public static DisplayedInventoryService GetSingleton(ServiceManager serviceManager)
+        public static async Task<DisplayedInventoryService> Create(ServiceManager serviceManager)
         {
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return DisplayedInventoryService.Instance ??= new DisplayedInventoryService(itemGrabMenuConstructedService, itemGrabMenuChangedService);
+            return DisplayedInventoryService.Instance ??= new(
+                await serviceManager.Get<ItemGrabMenuConstructedService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>());
         }
 
         /// <summary>
@@ -137,13 +139,7 @@
             for (var i = 0; i < this._menu.Value.inventory.Count; i++)
             {
                 var item = items.ElementAtOrDefault(i);
-                if (item is not null)
-                {
-                    this._menu.Value.inventory[i].name = this._items.Value.IndexOf(item).ToString();
-                    return;
-                }
-
-                this._menu.Value.inventory[i].name = (i < this._items.Value.Count ? int.MaxValue : i).ToString();
+                this._menu.Value.inventory[i].name = (item is not null ? this._items.Value.IndexOf(item) : int.MaxValue).ToString();
             }
         }
 
@@ -186,16 +182,21 @@
 
         private void OnItemGrabMenuEvent(object sender, ItemGrabMenuEventArgs e)
         {
-            if (e.ItemGrabMenu is null)
+            if (e.ItemGrabMenu is null || e.Chest is null)
             {
                 this._menu.Value = null;
                 return;
             }
 
-            this._menu.Value = e.ItemGrabMenu.ItemsToGrabMenu;
-            this._columns.Value = e.ItemGrabMenu.ItemsToGrabMenu.capacity / e.ItemGrabMenu.ItemsToGrabMenu.rows;
-            this._items.Value = e.ItemGrabMenu.ItemsToGrabMenu.actualInventory;
-            this.ReSyncInventory();
+            if (!ReferenceEquals(e.Chest, this._chest.Value))
+            {
+                this._menu.Value = e.ItemGrabMenu.ItemsToGrabMenu;
+                this._chest.Value = e.Chest;
+                this._offset.Value = 0;
+                this._columns.Value = e.ItemGrabMenu.ItemsToGrabMenu.capacity / e.ItemGrabMenu.ItemsToGrabMenu.rows;
+                this._items.Value = e.ItemGrabMenu.ItemsToGrabMenu.actualInventory;
+                this.ReSyncInventory();
+            }
         }
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)

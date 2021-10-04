@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Integrations.XSPlus;
     using Common.Services;
@@ -71,31 +72,34 @@
             Translations.Init(this.Helper.Translation);
             Reflection.Init(this.Helper.Reflection);
 
+            var serviceManager = ServiceManager.Create(this.Helper, this.ModManifest);
+
             // Services
-            var serviceManager = ServiceManager.GetSingleton();
-            serviceManager.AddSingleton<ModConfigService>(this.Helper, this.ModManifest);
-            serviceManager.AddSingleton<ItemGrabMenuConstructedService>();
-            serviceManager.AddSingleton<ItemGrabMenuChangedService>();
-            serviceManager.AddSingleton<ItemGrabMenuSideButtonsService>();
-            serviceManager.AddSingleton<RenderingActiveMenuService>();
-            serviceManager.AddSingleton<RenderedActiveMenuService>();
-            serviceManager.AddSingleton<DisplayedInventoryService>();
-            serviceManager.AddSingleton<HighlightItemsService>();
+            Task.WaitAll(
+                serviceManager.Create<ModConfigService>(),
+                serviceManager.Create<ItemGrabMenuConstructedService>(),
+                serviceManager.Create<ItemGrabMenuChangedService>(),
+                serviceManager.Create<ItemGrabMenuSideButtonsService>(),
+                serviceManager.Create<RenderingActiveMenuService>(),
+                serviceManager.Create<RenderedActiveMenuService>(),
+                serviceManager.Create<DisplayedInventoryService>(),
+                serviceManager.Create<HighlightItemsService>());
 
             // Features
-            serviceManager.AddSingleton<AccessCarriedFeature>();
-            serviceManager.AddSingleton<CapacityFeature>();
-            serviceManager.AddSingleton<CategorizeChestFeature>();
-            serviceManager.AddSingleton<ColorPickerFeature>();
-            serviceManager.AddSingleton<CraftFromChestFeature>();
-            serviceManager.AddSingleton<ExpandedMenuFeature>();
-            serviceManager.AddSingleton<FilterItemsFeature>();
-            serviceManager.AddSingleton<InventoryTabsFeature>();
-            serviceManager.AddSingleton<SearchItemsFeature>();
-            serviceManager.AddSingleton<StashToChestFeature>();
-            serviceManager.AddSingleton<UnbreakableFeature>();
-            serviceManager.AddSingleton<UnplaceableFeature>();
-            serviceManager.AddSingleton<VacuumItemsFeature>();
+            Task.WaitAll(
+                serviceManager.Create<AccessCarriedFeature>(),
+                serviceManager.Create<CapacityFeature>(),
+                serviceManager.Create<CategorizeChestFeature>(),
+                serviceManager.Create<ColorPickerFeature>(),
+                serviceManager.Create<CraftFromChestFeature>(),
+                serviceManager.Create<ExpandedMenuFeature>(),
+                serviceManager.Create<FilterItemsFeature>(),
+                serviceManager.Create<InventoryTabsFeature>(),
+                serviceManager.Create<SearchItemsFeature>(),
+                serviceManager.Create<StashToChestFeature>(),
+                serviceManager.Create<UnbreakableFeature>(),
+                serviceManager.Create<UnplaceableFeature>(),
+                serviceManager.Create<VacuumItemsFeature>());
 
             // Activate
             serviceManager.ActivateFeatures();

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection.Emit;
+    using System.Threading.Tasks;
     using Common.Extensions;
     using Common.Helpers;
     using Common.Models;
@@ -67,17 +68,13 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature" /> class.</returns>
-        public static ExpandedMenuFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<ExpandedMenuFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedInventory");
-            return ExpandedMenuFeature.Instance ??= new ExpandedMenuFeature(
-                modConfigService,
-                itemGrabMenuConstructedService,
-                itemGrabMenuChangedService,
-                displayedInventoryService);
+            return ExpandedMenuFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<ItemGrabMenuConstructedService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<DisplayedInventoryService>());
         }
 
         /// <inheritdoc />

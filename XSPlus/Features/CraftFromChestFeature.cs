@@ -4,6 +4,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection.Emit;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Services;
     using CommonHarmony.Services;
@@ -53,10 +54,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="CraftFromChestFeature" /> class.</returns>
-        public static CraftFromChestFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<CraftFromChestFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return CraftFromChestFeature.Instance ??= new CraftFromChestFeature(modConfigService);
+            return CraftFromChestFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
         }
 
         /// <inheritdoc />
@@ -96,7 +96,7 @@
 
         /// <inheritdoc />
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
-        protected internal override bool IsEnabledForItem(Item item)
+        protected override bool IsEnabledForItem(Item item)
         {
             if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range))
             {
@@ -152,9 +152,9 @@
             {
                 if (instruction.opcode == OpCodes.Ldfld && instruction.operand.Equals(AccessTools.Field(typeof(Chest), nameof(Chest.items))))
                 {
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Property(typeof(Game1), nameof(Game1.player)).GetGetMethod());
-                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Property(typeof(Farmer), nameof(Farmer.UniqueMultiplayerID)).GetGetMethod());
-                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)));
+                    yield return new(OpCodes.Call, AccessTools.Property(typeof(Game1), nameof(Game1.player)).GetGetMethod());
+                    yield return new(OpCodes.Callvirt, AccessTools.Property(typeof(Farmer), nameof(Farmer.UniqueMultiplayerID)).GetGetMethod());
+                    yield return new(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)));
                 }
                 else
                 {
@@ -198,7 +198,7 @@
                 return;
             }
 
-            this._multipleChestCraftingPage.Value = new MultipleChestCraftingPage(this.EnabledChests);
+            this._multipleChestCraftingPage.Value = new(this.EnabledChests);
             Input.Suppress(this._modConfigService.ModConfig.OpenCrafting);
         }
 
@@ -213,7 +213,7 @@
             {
                 this._chests = chests.Where(chest => !chest.mutex.IsLocked()).ToList();
                 var mutexes = this._chests.Select(chest => chest.mutex).ToList();
-                this._multipleMutexRequest = new MultipleMutexRequest(
+                this._multipleMutexRequest = new(
                     mutexes,
                     this.SuccessCallback,
                     this.FailureCallback);

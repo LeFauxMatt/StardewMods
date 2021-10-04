@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Services
 {
     using System;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Integrations.GenericModConfigMenu;
     using Common.Services;
@@ -27,16 +28,13 @@
         };
         private readonly ServiceManager _serviceManager;
 
-        private ModConfigService(
-            ServiceManager serviceManager,
-            IModHelper helper,
-            IManifest manifest)
+        private ModConfigService(ServiceManager serviceManager)
             : base("ModConfig")
         {
             this._serviceManager = serviceManager;
-            this._helper = helper;
-            this._manifest = manifest;
-            this._modConfigMenu = new GenericModConfigMenuIntegration(this._helper.ModRegistry);
+            this._helper = serviceManager.Helper;
+            this._manifest = serviceManager.ModManifest;
+            this._modConfigMenu = new(this._helper.ModRegistry);
 
             this.ModConfig = this._helper.ReadConfig<ModConfig>();
 
@@ -52,12 +50,10 @@
         ///     Returns and creates if needed an instance of the <see cref="ModConfigService" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <param name="helper">Provides simplified APIs for writing mods.</param>
-        /// <param name="manifest">A manifest which describes a mod for SMAPI.</param>
         /// <returns>Returns an instance of the <see cref="ModConfigService" /> class.</returns>
-        public static ModConfigService GetSingleton(ServiceManager serviceManager, IModHelper helper, IManifest manifest)
+        public static async Task<ModConfigService> Create(ServiceManager serviceManager)
         {
-            return ModConfigService.Instance ??= new ModConfigService(serviceManager, helper, manifest);
+            return ModConfigService.Instance ??= new(serviceManager);
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -202,7 +198,7 @@
 
         private void RevertToDefault()
         {
-            this.ModConfig = new ModConfig();
+            this.ModConfig = new();
         }
 
         private void SaveToFile()

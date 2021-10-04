@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
     using Common.Models;
@@ -17,6 +18,7 @@
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
     internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>
     {
+        private readonly ItemMatcher _addItemMatcher = new(string.Empty, true);
         private readonly PerScreen<bool> _attached = new();
         private readonly PerScreen<Chest> _chest = new();
         private readonly PerScreen<Dictionary<string, bool>> _filterItems = new();
@@ -24,7 +26,7 @@
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly PerScreen<ItemMatcher> _itemMatcher = new()
         {
-            Value = new ItemMatcher(string.Empty, true),
+            Value = new(string.Empty, true),
         };
         private MixInfo _addItemPatch;
         private MixInfo _automatePatch;
@@ -42,22 +44,19 @@
         /// <summary>
         ///     Gets the instance of <see cref="FilterItemsFeature" />.
         /// </summary>
-        protected internal static FilterItemsFeature Instance { get; private set; }
+        private static FilterItemsFeature Instance { get; set; }
 
         /// <summary>
         ///     Returns and creates if needed an instance of the <see cref="FilterItemsFeature" /> class.
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="FilterItemsFeature" /> class.</returns>
-        public static FilterItemsFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<FilterItemsFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var highlightItemsService = serviceManager.RequestService<HighlightItemsService>("HighlightItems");
-            return FilterItemsFeature.Instance ??= new FilterItemsFeature(
-                modConfigService,
-                itemGrabMenuChangedService,
-                highlightItemsService);
+            return FilterItemsFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<HighlightItemsService>());
         }
 
         /// <inheritdoc />
@@ -72,6 +71,7 @@
                 AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
                 typeof(FilterItemsFeature),
                 nameof(FilterItemsFeature.Chest_addItem_prefix));
+
             this._automatePatch = Mixin.Prefix(
                 new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
                 typeof(FilterItemsFeature),
@@ -90,20 +90,42 @@
             Mixin.Unpatch(this._automatePatch);
         }
 
+        /// <inheritdoc />
+        protected override bool IsEnabledForItem(Item item)
+        {
+            return base.IsEnabledForItem(item) || item is Chest chest && chest.playerChest.Value && chest.modData.ContainsKey($"{XSPlus.ModPrefix}/FilterItems");
+        }
+
+        public bool Matches(Chest chest, Item item, ItemMatcher itemMatcher = null)
+        {
+            itemMatcher ??= this._addItemMatcher;
+
+            // Mod configured filter
+            if (this.TryGetValueForItem(chest, out var modFilterItems))
+            {
+                itemMatcher.SetSearch(modFilterItems);
+            }
+            else
+            {
+                itemMatcher.SetSearch(string.Empty);
+            }
+
+            // Player configured filter
+            if (chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var playerFilterItems))
+            {
+                itemMatcher.AddSearch(playerFilterItems);
+            }
+
+            return itemMatcher.Matches(item);
+        }
+
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         [HarmonyPriority(Priority.High)]
         private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
         {
-            if (!FilterItemsFeature.Instance.TryGetValueForItem(__instance, out var filterItems))
-            {
-                return true;
-            }
-
-            var itemMatcher = new ItemMatcher(string.Empty, true);
-            itemMatcher.SetSearch(filterItems);
-            if (itemMatcher.Matches(item))
+            if (FilterItemsFeature.Instance.Matches(__instance, item))
             {
                 return true;
             }
@@ -114,17 +136,11 @@
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static bool Automate_Store_prefix(Chest ___Chest, object stack)
         {
-            if (!FilterItemsFeature.Instance.TryGetValueForItem(___Chest, out var filterItems))
-            {
-                return true;
-            }
-            var itemMatcher = new ItemMatcher(string.Empty, true);
-            itemMatcher.SetSearch(filterItems);
-            var item = Reflection.Property<Item>(stack, "Sample").GetValue();
-            return itemMatcher.Matches(item);
+            return FilterItemsFeature.Instance.Matches(
+                ___Chest,
+                Reflection.Property<Item>(stack, "Sample").GetValue());
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)
@@ -133,7 +149,6 @@
             {
                 this._attached.Value = false;
                 this._filterItems.Value = null;
-                this._itemMatcher.Value.SetSearch(string.Empty);
                 return;
             }
 
@@ -142,23 +157,12 @@
                 this._attached.Value = true;
             }
 
-            if (!ReferenceEquals(this._chest.Value, e.Chest))
-            {
-                this._chest.Value = e.Chest;
-                if (this.TryGetValueForItem(e.Chest, out var filterItems))
-                {
-                    this._itemMatcher.Value.SetSearch(filterItems);
-                }
-                else
-                {
-                    this._itemMatcher.Value.SetSearch(string.Empty);
-                }
-            }
+            this._chest.Value = e.Chest;
         }
 
         private bool HighlightMethod(Item item)
         {
-            return !this._attached.Value || this._itemMatcher.Value.Matches(item);
+            return !this._attached.Value || this.Matches(this._chest.Value, item, this._itemMatcher.Value);
         }
     }
 }

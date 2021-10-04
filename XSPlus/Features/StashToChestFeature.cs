@@ -3,8 +3,8 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Helpers.ItemMatcher;
     using Common.Services;
     using Services;
     using StardewModdingAPI;
@@ -19,12 +19,14 @@
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
         private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
         private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
+        private readonly FilterItemsFeature _filterItems;
         private readonly ModConfigService _modConfigService;
 
-        private StashToChestFeature(ModConfigService modConfigService)
+        private StashToChestFeature(ModConfigService modConfigService, FilterItemsFeature filterItems)
             : base("StashToChest", modConfigService)
         {
             this._modConfigService = modConfigService;
+            this._filterItems = filterItems;
         }
 
         /// <summary>
@@ -47,10 +49,11 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="StashToChestFeature" /> class.</returns>
-        public static StashToChestFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<StashToChestFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return StashToChestFeature.Instance ??= new StashToChestFeature(modConfigService);
+            return StashToChestFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<FilterItemsFeature>());
         }
 
         /// <inheritdoc />
@@ -73,7 +76,7 @@
 
         /// <inheritdoc />
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
-        protected internal override bool IsEnabledForItem(Item item)
+        protected override bool IsEnabledForItem(Item item)
         {
             if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range))
             {
@@ -141,25 +144,11 @@
 
         private Item TryAddItem(Item item)
         {
-            var itemMatcher = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol);
             var stack = (uint)item.Stack;
             foreach (var chest in this.EnabledChests)
             {
-                var allowList = FilterItemsFeature.Instance.IsEnabledForItem(chest);
-
-                if (chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems))
+                if (!this._filterItems.Matches(chest, item))
                 {
-                    itemMatcher.SetSearch(filterItems);
-
-                    // Skip chest if per-chest filter does not match
-                    if (!itemMatcher.Matches(item))
-                    {
-                        continue;
-                    }
-                }
-                else if (!allowList)
-                {
-                    // Skip chest if no built-in filter and no per-chest filter
                     continue;
                 }
 

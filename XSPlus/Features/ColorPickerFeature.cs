@@ -1,13 +1,13 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Models;
     using Common.Services;
     using Common.UI;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Microsoft.Xna.Framework;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -19,7 +19,6 @@
     /// <inheritdoc />
     internal class ColorPickerFeature : BaseFeature
     {
-        // TODO: Add toggle button
         private const int Width = 58;
         private const int Height = 558;
         private readonly PerScreen<Chest> _chest = new();
@@ -57,17 +56,13 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="ColorPickerFeature" /> class.</returns>
-        public static ColorPickerFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<ColorPickerFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return ColorPickerFeature.Instance ??= new ColorPickerFeature(
-                modConfigService,
-                itemGrabMenuConstructedService,
-                itemGrabMenuChangedService,
-                renderedActiveMenuService);
+            return ColorPickerFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<ItemGrabMenuConstructedService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<RenderedActiveMenuService>());
         }
 
         /// <inheritdoc />
@@ -122,7 +117,7 @@
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            this._hslSlider.Value = new HSLSlider();
+            this._hslSlider.Value = new();
         }
 
         private void OnItemGrabMenuConstructedEvent(object sender, ItemGrabMenuEventArgs e)
@@ -149,7 +144,7 @@
             this._screenId.Value = Context.ScreenId;
             this._menu.Value = e.ItemGrabMenu;
             this._chest.Value = e.Chest;
-            this._fakeChest.Value = new Chest(true, e.Chest.ParentSheetIndex)
+            this._fakeChest.Value = new(true, e.Chest.ParentSheetIndex)
             {
                 Name = e.Chest.Name,
                 lidFrameCount =
@@ -169,7 +164,7 @@
 
             this._fakeChest.Value.resetLidFrame();
 
-            this._hslSlider.Value.Area = new Rectangle(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2, e.ItemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2, ColorPickerFeature.Width, ColorPickerFeature.Height);
+            this._hslSlider.Value.Area = new(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2, e.ItemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2, ColorPickerFeature.Width, ColorPickerFeature.Height);
             this._hslSlider.Value.Color = e.Chest.playerChoiceColor.Value;
         }
 
@@ -193,7 +188,7 @@
                 return;
             }
 
-            if (Game1.player.showChestColorPicker && this._hslSlider.Value.MouseLeftButtonPressed())
+            if (Game1.player.showChestColorPicker && this._hslSlider.Value.LeftClick())
             {
                 Game1.playSound("coin");
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
@@ -217,7 +212,7 @@
                 return;
             }
 
-            if (e.Button == SButton.MouseLeft && this._hslSlider.Value.MouseLeftButtonReleased())
+            if (e.Button == SButton.MouseLeft && this._hslSlider.Value.LeftClick())
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
                 this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
@@ -231,7 +226,7 @@
                 return;
             }
 
-            if (this._hslSlider.Value.MouseHover())
+            if (this._hslSlider.Value.OnHover())
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
             }
@@ -244,7 +239,7 @@
                 return;
             }
 
-            if (this._hslSlider.Value.MouseWheelScroll(e.Delta))
+            if (this._hslSlider.Value.OnScroll(e.Delta))
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.Color;
                 this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;

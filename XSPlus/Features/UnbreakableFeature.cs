@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
@@ -27,10 +28,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="UnbreakableFeature" /> class.</returns>
-        public static UnbreakableFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<UnbreakableFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return UnbreakableFeature.Instance ??= new UnbreakableFeature(modConfigService);
+            return UnbreakableFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
         }
 
         /// <inheritdoc />

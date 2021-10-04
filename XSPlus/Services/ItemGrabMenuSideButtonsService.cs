@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Interfaces;
     using Common.Models;
     using Common.Services;
@@ -42,7 +43,7 @@
         };
         private readonly PerScreen<HashSet<VanillaButton>> _hideButtons = new()
         {
-            Value = new HashSet<VanillaButton>(),
+            Value = new(),
         };
         private readonly PerScreen<ItemGrabMenu> _menu = new();
 
@@ -81,11 +82,11 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="ItemGrabMenuSideButtonsService" /> class.</returns>
-        public static ItemGrabMenuSideButtonsService GetSingleton(ServiceManager serviceManager)
+        public static async Task<ItemGrabMenuSideButtonsService> Create(ServiceManager serviceManager)
         {
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return ItemGrabMenuSideButtonsService.Instance ??= new ItemGrabMenuSideButtonsService(itemGrabMenuConstructedService, itemGrabMenuChangedService);
+            return ItemGrabMenuSideButtonsService.Instance ??= new(
+                await serviceManager.Get<ItemGrabMenuConstructedService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>());
         }
 
         public void AddButton(ClickableComponent clickableComponent)

@@ -53,7 +53,7 @@
         /// <summary>Checks whether a feature is currently enabled for an item.</summary>
         /// <param name="item">The item to check if it supports this feature.</param>
         /// <returns>Returns true if the feature is currently enabled for the item.</returns>
-        protected internal virtual bool IsEnabledForItem(Item item)
+        protected virtual bool IsEnabledForItem(Item item)
         {
             var isEnabledByModData = this._modConfigService.ModConfig.Global.TryGetValue(this.FeatureName, out var option) && option;
 

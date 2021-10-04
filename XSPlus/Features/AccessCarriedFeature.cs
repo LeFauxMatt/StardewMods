@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Services;
     using CommonHarmony.Services;
@@ -31,10 +32,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="AccessCarriedFeature" /> class.</returns>
-        public static AccessCarriedFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<AccessCarriedFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return AccessCarriedFeature.Instance ??= new AccessCarriedFeature(modConfigService);
+            return AccessCarriedFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
         }
 
         /// <inheritdoc />

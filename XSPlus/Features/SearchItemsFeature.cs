@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection.Emit;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
     using Common.Models;
@@ -48,7 +49,7 @@
         };
         private readonly PerScreen<ClickableComponent> _searchArea = new()
         {
-            Value = new ClickableComponent(Rectangle.Empty, string.Empty),
+            Value = new(Rectangle.Empty, string.Empty),
         };
         private readonly PerScreen<TextBox> _searchField = new();
         private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
@@ -80,19 +81,14 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="SearchItemsFeature" /> class.</returns>
-        public static SearchItemsFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<SearchItemsFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuConstructedService = serviceManager.RequestService<ItemGrabMenuConstructedService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedInventory");
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return SearchItemsFeature.Instance ??= new SearchItemsFeature(
-                modConfigService,
-                itemGrabMenuConstructedService,
-                itemGrabMenuChangedService,
-                displayedInventoryService,
-                renderedActiveMenuService);
+            return SearchItemsFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<ItemGrabMenuConstructedService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<DisplayedInventoryService>(),
+                await serviceManager.Get<RenderedActiveMenuService>());
         }
 
         /// <inheritdoc />
@@ -305,7 +301,7 @@
             this._screenId.Value = Context.ScreenId;
             this._menu.Value = e.ItemGrabMenu;
             this._menuPadding.Value = SearchItemsFeature.SearchBarHeight;
-            this._itemMatcher.Value = new ItemMatcher(this._modConfigService.ModConfig.SearchTagSymbol);
+            this._itemMatcher.Value = new(this._modConfigService.ModConfig.SearchTagSymbol);
             var upperBounds = new Rectangle(
                 e.ItemGrabMenu.ItemsToGrabMenu.xPositionOnScreen,
                 e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen,
@@ -316,24 +312,24 @@
             this._searchField.Value.Y = upperBounds.Y - 14 * Game1.pixelZoom;
             this._searchField.Value.Width = upperBounds.Width;
             this._searchField.Value.Selected = false;
-            this._searchArea.Value.bounds = new Rectangle(this._searchField.Value.X, this._searchField.Value.Y, this._searchField.Value.Width, this._searchField.Value.Height);
-            this._searchIcon.Value.bounds = new Rectangle(upperBounds.Right - 38, upperBounds.Y - 14 * Game1.pixelZoom + 6, 32, 32);
+            this._searchArea.Value.bounds = new(this._searchField.Value.X, this._searchField.Value.Y, this._searchField.Value.Width, this._searchField.Value.Height);
+            this._searchIcon.Value.bounds = new(upperBounds.Right - 38, upperBounds.Y - 14 * Game1.pixelZoom + 6, 32, 32);
             var x = e.ItemGrabMenu.xPositionOnScreen - 480 - 8;
             var y = e.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + 10;
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            this._searchField.Value = new TextBox(
+            this._searchField.Value = new(
                 Content.FromGame<Texture2D>("LooseSprites\\textBox"),
                 null,
                 Game1.smallFont,
                 Game1.textColor);
 
-            this._searchIcon.Value = new ClickableTextureComponent(
+            this._searchIcon.Value = new(
                 Rectangle.Empty,
                 Game1.mouseCursors,
-                new Rectangle(80, 0, 13, 13),
+                new(80, 0, 13, 13),
                 2.5f);
         }
 

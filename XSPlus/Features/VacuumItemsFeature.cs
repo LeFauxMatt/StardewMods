@@ -4,6 +4,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection.Emit;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Services;
     using CommonHarmony.Services;
@@ -45,10 +46,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="VacuumItemsFeature" /> class.</returns>
-        public static VacuumItemsFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<VacuumItemsFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            return VacuumItemsFeature.Instance ??= new VacuumItemsFeature(modConfigService);
+            return VacuumItemsFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
         }
 
         /// <inheritdoc />
@@ -92,7 +92,7 @@
             {
                 if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
                 {
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.AddItemToInventoryBool)));
+                    yield return new(OpCodes.Call, AccessTools.Method(typeof(VacuumItemsFeature), nameof(VacuumItemsFeature.AddItemToInventoryBool)));
                 }
                 else
                 {

@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Helpers.ItemMatcher;
     using Common.Models;
@@ -26,7 +27,7 @@
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly PerScreen<ItemMatcher> _itemMatcher = new()
         {
-            Value = new ItemMatcher(string.Empty, true),
+            Value = new(string.Empty, true),
         };
         private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly ModConfigService _modConfigService;
@@ -68,19 +69,14 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="InventoryTabsFeature" /> class.</returns>
-        public static InventoryTabsFeature GetSingleton(ServiceManager serviceManager)
+        public static async Task<InventoryTabsFeature> Create(ServiceManager serviceManager)
         {
-            var modConfigService = serviceManager.RequestService<ModConfigService>();
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            var displayedInventoryService = serviceManager.RequestService<DisplayedInventoryService>("DisplayedInventory");
-            var renderingActiveMenuService = serviceManager.RequestService<RenderingActiveMenuService>();
-            var renderedActiveMenuService = serviceManager.RequestService<RenderedActiveMenuService>();
-            return InventoryTabsFeature.Instance ??= new InventoryTabsFeature(
-                modConfigService,
-                itemGrabMenuChangedService,
-                displayedInventoryService,
-                renderingActiveMenuService,
-                renderedActiveMenuService);
+            return InventoryTabsFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<DisplayedInventoryService>(),
+                await serviceManager.Get<RenderingActiveMenuService>(),
+                await serviceManager.Get<RenderedActiveMenuService>());
         }
 
         /// <inheritdoc />
@@ -118,10 +114,10 @@
 
             for (var i = 0; i < this._tabs.Count; i++)
             {
-                this._tabs[i].Component = new ClickableTextureComponent(
-                    new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                this._tabs[i].Component = new(
+                    new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
                     this._texture,
-                    new Rectangle(16 * i, 0, 16, 16),
+                    new(16 * i, 0, 16, 16),
                     Game1.pixelZoom)
                 {
                     hoverText = this._tabs[i].Name,
