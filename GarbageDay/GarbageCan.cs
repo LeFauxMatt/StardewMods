@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Common.Extensions;
+    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
     using Microsoft.Xna.Framework;
     using StardewValley;
@@ -109,38 +110,12 @@
         {
             get
             {
-                foreach (var item in this.Chest.items.Shuffle())
-                {
-                    var colorTag = item.GetContextTags().Where(tag => tag.StartsWith("color")).Shuffle().FirstOrDefault();
-                    if (colorTag is null)
-                    {
-                        continue;
-                    }
-
-                    return colorTag switch
-                    {
-                        "color_red" => Color.Red,
-                        "color_dark_red" => Color.DarkRed,
-                        "color_pale_violet_red" => Color.PaleVioletRed,
-                        "color_blue" => Color.Blue,
-                        "color_green" => Color.Green,
-                        "color_dark_green" => Color.DarkGreen,
-                        "color_jade" => Color.Teal,
-                        "color_brown" => Color.Brown,
-                        "color_dark_brown" => Color.Maroon,
-                        "color_yellow" => Color.Yellow,
-                        "color_dark_yellow" => Color.Goldenrod,
-                        "color_aquamarine" => Color.Aquamarine,
-                        "color_purple" => Color.Purple,
-                        "color_dark_purple" => Color.Indigo,
-                        "color_cyan" => Color.Cyan,
-                        "color_pink" => Color.Pink,
-                        "color_orange" => Color.Orange,
-                        _ => Color.Gray,
-                    };
-                }
-
-                return Color.Gray;
+                var colorTag = this.Chest.items
+                                   .SelectMany(item => item.GetContextTags())
+                                   .Where(tag => tag.StartsWith("color"))
+                                   .Shuffle()
+                                   .FirstOrDefault();
+                return colorTag is not null ? ColorHelper.FromTag(colorTag) : Color.Gray;
             }
         }
 
