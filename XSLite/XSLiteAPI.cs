@@ -42,9 +42,9 @@
         internal XSLiteAPI(IModHelper helper)
         {
             this._helper = helper;
-            this._dynamicAssets = new DynamicGameAssetsIntegration(helper.ModRegistry);
-            this._modConfigMenu = new GenericModConfigMenuIntegration(helper.ModRegistry);
-            this._xsPlus = new XSPlusIntegration(helper.ModRegistry);
+            this._dynamicAssets = new(helper.ModRegistry);
+            this._modConfigMenu = new(helper.ModRegistry);
+            this._xsPlus = new(helper.ModRegistry);
         }
 
         /// <inheritdoc />
@@ -134,7 +134,7 @@
                 config = contentPack.ReadJsonFile<Dictionary<string, ModConfig>>("config.json");
             }
 
-            config ??= new Dictionary<string, ModConfig>();
+            config ??= new();
 
             // Load expanded storages
             foreach (var storage in storages)
@@ -158,7 +158,7 @@
                 // Add to config
                 if (!config.TryGetValue(storage.Key, out var storageConfig))
                 {
-                    storageConfig = new ModConfig
+                    storageConfig = new()
                     {
                         Capacity = storage.Value.Capacity,
                         EnabledFeatures = storage.Value.EnabledFeatures,

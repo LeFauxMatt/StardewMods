@@ -106,7 +106,7 @@
                     {
                         if (!jsonFiles.TryGetValue(localizationKey, out var jsonFile))
                         {
-                            jsonFile = new StringBuilder("{");
+                            jsonFile = new("{");
                             jsonFiles.Add(localizationKey, jsonFile);
                         }
 

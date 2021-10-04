@@ -38,7 +38,7 @@
         public Storage(string specialChestType, HashSet<string> allowList, HashSet<string> blockList)
         {
             this.SpecialChestType = Enum.TryParse(specialChestType, out Chest.SpecialChestTypes specialChestTypes) ? specialChestTypes : Chest.SpecialChestTypes.None;
-            this.FilterItems = new Dictionary<string, bool>();
+            this.FilterItems = new();
             if (blockList is not null)
             {
                 foreach (var blockItem in blockList)
@@ -304,7 +304,7 @@
         private static Vector2 ShakeOffset(SObject instance, int minValue, int maxValue)
         {
             return instance.shakeTimer > 0
-                ? new Vector2(Game1.random.Next(minValue, maxValue), 0)
+                ? new(Game1.random.Next(minValue, maxValue), 0)
                 : Vector2.Zero;
         }
 

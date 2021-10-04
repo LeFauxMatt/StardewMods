@@ -5,7 +5,6 @@
     using System.Linq;
     using Common.Helpers;
     using Common.Integrations.XSLite;
-    using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
@@ -24,9 +23,9 @@
         internal static readonly IDictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         internal static readonly PerScreen<IReflectedField<int>> CurrentLidFrame = new();
         internal static readonly PerScreen<Chest> CurrentChest = new();
-        private readonly HashSet<int> InventoryStack = new();
-        private readonly HashSet<Vector2> ObjectListStack = new();
-        private IXSLiteAPI API;
+        private readonly HashSet<int> _inventoryStack = new();
+        private readonly HashSet<Vector2> _objectListStack = new();
+        private IXSLiteAPI _api;
 
         /// <inheritdoc />
         public bool CanLoad<T>(IAssetInfo asset)
@@ -64,29 +63,52 @@
                 return;
             }
 
-            this.API = new XSLiteAPI(this.Helper);
+            this._api = new XSLiteAPI(this.Helper);
 
             // Events
             this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
             this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-            this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+            this.Helper.Events.GameLoop.SaveLoaded += XSLite.OnSaveLoaded;
             this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-            this.Helper.Events.Player.Warped += this.OnWarped;
+            this.Helper.Events.Player.Warped += XSLite.OnWarped;
             this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
 
             // Patches
-            var unused = new Patches(this.Helper, new Harmony(this.ModManifest.UniqueID));
+            var unused = new Patches(this.Helper, new(this.ModManifest.UniqueID));
         }
 
         /// <inheritdoc />
         public override object GetApi()
         {
-            return this.API;
+            return this._api;
         }
 
-        private void OnWarped(object sender, WarpedEventArgs e)
+        private static void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            if (!Context.IsMainPlayer)
+            {
+                return;
+            }
+
+            var locations = Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
+            foreach (var location in locations)
+            {
+                var objects = location.Objects.Pairs.Where(obj => obj.Value is Chest chest && chest.playerChest.Value && XSLite.Storages.ContainsKey(chest.Name));
+                foreach (var obj in objects)
+                {
+                    if (obj.Value.modData.ContainsKey($"{XSLite.ModPrefix}/Storage") || !obj.Value.TryGetStorage(out var storage))
+                    {
+                        continue;
+                    }
+
+                    storage.Replace(location, obj.Key, obj.Value);
+                }
+            }
+        }
+
+        private static void OnWarped(object sender, WarpedEventArgs e)
         {
             foreach (var chest in e.NewLocation.Objects.Values.OfType<Chest>())
             {
@@ -112,30 +134,7 @@
             this.Monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
             foreach (var contentPack in this.Helper.ContentPacks.GetOwned())
             {
-                this.API.LoadContentPack(contentPack);
-            }
-        }
-
-        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
-        {
-            if (!Context.IsMainPlayer)
-            {
-                return;
-            }
-
-            var locations = Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
-            foreach (var location in locations)
-            {
-                var objects = location.Objects.Pairs.Where(obj => obj.Value is Chest chest && chest.playerChest.Value && XSLite.Storages.ContainsKey(chest.Name));
-                foreach (var obj in objects)
-                {
-                    if (obj.Value.modData.ContainsKey($"{XSLite.ModPrefix}/Storage") || !obj.Value.TryGetStorage(out var storage))
-                    {
-                        continue;
-                    }
-
-                    storage.Replace(location, obj.Key, obj.Value);
-                }
+                this._api.LoadContentPack(contentPack);
             }
         }
 
@@ -191,10 +190,10 @@
                 && int.TryParse(xStr, out var xPos)
                 && int.TryParse(yStr, out var yPos)
                 && (xPos != (int)pos.X || yPos != (int)pos.Y)
-                && Game1.currentLocation.Objects.TryGetValue(new Vector2(xPos, yPos), out var sourceObj))
+                && Game1.currentLocation.Objects.TryGetValue(new(xPos, yPos), out var sourceObj))
             {
                 obj = sourceObj;
-                pos = new Vector2(xPos, yPos);
+                pos = new(xPos, yPos);
             }
 
             // Object supports feature
@@ -237,7 +236,7 @@
                 }
 
                 obj.TileLocation = Vector2.Zero;
-                storage.ForEachPos(pos, innerPos => this.ObjectListStack.Add(innerPos));
+                storage.ForEachPos(pos, innerPos => this._objectListStack.Add(innerPos));
                 storage.Remove(Game1.currentLocation, pos, obj);
                 this.Helper.Input.Suppress(e.Button);
             }
@@ -260,13 +259,13 @@
                 }
 
                 var index = e.Player.getIndexOfInventoryItem(item);
-                if (this.InventoryStack.Contains(index))
+                if (this._inventoryStack.Contains(index))
                 {
-                    this.InventoryStack.Remove(index);
+                    this._inventoryStack.Remove(index);
                 }
                 else
                 {
-                    this.InventoryStack.Add(index);
+                    this._inventoryStack.Add(index);
                     storage.Replace(e.Player, index, item);
                 }
             }
@@ -283,9 +282,9 @@
 
             foreach (var removed in e.Removed)
             {
-                if (this.ObjectListStack.Contains(removed.Key))
+                if (this._objectListStack.Contains(removed.Key))
                 {
-                    this.ObjectListStack.Remove(removed.Key);
+                    this._objectListStack.Remove(removed.Key);
                 }
                 else
                 {
