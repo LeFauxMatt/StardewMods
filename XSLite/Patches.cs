@@ -883,6 +883,7 @@
 
         private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
         {
+            Log.Verbose("Recursively iterating chests in farmer inventory.");
             foreach (var farmer in Game1.getAllFarmers())
             {
                 foreach (var chest in farmer.Items.OfType<Chest>())
