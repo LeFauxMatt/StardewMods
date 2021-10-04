@@ -87,17 +87,20 @@
             this._chest.Value = e.Chest;
         }
 
-        private void OnSideButtonPressed(object sender, SideButtonPressed e)
+        private bool OnSideButtonPressed(SideButtonPressedEventArgs e)
         {
-            if (e.Button.name == "Configure")
+            if (e.Button.name != "Configure")
             {
-                var filterItems = this._chest.Value.GetFilterItems();
-                Game1.activeClickableMenu = new ItemSelectionMenu(
-                    string.Empty,
-                    this.ReturnToMenu,
-                    filterItems,
-                    this._chest.Value.SetFilterItems);
+                return false;
             }
+            
+            var filterItems = this._chest.Value.GetFilterItems();
+            Game1.activeClickableMenu = new ItemSelectionMenu(
+                string.Empty,
+                this.ReturnToMenu,
+                filterItems,
+                this._chest.Value.SetFilterItems);
+            return true;
         }
 
         private void ReturnToMenu()

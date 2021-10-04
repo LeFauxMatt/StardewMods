@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Interfaces;
+    using Enums;
     using HarmonyLib;
     using Models;
     using StardewModdingAPI;
@@ -16,34 +17,18 @@
     using StardewValley.Menus;
 
     /// <inheritdoc cref="BaseService" />
-    internal class ItemGrabMenuSideButtonsService : BaseService, IEventHandlerService<EventHandler<SideButtonPressed>>
+    internal class ItemGrabMenuSideButtonsService : BaseService, IEventHandlerService<Func<SideButtonPressedEventArgs, bool>>
     {
-        /// <summary>
-        ///     Default side buttons alongside the <see cref="ItemGrabMenu" />
-        /// </summary>
-        public enum VanillaButton
-        {
-            /// <summary>The Organize Button.</summary>
-            OrganizeButton,
-
-            /// <summary>The Fill Stacks Button.</summary>
-            FillStacksButton,
-
-            /// <summary>The Color Picker Toggle Button.</summary>
-            ColorPickerToggleButton,
-
-            /// <summary>The Special Button.</summary>
-            SpecialButton,
-
-            /// <summary>The Junimo Note Icon.</summary>
-            JunimoNoteIcon,
-        }
         private static ItemGrabMenuSideButtonsService Instance;
-        private readonly PerScreen<IList<ClickableTextureComponent>> _buttons = new()
+        private readonly PerScreen<IList<Func<SideButtonPressedEventArgs, bool>>> _buttonPressedHandlers = new()
         {
-            Value = new List<ClickableTextureComponent>(),
+            Value = new List<Func<SideButtonPressedEventArgs, bool>>(),
         };
-        private readonly PerScreen<HashSet<VanillaButton>> _hideButtons = new()
+        private readonly PerScreen<HashSet<SideButton>> _hideButtons = new()
+        {
+            Value = new(),
+        };
+        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _buttons = new()
         {
             Value = new(),
         };
@@ -70,18 +55,16 @@
         }
 
         /// <inheritdoc />
-        public void AddHandler(EventHandler<SideButtonPressed> eventHandler)
+        public void AddHandler(Func<SideButtonPressedEventArgs, bool> eventHandler)
         {
-            this.OnSideButtonPressed += eventHandler;
+            this._buttonPressedHandlers.Value.Add(eventHandler);
         }
 
         /// <inheritdoc />
-        public void RemoveHandler(EventHandler<SideButtonPressed> eventHandler)
+        public void RemoveHandler(Func<SideButtonPressedEventArgs, bool> eventHandler)
         {
-            this.OnSideButtonPressed -= eventHandler;
+            this._buttonPressedHandlers.Value.Remove(eventHandler);
         }
-
-        private event EventHandler<SideButtonPressed> OnSideButtonPressed;
 
         /// <summary>
         ///     Returns and creates if needed an instance of the <see cref="ItemGrabMenuSideButtonsService" /> class.
@@ -104,17 +87,15 @@
 
             if (!ReferenceEquals(this._menu.Value.ItemGrabMenu, this._lastMenu.Value))
             {
-                this._lastMenu.Value = this._menu.Value.ItemGrabMenu;
-                this._buttons.Value.Clear();
-                this._hideButtons.Value.Clear();
+                this.ResetButtons(this._menu.Value.ItemGrabMenu);
             }
 
-            this._buttons.Value.Add(cc);
+            this._buttons.Value.Add(cc, SideButton.Custom);
             this._menu.Value.ItemGrabMenu.SetupBorderNeighbors();
             this._menu.Value.ItemGrabMenu.RepositionSideButtons();
         }
 
-        public void HideButton(VanillaButton button)
+        public void HideButton(SideButton button)
         {
             if (this._menu.Value is null)
             {
@@ -123,9 +104,7 @@
 
             if (!ReferenceEquals(this._menu.Value.ItemGrabMenu, this._lastMenu.Value))
             {
-                this._lastMenu.Value = this._menu.Value.ItemGrabMenu;
-                this._buttons.Value.Clear();
-                this._hideButtons.Value.Clear();
+                this.ResetButtons(this._menu.Value.ItemGrabMenu);
             }
 
             this._hideButtons.Value.Add(button);
@@ -137,29 +116,23 @@
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static bool ItemGrabMenu_RepositionSideButtons_prefix(ItemGrabMenu __instance)
         {
-            if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Count == 0 && ItemGrabMenuSideButtonsService.Instance._buttons.Value.Count == 0)
+            if (ItemGrabMenuSideButtonsService.Instance._buttons.Value.Count == 0)
             {
                 return true;
             }
 
             var sideButtons = new List<ClickableComponent>();
-            foreach (VanillaButton vanillaButton in Enum.GetValues(typeof(VanillaButton)))
+            foreach (var button in ItemGrabMenuSideButtonsService.Instance._buttons.Value)
             {
-                if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Contains(vanillaButton))
+                if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Contains(button.Value))
                 {
-                    ItemGrabMenuSideButtonsService.HideButton(__instance, vanillaButton);
+                    ItemGrabMenuSideButtonsService.HideButton(__instance, button.Value);
                 }
                 else
                 {
-                    var button = ItemGrabMenuSideButtonsService.GetButton(__instance, vanillaButton);
-                    if (button is not null)
-                    {
-                        sideButtons.Add(button);
-                    }
+                    sideButtons.Add(button.Key);
                 }
             }
-
-            sideButtons.AddRange(ItemGrabMenuSideButtonsService.Instance._buttons.Value);
 
             var stepSize = sideButtons.Count >= 4 ? 72 : 80;
             for (var i = 0; i < sideButtons.Count; i++)
@@ -182,41 +155,28 @@
             return false;
         }
 
-        private static void HideButton(ItemGrabMenu menu, VanillaButton button)
+        private static void HideButton(ItemGrabMenu menu, SideButton button)
         {
             switch (button)
             {
-                case VanillaButton.OrganizeButton:
+                case SideButton.OrganizeButton:
                     menu.organizeButton = null;
                     break;
-                case VanillaButton.FillStacksButton:
+                case SideButton.FillStacksButton:
                     menu.fillStacksButton = null;
                     break;
-                case VanillaButton.ColorPickerToggleButton:
+                case SideButton.ColorPickerToggleButton:
                     menu.colorPickerToggleButton = null;
                     break;
-                case VanillaButton.SpecialButton:
+                case SideButton.SpecialButton:
                     menu.specialButton = null;
                     break;
-                case VanillaButton.JunimoNoteIcon:
+                case SideButton.JunimoNoteIcon:
                     menu.junimoNoteIcon = null;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(button), button, null);
             }
-        }
-
-        private static ClickableTextureComponent GetButton(ItemGrabMenu menu, VanillaButton button)
-        {
-            return button switch
-            {
-                VanillaButton.OrganizeButton => menu.organizeButton,
-                VanillaButton.FillStacksButton => menu.fillStacksButton,
-                VanillaButton.ColorPickerToggleButton => menu.colorPickerToggleButton,
-                VanillaButton.SpecialButton => menu.specialButton,
-                VanillaButton.JunimoNoteIcon => menu.junimoNoteIcon,
-                _ => throw new ArgumentOutOfRangeException(nameof(button), button, null),
-            };
         }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
@@ -238,7 +198,7 @@
             }
 
             // Draw buttons
-            foreach (var button in this._buttons.Value)
+            foreach (var button in this._buttons.Value.Keys)
             {
                 button.draw(e.SpriteBatch);
             }
@@ -258,11 +218,19 @@
             }
 
             var point = Game1.getMousePosition(true);
-            var button = this._buttons.Value.FirstOrDefault(button => button.containsPoint(point.X, point.Y));
-            if (button is not null)
+            var button = this._buttons.Value.FirstOrDefault(button => button.Key.containsPoint(point.X, point.Y));
+            if (button.Key is not null)
             {
+                var eventArgs = new SideButtonPressedEventArgs(button.Key, button.Value);
                 Game1.playSound("drumkit6");
-                this.InvokeAll(button);
+                foreach (var handler in this._buttonPressedHandlers.Value)
+                {
+                    if (handler(eventArgs))
+                    {
+                        Input.Suppress(SButton.MouseLeft);
+                        return;
+                    }
+                }
             }
         }
 
@@ -275,7 +243,7 @@
 
             var point = Game1.getMousePosition(true);
             this._hoverText.Value = string.Empty;
-            foreach (var button in this._buttons.Value)
+            foreach (var button in this._buttons.Value.Keys)
             {
                 button.tryHover(point.X, point.Y, 0.25f);
                 if (button.containsPoint(point.X, point.Y))
@@ -285,10 +253,27 @@
             }
         }
 
-        private void InvokeAll(ClickableTextureComponent cc)
+        private void ResetButtons(ItemGrabMenu menu)
         {
-            var eventArgs = new SideButtonPressed(cc);
-            this.OnSideButtonPressed?.Invoke(this, eventArgs);
+            this._lastMenu.Value = menu;
+            this._buttons.Value.Clear();
+            this._hideButtons.Value.Clear();
+            foreach (SideButton vanillaButton in Enum.GetValues(typeof(SideButton)))
+            {
+                var button = vanillaButton switch
+                {
+                    SideButton.OrganizeButton => menu.organizeButton,
+                    SideButton.FillStacksButton => menu.fillStacksButton,
+                    SideButton.ColorPickerToggleButton => menu.colorPickerToggleButton,
+                    SideButton.SpecialButton => menu.specialButton,
+                    SideButton.JunimoNoteIcon => menu.junimoNoteIcon,
+                    _ => null,
+                };
+                if (button is not null)
+                {
+                    this._buttons.Value.Add(button, vanillaButton);
+                }
+            }
         }
     }
 }

@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
     using Common.Helpers;
     using Common.UI;
+    using CommonHarmony.Enums;
     using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
@@ -24,6 +25,7 @@
         private readonly PerScreen<Chest> _fakeChest = new();
         private readonly PerScreen<HSLSlider> _hslSlider = new();
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
         private readonly PerScreen<ItemGrabMenu> _menu = new();
         private readonly RenderedActiveMenuService _renderedActiveMenuService;
         private readonly PerScreen<int> _screenId = new()
@@ -35,10 +37,12 @@
         private ColorPickerFeature(
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
+            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService,
             RenderedActiveMenuService renderedActiveMenuService)
             : base("ColorPicker", modConfigService)
         {
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
+            this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
             this._renderedActiveMenuService = renderedActiveMenuService;
         }
 
@@ -57,6 +61,7 @@
             return ColorPickerFeature.Instance ??= new(
                 await serviceManager.Get<ModConfigService>(),
                 await serviceManager.Get<ItemGrabMenuChangedService>(),
+                await serviceManager.Get<ItemGrabMenuSideButtonsService>(),
                 await serviceManager.Get<RenderedActiveMenuService>());
         }
 
@@ -65,6 +70,7 @@
         {
             // Events
             this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtonsService.AddHandler(ColorPickerFeature.OnSideButtonPressed);
             this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
             Events.GameLoop.GameLaunched += this.OnGameLaunched;
             Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -84,6 +90,7 @@
         {
             // Events
             this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtonsService.RemoveHandler(ColorPickerFeature.OnSideButtonPressed);
             this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
             Events.GameLoop.GameLaunched -= this.OnGameLaunched;
             Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -153,6 +160,18 @@
             e.ItemGrabMenu.discreteColorPickerCC = null;
         }
 
+        private static bool OnSideButtonPressed(SideButtonPressedEventArgs e)
+        {
+            if (e.Type != SideButton.ColorPickerToggleButton)
+            {
+                return false;
+            }
+
+            // Override color picker
+            Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
+            return true;
+        }
+
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
             if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
@@ -168,36 +187,26 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft)
+            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft || !Game1.player.showChestColorPicker)
             {
                 return;
             }
 
-            if (Game1.player.showChestColorPicker && this._hslSlider.Value.LeftClick())
+            if (this._hslSlider.Value.LeftClick())
             {
                 Game1.playSound("coin");
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
-                return;
-            }
-
-            // Override color picker
-            var point = Game1.getMousePosition(true);
-            if (this._menu.Value.colorPickerToggleButton is not null && this._menu.Value.colorPickerToggleButton.containsPoint(point.X, point.Y))
-            {
-                Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
-                Game1.playSound("drumkit6");
-                Input.Suppress(SButton.MouseLeft);
             }
         }
 
         private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker || e.Button != SButton.MouseLeft)
+            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft || !Game1.player.showChestColorPicker)
             {
                 return;
             }
 
-            if (e.Button == SButton.MouseLeft && this._hslSlider.Value.LeftClick())
+            if (this._hslSlider.Value.LeftReleased())
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
                 this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;

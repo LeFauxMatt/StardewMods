@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
+    using Common.Helpers;
     using CommonHarmony.Services;
     using Services;
     using StardewValley.Objects;
@@ -162,10 +163,12 @@
             value = value.Replace("#", string.Empty);
             if (string.IsNullOrWhiteSpace(value))
             {
+                Log.Trace($"Removing item filters for Chest {chest.DisplayName}");
                 chest.modData.Remove($"{XSPlus.ModPrefix}/FilterItems");
             }
             else
             {
+                Log.Trace($"Updating item filters for Chest {chest.DisplayName}");
                 chest.modData[$"{XSPlus.ModPrefix}/FilterItems"] = value;
             }
         }
