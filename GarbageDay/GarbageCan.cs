@@ -84,7 +84,7 @@
                     return null;
                 }
 
-                chest = new Chest(true, Vector2.Zero)
+                chest = new(true, Vector2.Zero)
                 {
                     Name = "Garbage Can",
                     playerChoiceColor =

@@ -33,7 +33,7 @@
         /// <returns>Returns a shuffled list.</returns>
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
-            return source.Shuffle(new Random());
+            return source.Shuffle(new());
         }
 
         private static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)

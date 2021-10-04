@@ -51,20 +51,26 @@
         /// </summary>
         public bool NotMatch { get; }
 
-        public static HashSet<string> GetContextTags(Item item)
+        public static IEnumerable<string> GetContextTags(Item item)
         {
             var contextTags = item.GetContextTags();
+            foreach (var contextTag in contextTags)
+            {
+                if (!contextTag.StartsWith("id_"))
+                {
+                    yield return contextTag;
+                }
+            }
+
             if (item is SObject obj && SearchPhrase.CanDonateToBundle(obj))
             {
-                contextTags.Add(SearchPhrase.DonateBundle);
+                yield return SearchPhrase.DonateBundle;
             }
 
             if (SearchPhrase.CanDonateToMuseum(item))
             {
-                contextTags.Add(SearchPhrase.DonateMuseum);
+                yield return SearchPhrase.DonateMuseum;
             }
-
-            return contextTags;
         }
 
         /// <summary>

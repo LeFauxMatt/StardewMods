@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
+    using StardewModdingAPI;
 
     /// <summary>
     ///     Service manager to request shared services.
@@ -13,62 +15,30 @@
         private static ServiceManager Instance;
         private readonly IDictionary<string, BaseService> _services = new Dictionary<string, BaseService>();
 
-        private ServiceManager()
+        private ServiceManager(IModHelper helper, IManifest manifest)
         {
+            this.Helper = helper;
+            this.ModManifest = manifest;
         }
+
+        public IModHelper Helper { get; }
+        public IManifest ModManifest { get; }
 
         /// <summary>Returns and creates if needed an instance of the <see cref="ServiceManager" /> class.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
+        /// <param name="manifest">A manifest which describes a mod for SMAPI.</param>
         /// <returns>An instance of <see cref="ServiceManager" /> class.</returns>
-        public static ServiceManager GetSingleton()
+        public static ServiceManager Create(IModHelper helper, IManifest manifest)
         {
-            return ServiceManager.Instance ??= new ServiceManager();
+            return ServiceManager.Instance ??= new(helper, manifest);
         }
 
         /// <summary>Add to collection of active service instances.</summary>
         /// <typeparam name="TServiceType">Type of service to add.</typeparam>
-        public void AddSingleton<TServiceType>()
+        internal async void Add<TServiceType>() where TServiceType : BaseService
         {
-            var service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(
-                null,
-                new object[]
-                {
-                    this,
-                });
-
-            if (service != null)
-            {
-                this._services.Add(service.ServiceName, service);
-            }
-        }
-
-        /// <summary>Add to collection of active service instances.</summary>
-        /// <param name="args">Additional parameters used to instantiate service.</param>
-        /// <typeparam name="TServiceType">Type of service to add.</typeparam>
-        public void AddSingleton<TServiceType>(params object[] args)
-        {
-            BaseService service;
-
-            if (args.Length > 0)
-            {
-                var newArgs = new object[args.Length + 1];
-                newArgs[0] = this;
-                Array.Copy(args, 0, newArgs, 1, args.Length);
-                service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, newArgs);
-            }
-            else
-            {
-                service = (BaseService)typeof(TServiceType).GetMethod("GetSingleton", BindingFlags.Public | BindingFlags.Static)?.Invoke(
-                    null,
-                    new object[]
-                    {
-                        this,
-                    });
-            }
-
-            if (service != null)
-            {
-                this._services.Add(service.ServiceName, service);
-            }
+            var service = await this.Create<TServiceType>();
+            this._services.Add(service.ServiceName, service);
         }
 
         /// <summary>
@@ -78,14 +48,14 @@
         /// <typeparam name="TServiceType">The type of service to request.</typeparam>
         /// <returns>Returns a service of the given type.</returns>
         /// <exception cref="ArgumentException">No valid service can be found.</exception>
-        public TServiceType RequestService<TServiceType>(string serviceName)
+        internal async Task<TServiceType> Get<TServiceType>(string serviceName) where TServiceType : BaseService
         {
             if (this._services.TryGetValue(serviceName, out var genericService) && genericService is TServiceType service)
             {
                 return service;
             }
 
-            return default;
+            return await this.Create<TServiceType>();
         }
 
         /// <summary>
@@ -93,11 +63,31 @@
         /// </summary>
         /// <typeparam name="TServiceType">The type of service to request.</typeparam>
         /// <returns>Returns a service of the given type.</returns>
-        /// <exception cref="ArgumentException">No valid service can be found.</exception>
-        public TServiceType RequestService<TServiceType>()
+        /// <exception cref="NullReferenceException">No valid service can be found.</exception>
+        internal async Task<TServiceType> Get<TServiceType>() where TServiceType : BaseService
+        {
+            return this._services.Values.OfType<TServiceType>().SingleOrDefault() ?? await this.Create<TServiceType>();
+        }
+
+        internal async Task<TServiceType> Create<TServiceType>() where TServiceType : BaseService
         {
             var service = this._services.Values.OfType<TServiceType>().SingleOrDefault();
-            return service ?? default;
+            if (service is not null)
+            {
+                return service;
+            }
+
+            var method = typeof(TServiceType).GetMethod("Create", BindingFlags.Public | BindingFlags.Static);
+            var task = (Task<TServiceType>)method?.Invoke(
+                null,
+                new object[]
+                {
+                    this,
+                });
+
+            service = await (task ?? throw new NullReferenceException(nameof(TServiceType)));
+            this._services.Add(service.ServiceName, service);
+            return service;
         }
 
         /// <summary>
@@ -106,7 +96,7 @@
         /// <typeparam name="TServiceType">The type of service to request.</typeparam>
         /// <returns>Returns a service of the given type.</returns>
         /// <exception cref="ArgumentException">No valid service can be found.</exception>
-        public List<TServiceType> RequestServices<TServiceType>()
+        internal List<TServiceType> GetAll<TServiceType>()
         {
             return this._services.Values.OfType<TServiceType>().ToList();
         }

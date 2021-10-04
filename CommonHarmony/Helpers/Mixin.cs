@@ -17,7 +17,7 @@
         /// <param name="manifest">The ModManifest to create the harmony instance with.</param>
         public static void Init(IManifest manifest)
         {
-            Mixin.Harmony = new Harmony(manifest.UniqueID);
+            Mixin.Harmony = new(manifest.UniqueID);
         }
 
         public static MixInfo Prefix(MethodBase original, Type type, string name)

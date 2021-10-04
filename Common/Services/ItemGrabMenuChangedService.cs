@@ -1,6 +1,7 @@
 ﻿namespace Common.Services
 {
     using System;
+    using System.Threading.Tasks;
     using Helpers;
     using Interfaces;
     using Models;
@@ -46,9 +47,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService" /> class.</returns>
-        public static ItemGrabMenuChangedService GetSingleton(ServiceManager serviceManager)
+        public static async Task<ItemGrabMenuChangedService> Create(ServiceManager serviceManager)
         {
-            return ItemGrabMenuChangedService.Instance ??= new ItemGrabMenuChangedService();
+            return ItemGrabMenuChangedService.Instance ??= new();
         }
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)

@@ -15,6 +15,11 @@
             Input.Helper = inputHelper;
         }
 
+        public static bool IsDown(SButton button)
+        {
+            return Input.Helper.IsDown(button);
+        }
+
         public static void Suppress(SButton button)
         {
             Input.Helper.Suppress(button);

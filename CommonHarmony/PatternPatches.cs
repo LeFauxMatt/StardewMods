@@ -15,19 +15,19 @@
         public PatternPatches(IEnumerable<CodeInstruction> instructions)
         {
             this._instructions = instructions;
-            this._patternPatches = new Queue<PatternPatch>();
+            this._patternPatches = new();
         }
 
         public PatternPatches(IEnumerable<CodeInstruction> instructions, params PatternPatch[] patches)
         {
             this._instructions = instructions;
-            this._patternPatches = new Queue<PatternPatch>(patches);
+            this._patternPatches = new(patches);
         }
 
         public PatternPatches(IEnumerable<CodeInstruction> instructions, PatternPatch patch)
         {
             this._instructions = instructions;
-            this._patternPatches = new Queue<PatternPatch>(
+            this._patternPatches = new(
                 new[]
                 {
                     patch,

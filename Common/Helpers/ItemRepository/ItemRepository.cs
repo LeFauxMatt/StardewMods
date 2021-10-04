@@ -420,8 +420,8 @@ namespace Common.Helpers.ItemRepository
         /// <param name="complexTags">A list of tag sets which match roe-producing fish.</param>
         private void GetRoeContextTagLookups(out HashSet<string> simpleTags, out List<List<string>> complexTags)
         {
-            simpleTags = new HashSet<string>();
-            complexTags = new List<List<string>>();
+            simpleTags = new();
+            complexTags = new();
 
             foreach (var data in Game1.content.Load<List<FishPondData>>("Data\\FishPondData"))
             {
@@ -448,7 +448,7 @@ namespace Common.Helpers.ItemRepository
             catch (ContentLoadException)
             {
                 // generally due to a player incorrectly replacing a data file with an XNB mod
-                return new Dictionary<TKey, TValue>();
+                return new();
             }
         }
 
@@ -476,7 +476,7 @@ namespace Common.Helpers.ItemRepository
         private Color GetRoeColor(SObject fish)
         {
             return fish.ParentSheetIndex == 698 // sturgeon
-                ? new Color(61, 55, 42)
+                ? new(61, 55, 42)
                 : (TailoringMenu.GetDyeColor(fish) ?? Color.Orange);
         }
 

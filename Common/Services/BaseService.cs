@@ -3,7 +3,7 @@
     /// <summary>
     ///     Encapsulates services that support the features of this mod.
     /// </summary>
-    internal abstract class BaseService
+    public abstract class BaseService
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="BaseService" /> class.

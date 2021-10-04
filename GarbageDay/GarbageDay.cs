@@ -87,7 +87,7 @@
 
                     if (!this._garbageCans.TryGetValue(whichCan, out var garbageCan))
                     {
-                        garbageCan = new GarbageCan(PathUtilities.NormalizeAssetName(asset.AssetName), whichCan, new Vector2(x, y));
+                        garbageCan = new(PathUtilities.NormalizeAssetName(asset.AssetName), whichCan, new(x, y));
                         this._garbageCans.Add(whichCan, garbageCan);
                     }
 
@@ -128,9 +128,9 @@
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
-            this._xsLite = new XSLiteIntegration(this.Helper.ModRegistry);
-            this._xsPlus = new XSPlusIntegration(this.Helper.ModRegistry);
-            GarbageDay.BetterRng = new EvenBetterRngIntegration(this.Helper.ModRegistry);
+            this._xsLite = new(this.Helper.ModRegistry);
+            this._xsPlus = new(this.Helper.ModRegistry);
+            GarbageDay.BetterRng = new(this.Helper.ModRegistry);
             this._config = this.Helper.ReadConfig<ModConfig>();
 
             // Console Commands

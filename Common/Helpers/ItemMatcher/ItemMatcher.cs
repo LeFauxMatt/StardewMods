@@ -52,7 +52,7 @@
             {
                 if (!this._searchPhrases.TryGetValue(searchValue, out var searchPhrase))
                 {
-                    searchPhrase = new SearchPhrase(searchValue, this._searchTagSymbol, this._exact);
+                    searchPhrase = new(searchValue, this._searchTagSymbol, this._exact);
                     this._searchPhrases.Add(searchValue, searchPhrase);
                 }
 

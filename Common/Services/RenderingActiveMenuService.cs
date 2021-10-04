@@ -1,6 +1,7 @@
 ﻿namespace Common.Services
 {
     using System;
+    using System.Threading.Tasks;
     using Helpers;
     using Interfaces;
     using Microsoft.Xna.Framework;
@@ -45,10 +46,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="RenderingActiveMenuService" /> class.</returns>
-        public static RenderingActiveMenuService GetSingleton(ServiceManager serviceManager)
+        public static async Task<RenderingActiveMenuService> Create(ServiceManager serviceManager)
         {
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return RenderingActiveMenuService.Instance ??= new RenderingActiveMenuService(itemGrabMenuChangedService);
+            return RenderingActiveMenuService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)

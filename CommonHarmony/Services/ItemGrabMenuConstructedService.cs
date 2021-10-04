@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Common.Interfaces;
     using Common.Models;
     using Common.Services;
@@ -51,9 +52,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="ItemGrabMenuConstructedService" /> class.</returns>
-        public static ItemGrabMenuConstructedService GetSingleton(ServiceManager serviceManager)
+        public static async Task<ItemGrabMenuConstructedService> Create(ServiceManager serviceManager)
         {
-            return ItemGrabMenuConstructedService.Instance ??= new ItemGrabMenuConstructedService();
+            return ItemGrabMenuConstructedService.Instance ??= new();
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

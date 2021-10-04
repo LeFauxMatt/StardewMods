@@ -43,7 +43,7 @@
                 this._cellSize = this._area.Height / this._totalCells;
                 for (var i = 0; i < this._totalCells; i++)
                 {
-                    this._bars[i] = new Rectangle(
+                    this._bars[i] = new(
                         this._area.Left + this._axis switch
                         {
                             Axis.Horizontal => i * this._cellSize,

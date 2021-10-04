@@ -111,7 +111,7 @@
                 h -= 1;
             }
 
-            return new HSLColor(h, this.S, this.L);
+            return new(h, this.S, this.L);
         }
 
         public Color ToRgbColor()

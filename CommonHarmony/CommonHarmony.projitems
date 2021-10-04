@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PatchType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\HighlightItemsService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ItemGrabMenuConstructedService.cs" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
 ﻿namespace Common.Services
 {
     using System;
+    using System.Threading.Tasks;
     using Helpers;
     using Interfaces;
-    using Microsoft.Xna.Framework;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -46,10 +46,9 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns an instance of the <see cref="RenderedActiveMenuService" /> class.</returns>
-        public static RenderedActiveMenuService GetSingleton(ServiceManager serviceManager)
+        public static async Task<RenderedActiveMenuService> Create(ServiceManager serviceManager)
         {
-            var itemGrabMenuChangedService = serviceManager.RequestService<ItemGrabMenuChangedService>();
-            return RenderedActiveMenuService.Instance ??= new RenderedActiveMenuService(itemGrabMenuChangedService);
+            return RenderedActiveMenuService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)
@@ -102,7 +101,7 @@
                 IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.ItemsToGrabMenu.descriptionText, itemGrabMenu.ItemsToGrabMenu.descriptionTitle, itemGrabMenu.hoveredItem, itemGrabMenu.heldItem is not null);
             }
 
-            itemGrabMenu.heldItem?.drawInMenu(e.SpriteBatch, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
+            itemGrabMenu.heldItem?.drawInMenu(e.SpriteBatch, new(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
 
             itemGrabMenu.drawMouse(e.SpriteBatch);
         }

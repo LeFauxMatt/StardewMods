@@ -1,13 +1,12 @@
-﻿namespace XSPlus.Services
+﻿namespace CommonHarmony.Services
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Threading.Tasks;
     using Common.Interfaces;
+    using Common.Models;
     using Common.Services;
-    using CommonHarmony.Services;
-    using HarmonyLib;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
@@ -20,17 +19,13 @@
         {
             Value = new List<Func<Item, bool>>(),
         };
-
         private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
 
-        private HighlightItemsService()
+        private HighlightItemsService(ItemGrabMenuConstructedService itemGrabMenuConstructedService)
             : base("HighlightItems")
         {
-            // Patches
-            Mixin.Postfix(
-                AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.highlightAllItems)),
-                typeof(HighlightItemsService),
-                nameof(HighlightItemsService.InventoryMenu_highlightAllItems_prefix));
+            // Events
+            itemGrabMenuConstructedService.AddHandler(this.OnItemGrabMenuConstructed);
         }
 
         /// <inheritdoc />
@@ -50,26 +45,23 @@
         /// </summary>
         /// <param name="serviceManager">Service manager to request shared services.</param>
         /// <returns>Returns a new instance of the <see cref="HighlightItemsService" /> class.</returns>
-        public static HighlightItemsService GetSingleton(ServiceManager serviceManager)
+        public static async Task<HighlightItemsService> Create(ServiceManager serviceManager)
         {
-            return HighlightItemsService.Instance ??= new HighlightItemsService();
+            return HighlightItemsService.Instance ??= new(await serviceManager.Get<ItemGrabMenuConstructedService>());
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-        private static void InventoryMenu_highlightAllItems_prefix(InventoryMenu __instance, ref bool __result, Item i)
+        private void OnItemGrabMenuConstructed(object sender, ItemGrabMenuEventArgs e)
         {
-            if (Game1.activeClickableMenu is not ItemGrabMenu {inventory: { } inventoryMenu} || !ReferenceEquals(inventoryMenu, __instance))
+            if (e.ItemGrabMenu.inventory.highlightMethod != this.HighlightMethod)
             {
-                return;
+                this._highlightMethod.Value = e.ItemGrabMenu.inventory.highlightMethod;
+                e.ItemGrabMenu.inventory.highlightMethod = this.HighlightMethod;
             }
-
-            __result = __result && HighlightItemsService.Instance.HighlightMethod(i);
         }
 
         private bool HighlightMethod(Item item)
         {
-            return this._highlightMethod.Value.Invoke(item) && this._highlightItemHandlers.Value.All(highlightMethod => highlightMethod(item));
+            return this._highlightMethod.Value(item) && (this._highlightItemHandlers.Value.Count == 0 || this._highlightItemHandlers.Value.All(highlightMethod => highlightMethod(item)));
         }
     }
 }

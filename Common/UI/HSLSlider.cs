@@ -39,7 +39,7 @@
             this._texture = Content.FromMod<Texture2D>("assets/hue.png");
             this._colors = new Color[this._texture.Width * this._texture.Height];
             this._texture.GetData(this._colors);
-            this._transparentBox = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(295, 503, 7, 7), Game1.pixelZoom);
+            this._transparentBox = new(Rectangle.Empty, Game1.mouseCursors, new(295, 503, 7, 7), Game1.pixelZoom);
         }
 
         /// <summary>
@@ -53,13 +53,13 @@
                 this._area = value;
                 var barWidth = value.Width / 2 - HSLSlider.Gap;
                 var barHeight = (value.Height - HSLSlider.Gap - 36) / 2;
-                this._hueSlider.Area = new Rectangle(value.Left, value.Top + 36, barWidth, value.Height - 36);
-                this._saturationSlider.Area = new Rectangle(value.Center.X + HSLSlider.Gap / 2, value.Top + 36, barWidth, barHeight);
-                this._luminanceSlider.Area = new Rectangle(value.Center.X + HSLSlider.Gap / 2, value.Top + 36 + barHeight + HSLSlider.Gap, barWidth, barHeight);
+                this._hueSlider.Area = new(value.Left, value.Top + 36, barWidth, value.Height - 36);
+                this._saturationSlider.Area = new(value.Center.X + HSLSlider.Gap / 2, value.Top + 36, barWidth, barHeight);
+                this._luminanceSlider.Area = new(value.Center.X + HSLSlider.Gap / 2, value.Top + 36 + barHeight + HSLSlider.Gap, barWidth, barHeight);
                 this._saturationBar.Area = this._saturationSlider.Area;
                 this._luminanceBar.Area = this._luminanceSlider.Area;
-                this._transparentBox.bounds = new Rectangle(value.Left - 2, value.Top, 7, 7);
-                this._transparentArea = new Rectangle(value.Left - 6, value.Top - 4, 36, 36);
+                this._transparentBox.bounds = new(value.Left - 2, value.Top, 7, 7);
+                this._transparentArea = new(value.Left - 6, value.Top - 4, 36, 36);
             }
         }
 
@@ -101,7 +101,7 @@
                 IClickableMenu.drawTextureBox(
                     b,
                     Game1.mouseCursors,
-                    new Rectangle(375, 357, 3, 3),
+                    new(375, 357, 3, 3),
                     this._transparentArea.Left,
                     this._transparentArea.Top,
                     this._transparentArea.Width,
@@ -114,33 +114,33 @@
             // Hue Selection
             b.Draw(
                 Game1.mouseCursors,
-                new Rectangle(this._hueSlider.Area.Left - 8, this._hueSlider.Coordinate, 20, 16),
+                new(this._hueSlider.Area.Left - 8, this._hueSlider.Coordinate, 20, 16),
                 HSLSlider.SelectRect,
                 Color.White,
                 MathHelper.PiOver2,
-                new Vector2(2.5f, 4f),
+                new(2.5f, 4f),
                 SpriteEffects.None,
                 1);
 
             // Saturation Selection
             b.Draw(
                 Game1.mouseCursors,
-                new Rectangle(this._saturationSlider.Area.Left - 8, this._saturationSlider.Coordinate, 20, 16),
+                new(this._saturationSlider.Area.Left - 8, this._saturationSlider.Coordinate, 20, 16),
                 HSLSlider.SelectRect,
                 Color.White,
                 MathHelper.PiOver2,
-                new Vector2(2.5f, 4f),
+                new(2.5f, 4f),
                 SpriteEffects.None,
                 1);
 
             // Luminance Selection
             b.Draw(
                 Game1.mouseCursors,
-                new Rectangle(this._luminanceSlider.Area.Left - 8, this._luminanceSlider.Coordinate, 20, 16),
+                new(this._luminanceSlider.Area.Left - 8, this._luminanceSlider.Coordinate, 20, 16),
                 HSLSlider.SelectRect,
                 Color.White,
                 MathHelper.PiOver2,
-                new Vector2(2.5f, 4f),
+                new(2.5f, 4f),
                 SpriteEffects.None,
                 1);
         }
@@ -149,9 +149,12 @@
         ///     Pass left mouse button pressed input to the HSL widget.
         /// </summary>
         /// <returns>Returns true if the color was updated.</returns>
-        public bool MouseLeftButtonPressed()
+        public bool LeftClick(int x = -1, int y = -1)
         {
-            var point = Game1.getMousePosition(true);
+            var point = x == -1 || y == -1
+                ? Game1.getMousePosition(true)
+                : new(x, y);
+
             if (this._holding is not Hold.None || !this._area.Contains(point))
             {
                 return false;
@@ -198,7 +201,7 @@
         ///     Releases input from the HSL widget.
         /// </summary>
         /// <returns>Returns true if the color was updated.</returns>
-        public bool MouseLeftButtonReleased()
+        public bool LeftReleased()
         {
             if (this._holding is not Hold.None)
             {
@@ -213,9 +216,12 @@
         ///     Pass mouse movement to the HSL widget.
         /// </summary>
         /// <returns>Returns true if the color was updated.</returns>
-        public bool MouseHover()
+        public bool OnHover(int x = -1, int y = -1)
         {
-            var point = Game1.getMousePosition(true);
+            var point = x == -1 || y == -1
+                ? Game1.getMousePosition(true)
+                : new(x, y);
+
             switch (this._holding)
             {
                 case Hold.Hue:
@@ -246,7 +252,7 @@
         /// </summary>
         /// <param name="delta">The scrolling direction.</param>
         /// <returns>Returns true if the color was updated.</returns>
-        public bool MouseWheelScroll(int delta)
+        public bool OnScroll(int delta)
         {
             var point = Game1.getMousePosition(true);
             if (this._holding is not Hold.None || !this._area.Contains(point))
@@ -297,7 +303,7 @@
             else
             {
                 this._isBlack = false;
-                this._color = new HSLColor
+                this._color = new()
                 {
                     H = this._hueSlider.Value,
                     S = this._saturationSlider.Value,
