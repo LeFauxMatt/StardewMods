@@ -29,6 +29,7 @@
         private IList<string> _loadedStorages;
         private Texture2D _placeholder;
         private bool _registeredTextures;
+        private Texture2D _texture;
         private XSLiteIntegration _xsLite;
 
         /// <inheritdoc />
@@ -42,6 +43,12 @@
         {
             var editor = asset.AsImage();
             editor.ExtendImage(80, this._expectedStorages.Count * 32);
+            if (this._texture is not null)
+            {
+                editor.PatchImage(this._texture);
+                return;
+            }
+
             for (var i = 0; i < this._expectedStorages.Count; i++)
             {
                 var storageName = this._expectedStorages[i];
@@ -62,13 +69,19 @@
                     }
                 }
             }
+
+            this._texture = editor.Data;
         }
 
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
+            this._xsLite = new(this.Helper.ModRegistry);
+
+            // Events
             this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+            this.Helper.Events.GameLoop.DayEnding += this.OnDayEnding;
             this.Helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
             this.Helper.Events.Multiplayer.ModMessageReceived += this.OnModMessageReceived;
         }
@@ -83,7 +96,6 @@
 
             this._placeholder = this.Helper.Content.Load<Texture2D>("assets/texture.png");
             this._alternativeTexturesAPI = this.Helper.ModRegistry.GetApi<IAlternativeTexturesAPI>("PeacefulEnd.AlternativeTextures");
-            this._xsLite = new(this.Helper.ModRegistry);
             this._loadedStorages = this._xsLite.API.GetAllStorages().Except(ModEntry.VanillaNames).Where(IsCorrectTexture).ToList();
         }
 
@@ -115,6 +127,11 @@
                 {
                     e.Peer.PlayerID,
                 });
+        }
+
+        private void OnDayEnding(object sender, DayEndingEventArgs e)
+        {
+            this._texture = null;
         }
 
         private void OnModMessageReceived(object sender, ModMessageReceivedEventArgs e)
