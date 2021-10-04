@@ -1,7 +1,7 @@
 ﻿{
   "Name": "eXpanded Storage (Alternative Textures)",
   "Author": "furyx639",
-  "Version": "1.0.0-beta.5",
+  "Version": "1.0.0-beta.6",
   "Description": "Adds XS Content Packs as Alternative Textures.",
   "UniqueID": "furyx639.XSAlternativeTextures",
   "EntryDll": "XSAlternativeTextures.dll",

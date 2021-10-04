@@ -1,7 +1,7 @@
 ﻿{
   "Name": "Garbage Day",
   "Author": "furyx639",
-  "Version": "2.1.0-beta.4",
+  "Version": "2.1.0-beta.5",
   "Description": "Turns the town trash cans into chests.",
   "UniqueID": "furyx639.GarbageDay",
   "EntryDll": "GarbageDay.dll",

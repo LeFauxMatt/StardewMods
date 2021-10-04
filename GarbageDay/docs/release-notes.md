@@ -1,5 +1,10 @@
 ﻿# Release Notes
 
+## Latest Changes
+
+- Added support for more types of custom loot
+- Fixed RNG being too low
+
 ## 2.1.0
 
 - Updated from Expanded Storage (Legacy) to XSLite+XSPlus

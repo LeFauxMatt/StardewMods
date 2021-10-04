@@ -1,7 +1,7 @@
 {
   "Name": "eXpanded Storage (Plus)",
   "Author": "furyx639",
-  "Version": "1.0.0-beta.6",
+  "Version": "1.0.0-beta.7",
   "Description": "Adds new features to chests.",
   "UniqueID": "furyx639.XSPlus",
   "EntryDll": "XSPlus.dll",
