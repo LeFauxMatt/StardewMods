@@ -3,16 +3,17 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Common.Helpers;
     using Common.Helpers.ItemRepository;
     using Common.Integrations.EvenBetterRNG;
     using Common.Integrations.XSLite;
-    using Common.Integrations.XSPlus;
     using Microsoft.Xna.Framework;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Characters;
+    using StardewValley.Locations;
     using StardewValley.Menus;
     using StardewValley.Objects;
     using xTile;
@@ -28,7 +29,6 @@
         private ModConfig _config;
         private Multiplayer _multiplayer;
         private XSLiteIntegration _xsLite;
-        private XSPlusIntegration _xsPlus;
 
         internal static IDictionary<string, IDictionary<string, float>> Loot { get; private set; }
 
@@ -49,10 +49,15 @@
         public void Edit<T>(IAssetData asset)
         {
             var map = asset.AsMap().Data;
-            if (!asset.AssetNameEquals(@"Maps\Town") && !map.Properties.ContainsKey("GarbageDay"))
+            if (!map.Properties.TryGetValue("GarbageDay", out var mapLoot))
             {
-                this._excludedAssets.Add(asset.AssetName);
-                return;
+                if (!asset.AssetNameEquals(@"Maps\Town"))
+                {
+                    this._excludedAssets.Add(asset.AssetName);
+                    return;
+                }
+
+                mapLoot = "Town";
             }
 
             for (var x = 0; x < map.Layers[0].LayerWidth; x++)
@@ -87,7 +92,7 @@
 
                     if (!this._garbageCans.TryGetValue(whichCan, out var garbageCan))
                     {
-                        garbageCan = new(PathUtilities.NormalizeAssetName(asset.AssetName), whichCan, new(x, y));
+                        garbageCan = new(PathUtilities.NormalizeAssetName(asset.AssetName), mapLoot, whichCan, new(x, y));
                         this._garbageCans.Add(whichCan, garbageCan);
                     }
 
@@ -128,8 +133,9 @@
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
+            Log.Init(this.Monitor);
+
             this._xsLite = new(this.Helper.ModRegistry);
-            this._xsPlus = new(this.Helper.ModRegistry);
             GarbageDay.BetterRng = new(this.Helper.ModRegistry);
             this._config = this.Helper.ReadConfig<ModConfig>();
 
@@ -186,25 +192,33 @@
 
             // Load GarbageCan using XSLite
             this._xsLite.API.LoadContentPack(this.ModManifest, this.Helper.DirectoryPath);
-
-            // Enable/Disable XSPlus features
-            this._xsPlus.API.EnableWithModData("CraftFromChest", "furyx639.ExpandedStorage/Storage", "Garbage Can", false);
-            this._xsPlus.API.EnableWithModData("SearchItems", "furyx639.ExpandedStorage/Storage", "Garbage Can", false);
-            this._xsPlus.API.EnableWithModData("StashToChest", "furyx639.ExpandedStorage/Storage", "Garbage Can", false);
-            this._xsPlus.API.EnableWithModData("Unbreakable", "furyx639.ExpandedStorage/Storage", "Garbage Can", true);
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            Utility.ForAllLocations(
-                delegate(GameLocation location)
+            var locations = Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
+
+            foreach (var location in locations)
+            {
+                var mapPath = PathUtilities.NormalizeAssetName(location.mapPath.Value);
+                foreach (var garbageCan in this._garbageCans.Where(gc => gc.Value.MapName.Equals(mapPath)))
                 {
-                    var mapPath = PathUtilities.NormalizeAssetName(location.mapPath.Value);
-                    foreach (var garbageCan in this._garbageCans.Where(gc => gc.Value.MapName.Equals(mapPath)))
+                    garbageCan.Value.Location = location;
+                }
+
+                var objects = location.Objects.Pairs.Where(obj => obj.Value is Chest chest && chest.playerChest.Value && chest.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var storage) && storage == "Garbage Can");
+                foreach (var obj in objects)
+                {
+                    if (obj.Value.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan) && this._garbageCans.ContainsKey(whichCan))
                     {
-                        garbageCan.Value.Location = location;
+                        continue;
                     }
-                });
+
+                    // Remove invalid cans
+                    Log.Trace($"Removing invalid Garbage Can {whichCan} at {location.Name}");
+                    location.Objects.Remove(obj.Key);
+                }
+            }
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e)
@@ -218,7 +232,7 @@
                 }
 
                 // Empty chest on garbage day
-                if (Game1.dayOfMonth % 7 == this._config.GarbageDay)
+                if (Game1.dayOfMonth % 7 == this._config.GarbageDay % 7)
                 {
                     garbageCan.Value.Chest.items.Clear();
                 }

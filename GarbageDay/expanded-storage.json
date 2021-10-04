@@ -8,6 +8,20 @@
     "OpenNearbySound": "trashcanlid",
     "CloseNearbySound": "trashcanlid",
     "OpenSound": "trashcan",
-    "Capacity": 12
+    "Capacity": 12,
+    "EnabledFeatures": [
+      "Unbreakable"
+    ],
+    "DisabledFeatures": [
+      "ColorPicker",
+      "CraftFromChest",
+      "FilterItems",
+      "InventoryTabs",
+      "SearchItems",
+      "StashToChest"
+    ],
+    "ModData": {
+      "Pathoschild.ChestsAnywhere/IsIgnored": "true"
+    }
   }
 }

@@ -18,6 +18,7 @@
     {
         private readonly IDictionary<string, float> _customLoot = new Dictionary<string, float>();
         private readonly ItemMatcher _itemMatcher = new(string.Empty, true);
+        private readonly string _mapLoot;
         private readonly int _vanillaCan;
         private readonly string _whichCan;
         private bool _checked;
@@ -29,11 +30,13 @@
 
         /// <summary>Initializes a new instance of the <see cref="GarbageCan" /> class.</summary>
         /// <param name="mapName">The name of the Map asset.</param>
-        /// <param name="whichCan">A name given to the garbage can for its loot table.</param>
+        /// <param name="mapLoot">A map property to specify a loot table.</param>
+        /// <param name="whichCan">A unique name given to the garbage can for its loot table.</param>
         /// <param name="tile">The tile where this garbage can is placed.</param>
-        public GarbageCan(string mapName, string whichCan, Vector2 tile)
+        public GarbageCan(string mapName, string mapLoot, string whichCan, Vector2 tile)
         {
             this.MapName = mapName;
+            this._mapLoot = mapLoot;
             this._whichCan = whichCan;
             this.Tile = tile;
             this._vanillaCan = int.TryParse(whichCan, out var vanillaCan) ? vanillaCan : 0;
@@ -85,6 +88,7 @@
                     return null;
                 }
 
+                Log.Trace($"Adding Garbage Can ({this._whichCan}) to location ({this.Location.Name})");
                 chest = new(true, Vector2.Zero)
                 {
                     Name = "Garbage Can",
@@ -115,6 +119,7 @@
                                    .Where(tag => tag.StartsWith("color"))
                                    .Shuffle()
                                    .FirstOrDefault();
+
                 return colorTag is not null ? ColorHelper.FromTag(colorTag) : Color.Gray;
             }
         }
@@ -192,6 +197,7 @@
             // Vanilla Loot
             if (this._vanillaCan is >= 3 and <= 7)
             {
+                Log.Trace($"Adding Vanilla Loot to Garbage Can {this._whichCan}");
                 var localLoot = this._vanillaCan switch
                 {
                     3 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => this.Randomizer.NextDouble() < 0.05 ? 749 : 535,
@@ -214,6 +220,7 @@
             var season = Game1.currentLocation.GetSeasonForLocation();
             if (this.Randomizer.NextDouble() < 0.1)
             {
+                Log.Trace($"Adding Vanilla Seasonal Loot {season} to Garbage Can {this._whichCan}");
                 var globalLoot = Utility.getRandomItemFromSeason(season, (int)(this.Tile.X * 653 + this.Tile.Y * 777), false);
                 if (globalLoot != -1)
                 {
@@ -226,15 +233,18 @@
 
             // Custom Loot
             this._customLoot.Clear();
-            this.AddToCustomLoot("All");
-            this.AddToCustomLoot($"Maps/{this.MapName}");
-            this.AddToCustomLoot($"Cans/{this._whichCan}");
-            this.AddToCustomLoot($"Seasons/{season}");
+            Log.Verbose($"Adding Custom Loot to Garbage Can {this._whichCan}");
+            this.AddToCustomLoot(this._whichCan);
+            Log.Verbose($"Adding Custom Map Loot {this._mapLoot} to Garbage Can {this._whichCan}");
+            this.AddToCustomLoot(this._mapLoot);
+            Log.Verbose($"Adding Custom Seasonal Loot {season} to Garbage Can {this._whichCan}");
+            this.AddToCustomLoot(season);
             if (!this._customLoot.Any())
             {
                 return;
             }
 
+            Log.Trace($"Adding custom loot to {this._whichCan}");
             var totalWeight = this._customLoot.Values.Sum();
             var targetIndex = this.Randomizer.NextDouble() * totalWeight;
             double currentIndex = 0;
