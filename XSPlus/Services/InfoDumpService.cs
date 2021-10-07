@@ -6,6 +6,7 @@
     using Common.Helpers;
     using CommonHarmony.Services;
     using Features;
+    using Microsoft.Xna.Framework;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewValley;
@@ -159,13 +160,14 @@
                                     $@"
     Filter Items: {chestFilterItems}");
                             }
-
                             break;
                         case ColorPickerFeature:
-                            info.Append(
-                                $@"
+                            if (chest.playerChoiceColor.Value != Color.Black)
+                            {
+                                info.Append(
+                                    $@"
     Chest Color: {chest.playerChoiceColor.Value.ToString()}");
-
+                            }
                             break;
                         case CraftFromChestFeature craftFromChestFeature:
                             if (craftFromChestFeature.TryGetValueForItem(chest, out var craftingRange))
