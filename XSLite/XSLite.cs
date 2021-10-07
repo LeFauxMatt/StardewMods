@@ -251,23 +251,41 @@
                 return;
             }
 
-            foreach (var item in e.Added)
+            void TryConvertItem(Item item)
             {
-                if (!item.TryGetStorage(out var storage))
+                if (item.Stack != 1 || !item.TryGetStorage(out var storage))
                 {
-                    continue;
+                    return;
                 }
 
-                var index = e.Player.getIndexOfInventoryItem(item);
-                if (this._inventoryStack.Contains(index))
+                var index = 0;
+                for (; index < e.Player.Items.Count; index++)
                 {
-                    this._inventoryStack.Remove(index);
+                    if (item == e.Player.Items[index] && e.Player.Items[index].Stack == 1)
+                    {
+                        if (this._inventoryStack.Contains(index))
+                        {
+                            this._inventoryStack.Remove(index);
+                        }
+                        else
+                        {
+                            this._inventoryStack.Add(index);
+                            storage.Replace(e.Player, index, item);
+                        }
+
+                        return;
+                    }
                 }
-                else
-                {
-                    this._inventoryStack.Add(index);
-                    storage.Replace(e.Player, index, item);
-                }
+            }
+
+            foreach (var item in e.Added)
+            {
+                TryConvertItem(item);
+            }
+
+            foreach (var item in e.QuantityChanged)
+            {
+                TryConvertItem(item.Item);
             }
         }
 
