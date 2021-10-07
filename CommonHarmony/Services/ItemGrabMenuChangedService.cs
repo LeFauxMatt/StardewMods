@@ -3,11 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Interfaces;
+    using Enums;
     using HarmonyLib;
+    using Interfaces;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -27,7 +29,11 @@
             });
         private static ItemGrabMenuChangedService Instance;
         private readonly PerScreen<bool> _attached = new();
+        private readonly List<ServiceHandler<EventHandler<ItemGrabMenuEventArgs>>> _handlers = new();
         private readonly PerScreen<IClickableMenu> _menu = new();
+        private ServiceHandler<EventHandler<ItemGrabMenuEventArgs>>[] _cachedHandlers = new ServiceHandler<EventHandler<ItemGrabMenuEventArgs>>[0];
+        private int _handlerCount;
+        private bool _hasNewHandlers;
 
         private ItemGrabMenuChangedService()
             : base("ItemGrabMenuConstructed")
@@ -43,15 +49,35 @@
         }
 
         /// <inheritdoc />
-        public void AddHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
+        public void AddHandler(EventHandler<ItemGrabMenuEventArgs> handler)
         {
-            this.ItemGrabMenuConstructed += eventHandler;
+            lock (this._handlers)
+            {
+                var priority = handler.Method.GetCustomAttribute<HandlerPriorityAttribute>()?.Priority ?? HandlerPriority.Normal;
+                var serviceHandler = new ServiceHandler<EventHandler<ItemGrabMenuEventArgs>>(handler, this._handlerCount++, priority);
+                this._handlers.Add(serviceHandler);
+                this._cachedHandlers = null;
+                this._hasNewHandlers = true;
+            }
         }
 
         /// <inheritdoc />
-        public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> eventHandler)
+        public void RemoveHandler(EventHandler<ItemGrabMenuEventArgs> handler)
         {
-            this.ItemGrabMenuConstructed -= eventHandler;
+            lock (this._handlers)
+            {
+                for (var i = this._handlers.Count - 1; i >= 0; i--)
+                {
+                    if (this._handlers[i].Handler != handler)
+                    {
+                        continue;
+                    }
+
+                    this._handlers.RemoveAt(i);
+                    this._cachedHandlers = null;
+                    break;
+                }
+            }
         }
 
         private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuConstructed;
@@ -106,8 +132,38 @@
 
         private void InvokeAll(ItemGrabMenu itemGrabMenu, Chest chest, int screenId, bool isNew = false)
         {
+            if (this._handlers.Count == 0)
+            {
+                return;
+            }
+
             var eventArgs = new ItemGrabMenuEventArgs(itemGrabMenu, chest, screenId, isNew);
-            this.ItemGrabMenuConstructed?.Invoke(this, eventArgs);
+            var handlers = this._cachedHandlers;
+            if (handlers is null)
+            {
+                lock (this._handlers)
+                {
+                    if (this._hasNewHandlers && this._handlers.Any(p => p.Priority != HandlerPriority.Normal))
+                    {
+                        this._handlers.Sort();
+                    }
+
+                    this._cachedHandlers = handlers = this._handlers.ToArray();
+                    this._hasNewHandlers = false;
+                }
+            }
+
+            foreach (var serviceHandler in handlers)
+            {
+                try
+                {
+                    serviceHandler.Handler.Invoke(this, eventArgs);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Failed in {nameof(ItemGrabMenuChangedService)}. {ex.Message}");
+                }
+            }
         }
     }
 }

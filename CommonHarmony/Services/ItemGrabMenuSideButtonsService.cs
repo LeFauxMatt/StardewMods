@@ -6,9 +6,9 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Interfaces;
     using Enums;
     using HarmonyLib;
+    using Interfaces;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -24,16 +24,15 @@
         {
             Value = new List<Func<SideButtonPressedEventArgs, bool>>(),
         };
-        private readonly PerScreen<HashSet<SideButton>> _hideButtons = new()
-        {
-            Value = new(),
-        };
         private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _buttons = new()
         {
             Value = new(),
         };
+        private readonly PerScreen<HashSet<SideButton>> _hideButtons = new()
+        {
+            Value = new(),
+        };
         private readonly PerScreen<string> _hoverText = new();
-        private readonly PerScreen<ItemGrabMenu> _lastMenu = new();
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
 
         private ItemGrabMenuSideButtonsService(
@@ -42,7 +41,8 @@
             : base("ItemGrabMenuSideButtons")
         {
             // Events
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedBefore);
+            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedAfter);
             renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
             Events.Input.ButtonPressed += this.OnButtonPressed;
             Events.Input.CursorMoved += this.OnCursorMoved;
@@ -85,14 +85,7 @@
                 return;
             }
 
-            if (!ReferenceEquals(this._menu.Value.ItemGrabMenu, this._lastMenu.Value))
-            {
-                this.ResetButtons(this._menu.Value.ItemGrabMenu);
-            }
-
             this._buttons.Value.Add(cc, SideButton.Custom);
-            this._menu.Value.ItemGrabMenu.SetupBorderNeighbors();
-            this._menu.Value.ItemGrabMenu.RepositionSideButtons();
         }
 
         public void HideButton(SideButton button)
@@ -102,14 +95,7 @@
                 return;
             }
 
-            if (!ReferenceEquals(this._menu.Value.ItemGrabMenu, this._lastMenu.Value))
-            {
-                this.ResetButtons(this._menu.Value.ItemGrabMenu);
-            }
-
             this._hideButtons.Value.Add(button);
-            this._menu.Value.ItemGrabMenu.SetupBorderNeighbors();
-            this._menu.Value.ItemGrabMenu.RepositionSideButtons();
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
@@ -174,12 +160,14 @@
                 case SideButton.JunimoNoteIcon:
                     menu.junimoNoteIcon = null;
                     break;
+                case SideButton.Custom:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(button), button, null);
             }
         }
 
-        private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
+        [HandlerPriority(HandlerPriority.High)]
+        private void OnItemGrabMenuChangedBefore(object sender, ItemGrabMenuEventArgs e)
         {
             if (e.ItemGrabMenu is null || e.Chest is null)
             {
@@ -187,7 +175,20 @@
                 return;
             }
 
+            this.ResetButtons(e.ItemGrabMenu);
             this._menu.Value = e;
+        }
+
+        [HandlerPriority(HandlerPriority.Low)]
+        private void OnItemGrabMenuChangedAfter(object sender, ItemGrabMenuEventArgs e)
+        {
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
+            {
+                return;
+            }
+
+            this._menu.Value.ItemGrabMenu.SetupBorderNeighbors();
+            this._menu.Value.ItemGrabMenu.RepositionSideButtons();
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
@@ -255,7 +256,6 @@
 
         private void ResetButtons(ItemGrabMenu menu)
         {
-            this._lastMenu.Value = menu;
             this._buttons.Value.Clear();
             this._hideButtons.Value.Clear();
             foreach (SideButton vanillaButton in Enum.GetValues(typeof(SideButton)))
@@ -269,6 +269,7 @@
                     SideButton.JunimoNoteIcon => menu.junimoNoteIcon,
                     _ => null,
                 };
+
                 if (button is not null)
                 {
                     this._buttons.Value.Add(button, vanillaButton);

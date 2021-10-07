@@ -20,12 +20,15 @@
         private readonly PerScreen<ClickableTextureComponent> _configButton = new();
         private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
         private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
+        private readonly ModConfigService _modConfigService;
         private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
+        private readonly StashToChestFeature _stashToChestFeature;
 
         private CategorizeChestFeature(
             ModConfigService modConfigService,
             ItemGrabMenuChangedService itemGrabMenuChangedService,
-            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService)
+            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService,
+            StashToChestFeature stashToChestFeature)
             : base("CategorizeChest", modConfigService)
         {
             this._configButton.Value = new(
@@ -37,8 +40,10 @@
                 name = "Configure",
             };
 
+            this._modConfigService = modConfigService;
             this._itemGrabMenuChangedService = itemGrabMenuChangedService;
             this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
+            this._stashToChestFeature = stashToChestFeature;
         }
 
         /// <summary>
@@ -56,7 +61,8 @@
             return CategorizeChestFeature.Instance ??= new(
                 await serviceManager.Get<ModConfigService>(),
                 await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<ItemGrabMenuSideButtonsService>());
+                await serviceManager.Get<ItemGrabMenuSideButtonsService>(),
+                await serviceManager.Get<StashToChestFeature>());
         }
 
         /// <inheritdoc />
@@ -93,18 +99,20 @@
             {
                 return false;
             }
-            
+
             var filterItems = this._chest.Value.GetFilterItems();
             Game1.activeClickableMenu = new ItemSelectionMenu(
-                string.Empty,
+                this._modConfigService.ModConfig.SearchTagSymbol,
                 this.ReturnToMenu,
                 filterItems,
                 this._chest.Value.SetFilterItems);
+
             return true;
         }
 
         private void ReturnToMenu()
         {
+            this._stashToChestFeature.ResetCachedChests(true, true);
             Game1.activeClickableMenu = this._returnMenu.Value;
         }
     }
