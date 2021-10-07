@@ -37,18 +37,18 @@
         {
             get
             {
-                IList<Chest> chests = XSPlus.Instance.AccessibleLocations.SelectMany(location => location.Objects.Values.OfType<Chest>()).ToList();
+                IList<Chest> chests = XSPlus.AccessibleLocations.SelectMany(location => location.Objects.Values.OfType<Chest>()).ToList();
                 return chests;
             }
         }
 
-        private IEnumerable<GameLocation> AccessibleLocations
+        public static IEnumerable<GameLocation> AccessibleLocations
         {
             get
             {
                 var locations = Context.IsMainPlayer
                     ? Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)))
-                    : this.Helper.Multiplayer.GetActiveLocations();
+                    : XSPlus.Instance.Helper.Multiplayer.GetActiveLocations();
 
                 return locations;
             }
@@ -82,7 +82,8 @@
                 serviceManager.Create<RenderingActiveMenuService>(),
                 serviceManager.Create<RenderedActiveMenuService>(),
                 serviceManager.Create<DisplayedInventoryService>(),
-                serviceManager.Create<HighlightItemsService>());
+                serviceManager.Create<HighlightItemsService>(),
+                serviceManager.Create<InfoDumpService>());
 
             // Features
             Task.WaitAll(

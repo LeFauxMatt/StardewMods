@@ -53,15 +53,14 @@
         }
 
         /// <inheritdoc />
-        protected override bool TryGetValueForItem(Item item, out int param)
+        internal override bool TryGetValueForItem(Item item, out int param)
         {
             if (base.TryGetValueForItem(item, out param))
             {
                 return true;
             }
 
-            param = this._modConfigService.ModConfig.Capacity;
-            return param == 0;
+            return (param = this._modConfigService.ModConfig.Capacity) != 0;
         }
 
         [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]

@@ -95,7 +95,7 @@
         }
 
         /// <inheritdoc />
-        protected override bool IsEnabledForItem(Item item)
+        internal override bool IsEnabledForItem(Item item)
         {
             return base.IsEnabledForItem(item) || item is Chest chest && chest.playerChest.Value && chest.modData.TryGetValue($"{XSPlus.ModPrefix}/FilterItems", out var filterItems) && !string.IsNullOrWhiteSpace(filterItems);
         }

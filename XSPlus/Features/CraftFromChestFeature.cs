@@ -95,7 +95,7 @@
 
         /// <inheritdoc />
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
-        protected override bool IsEnabledForItem(Item item)
+        internal override bool IsEnabledForItem(Item item)
         {
             if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range))
             {
@@ -112,7 +112,7 @@
         }
 
         /// <inheritdoc />
-        protected override bool TryGetValueForItem(Item item, out string param)
+        internal override bool TryGetValueForItem(Item item, out string param)
         {
             if (base.TryGetValueForItem(item, out param))
             {

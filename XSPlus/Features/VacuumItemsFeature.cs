@@ -18,14 +18,14 @@
     /// <inheritdoc />
     internal class VacuumItemsFeature : BaseFeature
     {
-        private static readonly PerScreen<bool> IsVacuuming = new();
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
-        private MixInfo _addItemToInventoryPatch;
+        private readonly FilterItemsFeature _filterItems;
         private MixInfo _collectPatch;
 
-        private VacuumItemsFeature(ModConfigService modConfigService)
+        private VacuumItemsFeature(ModConfigService modConfigService, FilterItemsFeature filterItems)
             : base("VacuumItems", modConfigService)
         {
+            this._filterItems = filterItems;
         }
 
         /// <summary>
@@ -47,7 +47,9 @@
         /// <returns>Returns an instance of the <see cref="VacuumItemsFeature" /> class.</returns>
         public static async Task<VacuumItemsFeature> Create(ServiceManager serviceManager)
         {
-            return VacuumItemsFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
+            return VacuumItemsFeature.Instance ??= new(
+                await serviceManager.Get<ModConfigService>(),
+                await serviceManager.Get<FilterItemsFeature>());
         }
 
         /// <inheritdoc />
@@ -61,17 +63,6 @@
                 AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
                 typeof(VacuumItemsFeature),
                 nameof(VacuumItemsFeature.Debris_collect_transpiler));
-
-            this._addItemToInventoryPatch = Mixin.Prefix(
-                AccessTools.Method(
-                    typeof(Farmer),
-                    nameof(Farmer.addItemToInventory),
-                    new[]
-                    {
-                        typeof(Item), typeof(List<Item>),
-                    }),
-                typeof(VacuumItemsFeature),
-                nameof(VacuumItemsFeature.Farmer_addItemToInventory_prefix));
         }
 
         /// <inheritdoc />
@@ -82,7 +73,13 @@
 
             // Patches
             Mixin.Unpatch(this._collectPatch);
-            Mixin.Unpatch(this._addItemToInventoryPatch);
+        }
+
+        /// <inheritdoc />
+        [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
+        internal override bool IsEnabledForItem(Item item)
+        {
+            return base.IsEnabledForItem(item) && item.Stack == 1 && item is Chest chest && chest.playerChest.Value;
         }
 
         private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -100,36 +97,6 @@
             }
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-        private static bool Farmer_addItemToInventory_prefix(ref Item __result, ref Item item)
-        {
-            if (!VacuumItemsFeature.IsVacuuming.Value)
-            {
-                return true;
-            }
-
-            Item remaining = null;
-            var stack = item.Stack;
-            foreach (var chest in VacuumItemsFeature.Instance.EnabledChests)
-            {
-                remaining = chest.addItem(item);
-                if (remaining is null)
-                {
-                    __result = null!;
-                    return false;
-                }
-            }
-
-            if (remaining is not null && remaining.Stack != stack)
-            {
-                item = remaining;
-            }
-
-            return true;
-        }
-
         private static bool AddItemToInventoryBool(Farmer farmer, Item item, bool makeActiveObject)
         {
             if (!VacuumItemsFeature.Instance.EnabledChests.Any())
@@ -137,20 +104,24 @@
                 return farmer.addItemToInventoryBool(item, makeActiveObject);
             }
 
-            VacuumItemsFeature.IsVacuuming.Value = true;
-            var success = farmer.addItemToInventoryBool(item, makeActiveObject);
-            VacuumItemsFeature.IsVacuuming.Value = false;
-            return success;
+            foreach (var chest in VacuumItemsFeature.Instance.EnabledChests.Where(chest => VacuumItemsFeature.Instance._filterItems.HasFilterItems(chest)))
+            {
+                item = chest.addItem(item);
+                if (item is null)
+                {
+                    break;
+                }
+            }
+
+            return item is null || farmer.addItemToInventoryBool(item, makeActiveObject);
         }
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
-            if (!e.IsLocalPlayer || !e.Added.OfType<Chest>().Any() && !e.Removed.OfType<Chest>().Any())
+            if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any() || e.QuantityChanged.Any(stack => stack.Item is Chest && stack.NewSize == 1)))
             {
-                return;
+                this._cachedEnabledChests.Value = null;
             }
-
-            this._cachedEnabledChests.Value = null;
         }
     }
 }

@@ -65,7 +65,7 @@
 
         /// <inheritdoc />
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
-        protected override bool IsEnabledForItem(Item item)
+        internal override bool IsEnabledForItem(Item item)
         {
             if (!base.IsEnabledForItem(item) || item is not Chest chest || !chest.playerChest.Value || !this.TryGetValueForItem(item, out var range) || !this._filterItems.HasFilterItems(chest))
             {
@@ -82,7 +82,7 @@
         }
 
         /// <inheritdoc />
-        protected override bool TryGetValueForItem(Item item, out string param)
+        internal override bool TryGetValueForItem(Item item, out string param)
         {
             if (base.TryGetValueForItem(item, out param))
             {
@@ -93,6 +93,19 @@
             return !string.IsNullOrWhiteSpace(param);
         }
 
+        internal void ResetCachedChests(bool playerChest = false, bool gameChest = false)
+        {
+            if (playerChest)
+            {
+                this._cachedPlayerChests.Value = null;
+            }
+
+            if (gameChest)
+            {
+                this._cachedGameChests.Value = null;
+            }
+        }
+
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
             if (!e.IsLocalPlayer)
@@ -100,12 +113,12 @@
                 return;
             }
 
-            this._cachedPlayerChests.Value = null;
+            this.ResetCachedChests(true);
         }
 
         private void OnWarped(object sender, WarpedEventArgs e)
         {
-            this._cachedGameChests.Value = null;
+            this.ResetCachedChests(gameChest: true);
         }
 
         /// <summary>Stash inventory items into all supported chests.</summary>

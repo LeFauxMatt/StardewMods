@@ -34,8 +34,7 @@
         {
             Value = -1,
         };
-        private IList<Tab> _tabs = null!;
-        private Texture2D _texture = null!;
+        private Texture2D _texture;
 
         private InventoryTabsFeature(
             ModConfigService modConfigService,
@@ -56,6 +55,8 @@
         ///     Gets or sets the instance of <see cref="InventoryTabsFeature" />.
         /// </summary>
         private static InventoryTabsFeature Instance { get; set; }
+
+        internal IList<Tab> Tabs { get; private set; }
 
         /// <summary>
         ///     Returns and creates if needed an instance of the <see cref="InventoryTabsFeature" /> class.
@@ -102,18 +103,18 @@
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            this._tabs = Content.FromMod<List<Tab>>("assets/tabs.json");
+            this.Tabs = Content.FromMod<List<Tab>>("assets/tabs.json");
             this._texture = Content.FromMod<Texture2D>("assets/tabs.png");
 
-            for (var i = 0; i < this._tabs.Count; i++)
+            for (var i = 0; i < this.Tabs.Count; i++)
             {
-                this._tabs[i].Component = new(
+                this.Tabs[i].Component = new(
                     new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
                     this._texture,
                     new(16 * i, 0, 16, 16),
                     Game1.pixelZoom)
                 {
-                    hoverText = this._tabs[i].Name,
+                    hoverText = this.Tabs[i].Name,
                 };
             }
         }
@@ -147,23 +148,23 @@
             // Draw tabs between inventory menus along a horizontal axis
             var x = this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.xPositionOnScreen;
             var y = this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.height + 1 * Game1.pixelZoom;
-            for (var i = 0; i < this._tabs.Count; i++)
+            for (var i = 0; i < this.Tabs.Count; i++)
             {
                 Color color;
-                this._tabs[i].Component.bounds.X = x;
+                this.Tabs[i].Component.bounds.X = x;
                 if (i == this._tabIndex.Value)
                 {
-                    this._tabs[i].Component.bounds.Y = y + 1 * Game1.pixelZoom;
+                    this.Tabs[i].Component.bounds.Y = y + 1 * Game1.pixelZoom;
                     color = Color.White;
                 }
                 else
                 {
-                    this._tabs[i].Component.bounds.Y = y;
+                    this.Tabs[i].Component.bounds.Y = y;
                     color = Color.Gray;
                 }
 
-                this._tabs[i].Component.draw(e.SpriteBatch, color, 0.86f + this._tabs[i].Component.bounds.Y / 20000f);
-                x = this._tabs[i].Component.bounds.Right;
+                this.Tabs[i].Component.draw(e.SpriteBatch, color, 0.86f + this.Tabs[i].Component.bounds.Y / 20000f);
+                x = this.Tabs[i].Component.bounds.Right;
             }
         }
 
@@ -189,9 +190,9 @@
 
             if (this._modConfigService.ModConfig.NextTab.JustPressed())
             {
-                this.SetTab(this._tabIndex.Value == this._tabs.Count ? -1 : this._tabIndex.Value + 1);
+                this.SetTab(this._tabIndex.Value == this.Tabs.Count ? -1 : this._tabIndex.Value + 1);
                 this._tabIndex.Value++;
-                if (this._tabIndex.Value == this._tabs.Count)
+                if (this._tabIndex.Value == this.Tabs.Count)
                 {
                     this._tabIndex.Value = -1;
                 }
@@ -202,7 +203,7 @@
 
             if (this._modConfigService.ModConfig.PreviousTab.JustPressed())
             {
-                this.SetTab(this._tabIndex.Value == -1 ? this._tabs.Count - 1 : this._tabIndex.Value - 1);
+                this.SetTab(this._tabIndex.Value == -1 ? this.Tabs.Count - 1 : this._tabIndex.Value - 1);
                 Input.Suppress(this._modConfigService.ModConfig.PreviousTab);
             }
         }
@@ -221,9 +222,9 @@
 
             // Check if any tab was clicked on.
             var point = Game1.getMousePosition(true);
-            for (var i = 0; i < this._tabs.Count; i++)
+            for (var i = 0; i < this.Tabs.Count; i++)
             {
-                if (this._tabs[i].Component.containsPoint(point.X, point.Y))
+                if (this.Tabs[i].Component.containsPoint(point.X, point.Y))
                 {
                     this.SetTab(this._tabIndex.Value == i ? -1 : i);
                     Input.Suppress(e.Button);
@@ -240,14 +241,14 @@
 
             // Check if any tab is hovered.
             var point = Game1.getMousePosition(true);
-            var tab = this._tabs.SingleOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
+            var tab = this.Tabs.SingleOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
             this._hoverText.Value = tab is not null ? Translations.Get($"tabs.{tab.Name}.name") : string.Empty;
         }
 
         private void SetTab(int index)
         {
             this._tabIndex.Value = index;
-            var tab = this._tabs.ElementAtOrDefault(index);
+            var tab = this.Tabs.ElementAtOrDefault(index);
             if (tab is not null)
             {
                 this._itemMatcher.Value.SetSearch(tab.Tags);
