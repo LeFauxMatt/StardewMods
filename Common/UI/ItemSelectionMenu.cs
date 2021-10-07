@@ -23,8 +23,9 @@
     internal class ItemSelectionMenu : ItemGrabMenu
     {
         private static readonly PerScreen<ItemSelectionMenu> Instance = new();
-        private static IEnumerable<Item> AllItems;
+        private static IEnumerable<SearchableItem> AllItems;
         private readonly int _columns;
+        private readonly List<SearchableItem> _filteredItems = new();
         private readonly ItemMatcher _itemFilter;
         private readonly IList<Item> _items;
         private readonly ItemMatcher _itemSelector;
@@ -34,10 +35,9 @@
         private readonly ClickableComponent _searchArea;
         private readonly TextBox _searchField;
         private readonly ClickableTextureComponent _searchIcon;
-        private readonly List<Item> _sortedItems = new();
+        private readonly List<SearchableItem> _sortedItems = new();
         private readonly IList<ClickableComponent> _tags;
         private ContextMenu _dropDown;
-        private IEnumerable<Item> _filteredItems;
         private int _offset;
 
         /// <summary>
@@ -53,14 +53,14 @@
                 false,
                 true,
                 ItemSelectionMenu.HighlightMethod,
-                (item, who) => { },
+                (_, _) => { },
                 null,
-                (item, who) => { },
+                (_, _) => { },
                 canBeExitedWithKey: false,
                 source: ItemSelectionMenu.source_none)
         {
             ItemSelectionMenu.Instance.Value = this;
-            ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().Select(i => i.CreateItem()).ToList();
+            ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().ToList();
             this._returnValue = returnValue;
             this.exitFunction = exitFunction;
             this.behaviorBeforeCleanup = this.BehaviorBeforeCleanup;
@@ -72,12 +72,9 @@
             this._offset = 0;
             this._range = new(0, ItemSelectionMenu.AllItems.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
             this._itemFilter = new(searchTagSymbol);
-            this._itemSelector = new(searchTagSymbol);
-
-            // Get saved labels from favorites
+            this._itemSelector = new(string.Empty);
             this._itemSelector.SetSearch(initialValue);
-
-            this.ReSyncInventory();
+            this.ReSyncInventory(true, true);
 
             this._searchField = new(Content.FromGame<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
             {
@@ -98,24 +95,10 @@
         /// <summary>
         ///     Gets the displayed items.
         /// </summary>
-        private IEnumerable<Item> Items
+        private IEnumerable<SearchableItem> Items
         {
-            get
-            {
-                // Filter for searched items
-                this._filteredItems ??= ItemSelectionMenu.AllItems!.Where(item => this._itemFilter.Matches(item));
-
-                // Bring selected items to top
-                if (this._sortedItems.Count == 0)
-                {
-                    this._sortedItems.AddRange(this._filteredItems.OrderBy(item => this._itemSelector.Matches(item) ? 0 : 1));
-                }
-
-                // Skip scrolled items
-                var items = this._sortedItems.Skip(this.Offset * this._columns);
-
-                return items;
-            }
+            // Skip scrolled items
+            get => this._sortedItems.Skip(this.Offset * this._columns);
         }
 
         /// <summary>
@@ -163,7 +146,7 @@
             if (cc is not null)
             {
                 var slotNumber = Convert.ToInt32(cc.name);
-                var item = this.Items.ElementAtOrDefault(slotNumber);
+                var item = this.Items.ElementAtOrDefault(slotNumber)?.Item;
                 if (item is not null)
                 {
                     var tag = item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("item_"));
@@ -192,10 +175,18 @@
             if (cc is not null)
             {
                 var slotNumber = Convert.ToInt32(cc.name);
-                var item = this.Items.ElementAtOrDefault(slotNumber);
+                var item = this.Items.ElementAtOrDefault(slotNumber)?.Item;
                 if (item is not null)
                 {
-                    this._dropDown = new(SearchPhrase.GetContextTags(item).ToList(), x, y, this.AddTag);
+                    var tags = SearchPhrase.GetContextTags(item).ToList();
+                    if (tags.Contains("quality_none"))
+                    {
+                        tags.Add("quality_silver");
+                        tags.Add("quality_gold");
+                        tags.Add("quality_iridium");
+                    }
+
+                    this._dropDown = new(tags, x, y, this.AddTag);
                 }
             }
         }
@@ -251,7 +242,7 @@
             if (cc is not null)
             {
                 var slotNumber = Convert.ToInt32(cc.name);
-                this.hoveredItem = this.Items.ElementAtOrDefault(slotNumber);
+                this.hoveredItem = this.Items.ElementAtOrDefault(slotNumber)?.Item;
                 this.hoverText = string.Empty;
                 return;
             }
@@ -278,7 +269,7 @@
             }
 
             this._itemFilter.SetSearch(this._searchField.Text);
-            this.ReSyncInventory(false, true);
+            this.ReSyncInventory(true, true);
             base.update(time);
         }
 
@@ -419,26 +410,29 @@
         private void ReSyncInventory(bool clearFiltered = false, bool clearSorted = false)
         {
             this._items.Clear();
+
             if (clearFiltered)
             {
-                this._filteredItems = null;
+                // Filter for searched items
+                this._filteredItems.Clear();
+                this._filteredItems.AddRange(ItemSelectionMenu.AllItems.Where(item => this._itemFilter.Matches(item)));
+                this._range.Maximum = Math.Max(0, this._filteredItems.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
             }
 
             if (clearFiltered || clearSorted)
             {
+                // Bring selected items to top
                 this._sortedItems.Clear();
+                this._sortedItems.AddRange(this._filteredItems.OrderBy(item => this._itemSelector.Matches(item) ? 0 : 1));
             }
 
-            this._range.Maximum = Math.Max(0, this.Items.Count().RoundUp(this._columns) / this._columns - this._menu.rows);
             for (var i = 0; i < this.ItemsToGrabMenu.capacity; i++)
             {
-                var item = this.Items.ElementAtOrDefault(i);
-                if (item is null)
+                var item = this.Items.ElementAtOrDefault(i)?.Item;
+                if (item is not null)
                 {
-                    break;
+                    this.ItemsToGrabMenu.actualInventory.Add(item);
                 }
-
-                this.ItemsToGrabMenu.actualInventory.Add(item);
             }
 
             this._tags.Clear();
