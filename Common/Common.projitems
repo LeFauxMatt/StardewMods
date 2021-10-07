@@ -36,7 +36,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\XSLiteIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\IXSPlusAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\XSPlusIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventHandlerService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\GradientBar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />

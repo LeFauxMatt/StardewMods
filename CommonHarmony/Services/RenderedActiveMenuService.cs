@@ -3,7 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using Common.Helpers;
-    using Common.Interfaces;
+    using Interfaces;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;

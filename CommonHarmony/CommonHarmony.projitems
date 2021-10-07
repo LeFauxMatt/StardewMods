@@ -10,10 +10,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\HandlerPriority.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SideButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Mixin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\MixInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventHandlerService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ServiceHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ItemGrabMenuEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\HandlerPriorityAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\SideButtonPressedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatchType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />

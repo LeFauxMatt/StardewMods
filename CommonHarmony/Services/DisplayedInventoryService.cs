@@ -7,9 +7,9 @@
     using System.Threading.Tasks;
     using Common.Extensions;
     using Common.Helpers;
-    using Common.Interfaces;
     using Common.Models;
     using HarmonyLib;
+    using Interfaces;
     using Microsoft.Xna.Framework.Graphics;
     using Models;
     using StardewModdingAPI.Events;

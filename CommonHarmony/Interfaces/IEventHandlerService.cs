@@ -1,4 +1,4 @@
-﻿namespace Common.Interfaces
+﻿namespace CommonHarmony.Interfaces
 {
     /// <summary>
     ///     Service to handle creation/invocation of an event.

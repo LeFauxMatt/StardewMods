@@ -77,15 +77,15 @@ namespace Common.Helpers.ItemRepository
 
             IEnumerable<SearchableItem> GetAllRaw()
             {
-                var types = itemTypes?.Any() == true ? new HashSet<ItemType>(itemTypes) : null;
+                HashSet<ItemType> types = itemTypes?.Any() == true ? new HashSet<ItemType>(itemTypes) : null;
                 bool ShouldGet(ItemType type) => types == null || types.Contains(type);
 
                 // get tools
                 if (ShouldGet(ItemType.Tool))
                 {
-                    for (var q = Tool.stone; q <= Tool.iridium; q++)
+                    for (int q = Tool.stone; q <= Tool.iridium; q++)
                     {
-                        var quality = q;
+                        int quality = q;
 
                         yield return this.TryCreate(ItemType.Tool, ToolFactory.axe, _ => ToolFactory.getToolFromDescription(ToolFactory.axe, quality));
                         yield return this.TryCreate(ItemType.Tool, ToolFactory.hoe, _ => ToolFactory.getToolFromDescription(ToolFactory.hoe, quality));
@@ -104,14 +104,14 @@ namespace Common.Helpers.ItemRepository
                 // clothing
                 if (ShouldGet(ItemType.Clothing))
                 {
-                    foreach (var id in this.GetShirtIds())
+                    foreach (int id in this.GetShirtIds())
                         yield return this.TryCreate(ItemType.Clothing, id, p => new Clothing(p.ID));
                 }
 
                 // wallpapers
                 if (ShouldGet(ItemType.Wallpaper))
                 {
-                    for (var id = 0; id < 112; id++)
+                    for (int id = 0; id < 112; id++)
                         yield return this.TryCreate(
                             ItemType.Wallpaper,
                             id,
@@ -124,7 +124,7 @@ namespace Common.Helpers.ItemRepository
                 // flooring
                 if (ShouldGet(ItemType.Flooring))
                 {
-                    for (var id = 0; id < 56; id++)
+                    for (int id = 0; id < 56; id++)
                         yield return this.TryCreate(
                             ItemType.Flooring,
                             id,
@@ -137,20 +137,20 @@ namespace Common.Helpers.ItemRepository
                 // equipment
                 if (ShouldGet(ItemType.Boots))
                 {
-                    foreach (var id in this.TryLoad<int, string>("Data\\Boots").Keys)
+                    foreach (int id in this.TryLoad<int, string>("Data\\Boots").Keys)
                         yield return this.TryCreate(ItemType.Boots, id, p => new Boots(p.ID));
                 }
 
                 if (ShouldGet(ItemType.Hat))
                 {
-                    foreach (var id in this.TryLoad<int, string>("Data\\hats").Keys)
+                    foreach (int id in this.TryLoad<int, string>("Data\\hats").Keys)
                         yield return this.TryCreate(ItemType.Hat, id, p => new Hat(p.ID));
                 }
 
                 // weapons
                 if (ShouldGet(ItemType.Weapon))
                 {
-                    foreach (var id in this.TryLoad<int, string>("Data\\weapons").Keys)
+                    foreach (int id in this.TryLoad<int, string>("Data\\weapons").Keys)
                     {
                         yield return this.TryCreate(
                             ItemType.Weapon,
@@ -164,37 +164,37 @@ namespace Common.Helpers.ItemRepository
                 // furniture
                 if (ShouldGet(ItemType.Furniture))
                 {
-                    foreach (var id in this.TryLoad<int, string>("Data\\Furniture").Keys)
+                    foreach (int id in this.TryLoad<int, string>("Data\\Furniture").Keys)
                         yield return this.TryCreate(ItemType.Furniture, id, p => Furniture.GetFurnitureInstance(p.ID));
                 }
 
                 // craftables
                 if (ShouldGet(ItemType.BigCraftable))
                 {
-                    foreach (var id in Game1.bigCraftablesInformation.Keys)
+                    foreach (int id in Game1.bigCraftablesInformation.Keys)
                         yield return this.TryCreate(ItemType.BigCraftable, id, p => new SObject(Vector2.Zero, p.ID));
                 }
 
                 // objects
                 if (ShouldGet(ItemType.Object) || ShouldGet(ItemType.Ring))
                 {
-                    foreach (var id in Game1.objectInformation.Keys)
+                    foreach (int id in Game1.objectInformation.Keys)
                     {
-                        var fields = Game1.objectInformation[id]?.Split('/');
+                        string[] fields = Game1.objectInformation[id]?.Split('/');
 
                         // secret notes
                         if (id == 79)
                         {
                             if (ShouldGet(ItemType.Object))
                             {
-                                foreach (var secretNoteId in this.TryLoad<int, string>("Data\\SecretNotes").Keys)
+                                foreach (int secretNoteId in this.TryLoad<int, string>("Data\\SecretNotes").Keys)
                                 {
                                     yield return this.TryCreate(
                                         ItemType.Object,
                                         this.CustomIDOffset + secretNoteId,
                                         _ =>
                                         {
-                                            var note = new SObject(79, 1);
+                                            SObject note = new SObject(79, 1);
                                             note.name = $"{note.name} #{secretNoteId}";
                                             return note;
                                         });
@@ -320,7 +320,7 @@ namespace Common.Helpers.ItemRepository
                                             this.CustomIDOffset * 5 + item.ParentSheetIndex,
                                             _ =>
                                             {
-                                                var honey = new SObject(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
+                                                SObject honey = new SObject(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
                                                 {
                                                     Name = $"{item.Name} Honey",
                                                     preservedParentSheetIndex =
@@ -338,12 +338,12 @@ namespace Common.Helpers.ItemRepository
                                     // roe and aged roe (derived from FishPond.GetFishProduce)
                                     case SObject.sellAtFishShopCategory when item.ParentSheetIndex == 812:
                                     {
-                                        this.GetRoeContextTagLookups(out var simpleTags, out var complexTags);
+                                        this.GetRoeContextTagLookups(out HashSet<string> simpleTags, out List<List<string>> complexTags);
 
                                         foreach (var pair in Game1.objectInformation)
                                         {
                                             // get input
-                                            var input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))?.Item as SObject;
+                                            SObject input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))?.Item as SObject;
                                             var inputTags = input?.GetContextTags();
                                             if (inputTags?.Any() != true)
                                                 continue;
@@ -354,7 +354,7 @@ namespace Common.Helpers.ItemRepository
 
                                             // yield roe
                                             SObject roe = null;
-                                            var color = this.GetRoeColor(input);
+                                            Color color = this.GetRoeColor(input);
                                             yield return this.TryCreate(
                                                 ItemType.Object,
                                                 this.CustomIDOffset * 7 + item.ParentSheetIndex,
@@ -420,10 +420,10 @@ namespace Common.Helpers.ItemRepository
         /// <param name="complexTags">A list of tag sets which match roe-producing fish.</param>
         private void GetRoeContextTagLookups(out HashSet<string> simpleTags, out List<List<string>> complexTags)
         {
-            simpleTags = new();
-            complexTags = new();
+            simpleTags = new HashSet<string>();
+            complexTags = new List<List<string>>();
 
-            foreach (var data in Game1.content.Load<List<FishPondData>>("Data\\FishPondData"))
+            foreach (FishPondData data in Game1.content.Load<List<FishPondData>>("Data\\FishPondData"))
             {
                 if (data.ProducedItems.All(p => p.ItemID != 812))
                     continue; // doesn't produce roe
@@ -448,7 +448,7 @@ namespace Common.Helpers.ItemRepository
             catch (ContentLoadException)
             {
                 // generally due to a player incorrectly replacing a data file with an XNB mod
-                return new();
+                return new Dictionary<TKey, TValue>();
             }
         }
 
@@ -476,7 +476,7 @@ namespace Common.Helpers.ItemRepository
         private Color GetRoeColor(SObject fish)
         {
             return fish.ParentSheetIndex == 698 // sturgeon
-                ? new(61, 55, 42)
+                ? new Color(61, 55, 42)
                 : (TailoringMenu.GetDyeColor(fish) ?? Color.Orange);
         }
 
@@ -500,7 +500,7 @@ namespace Common.Helpers.ItemRepository
         private IEnumerable<int> GetShirtIds()
         {
             // defined shirt items
-            foreach (var id in Game1.clothingInformation.Keys)
+            foreach (int id in Game1.clothingInformation.Keys)
             {
                 if (id < 0)
                     continue; // placeholder data for character customization clothing below
@@ -509,8 +509,8 @@ namespace Common.Helpers.ItemRepository
             }
 
             // dynamic shirts
-            var clothingIds = new HashSet<int>(Game1.clothingInformation.Keys);
-            for (var id = 1000; id <= 1299; id++)
+            HashSet<int> clothingIds = new HashSet<int>(Game1.clothingInformation.Keys);
+            for (int id = 1000; id <= 1299; id++)
             {
                 if (!clothingIds.Contains(id))
                     yield return id;

@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Common.Interfaces;
+    using Interfaces;
     using Models;
     using StardewModdingAPI.Utilities;
     using StardewValley;

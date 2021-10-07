@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using ItemRepository;
     using StardewValley;
 
     /// <summary>
@@ -34,6 +35,11 @@
         ///     The current search expression as a list of search values.
         /// </summary>
         public IList<string> SearchValues { get; } = new List<string>();
+
+        public bool Matches(SearchableItem item)
+        {
+            return this.Matches(item.Item);
+        }
 
         /// <summary>
         ///     Checks if an item matches the search phrases.
