@@ -4,9 +4,9 @@
 
 ## Latest Changes
 
-- Added new Categorized chests feature.
-- Added hover text to tabs.
-- Fixed color picker not resetting selection between chests.
+- Fixed issue where vacuum chests could possibly duplicate items.
+- Fixed issue where config button could not load and cause errors.
+- Added `xs_dump` command.
 
 ## 1.0.0
 

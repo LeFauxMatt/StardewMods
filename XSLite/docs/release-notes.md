@@ -2,7 +2,7 @@
 
 ## Latest Changes
 
-- Cached migrated content packs to improve next load times.
+- Fixed bug where splitting stacks of chests could cause extra quantities to be reduced to one.
 
 ## 1.7.1
 
