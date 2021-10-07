@@ -32,6 +32,10 @@
         {
             Value = new(),
         };
+        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _sideButtons = new()
+        {
+            Value = new(),
+        };
         private readonly PerScreen<string> _hoverText = new();
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
 
@@ -107,16 +111,35 @@
                 return true;
             }
 
-            var sideButtons = new List<ClickableComponent>();
-            foreach (var button in ItemGrabMenuSideButtonsService.Instance._buttons.Value)
+            ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Clear();
+            var sideButtons = new List<ClickableTextureComponent>();
+            foreach (var sideButton in ItemGrabMenuSideButtonsService.Instance._buttons.Value)
             {
-                if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Contains(button.Value))
+                ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Add(sideButton.Key, sideButton.Value);
+                sideButtons.Add(sideButton.Key);
+            }
+
+            foreach (SideButton vanillaButton in Enum.GetValues(typeof(SideButton)))
+            {
+                if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Contains(vanillaButton))
                 {
-                    ItemGrabMenuSideButtonsService.HideButton(__instance, button.Value);
+                    ItemGrabMenuSideButtonsService.HideButton(__instance, vanillaButton);
+                    continue;
                 }
-                else
+
+                var button = vanillaButton switch
                 {
-                    sideButtons.Add(button.Key);
+                    SideButton.OrganizeButton => __instance.organizeButton,
+                    SideButton.FillStacksButton => __instance.fillStacksButton,
+                    SideButton.ColorPickerToggleButton => __instance.colorPickerToggleButton,
+                    SideButton.SpecialButton => __instance.specialButton,
+                    SideButton.JunimoNoteIcon => __instance.junimoNoteIcon,
+                    _ => null,
+                };
+                if (button is not null)
+                {
+                    ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Add(button, vanillaButton);
+                    sideButtons.Add(button);
                 }
             }
 
@@ -161,6 +184,7 @@
                     menu.junimoNoteIcon = null;
                     break;
                 case SideButton.Custom:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(button), button, null);
             }
@@ -175,7 +199,8 @@
                 return;
             }
 
-            this.ResetButtons(e.ItemGrabMenu);
+            this._buttons.Value.Clear();
+            this._hideButtons.Value.Clear();
             this._menu.Value = e;
         }
 
@@ -187,8 +212,8 @@
                 return;
             }
 
-            this._menu.Value.ItemGrabMenu.SetupBorderNeighbors();
             this._menu.Value.ItemGrabMenu.RepositionSideButtons();
+            this._menu.Value.ItemGrabMenu.SetupBorderNeighbors();
         }
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
@@ -198,8 +223,8 @@
                 return;
             }
 
-            // Draw buttons
-            foreach (var button in this._buttons.Value.Keys)
+            // Draw custom buttons
+            foreach (var button in this._buttons.Value.Where(button => button.Value is SideButton.Custom).Select(button => button.Key))
             {
                 button.draw(e.SpriteBatch);
             }
@@ -219,18 +244,14 @@
             }
 
             var point = Game1.getMousePosition(true);
-            var button = this._buttons.Value.FirstOrDefault(button => button.Key.containsPoint(point.X, point.Y));
+            var button = this._sideButtons.Value.FirstOrDefault(button => button.Key.containsPoint(point.X, point.Y));
             if (button.Key is not null)
             {
                 var eventArgs = new SideButtonPressedEventArgs(button.Key, button.Value);
                 Game1.playSound("drumkit6");
-                foreach (var handler in this._buttonPressedHandlers.Value)
+                if (this._buttonPressedHandlers.Value.Any(handler => handler(eventArgs)))
                 {
-                    if (handler(eventArgs))
-                    {
-                        Input.Suppress(SButton.MouseLeft);
-                        return;
-                    }
+                    Input.Suppress(SButton.MouseLeft);
                 }
             }
         }
@@ -244,35 +265,12 @@
 
             var point = Game1.getMousePosition(true);
             this._hoverText.Value = string.Empty;
-            foreach (var button in this._buttons.Value.Keys)
+            foreach (var button in this._buttons.Value.Where(button => button.Value is SideButton.Custom).Select(button => button.Key))
             {
                 button.tryHover(point.X, point.Y, 0.25f);
                 if (button.containsPoint(point.X, point.Y))
                 {
                     this._hoverText.Value = Translations.Get($"button.{button.name}.name");
-                }
-            }
-        }
-
-        private void ResetButtons(ItemGrabMenu menu)
-        {
-            this._buttons.Value.Clear();
-            this._hideButtons.Value.Clear();
-            foreach (SideButton vanillaButton in Enum.GetValues(typeof(SideButton)))
-            {
-                var button = vanillaButton switch
-                {
-                    SideButton.OrganizeButton => menu.organizeButton,
-                    SideButton.FillStacksButton => menu.fillStacksButton,
-                    SideButton.ColorPickerToggleButton => menu.colorPickerToggleButton,
-                    SideButton.SpecialButton => menu.specialButton,
-                    SideButton.JunimoNoteIcon => menu.junimoNoteIcon,
-                    _ => null,
-                };
-
-                if (button is not null)
-                {
-                    this._buttons.Value.Add(button, vanillaButton);
                 }
             }
         }
