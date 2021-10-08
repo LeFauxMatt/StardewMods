@@ -15,17 +15,9 @@
     internal class ModConfigService : BaseService
     {
         private static ModConfigService Instance;
-        private readonly string[] _configChoices =
-        {
-            "Default", "Enable", "Disable",
-        };
         private readonly IModHelper _helper;
         private readonly IManifest _manifest;
         private readonly GenericModConfigMenuIntegration _modConfigMenu;
-        private readonly string[] _rangeChoices =
-        {
-            "Inventory", "Location", "World", "Default", "Disabled",
-        };
         private readonly ServiceManager _serviceManager;
 
         private ModConfigService(ServiceManager serviceManager)
@@ -130,13 +122,14 @@
                 6,
                 1);
 
+            var rangeChoices = new[] { "Inventory", "Location", "World", "Default", "Disabled" };
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
                 "Crafting Range",
                 "The default range that chests can be remotely crafted from.",
                 () => this.ModConfig.CraftingRange,
                 this.SetCraftingRange,
-                this._rangeChoices);
+                rangeChoices);
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -144,8 +137,9 @@
                 "The default range that chests can be remotely stashed into.",
                 () => this.ModConfig.StashingRange,
                 this.SetStashingRange,
-                this._rangeChoices);
+                rangeChoices);
 
+            var configChoices = new[] { "Default", "Enable", "Disable" };
             this._modConfigMenu.API.RegisterLabel(this._manifest, "Global Overrides", "Enable/disable features for all chests");
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -153,7 +147,7 @@
                 "Open the currently held chest in your inventory.",
                 this.GetConfig("AccessCarried"),
                 this.SetConfig("AccessCarried"),
-                this._configChoices);
+                configChoices);
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -161,7 +155,7 @@
                 "Organize chests by assigning categories of items.",
                 this.GetConfig("CategorizeChest"),
                 this.SetConfig("CategorizeChest"),
-                this._configChoices);
+                configChoices);
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -169,7 +163,7 @@
                 "Adds an HSL Color Picker to the chest menu.",
                 this.GetConfig("ColorPicker"),
                 this.SetConfig("ColorPicker"),
-                this._configChoices);
+                configChoices);
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -177,7 +171,7 @@
                 "Adds tabs to the chest menu.",
                 this.GetConfig("InventoryTabs"),
                 this.SetConfig("InventoryTabs"),
-                this._configChoices);
+                configChoices);
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -185,7 +179,7 @@
                 "Adds a search bar to the chest menu.",
                 this.GetConfig("SearchItems"),
                 this.SetConfig("SearchItems"),
-                this._configChoices);
+                configChoices);
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
@@ -193,7 +187,7 @@
                 "Allows chests in player inventory to pick up dropped items.",
                 this.GetConfig("VacuumItems"),
                 this.SetConfig("VacuumItems"),
-                this._configChoices);
+                configChoices);
         }
 
         private void RevertToDefault()

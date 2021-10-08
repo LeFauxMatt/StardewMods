@@ -51,12 +51,7 @@
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
-            if (e.ItemGrabMenu is null)
-            {
-                return;
-            }
-
-            if (e.ItemGrabMenu.inventory.highlightMethod != this.HighlightMethod)
+            if (e.ItemGrabMenu is not null && e.ItemGrabMenu.inventory.highlightMethod?.Target is not HighlightItemsService)
             {
                 this._highlightMethod.Value = e.ItemGrabMenu.inventory.highlightMethod;
                 e.ItemGrabMenu.inventory.highlightMethod = this.HighlightMethod;
