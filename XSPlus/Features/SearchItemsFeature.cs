@@ -383,7 +383,6 @@
             }
 
             this._searchField.Value.Text = string.Empty;
-            this._itemMatcher.Value.SetSearch(string.Empty);
             return true;
         }
 
