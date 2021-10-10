@@ -32,12 +32,12 @@
         {
             Value = new(),
         };
+        private readonly PerScreen<string> _hoverText = new();
+        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
         private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _sideButtons = new()
         {
             Value = new(),
         };
-        private readonly PerScreen<string> _hoverText = new();
-        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
 
         private ItemGrabMenuSideButtonsService(
             ItemGrabMenuChangedService itemGrabMenuChangedService,
@@ -136,6 +136,7 @@
                     SideButton.JunimoNoteIcon => __instance.junimoNoteIcon,
                     _ => null,
                 };
+
                 if (button is not null)
                 {
                     ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Add(button, vanillaButton);

@@ -160,6 +160,7 @@
                                     $@"
     Filter Items: {chestFilterItems}");
                             }
+
                             break;
                         case ColorPickerFeature:
                             if (chest.playerChoiceColor.Value != Color.Black)
@@ -168,6 +169,7 @@
                                     $@"
     Chest Color: {chest.playerChoiceColor.Value.ToString()}");
                             }
+
                             break;
                         case CraftFromChestFeature craftFromChestFeature:
                             if (craftFromChestFeature.TryGetValueForItem(chest, out var craftingRange))

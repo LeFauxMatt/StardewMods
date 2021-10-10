@@ -8,11 +8,11 @@
     using Common.Extensions;
     using Common.Helpers;
     using CommonHarmony;
+    using CommonHarmony.Services;
     using HarmonyLib;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Netcode;
-    using StardewModdingAPI;
     using StardewValley;
     using StardewValley.Locations;
     using StardewValley.Menus;
@@ -29,27 +29,23 @@
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     internal class Patches
     {
-        private static IModHelper Helper = null!;
-
         /// <summary>Initializes a new instance of the <see cref="Patches" /> class.</summary>
-        /// <param name="helper">Provides simplified APIs for writing mods.</param>
-        /// <param name="harmony">The harmony instance to apply patches.</param>
-        public Patches(IModHelper helper, Harmony harmony)
+        public Patches()
         {
-            Patches.Helper = helper;
-
             // Use GetItemsForPlayer for all chest types.
-            harmony.Patch(
+            Mixin.Transpiler(
                 AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                transpiler: new(typeof(Patches), nameof(Patches.Chest_addItem_transpiler)));
+                typeof(Patches),
+                nameof(Patches.Chest_addItem_transpiler));
 
             // Clear nulls for heldStorage items
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Method(typeof(Chest), nameof(Chest.clearNulls)),
-                postfix: new(typeof(Patches), nameof(Patches.Chest_clearNulls_postfix)));
+                typeof(Patches),
+                nameof(Patches.Chest_clearNulls_postfix));
 
             // Draw bigger storages from the origin chest.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(
                     typeof(Chest),
                     nameof(Chest.draw),
@@ -57,10 +53,11 @@
                     {
                         typeof(SpriteBatch), typeof(int), typeof(int), typeof(float),
                     }),
-                new(typeof(Patches), nameof(Patches.Chest_draw_prefix)));
+                typeof(Patches),
+                nameof(Patches.Chest_draw_prefix));
 
             // Draw chest with playerChoiceColor and animation when held.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(
                     typeof(Chest),
                     nameof(Chest.draw),
@@ -68,10 +65,11 @@
                     {
                         typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool),
                     }),
-                new(typeof(Patches), nameof(Patches.Chest_drawLocal_prefix)));
+                typeof(Patches),
+                nameof(Patches.Chest_drawLocal_prefix));
 
             // Draw chest with playerChoiceColor and animation in menu.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(
                     typeof(Chest),
                     nameof(Chest.drawInMenu),
@@ -79,55 +77,64 @@
                     {
                         typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool),
                     }),
-                new(typeof(Patches), nameof(Patches.Chest_drawInMenu_prefix)));
+                typeof(Patches),
+                nameof(Patches.Chest_drawInMenu_prefix));
 
             // Prevent OpenNearby chests from resetting their lid frame automatically.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(Chest), nameof(Chest.fixLidFrame)),
-                new(typeof(Patches), nameof(Patches.Chest_fixLidFrame_prefix)));
+                typeof(Patches),
+                nameof(Patches.Chest_fixLidFrame_prefix));
 
             // Return items from heldItem Chest.
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)),
-                postfix: new(typeof(Patches), nameof(Patches.Chest_GetItemsForPlayer_postfix)));
+                typeof(Patches),
+                nameof(Patches.Chest_GetItemsForPlayer_postfix));
 
             // Create expanded storage debris.
-            harmony.Patch(
+            Mixin.Transpiler(
                 AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                transpiler: new(typeof(Patches), nameof(Patches.Chest_performToolAction_transpiler)));
+                typeof(Patches),
+                nameof(Patches.Chest_performToolAction_transpiler));
 
             // Support calculating distance correctly for bigger chests.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-                new(typeof(Patches), nameof(Patches.Chest_UpdateFarmerNearby_prefix)));
+                typeof(Patches),
+                nameof(Patches.Chest_UpdateFarmerNearby_prefix));
 
             // Animate the lids for OpenNearby chests.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-                new(typeof(Patches), nameof(Patches.Chest_updateWhenCurrentLocation_prefix)));
+                typeof(Patches),
+                nameof(Patches.Chest_updateWhenCurrentLocation_prefix));
 
             // Disallow stacking Chests holding items.
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                postfix: new(typeof(Patches), nameof(Patches.Item_canStackWith_postfix)));
+                typeof(Patches),
+                nameof(Patches.Item_canStackWith_postfix));
 
             // Remove disabled components
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Constructor(
                     typeof(ItemGrabMenu),
                     new[]
                     {
                         typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
                     }),
-                postfix: new(typeof(Patches), nameof(Patches.ItemGrabMenu_constructor_postfix)));
+                typeof(Patches),
+                nameof(Patches.ItemGrabMenu_constructor_postfix));
 
             // Remove disabled components
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                postfix: new(typeof(Patches), nameof(Patches.ItemGrabMenu_setSourceItem_postfix)));
+                typeof(Patches),
+                nameof(Patches.ItemGrabMenu_setSourceItem_postfix));
 
             // Disable drawing extension objects for bigger storages.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(
                     typeof(SObject),
                     nameof(SObject.draw),
@@ -135,52 +142,56 @@
                     {
                         typeof(SpriteBatch), typeof(int), typeof(int), typeof(float),
                     }),
-                new(typeof(Patches), nameof(Patches.Object_draw_prefix)));
+                typeof(Patches),
+                nameof(Patches.Object_draw_prefix));
 
             // Draw bigger held storages.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
-                new(typeof(Patches), nameof(Patches.Object_drawWhenHeld_prefix)));
+                typeof(Patches),
+                nameof(Patches.Object_drawWhenHeld_prefix));
 
             // Draw placement bounds for bigger storages.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(SObject), nameof(SObject.drawPlacementBounds)),
-                new(typeof(Patches), nameof(Patches.Object_drawPlacementBounds_prefix)));
+                typeof(Patches),
+                nameof(Patches.Object_drawPlacementBounds_prefix));
 
             // Return custom description for Object.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(SObject), nameof(SObject.getDescription)),
-                new(typeof(Patches), nameof(Patches.Object_getDescription_prefix)));
+                typeof(Patches),
+                nameof(Patches.Object_getDescription_prefix));
 
             // Return custom display name for Object.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(SObject), "loadDisplayName"),
-                new(typeof(Patches), nameof(Patches.Object_loadDisplayName_prefix)));
+                typeof(Patches),
+                nameof(Patches.Object_loadDisplayName_prefix));
 
             // Perform tool actions at origin chest for bigger storages.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(SObject), nameof(SObject.performToolAction)),
-                new(typeof(Patches), nameof(Patches.Object_performToolAction_prefix)));
+                typeof(Patches),
+                nameof(Patches.Object_performToolAction_prefix));
 
             // Disallow invalid chest placement locations.
-            harmony.Patch(
+            Mixin.Prefix(
                 AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                new(typeof(Patches), nameof(Patches.Object_placementAction_prefix)));
-
-            // Convert XS storages placed as objects into chests.
-            harmony.Patch(
-                AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                postfix: new(typeof(Patches), nameof(Patches.Object_placementAction_postfix)));
+                typeof(Patches),
+                nameof(Patches.Object_placementAction_prefix));
 
             // Include chests in player inventory for iterateChestsAndStorage.
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
-                postfix: new(typeof(Patches), nameof(Patches.Utility_iterateChestsAndStorage_postfix)));
+                typeof(Patches),
+                nameof(Patches.Utility_iterateChestsAndStorage_postfix));
 
             // Check placement parameters for bigger storages.
-            harmony.Patch(
+            Mixin.Postfix(
                 AccessTools.Method(typeof(Utility), nameof(Utility.playerCanPlaceItemHere)),
-                postfix: new(typeof(Patches), nameof(Patches.Utility_playerCanPlaceItemHere_postfix)));
+                typeof(Patches),
+                nameof(Patches.Utility_playerCanPlaceItemHere_postfix));
         }
 
         private static IEnumerable<CodeInstruction> Chest_addItem_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -732,18 +743,21 @@
             }
         }
 
-        private static bool Object_draw_prefix(SObject __instance, int x, int y)
+        private static bool Object_draw_prefix(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
         {
             if (!__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Storage", out _)
                 || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
                 || !__instance.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
                 || !int.TryParse(xStr, out var xPos)
-                || !int.TryParse(yStr, out var yPos))
+                || !int.TryParse(yStr, out var yPos)
+                || !Game1.player.currentLocation.Objects.TryGetValue(new(xPos, yPos), out var obj)
+                || obj is not Chest {playerChest: {Value: true}} chest)
             {
                 return true;
             }
 
-            return xPos == x && yPos == y;
+            chest.draw(spriteBatch, xPos, yPos, alpha);
+            return false;
         }
 
         private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
@@ -870,17 +884,6 @@
             return true;
         }
 
-        private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y)
-        {
-            var placementTile = new Vector2((int)(x / 64f), (int)(y / 64f));
-            if (!location.Objects.TryGetValue(placementTile, out var _) || !__instance.TryGetStorage(out var storage))
-            {
-                return;
-            }
-
-            storage.Replace(location, placementTile, __instance);
-        }
-
         private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
         {
             Log.Verbose("Recursively iterating chests in farmer inventory.");
@@ -937,6 +940,7 @@
                 for (var j = 0; j < storage.TileHeight; j++)
                 {
                     var tileLocation = new Vector2(x / 64 + i, y / 64 + j);
+
                     if (item.canBePlacedHere(location, tileLocation)
                         && location.getObjectAtTile((int)tileLocation.X, (int)tileLocation.Y) is null
                         && location.isTilePlaceable(tileLocation, item))

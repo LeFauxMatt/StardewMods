@@ -122,7 +122,11 @@
                 6,
                 1);
 
-            var rangeChoices = new[] { "Inventory", "Location", "World", "Default", "Disabled" };
+            var rangeChoices = new[]
+            {
+                "Inventory", "Location", "World", "Default", "Disabled",
+            };
+
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
                 "Crafting Range",
@@ -139,7 +143,11 @@
                 this.SetStashingRange,
                 rangeChoices);
 
-            var configChoices = new[] { "Default", "Enable", "Disable" };
+            var configChoices = new[]
+            {
+                "Default", "Enable", "Disable",
+            };
+
             this._modConfigMenu.API.RegisterLabel(this._manifest, "Global Overrides", "Enable/disable features for all chests");
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,

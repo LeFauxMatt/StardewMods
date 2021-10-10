@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
+    using Common.Helpers;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Newtonsoft.Json;
@@ -124,7 +124,7 @@
 
         public float ScaleSize { get; private set; }
 
-        private Chest.SpecialChestTypes SpecialChestType { get; }
+        public Chest.SpecialChestTypes SpecialChestType { get; }
 
         private Texture2D Texture
         {
@@ -159,10 +159,14 @@
         }
 
         /// <summary>Clears cached textures to reload them.</summary>
-        /// <param name="contentHelper">Provides an API for loading content assets.</param>
-        public void InvalidateCache(IContentHelper contentHelper)
+        public void InvalidateCache()
         {
-            var texture = contentHelper.Load<Texture2D>(this._path, ContentSource.GameContent);
+            if (this.Format == AssetFormat.Vanilla)
+            {
+                return;
+            }
+
+            var texture = Content.FromGame<Texture2D>(this._path);
             if (texture is null && !XSLite.Textures.TryGetValue(this._name, out texture))
             {
                 return;
@@ -233,57 +237,6 @@
             return true;
         }
 
-        /// <summary>Replaces a vanilla chest in player inventory with an expanded storage.</summary>
-        /// <param name="player">The player whose inventory to replace.</param>
-        /// <param name="index">The item slot of the chest in player inventory.</param>
-        /// <param name="item">The item to replace.</param>
-        public void Replace(Farmer player, int index, Item item)
-        {
-            var stack = item.Stack;
-            player.Items[index] = this.Create(item);
-            player.Items[index].Stack = stack;
-        }
-
-        /// <summary>Replaces a vanilla chest placed in the world with an expanded storage.</summary>
-        /// <param name="location">The location to replace chest at.</param>
-        /// <param name="pos">The position of the chest at location.</param>
-        /// <param name="obj">The object to replace.</param>
-        public void Replace(GameLocation location, Vector2 pos, SObject obj)
-        {
-            var chest = this.Create(obj);
-            location.Objects[pos] = chest;
-            chest.modData[$"{XSLite.ModPrefix}/X"] = pos.X.ToString(CultureInfo.InvariantCulture);
-            chest.modData[$"{XSLite.ModPrefix}/Y"] = pos.Y.ToString(CultureInfo.InvariantCulture);
-            if (this.TileHeight == 1 && this.TileWidth == 1)
-            {
-                return;
-            }
-
-            // Add objects for extra Tile spaces
-            this.ForEachPos(
-                pos,
-                innerPos =>
-                {
-                    if (innerPos.Equals(pos) || location.Objects.ContainsKey(innerPos))
-                    {
-                        return;
-                    }
-
-                    var extraObj = new SObject(Vector2.Zero, 130)
-                    {
-                        name = this.Name,
-                    };
-
-                    // Copy modData from original item
-                    foreach (var modData in chest.modData)
-                    {
-                        extraObj.modData.CopyFrom(modData);
-                    }
-
-                    location.Objects.Add(innerPos, extraObj);
-                });
-        }
-
         /// <summary>Removes chest and artifacts from location.</summary>
         /// <param name="location">The location to remove chest from.</param>
         /// <param name="pos">The position of the object at location.</param>
@@ -308,7 +261,7 @@
                 : Vector2.Zero;
         }
 
-        private Chest Create(Item item)
+        internal Chest Create(Item item)
         {
             var chest = new Chest(true, Vector2.Zero, this.Format == AssetFormat.Vanilla ? item.ParentSheetIndex : 130)
             {
