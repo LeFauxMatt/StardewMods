@@ -1,14 +1,13 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
-    using System.Threading.Tasks;
-    using Common.Helpers;
+    using Common.Services;
     using Common.UI;
     using CommonHarmony.Enums;
     using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Services;
+    using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
@@ -21,88 +20,72 @@
     {
         private const int Width = 58;
         private const int Height = 558;
-        private readonly PerScreen<Chest> _chest = new();
+        private static ColorPickerFeature Instance;
         private readonly PerScreen<Chest> _fakeChest = new();
         private readonly PerScreen<HSLSlider> _hslSlider = new();
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
-        private readonly PerScreen<ItemGrabMenu> _menu = new();
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly PerScreen<int> _screenId = new()
-        {
-            Value = -1,
-        };
-        private MixInfo _setSourceItemPatch;
+        private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
+        private HarmonyService _harmony;
+        private ItemGrabMenuChangedService _itemGrabMenuChanged;
+        private ItemGrabMenuSideButtonsService _itemGrabMenuSideButtons;
+        private RenderedActiveMenuService _renderedActiveMenu;
 
-        private ColorPickerFeature(
-            ModConfigService modConfigService,
-            ItemGrabMenuChangedService itemGrabMenuChangedService,
-            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService,
-            RenderedActiveMenuService renderedActiveMenuService)
-            : base("ColorPicker", modConfigService)
+        private ColorPickerFeature(ServiceManager serviceManager)
+            : base("ColorPicker", serviceManager)
         {
-            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
-            this._renderedActiveMenuService = renderedActiveMenuService;
-        }
+            ColorPickerFeature.Instance ??= this;
 
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="ColorPickerFeature" />.
-        /// </summary>
-        private static ColorPickerFeature Instance { get; set; }
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(service => this._itemGrabMenuChanged = service as ItemGrabMenuChangedService);
+            this.AddDependency<ItemGrabMenuSideButtonsService>(service => this._itemGrabMenuSideButtons = service as ItemGrabMenuSideButtonsService);
+            this.AddDependency<RenderedActiveMenuService>(service => this._renderedActiveMenu = service as RenderedActiveMenuService);
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    // Init
+                    this._harmony = service as HarmonyService;
 
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="ColorPickerFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ColorPickerFeature" /> class.</returns>
-        public static async Task<ColorPickerFeature> Create(ServiceManager serviceManager)
-        {
-            return ColorPickerFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<ItemGrabMenuSideButtonsService>(),
-                await serviceManager.Get<RenderedActiveMenuService>());
+                    // Patches
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                        typeof(ColorPickerFeature),
+                        nameof(ColorPickerFeature.ItemGrabMenu_setSourceItem_postfix),
+                        PatchType.Postfix);
+                });
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            this._itemGrabMenuSideButtonsService.AddHandler(ColorPickerFeature.OnSideButtonPressed);
-            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
-            Events.GameLoop.GameLaunched += this.OnGameLaunched;
-            Events.Input.ButtonPressed += this.OnButtonPressed;
-            Events.Input.ButtonReleased += this.OnButtonReleased;
-            Events.Input.CursorMoved += this.OnCursorMoved;
-            Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+            this._itemGrabMenuChanged.AddHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtons.AddHandler(ColorPickerFeature.OnSideButtonPressed);
+            this._renderedActiveMenu.AddHandler(this.OnRenderedActiveMenu);
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.Input.ButtonReleased += this.OnButtonReleased;
+            this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
+            this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
             // Patches
-            this._setSourceItemPatch = Mixin.Postfix(
-                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                typeof(ColorPickerFeature),
-                nameof(ColorPickerFeature.ItemGrabMenu_setSourceItem_postfix));
+            this._harmony.ApplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
-            this._itemGrabMenuSideButtonsService.RemoveHandler(ColorPickerFeature.OnSideButtonPressed);
-            this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
-            Events.GameLoop.GameLaunched -= this.OnGameLaunched;
-            Events.Input.ButtonPressed -= this.OnButtonPressed;
-            Events.Input.ButtonReleased -= this.OnButtonReleased;
-            Events.Input.CursorMoved -= this.OnCursorMoved;
-            Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+            this._itemGrabMenuChanged.RemoveHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtons.RemoveHandler(ColorPickerFeature.OnSideButtonPressed);
+            this._renderedActiveMenu.RemoveHandler(this.OnRenderedActiveMenu);
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            this.Helper.Events.Input.ButtonReleased -= this.OnButtonReleased;
+            this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
+            this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
 
             // Patches
-            Mixin.Unpatch(this._setSourceItemPatch);
+            this._harmony.UnapplyPatches(this.ServiceName);
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
         {
@@ -115,23 +98,21 @@
             __instance.discreteColorPickerCC = null;
         }
 
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-        {
-            this._hslSlider.Value = new();
-        }
-
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
             if (e.ItemGrabMenu is null || e.Chest is null || !this.IsEnabledForItem(e.Chest))
             {
-                this._screenId.Value = -1;
                 this._menu.Value = null;
                 return;
             }
 
-            this._screenId.Value = Context.ScreenId;
-            this._menu.Value = e.ItemGrabMenu;
-            this._chest.Value = e.Chest;
+            if (e.IsNew)
+            {
+                // Remove vanilla color picker
+                e.ItemGrabMenu.chestColorPicker = null;
+                e.ItemGrabMenu.discreteColorPickerCC = null;
+            }
+
             this._fakeChest.Value = new(true, e.Chest.ParentSheetIndex)
             {
                 Name = e.Chest.Name,
@@ -152,12 +133,11 @@
 
             this._fakeChest.Value.resetLidFrame();
 
+            this._hslSlider.Value ??= new(this.Helper.Content.Load<Texture2D>);
             this._hslSlider.Value.Area = new(e.ItemGrabMenu.xPositionOnScreen + e.ItemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2, e.ItemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2, ColorPickerFeature.Width, ColorPickerFeature.Height);
             this._hslSlider.Value.CurrentColor = e.Chest.playerChoiceColor.Value;
 
-            // Remove vanilla color picker
-            e.ItemGrabMenu.chestColorPicker = null;
-            e.ItemGrabMenu.discreteColorPickerCC = null;
+            this._menu.Value = e;
         }
 
         private static bool OnSideButtonPressed(SideButtonPressedEventArgs e)
@@ -174,7 +154,7 @@
 
         private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }
@@ -187,7 +167,7 @@
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft || !Game1.player.showChestColorPicker)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }
@@ -201,7 +181,7 @@
 
         private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || e.Button != SButton.MouseLeft || !Game1.player.showChestColorPicker)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || !Game1.player.showChestColorPicker || e.Button != SButton.MouseLeft)
             {
                 return;
             }
@@ -209,13 +189,13 @@
             if (this._hslSlider.Value.LeftReleased())
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
-                this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
+                this._menu.Value.Chest.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
             }
         }
 
         private void OnCursorMoved(object sender, CursorMovedEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }
@@ -228,7 +208,7 @@
 
         private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
         {
-            if (this._screenId.Value != Context.ScreenId || !Game1.player.showChestColorPicker)
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || !Game1.player.showChestColorPicker)
             {
                 return;
             }
@@ -236,7 +216,7 @@
             if (this._hslSlider.Value.OnScroll(e.Delta))
             {
                 this._fakeChest.Value.playerChoiceColor.Value = this._hslSlider.Value.CurrentColor;
-                this._chest.Value.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
+                this._menu.Value.Chest.playerChoiceColor.Value = this._fakeChest.Value.playerChoiceColor.Value;
             }
         }
     }

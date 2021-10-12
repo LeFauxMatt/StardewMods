@@ -2,10 +2,10 @@
 {
     using System;
     using Enums;
-    using Helpers;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Models;
+    using StardewModdingAPI;
     using StardewValley;
     using StardewValley.Menus;
 
@@ -34,9 +34,9 @@
         /// <summary>
         ///     Initializes a new instance of the <see cref="HSLSlider" /> class.
         /// </summary>
-        public HSLSlider()
+        public HSLSlider(Func<string, ContentSource, Texture2D> loadContent)
         {
-            this._texture = Content.FromMod<Texture2D>("assets/hue.png");
+            this._texture = loadContent("assets/hue.png", ContentSource.ModFolder);
             this._colors = new Color[this._texture.Width * this._texture.Height];
             this._texture.GetData(this._colors);
             this._transparentBox = new(Rectangle.Empty, Game1.mouseCursors, new(295, 503, 7, 7), Game1.pixelZoom);

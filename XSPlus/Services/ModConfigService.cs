@@ -1,10 +1,8 @@
 ﻿namespace XSPlus.Services
 {
     using System;
-    using System.Threading.Tasks;
-    using Common.Helpers;
     using Common.Integrations.GenericModConfigMenu;
-    using CommonHarmony.Services;
+    using Common.Services;
     using Models;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -14,39 +12,31 @@
     /// </summary>
     internal class ModConfigService : BaseService
     {
-        private static ModConfigService Instance;
-        private readonly IModHelper _helper;
+        private readonly Action<string> _activateFeature;
+        private readonly Action<string> _deactivateFeature;
         private readonly IManifest _manifest;
         private readonly GenericModConfigMenuIntegration _modConfigMenu;
-        private readonly ServiceManager _serviceManager;
+        private readonly Action<ModConfig> _writeConfig;
 
         private ModConfigService(ServiceManager serviceManager)
             : base("ModConfig")
         {
-            this._serviceManager = serviceManager;
-            this._helper = serviceManager.Helper;
+            // Init
+            this.ModConfig = serviceManager.Helper.ReadConfig<ModConfig>();
             this._manifest = serviceManager.ModManifest;
-            this._modConfigMenu = new(this._helper.ModRegistry);
+            this._modConfigMenu = new(serviceManager.Helper.ModRegistry);
+            this._activateFeature = serviceManager.ActivateFeature;
+            this._deactivateFeature = serviceManager.DeactivateFeature;
+            this._writeConfig = serviceManager.Helper.WriteConfig;
 
-            this.ModConfig = this._helper.ReadConfig<ModConfig>();
-
-            Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            // Events
+            serviceManager.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         }
 
         /// <summary>
         ///     Gets config containing default values and config options for features.
         /// </summary>
         public ModConfig ModConfig { get; private set; }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="ModConfigService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ModConfigService" /> class.</returns>
-        public static async Task<ModConfigService> Create(ServiceManager serviceManager)
-        {
-            return ModConfigService.Instance ??= new(serviceManager);
-        }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
@@ -159,6 +149,14 @@
 
             this._modConfigMenu.API.RegisterChoiceOption(
                 this._manifest,
+                "Carry Chest",
+                "Allows chests full of items to be picked up.",
+                this.GetConfig("CarryChest"),
+                this.SetConfig("CarryChest"),
+                configChoices);
+
+            this._modConfigMenu.API.RegisterChoiceOption(
+                this._manifest,
                 "Categorized Chest",
                 "Organize chests by assigning categories of items.",
                 this.GetConfig("CategorizeChest"),
@@ -205,7 +203,7 @@
 
         private void SaveToFile()
         {
-            this._helper.WriteConfig(this.ModConfig);
+            this._writeConfig(this.ModConfig);
         }
 
         private Func<string> GetConfig(string featureName)
@@ -223,15 +221,15 @@
                 {
                     case "Enable":
                         this.ModConfig.Global[featureName] = true;
-                        this._serviceManager.ActivateFeature(featureName);
+                        this._activateFeature(featureName);
                         break;
                     case "Disable":
                         this.ModConfig.Global[featureName] = false;
-                        this._serviceManager.DeactivateFeature(featureName);
+                        this._deactivateFeature(featureName);
                         break;
                     default:
                         this.ModConfig.Global.Remove(featureName);
-                        this._serviceManager.ActivateFeature(featureName);
+                        this._activateFeature(featureName);
                         break;
                 }
             };

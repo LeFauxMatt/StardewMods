@@ -1,13 +1,14 @@
 ﻿namespace XSPlus.Features
 {
-    using System.Threading.Tasks;
-    using Common.Helpers;
+    using Common.Services;
     using Common.UI;
     using CommonHarmony.Models;
     using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Services;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
@@ -17,68 +18,38 @@
     internal class CategorizeChestFeature : BaseFeature
     {
         private readonly PerScreen<Chest> _chest = new();
-        private readonly PerScreen<ClickableTextureComponent> _configButton = new();
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly ItemGrabMenuSideButtonsService _itemGrabMenuSideButtonsService;
-        private readonly ModConfigService _modConfigService;
         private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
-        private readonly StashToChestFeature _stashToChestFeature;
+        private ItemGrabMenuChangedService _itemGrabMenuChanged;
+        private ItemGrabMenuSideButtonsService _itemGrabMenuSideButtons;
+        private ModConfigService _modConfig;
+        private StashToChestFeature _stashToChest;
 
-        private CategorizeChestFeature(
-            ModConfigService modConfigService,
-            ItemGrabMenuChangedService itemGrabMenuChangedService,
-            ItemGrabMenuSideButtonsService itemGrabMenuSideButtonsService,
-            StashToChestFeature stashToChestFeature)
-            : base("CategorizeChest", modConfigService)
+        private CategorizeChestFeature(ServiceManager serviceManager)
+            : base("CategorizeChest", serviceManager)
         {
-            this._configButton.Value = new(
-                new(0, 0, 64, 64),
-                Content.FromMod<Texture2D>("assets/configure.png"),
-                Rectangle.Empty,
-                Game1.pixelZoom)
-            {
-                name = "Configure",
-            };
-
-            this._modConfigService = modConfigService;
-            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._itemGrabMenuSideButtonsService = itemGrabMenuSideButtonsService;
-            this._stashToChestFeature = stashToChestFeature;
-        }
-
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="CategorizeChestFeature" />.
-        /// </summary>
-        private static CategorizeChestFeature Instance { get; set; }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="CategorizeChestFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CategorizeChestFeature" /> class.</returns>
-        public static async Task<CategorizeChestFeature> Create(ServiceManager serviceManager)
-        {
-            return CategorizeChestFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<ItemGrabMenuSideButtonsService>(),
-                await serviceManager.Get<StashToChestFeature>());
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
+            this.AddDependency<ItemGrabMenuChangedService>(service => this._itemGrabMenuChanged = service as ItemGrabMenuChangedService);
+            this.AddDependency<ItemGrabMenuSideButtonsService>(service => this._itemGrabMenuSideButtons = service as ItemGrabMenuSideButtonsService);
+            this.AddDependency<StashToChestFeature>(service => this._stashToChest = service as StashToChestFeature);
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            this._itemGrabMenuSideButtonsService.AddHandler(this.OnSideButtonPressed);
+            this._itemGrabMenuChanged.AddHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtons.AddHandler(this.OnSideButtonPressed);
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
-            this._itemGrabMenuSideButtonsService.RemoveHandler(this.OnSideButtonPressed);
+            this._itemGrabMenuChanged.RemoveHandler(this.OnItemGrabMenuChanged);
+            this._itemGrabMenuSideButtons.RemoveHandler(this.OnSideButtonPressed);
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
@@ -88,7 +59,16 @@
                 return;
             }
 
-            this._itemGrabMenuSideButtonsService.AddButton(this._configButton.Value);
+            this._itemGrabMenuSideButtons.AddButton(
+                new(
+                    new(0, 0, 64, 64),
+                    this.Helper.Content.Load<Texture2D>("assets/configure.png"),
+                    Rectangle.Empty,
+                    Game1.pixelZoom)
+                {
+                    name = "Configure",
+                });
+
             this._returnMenu.Value = e.ItemGrabMenu;
             this._chest.Value = e.Chest;
         }
@@ -102,17 +82,48 @@
 
             var filterItems = this._chest.Value.GetFilterItems();
             Game1.activeClickableMenu = new ItemSelectionMenu(
-                this._modConfigService.ModConfig.SearchTagSymbol,
+                this._modConfig.ModConfig.SearchTagSymbol,
                 this.ReturnToMenu,
                 filterItems,
-                this._chest.Value.SetFilterItems);
+                this._chest.Value.SetFilterItems,
+                this.IsModifierDown);
 
             return true;
         }
 
+        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+        {
+            if (Game1.activeClickableMenu is not ItemSelectionMenu itemSelectionMenu)
+            {
+                return;
+            }
+
+            switch (e.Button)
+            {
+                case SButton.Escape when itemSelectionMenu.readyToClose():
+                    itemSelectionMenu.exitThisMenu();
+                    this.Helper.Input.Suppress(e.Button);
+                    return;
+                case SButton.Escape:
+                    this.Helper.Input.Suppress(e.Button);
+                    return;
+                case SButton.MouseLeft when itemSelectionMenu.LeftClick(Game1.getMousePosition(true)):
+                    this.Helper.Input.Suppress(e.Button);
+                    break;
+                case SButton.MouseRight when itemSelectionMenu.RightClick(Game1.getMousePosition(true)):
+                    this.Helper.Input.Suppress(e.Button);
+                    break;
+            }
+        }
+
+        private bool IsModifierDown()
+        {
+            return this.Helper.Input.IsDown(SButton.LeftShift) || this.Helper.Input.IsDown(SButton.RightShift);
+        }
+
         private void ReturnToMenu()
         {
-            this._stashToChestFeature.ResetCachedChests(true, true);
+            this._stashToChest.ResetCachedChests(true, true);
             Game1.activeClickableMenu = this._returnMenu.Value;
         }
     }

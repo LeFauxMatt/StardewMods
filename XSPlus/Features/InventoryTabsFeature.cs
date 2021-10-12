@@ -2,9 +2,8 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
-    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
+    using Common.Services;
     using CommonHarmony.Models;
     using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
@@ -19,92 +18,62 @@
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
     internal class InventoryTabsFeature : FeatureWithParam<HashSet<string>>
     {
-        private readonly DisplayedInventoryService _displayedInventoryService;
         private readonly PerScreen<string> _hoverText = new();
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly PerScreen<ItemMatcher> _itemMatcher = new()
-        {
-            Value = new(string.Empty, true),
-        };
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(string.Empty, true));
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
-        private readonly ModConfigService _modConfigService;
-        private readonly RenderedActiveMenuService _renderedActiveMenuService;
-        private readonly RenderingActiveMenuService _renderingActiveMenuService;
-        private readonly PerScreen<int> _tabIndex = new()
-        {
-            Value = -1,
-        };
+        private readonly PerScreen<int> _tabIndex = new(() => -1);
+        private DisplayedInventoryService _displayedInventory;
+        private ItemGrabMenuChangedService _itemGrabMenuChanged;
+        private ModConfigService _modConfig;
+        private RenderedActiveMenuService _renderedActiveMenu;
+        private RenderingActiveMenuService _renderingActiveMenu;
         private Texture2D _texture;
 
-        private InventoryTabsFeature(
-            ModConfigService modConfigService,
-            ItemGrabMenuChangedService itemGrabMenuChangedService,
-            RenderingActiveMenuService renderingActiveMenuService,
-            RenderedActiveMenuService renderedActiveMenuService,
-            DisplayedInventoryService displayedInventoryService)
-            : base("InventoryTabs", modConfigService)
+        private InventoryTabsFeature(ServiceManager serviceManager)
+            : base("InventoryTabs", serviceManager)
         {
-            this._modConfigService = modConfigService;
-            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._renderingActiveMenuService = renderingActiveMenuService;
-            this._renderedActiveMenuService = renderedActiveMenuService;
-            this._displayedInventoryService = displayedInventoryService;
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
+            this.AddDependency<ItemGrabMenuChangedService>(service => this._itemGrabMenuChanged = service as ItemGrabMenuChangedService);
+            this.AddDependency<RenderingActiveMenuService>(service => this._renderingActiveMenu = service as RenderingActiveMenuService);
+            this.AddDependency<RenderedActiveMenuService>(service => this._renderedActiveMenu = service as RenderedActiveMenuService);
+            this.AddDependency<DisplayedInventoryService>(service => this._displayedInventory = service as DisplayedInventoryService);
         }
-
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="InventoryTabsFeature" />.
-        /// </summary>
-        private static InventoryTabsFeature Instance { get; set; }
 
         internal IList<Tab> Tabs { get; private set; }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="InventoryTabsFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="InventoryTabsFeature" /> class.</returns>
-        public static async Task<InventoryTabsFeature> Create(ServiceManager serviceManager)
-        {
-            return InventoryTabsFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<RenderingActiveMenuService>(),
-                await serviceManager.Get<RenderedActiveMenuService>(),
-                await serviceManager.Get<DisplayedInventoryService>());
-        }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
-            this._renderingActiveMenuService.AddHandler(this.OnRenderingActiveMenu);
-            this._renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
-            this._displayedInventoryService.AddHandler(this.FilterMethod);
-            Events.GameLoop.GameLaunched += this.OnGameLaunched;
-            Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            Events.Input.ButtonPressed += this.OnButtonPressed;
-            Events.Input.CursorMoved += this.OnCursorMoved;
+            this._itemGrabMenuChanged.AddHandler(this.OnItemGrabMenuChangedEvent);
+            this._renderingActiveMenu.AddHandler(this.OnRenderingActiveMenu);
+            this._renderedActiveMenu.AddHandler(this.OnRenderedActiveMenu);
+            this._displayedInventory.AddHandler(this.FilterMethod);
+            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
-            this._renderingActiveMenuService.RemoveHandler(this.OnRenderingActiveMenu);
-            this._renderedActiveMenuService.RemoveHandler(this.OnRenderedActiveMenu);
-            this._displayedInventoryService.RemoveHandler(this.FilterMethod);
-            Events.GameLoop.GameLaunched -= this.OnGameLaunched;
-            Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-            Events.Input.ButtonPressed -= this.OnButtonPressed;
-            Events.Input.CursorMoved -= this.OnCursorMoved;
+            this._itemGrabMenuChanged.RemoveHandler(this.OnItemGrabMenuChangedEvent);
+            this._renderingActiveMenu.RemoveHandler(this.OnRenderingActiveMenu);
+            this._renderedActiveMenu.RemoveHandler(this.OnRenderedActiveMenu);
+            this._displayedInventory.RemoveHandler(this.FilterMethod);
+            this.Helper.Events.GameLoop.GameLaunched -= this.OnGameLaunched;
+            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            this.Tabs = Content.FromMod<List<Tab>>("assets/tabs.json");
-            this._texture = Content.FromMod<Texture2D>("assets/tabs.png");
+            this.Tabs = this.Helper.Content.Load<List<Tab>>("assets/tabs.json");
+            this._texture = this.Helper.Content.Load<Texture2D>("assets/tabs.png");
 
             for (var i = 0; i < this.Tabs.Count; i++)
             {
@@ -188,23 +157,17 @@
                 return;
             }
 
-            if (this._modConfigService.ModConfig.NextTab.JustPressed())
+            if (this._modConfig.ModConfig.NextTab.JustPressed())
             {
                 this.SetTab(this._tabIndex.Value == this.Tabs.Count ? -1 : this._tabIndex.Value + 1);
-                this._tabIndex.Value++;
-                if (this._tabIndex.Value == this.Tabs.Count)
-                {
-                    this._tabIndex.Value = -1;
-                }
-
-                Input.Suppress(this._modConfigService.ModConfig.NextTab);
+                this.Helper.Input.SuppressActiveKeybinds(this._modConfig.ModConfig.NextTab);
                 return;
             }
 
-            if (this._modConfigService.ModConfig.PreviousTab.JustPressed())
+            if (this._modConfig.ModConfig.PreviousTab.JustPressed())
             {
                 this.SetTab(this._tabIndex.Value == -1 ? this.Tabs.Count - 1 : this._tabIndex.Value - 1);
-                Input.Suppress(this._modConfigService.ModConfig.PreviousTab);
+                this.Helper.Input.SuppressActiveKeybinds(this._modConfig.ModConfig.PreviousTab);
             }
         }
 
@@ -227,7 +190,7 @@
                 if (this.Tabs[i].Component.containsPoint(point.X, point.Y))
                 {
                     this.SetTab(this._tabIndex.Value == i ? -1 : i);
-                    Input.Suppress(e.Button);
+                    this.Helper.Input.Suppress(e.Button);
                 }
             }
         }
@@ -242,7 +205,7 @@
             // Check if any tab is hovered.
             var point = Game1.getMousePosition(true);
             var tab = this.Tabs.SingleOrDefault(tab => tab.Component.containsPoint(point.X, point.Y));
-            this._hoverText.Value = tab is not null ? Translations.Get($"tabs.{tab.Name}.name") : string.Empty;
+            this._hoverText.Value = tab is not null ? this.Helper.Translation.Get($"tabs.{tab.Name}.name") : string.Empty;
         }
 
         private void SetTab(int index)
@@ -258,7 +221,7 @@
                 this._itemMatcher.Value.SetSearch(string.Empty);
             }
 
-            this._displayedInventoryService.ReSyncInventory(this._menu.Value.ItemGrabMenu.ItemsToGrabMenu, true);
+            this._displayedInventory.ReSyncInventory(this._menu.Value.ItemGrabMenu.ItemsToGrabMenu, true);
         }
 
         private bool FilterMethod(Item item)

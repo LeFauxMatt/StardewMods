@@ -2,14 +2,12 @@
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Threading.Tasks;
-    using Common.Helpers;
     using Common.Helpers.ItemMatcher;
+    using Common.Services;
     using CommonHarmony;
     using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Utilities;
     using StardewValley;
@@ -18,80 +16,66 @@
     /// <inheritdoc cref="FeatureWithParam{TParam}" />
     internal class FilterItemsFeature : FeatureWithParam<Dictionary<string, bool>>
     {
+        private static FilterItemsFeature Instance;
         private readonly ItemMatcher _addItemMatcher = new(string.Empty, true);
-        private readonly HighlightItemsService _highlightItemsService;
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
-        private readonly PerScreen<ItemMatcher> _itemMatcher = new()
-        {
-            Value = new(string.Empty, true),
-        };
+        private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(string.Empty, true));
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
-        private MixInfo _addItemPatch;
-        private MixInfo _automatePatch;
+        private HarmonyService _harmony;
+        private HighlightItemsService _highlightItems;
+        private ItemGrabMenuChangedService _itemGrabMenuChanged;
 
-        private FilterItemsFeature(
-            ModConfigService modConfigService,
-            ItemGrabMenuChangedService itemGrabMenuChangedService,
-            HighlightItemsService highlightItemsService)
-            : base("FilterItems", modConfigService)
+        private FilterItemsFeature(ServiceManager serviceManager)
+            : base("FilterItems", serviceManager)
         {
-            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._highlightItemsService = highlightItemsService;
-        }
+            FilterItemsFeature.Instance ??= this;
 
-        /// <summary>
-        ///     Gets the instance of <see cref="FilterItemsFeature" />.
-        /// </summary>
-        private static FilterItemsFeature Instance { get; set; }
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(service => this._itemGrabMenuChanged = service as ItemGrabMenuChangedService);
+            this.AddDependency<HighlightItemsService>(service => this._highlightItems = service as HighlightItemsService);
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    // Init
+                    this._harmony = service as HarmonyService;
 
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="FilterItemsFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="FilterItemsFeature" /> class.</returns>
-        public static async Task<FilterItemsFeature> Create(ServiceManager serviceManager)
-        {
-            return FilterItemsFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<HighlightItemsService>());
+                    // Patches
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                        typeof(FilterItemsFeature),
+                        nameof(FilterItemsFeature.Chest_addItem_prefix));
+
+                    if (this.Helper.ModRegistry.IsLoaded("Pathochild.Automate"))
+                    {
+                        this._harmony?.AddPatch(
+                            this.ServiceName,
+                            new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
+                            typeof(FilterItemsFeature),
+                            nameof(FilterItemsFeature.Automate_Store_prefix));
+                    }
+                });
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            this._highlightItemsService.AddHandler(this.HighlightMethod);
-            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedEvent);
+            this._highlightItems.AddHandler(this.HighlightMethod);
+            this._itemGrabMenuChanged.AddHandler(this.OnItemGrabMenuChangedEvent);
 
             // Patches
-            this._addItemPatch = Mixin.Prefix(
-                AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                typeof(FilterItemsFeature),
-                nameof(FilterItemsFeature.Chest_addItem_prefix));
-
-            if (ModRegistry.IsLoaded("Pathochild.Automate"))
-            {
-                this._automatePatch = Mixin.Prefix(
-                    new AssemblyPatch("Automate").Method("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer", "Store"),
-                    typeof(FilterItemsFeature),
-                    nameof(FilterItemsFeature.Automate_Store_prefix));
-            }
+            this._harmony.ApplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChangedEvent);
-            this._highlightItemsService.RemoveHandler(this.HighlightMethod);
+            this._itemGrabMenuChanged.RemoveHandler(this.OnItemGrabMenuChangedEvent);
+            this._highlightItems.RemoveHandler(this.HighlightMethod);
 
             // Patches
-            Mixin.Unpatch(this._addItemPatch);
-            if (this._automatePatch is not null)
-            {
-                Mixin.Unpatch(this._automatePatch);
-            }
+            this._harmony.UnapplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
@@ -130,7 +114,6 @@
             return itemMatcher.Matches(item);
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         [HarmonyPriority(Priority.High)]
@@ -145,13 +128,12 @@
             return false;
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static bool Automate_Store_prefix(Chest ___Chest, object stack)
         {
             return FilterItemsFeature.Instance.Matches(
                 ___Chest,
-                Reflection.Property<Item>(stack, "Sample").GetValue());
+                FilterItemsFeature.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue());
         }
 
         private void OnItemGrabMenuChangedEvent(object sender, ItemGrabMenuEventArgs e)
@@ -163,11 +145,29 @@
             }
 
             this._menu.Value = e;
+
+            // Mod configured filter
+            if (this.TryGetValueForItem(e.Chest, out var modFilterItems))
+            {
+                this._itemMatcher.Value.SetSearch(modFilterItems);
+            }
+            else
+            {
+                this._itemMatcher.Value.SetSearch(string.Empty);
+            }
+
+            // Player configured filter
+            this._itemMatcher.Value.AddSearch(e.Chest.GetFilterItems());
         }
 
         private bool HighlightMethod(Item item)
         {
-            return this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || this.Matches(this._menu.Value.Chest, item, this._itemMatcher.Value);
+            if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || !this.IsEnabledForItem(this._menu.Value.Chest))
+            {
+                return true;
+            }
+
+            return this._itemMatcher.Value.Matches(item);
         }
     }
 }

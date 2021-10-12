@@ -1,55 +1,53 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
-    using System.Threading.Tasks;
+    using Common.Services;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Services;
     using SObject = StardewValley.Object;
 
     /// <inheritdoc />
     internal class UnplaceableFeature : FeatureWithParam<bool>
     {
-        private MixInfo _placementActionPatch;
+        private static UnplaceableFeature Instance;
+        private HarmonyService _harmony;
 
-        private UnplaceableFeature(ModConfigService modConfigService)
-            : base("Unplaceable", modConfigService)
+        private UnplaceableFeature(ServiceManager serviceManager)
+            : base("Unplaceable", serviceManager)
         {
-        }
+            // Init
+            UnplaceableFeature.Instance ??= this;
 
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="UnplaceableFeature" />.
-        /// </summary>
-        private static UnplaceableFeature Instance { get; set; }
+            // Dependencies
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    // Init
+                    this._harmony = service as HarmonyService;
 
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="UnplaceableFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="UnplaceableFeature" /> class.</returns>
-        public static async Task<UnplaceableFeature> Create(ServiceManager serviceManager)
-        {
-            return UnplaceableFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
+                    // Patches
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+                        typeof(UnplaceableFeature),
+                        nameof(UnplaceableFeature.Object_placementAction_prefix));
+                });
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Patches
-            this._placementActionPatch = Mixin.Prefix(
-                AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                typeof(UnplaceableFeature),
-                nameof(UnplaceableFeature.Object_placementAction_prefix));
+            this._harmony.ApplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Patches
-            Mixin.Unpatch(this._placementActionPatch);
+            this._harmony.UnapplyPatches(this.ServiceName);
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         [HarmonyPriority(Priority.High)]

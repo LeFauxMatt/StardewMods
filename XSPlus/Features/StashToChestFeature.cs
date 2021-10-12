@@ -3,9 +3,8 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using System.Threading.Tasks;
     using Common.Helpers;
-    using CommonHarmony.Services;
+    using Common.Services;
     using Services;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
@@ -16,51 +15,35 @@
     /// <inheritdoc />
     internal class StashToChestFeature : FeatureWithParam<string>
     {
-        private readonly PerScreen<IList<Chest>> _cachedGameChests = new();
         private readonly PerScreen<IList<Chest>> _cachedPlayerChests = new();
-        private readonly FilterItemsFeature _filterItems;
-        private readonly ModConfigService _modConfigService;
+        private IList<Chest> _cachedGameChests;
+        private FilterItemsFeature _filterItems;
+        private ModConfigService _modConfig;
 
-        private StashToChestFeature(ModConfigService modConfigService, FilterItemsFeature filterItems)
-            : base("StashToChest", modConfigService)
+        private StashToChestFeature(ServiceManager serviceManager)
+            : base("StashToChest", serviceManager)
         {
-            this._modConfigService = modConfigService;
-            this._filterItems = filterItems;
-        }
-
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="StashToChestFeature" />.
-        /// </summary>
-        private static StashToChestFeature Instance { get; set; }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="StashToChestFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="StashToChestFeature" /> class.</returns>
-        public static async Task<StashToChestFeature> Create(ServiceManager serviceManager)
-        {
-            return StashToChestFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<FilterItemsFeature>());
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
+            this.AddDependency<FilterItemsFeature>(service => this._filterItems = service as FilterItemsFeature);
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            Events.Player.InventoryChanged += this.OnInventoryChanged;
-            Events.Player.Warped += this.OnWarped;
+            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+            this.Helper.Events.Player.Warped += this.OnWarped;
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-            Events.Player.InventoryChanged -= this.OnInventoryChanged;
-            Events.Player.Warped -= this.OnWarped;
+            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+            this.Helper.Events.Player.Warped -= this.OnWarped;
         }
 
         /// <inheritdoc />
@@ -89,7 +72,7 @@
                 return true;
             }
 
-            param = this._modConfigService.ModConfig.StashingRange;
+            param = this._modConfig.ModConfig.StashingRange;
             return !string.IsNullOrWhiteSpace(param);
         }
 
@@ -102,7 +85,7 @@
 
             if (gameChest)
             {
-                this._cachedGameChests.Value = null;
+                this._cachedGameChests = null;
             }
         }
 
@@ -124,15 +107,15 @@
         /// <summary>Stash inventory items into all supported chests.</summary>
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            if (!Context.IsPlayerFree || !this._modConfigService.ModConfig.StashItems.JustPressed())
+            if (!Context.IsPlayerFree || !this._modConfig.ModConfig.StashItems.JustPressed())
             {
                 return;
             }
 
             this._cachedPlayerChests.Value ??= Game1.player.Items.OfType<Chest>().Where(this.IsEnabledForItem).ToList();
-            this._cachedGameChests.Value ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
+            this._cachedGameChests ??= XSPlus.AccessibleChests.Where(this.IsEnabledForItem).ToList();
 
-            if (!this._cachedGameChests.Value.Any() && !this._cachedPlayerChests.Value.Any())
+            if (!this._cachedGameChests.Any() && !this._cachedPlayerChests.Value.Any())
             {
                 Log.Trace("No eligible chests found to stash items into");
                 return;
@@ -160,7 +143,7 @@
             }
 
             Game1.playSound("Ship");
-            Input.Suppress(this._modConfigService.ModConfig.StashItems);
+            this.Helper.Input.SuppressActiveKeybinds(this._modConfig.ModConfig.StashItems);
         }
 
         private Item TryAddItem(Item item)
@@ -188,7 +171,7 @@
                 }
             }
 
-            foreach (var chest in this._cachedGameChests.Value)
+            foreach (var chest in this._cachedGameChests)
             {
                 if (!this._filterItems.Matches(chest, item))
                 {

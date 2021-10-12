@@ -13,6 +13,7 @@
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewValley;
+    using StardewValley.Locations;
     using StardewValley.Objects;
     using SObject = StardewValley.Object;
 
@@ -73,6 +74,9 @@
                         nameof(BiggerChestFeature.Utility_playerCanPlaceItemHere_postfix),
                         PatchType.Postfix);
                 });
+
+            // Events
+            this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
         }
 
         /// <inheritdoc />
@@ -271,6 +275,41 @@
             }
 
             __result = true;
+        }
+
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            if (Context.IsMainPlayer)
+            {
+                var locations = Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
+                foreach (var location in locations)
+                {
+                    foreach (var obj in location.Objects.Pairs)
+                    {
+                        if (obj.Value is not Chest {playerChest: {Value: true}} || !this.IsEnabledForItem(obj.Value) || !this.TryGetValueForItem(obj.Value, out var data))
+                        {
+                            continue;
+                        }
+
+                        var tileWidth = data.Item1 / 16;
+                        var tileHeight = (data.Item3 > 0 ? data.Item3 : data.Item2 - 16) / 16;
+                        for (var x = 0; x < tileWidth; x++)
+                        {
+                            for (var y = 0; y < tileHeight; y++)
+                            {
+                                var pos = obj.Key + new Vector2(x, y);
+                                if ((x != 0 || y != 0) && location.Objects[pos] is not Chest)
+                                {
+                                    location.Objects[pos] = new(Vector2.Zero, 232);
+                                }
+
+                                location.Objects[pos].modData[$"{XSPlus.ModPrefix}/X"] = obj.Key.X.ToString(CultureInfo.InvariantCulture);
+                                location.Objects[pos].modData[$"{XSPlus.ModPrefix}/Y"] = obj.Key.Y.ToString(CultureInfo.InvariantCulture);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         [EventPriority(EventPriority.High)]

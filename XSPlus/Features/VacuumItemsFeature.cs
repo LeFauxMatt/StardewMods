@@ -4,11 +4,10 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection.Emit;
-    using System.Threading.Tasks;
-    using Common.Helpers;
+    using Common.Services;
+    using CommonHarmony.Enums;
     using CommonHarmony.Services;
     using HarmonyLib;
-    using Services;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
@@ -18,20 +17,34 @@
     /// <inheritdoc />
     internal class VacuumItemsFeature : BaseFeature
     {
+        private static VacuumItemsFeature Instance;
         private readonly PerScreen<List<Chest>> _cachedEnabledChests = new();
-        private readonly FilterItemsFeature _filterItems;
-        private MixInfo _collectPatch;
+        private FilterItemsFeature _filterItems;
+        private HarmonyService _harmony;
 
-        private VacuumItemsFeature(ModConfigService modConfigService, FilterItemsFeature filterItems)
-            : base("VacuumItems", modConfigService)
+        private VacuumItemsFeature(ServiceManager serviceManager)
+            : base("VacuumItems", serviceManager)
         {
-            this._filterItems = filterItems;
-        }
+            // Init
+            VacuumItemsFeature.Instance ??= this;
 
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="VacuumItemsFeature" />.
-        /// </summary>
-        private static VacuumItemsFeature Instance { get; set; }
+            // Dependencies
+            this.AddDependency<FilterItemsFeature>(service => this._filterItems = service as FilterItemsFeature);
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    // Init
+                    this._harmony = service as HarmonyService;
+
+                    // Patches
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
+                        typeof(VacuumItemsFeature),
+                        nameof(VacuumItemsFeature.Debris_collect_transpiler),
+                        PatchType.Transpiler);
+                });
+        }
 
         private List<Chest> EnabledChests
         {
@@ -40,39 +53,24 @@
                                                             .ToList();
         }
 
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="VacuumItemsFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="VacuumItemsFeature" /> class.</returns>
-        public static async Task<VacuumItemsFeature> Create(ServiceManager serviceManager)
-        {
-            return VacuumItemsFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<FilterItemsFeature>());
-        }
-
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            Events.Player.InventoryChanged += this.OnInventoryChanged;
+            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
 
             // Patches
-            this._collectPatch = Mixin.Transpiler(
-                AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                typeof(VacuumItemsFeature),
-                nameof(VacuumItemsFeature.Debris_collect_transpiler));
+            this._harmony.ApplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            Events.Player.InventoryChanged -= this.OnInventoryChanged;
+            this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
 
             // Patches
-            Mixin.Unpatch(this._collectPatch);
+            this._harmony.UnapplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />

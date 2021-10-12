@@ -1,7 +1,8 @@
 ﻿namespace XSPlus.Features
 {
     using System.Diagnostics.CodeAnalysis;
-    using System.Threading.Tasks;
+    using Common.Services;
+    using CommonHarmony.Enums;
     using CommonHarmony.Services;
     using HarmonyLib;
     using Services;
@@ -11,45 +12,52 @@
     /// <inheritdoc />
     internal class CapacityFeature : FeatureWithParam<int>
     {
-        private readonly ModConfigService _modConfigService;
-        private MixInfo _capacityPatch;
+        private static CapacityFeature Instance;
+        private ExpandedMenuFeature _expandedMenu;
+        private HarmonyService _harmony;
+        private ModConfigService _modConfig;
 
-        private CapacityFeature(ModConfigService modConfigService)
-            : base("Capacity", modConfigService)
+        private CapacityFeature(ServiceManager serviceManager)
+            : base("Capacity", serviceManager)
         {
-            this._modConfigService = modConfigService;
-        }
+            CapacityFeature.Instance ??= this;
 
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="CapacityFeature" />.
-        /// </summary>
-        private static CapacityFeature Instance { get; set; }
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
+            this.AddDependency<ExpandedMenuFeature>(service => this._expandedMenu = service as ExpandedMenuFeature);
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    // Init
+                    this._harmony = service as HarmonyService;
 
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="CapacityFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="CapacityFeature" /> class.</returns>
-        public static async Task<CapacityFeature> Create(ServiceManager serviceManager)
-        {
-            return CapacityFeature.Instance ??= new(await serviceManager.Get<ModConfigService>());
+                    // Patches
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                        typeof(CapacityFeature),
+                        nameof(CapacityFeature.Chest_GetActualCapacity_postfix),
+                        PatchType.Postfix);
+                });
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Patches
-            this._capacityPatch = Mixin.Postfix(
-                AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                typeof(CapacityFeature),
-                nameof(CapacityFeature.Chest_GetActualCapacity_postfix));
+            this._harmony.ApplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Patches
-            Mixin.Unpatch(this._capacityPatch);
+            this._harmony.UnapplyPatches(this.ServiceName);
+        }
+
+        internal override bool IsEnabledForItem(Item item)
+        {
+            return base.IsEnabledForItem(item) && this._expandedMenu.IsEnabledForItem(item);
         }
 
         /// <inheritdoc />
@@ -60,10 +68,9 @@
                 return true;
             }
 
-            return (param = this._modConfigService.ModConfig.Capacity) != 0;
+            return (param = this._modConfig.ModConfig.Capacity) != 0;
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
         private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)

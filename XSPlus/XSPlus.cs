@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using System.Threading.Tasks;
     using Common.Helpers;
     using Common.Integrations.XSPlus;
+    using Common.Services;
     using CommonHarmony.Services;
     using Features;
     using Services;
@@ -30,6 +30,8 @@
         {
             XSPlus.Instance = this;
         }
+
+        internal ServiceManager ServiceManager { get; private set; }
 
         /// <summary>Gets placed Chests that are accessible to the player.</summary>
         [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Required for enumerating this collection.")]
@@ -63,48 +65,45 @@
                 return;
             }
 
-            Content.Init(this.Helper.Content);
-            Events.Init(this.Helper.Events);
-            Input.Init(this.Helper.Input);
             Log.Init(this.Monitor);
-            ModRegistry.Init(this.Helper.ModRegistry);
-            Mixin.Init(this.ModManifest);
-            Reflection.Init(this.Helper.Reflection);
-            Translations.Init(this.Helper.Translation);
 
-            var serviceManager = ServiceManager.Create(this.Helper, this.ModManifest);
+            this.ServiceManager = new(this.Helper, this.ModManifest);
 
             // Services
-            Task.WaitAll(
-                serviceManager.Create<ModConfigService>(),
-                serviceManager.Create<ItemGrabMenuChangedService>(),
-                serviceManager.Create<ItemGrabMenuSideButtonsService>(),
-                serviceManager.Create<RenderingActiveMenuService>(),
-                serviceManager.Create<RenderedActiveMenuService>(),
-                serviceManager.Create<DisplayedInventoryService>(),
-                serviceManager.Create<HighlightItemsService>(),
-                serviceManager.Create<InfoDumpService>());
+            this.ServiceManager.Create<DisplayedInventoryService>();
+            this.ServiceManager.Create<HarmonyService>();
+            this.ServiceManager.Create<HighlightItemsService>();
+            this.ServiceManager.Create<InfoDumpService>();
+            this.ServiceManager.Create<ItemGrabMenuChangedService>();
+            this.ServiceManager.Create<ItemGrabMenuSideButtonsService>();
+            this.ServiceManager.Create<ModConfigService>();
+            this.ServiceManager.Create<RenderingActiveMenuService>();
+            this.ServiceManager.Create<RenderedActiveMenuService>();
 
             // Features
-            Task.WaitAll(
-                serviceManager.Create<AccessCarriedFeature>(),
-                serviceManager.Create<CapacityFeature>(),
-                serviceManager.Create<CategorizeChestFeature>(),
-                serviceManager.Create<ColorPickerFeature>(),
-                serviceManager.Create<CraftFromChestFeature>(),
-                serviceManager.Create<ExpandedMenuFeature>(),
-                serviceManager.Create<FilterItemsFeature>(),
-                serviceManager.Create<InventoryTabsFeature>(),
-                serviceManager.Create<SearchItemsFeature>(),
-                serviceManager.Create<StashToChestFeature>(),
-                serviceManager.Create<UnbreakableFeature>(),
-                serviceManager.Create<UnplaceableFeature>(),
-                serviceManager.Create<VacuumItemsFeature>());
+            this.ServiceManager.Create<AccessCarriedFeature>();
+            this.ServiceManager.Create<BiggerChestFeature>();
+            this.ServiceManager.Create<CapacityFeature>();
+            this.ServiceManager.Create<CarryChestFeature>();
+            this.ServiceManager.Create<CategorizeChestFeature>();
+            this.ServiceManager.Create<ColorPickerFeature>();
+            this.ServiceManager.Create<CraftFromChestFeature>();
+            this.ServiceManager.Create<ExpandedMenuFeature>();
+            this.ServiceManager.Create<FilterItemsFeature>();
+            this.ServiceManager.Create<InventoryTabsFeature>();
+            this.ServiceManager.Create<OpenNearbyFeature>();
+            this.ServiceManager.Create<SearchItemsFeature>();
+            this.ServiceManager.Create<StashToChestFeature>();
+            this.ServiceManager.Create<UnbreakableFeature>();
+            this.ServiceManager.Create<UnplaceableFeature>();
+            this.ServiceManager.Create<VacuumItemsFeature>();
+
+            this.ServiceManager.ResolveDependencies();
 
             // Activate
-            serviceManager.ActivateFeatures();
+            this.ServiceManager.ActivateFeatures();
 
-            this._api = new XSPlusAPI(serviceManager);
+            this._api = new XSPlusAPI(this);
         }
 
         /// <inheritdoc />

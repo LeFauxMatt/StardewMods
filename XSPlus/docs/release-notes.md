@@ -2,6 +2,9 @@
 
 ## Upcoming
 
+- Fixed shipping bin resetting cursor position when using a Gamepad.
+- Fixed split screen causing errors for Farmhands.
+
 ## Latest Changes
 
 - Fixed issue where vacuum chests could possibly duplicate items.

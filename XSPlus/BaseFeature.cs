@@ -1,8 +1,9 @@
 ﻿namespace XSPlus
 {
     using System.Collections.Generic;
-    using CommonHarmony.Services;
+    using Common.Services;
     using Services;
+    using StardewModdingAPI;
     using StardewValley;
 
     /// <summary>
@@ -10,21 +11,27 @@
     /// </summary>
     internal abstract class BaseFeature : BaseService
     {
+        public static readonly HashSet<string> ValidFeatures = new();
         private readonly IDictionary<KeyValuePair<string, string>, bool> _enabledByModData = new Dictionary<KeyValuePair<string, string>, bool>();
-        private readonly ModConfigService _modConfigService;
+        private ModConfigService _modConfig;
 
         /// <summary>Initializes a new instance of the <see cref="BaseFeature" /> class.</summary>
         /// <param name="featureName">The name of the feature used for config/API.</param>
-        /// <param name="modConfigService">Service to handle read/write to <see cref="Models.ModConfig" />.</param>
-        private protected BaseFeature(string featureName, ModConfigService modConfigService)
+        /// <param name="serviceManager">Service manager to request shared services.</param>
+        private protected BaseFeature(string featureName, ServiceManager serviceManager)
             : base(featureName)
         {
-            this.FeatureName = featureName;
-            this._modConfigService = modConfigService;
+            BaseFeature.ValidFeatures.Add(featureName);
+
+            // Init
+            this.Helper = serviceManager.Helper;
+
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
         }
 
-        /// <summary>Gets the name of the feature used for config/API.</summary>
-        public string FeatureName { get; }
+        /// <summary>Provides simplified APIs for writing mods.</summary>
+        private protected IModHelper Helper { get; }
 
         /// <summary>Add events and apply patches used to enable this feature.</summary>
         public abstract void Activate();
@@ -55,7 +62,16 @@
         /// <returns>Returns true if the feature is currently enabled for the item.</returns>
         internal virtual bool IsEnabledForItem(Item item)
         {
-            var isEnabledByModData = this._modConfigService.ModConfig.Global.TryGetValue(this.FeatureName, out var option) && option;
+            var isEnabledByModData = false;
+            if (this._modConfig.ModConfig.Global.TryGetValue(this.ServiceName, out var option))
+            {
+                if (!option)
+                {
+                    return false;
+                }
+
+                isEnabledByModData = true;
+            }
 
             foreach (var modData in this._enabledByModData)
             {

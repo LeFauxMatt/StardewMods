@@ -2,50 +2,29 @@
 {
     using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
     using Common.Helpers;
-    using CommonHarmony.Services;
+    using Common.Services;
     using Features;
     using Microsoft.Xna.Framework;
     using StardewModdingAPI;
-    using StardewModdingAPI.Events;
     using StardewValley;
     using StardewValley.Objects;
 
     internal class InfoDumpService : BaseService
     {
-        private static InfoDumpService Instance;
         private readonly ICommandHelper _commandHelper;
-        private readonly ModConfigService _modConfigService;
         private readonly ServiceManager _serviceManager;
+        private ModConfigService _modConfig;
 
-        internal InfoDumpService(ServiceManager serviceManager, ModConfigService modConfigService, ICommandHelper commandHelper)
+        private InfoDumpService(ServiceManager serviceManager)
             : base("InfoDumpService")
         {
+            // Init
             this._serviceManager = serviceManager;
-            this._modConfigService = modConfigService;
-            this._commandHelper = commandHelper;
+            serviceManager.Helper.ConsoleCommands.Add("xs_dump", "Dumps a bunch of info to the logs.", this.DumpInfo);
 
-            // Events
-            Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-        }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="InfoDumpService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="InfoDumpService" /> class.</returns>
-        public static async Task<InfoDumpService> Create(ServiceManager serviceManager)
-        {
-            return InfoDumpService.Instance ??= new(
-                serviceManager,
-                await serviceManager.Get<ModConfigService>(),
-                serviceManager.Helper.ConsoleCommands);
-        }
-
-        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
-        {
-            this._commandHelper.Add("xs_dump", "Dumps a bunch of info to the logs.", this.DumpInfo);
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
         }
 
         private void DumpInfo(string command, string[] args)
@@ -55,7 +34,7 @@
 
             foreach (var feature in features)
             {
-                var globalConfig = this._modConfigService.ModConfig.Global.TryGetValue(feature.FeatureName, out var option) switch
+                var globalConfig = this._modConfig.ModConfig.Global.TryGetValue(feature.ServiceName, out var option) switch
                 {
                     true when option => "+",
                     true => "-",
@@ -64,36 +43,36 @@
 
                 info.Append(
                     @$"
-{globalConfig}{feature.FeatureName}");
+{globalConfig}{feature.ServiceName}");
 
                 switch (feature)
                 {
                     case CapacityFeature:
                         info.Append(
                             @$"
-    Global Capacity: {this._modConfigService.ModConfig.Capacity.ToString()}");
+    Global Capacity: {this._modConfig.ModConfig.Capacity.ToString()}");
 
                         break;
                     case CraftFromChestFeature:
                         info.Append(
                             $@"
-    Crafting Button: {this._modConfigService.ModConfig.OpenCrafting}
-    Crafting Range: {this._modConfigService.ModConfig.CraftingRange}");
+    Crafting Button: {this._modConfig.ModConfig.OpenCrafting}
+    Crafting Range: {this._modConfig.ModConfig.CraftingRange}");
 
                         break;
                     case ExpandedMenuFeature:
                         info.Append(
                             $@"
-    Menu Rows: {this._modConfigService.ModConfig.MenuRows.ToString()}
-    Scroll Up: {this._modConfigService.ModConfig.ScrollUp}
-    Scroll Down: {this._modConfigService.ModConfig.ScrollDown}");
+    Menu Rows: {this._modConfig.ModConfig.MenuRows.ToString()}
+    Scroll Up: {this._modConfig.ModConfig.ScrollUp}
+    Scroll Down: {this._modConfig.ModConfig.ScrollDown}");
 
                         break;
                     case InventoryTabsFeature inventoryTabsFeature:
                         info.Append(
                             $@"
-    Previous Tab: {this._modConfigService.ModConfig.PreviousTab}
-    Next Tab: {this._modConfigService.ModConfig.NextTab}
+    Previous Tab: {this._modConfig.ModConfig.PreviousTab}
+    Next Tab: {this._modConfig.ModConfig.NextTab}
     Tabs:");
 
                         foreach (var tab in inventoryTabsFeature.Tabs)
@@ -107,14 +86,14 @@
                     case SearchItemsFeature:
                         info.Append(
                             $@"
-    Search Tag Symbol: {this._modConfigService.ModConfig.SearchTagSymbol}");
+    Search Tag Symbol: {this._modConfig.ModConfig.SearchTagSymbol}");
 
                         break;
                     case StashToChestFeature:
                         info.Append(
                             $@"
-    Stashing Button: {this._modConfigService.ModConfig.StashItems}
-    Stashing Range: {this._modConfigService.ModConfig.StashingRange}");
+    Stashing Button: {this._modConfig.ModConfig.StashItems}
+    Stashing Range: {this._modConfig.ModConfig.StashingRange}");
 
                         break;
                 }
@@ -134,7 +113,7 @@
                     var config = feature.IsEnabledForItem(chest) ? "+" : "-";
                     info.Append(
                         $@"
-{config}{feature.FeatureName}");
+{config}{feature.ServiceName}");
 
                     if (config == "-")
                     {

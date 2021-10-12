@@ -4,10 +4,11 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection.Emit;
-    using System.Threading.Tasks;
     using Common.Extensions;
     using Common.Helpers;
+    using Common.Services;
     using CommonHarmony;
+    using CommonHarmony.Enums;
     using CommonHarmony.Models;
     using CommonHarmony.Services;
     using HarmonyLib;
@@ -23,94 +24,89 @@
     /// <inheritdoc />
     internal class ExpandedMenuFeature : FeatureWithParam<int>
     {
-        private static readonly Type[] ItemGrabMenuConstructorParams =
-        {
-            typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
-        };
-        private static readonly Type[] MenuWithInventoryDrawParams =
-        {
-            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
-        };
-        private readonly DisplayedInventoryService _displayedInventoryService;
-        private readonly ItemGrabMenuChangedService _itemGrabMenuChangedService;
+        private static ExpandedMenuFeature Instance;
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
-        private readonly ModConfigService _modConfigService;
-        private MixInfo _itemGrabMenuConstructorPatch;
-        private MixInfo _itemGrabMenuDrawPatch;
-        private MixInfo _menuWithInventoryDrawPatch;
+        private DisplayedInventoryService _displayedInventory;
+        private HarmonyService _harmony;
+        private ItemGrabMenuChangedService _itemGrabMenuChanged;
+        private ModConfigService _modConfig;
 
-        private ExpandedMenuFeature(
-            ModConfigService modConfigService,
-            ItemGrabMenuChangedService itemGrabMenuChangedService,
-            DisplayedInventoryService displayedInventoryService)
-            : base("ExpandedMenu", modConfigService)
+        private ExpandedMenuFeature(ServiceManager serviceManager)
+            : base("ExpandedMenu", serviceManager)
         {
-            this._modConfigService = modConfigService;
-            this._itemGrabMenuChangedService = itemGrabMenuChangedService;
-            this._displayedInventoryService = displayedInventoryService;
-        }
+            ExpandedMenuFeature.Instance ??= this;
 
-        /// <summary>
-        ///     Gets or sets the instance of <see cref="ExpandedMenuFeature" />.
-        /// </summary>
-        private static ExpandedMenuFeature Instance { get; set; }
+            // Dependencies
+            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
+            this.AddDependency<DisplayedInventoryService>(service => this._displayedInventory = service as DisplayedInventoryService);
+            this.AddDependency<ItemGrabMenuChangedService>(service => this._itemGrabMenuChanged = service as ItemGrabMenuChangedService);
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    // Init
+                    this._harmony = service as HarmonyService;
+                    var ctorItemGrabMenu = new[]
+                    {
+                        typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+                    };
 
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="ExpandedMenuFeature" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ExpandedMenuFeature" /> class.</returns>
-        public static async Task<ExpandedMenuFeature> Create(ServiceManager serviceManager)
-        {
-            return ExpandedMenuFeature.Instance ??= new(
-                await serviceManager.Get<ModConfigService>(),
-                await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<DisplayedInventoryService>());
+                    var drawMenuWithInventory = new[]
+                    {
+                        typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+                    };
+
+                    // Patches
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Constructor(typeof(ItemGrabMenu), ctorItemGrabMenu),
+                        typeof(ExpandedMenuFeature),
+                        nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler),
+                        PatchType.Transpiler);
+
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(
+                            typeof(ItemGrabMenu),
+                            nameof(ItemGrabMenu.draw),
+                            new[]
+                            {
+                                typeof(SpriteBatch),
+                            }),
+                        typeof(ExpandedMenuFeature),
+                        nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler),
+                        PatchType.Transpiler);
+
+                    this._harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
+                        typeof(ExpandedMenuFeature),
+                        nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler),
+                        PatchType.Transpiler);
+                });
         }
 
         /// <inheritdoc />
         public override void Activate()
         {
             // Events
-            this._itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+            this._itemGrabMenuChanged.AddHandler(this.OnItemGrabMenuChanged);
+            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
             // Patches
-            this._itemGrabMenuConstructorPatch = Mixin.Transpiler(
-                AccessTools.Constructor(typeof(ItemGrabMenu), ExpandedMenuFeature.ItemGrabMenuConstructorParams),
-                typeof(ExpandedMenuFeature),
-                nameof(ExpandedMenuFeature.ItemGrabMenu_constructor_transpiler));
-
-            this._itemGrabMenuDrawPatch = Mixin.Transpiler(
-                AccessTools.Method(
-                    typeof(ItemGrabMenu),
-                    nameof(ItemGrabMenu.draw),
-                    new[]
-                    {
-                        typeof(SpriteBatch),
-                    }),
-                typeof(ExpandedMenuFeature),
-                nameof(ExpandedMenuFeature.ItemGrabMenu_draw_transpiler));
-
-            this._menuWithInventoryDrawPatch = Mixin.Transpiler(
-                AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), ExpandedMenuFeature.MenuWithInventoryDrawParams),
-                typeof(ExpandedMenuFeature),
-                nameof(ExpandedMenuFeature.MenuWithInventory_draw_transpiler));
+            this._harmony.ApplyPatches(this.ServiceName);
         }
 
         /// <inheritdoc />
         public override void Deactivate()
         {
             // Events
-            this._itemGrabMenuChangedService.RemoveHandler(this.OnItemGrabMenuChanged);
-            Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-            Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+            this._itemGrabMenuChanged.RemoveHandler(this.OnItemGrabMenuChanged);
+            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
 
             // Patches
-            Mixin.Unpatch(this._itemGrabMenuConstructorPatch);
-            Mixin.Unpatch(this._itemGrabMenuDrawPatch);
-            Mixin.Unpatch(this._menuWithInventoryDrawPatch);
+            this._harmony.UnapplyPatches(this.ServiceName);
         }
 
         /// <summary>Generate additional slots/rows for top inventory menu.</summary>
@@ -118,7 +114,7 @@
         private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(IEnumerable<CodeInstruction> instructions)
         {
             Log.Trace("Changing jump condition from Beq 36 to Bge 10.");
-            var jumpPatch = new PatternPatch(PatchType.Replace);
+            var jumpPatch = new PatternPatch();
             jumpPatch
                 .Find(
                     new[]
@@ -136,7 +132,7 @@
                     });
 
             Log.Trace("Overriding default values for capacity and rows.");
-            var capacityPatch = new PatternPatch(PatchType.Replace);
+            var capacityPatch = new PatternPatch();
             capacityPatch
                 .Find(
                     new[]
@@ -186,7 +182,7 @@
         private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
             Log.Trace("Moving backpack icon down by expanded menu extra height.");
-            var moveBackpackPatch = new PatternPatch(PatchType.Replace);
+            var moveBackpackPatch = new PatternPatch();
             moveBackpackPatch
                 .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
                 .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
@@ -217,7 +213,7 @@
         private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
             Log.Trace("Moving bottom dialogue box down by expanded menu height.");
-            var moveDialogueBoxPatch = new PatternPatch(PatchType.Replace);
+            var moveDialogueBoxPatch = new PatternPatch();
             moveDialogueBoxPatch
                 .Find(
                     new[]
@@ -233,7 +229,7 @@
                     });
 
             Log.Trace("Shrinking bottom dialogue box height by expanded menu height.");
-            var resizeDialogueBoxPatch = new PatternPatch(PatchType.Replace);
+            var resizeDialogueBoxPatch = new PatternPatch();
             resizeDialogueBoxPatch
                 .Find(
                     new[]
@@ -271,7 +267,7 @@
             }
 
             var capacity = chest.GetActualCapacity();
-            var maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
+            var maxMenuRows = ExpandedMenuFeature.Instance._modConfig.ModConfig.MenuRows;
             return capacity switch
             {
                 < 72 => Math.Min(maxMenuRows * 12, capacity.RoundUp(12)), // Variable
@@ -287,7 +283,7 @@
             }
 
             var capacity = chest.GetActualCapacity();
-            var maxMenuRows = ExpandedMenuFeature.Instance._modConfigService.ModConfig.MenuRows;
+            var maxMenuRows = ExpandedMenuFeature.Instance._modConfig.ModConfig.MenuRows;
             return capacity switch
             {
                 < 72 => (int)Math.Min(maxMenuRows, Math.Ceiling(capacity / 12f)),
@@ -350,10 +346,10 @@
             switch (e.Delta)
             {
                 case > 0:
-                    this._displayedInventoryService.Offset--;
+                    this._displayedInventory.Offset--;
                     break;
                 case < 0:
-                    this._displayedInventoryService.Offset++;
+                    this._displayedInventory.Offset++;
                     break;
                 default:
                     return;
@@ -367,17 +363,17 @@
                 return;
             }
 
-            if (this._modConfigService.ModConfig.ScrollUp.JustPressed())
+            if (this._modConfig.ModConfig.ScrollUp.JustPressed())
             {
-                this._displayedInventoryService.Offset--;
-                Input.Suppress(this._modConfigService.ModConfig.ScrollUp);
+                this._displayedInventory.Offset--;
+                this.Helper.Input.SuppressActiveKeybinds(this._modConfig.ModConfig.ScrollUp);
                 return;
             }
 
-            if (this._modConfigService.ModConfig.ScrollDown.JustPressed())
+            if (this._modConfig.ModConfig.ScrollDown.JustPressed())
             {
-                this._displayedInventoryService.Offset++;
-                Input.Suppress(this._modConfigService.ModConfig.ScrollDown);
+                this._displayedInventory.Offset++;
+                this.Helper.Input.SuppressActiveKeybinds(this._modConfig.ModConfig.ScrollDown);
             }
         }
     }

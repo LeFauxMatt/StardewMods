@@ -4,15 +4,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using Extensions;
-    using Helpers;
     using Helpers.ItemMatcher;
     using Helpers.ItemRepository;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
     using Models;
-    using StardewModdingAPI;
-    using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
@@ -26,6 +23,7 @@
         private static IEnumerable<SearchableItem> AllItems;
         private readonly int _columns;
         private readonly List<SearchableItem> _filteredItems = new();
+        private readonly Func<bool> _isModifierDown;
         private readonly ItemMatcher _itemFilter;
         private readonly IList<Item> _items;
         private readonly ItemMatcher _itemSelector;
@@ -47,7 +45,8 @@
         /// <param name="exitFunction">The method to run when exiting this menu.</param>
         /// <param name="initialValue">The initial search expression that will be used.</param>
         /// <param name="returnValue">An action that will accept the return value on exit.</param>
-        public ItemSelectionMenu(string searchTagSymbol, onExit exitFunction, string initialValue, Action<string> returnValue)
+        /// <param name="isModifierDown">A function that indicates if modifier is currently being held down.</param>
+        public ItemSelectionMenu(string searchTagSymbol, onExit exitFunction, string initialValue, Action<string> returnValue, Func<bool> isModifierDown)
             : base(
                 new List<Item>(),
                 false,
@@ -62,9 +61,9 @@
             ItemSelectionMenu.Instance.Value = this;
             ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().ToList();
             this._returnValue = returnValue;
+            this._isModifierDown = isModifierDown;
             this.exitFunction = exitFunction;
             this.behaviorBeforeCleanup = this.BehaviorBeforeCleanup;
-            Events.Input.ButtonPressed += this.OnButtonPressed;
             this._items = this.ItemsToGrabMenu.actualInventory;
             this._tags = this.inventory.inventory;
             this._menu = this.ItemsToGrabMenu;
@@ -76,7 +75,7 @@
             this._itemSelector.SetSearch(initialValue);
             this.ReSyncInventory(true, true);
 
-            this._searchField = new(Content.FromGame<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
+            this._searchField = new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor)
             {
                 X = this.ItemsToGrabMenu.xPositionOnScreen,
                 Y = this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom,
@@ -348,52 +347,39 @@
             this.drawMouse(b);
         }
 
+        public bool LeftClick(Point point)
+        {
+            this._searchField.Selected = this._searchArea.containsPoint(point.X, point.Y);
+            this._dropDown = null;
+            return this._searchField.Selected;
+        }
+
+        public bool RightClick(Point point)
+        {
+            this._searchField.Selected = this._searchArea.containsPoint(point.X, point.Y);
+            if (this._searchField.Selected)
+            {
+                this._searchField.Text = string.Empty;
+                this.Offset = 0;
+            }
+
+            this._dropDown = null;
+            return this._searchField.Selected;
+        }
+
         private static bool HighlightMethod(Item item)
         {
             return ItemSelectionMenu.Instance.Value._itemSelector.Matches(item);
         }
 
-        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-        {
-            switch (e.Button)
-            {
-                case SButton.Escape when this.readyToClose():
-                    this.exitThisMenu();
-                    Input.Suppress(e.Button);
-                    return;
-                case SButton.Escape:
-                    Input.Suppress(e.Button);
-                    return;
-                case SButton.MouseLeft or SButton.MouseRight:
-                {
-                    var point = Game1.getMousePosition(true);
-                    this._searchField.Selected = this._searchArea.containsPoint(point.X, point.Y);
-                    break;
-                }
-            }
-
-            if (this._searchField.Selected)
-            {
-                if (e.Button is SButton.MouseRight)
-                {
-                    this._searchField.Text = string.Empty;
-                    this.Offset = 0;
-                }
-
-                this._dropDown = null;
-                Input.Suppress(e.Button);
-            }
-        }
-
         private void BehaviorBeforeCleanup(IClickableMenu menu)
         {
-            Events.Input.ButtonPressed -= this.OnButtonPressed;
             this._returnValue(this._itemSelector.Search);
         }
 
         private void AddTag(string name)
         {
-            if (Input.IsDown(SButton.LeftShift) || Input.IsDown(SButton.RightShift))
+            if (this._isModifierDown())
             {
                 name = name.StartsWith("!")
                     ? name.Substring(1)
