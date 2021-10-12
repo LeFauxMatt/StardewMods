@@ -3,9 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Threading.Tasks;
     using Common.Helpers;
-    using CommonHarmony.Services;
+    using Common.Services;
     using Services;
     using StardewValley.Objects;
 
@@ -15,22 +14,6 @@
     internal static class Extensions
     {
         private static readonly HashSet<string> ActivatedFeatures = new();
-        private static readonly HashSet<string> ValidFeatures = new()
-        {
-            "AccessCarried",
-            "Capacity",
-            "CategorizeChest",
-            "ColorPicker",
-            "CraftFromChest",
-            "ExpandedMenu",
-            "FilterItems",
-            "InventoryTabs",
-            "SearchItems",
-            "StashToChest",
-            "Unbreakable",
-            "Unplaceable",
-            "VacuumItems",
-        };
 
         /// <summary>Allows items containing particular mod data to have feature enabled.</summary>
         /// <param name="serviceManager">The service manager.</param>
@@ -43,12 +26,12 @@
         [SuppressMessage("ReSharper", "HeapView.PossibleBoxingAllocation", Justification = "Support dynamic param types for API access.")]
         public static void EnableFeatureWithModData<T>(this ServiceManager serviceManager, string featureName, string key, string value, T param)
         {
-            if (!Extensions.ValidFeatures.Contains(featureName))
+            if (!BaseFeature.ValidFeatures.Contains(featureName))
             {
                 return;
             }
 
-            var feature = Task.Run(async () => await serviceManager.Get<BaseFeature>(featureName)).Result;
+            var feature = serviceManager.GetByName<BaseFeature>(featureName);
             if (feature is null)
             {
                 return;
@@ -79,6 +62,10 @@
                     dFeature.StoreValueWithModData(key, value, dParam);
                     feature.EnableWithModData(key, value, true);
                     break;
+                case Tuple<int, int, int> tParam when feature is FeatureWithParam<Tuple<int, int, int>> tFeature:
+                    tFeature.StoreValueWithModData(key, value, tParam);
+                    feature.EnableWithModData(key, value, true);
+                    break;
             }
         }
 
@@ -88,7 +75,7 @@
         /// <returns>Returns true if feature is enabled globally.</returns>
         public static bool IsFeatureEnabledGlobally(this ServiceManager serviceManager, string featureName)
         {
-            var modConfigService = Task.Run(async () => await serviceManager.Get<ModConfigService>()).Result;
+            var modConfigService = serviceManager.GetByType<ModConfigService>();
             return modConfigService.ModConfig.Global.TryGetValue(featureName, out var option) && option;
         }
 
@@ -98,7 +85,7 @@
         /// <exception cref="InvalidOperationException">When a feature is unknown.</exception>
         public static void ActivateFeature(this ServiceManager serviceManager, string featureName)
         {
-            var feature = Task.Run(async () => await serviceManager.Get<BaseFeature>(featureName)).Result;
+            var feature = serviceManager.GetByName<BaseFeature>(featureName);
             if (feature is null)
             {
                 throw new InvalidOperationException($"Unknown feature {featureName}");
@@ -119,7 +106,7 @@
         /// <exception cref="InvalidOperationException">When a feature is unknown.</exception>
         public static void DeactivateFeature(this ServiceManager serviceManager, string featureName)
         {
-            var feature = Task.Run(async () => await serviceManager.Get<BaseFeature>(featureName)).Result;
+            var feature = serviceManager.GetByName<BaseFeature>(featureName);
             if (feature is null)
             {
                 throw new InvalidOperationException($"Unknown feature {featureName}");
@@ -138,16 +125,16 @@
         /// <param name="serviceManager">The service manager.</param>
         public static void ActivateFeatures(this ServiceManager serviceManager)
         {
-            var modConfigService = Task.Run(async () => await serviceManager.Get<ModConfigService>()).Result;
+            var modConfigService = serviceManager.GetByType<ModConfigService>();
             foreach (var feature in serviceManager.GetAll<BaseFeature>())
             {
                 // Skip any feature that is globally disabled
-                if (modConfigService.ModConfig.Global.TryGetValue(feature.FeatureName, out var option) && !option)
+                if (modConfigService.ModConfig.Global.TryGetValue(feature.ServiceName, out var option) && !option)
                 {
                     continue;
                 }
 
-                serviceManager.ActivateFeature(feature.FeatureName);
+                serviceManager.ActivateFeature(feature.ServiceName);
             }
         }
 

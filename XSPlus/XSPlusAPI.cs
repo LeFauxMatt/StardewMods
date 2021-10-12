@@ -1,8 +1,9 @@
 ﻿namespace XSPlus
 {
+    using System;
     using System.Collections.Generic;
     using Common.Integrations.XSPlus;
-    using CommonHarmony.Services;
+    using Common.Services;
 
     /// <inheritdoc />
     public class XSPlusAPI : IXSPlusAPI
@@ -12,10 +13,10 @@
         /// <summary>
         ///     Initializes a new instance of the <see cref="XSPlusAPI" /> class.
         /// </summary>
-        /// <param name="serviceManager">The service manager.</param>
-        public XSPlusAPI(ServiceManager serviceManager)
+        /// <param name="mod">The mod instance.</param>
+        public XSPlusAPI(XSPlus mod)
         {
-            this._serviceManager = serviceManager;
+            this._serviceManager = mod.ServiceManager;
         }
 
         /// <inheritdoc />
@@ -50,6 +51,12 @@
 
         /// <inheritdoc />
         public void EnableWithModData(string featureName, string key, string value, Dictionary<string, bool> param)
+        {
+            this._serviceManager.EnableFeatureWithModData(featureName, key, value, param);
+        }
+
+        /// <inheritdoc />
+        public void EnableWithModData(string featureName, string key, string value, Tuple<int, int, int> param)
         {
             this._serviceManager.EnableFeatureWithModData(featureName, key, value, param);
         }

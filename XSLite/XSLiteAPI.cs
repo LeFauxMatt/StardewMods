@@ -153,6 +153,13 @@
                 {
                     var texture = contentPack.LoadAsset<Texture2D>(storage.Value.Image);
                     XSLite.Textures.Add(storage.Key, texture);
+                    storage.Value.ReloadTexture(texture);
+                }
+
+                if ((storage.Value.Width > 16 || storage.Value.Height > 32) && !this._xsPlus.IsLoaded)
+                {
+                    Log.Warn($"Cannot load {storage.Key} from {contentPack.Manifest.Name} {contentPack.Manifest.Version}\nXSPlus is required for bigger storages!");
+                    continue;
                 }
 
                 // Add to config
@@ -175,6 +182,12 @@
                     // Opt-in to Expanded Menu
                     this._xsPlus.API.EnableWithModData("ExpandedMenu", $"{XSLite.ModPrefix}/Storage", storage.Key, true);
 
+                    // Enable bigger chests
+                    if (storage.Value.Width > 16 || storage.Value.Height > 32)
+                    {
+                        this._xsPlus.API.EnableWithModData("BiggerChest", $"{XSLite.ModPrefix}/Storage", storage.Key, new Tuple<int, int, int>(storage.Value.Width, storage.Value.Height, storage.Value.Depth));
+                    }
+
                     // Enable filtering items
                     if (storage.Value.FilterItems.Any())
                     {
@@ -182,9 +195,15 @@
                     }
 
                     // Enable additional capacity
-                    else if (storageConfig.Capacity != 0)
+                    if (storageConfig.Capacity != 0)
                     {
                         this._xsPlus.API.EnableWithModData("Capacity", $"{XSLite.ModPrefix}/Storage", storage.Key, storageConfig.Capacity);
+                    }
+
+                    // Enable Open Nearby
+                    if (storage.Value.OpenNearby > 0)
+                    {
+                        this._xsPlus.API.EnableWithModData("OpenNearby", $"{XSLite.ModPrefix}/Storage", storage.Key, storage.Value.OpenNearby);
                     }
 
                     // Disable color picker if storage does not support player color

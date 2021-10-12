@@ -6,7 +6,6 @@
     using System.Linq;
     using Common.Helpers;
     using Common.Integrations.XSLite;
-    using CommonHarmony.Services;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
@@ -23,10 +22,7 @@
         internal const string ModPrefix = "furyx639.ExpandedStorage";
         internal static readonly IDictionary<string, Storage> Storages = new Dictionary<string, Storage>();
         internal static readonly IDictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-        internal static readonly PerScreen<IReflectedField<int>> CurrentLidFrame = new();
-        internal static readonly PerScreen<Chest> CurrentChest = new();
         private readonly HashSet<int> _inventoryStack = new();
-        private readonly HashSet<Vector2> _objectListStack = new();
         private IXSLiteAPI _api;
 
         /// <inheritdoc />
@@ -57,9 +53,8 @@
         /// <inheritdoc />
         public override void Entry(IModHelper helper)
         {
-            Content.Init(this.Helper.Content);
+            Storage.LoadContent = this.Helper.Content.Load<Texture2D>;
             Log.Init(this.Monitor);
-            Mixin.Init(this.ModManifest);
 
             if (this.Helper.ModRegistry.IsLoaded("furyx639.MoreChests"))
             {
@@ -70,15 +65,12 @@
             this._api = new XSLiteAPI(this.Helper);
 
             // Events
-            this.Helper.Events.GameLoop.DayStarted += XSLite.OnDayStarted;
+            this.Helper.Events.GameLoop.DayEnding += XSLite.OnDayEnding;
             this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-            this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this.Helper.Events.Player.Warped += XSLite.OnWarped;
 
             // Patches
-            var unused = new Patches();
+            var unused = new Patches(new(this.ModManifest.UniqueID));
         }
 
         /// <inheritdoc />
@@ -146,30 +138,17 @@
             }
 
             this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-            this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
-        }
-
-        private static void OnWarped(object sender, WarpedEventArgs e)
-        {
-            foreach (var obj in e.NewLocation.Objects.Values)
-            {
-                if (obj is Chest chest && chest.TryGetStorage(out var storage) && storage.OpenNearby > 0)
-                {
-                    chest.UpdateFarmerNearby(e.NewLocation, false);
-                }
-            }
         }
 
         /// <summary>Invalidate sprite cache for storages each in-game day.</summary>
-        private static void OnDayStarted(object sender, DayStartedEventArgs e)
+        private static void OnDayEnding(object sender, DayEndingEventArgs e)
         {
             foreach (var storage in XSLite.Storages.Values)
             {
-                storage.InvalidateCache();
+                storage.ReloadTexture();
             }
         }
 
-        /// <summary>Load Expanded Storage content packs.</summary>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this.Monitor.Log("Loading Expanded Storage Content", LogLevel.Info);
@@ -179,103 +158,6 @@
             }
         }
 
-        /// <summary>Tick visible chests in inventory.</summary>
-        private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
-        {
-            if (!Context.IsPlayerFree)
-            {
-                return;
-            }
-
-            if (!ReferenceEquals(Game1.player.CurrentItem, XSLite.CurrentChest.Value))
-            {
-                XSLite.CurrentChest.Value = Game1.player.CurrentItem as Chest;
-                XSLite.CurrentLidFrame.Value = XSLite.CurrentChest.Value is not null
-                    ? this.Helper.Reflection.GetField<int>(XSLite.CurrentChest.Value, "currentLidFrame")
-                    : null;
-            }
-
-            foreach (var chest in Game1.player.Items.Take(12).OfType<Chest>())
-            {
-                chest.updateWhenCurrentLocation(Game1.currentGameTime, Game1.player.currentLocation);
-            }
-        }
-
-        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-        {
-            if (!Context.IsPlayerFree || !e.Button.IsActionButton() && !e.Button.IsUseToolButton())
-            {
-                return;
-            }
-
-            var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
-            pos.X = (int)pos.X;
-            pos.Y = (int)pos.Y;
-
-            // Object exists at pos and is within reach of player
-            if (!Utility.withinRadiusOfPlayer((int)(64 * pos.X), (int)(64 * pos.Y), 1, Game1.player)
-                || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
-            {
-                return;
-            }
-
-            // Reassign to origin object if applicable
-            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
-                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
-                && int.TryParse(xStr, out var xPos)
-                && int.TryParse(yStr, out var yPos)
-                && (xPos != (int)pos.X || yPos != (int)pos.Y)
-                && Game1.currentLocation.Objects.TryGetValue(new(xPos, yPos), out var sourceObj))
-            {
-                obj = sourceObj;
-                pos = new(xPos, yPos);
-            }
-
-            // Object supports feature
-            if (!obj.TryGetStorage(out var storage))
-            {
-                return;
-            }
-
-            var chest = obj as Chest ?? obj.heldObject.Value as Chest;
-
-            // Check for chest action
-            if (e.Button.IsActionButton() && chest is not null && chest.playerChest.Value)
-            {
-                if (storage.OpenNearby > 0 || storage.Frames <= 1)
-                {
-                    Game1.playSound(storage.OpenSound);
-                    chest.ShowMenu();
-                }
-                else
-                {
-                    chest.GetMutex().RequestLock(
-                        () =>
-                        {
-                            chest.frameCounter.Value = 5;
-                            Game1.playSound(storage.OpenSound);
-                            Game1.player.Halt();
-                            Game1.player.freezePause = 1000;
-                        });
-                }
-
-                this.Helper.Input.Suppress(e.Button);
-            }
-
-            // Object supports feature, and player can carry object
-            else if (e.Button.IsUseToolButton() && Game1.player.CurrentItem is not Tool && storage.Config.EnabledFeatures.Contains("CanCarry") && Game1.player.addItemToInventoryBool(obj, true))
-            {
-                if (!string.IsNullOrWhiteSpace(storage.CarrySound))
-                {
-                    Game1.currentLocation.playSound(storage.CarrySound);
-                }
-
-                Game1.currentLocation.Objects.Remove(pos);
-                this.Helper.Input.Suppress(e.Button);
-            }
-        }
-
-        /// <summary>Replace Expanded Storage objects with modded Chest.</summary>
         [EventPriority(EventPriority.Low)]
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
@@ -305,91 +187,6 @@
                 this._inventoryStack.Add(index);
                 items.Remove(item);
                 e.Player.Items[index] = item.ToChest(storage);
-            }
-        }
-
-        /// <summary>Remove extra objects for bigger storages.</summary>
-        [EventPriority(EventPriority.Low)]
-        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
-        {
-            if (!e.IsCurrentLocation)
-            {
-                return;
-            }
-
-            foreach (var added in e.Added)
-            {
-                if (this._objectListStack.Contains(added.Key))
-                {
-                    this._objectListStack.Remove(added.Key);
-                    continue;
-                }
-
-                if (XSLite.CurrentChest.Value is null || !XSLite.CurrentChest.Value.TryGetStorage(out var storage))
-                {
-                    continue;
-                }
-
-                storage.ForEachPos(
-                    added.Key,
-                    pos =>
-                    {
-                        this._objectListStack.Add(pos);
-
-                        // Replace origin object with chest
-                        if (pos.Equals(added.Key))
-                        {
-                            var chest = XSLite.CurrentChest.Value.ToChest(storage);
-                            chest.modData[$"{XSLite.ModPrefix}/X"] = added.Key.X.ToString(CultureInfo.InvariantCulture);
-                            chest.modData[$"{XSLite.ModPrefix}/Y"] = added.Key.Y.ToString(CultureInfo.InvariantCulture);
-                            e.Location.Objects[pos] = chest;
-                            return;
-                        }
-
-                        // Add generic objects at remaining positions
-                        e.Location.Objects[pos] = new(Vector2.Zero, 232)
-                        {
-                            name = storage.Name,
-                            modData =
-                            {
-                                [$"{XSLite.ModPrefix}/Storage"] = storage.Name,
-                                [$"{XSLite.ModPrefix}/X"] = added.Key.X.ToString(CultureInfo.InvariantCulture),
-                                [$"{XSLite.ModPrefix}/Y"] = added.Key.Y.ToString(CultureInfo.InvariantCulture),
-                            },
-                        };
-                    });
-            }
-
-            foreach (var removed in e.Removed)
-            {
-                if (this._objectListStack.Contains(removed.Key))
-                {
-                    this._objectListStack.Remove(removed.Key);
-                    continue;
-                }
-
-                if (!removed.Value.TryGetStorage(out var storage)
-                    || !removed.Value.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
-                    || !removed.Value.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
-                    || !int.TryParse(xStr, out var xPos)
-                    || !int.TryParse(yStr, out var yPos))
-                {
-                    continue;
-                }
-
-                storage.ForEachPos(
-                    xPos,
-                    yPos,
-                    pos =>
-                    {
-                        if (pos.Equals(removed.Key))
-                        {
-                            return;
-                        }
-
-                        this._objectListStack.Add(pos);
-                        e.Location.Objects.Remove(pos);
-                    });
             }
         }
     }
