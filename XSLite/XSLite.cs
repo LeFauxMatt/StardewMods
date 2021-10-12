@@ -81,60 +81,13 @@
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            if (Context.IsMainPlayer)
-            {
-                var locations = Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)));
-                foreach (var location in locations)
-                {
-                    foreach (var obj in location.Objects.Pairs)
-                    {
-                        if (obj.Value is not Chest {playerChest: {Value: true}} || !obj.Value.TryGetStorage(out var storage))
-                        {
-                            continue;
-                        }
-
-                        storage.ForEachPos(
-                            obj.Key,
-                            pos =>
-                            {
-                                // Replace origin object with chest
-                                if (pos.Equals(obj.Key))
-                                {
-                                    var chest = obj.Value.ToChest(storage);
-                                    chest.modData[$"{XSLite.ModPrefix}/X"] = obj.Key.X.ToString(CultureInfo.InvariantCulture);
-                                    chest.modData[$"{XSLite.ModPrefix}/Y"] = obj.Key.Y.ToString(CultureInfo.InvariantCulture);
-                                    location.Objects[pos] = chest;
-                                    return;
-                                }
-
-                                // Add generic objects at remaining positions
-                                location.Objects[pos] = new(Vector2.Zero, 232)
-                                {
-                                    name = storage.Name,
-                                    modData =
-                                    {
-                                        [$"{XSLite.ModPrefix}/Storage"] = storage.Name,
-                                        [$"{XSLite.ModPrefix}/X"] = obj.Key.X.ToString(CultureInfo.InvariantCulture),
-                                        [$"{XSLite.ModPrefix}/Y"] = obj.Key.Y.ToString(CultureInfo.InvariantCulture),
-                                    },
-                                };
-                            });
-                    }
-                }
-            }
-
             for (var index = 0; index < Game1.player.Items.Count; index++)
             {
                 var item = Game1.player.Items[index];
-                if (item is null || item is Chest && item.modData.ContainsKey($"{XSLite.ModPrefix}/Storage") || !item.TryGetStorage(out var storage))
+                if (item is SObject {bigCraftable: {Value: true}} and not Chest && item.TryGetStorage(out var storage))
                 {
-                    continue;
+                    Game1.player.Items[index] = item.ToChest(storage);
                 }
-
-                var chest = item.ToChest(storage);
-                chest.modData.Remove($"{XSLite.ModPrefix}/X");
-                chest.modData.Remove($"{XSLite.ModPrefix}/Y");
-                Game1.player.Items[index] = chest;
             }
 
             this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
