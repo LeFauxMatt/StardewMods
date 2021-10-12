@@ -6,13 +6,11 @@
     using Common.Services;
     using Features;
     using Microsoft.Xna.Framework;
-    using StardewModdingAPI;
     using StardewValley;
     using StardewValley.Objects;
 
     internal class InfoDumpService : BaseService
     {
-        private readonly ICommandHelper _commandHelper;
         private readonly ServiceManager _serviceManager;
         private ModConfigService _modConfig;
 
