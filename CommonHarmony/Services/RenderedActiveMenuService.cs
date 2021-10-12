@@ -1,8 +1,7 @@
 ﻿namespace CommonHarmony.Services
 {
     using System;
-    using System.Threading.Tasks;
-    using Common.Helpers;
+    using Common.Services;
     using Interfaces;
     using Models;
     using StardewModdingAPI;
@@ -14,14 +13,16 @@
     /// <inheritdoc cref="BaseService" />
     internal class RenderedActiveMenuService : BaseService, IEventHandlerService<EventHandler<RenderedActiveMenuEventArgs>>
     {
-        private static RenderedActiveMenuService Instance;
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
 
-        private RenderedActiveMenuService(ItemGrabMenuChangedService itemGrabMenuChangedService)
+        private RenderedActiveMenuService(ServiceManager serviceManager)
             : base("RenderedActiveMenu")
         {
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(service => (service as ItemGrabMenuChangedService)?.AddHandler(this.OnItemGrabMenuChanged));
+
+            // Events
+            serviceManager.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         }
 
         /// <inheritdoc />
@@ -37,16 +38,6 @@
         }
 
         private event EventHandler<RenderedActiveMenuEventArgs> RenderedActiveMenu;
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="RenderedActiveMenuService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="RenderedActiveMenuService" /> class.</returns>
-        public static async Task<RenderedActiveMenuService> Create(ServiceManager serviceManager)
-        {
-            return RenderedActiveMenuService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
-        }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {

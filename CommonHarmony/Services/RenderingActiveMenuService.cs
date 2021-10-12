@@ -1,8 +1,7 @@
 ﻿namespace CommonHarmony.Services
 {
     using System;
-    using System.Threading.Tasks;
-    using Common.Helpers;
+    using Common.Services;
     using Interfaces;
     using Microsoft.Xna.Framework;
     using Models;
@@ -14,14 +13,16 @@
     /// <inheritdoc cref="BaseService" />
     internal class RenderingActiveMenuService : BaseService, IEventHandlerService<EventHandler<RenderingActiveMenuEventArgs>>
     {
-        private static RenderingActiveMenuService Instance;
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
 
-        private RenderingActiveMenuService(ItemGrabMenuChangedService itemGrabMenuChangedService)
+        private RenderingActiveMenuService(ServiceManager serviceManager)
             : base("RenderingActiveMenu")
         {
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(service => (service as ItemGrabMenuChangedService)?.AddHandler(this.OnItemGrabMenuChanged));
+
+            // Events
+            serviceManager.Helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         }
 
         /// <inheritdoc />
@@ -37,16 +38,6 @@
         }
 
         private event EventHandler<RenderingActiveMenuEventArgs> RenderingActiveMenu;
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="RenderingActiveMenuService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="RenderingActiveMenuService" /> class.</returns>
-        public static async Task<RenderingActiveMenuService> Create(ServiceManager serviceManager)
-        {
-            return RenderingActiveMenuService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
-        }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {

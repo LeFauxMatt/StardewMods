@@ -5,8 +5,8 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
-    using System.Threading.Tasks;
     using Common.Helpers;
+    using Common.Services;
     using Enums;
     using HarmonyLib;
     using Interfaces;
@@ -21,12 +21,6 @@
     /// <inheritdoc cref="BaseService" />
     internal class ItemGrabMenuChangedService : BaseService, IEventHandlerService<EventHandler<ItemGrabMenuEventArgs>>
     {
-        private static readonly ConstructorInfo ItemGrabMenuConstructor = AccessTools.Constructor(
-            typeof(ItemGrabMenu),
-            new[]
-            {
-                typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
-            });
         private static ItemGrabMenuChangedService Instance;
         private readonly PerScreen<bool> _attached = new();
         private readonly List<ServiceHandler<EventHandler<ItemGrabMenuEventArgs>>> _handlers = new();
@@ -35,17 +29,33 @@
         private int _handlerCount;
         private bool _hasNewHandlers;
 
-        private ItemGrabMenuChangedService()
+        private ItemGrabMenuChangedService(ServiceManager serviceManager)
             : base("ItemGrabMenuConstructed")
         {
-            // Events
-            Events.Display.MenuChanged += this.OnMenuChanged;
+            ItemGrabMenuChangedService.Instance ??= this;
 
-            // Patches
-            Mixin.Postfix(
-                ItemGrabMenuChangedService.ItemGrabMenuConstructor,
-                typeof(ItemGrabMenuChangedService),
-                nameof(ItemGrabMenuChangedService.ItemGrabMenu_constructor_postfix));
+            // Dependencies
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    var harmony = service as HarmonyService;
+                    var ctorParams = new[]
+                    {
+                        typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+                    };
+
+                    harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Constructor(typeof(ItemGrabMenu), ctorParams),
+                        typeof(ItemGrabMenuChangedService),
+                        nameof(ItemGrabMenuChangedService.ItemGrabMenu_constructor_postfix),
+                        PatchType.Postfix);
+
+                    harmony?.ApplyPatches(this.ServiceName);
+                });
+
+            // Events
+            serviceManager.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
         }
 
         /// <inheritdoc />
@@ -80,19 +90,6 @@
             }
         }
 
-        private event EventHandler<ItemGrabMenuEventArgs> ItemGrabMenuConstructed;
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="ItemGrabMenuChangedService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ItemGrabMenuChangedService" /> class.</returns>
-        public static async Task<ItemGrabMenuChangedService> Create(ServiceManager serviceManager)
-        {
-            return ItemGrabMenuChangedService.Instance ??= new();
-        }
-
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
         {

@@ -4,8 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using System.Threading.Tasks;
-    using Common.Helpers;
+    using Common.Services;
     using Enums;
     using HarmonyLib;
     using Interfaces;
@@ -20,42 +19,50 @@
     internal class ItemGrabMenuSideButtonsService : BaseService, IEventHandlerService<Func<SideButtonPressedEventArgs, bool>>
     {
         private static ItemGrabMenuSideButtonsService Instance;
-        private readonly PerScreen<IList<Func<SideButtonPressedEventArgs, bool>>> _buttonPressedHandlers = new()
-        {
-            Value = new List<Func<SideButtonPressedEventArgs, bool>>(),
-        };
-        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _buttons = new()
-        {
-            Value = new(),
-        };
-        private readonly PerScreen<HashSet<SideButton>> _hideButtons = new()
-        {
-            Value = new(),
-        };
+        private readonly PerScreen<IList<Func<SideButtonPressedEventArgs, bool>>> _buttonPressedHandlers = new(() => new List<Func<SideButtonPressedEventArgs, bool>>());
+        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _buttons = new(() => new());
+        private readonly Func<string, Translation> _getTranslation;
+        private readonly PerScreen<HashSet<SideButton>> _hideButtons = new(() => new());
         private readonly PerScreen<string> _hoverText = new();
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
-        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _sideButtons = new()
-        {
-            Value = new(),
-        };
+        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _sideButtons = new(() => new());
+        private readonly Action<SButton> _suppress;
 
-        private ItemGrabMenuSideButtonsService(
-            ItemGrabMenuChangedService itemGrabMenuChangedService,
-            RenderedActiveMenuService renderedActiveMenuService)
+        private ItemGrabMenuSideButtonsService(ServiceManager serviceManager)
             : base("ItemGrabMenuSideButtons")
         {
-            // Events
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedBefore);
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChangedAfter);
-            renderedActiveMenuService.AddHandler(this.OnRenderedActiveMenu);
-            Events.Input.ButtonPressed += this.OnButtonPressed;
-            Events.Input.CursorMoved += this.OnCursorMoved;
+            ItemGrabMenuSideButtonsService.Instance ??= this;
 
-            // Patches
-            Mixin.Prefix(
-                AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-                typeof(ItemGrabMenuSideButtonsService),
-                nameof(ItemGrabMenuSideButtonsService.ItemGrabMenu_RepositionSideButtons_prefix));
+            // Init
+            this._suppress = serviceManager.Helper.Input.Suppress;
+            this._getTranslation = serviceManager.Helper.Translation.Get;
+
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(
+                service =>
+                {
+                    var itemGrabMenuChanged = service as ItemGrabMenuChangedService;
+                    itemGrabMenuChanged?.AddHandler(this.OnItemGrabMenuChangedBefore);
+                    itemGrabMenuChanged?.AddHandler(this.OnItemGrabMenuChangedAfter);
+                });
+
+            this.AddDependency<RenderedActiveMenuService>(service => (service as RenderedActiveMenuService)?.AddHandler(this.OnRenderedActiveMenu));
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    var harmony = service as HarmonyService;
+                    harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
+                        typeof(ItemGrabMenuSideButtonsService),
+                        nameof(ItemGrabMenuSideButtonsService.ItemGrabMenu_RepositionSideButtons_prefix));
+
+                    harmony?.ApplyPatches(this.ServiceName);
+                });
+
+            // Events
+            serviceManager.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            serviceManager.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         }
 
         /// <inheritdoc />
@@ -68,18 +75,6 @@
         public void RemoveHandler(Func<SideButtonPressedEventArgs, bool> eventHandler)
         {
             this._buttonPressedHandlers.Value.Remove(eventHandler);
-        }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="ItemGrabMenuSideButtonsService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns an instance of the <see cref="ItemGrabMenuSideButtonsService" /> class.</returns>
-        public static async Task<ItemGrabMenuSideButtonsService> Create(ServiceManager serviceManager)
-        {
-            return ItemGrabMenuSideButtonsService.Instance ??= new(
-                await serviceManager.Get<ItemGrabMenuChangedService>(),
-                await serviceManager.Get<RenderedActiveMenuService>());
         }
 
         public void AddButton(ClickableTextureComponent cc)
@@ -102,7 +97,6 @@
             this._hideButtons.Value.Add(button);
         }
 
-        [SuppressMessage("ReSharper", "SA1313", Justification = "Naming is determined by Harmony.")]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static bool ItemGrabMenu_RepositionSideButtons_prefix(ItemGrabMenu __instance)
         {
@@ -252,7 +246,7 @@
                 Game1.playSound("drumkit6");
                 if (this._buttonPressedHandlers.Value.Any(handler => handler(eventArgs)))
                 {
-                    Input.Suppress(SButton.MouseLeft);
+                    this._suppress(SButton.MouseLeft);
                 }
             }
         }
@@ -271,7 +265,7 @@
                 button.tryHover(point.X, point.Y, 0.25f);
                 if (button.containsPoint(point.X, point.Y))
                 {
-                    this._hoverText.Value = Translations.Get($"button.{button.name}.name");
+                    this._hoverText.Value = this._getTranslation($"button.{button.name}.name");
                 }
             }
         }

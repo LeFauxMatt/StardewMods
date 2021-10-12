@@ -13,12 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ItemExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Content.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Input.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ModRegistry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Reflection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Translations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemMatcher\ItemMatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemMatcher\SearchPhrase.cs" />
@@ -40,6 +34,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Slider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\IService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\PendingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ServiceManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ContextMenu.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\HSLSlider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />

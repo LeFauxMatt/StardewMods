@@ -4,10 +4,11 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection.Emit;
-    using System.Threading.Tasks;
     using Common.Extensions;
     using Common.Helpers;
     using Common.Models;
+    using Common.Services;
+    using Enums;
     using HarmonyLib;
     using Interfaces;
     using Microsoft.Xna.Framework.Graphics;
@@ -24,37 +25,43 @@
     {
         private static DisplayedInventoryService Instance;
         private readonly PerScreen<int> _columns = new();
-        private readonly PerScreen<IList<Func<Item, bool>>> _filterItemHandlers = new()
-        {
-            Value = new List<Func<Item, bool>>(),
-        };
+        private readonly PerScreen<List<Item>> _filteredItems = new();
+        private readonly IList<Func<Item, bool>> _filterItemHandlers = new List<Func<Item, bool>>();
         private readonly PerScreen<IList<Item>> _items = new();
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
         private readonly PerScreen<int> _offset = new();
-        private readonly PerScreen<Range<int>> _range = new()
-        {
-            Value = new(),
-        };
+        private readonly PerScreen<Range<int>> _range = new(() => new());
         private readonly PerScreen<int> _rows = new();
 
-        private DisplayedInventoryService(ItemGrabMenuChangedService itemGrabMenuChangedService)
+        private DisplayedInventoryService(ServiceManager serviceManager)
             : base("DisplayedInventory")
         {
-            // Events
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
-            Events.Player.InventoryChanged += this.OnInventoryChanged;
+            // Init
+            DisplayedInventoryService.Instance ??= this;
 
-            // Patches
-            Mixin.Transpiler(
-                AccessTools.Method(
-                    typeof(InventoryMenu),
-                    nameof(InventoryMenu.draw),
-                    new[]
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(service => (service as ItemGrabMenuChangedService)?.AddHandler(this.OnItemGrabMenuChanged));
+            this.AddDependency<HarmonyService>(
+                service =>
+                {
+                    var harmony = service as HarmonyService;
+                    var methodParams = new[]
                     {
                         typeof(SpriteBatch), typeof(int), typeof(int), typeof(int),
-                    }),
-                typeof(DisplayedInventoryService),
-                nameof(DisplayedInventoryService.InventoryMenu_draw_transpiler));
+                    };
+
+                    harmony?.AddPatch(
+                        this.ServiceName,
+                        AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), methodParams),
+                        typeof(DisplayedInventoryService),
+                        nameof(DisplayedInventoryService.InventoryMenu_draw_transpiler),
+                        PatchType.Transpiler);
+
+                    harmony?.ApplyPatches(this.ServiceName);
+                });
+
+            // Events
+            serviceManager.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         }
 
         /// <summary>
@@ -82,10 +89,10 @@
             get
             {
                 var offset = this.Offset * this._columns.Value;
-                for (var i = 0; i < this._items.Value.Count; i++)
+                for (var i = 0; i < this._filteredItems.Value.Count; i++)
                 {
-                    var item = this._items.Value.ElementAtOrDefault(i);
-                    if (item is null || !this.FilterMethod(item))
+                    var item = this._filteredItems.Value.ElementAtOrDefault(i);
+                    if (item is null)
                     {
                         continue;
                     }
@@ -104,23 +111,13 @@
         /// <inheritdoc />
         public void AddHandler(Func<Item, bool> handler)
         {
-            this._filterItemHandlers.Value.Add(handler);
+            this._filterItemHandlers.Add(handler);
         }
 
         /// <inheritdoc />
         public void RemoveHandler(Func<Item, bool> handler)
         {
-            this._filterItemHandlers.Value.Remove(handler);
-        }
-
-        /// <summary>
-        ///     Returns and creates if needed an instance of the <see cref="DisplayedInventoryService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>An instance of the <see cref="DisplayedInventoryService" /> class.</returns>
-        public static async Task<DisplayedInventoryService> Create(ServiceManager serviceManager)
-        {
-            return DisplayedInventoryService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
+            this._filterItemHandlers.Remove(handler);
         }
 
         /// <summary>
@@ -133,19 +130,29 @@
                 this._offset.Value = 0;
             }
 
-            this._range.Value.Maximum = Math.Max(0, this._items.Value.Count.RoundUp(this._columns.Value) / this._columns.Value - this._rows.Value);
-            IList<Item> items = this.Items.Take(inventoryMenu.inventory.Count).ToList();
-            for (var i = 0; i < inventoryMenu.inventory.Count; i++)
+            this._filteredItems.Value = new(this._filterItemHandlers.Count == 0 ? this._items.Value : this._items.Value.Where(this.FilterMethod));
+            this._range.Value.Maximum = Math.Max(0, this._filteredItems.Value.Count.RoundUp(this._columns.Value) / this._columns.Value - this._rows.Value);
+
+            var slot = 0;
+            foreach (var item in this.Items)
             {
-                var item = items.ElementAtOrDefault(i);
-                inventoryMenu.inventory[i].name = (item is not null ? this._items.Value.IndexOf(item) : int.MaxValue).ToString();
+                inventoryMenu.inventory[slot++].name = (item is not null ? this._items.Value.IndexOf(item) : int.MaxValue).ToString();
+                if (slot == inventoryMenu.inventory.Count)
+                {
+                    return;
+                }
             }
+
+            do
+            {
+                inventoryMenu.inventory[slot++].name = int.MaxValue.ToString();
+            } while (slot < inventoryMenu.inventory.Count);
         }
 
         private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
         {
             Log.Trace("Filter actualInventory to managed inventory.");
-            var scrollItemsPatch = new PatternPatch(PatchType.Replace);
+            var scrollItemsPatch = new PatternPatch();
             scrollItemsPatch
                 .Find(
                     new[]
@@ -208,7 +215,7 @@
 
         private bool FilterMethod(Item item)
         {
-            return this._filterItemHandlers.Value.Count == 0 || this._filterItemHandlers.Value.All(filterMethod => filterMethod(item));
+            return this._filterItemHandlers.Count == 0 || this._filterItemHandlers.All(filterMethod => filterMethod(item));
         }
     }
 }

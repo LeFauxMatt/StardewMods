@@ -3,28 +3,25 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
+    using Common.Services;
     using Interfaces;
     using Models;
     using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Menus;
+    using StardewValley.Objects;
 
     /// <inheritdoc cref="BaseService" />
     internal class HighlightItemsService : BaseService, IEventHandlerService<Func<Item, bool>>
     {
-        private static HighlightItemsService Instance;
-        private readonly PerScreen<IList<Func<Item, bool>>> _highlightItemHandlers = new()
-        {
-            Value = new List<Func<Item, bool>>(),
-        };
+        private readonly PerScreen<IList<Func<Item, bool>>> _highlightItemHandlers = new(() => new List<Func<Item, bool>>());
         private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
 
-        private HighlightItemsService(ItemGrabMenuChangedService itemGrabMenuChangedService)
+        private HighlightItemsService(ServiceManager serviceManager)
             : base("HighlightItems")
         {
-            // Events
-            itemGrabMenuChangedService.AddHandler(this.OnItemGrabMenuChanged);
+            // Dependencies
+            this.AddDependency<ItemGrabMenuChangedService>(service => (service as ItemGrabMenuChangedService)?.AddHandler(this.OnItemGrabMenuChanged));
         }
 
         /// <inheritdoc />
@@ -39,19 +36,9 @@
             this._highlightItemHandlers.Value.Remove(handler);
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="HighlightItemsService" /> class.
-        /// </summary>
-        /// <param name="serviceManager">Service manager to request shared services.</param>
-        /// <returns>Returns a new instance of the <see cref="HighlightItemsService" /> class.</returns>
-        public static async Task<HighlightItemsService> Create(ServiceManager serviceManager)
-        {
-            return HighlightItemsService.Instance ??= new(await serviceManager.Get<ItemGrabMenuChangedService>());
-        }
-
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
         {
-            if (e.ItemGrabMenu is not null && e.ItemGrabMenu.inventory.highlightMethod?.Target is not HighlightItemsService)
+            if (e.ItemGrabMenu?.context is Chest {playerChest: {Value: true}} && e.ItemGrabMenu.inventory.highlightMethod?.Target is not HighlightItemsService)
             {
                 this._highlightMethod.Value = e.ItemGrabMenu.inventory.highlightMethod;
                 e.ItemGrabMenu.inventory.highlightMethod = this.HighlightMethod;
