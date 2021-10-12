@@ -7,7 +7,6 @@
     internal class PatternPatch
     {
         private readonly IList<Action<LinkedList<CodeInstruction>>> _patches = new List<Action<LinkedList<CodeInstruction>>>();
-        private readonly PatchType _patchType;
         private readonly Queue<int> _patternIndex = new();
 
         private readonly List<CodeInstruction> _patterns = new();
@@ -16,20 +15,13 @@
         private int _loop;
         private int _startIndex;
 
-        /// <summary>Initializes a new instance of the <see cref="PatternPatch" /> class.</summary>
-        /// <param name="pattern"></param>
-        public PatternPatch(PatchType patchType)
-        {
-            this._patchType = patchType;
-        }
-
         /// <summary></summary>
         public int Skipped { get; private set; }
 
         /// <summary></summary>
         public bool Loop
         {
-            get => this._patchType == PatchType.Replace && this._loop == -1 || --this._loop > 0;
+            get => this._loop == -1 || --this._loop > 0;
         }
 
         /// <summary></summary>
@@ -84,12 +76,6 @@
         /// <returns></returns>
         public bool Matches(CodeInstruction instruction)
         {
-            // Return true if no pattern to match
-            if (this._patchType == PatchType.Prepend)
-            {
-                return true;
-            }
-
             // Initialize end index
             if (this._startIndex == this._endIndex)
             {
