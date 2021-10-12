@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using Common.Helpers;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Newtonsoft.Json;
@@ -56,6 +55,8 @@
             }
         }
 
+        public static Func<string, ContentSource, Texture2D> LoadContent { get; set; }
+
         public AssetFormat Format { get; set; } = AssetFormat.Vanilla;
 
         public string Name
@@ -76,8 +77,6 @@
 
         public int Frames { get; set; } = 5;
 
-        public string Animation { get; set; } = "none";
-
         public bool PlayerColor { get; set; } = false;
 
         public bool PlayerConfig { get; set; } = true;
@@ -87,10 +86,6 @@
         public int Capacity { get; set; } = 0;
 
         public string OpenSound { get; set; } = "openChest";
-
-        public string PlaceSound { get; set; } = "axe";
-
-        public string CarrySound { get; set; } = "pickUpItem";
 
         public float OpenNearby { get; set; } = 0;
 
@@ -159,14 +154,14 @@
         }
 
         /// <summary>Clears cached textures to reload them.</summary>
-        public void InvalidateCache()
+        public void ReloadTexture(Texture2D texture = null)
         {
             if (this.Format == AssetFormat.Vanilla)
             {
                 return;
             }
 
-            var texture = Content.FromGame<Texture2D>(this._path);
+            texture ??= Storage.LoadContent(this._path, ContentSource.GameContent);
             if (texture is null && !XSLite.Textures.TryGetValue(this._name, out texture))
             {
                 return;
@@ -237,94 +232,11 @@
             return true;
         }
 
-        /// <summary>Removes chest and artifacts from location.</summary>
-        /// <param name="location">The location to remove chest from.</param>
-        /// <param name="pos">The position of the object at location.</param>
-        /// <param name="obj">The object to remove.</param>
-        public void Remove(GameLocation location, Vector2 pos, SObject obj)
-        {
-            if (obj.modData.TryGetValue($"{XSLite.ModPrefix}/X", out var xStr)
-                && obj.modData.TryGetValue($"{XSLite.ModPrefix}/Y", out var yStr)
-                && int.TryParse(xStr, out var xPos)
-                && int.TryParse(yStr, out var yPos))
-            {
-                this.ForEachPos(xPos, yPos, innerPos => { location.Objects.Remove(innerPos); });
-            }
-
-            location.Objects.Remove(pos);
-        }
-
         private static Vector2 ShakeOffset(SObject instance, int minValue, int maxValue)
         {
             return instance.shakeTimer > 0
                 ? new(Game1.random.Next(minValue, maxValue), 0)
                 : Vector2.Zero;
-        }
-
-        internal Chest Create(Item item)
-        {
-            var chest = new Chest(true, Vector2.Zero, this.Format == AssetFormat.Vanilla ? item.ParentSheetIndex : 130)
-            {
-                Name = this.Name,
-                SpecialChestType = this.SpecialChestType,
-                fridge =
-                {
-                    Value = this.IsFridge,
-                },
-                lidFrameCount =
-                {
-                    Value = this.Frames,
-                },
-                modData =
-                {
-                    [$"{XSLite.ModPrefix}/Storage"] = this.Name,
-                },
-            };
-
-            if (item is Chest oldChest)
-            {
-                if (oldChest.items.Any())
-                {
-                    chest.items.CopyFrom(oldChest.items);
-                }
-
-                chest.playerChoiceColor.Value = oldChest.playerChoiceColor.Value;
-            }
-
-            if (this.HeldStorage)
-            {
-                var heldChest = new Chest(true, Vector2.Zero)
-                {
-                    modData =
-                    {
-                        [$"{XSLite.ModPrefix}/Storage"] = this.Name,
-                    },
-                };
-
-                if (item is SObject {heldObject: {Value: Chest oldHeldChest}} && oldHeldChest.items.Any())
-                {
-                    heldChest.items.CopyFrom(oldHeldChest.items);
-                }
-
-                chest.heldObject.Value = heldChest;
-            }
-
-            // Copy modData from original item
-            foreach (var modData in item.modData)
-            {
-                chest.modData.CopyFrom(modData);
-            }
-
-            // Copy modData from config
-            foreach (var modData in this.ModData)
-            {
-                if (!chest.modData.ContainsKey(modData.Key))
-                {
-                    chest.modData.Add(modData.Key, modData.Value);
-                }
-            }
-
-            return chest;
         }
     }
 }
