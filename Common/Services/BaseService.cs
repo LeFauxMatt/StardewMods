@@ -9,7 +9,6 @@
     internal abstract class BaseService : IService
     {
         private readonly Dictionary<Type, IList<Action<IService>>> _pendingDependencies = new();
-        //private readonly HashSet<Type> _pendingDependencies = new();
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="BaseService" /> class.
@@ -19,8 +18,6 @@
         {
             this.ServiceName = serviceName;
         }
-
-        private protected IList<IService> Dependencies { get; } = new List<IService>();
 
         /// <inheritdoc />
         public string ServiceName { get; }
@@ -35,8 +32,6 @@
                     new object[]
                     {
                     });
-
-                this.Dependencies.Add(service);
 
                 foreach (var handler in dependency.Value)
                 {

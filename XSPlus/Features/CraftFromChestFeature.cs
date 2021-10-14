@@ -189,13 +189,13 @@
                 return;
             }
 
-            this._multipleChestCraftingPage.Value = new(this._cachedPlayerChests.Value.Union(this._cachedGameChests).ToList());
+            this._multipleChestCraftingPage.Value = new(this._cachedPlayerChests.Value.Concat(this._cachedGameChests).ToList());
             this.Helper.Input.SuppressActiveKeybinds(this._modConfig.ModConfig.OpenCrafting);
         }
 
         private class MultipleChestCraftingPage
         {
-            private const int TimeOut = 100;
+            private const int TimeOut = 60;
             private readonly List<Chest> _chests;
             private readonly MultipleMutexRequest _multipleMutexRequest;
             private int _timeOut = MultipleChestCraftingPage.TimeOut;
@@ -249,7 +249,7 @@
             private void ExitFunction()
             {
                 this._multipleMutexRequest.ReleaseLocks();
-                this._timeOut = 0;
+                this._timeOut = MultipleChestCraftingPage.TimeOut;
             }
         }
     }
