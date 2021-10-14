@@ -73,9 +73,12 @@
             }
 
             // Copy modData from original item
-            foreach (var modData in item.modData)
+            foreach (var modData in item.modData.Pairs)
             {
-                chest.modData.CopyFrom(modData);
+                if (modData.Key != $"{XSLite.ModPrefix}/X" && modData.Key != $"{XSLite.ModPrefix}/Y")
+                {
+                    chest.modData[modData.Key] = modData.Value;
+                }
             }
 
             // Copy modData from config

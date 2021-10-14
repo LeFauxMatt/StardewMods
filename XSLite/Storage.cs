@@ -170,30 +170,6 @@
             this.Texture = texture;
         }
 
-        /// <summary>Perform an action for each tile the chest occupies.</summary>
-        /// <param name="origin">The top-left coordinate of the object.</param>
-        /// <param name="doAction">The action to perform for each tile.</param>
-        public void ForEachPos(Vector2 origin, Action<Vector2> doAction)
-        {
-            this.ForEachPos((int)origin.X, (int)origin.Y, doAction);
-        }
-
-        /// <summary>Perform an action for each tile the chest occupies.</summary>
-        /// <param name="x">The leftmost coordinate of the object.</param>
-        /// <param name="y">The topmost coordinate of the object.</param>
-        /// <param name="doAction">The action to perform for each tile.</param>
-        public void ForEachPos(int x, int y, Action<Vector2> doAction)
-        {
-            for (var i = 0; i < this.TileWidth; i++)
-            {
-                for (var j = 0; j < this.TileHeight; j++)
-                {
-                    var pos = new Vector2(x + i, y + j);
-                    doAction.Invoke(pos);
-                }
-            }
-        }
-
         /// <summary>Draws an expanded storage.</summary>
         /// <param name="obj">The object to draw.</param>
         /// <param name="currentFrame">Which frame of lid animation to draw the object at.</param>

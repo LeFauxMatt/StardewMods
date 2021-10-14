@@ -112,6 +112,10 @@
                 AccessTools.Method(typeof(SObject), nameof(SObject.getDescription)),
                 postfix: new(typeof(Patches), nameof(Patches.Object_getDescription_postfix)));
 
+            harmony.Patch(
+                AccessTools.Method(typeof(SObject), nameof(SObject.getOne)),
+                postfix: new(typeof(Patches), nameof(Patches.Object_getOne_postfix)));
+
             // Return custom display name for Object.
             harmony.Patch(
                 AccessTools.Method(typeof(SObject), "loadDisplayName"),
@@ -385,20 +389,35 @@
             }
 
             // Block if mismatched data
-            __result = chest.playerChoiceColor.Value != otherChest.playerChoiceColor.Value;
-            if (!__result)
+            if (chest.playerChoiceColor.Value.PackedValue != otherChest.playerChoiceColor.Value.PackedValue)
             {
+                __result = false;
                 return;
             }
 
             // Block if mismatched modData
             foreach (var key in chest.modData.Keys.Concat(otherChest.modData.Keys).Distinct())
             {
-                if (!chest.modData.TryGetValue(key, out var chestValue) || !otherChest.modData.TryGetValue(key, out var otherValue) || chestValue != otherValue)
+                var hasValue = chest.modData.TryGetValue(key, out var value);
+                var OtherHasValue = otherChest.modData.TryGetValue(key, out var otherValue);
+                if (hasValue && OtherHasValue)
                 {
+                    if (value == otherValue)
+                    {
+                        continue;
+                    }
+
                     __result = false;
                     return;
                 }
+
+                if (!hasValue)
+                {
+                    chest.modData[key] = otherValue;
+                    continue;
+                }
+
+                otherChest.modData[key] = value;
             }
         }
 
@@ -451,6 +470,14 @@
             if (__instance.TryGetStorage(out var storage) && storage.Format != Storage.AssetFormat.Vanilla && !string.IsNullOrWhiteSpace(storage.Description))
             {
                 __result = storage.Description;
+            }
+        }
+
+        private static void Object_getOne_postfix(SObject __instance, ref Item __result)
+        {
+            if (__instance.TryGetStorage(out var storage) && storage.Format != Storage.AssetFormat.Vanilla && !string.IsNullOrWhiteSpace(storage.Name))
+            {
+                __result = __result.ToChest(storage);
             }
         }
 

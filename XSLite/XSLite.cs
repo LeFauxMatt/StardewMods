@@ -2,17 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using Common.Helpers;
     using Common.Integrations.XSLite;
-    using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewModdingAPI.Utilities;
     using StardewValley;
-    using StardewValley.Locations;
     using StardewValley.Objects;
     using SObject = StardewValley.Object;
 
@@ -22,7 +19,7 @@
         internal const string ModPrefix = "furyx639.ExpandedStorage";
         internal static readonly IDictionary<string, Storage> Storages = new Dictionary<string, Storage>();
         internal static readonly IDictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-        private readonly HashSet<int> _inventoryStack = new();
+        private readonly PerScreen<Chest> _currentChest = new();
         private IXSLiteAPI _api;
 
         /// <inheritdoc />
@@ -68,6 +65,9 @@
             this.Helper.Events.GameLoop.DayEnding += XSLite.OnDayEnding;
             this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+            this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
+            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+            this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
 
             // Patches
             var unused = new Patches(new(this.ModManifest.UniqueID));
@@ -84,13 +84,22 @@
             for (var index = 0; index < Game1.player.Items.Count; index++)
             {
                 var item = Game1.player.Items[index];
-                if (item is SObject {bigCraftable: {Value: true}} and not Chest && item.TryGetStorage(out var storage))
+                if (!item.TryGetStorage(out var storage))
                 {
-                    Game1.player.Items[index] = item.ToChest(storage);
+                    continue;
+                }
+
+                switch (item)
+                {
+                    case SObject {bigCraftable: {Value: true}} and not Chest:
+                        Game1.player.Items[index] = item.ToChest(storage);
+                        break;
+                    case Chest chest:
+                        chest.modData.Remove($"{XSLite.ModPrefix}/X");
+                        chest.modData.Remove($"{XSLite.ModPrefix}/Y");
+                        break;
                 }
             }
-
-            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         }
 
         /// <summary>Invalidate sprite cache for storages each in-game day.</summary>
@@ -111,6 +120,14 @@
             }
         }
 
+        private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
+        {
+            if (Context.IsPlayerFree)
+            {
+                this._currentChest.Value = Game1.player.CurrentItem as Chest;
+            }
+        }
+
         [EventPriority(EventPriority.Low)]
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
@@ -120,26 +137,72 @@
             }
 
             var items = e.Added.Concat(e.QuantityChanged.Select(stack => stack.Item))
-                         .Where(item => (item is not Chest || item.modData.ContainsKey($"{XSLite.ModPrefix}/Storage")) && XSLite.Storages.ContainsKey(item.Name))
+                         .OfType<SObject>()
+                         .Where(item => item.bigCraftable.Value && item is not Chest && XSLite.Storages.ContainsKey(item.Name))
                          .ToList();
+
+            if (items.Count == 0)
+            {
+                return;
+            }
 
             for (var index = 0; index < e.Player.Items.Count; index++)
             {
-                var item = e.Player.Items[index];
+                var item = e.Player.Items[index] as SObject;
                 if (item is null || !items.Contains(item) || !item.TryGetStorage(out var storage))
                 {
                     continue;
                 }
 
-                if (this._inventoryStack.Contains(index))
+                var stack = e.Player.Items[index].Stack;
+                var chest = item.ToChest(storage);
+                chest.Stack = stack;
+                e.Player.Items[index] = chest;
+                items.Remove(item);
+                if (items.Count == 0)
                 {
-                    this._inventoryStack.Remove(index);
-                    continue;
+                    return;
+                }
+            }
+        }
+
+        [EventPriority(EventPriority.High)]
+        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        {
+            if (!e.IsCurrentLocation || this._currentChest.Value is null)
+            {
+                return;
+            }
+
+            var chest = e.Added.Select(added => added.Value).OfType<Chest>().SingleOrDefault();
+            if (chest is not null && this._currentChest.Value.TryGetStorage(out var storage))
+            {
+                chest.Name = storage.Name;
+                chest.SpecialChestType = storage.SpecialChestType;
+                chest.fridge.Value = storage.IsFridge;
+                chest.lidFrameCount.Value = storage.Frames;
+                chest.playerChoiceColor.Value = this._currentChest.Value.playerChoiceColor.Value;
+
+                if (this._currentChest.Value.items.Any())
+                {
+                    chest.items.CopyFrom(this._currentChest.Value.items);
                 }
 
-                this._inventoryStack.Add(index);
-                items.Remove(item);
-                e.Player.Items[index] = item.ToChest(storage);
+                foreach (var modData in this._currentChest.Value.modData.Pairs)
+                {
+                    chest.modData[modData.Key] = modData.Value;
+                }
+
+                foreach (var modData in storage.ModData)
+                {
+                    if (!chest.modData.ContainsKey(modData.Key))
+                    {
+                        chest.modData[modData.Key] = modData.Value;
+                    }
+                }
+
+                chest.modData.Remove($"{XSLite.ModPrefix}/X");
+                chest.modData.Remove($"{XSLite.ModPrefix}/Y");
             }
         }
     }
