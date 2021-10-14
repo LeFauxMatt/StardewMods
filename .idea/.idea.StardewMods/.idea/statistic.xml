@@ -2,11 +2,30 @@
 <project version="4">
   <component name="Statistic">
     <option name="fileTypes" value="class;svn-base;svn-work;Extra;gif;png;jpg;jpeg;bmp;tga;tiff;ear;war;zip;jar;iml;iws;ipr;bz2;gz;pyc;dll;pdb;cache;sln;csproj;projitems;props;user;shproj;editorconfig;dotsettings;targets" />
+    <option name="separateTabsFileTypes" value="java;xml;css;html;js;properties;jsp;txt;php;php4;php5;phtml;inc;py;vue;kt;cs;md" />
     <option name="excludeDotArtifactDirectory" value="true" />
     <option name="excludedDirectories">
       <list>
         <option value="$PROJECT_DIR$/build" />
         <option value="$PROJECT_DIR$/releases" />
+        <option value="$PROJECT_DIR$/BetterChests/bin" />
+        <option value="$PROJECT_DIR$/BetterChests/obj" />
+        <option value="$PROJECT_DIR$/CustomChores/bin" />
+        <option value="$PROJECT_DIR$/CustomChores/obj" />
+        <option value="$PROJECT_DIR$/GarbageDay/bin" />
+        <option value="$PROJECT_DIR$/GarbageDay/obj" />
+        <option value="$PROJECT_DIR$/HelpForHire/bin" />
+        <option value="$PROJECT_DIR$/HelpForHire/obj" />
+        <option value="$PROJECT_DIR$/MoreChests/bin" />
+        <option value="$PROJECT_DIR$/MoreChests/obj" />
+        <option value="$PROJECT_DIR$/XSAlternativeTextures/bin" />
+        <option value="$PROJECT_DIR$/XSAlternativeTextures/obj" />
+        <option value="$PROJECT_DIR$/XSAutomate/bin" />
+        <option value="$PROJECT_DIR$/XSAutomate/obj" />
+        <option value="$PROJECT_DIR$/XSLite/bin" />
+        <option value="$PROJECT_DIR$/XSLite/obj" />
+        <option value="$PROJECT_DIR$/XSPlus/bin" />
+        <option value="$PROJECT_DIR$/XSPlus/obj" />
       </list>
     </option>
   </component>
