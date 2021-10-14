@@ -76,8 +76,7 @@
             // Copy modData from original item
             var excludedKeys = new[]
             {
-                $"{XSLite.ModPrefix}/X",
-                $"{XSLite.ModPrefix}/Y",
+                $"{XSLite.ModPrefix}/X", $"{XSLite.ModPrefix}/Y",
             };
 
             foreach (var modData in item.modData.Pairs.Where(modData => !excludedKeys.Contains(modData.Key)))
