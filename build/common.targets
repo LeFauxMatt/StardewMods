@@ -9,7 +9,6 @@
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <GamePath>G:\Steam\steamapps\common\Stardew Valley 1.5.4</GamePath>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
-        <CodeAnalysisRuleSet>$(SolutionDir)\Custom.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.3.0"/>
