@@ -188,12 +188,12 @@
                     chest.items.CopyFrom(this._currentChest.Value.items);
                 }
 
-                foreach (var modData in this._currentChest.Value.modData.Pairs)
+                foreach (var modData in storage.ModData)
                 {
                     chest.modData[modData.Key] = modData.Value;
                 }
 
-                foreach (var modData in storage.ModData)
+                foreach (var modData in this._currentChest.Value.modData.Pairs)
                 {
                     if (!chest.modData.ContainsKey(modData.Key))
                     {

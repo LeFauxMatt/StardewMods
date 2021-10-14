@@ -5,6 +5,7 @@
     using Services;
     using StardewModdingAPI;
     using StardewValley;
+    using StardewValley.Objects;
 
     /// <summary>
     ///     Encapsulates logic for features added by this mod.
@@ -62,6 +63,11 @@
         /// <returns>Returns true if the feature is currently enabled for the item.</returns>
         internal virtual bool IsEnabledForItem(Item item)
         {
+            if (item is not Chest {playerChest: {Value: true}})
+            {
+                return false;
+            }
+
             var isEnabledByModData = false;
             if (this._modConfig.ModConfig.Global.TryGetValue(this.ServiceName, out var option))
             {

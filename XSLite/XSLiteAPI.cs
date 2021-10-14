@@ -306,6 +306,13 @@
                         OptionSet("VacuumItems"));
                 }
 
+                // Alternative Textures Compat
+                if (this._helper.ModRegistry.IsLoaded("PeacefulEnd.AlternativeTextures"))
+                {
+                    storage.Value.ModData.Add("AlternativeTextureOwner", "Stardew.Default");
+                    storage.Value.ModData.Add("AlternativeTextureVariation", "-1");
+                }
+
                 XSLite.Storages.Add(storage.Key, storage.Value);
             }
 
