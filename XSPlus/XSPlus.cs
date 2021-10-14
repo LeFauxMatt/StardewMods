@@ -1,5 +1,6 @@
 ﻿namespace XSPlus
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
@@ -20,16 +21,9 @@
         /// <summary>Mod-specific prefix for modData.</summary>
         internal const string ModPrefix = "furyx639.ExpandedStorage";
 
-        private static XSPlus Instance;
-        private IXSPlusAPI _api;
+        private static Func<IEnumerable<GameLocation>> GetActiveLocations;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="XSPlus" /> class.
-        /// </summary>
-        public XSPlus()
-        {
-            XSPlus.Instance = this;
-        }
+        private IXSPlusAPI _api;
 
         internal ServiceManager ServiceManager { get; private set; }
 
@@ -50,7 +44,7 @@
             {
                 var locations = Context.IsMainPlayer
                     ? Game1.locations.Concat(Game1.locations.OfType<BuildableGameLocation>().SelectMany(location => location.buildings.Where(building => building.indoors.Value is not null).Select(building => building.indoors.Value)))
-                    : XSPlus.Instance.Helper.Multiplayer.GetActiveLocations();
+                    : XSPlus.GetActiveLocations();
 
                 return locations;
             }
@@ -65,9 +59,10 @@
                 return;
             }
 
+            // Init
             Log.Init(this.Monitor);
-
             this.ServiceManager = new(this.Helper, this.ModManifest);
+            XSPlus.GetActiveLocations = this.Helper.Multiplayer.GetActiveLocations;
 
             // Services
             this.ServiceManager.Create<DisplayedInventoryService>();
