@@ -19,13 +19,13 @@
     internal class ItemGrabMenuSideButtonsService : BaseService, IEventHandlerService<Func<SideButtonPressedEventArgs, bool>>
     {
         private static ItemGrabMenuSideButtonsService Instance;
-        private readonly PerScreen<IList<Func<SideButtonPressedEventArgs, bool>>> _buttonPressedHandlers = new(() => new List<Func<SideButtonPressedEventArgs, bool>>());
-        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _buttons = new(() => new());
+        private readonly PerScreen<List<SideButton>> _allButtons = new(() => new());
+        private readonly IList<Func<SideButtonPressedEventArgs, bool>> _buttonPressedHandlers = new List<Func<SideButtonPressedEventArgs, bool>>();
+        private readonly PerScreen<IList<SideButton>> _customButtons = new(() => new List<SideButton>());
         private readonly Func<string, Translation> _getTranslation;
-        private readonly PerScreen<HashSet<SideButton>> _hideButtons = new(() => new());
+        private readonly PerScreen<HashSet<ButtonType>> _hideButtons = new(() => new());
         private readonly PerScreen<string> _hoverText = new();
         private readonly PerScreen<ItemGrabMenuEventArgs> _menu = new();
-        private readonly PerScreen<Dictionary<ClickableTextureComponent, SideButton>> _sideButtons = new(() => new());
         private readonly Action<SButton> _suppress;
 
         private ItemGrabMenuSideButtonsService(ServiceManager serviceManager)
@@ -68,13 +68,13 @@
         /// <inheritdoc />
         public void AddHandler(Func<SideButtonPressedEventArgs, bool> eventHandler)
         {
-            this._buttonPressedHandlers.Value.Add(eventHandler);
+            this._buttonPressedHandlers.Add(eventHandler);
         }
 
         /// <inheritdoc />
         public void RemoveHandler(Func<SideButtonPressedEventArgs, bool> eventHandler)
         {
-            this._buttonPressedHandlers.Value.Remove(eventHandler);
+            this._buttonPressedHandlers.Remove(eventHandler);
         }
 
         public void AddButton(ClickableTextureComponent cc)
@@ -84,72 +84,69 @@
                 return;
             }
 
-            this._buttons.Value.Add(cc, SideButton.Custom);
+            if (!this._customButtons.Value.Contains(cc))
+            {
+                this._customButtons.Value.Add(cc);
+            }
         }
 
-        public void HideButton(SideButton button)
+        public void HideButton(ButtonType buttonType)
         {
             if (this._menu.Value is null)
             {
                 return;
             }
 
-            this._hideButtons.Value.Add(button);
+            this._hideButtons.Value.Add(buttonType);
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
         private static bool ItemGrabMenu_RepositionSideButtons_prefix(ItemGrabMenu __instance)
         {
-            if (ItemGrabMenuSideButtonsService.Instance._buttons.Value.Count == 0)
+            if (ItemGrabMenuSideButtonsService.Instance._customButtons.Value.Count == 0)
             {
                 return true;
             }
 
-            ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Clear();
-            var sideButtons = new List<ClickableTextureComponent>();
-            foreach (var sideButton in ItemGrabMenuSideButtonsService.Instance._buttons.Value)
+            var sideButtons = ItemGrabMenuSideButtonsService.Instance._allButtons.Value;
+            sideButtons.Clear();
+            sideButtons.AddRange(ItemGrabMenuSideButtonsService.Instance._customButtons.Value);
+            foreach (ButtonType buttonType in Enum.GetValues(typeof(ButtonType)))
             {
-                ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Add(sideButton.Key, sideButton.Value);
-                sideButtons.Add(sideButton.Key);
-            }
-
-            foreach (SideButton vanillaButton in Enum.GetValues(typeof(SideButton)))
-            {
-                if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Contains(vanillaButton))
+                if (ItemGrabMenuSideButtonsService.Instance._hideButtons.Value.Contains(buttonType))
                 {
-                    ItemGrabMenuSideButtonsService.HideButton(__instance, vanillaButton);
+                    ItemGrabMenuSideButtonsService.HideButton(__instance, buttonType);
                     continue;
                 }
 
-                var button = vanillaButton switch
+                var button = buttonType switch
                 {
-                    SideButton.OrganizeButton => __instance.organizeButton,
-                    SideButton.FillStacksButton => __instance.fillStacksButton,
-                    SideButton.ColorPickerToggleButton => __instance.colorPickerToggleButton,
-                    SideButton.SpecialButton => __instance.specialButton,
-                    SideButton.JunimoNoteIcon => __instance.junimoNoteIcon,
+                    ButtonType.OrganizeButton => __instance.organizeButton,
+                    ButtonType.FillStacksButton => __instance.fillStacksButton,
+                    ButtonType.ColorPickerToggleButton => __instance.colorPickerToggleButton,
+                    ButtonType.SpecialButton => __instance.specialButton,
+                    ButtonType.JunimoNoteIcon => __instance.junimoNoteIcon,
                     _ => null,
                 };
 
                 if (button is not null)
                 {
-                    ItemGrabMenuSideButtonsService.Instance._sideButtons.Value.Add(button, vanillaButton);
-                    sideButtons.Add(button);
+                    sideButtons.Add(new(buttonType, button));
                 }
             }
 
             var stepSize = sideButtons.Count >= 4 ? 72 : 80;
             for (var i = 0; i < sideButtons.Count; i++)
             {
-                var button = sideButtons[i];
+                var button = sideButtons[i].Button;
                 if (i > 0 && sideButtons.Count > 1)
                 {
-                    button.downNeighborID = sideButtons[i - 1].myID;
+                    button.downNeighborID = sideButtons[i - 1].Button.myID;
                 }
 
                 if (i < sideButtons.Count - 1 && sideButtons.Count > 1)
                 {
-                    button.upNeighborID = sideButtons[i + 1].myID;
+                    button.upNeighborID = sideButtons[i + 1].Button.myID;
                 }
 
                 button.bounds.X = __instance.xPositionOnScreen + __instance.width;
@@ -159,29 +156,29 @@
             return false;
         }
 
-        private static void HideButton(ItemGrabMenu menu, SideButton button)
+        private static void HideButton(ItemGrabMenu menu, ButtonType buttonType)
         {
-            switch (button)
+            switch (buttonType)
             {
-                case SideButton.OrganizeButton:
+                case ButtonType.OrganizeButton:
                     menu.organizeButton = null;
                     break;
-                case SideButton.FillStacksButton:
+                case ButtonType.FillStacksButton:
                     menu.fillStacksButton = null;
                     break;
-                case SideButton.ColorPickerToggleButton:
+                case ButtonType.ColorPickerToggleButton:
                     menu.colorPickerToggleButton = null;
                     break;
-                case SideButton.SpecialButton:
+                case ButtonType.SpecialButton:
                     menu.specialButton = null;
                     break;
-                case SideButton.JunimoNoteIcon:
+                case ButtonType.JunimoNoteIcon:
                     menu.junimoNoteIcon = null;
                     break;
-                case SideButton.Custom:
+                case ButtonType.Custom:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(button), button, null);
+                    throw new ArgumentOutOfRangeException(nameof(buttonType), buttonType, null);
             }
         }
 
@@ -194,7 +191,7 @@
                 return;
             }
 
-            this._buttons.Value.Clear();
+            this._customButtons.Value.Clear();
             this._hideButtons.Value.Clear();
             this._menu.Value = e;
         }
@@ -219,9 +216,9 @@
             }
 
             // Draw custom buttons
-            foreach (var button in this._buttons.Value.Where(button => button.Value is SideButton.Custom).Select(button => button.Key))
+            foreach (var button in this._customButtons.Value)
             {
-                button.draw(e.SpriteBatch);
+                button.Button.draw(e.SpriteBatch);
             }
 
             // Add hover text to menu
@@ -239,12 +236,12 @@
             }
 
             var point = Game1.getMousePosition(true);
-            var button = this._sideButtons.Value.FirstOrDefault(button => button.Key.containsPoint(point.X, point.Y));
-            if (button.Key is not null)
+            var button = this._allButtons.Value.FirstOrDefault(button => button.Button.containsPoint(point.X, point.Y));
+            if (button is not null)
             {
-                var eventArgs = new SideButtonPressedEventArgs(button.Key, button.Value);
+                var eventArgs = new SideButtonPressedEventArgs(button.Button, button.ButtonType);
                 Game1.playSound("drumkit6");
-                if (this._buttonPressedHandlers.Value.Any(handler => handler(eventArgs)))
+                if (this._buttonPressedHandlers.Any(handler => handler(eventArgs)))
                 {
                     this._suppress(SButton.MouseLeft);
                 }
@@ -260,7 +257,7 @@
 
             var point = Game1.getMousePosition(true);
             this._hoverText.Value = string.Empty;
-            foreach (var button in this._buttons.Value.Where(button => button.Value is SideButton.Custom).Select(button => button.Key))
+            foreach (var button in this._customButtons.Value.Where(button => button.ButtonType is ButtonType.Custom).Select(button => button.Button))
             {
                 button.tryHover(point.X, point.Y, 0.25f);
                 if (button.containsPoint(point.X, point.Y))

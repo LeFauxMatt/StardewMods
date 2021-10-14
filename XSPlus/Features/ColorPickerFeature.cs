@@ -142,7 +142,7 @@
 
         private static bool OnSideButtonPressed(SideButtonPressedEventArgs e)
         {
-            if (e.Type != SideButton.ColorPickerToggleButton)
+            if (e.Type != ButtonType.ColorPickerToggleButton)
             {
                 return false;
             }

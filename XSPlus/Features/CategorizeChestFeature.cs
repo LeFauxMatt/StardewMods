@@ -18,6 +18,7 @@
     internal class CategorizeChestFeature : BaseFeature
     {
         private readonly PerScreen<Chest> _chest = new();
+        private readonly PerScreen<ClickableTextureComponent> _configureButton = new();
         private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
         private ItemGrabMenuChangedService _itemGrabMenuChanged;
         private ItemGrabMenuSideButtonsService _itemGrabMenuSideButtons;
@@ -40,6 +41,7 @@
             // Events
             this._itemGrabMenuChanged.AddHandler(this.OnItemGrabMenuChanged);
             this._itemGrabMenuSideButtons.AddHandler(this.OnSideButtonPressed);
+            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         }
 
@@ -49,7 +51,20 @@
             // Events
             this._itemGrabMenuChanged.RemoveHandler(this.OnItemGrabMenuChanged);
             this._itemGrabMenuSideButtons.RemoveHandler(this.OnSideButtonPressed);
+            this.Helper.Events.GameLoop.GameLaunched -= this.OnGameLaunched;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        }
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            this._configureButton.Value = new(
+                new(0, 0, 64, 64),
+                this.Helper.Content.Load<Texture2D>("assets/configure.png"),
+                Rectangle.Empty,
+                Game1.pixelZoom)
+            {
+                name = "Configure",
+            };
         }
 
         private void OnItemGrabMenuChanged(object sender, ItemGrabMenuEventArgs e)
@@ -59,16 +74,7 @@
                 return;
             }
 
-            this._itemGrabMenuSideButtons.AddButton(
-                new(
-                    new(0, 0, 64, 64),
-                    this.Helper.Content.Load<Texture2D>("assets/configure.png"),
-                    Rectangle.Empty,
-                    Game1.pixelZoom)
-                {
-                    name = "Configure",
-                });
-
+            this._itemGrabMenuSideButtons.AddButton(this._configureButton.Value);
             this._returnMenu.Value = e.ItemGrabMenu;
             this._chest.Value = e.Chest;
         }

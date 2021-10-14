@@ -101,6 +101,7 @@
             {
                 chest.ShowMenu();
             }
+
             this.Helper.Input.Suppress(e.Button);
         }
     }

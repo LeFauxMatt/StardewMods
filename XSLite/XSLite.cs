@@ -84,7 +84,7 @@
             for (var index = 0; index < Game1.player.Items.Count; index++)
             {
                 var item = Game1.player.Items[index];
-                if (!item.TryGetStorage(out var storage))
+                if (item is null || !item.TryGetStorage(out var storage))
                 {
                     continue;
                 }

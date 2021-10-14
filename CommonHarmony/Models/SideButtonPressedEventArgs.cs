@@ -5,7 +5,7 @@
 
     internal record SideButtonPressedEventArgs
     {
-        public SideButtonPressedEventArgs(ClickableTextureComponent cc, SideButton type)
+        public SideButtonPressedEventArgs(ClickableTextureComponent cc, ButtonType type)
         {
             this.Button = cc;
             this.Type = type;
@@ -13,6 +13,6 @@
 
         public ClickableTextureComponent Button { get; }
 
-        public SideButton Type { get; }
+        public ButtonType Type { get; }
     }
 }

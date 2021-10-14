@@ -5,7 +5,7 @@
     /// <summary>
     ///     Default side buttons alongside the <see cref="ItemGrabMenu" />
     /// </summary>
-    internal enum SideButton
+    internal enum ButtonType
     {
         /// <summary>The Organize Button.</summary>
         OrganizeButton,

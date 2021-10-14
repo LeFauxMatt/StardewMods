@@ -12,12 +12,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\HandlerPriority.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\PatchType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Enums\SideButton.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\ButtonType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventHandlerService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\SavedPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ServiceHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ItemGrabMenuEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HandlerPriorityAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\SideButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\SideButtonPressedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PatternPatches.cs" />
