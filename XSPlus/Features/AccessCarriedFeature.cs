@@ -39,7 +39,7 @@
         public override void Activate()
         {
             // Events
-            this.Helper.Events.GameLoop.UpdateTicking += AccessCarriedFeature.OnUpdateTicking;
+            this.Helper.Events.GameLoop.UpdateTicked += AccessCarriedFeature.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
             // Patches
@@ -50,7 +50,7 @@
         public override void Deactivate()
         {
             // Events
-            this.Helper.Events.GameLoop.UpdateTicking -= AccessCarriedFeature.OnUpdateTicking;
+            this.Helper.Events.GameLoop.UpdateTicked -= AccessCarriedFeature.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
 
             // Patches
@@ -71,7 +71,7 @@
             return false;
         }
 
-        private static void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
+        private static void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
             if (!Context.IsPlayerFree)
             {
@@ -92,8 +92,15 @@
                 return;
             }
 
-            Log.Trace("Opening Menu for Carried Chest.");
-            chest.checkForAction(Game1.player);
+            Log.Trace($"Opening Menu for Carried ${chest.Name}.");
+            if (Context.IsMainPlayer)
+            {
+                chest.checkForAction(Game1.player);
+            }
+            else
+            {
+                chest.ShowMenu();
+            }
             this.Helper.Input.Suppress(e.Button);
         }
     }
