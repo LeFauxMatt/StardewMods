@@ -2,18 +2,16 @@
 
 ## Upcoming
 
-- Fixed shipping bin resetting cursor position when using a Gamepad.
-- Fixed split screen causing errors for Farmhands.
-
 ## Latest Changes
 
-- Fixed issue where vacuum chests could possibly duplicate items.
-- Fixed issue where config button could not load and cause errors.
-- Added `xs_dump` command.
+- Fixed shipping bin resetting cursor position when using a Gamepad.
+- Fixed split screen causing errors for Farmhands.
+- Fixed farmhands unable to access carried chests.
 
 ## 1.0.0
 
 - Initial Version
+- Added `xs_dump` command.
 - Added features:
     - Access inventory of carried chests.
     - Modify the capacity of chests.

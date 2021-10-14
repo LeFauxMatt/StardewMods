@@ -3,13 +3,16 @@
 ### Features
 
 * [Access Carried](#access-carried)
+* [Bigger Chest](#bigger-chest)
 * [Capacity](#capacity)
+* [Carry Chest](#carry-chest)
 * [Categorize Chest](#categorize-chest)
 * [Color Picker](#color-picker)
 * [Craft From Chest](#craft-from-chest)
 * [Expanded Menu](#expanded-menu)
 * [Filter Items](#filter-items)
 * [Inventory Tabs](#inventory-tabs)
+* [Open Nearby](#open-nearby)
 * [Search Items](#search-items)
 * [Stash to Chest](#stash-to-chest)
 * [Unbreakable](#unbreakable)
@@ -18,29 +21,30 @@
 
 feature         | parameter(s)
 ----------------|--------------
-AccessCarried   | null
-CraftFromChest  | Distance <sup>[1](#distance)</sup>
-ExpandedMenu    | Rows <sup>[2](#rows)</sup>
-FilterItems     | Filters <sup>[3](#filters)</sup>
-InventoryTabs   | Tabs <sup>[4](#tabs)</sup>
-SearchItems     | null
-StashToChest    | Distance <sup>[1](#distance)</sup>
-Unbreakable     | null
-Unplaceable     | null
-VacuumItems     | null
-
-<span id="distance">1.</span> Distance - Inventory, Location, or World.  
-<span id="rows">2.</span> Rows - Max rows to show on expanded menu.  
-<span id="filters">3.</span> Filters - List of items/tags to allow or block.  
-<span id="tabs">4.</span> Tabs - List of tabs to show.
+Bigger Chest    | Width (int), Height (int), Depth (int)
+Capacity        | Storage Capacity (int)
+CraftFromChest  | Crafting Range (Inventory, Location, or World)
+ExpandedMenu    | Menu Rows (int 3-6)
+FilterItems     | Item tag filters to allow or block (Dictionary key = item tags (string), value (bool)) 
+InventoryTabs   | Tabs to show (List of strings)
+Open Nearby     | Tiles from farmer (float)
+StashToChest    | Stashing Range (Inventory, Location, or World)
 
 ### Access Carried
 
 Allows chest inventory to be accessed while held.
 
+### Bigger Chest
+
+Supports multi-tile width and/or height chests.
+
 ### Capacity
 
 Allows chest to hold additional items.
+
+## Carry Chest
+
+Allows chests to be picked up by the player.
 
 ### Categorize Chest
 
@@ -116,6 +120,10 @@ tabs.json, by default these are:
 
 Tabs in tabs.json filter items based
 on [context tags](https://github.com/ImJustMatt/StardewMods/blob/develop/XSLite/docs/content-pack.md#context-tags).
+
+### Open Nearby
+
+Chest will play lid opening animation when a farmer is nearby, and closing animation when farmers leave the range.
 
 ### Search Items
 

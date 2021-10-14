@@ -2,13 +2,11 @@
 
 ## Upcoming
 
-- Now depends on XS Plus for Carry Chest feature.
-- Now depends on XS Plus for Bigger Chest support.
-- Now depends on XS Plus for Open Nearby feature.
-
 ## Latest Changes
 
-- Fixed bug where splitting stacks of chests could cause extra quantities to be reduced to one.
+- Depends on XS Plus for Carry Chest feature.
+- Depends on XS Plus for Bigger Chest support.
+- Depends on XS Plus for Open Nearby feature.
 
 ## 1.7.1
 
