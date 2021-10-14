@@ -19,6 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\SearchableItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\DynamicGameAssets\DynamicGameAssetsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\DynamicGameAssets\IDynamicGameAssetsAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRNG\EvenBetterRNGIntegration.cs" />
@@ -26,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\MoreChests\IMoreChestsAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\IXSLiteAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\XSLiteIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\IXSPlusAPI.cs" />

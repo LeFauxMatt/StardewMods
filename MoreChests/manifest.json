@@ -6,7 +6,9 @@
   "UniqueID": "furyx639.MoreChests",
   "EntryDll": "MoreChests.dll",
   "MinimumApiVersion": "3.13.0-beta",
-  "UpdateKeys": [ "Nexus:9790" ],
+  "UpdateKeys": [
+    "Nexus:9790"
+  ],
   "Dependencies": [
     {
       "UniqueID": "spacechase0.DynamicGameAssets",
