@@ -104,7 +104,15 @@
                 info.Clear();
                 info.Append(
                     $@"
-{chest.DisplayName} in {location}");
+{chest.DisplayName} in {location}
+Mod Data");
+
+                foreach (var modData in chest.modData.Pairs)
+                {
+                    info.Append(
+                        $@"
+    {modData.Key}: {modData.Value}");
+                }
 
                 foreach (var feature in features.OrderBy(feature => !feature.IsEnabledForItem(chest)))
                 {
