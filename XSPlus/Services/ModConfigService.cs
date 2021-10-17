@@ -1,6 +1,7 @@
 ﻿namespace XSPlus.Services
 {
     using System;
+    using System.Collections.Generic;
     using Common.Integrations.GenericModConfigMenu;
     using Common.Services;
     using Models;
@@ -114,13 +115,23 @@
                 "Inventory", "Location", "World", "Default", "Disabled",
             };
 
+            var rangeValues = new String[]
+            {
+                this._translation.Get("choice.inventory.name"),
+                this._translation.Get("choice.location.name"),
+                this._translation.Get("choice.world.name"),
+                this._translation.Get("choice.default.name"),
+                this._translation.Get("choice.disabled.name"),
+            };
+
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
                 name: () => this._translation.Get("config.crafting-range.name"),
                 tooltip: () => this._translation.Get("config.crafting-range.tooltip"),
                 getValue: () => this.ModConfig.CraftingRange,
                 setValue: this.SetCraftingRange,
-                allowedValues: rangeChoices);
+                allowedValues: rangeChoices,
+                labels: rangeValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -128,11 +139,19 @@
                 tooltip: () => this._translation.Get("config.stashing-range.tooltip"),
                 getValue: () => this.ModConfig.StashingRange,
                 setValue: this.SetStashingRange,
-                allowedValues: rangeChoices);
+                allowedValues: rangeChoices,
+                labels: rangeValues);
 
             var configChoices = new[]
             {
                 "Default", "Enable", "Disable",
+            };
+
+            var configValues = new String[]
+            {
+                this._translation.Get("choice.default.name"),
+                this._translation.Get("choice.enabled.name"),
+                this._translation.Get("choice.disabled.name"),
             };
 
             this._modConfigMenu.API.AddSectionTitle(
@@ -146,7 +165,8 @@
                 tooltip: () => this._translation.Get("config.access-carried.tooltip"),
                 getValue: this.GetConfig("AccessCarried"),
                 setValue: this.SetConfig("AccessCarried"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -154,7 +174,8 @@
                 tooltip: () => this._translation.Get("config.carry-chest.tooltip"),
                 getValue: this.GetConfig("CarryChest"),
                 setValue: this.SetConfig("CarryChest"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -162,7 +183,8 @@
                 tooltip: () => this._translation.Get("config.categorize-chest.tooltip"),
                 getValue: this.GetConfig("CategorizeChest"),
                 setValue: this.SetConfig("CategorizeChest"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -170,7 +192,8 @@
                 tooltip: () => this._translation.Get("config.color-picker.tooltip"),
                 getValue: this.GetConfig("ColorPicker"),
                 setValue: this.SetConfig("ColorPicker"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -178,7 +201,8 @@
                 tooltip: () => this._translation.Get("config.inventory-tabs.tooltip"),
                 getValue: this.GetConfig("InventoryTabs"),
                 setValue: this.SetConfig("InventoryTabs"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -186,7 +210,8 @@
                 tooltip: () => this._translation.Get("config.search-items.tooltip"),
                 getValue: this.GetConfig("SearchItems"),
                 setValue: this.SetConfig("SearchItems"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -194,7 +219,8 @@
                 tooltip: () => this._translation.Get("config.vacuum-items.tooltip"),
                 getValue: this.GetConfig("VacuumItems"),
                 setValue: this.SetConfig("VacuumItems"),
-                allowedValues: configChoices);
+                allowedValues: configChoices,
+                labels: configValues);
         }
 
         private void Reset()
