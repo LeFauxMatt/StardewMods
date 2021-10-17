@@ -48,11 +48,25 @@
             return this._services.Values.OfType<TServiceType>().Single();
         }
 
-        public PendingService Create<TServiceType>() where TServiceType : IService
+        public void Create(IEnumerable<Type> types)
         {
-            var pendingService = new PendingService(typeof(TServiceType));
-            this._pendingServices.Add(pendingService);
-            return pendingService;
+            foreach (var type in types)
+            {
+                this._pendingServices.Add(new(type));
+            }
+
+            for (var i = this._pendingServices.Count - 1; i >= 0; i--)
+            {
+                var service = this._pendingServices[i].Create(this);
+                Log.Trace($"Registering service {service.ServiceName}.", true);
+                this._services.Add(service.ServiceName, service);
+                this._pendingServices.RemoveAt(i);
+            }
+
+            foreach (var service in this._services.Values)
+            {
+                service.ResolveDependencies(this);
+            }
         }
 
         /// <summary>
