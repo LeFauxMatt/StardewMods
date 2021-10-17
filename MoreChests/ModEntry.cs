@@ -22,12 +22,14 @@
             this._api = new MoreChestsAPI(this);
 
             // Services
-            this.ServiceManager.Create<AssetHandler>();
-            this.ServiceManager.Create<ContentPackLoader>();
-            this.ServiceManager.Create<CustomChestManager>();
-            this.ServiceManager.Create<InventoryHandler>();
-            this.ServiceManager.Create<ModConfigService>();
-            this.ServiceManager.ResolveDependencies();
+            this.ServiceManager.Create(new []
+            {
+                typeof(AssetHandler),
+                typeof(ContentPackLoader),
+                typeof(CustomChestManager),
+                typeof(InventoryHandler),
+                typeof(ModConfigService),
+            });
         }
 
         /// <inheritdoc />
