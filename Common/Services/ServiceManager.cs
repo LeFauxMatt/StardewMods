@@ -11,7 +11,6 @@
     /// </summary>
     internal class ServiceManager
     {
-        private readonly IList<PendingService> _pendingServices = new List<PendingService>();
         private readonly IDictionary<string, IService> _services = new Dictionary<string, IService>();
 
         public ServiceManager(IModHelper helper, IManifest manifest)
@@ -50,22 +49,19 @@
 
         public void Create(IEnumerable<Type> types)
         {
+            IList<IService> pendingServices = new List<IService>();
             foreach (var type in types)
             {
-                this._pendingServices.Add(new(type));
-            }
-
-            for (var i = this._pendingServices.Count - 1; i >= 0; i--)
-            {
-                var service = this._pendingServices[i].Create(this);
+                var service = new PendingService(type).Create(this);
                 Log.Trace($"Registering service {service.ServiceName}.", true);
                 this._services.Add(service.ServiceName, service);
-                this._pendingServices.RemoveAt(i);
+                pendingServices.Add(service);
             }
 
-            foreach (var service in this._services.Values)
+            for (var i = pendingServices.Count - 1; i >= 0; i--)
             {
-                service.ResolveDependencies(this);
+                pendingServices[i].ResolveDependencies(this);
+                pendingServices.RemoveAt(i);
             }
         }
 
@@ -78,21 +74,6 @@
         public List<TServiceType> GetAll<TServiceType>() where TServiceType : IService
         {
             return this._services.Values.OfType<TServiceType>().ToList();
-        }
-
-        public void ResolveDependencies()
-        {
-            for (var i = this._pendingServices.Count - 1; i >= 0; i--)
-            {
-                var service = this._pendingServices[i].Create(this);
-                Log.Trace($"Registering service {service.ServiceName}.", true);
-                this._services.Add(service.ServiceName, service);
-            }
-
-            foreach (var service in this._services.Values)
-            {
-                service.ResolveDependencies(this);
-            }
         }
     }
 }

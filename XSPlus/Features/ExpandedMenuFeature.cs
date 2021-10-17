@@ -218,7 +218,27 @@
                 .Find(
                     new[]
                     {
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)64), new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(
+                            OpCodes.Ldfld,
+                            AccessTools.Field(
+                                typeof(IClickableMenu),
+                                nameof(IClickableMenu.yPositionOnScreen))),
+                        new CodeInstruction(
+                            OpCodes.Ldsfld,
+                            AccessTools.Field(
+                                typeof(IClickableMenu),
+                                nameof(IClickableMenu.borderWidth))),
+                        new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(
+                            OpCodes.Ldsfld,
+                            AccessTools.Field(
+                                typeof(IClickableMenu),
+                                nameof(IClickableMenu.spaceToClearTopBorder))),
+                        new CodeInstruction(OpCodes.Add),
+                        new CodeInstruction(
+                            OpCodes.Ldc_I4_S,
+                            (sbyte)64),
+                        new CodeInstruction(OpCodes.Add),
                     })
                 .Patch(
                     list =>
