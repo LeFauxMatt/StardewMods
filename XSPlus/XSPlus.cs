@@ -65,35 +65,39 @@
             XSPlus.GetActiveLocations = this.Helper.Multiplayer.GetActiveLocations;
 
             // Services
-            this.ServiceManager.Create<DisplayedInventoryService>();
-            this.ServiceManager.Create<HarmonyService>();
-            this.ServiceManager.Create<HighlightItemsService>();
-            this.ServiceManager.Create<InfoDumpService>();
-            this.ServiceManager.Create<ItemGrabMenuChangedService>();
-            this.ServiceManager.Create<ItemGrabMenuSideButtonsService>();
-            this.ServiceManager.Create<ModConfigService>();
-            this.ServiceManager.Create<RenderingActiveMenuService>();
-            this.ServiceManager.Create<RenderedActiveMenuService>();
+            this.ServiceManager.Create(new []
+            {
+                typeof(DisplayedInventoryService),
+                typeof(HarmonyService),
+                typeof(HighlightItemsService),
+                typeof(InfoDumpService),
+                typeof(ItemGrabMenuChangedService),
+                typeof(ItemGrabMenuSideButtonsService),
+                typeof(ModConfigService),
+                typeof(RenderedActiveMenuService),
+                typeof(RenderingActiveMenuService),
+            });
 
             // Features
-            this.ServiceManager.Create<AccessCarriedFeature>();
-            this.ServiceManager.Create<BiggerChestFeature>();
-            this.ServiceManager.Create<CapacityFeature>();
-            this.ServiceManager.Create<CarryChestFeature>();
-            this.ServiceManager.Create<CategorizeChestFeature>();
-            this.ServiceManager.Create<ColorPickerFeature>();
-            this.ServiceManager.Create<CraftFromChestFeature>();
-            this.ServiceManager.Create<ExpandedMenuFeature>();
-            this.ServiceManager.Create<FilterItemsFeature>();
-            this.ServiceManager.Create<InventoryTabsFeature>();
-            this.ServiceManager.Create<OpenNearbyFeature>();
-            this.ServiceManager.Create<SearchItemsFeature>();
-            this.ServiceManager.Create<StashToChestFeature>();
-            this.ServiceManager.Create<UnbreakableFeature>();
-            this.ServiceManager.Create<UnplaceableFeature>();
-            this.ServiceManager.Create<VacuumItemsFeature>();
-
-            this.ServiceManager.ResolveDependencies();
+            this.ServiceManager.Create(new []
+            {
+                typeof(AccessCarriedFeature),
+                typeof(BiggerChestFeature),
+                typeof(CapacityFeature),
+                typeof(CarryChestFeature),
+                typeof(CategorizeChestFeature),
+                typeof(ColorPickerFeature),
+                typeof(CraftFromChestFeature),
+                typeof(ExpandedMenuFeature),
+                typeof(FilterItemsFeature),
+                typeof(InventoryTabsFeature),
+                typeof(OpenNearbyFeature),
+                typeof(SearchItemsFeature),
+                typeof(StashToChestFeature),
+                typeof(UnbreakableFeature),
+                typeof(UnplaceableFeature),
+                typeof(VacuumItemsFeature),
+            });
 
             // Activate
             this.ServiceManager.ActivateFeatures();
