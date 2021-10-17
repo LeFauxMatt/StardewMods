@@ -32,14 +32,10 @@
                 return false;
             }
 
-            this._modConfig.API.RegisterModConfig(
+            this._modConfig.API.Register(
                 contentPack.Manifest,
-                this.RevertToDefault,
+                this.Reset,
                 () => contentPack.WriteJsonFile("config.json", this._configs));
-
-            this._modConfig.API.SetDefaultIngameOptinValue(
-                contentPack.Manifest,
-                true);
 
             return true;
         }
@@ -60,15 +56,14 @@
                 }
 
                 this._configs.Add(data.Key, chestConfig);
-                this._modConfig.API.RegisterPageLabel(
+                this._modConfig.API.AddPageLink(
                     contentPack.Manifest,
                     data.Key,
-                    string.Empty,
-                    data.Key);
+                    () => data.Key);
             }
         }
 
-        private void RevertToDefault()
+        private void Reset()
         {
             foreach (var config in this._configs)
             {
