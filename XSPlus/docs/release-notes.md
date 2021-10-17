@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+- Added localization for Generic Mod Config Menu.
+
 ## Latest Changes
 
 - Fixed shipping bin resetting cursor position when using a Gamepad.

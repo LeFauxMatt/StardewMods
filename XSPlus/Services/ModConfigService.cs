@@ -16,6 +16,7 @@
         private readonly Action<string> _deactivateFeature;
         private readonly IManifest _manifest;
         private readonly GenericModConfigMenuIntegration _modConfigMenu;
+        private readonly ITranslationHelper _translation;
         private readonly Action<ModConfig> _writeConfig;
 
         private ModConfigService(ServiceManager serviceManager)
@@ -23,10 +24,11 @@
         {
             // Init
             this.ModConfig = serviceManager.Helper.ReadConfig<ModConfig>();
-            this._manifest = serviceManager.ModManifest;
-            this._modConfigMenu = new(serviceManager.Helper.ModRegistry);
             this._activateFeature = serviceManager.ActivateFeature;
             this._deactivateFeature = serviceManager.DeactivateFeature;
+            this._manifest = serviceManager.ModManifest;
+            this._modConfigMenu = new(serviceManager.Helper.ModRegistry);
+            this._translation = serviceManager.Helper.Translation;
             this._writeConfig = serviceManager.Helper.WriteConfig;
 
             // Events
@@ -46,162 +48,161 @@
             }
 
             // Register mod configuration
-            this._modConfigMenu.API.RegisterModConfig(this._manifest, this.RevertToDefault, this.SaveToFile);
-
-            // Allow config in game
-            this._modConfigMenu.API.SetDefaultIngameOptinValue(this._manifest, true);
+            this._modConfigMenu.API.Register(this._manifest, this.Reset, this.Save);
 
             // Config options
-            this._modConfigMenu.API.RegisterLabel(this._manifest, "General", string.Empty);
-            this._modConfigMenu.API.RegisterSimpleOption(
-                this._manifest,
-                "Open Crafting Button",
-                "Key to open the crafting menu for accessible chests.",
-                () => this.ModConfig.OpenCrafting,
-                value => this.ModConfig.OpenCrafting = value);
+            this._modConfigMenu.API.AddSectionTitle(this._manifest, () => this._translation.Get("section.general.name"));
+            this._modConfigMenu.API.AddKeybindList(this._manifest,
+                name: () => this._translation.Get("config.open-crafting.name"),
+                tooltip: () => this._translation.Get("config.open-crafting.tooltip"),
+                getValue: () => this.ModConfig.OpenCrafting,
+                setValue: value => this.ModConfig.OpenCrafting = value);
 
-            this._modConfigMenu.API.RegisterSimpleOption(
+            this._modConfigMenu.API.AddKeybindList(
                 this._manifest,
-                "Stash Items Button",
-                "Key to stash items into accessible chests.",
-                () => this.ModConfig.StashItems,
-                value => this.ModConfig.StashItems = value);
+                name: () => this._translation.Get("config.stash-items.name"),
+                tooltip: () => this._translation.Get("config.stash-items.tooltip"),
+                getValue: () => this.ModConfig.StashItems,
+                setValue: value => this.ModConfig.StashItems = value);
 
-            this._modConfigMenu.API.RegisterSimpleOption(
+            this._modConfigMenu.API.AddKeybindList(
                 this._manifest,
-                "Scroll Up",
-                "Key to scroll up in expanded inventory menus.",
-                () => this.ModConfig.ScrollUp,
-                value => this.ModConfig.ScrollUp = value);
+                name: () => this._translation.Get("config.scroll-up.name"),
+                tooltip: () => this._translation.Get("config.scroll-up.tooltip"),
+                getValue: () => this.ModConfig.ScrollUp,
+                setValue: value => this.ModConfig.ScrollUp = value);
 
-            this._modConfigMenu.API.RegisterSimpleOption(
+            this._modConfigMenu.API.AddKeybindList(
                 this._manifest,
-                "Scroll Down",
-                "Key to scroll down in expanded inventory menus.",
-                () => this.ModConfig.ScrollDown,
-                value => this.ModConfig.ScrollDown = value);
+                name: () => this._translation.Get("config.scroll-down.name"),
+                tooltip: () => this._translation.Get("config.scroll-down.tooltip"),
+                getValue: () => this.ModConfig.ScrollDown,
+                setValue: value => this.ModConfig.ScrollDown = value);
 
-            this._modConfigMenu.API.RegisterSimpleOption(
+            this._modConfigMenu.API.AddKeybindList(
                 this._manifest,
-                "Previous Tab",
-                "Key to switch to previous tab.",
-                () => this.ModConfig.PreviousTab,
-                value => this.ModConfig.PreviousTab = value);
+                name: () => this._translation.Get("config.previous-tab.name"),
+                tooltip: () => this._translation.Get("config.previous-tab.tooltip"),
+                getValue: () => this.ModConfig.PreviousTab,
+                setValue: value => this.ModConfig.PreviousTab = value);
 
-            this._modConfigMenu.API.RegisterSimpleOption(
-                this._manifest,
-                "Next Tab",
-                "Key to switch to next tab.",
-                () => this.ModConfig.NextTab,
-                value => this.ModConfig.NextTab = value);
+            this._modConfigMenu.API.AddKeybindList(this._manifest,
+                name: () => this._translation.Get("config.next-tab.name"),
+                tooltip: () => this._translation.Get("config.previous-tab.tooltip"),
+                getValue: () => this.ModConfig.NextTab,
+                setValue: value => this.ModConfig.NextTab = value);
 
-            this._modConfigMenu.API.RegisterSimpleOption(
+            this._modConfigMenu.API.AddNumberOption(
                 this._manifest,
-                "Capacity",
-                "How many items each chest will hold (use -1 for maximum capacity).",
-                () => this.ModConfig.Capacity,
-                this.SetCapacity);
+                name: () => this._translation.Get("config.capacity.name"),
+                tooltip: () => this._translation.Get("config.capacity.tooltip"),
+                getValue: () => this.ModConfig.Capacity,
+                setValue: this.SetCapacity);
 
-            this._modConfigMenu.API.RegisterClampedOption(
+            this._modConfigMenu.API.AddNumberOption(
                 this._manifest,
-                "Menu Rows",
-                "The most number of rows that the menu can expand into.",
-                () => this.ModConfig.MenuRows,
-                this.SetMenuRows,
-                3,
-                6,
-                1);
+                name: () => this._translation.Get("config.menu-rows.name"),
+                tooltip: () => this._translation.Get("config.menu-rows.tooltip"),
+                getValue: () => this.ModConfig.MenuRows,
+                setValue: this.SetMenuRows,
+                min: 3,
+                max: 6,
+                interval: 1);
 
             var rangeChoices = new[]
             {
                 "Inventory", "Location", "World", "Default", "Disabled",
             };
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Crafting Range",
-                "The default range that chests can be remotely crafted from.",
-                () => this.ModConfig.CraftingRange,
-                this.SetCraftingRange,
-                rangeChoices);
+                name: () => this._translation.Get("config.crafting-range.name"),
+                tooltip: () => this._translation.Get("config.crafting-range.tooltip"),
+                getValue: () => this.ModConfig.CraftingRange,
+                setValue: this.SetCraftingRange,
+                allowedValues: rangeChoices);
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Stashing Range",
-                "The default range that chests can be remotely stashed into.",
-                () => this.ModConfig.StashingRange,
-                this.SetStashingRange,
-                rangeChoices);
+                name: () => this._translation.Get("config.stashing-range.name"),
+                tooltip: () => this._translation.Get("config.stashing-range.tooltip"),
+                getValue: () => this.ModConfig.StashingRange,
+                setValue: this.SetStashingRange,
+                allowedValues: rangeChoices);
 
             var configChoices = new[]
             {
                 "Default", "Enable", "Disable",
             };
 
-            this._modConfigMenu.API.RegisterLabel(this._manifest, "Global Overrides", "Enable/disable features for all chests");
-            this._modConfigMenu.API.RegisterChoiceOption(
-                this._manifest,
-                "Access Carried",
-                "Open the currently held chest in your inventory.",
-                this.GetConfig("AccessCarried"),
-                this.SetConfig("AccessCarried"),
-                configChoices);
+            this._modConfigMenu.API.AddSectionTitle(
+                this._manifest, 
+                () => this._translation.Get("section.global-overrides.name"), 
+                () => this._translation.Get("section.global-overrides.tooltip"));
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Carry Chest",
-                "Allows chests full of items to be picked up.",
-                this.GetConfig("CarryChest"),
-                this.SetConfig("CarryChest"),
-                configChoices);
+                name: () => this._translation.Get("config.access-carried.name"),
+                tooltip: () => this._translation.Get("config.access-carried.tooltip"),
+                getValue: this.GetConfig("AccessCarried"),
+                setValue: this.SetConfig("AccessCarried"),
+                allowedValues: configChoices);
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Categorized Chest",
-                "Organize chests by assigning categories of items.",
-                this.GetConfig("CategorizeChest"),
-                this.SetConfig("CategorizeChest"),
-                configChoices);
+                name: () => this._translation.Get("config.carry-chest.name"),
+                tooltip: () => this._translation.Get("config.carry-chest.tooltip"),
+                getValue: this.GetConfig("CarryChest"),
+                setValue: this.SetConfig("CarryChest"),
+                allowedValues: configChoices);
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Color Picker",
-                "Adds an HSL Color Picker to the chest menu.",
-                this.GetConfig("ColorPicker"),
-                this.SetConfig("ColorPicker"),
-                configChoices);
+                name: () => this._translation.Get("config.categorize-chest.name"),
+                tooltip: () => this._translation.Get("config.categorize-chest.tooltip"),
+                getValue: this.GetConfig("CategorizeChest"),
+                setValue: this.SetConfig("CategorizeChest"),
+                allowedValues: configChoices);
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Inventory Tabs",
-                "Adds tabs to the chest menu.",
-                this.GetConfig("InventoryTabs"),
-                this.SetConfig("InventoryTabs"),
-                configChoices);
+                name: () => this._translation.Get("config.color-picker.name"),
+                tooltip: () => this._translation.Get("config.color-picker.tooltip"),
+                getValue: this.GetConfig("ColorPicker"),
+                setValue: this.SetConfig("ColorPicker"),
+                allowedValues: configChoices);
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Search Items",
-                "Adds a search bar to the chest menu.",
-                this.GetConfig("SearchItems"),
-                this.SetConfig("SearchItems"),
-                configChoices);
+                name: () => this._translation.Get("config.inventory-tabs.name"),
+                tooltip: () => this._translation.Get("config.inventory-tabs.tooltip"),
+                getValue: this.GetConfig("InventoryTabs"),
+                setValue: this.SetConfig("InventoryTabs"),
+                allowedValues: configChoices);
 
-            this._modConfigMenu.API.RegisterChoiceOption(
+            this._modConfigMenu.API.AddTextOption(
                 this._manifest,
-                "Vacuum Items",
-                "Allows chests in player inventory to pick up dropped items.",
-                this.GetConfig("VacuumItems"),
-                this.SetConfig("VacuumItems"),
-                configChoices);
+                name: () => this._translation.Get("config.search-items.name"),
+                tooltip: () => this._translation.Get("config.search-items.tooltip"),
+                getValue: this.GetConfig("SearchItems"),
+                setValue: this.SetConfig("SearchItems"),
+                allowedValues: configChoices);
+
+            this._modConfigMenu.API.AddTextOption(
+                this._manifest,
+                name: () => this._translation.Get("config.vacuum-items.name"),
+                tooltip: () => this._translation.Get("config.vacuum-items.tooltip"),
+                getValue: this.GetConfig("VacuumItems"),
+                setValue: this.SetConfig("VacuumItems"),
+                allowedValues: configChoices);
         }
 
-        private void RevertToDefault()
+        private void Reset()
         {
             this.ModConfig = new();
         }
 
-        private void SaveToFile()
+        private void Save()
         {
             this._writeConfig(this.ModConfig);
         }
