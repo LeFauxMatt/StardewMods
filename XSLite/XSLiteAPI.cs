@@ -93,7 +93,7 @@
             {
                 if (this._modConfigMenu.IsLoaded)
                 {
-                    void RevertToDefault()
+                    void Reset()
                     {
                         foreach (var storage in storages)
                         {
@@ -102,7 +102,7 @@
                         }
                     }
 
-                    void SaveToFile()
+                    void Save()
                     {
                         contentPack.WriteJsonFile(
                             "config.json",
@@ -110,24 +110,16 @@
                                 storage => storage.Key,
                                 storage => storage.Value.Config));
                     }
-
-                    this._modConfigMenu.API.RegisterModConfig(
-                        contentPack.Manifest,
-                        RevertToDefault,
-                        SaveToFile);
-
-                    this._modConfigMenu.API.SetDefaultIngameOptinValue(
-                        contentPack.Manifest,
-                        true);
+                    
+                    this._modConfigMenu.API.Register(contentPack.Manifest, Reset, Save);
 
                     // Add a page for each storage
                     foreach (var storage in storages)
                     {
-                        this._modConfigMenu.API.RegisterPageLabel(
+                        this._modConfigMenu.API.AddPageLink(
                             contentPack.Manifest,
                             storage.Key,
-                            string.Empty,
-                            storage.Key);
+                            () => storage.Key);
                     }
                 }
 
@@ -250,60 +242,54 @@
                         };
                     }
 
-                    this._modConfigMenu.API.StartNewPage(
-                        contentPack.Manifest,
-                        storage.Key);
+                    this._modConfigMenu.API.AddPage(contentPack.Manifest, storage.Key);
+                    this._modConfigMenu.API.AddSectionTitle(contentPack.Manifest, () => storage.Key);
 
-                    this._modConfigMenu.API.RegisterLabel(
+                    this._modConfigMenu.API.AddNumberOption(
                         contentPack.Manifest,
-                        storage.Key,
-                        string.Empty);
-
-                    this._modConfigMenu.API.RegisterSimpleOption(
-                        contentPack.Manifest,
-                        "Capacity",
-                        "The carrying capacity for this chests.",
-                        () => storageConfig.Capacity,
-                        value =>
+                        name: () => this._helper.Translation.Get("config.capacity.name"),
+                        tooltip: () => this._helper.Translation.Get("config.capacity.tooltip"),
+                        getValue: () => storageConfig.Capacity,
+                        setValue: value =>
                         {
                             storageConfig.Capacity = value;
                             this._xsPlus.API?.EnableWithModData("Capacity", $"{XSLite.ModPrefix}/Storage", storage.Key, value);
                         });
 
-                    this._modConfigMenu.API.RegisterSimpleOption(
+                    this._modConfigMenu.API.AddBoolOption(
                         contentPack.Manifest,
-                        "Access Carried",
-                        "Open this chest inventory while it's being carried.",
-                        OptionGet("AccessCarried"),
-                        OptionSet("AccessCarried"));
+                        name: () => this._helper.Translation.Get("config.access-carried.name"),
+                        tooltip: () => this._helper.Translation.Get("config.access-carried.tooltip"),
+                        getValue: OptionGet("AccessCarried"),
+                        setValue: OptionSet("AccessCarried"));
 
-                    this._modConfigMenu.API.RegisterSimpleOption(
+                    this._modConfigMenu.API.AddBoolOption(
                         contentPack.Manifest,
-                        "Carry Chest",
-                        "Carry this chest even while it's holding items.",
-                        OptionGet("CanCarry"),
-                        OptionSet("CanCarry"));
+                        name: () => this._helper.Translation.Get("config.can-carry.name"),
+                        tooltip: () => this._helper.Translation.Get("config.can-carry.tooltip"),
+                        getValue: OptionGet("CanCarry"),
+                        setValue: OptionSet("CanCarry"));
 
-                    this._modConfigMenu.API.RegisterSimpleOption(
+                    this._modConfigMenu.API.AddBoolOption(
                         contentPack.Manifest,
-                        "Craft from Chest",
-                        "Allows chest to be crafted from remotely.",
-                        OptionGet("CraftFromChest"),
-                        OptionSet("CraftFromChest"));
+                        name: () => this._helper.Translation.Get("config.craft-from-chest.name"),
+                        tooltip: () => this._helper.Translation.Get("config.craft-from-chest.tooltip"),
+                        getValue: OptionGet("CraftFromChest"),
+                        setValue: OptionSet("CraftFromChest"));
 
-                    this._modConfigMenu.API.RegisterSimpleOption(
+                    this._modConfigMenu.API.AddBoolOption(
                         contentPack.Manifest,
-                        "Stash to Chest",
-                        "Allows chest to be stashed into remotely.",
-                        OptionGet("StashToChest"),
-                        OptionSet("StashToChest"));
+                        name: () => this._helper.Translation.Get("config.stash-to-chest.name"),
+                        tooltip: () => this._helper.Translation.Get("config.stash-to-chest.tooltip"),
+                        getValue: OptionGet("StashToChest"),
+                        setValue: OptionSet("StashToChest"));
 
-                    this._modConfigMenu.API.RegisterSimpleOption(
+                    this._modConfigMenu.API.AddBoolOption(
                         contentPack.Manifest,
-                        "Vacuum Items",
-                        "Allows chest to pick up dropped items while in player inventory.",
-                        OptionGet("VacuumItems"),
-                        OptionSet("VacuumItems"));
+                        name: () => this._helper.Translation.Get("config.vacuum-items.name"),
+                        tooltip: () => this._helper.Translation.Get("config.vacuum-items.tooltip"),
+                        getValue: OptionGet("VacuumItems"),
+                        setValue: OptionSet("VacuumItems"));
                 }
 
                 // Alternative Textures Compat
