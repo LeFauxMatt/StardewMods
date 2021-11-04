@@ -20,7 +20,7 @@
         internal static readonly IDictionary<string, Storage> Storages = new Dictionary<string, Storage>();
         internal static readonly IDictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         private readonly PerScreen<Chest> _currentChest = new();
-        private IXSLiteAPI _api;
+        private IXSLiteApi _api;
 
         /// <inheritdoc />
         public bool CanLoad<T>(IAssetInfo asset)
@@ -59,7 +59,7 @@
                 return;
             }
 
-            this._api = new XSLiteAPI(this.Helper);
+            this._api = new XSLiteApi(this.Helper);
 
             // Events
             this.Helper.Events.GameLoop.DayEnding += XSLite.OnDayEnding;
