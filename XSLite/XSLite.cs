@@ -19,7 +19,6 @@
         internal const string ModPrefix = "furyx639.ExpandedStorage";
         internal static readonly IDictionary<string, Storage> Storages = new Dictionary<string, Storage>();
         internal static readonly IDictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-        private readonly PerScreen<Chest> _currentChest = new();
         private IXSLiteApi _api;
 
         /// <inheritdoc />
@@ -65,9 +64,7 @@
             this.Helper.Events.GameLoop.DayEnding += XSLite.OnDayEnding;
             this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-            this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
             this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-            this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
 
             // Patches
             var unused = new Patches(new(this.ModManifest.UniqueID));
@@ -120,14 +117,6 @@
             }
         }
 
-        private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
-        {
-            if (Context.IsPlayerFree)
-            {
-                this._currentChest.Value = Game1.player.CurrentItem as Chest;
-            }
-        }
-
         [EventPriority(EventPriority.Low)]
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
@@ -163,46 +152,6 @@
                 {
                     return;
                 }
-            }
-        }
-
-        [EventPriority(EventPriority.High)]
-        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
-        {
-            if (!e.IsCurrentLocation || this._currentChest.Value is null)
-            {
-                return;
-            }
-
-            var chest = e.Added.Select(added => added.Value).OfType<Chest>().SingleOrDefault();
-            if (chest is not null && this._currentChest.Value.TryGetStorage(out var storage))
-            {
-                chest.Name = storage.Name;
-                chest.SpecialChestType = storage.SpecialChestType;
-                chest.fridge.Value = storage.IsFridge;
-                chest.lidFrameCount.Value = storage.Frames;
-                chest.playerChoiceColor.Value = this._currentChest.Value.playerChoiceColor.Value;
-
-                if (this._currentChest.Value.items.Any())
-                {
-                    chest.items.CopyFrom(this._currentChest.Value.items);
-                }
-
-                foreach (var modData in storage.ModData)
-                {
-                    chest.modData[modData.Key] = modData.Value;
-                }
-
-                foreach (var modData in this._currentChest.Value.modData.Pairs)
-                {
-                    if (!chest.modData.ContainsKey(modData.Key))
-                    {
-                        chest.modData[modData.Key] = modData.Value;
-                    }
-                }
-
-                chest.modData.Remove($"{XSLite.ModPrefix}/X");
-                chest.modData.Remove($"{XSLite.ModPrefix}/Y");
             }
         }
     }
