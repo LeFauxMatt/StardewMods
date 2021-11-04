@@ -201,6 +201,10 @@
                 this._items.Value = e.ItemGrabMenu.ItemsToGrabMenu.actualInventory;
                 this.ReSyncInventory(e.ItemGrabMenu.ItemsToGrabMenu, true);
             }
+            else if (!ReferenceEquals(e.ItemGrabMenu, this._menu.Value.ItemGrabMenu))
+            {
+                this.ReSyncInventory(e.ItemGrabMenu.ItemsToGrabMenu);
+            }
 
             this._menu.Value = e;
         }
