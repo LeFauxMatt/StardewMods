@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using StardewModdingAPI;
 
-    public interface IMoreChestsAPI
+    public interface IMoreChestsApi
     {
         /// <summary>Load a directory as a More Chests content pack.</summary>
         /// <param name="manifest">Manifest for content pack.</param>

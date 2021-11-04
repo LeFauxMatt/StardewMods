@@ -2,7 +2,7 @@
 {
     using StardewModdingAPI;
 
-    internal class EvenBetterRngIntegration : ModIntegration<IEvenBetterRNGAPI>
+    internal class EvenBetterRngIntegration : ModIntegration<IEvenBetterRngApi>
     {
         /// <summary>Initializes a new instance of the <see cref="EvenBetterRngIntegration" /> class.</summary>
         /// <param name="modRegistry">SMAPI's mod registry.</param>

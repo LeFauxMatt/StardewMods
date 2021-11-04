@@ -3,7 +3,7 @@
     using StardewModdingAPI;
 
     /// <inheritdoc />
-    internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuAPI>
+    internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuApi>
     {
         /// <summary>Initializes a new instance of the <see cref="GenericModConfigMenuIntegration" /> class.</summary>
         /// <param name="modRegistry">SMAPI's mod registry.</param>

@@ -2,7 +2,7 @@
 {
     using StardewModdingAPI;
 
-    public interface IDynamicGameAssetsAPI
+    public interface IDynamicGameAssetsApi
     {
         /// <summary>
         ///     Get the DGA item ID of this item, if it has one.

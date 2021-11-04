@@ -6,7 +6,7 @@
     using StardewValley.Objects;
 
     /// <summary>API for loading Expanded Storage content packs.</summary>
-    public interface IXSLiteAPI
+    public interface IXSLiteApi
     {
         /// <summary>Load a directory as an Expanded Storage content pack.</summary>
         /// <param name="manifest">Manifest for content pack.</param>

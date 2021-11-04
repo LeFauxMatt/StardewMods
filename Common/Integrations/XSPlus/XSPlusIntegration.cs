@@ -3,7 +3,7 @@
     using StardewModdingAPI;
 
     /// <inheritdoc />
-    internal class XSPlusIntegration : ModIntegration<IXSPlusAPI>
+    internal class XSPlusIntegration : ModIntegration<IXSPlusApi>
     {
         /// <summary>Initializes a new instance of the <see cref="XSPlusIntegration" /> class.</summary>
         /// <param name="modRegistry">SMAPI's mod registry.</param>

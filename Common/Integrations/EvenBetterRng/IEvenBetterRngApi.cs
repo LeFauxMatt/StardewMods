@@ -2,7 +2,7 @@
 {
     using System;
 
-    public interface IEvenBetterRNGAPI
+    public interface IEvenBetterRngApi
     {
         /// <summary>
         ///     Get the main XoShiRo PRNG instance that continually replace Game1.random

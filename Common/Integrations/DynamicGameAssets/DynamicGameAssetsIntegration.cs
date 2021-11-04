@@ -3,7 +3,7 @@
     using StardewModdingAPI;
 
     /// <inheritdoc />
-    internal class DynamicGameAssetsIntegration : ModIntegration<IDynamicGameAssetsAPI>
+    internal class DynamicGameAssetsIntegration : ModIntegration<IDynamicGameAssetsApi>
     {
         /// <summary>Initializes a new instance of the <see cref="DynamicGameAssetsIntegration" /> class.</summary>
         /// <param name="modRegistry">SMAPI's mod registry.</param>
