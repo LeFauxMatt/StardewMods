@@ -10,6 +10,7 @@
     using HarmonyLib;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
+    using StardewModdingAPI.Utilities;
     using StardewValley;
     using StardewValley.Objects;
     using SObject = StardewValley.Object;
@@ -17,6 +18,7 @@
     internal class CarryChestFeature : BaseFeature
     {
         private HarmonyService _harmony;
+        private readonly PerScreen<Chest> _currentChest = new();
 
         private CarryChestFeature(ServiceManager serviceManager)
             : base("CarryChest", serviceManager)
@@ -42,7 +44,9 @@
         public override void Activate()
         {
             // Events
+            this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
 
             // Patches
             this._harmony.ApplyPatches(this.ServiceName);
@@ -52,10 +56,20 @@
         public override void Deactivate()
         {
             // Events
+            this.Helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            this.Helper.Events.World.ObjectListChanged -= this.OnObjectListChanged;
 
             // Patches
             this._harmony.UnapplyPatches(this.ServiceName);
+        }
+
+        private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
+        {
+            if (Context.IsPlayerFree)
+            {
+                this._currentChest.Value = Game1.player.CurrentItem as Chest;
+            }
         }
 
         private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
@@ -103,6 +117,41 @@
 
             Game1.currentLocation.Objects.Remove(pos);
             this.Helper.Input.Suppress(e.Button);
+        }
+
+        [EventPriority(EventPriority.High)]
+        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        {
+            if (!e.IsCurrentLocation || this._currentChest.Value is null)
+            {
+                return;
+            }
+
+            var chest = e.Added.Select(added => added.Value).OfType<Chest>().SingleOrDefault();
+            if (chest is not null && this.IsEnabledForItem(this._currentChest.Value))
+            {
+                chest.Name = this._currentChest.Value.Name;
+                chest.SpecialChestType = this._currentChest.Value.SpecialChestType;
+                chest.fridge.Value = this._currentChest.Value.fridge.Value;
+                chest.lidFrameCount.Value = this._currentChest.Value.lidFrameCount.Value;
+                chest.playerChoiceColor.Value = this._currentChest.Value.playerChoiceColor.Value;
+
+                if (this._currentChest.Value.items.Any())
+                {
+                    chest.items.CopyFrom(this._currentChest.Value.items);
+                }
+
+                foreach (var modData in this._currentChest.Value.modData.Pairs)
+                {
+                    if (!chest.modData.ContainsKey(modData.Key))
+                    {
+                        chest.modData[modData.Key] = modData.Value;
+                    }
+                }
+
+                chest.modData.Remove($"{XSPlus.ModPrefix}/X");
+                chest.modData.Remove($"{XSPlus.ModPrefix}/Y");
+            }
         }
     }
 }
