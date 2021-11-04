@@ -102,8 +102,6 @@
                 return;
             }
 
-            __instance.setBackgroundTransparency(false);
-
             ItemGrabMenuChangedService.Instance._attached.Value = true;
             ItemGrabMenuChangedService.Instance.InvokeAll(__instance, chest, Context.ScreenId, true);
         }

@@ -47,6 +47,11 @@
                 return;
             }
 
+            if (e.IsNew)
+            {
+                e.ItemGrabMenu.setBackgroundTransparency(false);
+            }
+
             this._menu.Value = e;
         }
 
