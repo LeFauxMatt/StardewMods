@@ -377,6 +377,11 @@
                 return this._searchField.Value.Selected;
             }
 
+            if (this._menu.Value is not null && !this._menu.Value.ItemGrabMenu.readyToClose())
+            {
+                return false;
+            }
+
             Game1.playSound("bigDeSelect");
             Game1.activeClickableMenu = null;
             return true;
