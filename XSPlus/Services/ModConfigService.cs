@@ -135,7 +135,7 @@
                 getValue: () => this.ModConfig.CraftingRange,
                 setValue: this.SetCraftingRange,
                 allowedValues: rangeValues,
-                formatAllowedValues: FormatRangeValues);
+                formatAllowedValue: FormatRangeValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -144,7 +144,7 @@
                 getValue: () => this.ModConfig.StashingRange,
                 setValue: this.SetStashingRange,
                 allowedValues: rangeValues,
-                formatAllowedValues: FormatRangeValues);
+                formatAllowedValue: FormatRangeValues);
 
             var configValues = new[]
             {
@@ -153,13 +153,7 @@
 
             string FormatConfigValues(string value)
             {
-                return value switch
-                {
-                    "Default" => this._translation.Get("choice.default.name"),
-                    "Enable" => this._translation.Get("choice.enabled.name"),
-                    "Disable" => this._translation.Get("choice.disabled.name"),
-                    _ => value,
-                };
+                return this._translation.Get($"choice.{value}.name");
             };
 
             this._modConfigMenu.API.AddSectionTitle(
@@ -174,7 +168,7 @@
                 getValue: this.GetConfig("AccessCarried"),
                 setValue: this.SetConfig("AccessCarried"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -183,7 +177,7 @@
                 getValue: this.GetConfig("CarryChest"),
                 setValue: this.SetConfig("CarryChest"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -192,7 +186,7 @@
                 getValue: this.GetConfig("CategorizeChest"),
                 setValue: this.SetConfig("CategorizeChest"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -201,7 +195,7 @@
                 getValue: this.GetConfig("ColorPicker"),
                 setValue: this.SetConfig("ColorPicker"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -210,7 +204,7 @@
                 getValue: this.GetConfig("InventoryTabs"),
                 setValue: this.SetConfig("InventoryTabs"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -219,7 +213,7 @@
                 getValue: this.GetConfig("SearchItems"),
                 setValue: this.SetConfig("SearchItems"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
 
             this._modConfigMenu.API.AddTextOption(
                 this._manifest,
@@ -228,7 +222,7 @@
                 getValue: this.GetConfig("VacuumItems"),
                 setValue: this.SetConfig("VacuumItems"),
                 allowedValues: configValues,
-                formatAllowedValues: FormatConfigValues);
+                formatAllowedValue: FormatConfigValues);
         }
 
         private void Reset()

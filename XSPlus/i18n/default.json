@@ -1,8 +1,8 @@
 {
   "button.Configure.name": "Configure",
   "choice.default.name": "Default",
-  "choice.enabled.name": "Enabled",
-  "choice.disabled.name": "Disabled",
+  "choice.enable.name": "Enabled",
+  "choice.disable.name": "Disabled",
   "choice.inventory.name": "Inventory",
   "choice.location.name": "Location",
   "choice.world.name": "World",
