@@ -3,6 +3,10 @@
 ## Upcoming
 
 - Added localization for Generic Mod Config Menu.
+- Fixed menu voiding held items when closed.
+- Fixed inventory not syncing after organize.
+- Fixed recently placed chests not included in crafting.
+- Fixed inventory voiding when placing carried chest.
 
 ## Latest Changes
 
