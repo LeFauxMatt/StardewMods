@@ -7,6 +7,8 @@
 - Fixed inventory not syncing after organize.
 - Fixed recently placed chests not included in crafting.
 - Fixed inventory voiding when placing carried chest.
+- Fixed inventory tabs being activated by any button.
+- Fixed holding an item causes inventory to not refresh.
 
 ## Latest Changes
 

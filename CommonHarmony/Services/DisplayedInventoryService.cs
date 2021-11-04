@@ -32,6 +32,7 @@
         private readonly PerScreen<int> _offset = new();
         private readonly PerScreen<Range<int>> _range = new(() => new());
         private readonly PerScreen<int> _rows = new();
+        private readonly PerScreen<Item> _heldItem = new();
 
         private DisplayedInventoryService(ServiceManager serviceManager)
             : base("DisplayedInventory")
@@ -61,6 +62,7 @@
                 });
 
             // Events
+            serviceManager.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             serviceManager.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         }
 
@@ -207,6 +209,15 @@
             }
 
             this._menu.Value = e;
+        }
+
+        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        {
+            if (this._menu.Value is not null && !ReferenceEquals(this._heldItem.Value, this._menu.Value.ItemGrabMenu.heldItem))
+            {
+                this._heldItem.Value = this._menu.Value.ItemGrabMenu.heldItem;
+                this.ReSyncInventory(this._menu.Value.ItemGrabMenu.ItemsToGrabMenu);
+            }
         }
 
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
