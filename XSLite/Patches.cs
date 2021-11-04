@@ -489,7 +489,7 @@
             }
         }
 
-        [HarmonyPriority(Priority.High)]
+        [HarmonyPriority(Priority.Low)]
         private static bool Object_placementAction_prefix(SObject __instance, ref bool __result, GameLocation location, int x, int y)
         {
             if (!__instance.TryGetStorage(out var storage) || storage.Format == Storage.AssetFormat.Vanilla)
@@ -511,8 +511,14 @@
                 return false;
             }
 
+            var chest = __instance.ToChest(storage);
+            chest.TileLocation = placementTile;
+            chest.shakeTimer = 50;
+            location.objects.Add(placementTile, chest);
+            location.playSound("axe");
+
             __result = true;
-            return true;
+            return false;
         }
     }
 }
