@@ -143,10 +143,7 @@
 
                 foreach (var modData in this._currentChest.Value.modData.Pairs)
                 {
-                    if (!chest.modData.ContainsKey(modData.Key))
-                    {
-                        chest.modData[modData.Key] = modData.Value;
-                    }
+                    chest.modData[modData.Key] = modData.Value;
                 }
 
                 chest.modData.Remove($"{XSPlus.ModPrefix}/X");
