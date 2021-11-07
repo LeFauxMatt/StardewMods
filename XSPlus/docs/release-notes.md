@@ -2,19 +2,17 @@
 
 ## Upcoming
 
-- Added localization for Generic Mod Config Menu.
+## Latest Changes
+
+- Fixed shipping bin resetting cursor position when using a Gamepad.
+- Fixed split screen causing errors for Farmhands.
+- Fixed farmhands unable to access carried chests.
 - Fixed menu voiding held items when closed.
 - Fixed inventory not syncing after organize.
 - Fixed recently placed chests not included in crafting.
 - Fixed inventory voiding when placing carried chest.
 - Fixed inventory tabs being activated by any button.
 - Fixed holding an item causes inventory to not refresh.
-
-## Latest Changes
-
-- Fixed shipping bin resetting cursor position when using a Gamepad.
-- Fixed split screen causing errors for Farmhands.
-- Fixed farmhands unable to access carried chests.
 
 ## 1.0.0
 
@@ -31,3 +29,4 @@
     - Support unbreakable chests.
     - Support chests that cannot be placed.
     - Add chests that pull dropped items directly into their inventory.
+- Added localization for Generic Mod Config Menu.
