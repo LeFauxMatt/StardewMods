@@ -1,0 +1,29 @@
+{
+  /****
+  ** UI
+  ****/
+  "ui.purchased": "Purchased",
+  "ui.not-purchased": "Not Purchased",
+  
+  /****
+  ** Generic Mod Config Menu
+  ****/
+  "config.chore-enabled": "Enabled",
+  "config.chore-price": "Price",
+  
+  /****
+  ** Chores
+  ****/
+  "chore.feed-animals.name": "Feed the Animals",
+  "chore.feed-animals.description": "We'll feed all of your Barn and Coop animals.",
+  "chore.feed-pet.name": "Feed the Pet",
+  "chore.feed-pet.description": "Let us provide the best of care for your furry friend.",
+  "chore.pet-animals.name": "Pet the Animals",
+  "chore.pet-animals.description": "We'll brush and care for your Barn and Coop animals",
+  "chore.repair-fences.name": "Repair the Fences",
+  "chore.repair-fences.description": "We'll make sure all of your fences are in tip-top shape.",
+  "chore.water-crops.name": "Water the Crops",
+  "chore.water-crops.description": "We'll water all of your crops.",
+  "chore.water-slimes.name": "Water the Slimes",
+  "chore.water-slimes.description": "We'll fill up all the water troughs in slime hutches.",
+}
