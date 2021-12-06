@@ -96,7 +96,7 @@
                         return false;
                     }
 
-                    this._betterChests.API.EnableWithModData("BiggerChest", $"{ModEntry.ModPrefix}/Name", data.Key, new Tuple<int, int, int>(texture.Width, texture.Height, data.Value.Depth));
+                    this._betterChests.API.ConfigureChest(name, "BiggerChest", new Tuple<int, int, int>(texture.Width, texture.Height, data.Value.Depth));
                 }
 
                 this._assetHandler.AddAsset(data.Key, texture);
@@ -112,24 +112,26 @@
                 return;
             }
 
+            this._betterChests.API.RegisterCustomChest(name, $"{ModEntry.ModPrefix}/Name", name);
+
             if (data.FilterItems.Any())
             {
-                this._betterChests.API.EnableWithModData("FilterItems", $"{ModEntry.ModPrefix}/Name", name, data.FilterItems);
+                this._betterChests.API.ConfigureChest(name, "FilterItems", data.FilterItems);
             }
 
             if (data.OpenNearby > 0)
             {
-                this._betterChests.API.EnableWithModData("OpenNearby", $"{ModEntry.ModPrefix}/Name", name, data.OpenNearby);
+                this._betterChests.API.ConfigureChest(name, "OpenNearby", data.OpenNearby);
             }
 
             if (!data.PlayerColor)
             {
-                this._betterChests.API.EnableWithModData("ColorPicker", $"{ModEntry.ModPrefix}/Name", name, false);
+                this._betterChests.API.ConfigureChest(name, "ColorPicker", false);
             }
 
             foreach (var featureName in data.DisabledFeatures)
             {
-                this._betterChests.API.EnableWithModData(featureName, $"{ModEntry.ModPrefix}/Name", name, false);
+                this._betterChests.API.ConfigureChest(name, featureName, false);
             }
 
             // Skip features overriden by player config
@@ -140,13 +142,13 @@
 
             if (data.Capacity != 0)
             {
-                this._betterChests.API.EnableWithModData("ExpandedMenu", $"{ModEntry.ModPrefix}/Name", name, true);
-                this._betterChests.API.EnableWithModData("Capacity", $"{ModEntry.ModPrefix}/Name", name, data.Capacity);
+                this._betterChests.API.ConfigureChest(name, "ExpandedMenu", true);
+                this._betterChests.API.ConfigureChest(name, "Capacity", data.Capacity);
             }
 
             foreach (var featureName in data.EnabledFeatures.Except(data.DisabledFeatures))
             {
-                this._betterChests.API.EnableWithModData(featureName, $"{ModEntry.ModPrefix}/Name", name, true);
+                this._betterChests.API.ConfigureChest(name, featureName, true);
             }
         }
     }

@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\Axis.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOptionRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ItemExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />

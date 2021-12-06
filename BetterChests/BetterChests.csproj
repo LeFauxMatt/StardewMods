@@ -1,9 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common_beta.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
-    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared"/>
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared" />
     <PropertyGroup>
         <Version>1.0.0</Version>
         <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="assets" />
+      <Folder Include="docs" />
+      <Folder Include="i18n" />
+    </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
 ﻿{
   "Name": "eXpanded Storage (Lite)",
   "Author": "furyx639",
-  "Version": "1.7.1",
+  "Version": "1.7.2",
   "Description": "Framework that adds new chests.",
   "UniqueID": "furyx639.ExpandedStorage",
   "EntryDll": "XSLite.dll",
-  "MinimumApiVersion": "3.12.6",
+  "MinimumApiVersion": "3.13.0",
   "UpdateKeys": [
     "Nexus:7431@XSLite"
   ],
@@ -21,7 +21,7 @@
     {
       "UniqueID": "furyx639.XSPlus",
       "IsRequired": false,
-      "MinimumVersion": "1.0.0-beta"
+      "MinimumVersion": "1.0.1"
     },
     {
       "UniqueID": "furyx639.MoreChests",

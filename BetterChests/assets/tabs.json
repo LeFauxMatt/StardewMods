@@ -1,0 +1,77 @@
+﻿[
+  {
+    "Name": "Clothing",
+    "Tags": [
+      "category_clothing",
+      "category_boots",
+      "category_hat"
+    ]
+  },
+  {
+    "Name": "Cooking",
+    "Tags": [
+      "category_syrup",
+      "category_artisan_goods",
+      "category_ingredients",
+      "category_sell_at_pierres_and_marnies",
+      "category_sell_at_pierres",
+      "category_meat",
+      "category_cooking",
+      "category_milk",
+      "category_egg"
+    ]
+  },
+  {
+    "Name": "Crops",
+    "Tags": [
+      "category_greens",
+      "category_flowers",
+      "category_fruits",
+      "category_vegetable"
+    ]
+  },
+  {
+    "Name": "Equipment",
+    "Tags": [
+      "category_equipment",
+      "category_ring",
+      "category_tool",
+      "category_weapon"
+    ]
+  },
+  {
+    "Name": "Fishing",
+    "Tags": [
+      "category_bait",
+      "category_fish",
+      "category_tackle",
+      "category_sell_at_fish_shop"
+    ]
+  },
+  {
+    "Name": "Materials",
+    "Tags": [
+      "category_monster_loot",
+      "category_metal_resources",
+      "category_building_resources",
+      "category_minerals",
+      "category_crafting",
+      "category_gem"
+    ]
+  },
+  {
+    "Name": "Misc",
+    "Tags": [
+      "category_big_craftable",
+      "category_furniture",
+      "category_junk"
+    ]
+  },
+  {
+    "Name": "Seeds",
+    "Tags": [
+      "category_seeds",
+      "category_fertilizer"
+    ]
+  }
+]

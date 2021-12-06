@@ -4,13 +4,13 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <TargetFramework>net452</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <GamePath>G:\Steam\steamapps\common\Stardew Valley 1.5.4</GamePath>
+        <GamePath>G:\Steam\steamapps\common\Stardew Valley</GamePath>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.3.0"/>
+        <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     </ItemGroup>
 </Project>

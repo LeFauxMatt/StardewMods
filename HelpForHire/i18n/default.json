@@ -4,16 +4,18 @@
   ****/
   "ui.purchased": "Purchased",
   "ui.not-purchased": "Not Purchased",
-  
+
   /****
   ** Generic Mod Config Menu
   ****/
   "config.chore-enabled": "Enabled",
   "config.chore-price": "Price",
-  
+
   /****
   ** Chores
   ****/
+  "chore.birthday-gift.name": "",
+  "chore.birthday-gift.description": "",
   "chore.feed-animals.name": "Feed the Animals",
   "chore.feed-animals.description": "We'll feed all of your Barn and Coop animals.",
   "chore.feed-pet.name": "Feed the Pet",
