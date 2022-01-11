@@ -1,26 +1,43 @@
-﻿namespace BetterChests.Models
+﻿namespace BetterChests.Models;
+
+using System.Collections.Generic;
+using FuryCore.Models;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using StardewValley;
+using StardewValley.Menus;
+
+/// <inheritdoc />
+internal class Tab : MenuComponent
 {
-    using System.Collections.Generic;
-    using StardewValley.Menus;
-
     /// <summary>
-    ///     A tab representing a group of items.
+    /// Initializes a new instance of the <see cref="Tab"/> class.
     /// </summary>
-    internal class Tab
+    /// <param name="component"></param>
+    /// <param name="tags"></param>
+    public Tab(ClickableTextureComponent component, IList<string> tags)
+        : base(component)
     {
-        /// <summary>
-        ///     Gets or sets the name of the tab.
-        /// </summary>
-        public string Name { get; set; }
+        this.Tags = tags;
+    }
 
-        /// <summary>
-        ///     Gets or sets the context tags of items belonging to this tab.
-        /// </summary>
-        public List<string> Tags { get; set; }
+    public IList<string> Tags { get; }
 
-        /// <summary>
-        ///     Gets or sets the visual representation fo the tab.
-        /// </summary>
-        public ClickableTextureComponent Component { get; set; }
+    public bool Selected { get; set; }
+
+    public int BaseY { get; set; } = 0;
+
+    /// <inheritdoc/>
+    public override void Draw(SpriteBatch spriteBatch)
+    {
+        var color = this.Selected ? Color.White : Color.Gray;
+        this.Component.bounds.Y = this.BaseY + (this.Selected ? Game1.pixelZoom : 0);
+        this.Component.draw(spriteBatch, color, 0.86f + (this.Component.bounds.Y / 20000f));
+    }
+
+    /// <inheritdoc/>
+    public override void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
+    {
+        // Do Nothing
     }
 }

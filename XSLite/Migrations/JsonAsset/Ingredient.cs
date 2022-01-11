@@ -1,9 +1,8 @@
-﻿namespace XSLite.Migrations.JsonAsset
-{
-    internal record Ingredient
-    {
-        public int Object { get; set; }
+﻿namespace XSLite.Migrations.JsonAsset;
 
-        public int Count { get; set; } = 1;
-    }
+internal record Ingredient
+{
+    public int Object { get; set; }
+
+    public int Count { get; set; } = 1;
 }

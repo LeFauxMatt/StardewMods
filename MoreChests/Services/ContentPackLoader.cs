@@ -1,110 +1,108 @@
-﻿namespace MoreChests.Services
+﻿namespace MoreChests.Services;
+
+using System.Collections.Generic;
+using System.Linq;
+using Common.Helpers;
+using Common.Integrations.DynamicGameAssets;
+using Models;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
+
+internal class ContentPackLoader : BaseService
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using Common.Helpers;
-    using Common.Integrations.DynamicGameAssets;
-    using Common.Services;
-    using Models;
-    using StardewModdingAPI;
-    using StardewModdingAPI.Events;
+    private readonly IEnumerable<IContentPack> _contentPacks;
+    private readonly DynamicGameAssetsIntegration _dynamicGameAssets;
+    private CustomChestManager _customChestManager;
+    private ModConfigService _modConfig;
 
-    internal class ContentPackLoader : BaseService
+    private ContentPackLoader(ServiceLocator serviceLocator)
+        : base("ContentPackLoader")
     {
-        private readonly IEnumerable<IContentPack> _contentPacks;
-        private readonly DynamicGameAssetsIntegration _dynamicGameAssets;
-        private CustomChestManager _customChestManager;
-        private ModConfigService _modConfig;
+        // Init
+        this._contentPacks = serviceLocator.Helper.ContentPacks.GetOwned();
+        this._dynamicGameAssets = new(serviceLocator.Helper.ModRegistry);
 
-        private ContentPackLoader(ServiceManager serviceManager)
-            : base("ContentPackLoader")
+        // Dependencies
+        this.AddDependency<CustomChestManager>(service => this._customChestManager = service as CustomChestManager);
+        this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
+
+        // Events
+        serviceLocator.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+    }
+
+    public bool LoadContentPack(IContentPack contentPack)
+    {
+        Log.Info($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+
+        var chestData = contentPack.ReadJsonFile<IDictionary<string, ChestData>>("expanded-storage.json");
+        if (chestData is null)
         {
-            // Init
-            this._contentPacks = serviceManager.Helper.ContentPacks.GetOwned();
-            this._dynamicGameAssets = new(serviceManager.Helper.ModRegistry);
-
-            // Dependencies
-            this.AddDependency<CustomChestManager>(service => this._customChestManager = service as CustomChestManager);
-            this.AddDependency<ModConfigService>(service => this._modConfig = service as ModConfigService);
-
-            // Events
-            serviceManager.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            Log.Warn($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+            return false;
         }
 
-        public bool LoadContentPack(IContentPack contentPack)
+        // Remove any duplicate storages
+        foreach (var name in chestData.Keys.Where(this._customChestManager.Exists))
         {
-            Log.Info($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+            Log.Warn($"Duplicate chest {name} in {contentPack.Manifest.UniqueID}.");
+            chestData.Remove(name);
+        }
 
-            var chestData = contentPack.ReadJsonFile<IDictionary<string, ChestData>>("expanded-storage.json");
-            if (chestData is null)
-            {
-                Log.Warn($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
-                return false;
-            }
+        if (chestData.Count == 0)
+        {
+            Log.Warn($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+            return false;
+        }
 
-            // Remove any duplicate storages
-            foreach (var name in chestData.Keys.Where(this._customChestManager.Exists))
-            {
-                Log.Warn($"Duplicate chest {name} in {contentPack.Manifest.UniqueID}.");
-                chestData.Remove(name);
-            }
+        // Register/load configs
+        if (this._modConfig.RegisterNew(contentPack))
+        {
+            this._modConfig.AddChests(contentPack, chestData.Where(data => data.Value.PlayerConfig));
+        }
 
-            if (chestData.Count == 0)
-            {
-                Log.Warn($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
-                return false;
-            }
+        // Load chest data
+        this._customChestManager.AddChests(contentPack, chestData);
 
-            // Register/load configs
-            if (this._modConfig.RegisterNew(contentPack))
-            {
-                this._modConfig.AddChests(contentPack, chestData.Where(data => data.Value.PlayerConfig));
-            }
+        foreach (var data in chestData)
+        {
+            data.Value.DisplayName = contentPack.Translation.Get($"big-craftable.{data.Key}.name");
+            data.Value.Description = contentPack.Translation.Get($"big-craftable.{data.Key}.description");
+        }
 
-            // Load chest data
-            this._customChestManager.AddChests(contentPack, chestData);
-
-            foreach (var data in chestData)
-            {
-                data.Value.DisplayName = contentPack.Translation.Get($"big-craftable.{data.Key}.name");
-                data.Value.Description = contentPack.Translation.Get($"big-craftable.{data.Key}.description");
-            }
-
-            if (!this._dynamicGameAssets.IsLoaded)
-            {
-                return true;
-            }
-
-            var manifest = new FakeManifest(contentPack.Manifest)
-            {
-                ContentPackFor = new ContentPackFor
-                {
-                    UniqueID = "spacechase0.DynamicGameAsset",
-                    MinimumVersion = null,
-                },
-                ExtraFields = new Dictionary<string, object>
-                {
-                    {
-                        "DGA.FormatVersion", "2"
-                    },
-                    {
-                        "DGA.ConditionsFormatVersion", "1.23.0"
-                    },
-                },
-            };
-
-            this._dynamicGameAssets.API.AddEmbeddedPack(manifest, contentPack.DirectoryPath);
-
+        if (!this._dynamicGameAssets.IsLoaded)
+        {
             return true;
         }
 
-        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        var manifest = new FakeManifest(contentPack.Manifest)
         {
-            Log.Info("Loading Content Packs for More Chests");
-            foreach (var contentPack in this._contentPacks)
+            ContentPackFor = new ContentPackFor
             {
-                this.LoadContentPack(contentPack);
-            }
+                UniqueID = "spacechase0.DynamicGameAsset",
+                MinimumVersion = null,
+            },
+            ExtraFields = new Dictionary<string, object>
+            {
+                {
+                    "DGA.FormatVersion", "2"
+                },
+                {
+                    "DGA.ConditionsFormatVersion", "1.23.0"
+                },
+            },
+        };
+
+        this._dynamicGameAssets.API.AddEmbeddedPack(manifest, contentPack.DirectoryPath);
+
+        return true;
+    }
+
+    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    {
+        Log.Info("Loading Content Packs for More Chests");
+        foreach (var contentPack in this._contentPacks)
+        {
+            this.LoadContentPack(contentPack);
         }
     }
 }

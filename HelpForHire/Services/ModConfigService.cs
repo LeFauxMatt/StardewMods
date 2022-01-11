@@ -1,7 +1,6 @@
-﻿namespace HelpForHire.Services
+﻿namespace HelpForHire.Services;
+
+internal class ModConfigService
 {
-    internal class ModConfigService
-    {
         
-    }
 }

@@ -1,105 +1,165 @@
-﻿namespace BetterChests
+﻿namespace BetterChests;
+
+using System;
+using System.Collections.Generic;
+using BetterChests.Enums;
+using Common.Integrations.BetterChests;
+using FuryCore.Services;
+using Models;
+using Services;
+using StardewModdingAPI;
+
+/// <inheritdoc />
+public class BetterChestsApi : IBetterChestsApi
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Common.Enums;
-    using Common.Integrations.BetterChests;
-    using Common.Services;
-    using Services;
+    private readonly Lazy<ModConfigMenu> _configMenu;
 
-    public class BetterChestsApi : IBetterChestsApi
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BetterChestsApi"/> class.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <param name="services"></param>
+    internal BetterChestsApi(ModConfig config, ServiceCollection services)
     {
-        private readonly ModConfigService _modConfigService;
-        private readonly ManagedChestService _managedChestService;
+        this.Config = config;
+        this._configMenu = services.Lazy<ModConfigMenu>();
+    }
 
-        internal BetterChestsApi(ServiceManager serviceManager)
+    private ModConfig Config { get; }
+
+    private ModConfigMenu ConfigMenu
+    {
+        get => this._configMenu.Value;
+    }
+
+    /// <inheritdoc />
+    public bool RegisterCustomChest(string name)
+    {
+        if (!this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
         {
-            this._modConfigService = serviceManager.GetByType<ModConfigService>();
-            this._managedChestService = serviceManager.GetByType<ManagedChestService>();
+            chestConfig = new();
         }
 
-        /// <inheritdoc />
-        public void RegisterCustomChest(string name, string key, string value)
+        return true;
+    }
+
+    /// <inheritdoc />
+    public bool AddGMCMOptions(string name)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
         {
-            this._managedChestService.AddManagedChestType(name, key, value);
+            this.ConfigMenu.GenerateChestConfigOptions(chestConfig);
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetAccessCarried(string name, bool enabled)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (chestConfig.AccessCarried == FeatureOption.Default)
-            {
-                chestConfig.AccessCarried = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
-            }
+    /// <inheritdoc />
+    public bool AddGMCMOptions(string name, IManifest manifest, string[] options)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            this.ConfigMenu.GenerateChestConfigOptions(chestConfig, manifest, options);
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetCapacity(string name, int capacity)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (chestConfig.Capacity == 0)
-            {
-                chestConfig.Capacity = capacity;
-            }
+    /// <inheritdoc />
+    public bool SetAccessCarried(string name, bool enabled)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig.AccessCarried = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetCarryChest(string name, bool enabled)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (chestConfig.CarryChest == FeatureOption.Default)
-            {
-                chestConfig.CarryChest = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
-            }
+    /// <inheritdoc />
+    public bool SetCapacity(string name, int capacity)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig.Capacity = capacity;
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetCollectItems(string name, bool enabled)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (chestConfig.CollectItems == FeatureOption.Default)
-            {
-                chestConfig.CollectItems = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
-            }
+    /// <inheritdoc />
+    public bool SetCarryChest(string name, bool enabled)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig.CarryChest = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetCraftingRange(string name, string range)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (chestConfig.CraftingRange == FeatureOptionRange.Default && Enum.TryParse(range, out FeatureOptionRange craftingRange))
-            {
-                chestConfig.CraftingRange = craftingRange;
-            }
+    /// <inheritdoc />
+    public bool SetCategorizeChest(string name, bool enabled)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig.CategorizeChest = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetStashingRange(string name, string range)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (chestConfig.StashingRange == FeatureOptionRange.Default && Enum.TryParse(range, out FeatureOptionRange stashingRange))
-            {
-                chestConfig.StashingRange = stashingRange;
-            }
+    /// <inheritdoc />
+    public bool SetCollectItems(string name, bool enabled)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig.CollectItems = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return true;
         }
 
-        /// <inheritdoc />
-        public void SetItemFilters(string name, HashSet<string> filters)
-        {
-            var chestConfig = this._modConfigService.GetChestConfig(name);
+        return false;
+    }
 
-            if (!chestConfig.FilterItems.Any())
-            {
-                chestConfig.FilterItems = filters;
-            }
+    /// <inheritdoc />
+    public bool SetCraftingRange(string name, string range)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig) && Enum.TryParse(range, out FeatureOptionRange craftingRange))
+        {
+            chestConfig.CraftingRange = craftingRange;
+            return true;
         }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    public bool SetStashingRange(string name, string range)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig) && Enum.TryParse(range, out FeatureOptionRange stashingRange))
+        {
+            chestConfig.StashingRange = stashingRange;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    public bool SetItemFilters(string name, HashSet<string> filters)
+    {
+        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig.FilterItems = filters;
+            return true;
+        }
+
+        return false;
     }
 }

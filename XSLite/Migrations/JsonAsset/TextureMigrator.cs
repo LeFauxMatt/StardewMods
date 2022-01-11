@@ -1,97 +1,96 @@
-﻿namespace XSLite.Migrations.JsonAsset
+﻿namespace XSLite.Migrations.JsonAsset;
+
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
+using StardewValley;
+
+internal class TextureMigrator
 {
-    using System.Collections.Generic;
-    using System.IO;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using StardewModdingAPI;
-    using StardewValley;
+    private const int Frames = 5;
+    private const int Width = 16;
+    private const int Height = 32;
+    private const int TotalWidth = 80;
+    private readonly string _path;
 
-    internal class TextureMigrator
+    private readonly Dictionary<string, Texture2D> _textures = new();
+
+    public TextureMigrator(IContentPack contentPack, string name)
     {
-        private const int Frames = 5;
-        private const int Width = 16;
-        private const int Height = 32;
-        private const int TotalWidth = 80;
-        private readonly string _path;
+        this._path = Path.Combine(contentPack.DirectoryPath, "assets", $"{name}.png");
+    }
 
-        private readonly Dictionary<string, Texture2D> _textures = new();
+    public void AddTexture(string name, Texture2D texture)
+    {
+        this._textures.Add(name, texture);
+    }
 
-        public TextureMigrator(IContentPack contentPack, string name)
+    public void UpdateTextureFormat()
+    {
+        if (File.Exists(this._path))
         {
-            this._path = Path.Combine(contentPack.DirectoryPath, "assets", $"{name}.png");
+            return;
         }
 
-        public void AddTexture(string name, Texture2D texture)
+        if (this._textures.Count == 0 || !this._textures.TryGetValue("big-craftable.png", out var baseTexture) || baseTexture.Width != TextureMigrator.Width || baseTexture.Height != TextureMigrator.Height)
         {
-            this._textures.Add(name, texture);
+            return;
         }
 
-        public void UpdateTextureFormat()
+        var layers = this._textures.Count switch
         {
-            if (File.Exists(this._path))
-            {
-                return;
-            }
+            >= 15 => 3,
+            _ => 1,
+        };
 
-            if (this._textures.Count == 0 || !this._textures.TryGetValue("big-craftable.png", out var baseTexture) || baseTexture.Width != TextureMigrator.Width || baseTexture.Height != TextureMigrator.Height)
-            {
-                return;
-            }
+        var totalHeight = layers * TextureMigrator.Height;
+        var pixels = new Color[TextureMigrator.TotalWidth * totalHeight];
 
-            var layers = this._textures.Count switch
+        for (var frame = 0; frame < TextureMigrator.Frames; frame++)
+        {
+            for (var layer = 0; layer < layers; layer++)
             {
-                >= 15 => 3,
-                _ => 1,
-            };
+                var baseOffset = frame * TextureMigrator.Width + layer * TextureMigrator.TotalWidth * TextureMigrator.Height;
 
-            var totalHeight = layers * TextureMigrator.Height;
-            var pixels = new Color[TextureMigrator.TotalWidth * totalHeight];
-
-            for (var frame = 0; frame < TextureMigrator.Frames; frame++)
-            {
-                for (var layer = 0; layer < layers; layer++)
+                // Base Layer
+                if (!this._textures.TryGetValue($"big-craftable-{(1 + layer * 6).ToString()}", out var sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
                 {
-                    var baseOffset = frame * TextureMigrator.Width + layer * TextureMigrator.TotalWidth * TextureMigrator.Height;
+                    sourceTexture = baseTexture;
+                }
 
-                    // Base Layer
-                    if (!this._textures.TryGetValue($"big-craftable-{(1 + layer * 6).ToString()}", out var sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
-                    {
-                        sourceTexture = baseTexture;
-                    }
+                var subPixels = new Color[TextureMigrator.Width * TextureMigrator.Height];
+                sourceTexture.GetData(subPixels);
+                for (var i = 0; i < subPixels.Length; i++)
+                {
+                    var targetOffset = baseOffset + i % TextureMigrator.Width + i / TextureMigrator.Width * TextureMigrator.TotalWidth;
+                    pixels[targetOffset] = subPixels[i];
+                }
 
-                    var subPixels = new Color[TextureMigrator.Width * TextureMigrator.Height];
-                    sourceTexture.GetData(subPixels);
-                    for (var i = 0; i < subPixels.Length; i++)
-                    {
-                        var targetOffset = baseOffset + i % TextureMigrator.Width + i / TextureMigrator.Width * TextureMigrator.TotalWidth;
-                        pixels[targetOffset] = subPixels[i];
-                    }
+                // Lid Layer
+                if (!this._textures.TryGetValue($"big-craftable-{(2 + frame + layer * 6).ToString()}.png", out sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
+                {
+                    continue;
+                }
 
-                    // Lid Layer
-                    if (!this._textures.TryGetValue($"big-craftable-{(2 + frame + layer * 6).ToString()}.png", out sourceTexture) || sourceTexture.Width != TextureMigrator.Width || sourceTexture.Height != TextureMigrator.Height)
+                sourceTexture.GetData(subPixels);
+                for (var i = 0; i < subPixels.Length; i++)
+                {
+                    if (subPixels[i] == Color.Transparent)
                     {
                         continue;
                     }
 
-                    sourceTexture.GetData(subPixels);
-                    for (var i = 0; i < subPixels.Length; i++)
-                    {
-                        if (subPixels[i] == Color.Transparent)
-                        {
-                            continue;
-                        }
-
-                        var targetOffset = baseOffset + i % TextureMigrator.Width + i / TextureMigrator.Width * TextureMigrator.TotalWidth;
-                        pixels[targetOffset] = subPixels[i];
-                    }
+                    var targetOffset = baseOffset + i % TextureMigrator.Width + i / TextureMigrator.Width * TextureMigrator.TotalWidth;
+                    pixels[targetOffset] = subPixels[i];
                 }
             }
-
-            var targetTexture = new Texture2D(Game1.graphics.GraphicsDevice, TextureMigrator.TotalWidth, totalHeight);
-            targetTexture.SetData(pixels);
-            using FileStream stream = new(this._path, FileMode.CreateNew);
-            targetTexture.SaveAsPng(stream, TextureMigrator.TotalWidth, totalHeight);
         }
+
+        var targetTexture = new Texture2D(Game1.graphics.GraphicsDevice, TextureMigrator.TotalWidth, totalHeight);
+        targetTexture.SetData(pixels);
+        using FileStream stream = new(this._path, FileMode.CreateNew);
+        targetTexture.SaveAsPng(stream, TextureMigrator.TotalWidth, totalHeight);
     }
 }

@@ -11,6 +11,12 @@
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 </Project>

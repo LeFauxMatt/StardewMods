@@ -9,11 +9,7 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Enums\Axis.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOption.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOptionRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ItemExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemMatcher\ItemMatcher.cs" />
@@ -35,16 +31,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSLite\XSLiteIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\IXSPlusApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\XSPlusIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\GradientBar.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\Slider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\IService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\PendingService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\ServiceManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TagChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ContextMenu.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\HSLSlider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />
   </ItemGroup>
 </Project>

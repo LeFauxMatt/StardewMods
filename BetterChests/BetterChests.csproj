@@ -7,12 +7,10 @@
         <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="assets" />
-      <Folder Include="docs" />
-      <Folder Include="i18n" />
+        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.0" />
+        <Reference Include="FuryCore">
+            <HintPath>$(GameModsPath)\FuryCore\FuryCore.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 </Project>

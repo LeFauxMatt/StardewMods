@@ -7,11 +7,9 @@
         <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="DynamicGameAssets, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>G:\Steam\steamapps\common\Stardew Valley 1.5.5\Mods\DynamicGameAssets\DynamicGameAssets.dll</HintPath>
+        <Reference Include="DynamicGameAssets">
+            <HintPath>$(GameModsPath)\DynamicGameAssets\DynamicGameAssets.dll</HintPath>
+            <Private>false</Private>
         </Reference>
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
     </ItemGroup>
 </Project>

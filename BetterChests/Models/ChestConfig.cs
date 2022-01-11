@@ -1,43 +1,42 @@
-﻿namespace BetterChests.Models
+﻿namespace BetterChests.Models;
+
+using System.Collections.Generic;
+using BetterChests.Enums;
+using Interfaces;
+
+/// <inheritdoc />
+internal class ChestConfig : IChestConfig
 {
-    using System.Collections.Generic;
-    using Common.Enums;
+    /// <inheritdoc/>
+    public FeatureOption AccessCarried { get; set; }
 
-    internal class ChestConfig
-    {
-        /// <summary>
-        /// Gets or sets whether the <see cref="StardewValley.Objects.Chest" /> can be accessed while carried.
-        /// </summary>
-        public FeatureOption AccessCarried { get; set; } = FeatureOption.Default;
+    /// <inheritdoc/>
+    public int Capacity { get; set; }
 
-        /// <summary>
-        /// Gets or sets the maximum number of items the <see cref="StardewValley.Objects.Chest" /> is able to hold.
-        /// </summary>
-        public int Capacity { get; set; }
+    /// <inheritdoc/>
+    public FeatureOption CarryChest { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether the <see cref="StardewValley.Objects.Chest" /> can be carried by the player.
-        /// </summary>
-        public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
+    /// <inheritdoc/>
+    public FeatureOption CategorizeChest { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether the <see cref="StardewValley.Objects.Chest" /> can collect <see cref="StardewValley.Debris" />.
-        /// </summary>
-        public FeatureOption CollectItems { get; set; } = FeatureOption.Default;
+    /// <inheritdoc/>
+    public FeatureOption CollectItems { get; set; }
 
-        /// <summary>
-        /// Gets or sets the range that the <see cref="StardewValley.Objects.Chest" /> can be remotely stashed into.
-        /// </summary>
-        public FeatureOptionRange CraftingRange { get; set; } = FeatureOptionRange.Default;
+    /// <inheritdoc/>
+    public FeatureOption ColorPicker { get; set; }
 
-        /// <summary>
-        /// Gets or sets the range that the <see cref="StardewValley.Objects.Chest" /> can be remotely crafted from.
-        /// </summary>
-        public FeatureOptionRange StashingRange { get; set; } = FeatureOptionRange.Default;
+    /// <inheritdoc/>
+    public FeatureOption SearchItems { get; set; }
 
-        /// <summary>
-        /// Gets or sets items that the <see cref="StardewValley.Objects.Chest" /> can accept or will block.
-        /// </summary>
-        public HashSet<string> FilterItems { get; set; } = new();
-    }
+    /// <inheritdoc/>
+    public FeatureOption VacuumItems { get; set; }
+
+    /// <inheritdoc/>
+    public FeatureOptionRange CraftingRange { get; set; }
+
+    /// <inheritdoc/>
+    public FeatureOptionRange StashingRange { get; set; }
+
+    /// <inheritdoc/>
+    public HashSet<string> FilterItems { get; set; }
 }

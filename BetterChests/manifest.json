@@ -9,6 +9,10 @@
   "UpdateKeys": [ "Nexus:9791" ],
   "Dependencies": [
     {
+      "UniqueID": "furyx639.FuryCore",
+      "IsRequired": true
+    },
+    {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "IsRequired": false
     }
