@@ -29,36 +29,12 @@ public interface IBetterChestsApi
     public bool AddGMCMOptions(string name, IManifest manifest, string[] options);
 
     /// <summary>
-    /// Sets whether the <see cref="StardewValley.Objects.Chest" /> can be accessed while carried.
-    /// </summary>
-    /// <param name="name">Name that uniquely identifies the custom <see cref="StardewValley.Objects.Chest" />.</param>
-    /// <param name="enabled">Set to true to enable or false to disable this feature.</param>
-    /// <returns>True if custom chest exists.</returns>
-    public bool SetAccessCarried(string name, bool enabled);
-
-    /// <summary>
     /// Sets the maximum number of items the <see cref="StardewValley.Objects.Chest" /> is able to hold.
     /// </summary>
     /// <param name="name">Name that uniquely identifies the custom <see cref="StardewValley.Objects.Chest" />.</param>
     /// <param name="capacity"></param>
     /// <returns>True if custom chest exists.</returns>
     public bool SetCapacity(string name, int capacity);
-
-    /// <summary>
-    /// Sets whether the <see cref="StardewValley.Objects.Chest" /> can be carried by the player.
-    /// </summary>
-    /// <param name="name">Name that uniquely identifies the custom <see cref="StardewValley.Objects.Chest" />.</param>
-    /// <param name="enabled">Set to true to enable or false to disable this feature.</param>
-    /// <returns>True if custom chest exists.</returns>
-    public bool SetCarryChest(string name, bool enabled);
-
-    /// <summary>
-    /// Sets whether the <see cref="StardewValley.Objects.Chest" /> can be categorized by the player.
-    /// </summary>
-    /// <param name="name">Name that uniquely identifies the custom <see cref="StardewValley.Objects.Chest" />.</param>
-    /// <param name="enabled">Set to true to enable or false to disable this feature.</param>
-    /// <returns>True if custom chest exists.</returns>
-    public bool SetCategorizeChest(string name, bool enabled);
 
     /// <summary>
     /// Sets whether the <see cref="StardewValley.Objects.Chest" /> can collect <see cref="StardewValley.Debris" />.

@@ -75,7 +75,8 @@ internal class FilterItems : Feature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     private static bool Automate_Store_prefix(Chest ___Chest, object stack)
     {
-        return FilterItems.Instance.ChestAcceptsItem(___Chest, FilterItems.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue());
+        var item = FilterItems.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
+        return !FilterItems.Instance.ManagedChests.FindChest(___Chest, out var managedChest) || managedChest.Config.ItemMatcher.Matches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -83,7 +84,7 @@ internal class FilterItems : Feature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (FilterItems.Instance.ChestAcceptsItem(__instance, item))
+        if (!FilterItems.Instance.ManagedChests.FindChest(__instance, out var managedChest) || managedChest.Config.ItemMatcher.Matches(item))
         {
             return true;
         }
@@ -94,11 +95,9 @@ internal class FilterItems : Feature
 
     private void OnItemsHighlighted(object sender, ItemsHighlightedEventArgs e)
     {
-        e.AddHighlighter(item => this.ChestAcceptsItem(e.Chest, item));
-    }
-
-    private bool ChestAcceptsItem(Chest chest, Item item)
-    {
-        return !this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.Config.ItemMatcher.Matches(item);
+        if (this.ManagedChests.FindChest(e.Chest, out var managedChest))
+        {
+            e.AddHighlighter(managedChest.Config.ItemMatcher.Matches);
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31702.278
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSLite", "XSLite\XSLite.csproj", "{4C78ABFE-A327-4CE0-A3C5-3DB99E889F0A}"
 EndProject
@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoreChests", "MoreChests\Mo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetterChests", "BetterChests\BetterChests.csproj", "{8CEAB902-D2AB-4802-82E9-F4A6AB718BF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryCore", "FuryCore\FuryCore.csproj", "{88AB327C-D567-41C5-A02B-26F4821A8E98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuryCore", "FuryCore\FuryCore.csproj", "{88AB327C-D567-41C5-A02B-26F4821A8E98}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -37,6 +37,8 @@ Global
 		CommonHarmony\CommonHarmony.projitems*{528e219b-d7ac-4e37-b9d0-c1fabea33ddd}*SharedItemsImports = 5
 		Common\Common.projitems*{528e219b-d7ac-4e37-b9d0-c1fabea33ddd}*SharedItemsImports = 5
 		Common\Common.projitems*{8883a431-d2f4-4fd9-994e-ed68c0dd14ba}*SharedItemsImports = 5
+		CommonHarmony\CommonHarmony.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
+		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
 		CommonHarmony\CommonHarmony.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		CommonHarmony\CommonHarmony.projitems*{b334c000-d969-45db-8916-182768d8f305}*SharedItemsImports = 13

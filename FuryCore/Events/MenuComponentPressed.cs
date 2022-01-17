@@ -34,7 +34,7 @@ internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEve
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (e.Button != SButton.MouseLeft || !(this.CustomMenuComponents.SideComponents.Any() || this.CustomMenuComponents.BehindComponents.Any()))
+        if ((e.Button != SButton.MouseLeft && !e.Button.IsActionButton()) || !(this.CustomMenuComponents.SideComponents.Any() || this.CustomMenuComponents.BehindComponents.Any()))
         {
             return;
         }

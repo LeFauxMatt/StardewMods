@@ -95,7 +95,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.Config.AccessCarried != FeatureOption.Enabled)
+        if (!this.ManagedChests.FindChest(chest, out var managedChest))
         {
             return;
         }

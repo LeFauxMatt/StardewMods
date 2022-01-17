@@ -123,14 +123,13 @@ internal class CustomMenuComponents : IFuryMenu, IService
         }
 
         var vanillaComponents = Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
-                              .Select(componentType => this.GetVanillaComponent(componentType, out var component) ? component : null)
-                              .Where(component => component is not null)
-                              .OrderBy(component => component.Component.bounds.Y);
-
-        this.SideComponents.Clear();
-        this.SideComponents.AddRange(vanillaComponents);
+                                    .Select(componentType => new MenuComponent(this.Menu, componentType))
+                                    .Where(component => component.Component is not null)
+                                    .OrderBy(component => component.Component.bounds.Y);
 
         this.BehindComponents.Clear();
+        this.SideComponents.Clear();
+        this.SideComponents.AddRange(vanillaComponents);
     }
 
     [SortedEventPriority(EventPriority.Low)]
@@ -141,13 +140,17 @@ internal class CustomMenuComponents : IFuryMenu, IService
             return;
         }
 
+        foreach (var component in this.BehindComponents.Concat(this.SideComponents).Where(component => component.IsCustom))
+        {
+            this.Menu.allClickableComponents.Add(component.Component);
+        }
+
         this.RepositionSideButtons(this.Menu);
-        this.Menu.SetupBorderNeighbors();
     }
 
     private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        foreach (var component in this.SideComponents.Where(this.IsCustomComponent))
+        foreach (var component in this.SideComponents.Where(component => component.IsCustom))
         {
             component.Draw(e.SpriteBatch);
         }
@@ -160,7 +163,7 @@ internal class CustomMenuComponents : IFuryMenu, IService
 
     private void OnRenderingItemGrabMenu(object sender, RenderingActiveMenuEventArgs e)
     {
-        foreach (var component in this.BehindComponents.Where(this.IsCustomComponent))
+        foreach (var component in this.BehindComponents.Where(component => component.IsCustom))
         {
             component.Draw(e.SpriteBatch);
         }
@@ -169,56 +172,18 @@ internal class CustomMenuComponents : IFuryMenu, IService
     private void RepositionSideButtons(IClickableMenu menu)
     {
         var stepSize = this.SideComponents.Count >= 4 ? 72 : 80;
-        ClickableTextureComponent previousComponent = null;
+        MenuComponent previousComponent = null;
         foreach (var (component, index) in this.SideComponents.AsEnumerable().Reverse().Select((component, index) => (component, index)))
         {
             if (previousComponent is not null)
             {
-                previousComponent.downNeighborID = component.Component.myID;
-                component.Component.upNeighborID = previousComponent.myID;
+                previousComponent.Component.upNeighborID = component.Id;
+                component.Component.downNeighborID = previousComponent.Id;
             }
 
             component.Component.bounds.X = menu.xPositionOnScreen + menu.width;
             component.Component.bounds.Y = menu.yPositionOnScreen + (menu.height / 3) - 64 - (stepSize * index);
-            previousComponent = component.Component;
+            previousComponent = component;
         }
-    }
-
-    private bool GetVanillaComponent(ComponentType componentType, out MenuComponent menuComponent)
-    {
-        menuComponent = null;
-        if (this.Menu is null)
-        {
-            return false;
-        }
-
-        var component = componentType switch
-        {
-            ComponentType.OrganizeButton => this.Menu.organizeButton,
-            ComponentType.FillStacksButton => this.Menu.fillStacksButton,
-            ComponentType.ColorPickerToggleButton => this.Menu.colorPickerToggleButton,
-            ComponentType.SpecialButton => this.Menu.specialButton,
-            ComponentType.JunimoNoteIcon => this.Menu.junimoNoteIcon,
-            _ => null,
-        };
-
-        if (component is not null)
-        {
-            menuComponent = new(component);
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool IsCustomComponent(MenuComponent component)
-    {
-        return !this.IsVanillaComponent(component);
-    }
-
-    private bool IsVanillaComponent(MenuComponent component)
-    {
-        return Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
-                   .Any(componentType => this.GetVanillaComponent(componentType, out var vanillaComponent) && ReferenceEquals(component, vanillaComponent));
     }
 }

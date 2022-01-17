@@ -1,7 +1,7 @@
 ﻿namespace BetterChests.Models;
 
 using System.Linq;
-using Common.Helpers.ItemMatcher;
+using FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -25,16 +25,11 @@ internal record ManagedChest
 
     public ItemMatcher ItemMatcher { get; }
 
-    public bool AcceptsItem(Item item)
-    {
-        return this.Config.ItemMatcher.Matches(item) && this.ItemMatcher.Matches(item);
-    }
-
-    public Item StashItem(Item item, bool existingStacks = false)
+    public Item StashItem(Item item, bool fillStacks = false)
     {
         var stack = item.Stack;
 
-        if (this.AcceptsItem(item))
+        if ((this.Config.ItemMatcher.Any() || this.ItemMatcher.Any()) && this.Config.ItemMatcher.Matches(item) && this.ItemMatcher.Matches(item))
         {
             var tmp = this.Chest.addItem(item);
             if (tmp is null || tmp.Stack <= 0)
@@ -48,9 +43,9 @@ internal record ManagedChest
             }
         }
 
-        if (existingStacks)
+        if (fillStacks)
         {
-            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem.canStackWith(item)))
+            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem.maximumStackSize() > 1 && chestItem.canStackWith(item)))
             {
                 if (chestItem.getRemainingStackSpace() > 0)
                 {

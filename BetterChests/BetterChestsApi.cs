@@ -68,47 +68,11 @@ public class BetterChestsApi : IBetterChestsApi
     }
 
     /// <inheritdoc />
-    public bool SetAccessCarried(string name, bool enabled)
-    {
-        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
-        {
-            chestConfig.AccessCarried = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <inheritdoc />
     public bool SetCapacity(string name, int capacity)
     {
         if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
         {
             chestConfig.Capacity = capacity;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <inheritdoc />
-    public bool SetCarryChest(string name, bool enabled)
-    {
-        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
-        {
-            chestConfig.CarryChest = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <inheritdoc />
-    public bool SetCategorizeChest(string name, bool enabled)
-    {
-        if (this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
-        {
-            chestConfig.CategorizeChest = enabled ? FeatureOption.Enabled : FeatureOption.Disabled;
             return true;
         }
 

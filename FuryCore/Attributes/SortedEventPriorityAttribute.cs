@@ -5,7 +5,7 @@ using StardewModdingAPI.Events;
 
 /// <inheritdoc />
 [AttributeUsage(AttributeTargets.Method)]
-internal class SortedEventPriorityAttribute : Attribute
+public class SortedEventPriorityAttribute : Attribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SortedEventPriorityAttribute"/> class.

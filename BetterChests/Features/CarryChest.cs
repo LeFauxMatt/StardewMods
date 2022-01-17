@@ -188,7 +188,7 @@ internal class CarryChest : Feature
             return;
         }
 
-        if (!this.ManagedChests.FindChest(obj as Chest, out var managedChest) || managedChest.Config.CarryChest != FeatureOption.Enabled)
+        if (!this.ManagedChests.FindChest(obj as Chest, out _))
         {
             return;
         }

@@ -1,14 +1,15 @@
-﻿namespace Common.UI;
+﻿namespace FuryCore.UI;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Common.Extensions;
-using Common.Helpers.ItemMatcher;
 using Common.Helpers.ItemRepository;
+using Common.Models;
+using FuryCore.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Common.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -17,7 +18,7 @@ using StardewValley.Menus;
 /// <summary>
 /// A menu for selecting items.
 /// </summary>
-internal class ItemSelectionMenu : ItemGrabMenu
+public class ItemSelectionMenu : ItemGrabMenu
 {
     private int _offset;
 
@@ -67,15 +68,13 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private int Columns { get; }
 
-    private bool Refresh { get; set; }
-
     private ClickableComponent SearchArea { get; }
 
     private TextBox SearchField { get; }
 
     private ClickableTextureComponent SearchIcon { get; }
 
-    private ContextMenu DropDown { get; set; }
+    private DropDownMenu TagMenu { get; set; }
 
     private ItemMatcher ItemMatcher { get; }
 
@@ -84,8 +83,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
     private string SearchText { get; set; }
 
     private IEnumerable<SearchableItem> SortedItems { get; set; }
-
-    private IList<int> Indexes { get; set; }
 
     private IEnumerable<SearchableItem> Items
     {
@@ -99,24 +96,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
                 this.DisplayedItems = null;
             }
 
-            if (this.DisplayedItems is null)
-            {
-                this.DisplayedItems = string.IsNullOrWhiteSpace(this.SearchField.Text)
-                    ? this.SortedItems.ToList()
-                    : this.SortedItems.Where(item => item.NameContains(this.SearchField.Text)).ToList();
-                this.Indexes = this.DisplayedItems.Select(item => ItemSelectionMenu.AllItems.IndexOf(item)).ToList();
-                this.Refresh = true;
-            }
-
-            if (this.Refresh)
-            {
-                foreach (var (slot, index) in this.ItemsToGrabMenu.inventory.Select((slot, index) => (slot, index)))
-                {
-                    slot.name = (index < this.Indexes.Count ? this.Indexes[index] : int.MaxValue).ToString();
-                }
-
-                this.Refresh = false;
-            }
+            this.DisplayedItems ??= string.IsNullOrWhiteSpace(this.SearchField.Text)
+                ? this.SortedItems.ToList()
+                : this.SortedItems.Where(item => item.NameContains(this.SearchField.Text)).ToList();
 
             return this.DisplayedItems.Skip(this.Offset * this.Columns);
         }
@@ -134,7 +116,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
         {
             this.Range.Maximum = Math.Max(0, (this.DisplayedItems.Count - this.ItemsToGrabMenu.capacity).RoundUp(this.Columns) / this.Columns);
             this._offset = this.Range.Clamp(value);
-            this.Refresh = true;
         }
     }
 
@@ -147,7 +128,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
     public void RegisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed += this.OnButtonPressed;
-        this.ItemMatcher.TagChanged += this.OnTagChanged;
+        this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
     /// <summary>
@@ -157,7 +138,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
     public void UnregisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed -= this.OnButtonPressed;
-        this.ItemMatcher.TagChanged -= this.OnTagChanged;
+        this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
     }
 
     /// <inheritdoc />
@@ -166,7 +147,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         if (this.okButton.containsPoint(x, y) && this.readyToClose())
         {
             this.exitThisMenu();
-            if (Game1.currentLocation.currentEvent is {CurrentCommand: > 0})
+            if (Game1.currentLocation.currentEvent is { CurrentCommand: > 0 })
             {
                 Game1.currentLocation.currentEvent.CurrentCommand++;
             }
@@ -203,7 +184,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
             && int.TryParse(itemSlot.name, out var slotNumber)
             && this.Items.ElementAtOrDefault(slotNumber) is { Item: { } item })
         {
-            var tags = SearchPhrase.GetContextTags(item).ToList();
+            var tags = ItemMatcher.GetContextTags(item).ToList();
             if (tags.Contains("quality_none"))
             {
                 tags.Add("quality_silver");
@@ -211,7 +192,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
                 tags.Add("quality_iridium");
             }
 
-            this.DropDown = new(tags, x, y, this.ItemMatcher.Add);
+            this.TagMenu = new(tags, x, y, this.AddTag);
         }
     }
 
@@ -245,10 +226,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
             ? Math.Min(1.1f, this.okButton.scale + 0.05f)
             : Math.Max(1f, this.okButton.scale - 0.05f);
 
-        if (this.DropDown is not null && this.DropDown.OnHover(x, y))
-        {
-            return;
-        }
+        this.TagMenu?.TryHover(x, y);
 
         var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (cc is not null)
@@ -339,9 +317,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
             }
         }
 
-        if (this.DropDown is not null)
+        if (this.TagMenu is not null)
         {
-            this.DropDown.Draw(b);
+            this.TagMenu.Draw(b);
         }
         else if (this.hoveredItem != null)
         {
@@ -367,13 +345,10 @@ internal class ItemSelectionMenu : ItemGrabMenu
                 this.InputHelper.Suppress(e.Button);
                 return;
 
-            case SButton.MouseLeft when this.DropDown?.LeftClick(x, y) == true:
-                this.DropDown = null;
-                return;
-
             case SButton.MouseLeft:
                 this.SearchField.Selected = this.SearchArea.containsPoint(x, y);
-                this.DropDown = null;
+                this.TagMenu?.LeftClick(x, y);
+                this.TagMenu = null;
                 break;
 
             case SButton.MouseRight:
@@ -384,6 +359,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
                     this.Offset = 0;
                 }
 
+                this.TagMenu = null;
+
                 break;
         }
 
@@ -393,10 +370,20 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
     }
 
-    private void OnTagChanged(object sender, TagChangedEventArgs e)
+    private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         this.SortedItems = null;
         this.RefreshTags();
+    }
+
+    private void AddTag(string tag)
+    {
+        if (this.InputHelper.IsDown(SButton.LeftShift) || this.InputHelper.IsDown(SButton.RightShift))
+        {
+            tag = $"!{tag}";
+        }
+
+        this.ItemMatcher.Add(tag);
     }
 
     private void RefreshTags()

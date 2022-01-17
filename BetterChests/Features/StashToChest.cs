@@ -44,16 +44,17 @@ internal class StashToChest : Feature
         }
 
         var eligibleChests = (
-            from item in this.ManagedChests.AccessibleChests
-            where item.Value.Config.StashingRange switch
-            {
-                FeatureOptionRange.Inventory => ReferenceEquals(item.Key.Player, Game1.player),
-                FeatureOptionRange.Location => ReferenceEquals(item.Key.Location, Game1.currentLocation),
-                FeatureOptionRange.World => true,
-                _ => false,
-            }
-            select item.Value)
-        .ToList();
+                from item in this.ManagedChests.AccessibleChests
+                where item.Value.Config.StashingRange switch
+                {
+                    FeatureOptionRange.Inventory => ReferenceEquals(item.Key.Player, Game1.player),
+                    FeatureOptionRange.Location => ReferenceEquals(item.Key.Location, Game1.currentLocation)
+                                                   || ReferenceEquals(item.Key.Player, Game1.player),
+                    FeatureOptionRange.World => true,
+                    _ => false,
+                }
+                select item.Value)
+            .ToList();
 
         if (!eligibleChests.Any())
         {
@@ -71,9 +72,10 @@ internal class StashToChest : Feature
 
             foreach (var eligibleChest in eligibleChests)
             {
-                item = eligibleChest.StashItem(item);
+                item = eligibleChest.StashItem(item, this.Config.FillStacks);
                 if (item is null)
                 {
+                    Game1.player.Items[i] = null;
                     break;
                 }
             }

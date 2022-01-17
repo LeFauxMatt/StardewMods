@@ -115,6 +115,14 @@ internal class ModConfigMenu : IService
             I18n.Config_ColorPicker_Name,
             I18n.Config_ColorPicker_Tooltip);
 
+        // Fill Stacks
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.FillStacks,
+            value => this.Config.FillStacks = value,
+            I18n.Config_FillStacks_Name,
+            I18n.Config_FillStacks_Tooltip);
+
         // Menu Rows
         this.GMCM.API.AddNumberOption(
             this.Manifest,
@@ -237,32 +245,6 @@ internal class ModConfigMenu : IService
                 I18n.Config_Capacity_Tooltip);
         }
 
-        // Access Carried
-        if (features.Contains("access-carried"))
-        {
-            this.GMCM.API.AddTextOption(
-                manifest,
-                () => ModConfigMenu.GetOptionName(chestConfig.AccessCarried),
-                value => chestConfig.AccessCarried = ModConfigMenu.GetOptionValue(value),
-                I18n.Config_AccessCarried_Name,
-                I18n.Config_AccessCarried_Tooltip,
-                optionValues,
-                ModConfigMenu.FormatAllowedValue);
-        }
-
-        // Carry Chest
-        if (features.Contains("carry-chest"))
-        {
-            this.GMCM.API.AddTextOption(
-                manifest,
-                () => ModConfigMenu.GetOptionName(chestConfig.CarryChest),
-                value => chestConfig.CarryChest = ModConfigMenu.GetOptionValue(value),
-                I18n.Config_CarryChest_Name,
-                I18n.Config_CarryChest_Tooltip,
-                optionValues,
-                ModConfigMenu.FormatAllowedValue);
-        }
-
         // Collect Items
         if (features.Contains("collect-items"))
         {
@@ -302,6 +284,7 @@ internal class ModConfigMenu : IService
                 ModConfigMenu.FormatAllowedValue);
         }
     }
+
     private static string FormatAllowedValue(string value)
     {
         return value switch

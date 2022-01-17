@@ -2,14 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Common.Extensions;
 using Common.Models;
+using FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-public class ItemsDisplayedEventArgs : EventArgs
+public class ItemsDisplayedEventArgs : EventArgs, IDisposable
 {
     private int _offset;
     private bool _refreshInventory;
@@ -79,21 +81,22 @@ public class ItemsDisplayedEventArgs : EventArgs
 
     private IList<int> Indexes { get; set; }
 
-    private IDictionary<Item, bool> ItemFilterCache { get; } = new Dictionary<Item, bool>();
+    private IDictionary<string, bool> ItemFilterCache { get; } = new Dictionary<string, bool>();
 
-    private IList<Func<Item, bool>> ItemFilters { get; } = new List<Func<Item, bool>>();
+    private IList<ItemMatcher> ItemMatchers { get; } = new List<ItemMatcher>();
 
     private Range<int> Range { get; } = new();
 
-    public void AddFilter(Func<Item, bool> filter)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="itemMatcher"></param>
+    public void AddFilter(ItemMatcher itemMatcher)
     {
-        this.ItemFilters.Add(filter);
-        this.ForceRefresh();
+        this.ItemMatchers.Add(itemMatcher);
+        itemMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
-    /// <summary>
-    ///     Forces displayed inventory to refresh.
-    /// </summary>
     public void ForceRefresh()
     {
         this.ItemFilterCache.Clear();
@@ -101,14 +104,35 @@ public class ItemsDisplayedEventArgs : EventArgs
         this._refreshInventory = true;
     }
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        foreach (var itemMatcher in this.ItemMatchers)
+        {
+            itemMatcher.CollectionChanged -= this.OnCollectionChanged;
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
     private bool FilterMethod(Item item)
     {
-        if (!this.ItemFilterCache.TryGetValue(item, out var filtered))
+        if (item is null)
         {
-            filtered = this.ItemFilters.All(itemHighlighter => itemHighlighter.Invoke(item));
-            this.ItemFilterCache.Add(item, filtered);
+            return false;
+        }
+
+        if (!this.ItemFilterCache.TryGetValue(item.Name, out var filtered))
+        {
+            filtered = this.ItemMatchers.All(itemMatcher => itemMatcher.Matches(item));
+            this.ItemFilterCache.Add(item.Name, filtered);
         }
 
         return filtered;
+    }
+
+    private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.ForceRefresh();
     }
 }

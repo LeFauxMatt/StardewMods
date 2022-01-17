@@ -3,7 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Helpers.ItemMatcher;
+using Common.Helpers;
+using FuryCore.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
@@ -122,20 +123,34 @@ internal class ChestMenuTabs : Feature
         this.Chest = e.Chest;
 
         // Reposition tabs between inventory menus along a horizontal axis
-        var x = this.Menu.ItemsToGrabMenu.xPositionOnScreen;
-        var y = this.Menu.ItemsToGrabMenu.yPositionOnScreen + this.Menu.ItemsToGrabMenu.height + Game1.pixelZoom;
-        foreach (var tab in this.Tabs)
+        MenuComponent previousTab = null;
+        var slot = this.Menu.ItemsToGrabMenu.capacity - (this.Menu.ItemsToGrabMenu.capacity / this.Menu.ItemsToGrabMenu.rows);
+        foreach (var (tab, index) in this.Tabs.Select((tab, index) => (tab, index)))
         {
-            tab.Component.bounds.X = x;
             tab.BaseY = this.Menu.ItemsToGrabMenu.yPositionOnScreen + this.Menu.ItemsToGrabMenu.height + Game1.pixelZoom;
-            x = tab.Component.bounds.Right;
+            tab.Component.bounds.X = previousTab is not null
+                ? previousTab.Component.bounds.Right
+                : this.Menu.ItemsToGrabMenu.xPositionOnScreen;
+
+            tab.Component.upNeighborID = this.Menu.ItemsToGrabMenu.inventory[slot + index].myID;
+            tab.Component.downNeighborID = this.Menu.inventory.inventory[index].myID;
+            this.Menu.ItemsToGrabMenu.inventory[slot + index].downNeighborID = tab.Id;
+            this.Menu.inventory.inventory[index].upNeighborID = tab.Id;
+
+            if (previousTab is not null)
+            {
+                previousTab.Component.rightNeighborID = tab.Id;
+                tab.Component.leftNeighborID = previousTab.Id;
+            }
+
+            previousTab = tab;
         }
     }
 
     private void OnItemsDisplayed(object sender, ItemsDisplayedEventArgs e)
     {
         this.DisplayedItems = e;
-        e.AddFilter(this.ItemMatcher.Matches);
+        e.AddFilter(this.ItemMatcher);
     }
 
     private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
@@ -163,7 +178,7 @@ internal class ChestMenuTabs : Feature
 
         if (this.Config.NextTab.JustPressed())
         {
-            this.SetTab(this.Index == this.Tabs.Count ? -1 : this.Index + 1);
+            this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
             this.Helper.Input.SuppressActiveKeybinds(this.Config.NextTab);
             return;
         }
@@ -186,12 +201,17 @@ internal class ChestMenuTabs : Feature
         if (this.Index != -1)
         {
             this.Tabs[this.Index].Selected = true;
+            this.Menu.setCurrentlySnappedComponentTo(this.Tabs[this.Index].Id);
+            this.Menu.snapCursorToCurrentSnappedComponent();
         }
 
         this.ItemMatcher.Clear();
         if (index != -1)
         {
-            this.ItemMatcher.UnionWith(this.Tabs.ElementAt(this.Index).Tags);
+            foreach (var tag in this.Tabs[this.Index].Tags)
+            {
+                this.ItemMatcher.Add(tag);
+            }
         }
 
         this.DisplayedItems?.ForceRefresh();

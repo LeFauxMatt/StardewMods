@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using BetterChests.Enums;
 using BetterChests.Extensions;
 using BetterChests.Models;
 using Common.Helpers;
-using Common.Helpers.ItemMatcher;
 using CommonHarmony;
+using FuryCore.Attributes;
 using FuryCore.Enums;
+using FuryCore.Helpers;
 using FuryCore.Models;
 using FuryCore.Services;
 using FuryCore.UI;
@@ -290,9 +290,10 @@ internal class SearchItems : Feature
     private void OnItemsDisplayed(object sender, ItemsDisplayedEventArgs e)
     {
         this.DisplayedItems = e;
-        e.AddFilter(this.ItemMatcher.Matches);
+        e.AddFilter(this.ItemMatcher);
     }
 
+    [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         if (ReferenceEquals(this.Menu, e.ItemGrabMenu))
@@ -301,7 +302,7 @@ internal class SearchItems : Feature
         }
 
         this.Menu = e.ItemGrabMenu;
-        if (this.Menu?.IsPlayerChestMenu(out _) != true || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.Config.SearchItems != FeatureOption.Enabled)
+        if (this.Menu?.IsPlayerChestMenu(out _) != true || !this.ManagedChests.FindChest(e.Chest, out var managedChest))
         {
             this.Menu = null;
             return;

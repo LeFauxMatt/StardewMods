@@ -1,27 +1,33 @@
 ﻿namespace BetterChests.Features;
 
 using System;
-using BetterChests.Enums;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using BetterChests.Models;
-using Common.UI;
+using CommonHarmony;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
+using FuryCore.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CategorizeChest : Feature
 {
+    private const string AutomateAssemblyType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
+    private const string AutomateModUniqueId = "Pathochild.Automate";
+
     private readonly PerScreen<ManagedChest> _managedChest = new();
     private readonly PerScreen<MenuComponent> _configureButton = new();
     private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
     private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
     private readonly Lazy<IFuryMenu> _customMenuComponents;
+    private readonly Lazy<HarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CategorizeChest"/> class.
@@ -32,7 +38,16 @@ internal class CategorizeChest : Feature
     public CategorizeChest(ModConfig config, IModHelper helper, ServiceCollection services)
         : base(config, helper, services)
     {
+        CategorizeChest.Instance = this;
         this._customMenuComponents = services.Lazy<IFuryMenu>();
+        this._harmony = services.Lazy<HarmonyHelper>(CategorizeChest.AddPatches);
+    }
+
+    private static CategorizeChest Instance { get; set; }
+
+    private HarmonyHelper Harmony
+    {
+        get => this._harmony.Value;
     }
 
     private ManagedChest ManagedChest
@@ -67,6 +82,7 @@ internal class CategorizeChest : Feature
     /// <inheritdoc />
     public override void Activate()
     {
+        this.Harmony.ApplyPatches(nameof(CategorizeChest));
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
     }
@@ -74,8 +90,29 @@ internal class CategorizeChest : Feature
     /// <inheritdoc />
     public override void Deactivate()
     {
+        this.Harmony.UnapplyPatches(nameof(CategorizeChest));
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+    }
+
+    private static void AddPatches(HarmonyHelper harmony)
+    {
+        if (CategorizeChest.Instance.Helper.ModRegistry.IsLoaded(CategorizeChest.AutomateModUniqueId))
+        {
+            harmony.AddPatch(
+                nameof(CategorizeChest),
+                new AssemblyPatch("Automate").Method(CategorizeChest.AutomateAssemblyType, "Store"),
+                typeof(CategorizeChest),
+                nameof(CategorizeChest.Automate_Store_prefix));
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    private static bool Automate_Store_prefix(Chest ___Chest, object stack)
+    {
+        var item = CategorizeChest.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
+        return !CategorizeChest.Instance.ManagedChests.FindChest(___Chest, out var managedChest) || managedChest.ItemMatcher.Matches(item);
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
@@ -87,7 +124,7 @@ internal class CategorizeChest : Feature
                 return;
 
             // Enter an Eligible ItemGrabMenu
-            case not null when this.ManagedChests.FindChest(e.Chest, out var managedChest) && managedChest.Config.CategorizeChest == FeatureOption.Enabled:
+            case not null when this.ManagedChests.FindChest(e.Chest, out var managedChest):
                 this.ConfigureButton ??= new(new(
                     new(0, 0, Game1.tileSize, Game1.tileSize),
                     this.Helper.Content.Load<Texture2D>("assets/configure.png"),

@@ -17,25 +17,25 @@ using StardewValley;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class VacuumItems : Feature
+internal class CollectItems : Feature
 {
     private readonly PerScreen<IList<ManagedChest>> _eligibleChests = new();
     private readonly Lazy<HarmonyHelper> _harmony;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VacuumItems"/> class.
+    /// Initializes a new instance of the <see cref="CollectItems"/> class.
     /// </summary>
     /// <param name="config"></param>
     /// <param name="helper"></param>
     /// <param name="services"></param>
-    public VacuumItems(ModConfig config, IModHelper helper, ServiceCollection services)
+    public CollectItems(ModConfig config, IModHelper helper, ServiceCollection services)
         : base(config, helper, services)
     {
-        VacuumItems.Instance ??= this;
-        this._harmony = services.Lazy<HarmonyHelper>(VacuumItems.AddPatches);
+        CollectItems.Instance ??= this;
+        this._harmony = services.Lazy<HarmonyHelper>(CollectItems.AddPatches);
     }
 
-    private static VacuumItems Instance { get; set; }
+    private static CollectItems Instance { get; set; }
 
     private HarmonyHelper Harmony
     {
@@ -46,7 +46,7 @@ internal class VacuumItems : Feature
     {
         get => this._eligibleChests.Value ??= (
             from item in this.ManagedChests.AccessibleChests
-            where item.Value.Config.VacuumItems == FeatureOption.Enabled
+            where item.Value.Config.CollectItems == FeatureOption.Enabled
                   && ReferenceEquals(item.Key.Player, Game1.player)
                   && item.Value.Chest.Stack == 1
             select item.Value).ToList();
@@ -56,27 +56,27 @@ internal class VacuumItems : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(VacuumItems));
+        this.Harmony.ApplyPatches(nameof(CollectItems));
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc/>
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(VacuumItems));
+        this.Harmony.UnapplyPatches(nameof(CollectItems));
         this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
     private static void AddPatches(HarmonyHelper harmony)
     {
         harmony.AddPatches(
-            nameof(VacuumItems),
+            nameof(CollectItems),
             new SavedPatch[]
             {
                 new(
                     AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                    typeof(VacuumItems),
-                    nameof(VacuumItems.Debris_collect_transpiler),
+                    typeof(CollectItems),
+                    nameof(CollectItems.Debris_collect_transpiler),
                     PatchType.Transpiler),
             });
     }
@@ -87,7 +87,7 @@ internal class VacuumItems : Feature
         {
             if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
             {
-                yield return new(OpCodes.Call, AccessTools.Method(typeof(VacuumItems), nameof(VacuumItems.AddItemToInventoryBool)));
+                yield return new(OpCodes.Call, AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
             }
             else
             {
@@ -98,12 +98,12 @@ internal class VacuumItems : Feature
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item item, bool makeActiveObject)
     {
-        if (!VacuumItems.Instance.EligibleChests.Any())
+        if (!CollectItems.Instance.EligibleChests.Any())
         {
             return farmer.addItemToInventoryBool(item, makeActiveObject);
         }
 
-        foreach (var managedChest in VacuumItems.Instance.EligibleChests)
+        foreach (var managedChest in CollectItems.Instance.EligibleChests)
         {
             item = managedChest.StashItem(item, true);
             if (item is null)

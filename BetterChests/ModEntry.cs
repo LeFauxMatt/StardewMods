@@ -48,7 +48,7 @@ public class ModEntry : Mod
                 new ResizeChest(this.Config, this.Helper, this.Services),
                 new SearchItems(this.Config, this.Helper, this.Services),
                 new StashToChest(this.Config, this.Helper, this.Services),
-                new VacuumItems(this.Config, this.Helper, this.Services),
+                new CollectItems(this.Config, this.Helper, this.Services),
             });
         this.Services.ForceEvaluation();
 

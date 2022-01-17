@@ -8,6 +8,7 @@ using Common.Extensions;
 using Common.Helpers;
 using CommonHarmony;
 using Extensions;
+using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Models;
 using FuryCore.Services;
@@ -101,7 +102,8 @@ internal class ResizeChestMenu : Feature
 
         harmony.AddPatches(
             nameof(ResizeChestMenu),
-            new SavedPatch[] {
+            new SavedPatch[]
+            {
                 new(
                     AccessTools.Constructor(typeof(ItemGrabMenu), ctorItemGrabMenu),
                     typeof(ResizeChestMenu),
@@ -359,6 +361,7 @@ internal class ResizeChestMenu : Feature
         return Game1.tileSize * (rows - 3);
     }
 
+    [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         this.Menu = e.ItemGrabMenu;

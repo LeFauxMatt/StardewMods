@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BetterChests.Enums;
-using Common.Helpers.ItemMatcher;
+using FuryCore.Helpers;
 using Interfaces;
 
 /// <inheritdoc />
@@ -25,21 +25,6 @@ internal class ChestType : IChestConfig
     }
 
     /// <inheritdoc />
-    public FeatureOption AccessCarried
-    {
-        get
-        {
-            if (this.ChestConfig.AccessCarried != FeatureOption.Default)
-            {
-                return this.ChestConfig.AccessCarried;
-            }
-
-            return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.AccessCarried;
-        }
-        set => this.ChestConfig.AccessCarried = value;
-    }
-
-    /// <inheritdoc />
     public int Capacity
     {
         get
@@ -55,36 +40,6 @@ internal class ChestType : IChestConfig
     }
 
     /// <inheritdoc />
-    public FeatureOption CarryChest
-    {
-        get
-        {
-            if (this.ChestConfig.CarryChest != FeatureOption.Default)
-            {
-                return this.ChestConfig.CarryChest;
-            }
-
-            return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.CarryChest;
-        }
-        set => this.ChestConfig.CarryChest = value;
-    }
-
-    /// <inheritdoc />
-    public FeatureOption CategorizeChest
-    {
-        get
-        {
-            if (this.ChestConfig.CategorizeChest != FeatureOption.Default)
-            {
-                return this.ChestConfig.CategorizeChest;
-            }
-
-            return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.CategorizeChest;
-        }
-        set => this.ChestConfig.CategorizeChest = value;
-    }
-
-    /// <inheritdoc />
     public FeatureOption CollectItems
     {
         get
@@ -97,51 +52,6 @@ internal class ChestType : IChestConfig
             return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.CollectItems;
         }
         set => this.ChestConfig.CollectItems = value;
-    }
-
-    /// <inheritdoc />
-    public FeatureOption ColorPicker
-    {
-        get
-        {
-            if (this.ChestConfig.ColorPicker != FeatureOption.Default)
-            {
-                return this.ChestConfig.ColorPicker;
-            }
-
-            return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.ColorPicker;
-        }
-        set => this.ChestConfig.ColorPicker = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption SearchItems
-    {
-        get
-        {
-            if (this.ChestConfig.SearchItems != FeatureOption.Default)
-            {
-                return this.ChestConfig.SearchItems;
-            }
-
-            return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.SearchItems;
-        }
-        set => this.ChestConfig.SearchItems = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption VacuumItems
-    {
-        get
-        {
-            if (this.ChestConfig.VacuumItems != FeatureOption.Default)
-            {
-                return this.ChestConfig.VacuumItems;
-            }
-
-            return this.IsDefault ? FeatureOption.Enabled : ChestType.Default.VacuumItems;
-        }
-        set => this.ChestConfig.VacuumItems = value;
     }
 
     /// <inheritdoc />
@@ -191,7 +101,10 @@ internal class ChestType : IChestConfig
         {
             this.ChestConfig.FilterItems = value;
             this.ItemMatcher.Clear();
-            this.ItemMatcher.UnionWith(this.FilterItems);
+            foreach (var filterItem in this.FilterItems)
+            {
+                this.ItemMatcher.Add(filterItem);
+            }
         }
     }
 
