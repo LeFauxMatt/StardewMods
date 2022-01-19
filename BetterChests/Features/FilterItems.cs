@@ -2,7 +2,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using CommonHarmony;
+using System.Reflection;
+using Common.Helpers;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
@@ -14,7 +15,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class FilterItems : Feature
 {
-    private const string AutomateAssemblyType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
+    private const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
     private const string AutomateModUniqueId = "Pathochild.Automate";
 
     private readonly Lazy<HarmonyHelper> _harmony;
@@ -61,11 +62,19 @@ internal class FilterItems : Feature
             typeof(FilterItems),
             nameof(FilterItems.Chest_addItem_prefix));
 
-        if (FilterItems.Instance.Helper.ModRegistry.IsLoaded(FilterItems.AutomateModUniqueId))
+        if (!FilterItems.Instance.Helper.ModRegistry.IsLoaded(FilterItems.AutomateModUniqueId))
+        {
+            return;
+        }
+
+        var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
+            .GetType(FilterItems.AutomateChestContainerType)?
+            .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+        if (storeMethod is not null)
         {
             harmony.AddPatch(
                 nameof(FilterItems),
-                new AssemblyPatch("Automate").Method(FilterItems.AutomateAssemblyType, "Store"),
+                storeMethod,
                 typeof(FilterItems),
                 nameof(FilterItems.Automate_Store_prefix));
         }

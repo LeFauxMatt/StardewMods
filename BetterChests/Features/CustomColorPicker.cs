@@ -2,9 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using BetterChests.Enums;
 using BetterChests.Models;
-using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Models;
 using FuryCore.Services;
@@ -12,7 +10,6 @@ using FuryCore.UI;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley.Menus;
 using StardewValley.Objects;

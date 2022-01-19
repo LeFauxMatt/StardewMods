@@ -10,11 +10,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\Pattern.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternEnum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\SearchableItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\DynamicGameAssets\DynamicGameAssetsIntegration.cs" />

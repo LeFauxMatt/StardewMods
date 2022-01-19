@@ -1,11 +1,10 @@
 ﻿namespace FuryCore.Events;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
-using CommonHarmony;
+using Common.Helpers.PatternPatcher;
 using FuryCore.Enums;
 using FuryCore.Models;
 using FuryCore.Services;
@@ -82,31 +81,46 @@ internal class ItemsDisplayed : SortedEventHandler<ItemsDisplayedEventArgs>
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace("Replace actualInventory with displayed inventory.");
-        var displayedItemsPatch = new PatternPatch();
-        displayedItemsPatch
-            .Find(
-                new[]
-                {
-                    new CodeInstruction(OpCodes.Ldarg_0), new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
-                })
-            .Patch(
-                delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemsDisplayed), nameof(ItemsDisplayed.DisplayedItems))));
-                })
-            .Repeat(-1);
+        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)}");
+        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
-        var patternPatches = new PatternPatches(instructions, displayedItemsPatch);
-        foreach (var patternPatch in patternPatches)
+        // ****************************************************************************************
+        // Actual Inventory Patch
+        // Replaces all actualInventory with ItemsDisplayed.DisplayedItems(actualInventory)
+        // which can filter/sort items separately from the actual inventory.
+        patcher.AddPatch(
+            new CodeInstruction[]
+            {
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
+            },
+            code =>
+            {
+                code.Add(new(OpCodes.Ldarg_0));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ItemsDisplayed), nameof(ItemsDisplayed.DisplayedItems))));
+            },
+            -1);
+
+        // Fill code buffer
+        foreach (var inCode in instructions)
         {
-            yield return patternPatch;
+            // Return patched code segments
+            foreach (var outCode in patcher.From(inCode))
+            {
+                yield return outCode;
+            }
         }
 
-        if (!patternPatches.Done)
+        // Return remaining code
+        foreach (var outCode in patcher.FlushBuffer())
         {
-            Log.Warn($"Failed to apply all patches in {typeof(ItemsDisplayed)}::{nameof(ItemsDisplayed.InventoryMenu_draw_transpiler)}");
+            yield return outCode;
+        }
+
+        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
+        if (patcher.AppliedPatches < patcher.TotalPatches)
+        {
+            Log.Warn("Failed to applied all patches!");
         }
     }
 

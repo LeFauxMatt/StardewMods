@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using BetterChests.Enums;
-using StardewValley.Menus;
 
 /// <summary>
 /// 

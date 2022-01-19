@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.Extensions;
 using Common.Helpers;
-using CommonHarmony;
+using Common.Helpers.PatternPatcher;
 using Extensions;
 using FuryCore.Attributes;
 using FuryCore.Enums;
@@ -126,98 +126,130 @@ internal class ResizeChestMenu : Feature
     [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Boxing allocation is required for Harmony.")]
     private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace("Changing jump condition from Beq 36 to Bge 10.");
-        var jumpPatch = new PatternPatch();
-        jumpPatch
-            .Find(
-                new[]
-                {
-                    new CodeInstruction(OpCodes.Isinst, typeof(Chest)), new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity))), new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)36), new CodeInstruction(OpCodes.Beq_S),
-                })
-            .Patch(
-                delegate(LinkedList<CodeInstruction> list)
-                {
-                    var jumpCode = list.Last?.Value;
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.AddLast(new CodeInstruction(OpCodes.Ldc_I4_S, (sbyte)10));
-                    list.AddLast(new CodeInstruction(OpCodes.Bge_S, jumpCode?.operand));
-                });
+        Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.ctor");
+        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
-        Log.Trace("Overriding default values for capacity and rows.");
-        var capacityPatch = new PatternPatch();
-        capacityPatch
-            .Find(
-                new[]
-                {
-                    new CodeInstruction(
-                        OpCodes.Newobj,
-                        AccessTools.Constructor(
-                            typeof(InventoryMenu),
-                            new[]
-                            {
-                                typeof(int), typeof(int), typeof(bool), typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool),
-                            })),
-                    new CodeInstruction(OpCodes.Stfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                })
-            .Find(
-                new[]
-                {
-                    new CodeInstruction(OpCodes.Ldc_I4_M1), new CodeInstruction(OpCodes.Ldc_I4_3),
-                })
-            .Patch(
-                delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.RemoveLast();
-                    list.RemoveLast();
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuCapacity))));
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuRows))));
-                });
+        // ****************************************************************************************
+        // Jump Condition Patch
+        // Original:
+        //      if (source == 1 && sourceItem != null && sourceItem is Chest && (sourceItem as Chest).GetActualCapacity() != 36)
+        // Patched:
+        //      if (source == 1 && sourceItem != null && sourceItem is Chest && (sourceItem as Chest).GetActualCapacity() >= 10)
+        //
+        // This forces (InventoryMenu) ItemsToGrabMenu to be instantiated with the a capacity of 36
+        // and prevents large capacity chests from freezing the game and leaking memory
+        patcher.AddPatch(
+            new CodeInstruction[]
+            {
+                new(OpCodes.Isinst, typeof(Chest)),
+                new(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity))),
+                new(OpCodes.Ldc_I4_S, (sbyte)36),
+                new(OpCodes.Beq_S),
+            },
+            code =>
+            {
+                Log.Trace("Changing jump condition from Beq 36 to Bge 10.", true);
+                var top = code[^1];
+                code.RemoveAt(code.Count - 1);
+                code.RemoveAt(code.Count - 1);
+                code.Add(new(OpCodes.Ldc_I4_S, (sbyte)10));
+                code.Add(new(OpCodes.Bge_S, top?.operand));
+            });
 
-        var patternPatches = new PatternPatches(instructions);
-        patternPatches.AddPatch(jumpPatch);
-        patternPatches.AddPatch(capacityPatch);
+        // Original:
+        //      this.ItemsToGrabMenu = new InventoryMenu(base.xPositionOnScreen + 32, base.yPositionOnScreen, false, inventory, highlightFunction, -1, 3, 0, 0, true);
+        // Patched:
+        //      this.ItemsToGrabMenu = new InventoryMenu(base.xPositionOnScreen + 32, base.yPositionOnScreen, false, inventory, highlightFunction, ResizeChestMenu.GetMenuCapacity(), ResizeChestMenu.GetMenuRows(), 0, 0, true);
+        //
+        // This replaces the default capacity/rows of -1 and 3 with ResizeChestMenu methods to
+        // allow customized capacity and rows
+        patcher.AddSeek(
+            new CodeInstruction[]
+            {
+                new(OpCodes.Newobj, AccessTools.Constructor(typeof(InventoryMenu), new[] { typeof(int), typeof(int), typeof(bool), typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) })),
+                new(OpCodes.Stfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+            });
+        patcher.AddPatch(
+            new CodeInstruction[]
+            {
+                new(OpCodes.Ldc_I4_M1),
+                new(OpCodes.Ldc_I4_3),
+            },
+            code =>
+            {
+                Log.Trace("Overriding default values for capacity and rows.", true);
+                code.RemoveAt(code.Count - 1);
+                code.RemoveAt(code.Count - 1);
+                code.Add(new(OpCodes.Ldarg_0));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuCapacity))));
+                code.Add(new(OpCodes.Ldarg_0));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuRows))));
+            });
 
-        foreach (var patternPatch in patternPatches)
+        // Fill code buffer
+        foreach (var inCode in instructions)
         {
-            yield return patternPatch;
+            // Return patched code segments
+            foreach (var outCode in patcher.From(inCode))
+            {
+                yield return outCode;
+            }
         }
 
-        if (!patternPatches.Done)
+        // Return remaining code
+        foreach (var outCode in patcher.FlushBuffer())
         {
-            Log.Warn($"Failed to apply all patches in {typeof(ResizeChestMenu)}::{nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler)}");
+            yield return outCode;
+        }
+
+        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
+        if (patcher.AppliedPatches < patcher.TotalPatches)
+        {
+            Log.Warn("Failed to applied all patches!");
         }
     }
 
     /// <summary>Move/resize backpack by expanded menu height.</summary>
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace("Moving backpack icon down by expanded menu extra height.");
-        var moveBackpackPatch = new PatternPatch();
-        moveBackpackPatch
-            .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
-            .Find(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
-            .Patch(
-                delegate(LinkedList<CodeInstruction> list)
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                })
-            .Repeat(3);
+        Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)}");
+        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
-        var patternPatches = new PatternPatches(instructions, moveBackpackPatch);
+        // ****************************************************************************************
+        // Draw Backpack Patch
+        // This adds ResizeChestMenu.GetMenuOffset() to the y-coordinate of the backpack sprite
+        patcher.AddSeek(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
+        patcher.AddPatch(
+            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+            code =>
+            {
+                Log.Trace("Moving backpack icon down by expanded menu extra height.", true);
+                code.Add(new(OpCodes.Ldarg_0));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
+                code.Add(new(OpCodes.Add));
+            },
+            2);
 
-        foreach (var patternPatch in patternPatches)
+        // Fill code buffer
+        foreach (var inCode in instructions)
         {
-            yield return patternPatch;
+            // Return patched code segments
+            foreach (var outCode in patcher.From(inCode))
+            {
+                yield return outCode;
+            }
         }
 
-        if (!patternPatches.Done)
+        // Return remaining code
+        foreach (var outCode in patcher.FlushBuffer())
         {
-            Log.Warn($"Failed to apply all patches in {typeof(ItemGrabMenu)}::{nameof(ItemGrabMenu.draw)}.");
+            yield return outCode;
+        }
+
+        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
+        if (patcher.AppliedPatches < patcher.TotalPatches)
+        {
+            Log.Warn("Failed to applied all patches!");
         }
     }
 
@@ -225,70 +257,72 @@ internal class ResizeChestMenu : Feature
     [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Boxing allocation is required for Harmony.")]
     private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace("Moving bottom dialogue box down by expanded menu height.");
-        var moveDialogueBoxPatch = new PatternPatch();
-        moveDialogueBoxPatch
-            .Find(
-                new[]
-                {
-                    new CodeInstruction(
-                        OpCodes.Ldfld,
-                        AccessTools.Field(
-                            typeof(IClickableMenu),
-                            nameof(IClickableMenu.yPositionOnScreen))),
-                    new CodeInstruction(
-                        OpCodes.Ldsfld,
-                        AccessTools.Field(
-                            typeof(IClickableMenu),
-                            nameof(IClickableMenu.borderWidth))),
-                    new CodeInstruction(OpCodes.Add),
-                    new CodeInstruction(
-                        OpCodes.Ldsfld,
-                        AccessTools.Field(
-                            typeof(IClickableMenu),
-                            nameof(IClickableMenu.spaceToClearTopBorder))),
-                    new CodeInstruction(OpCodes.Add),
-                    new CodeInstruction(
-                        OpCodes.Ldc_I4_S,
-                        (sbyte)64),
-                    new CodeInstruction(OpCodes.Add),
-                })
-            .Patch(
-                list =>
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                });
+        Log.Trace($"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)}", true);
+        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
-        Log.Trace("Shrinking bottom dialogue box height by expanded menu height.");
-        var resizeDialogueBoxPatch = new PatternPatch();
-        resizeDialogueBoxPatch
-            .Find(
-                new[]
-                {
-                    new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))), new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))), new CodeInstruction(OpCodes.Add), new CodeInstruction(OpCodes.Ldc_I4, 192), new CodeInstruction(OpCodes.Add),
-                })
-            .Patch(
-                list =>
-                {
-                    list.AddLast(new CodeInstruction(OpCodes.Ldarg_0));
-                    list.AddLast(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
-                    list.AddLast(new CodeInstruction(OpCodes.Add));
-                });
+        // ****************************************************************************************
+        // Move Dialogue Patch
+        // This adds ResizeChestMenu.GetMenuOffset() to the y-coordinate of the inventory dialogue
+        patcher.AddPatch(
+            new CodeInstruction[]
+            {
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+                new(OpCodes.Add),
+                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+                new(OpCodes.Add),
+                new(OpCodes.Ldc_I4_S, (sbyte)64),
+                new(OpCodes.Add),
+            },
+            code =>
+            {
+                Log.Trace("Moving bottom dialogue box down by expanded menu height.", true);
+                code.Add(new(OpCodes.Ldarg_0));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
+                code.Add(new(OpCodes.Add));
+            });
 
-        var patternPatches = new PatternPatches(instructions);
-        patternPatches.AddPatch(moveDialogueBoxPatch);
-        patternPatches.AddPatch(resizeDialogueBoxPatch);
+        // ****************************************************************************************
+        // Shrink Dialogue Patch
+        // This subtracts ResizeChestMenu.GetMenuOffset() from the height of the inventory dialogue
+        patcher.AddPatch(
+            new CodeInstruction[]
+            {
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
+                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+                new(OpCodes.Add),
+                new(OpCodes.Ldc_I4, 192),
+                new(OpCodes.Add),
+            },
+            code =>
+            {
+                Log.Trace("Shrinking bottom dialogue box height by expanded menu height.", true);
+                code.Add(new(OpCodes.Ldarg_0));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
+                code.Add(new(OpCodes.Add));
+            });
 
-        foreach (var patternPatch in patternPatches)
+        // Fill code buffer
+        foreach (var inCode in instructions)
         {
-            yield return patternPatch;
+            // Return patched code segments
+            foreach (var outCode in patcher.From(inCode))
+            {
+                yield return outCode;
+            }
         }
 
-        if (!patternPatches.Done)
+        // Return remaining code
+        foreach (var outCode in patcher.FlushBuffer())
         {
-            Log.Warn($"Failed to apply all patches in {typeof(MenuWithInventory)}::{nameof(MenuWithInventory.draw)}.");
+            yield return outCode;
+        }
+
+        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
+        if (patcher.AppliedPatches < patcher.TotalPatches)
+        {
+            Log.Warn("Failed to applied all patches!");
         }
     }
 

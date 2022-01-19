@@ -69,7 +69,21 @@ internal static class Log
     /// <param name="message">The message to log.</param>
     public static void Verbose(string message)
     {
-        Log.Monitor.VerboseLog(message);
+        if (Log.Monitor.IsVerbose)
+        {
+            Log.Monitor.VerboseLog(message);
+        }
+    }
+
+    /// <summary>Logs a message that only appears when <see cref="IMonitor.IsVerbose" /> is enabled.</summary>
+    /// <param name="message">The message to log.</param>
+    /// <param name="args">The arguments to pass.</param>
+    public static void Verbose(string message, params object[] args)
+    {
+        if (Log.Monitor.IsVerbose)
+        {
+            Log.Monitor.VerboseLog(string.Format(message, args));
+        }
     }
 
     private static void LogMessage(string message, bool once, LogLevel logLevel)

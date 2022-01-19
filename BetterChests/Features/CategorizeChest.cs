@@ -2,10 +2,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using BetterChests.Models;
-using CommonHarmony;
+using Common.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
@@ -19,7 +20,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class CategorizeChest : Feature
 {
-    private const string AutomateAssemblyType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
+    private const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
     private const string AutomateModUniqueId = "Pathochild.Automate";
 
     private readonly PerScreen<ManagedChest> _managedChest = new();
@@ -97,11 +98,19 @@ internal class CategorizeChest : Feature
 
     private static void AddPatches(HarmonyHelper harmony)
     {
-        if (CategorizeChest.Instance.Helper.ModRegistry.IsLoaded(CategorizeChest.AutomateModUniqueId))
+        if (!CategorizeChest.Instance.Helper.ModRegistry.IsLoaded(CategorizeChest.AutomateModUniqueId))
+        {
+            return;
+        }
+
+        var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
+            .GetType(CategorizeChest.AutomateChestContainerType)?
+            .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+        if (storeMethod is not null)
         {
             harmony.AddPatch(
                 nameof(CategorizeChest),
-                new AssemblyPatch("Automate").Method(CategorizeChest.AutomateAssemblyType, "Store"),
+                storeMethod,
                 typeof(CategorizeChest),
                 nameof(CategorizeChest.Automate_Store_prefix));
         }

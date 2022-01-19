@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using BetterChests.Enums;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Models;

@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 
-public static class ColorHelper
+internal static class ColorHelper
 {
     public static Color FromTag(string colorTag)
     {
