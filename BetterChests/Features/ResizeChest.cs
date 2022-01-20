@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Services;
 using HarmonyLib;
 using Models;
@@ -12,7 +13,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class ResizeChest : Feature
 {
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResizeChest"/> class.
@@ -24,12 +25,21 @@ internal class ResizeChest : Feature
         : base(config, helper, services)
     {
         ResizeChest.Instance = this;
-        this._harmony = services.Lazy<HarmonyHelper>(ResizeChest.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                    typeof(ResizeChest),
+                    nameof(ResizeChest.Chest_GetActualCapacity_postfix),
+                    PatchType.Postfix);
+            });
     }
 
     private static ResizeChest Instance { get; set; }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -37,23 +47,13 @@ internal class ResizeChest : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(ResizeChest));
+        this.Harmony.ApplyPatches(this.Id);
     }
 
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(ResizeChest));
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatch(
-            nameof(ResizeChest),
-            AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-            typeof(ResizeChest),
-            nameof(ResizeChest.Chest_GetActualCapacity_postfix),
-            PatchType.Postfix);
+        this.Harmony.UnapplyPatches(this.Id);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

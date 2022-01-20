@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
@@ -19,7 +20,7 @@ using StardewValley.Objects;
 internal class CarryChest : Feature
 {
     private readonly PerScreen<Chest> _chest = new();
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CarryChest"/> class.
@@ -30,7 +31,25 @@ internal class CarryChest : Feature
     public CarryChest(ModConfig config, IModHelper helper, ServiceCollection services)
         : base(config, helper, services)
     {
-        this._harmony = services.Lazy<HarmonyHelper>(CarryChest.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatches(
+                    this.Id,
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.Item_canStackWith_postfix),
+                            PatchType.Postfix),
+                        new(
+                            AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.Utility_iterateChestsAndStorage_postfix),
+                            PatchType.Postfix),
+                    });
+            });
     }
 
     private Chest Chest
@@ -39,7 +58,7 @@ internal class CarryChest : Feature
         set => this._chest.Value = value;
     }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -47,7 +66,7 @@ internal class CarryChest : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(CarryChest));
+        this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
@@ -56,29 +75,10 @@ internal class CarryChest : Feature
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(CarryChest));
+        this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.World.ObjectListChanged -= this.OnObjectListChanged;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatches(
-            nameof(CarryChest),
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Item_canStackWith_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Utility_iterateChestsAndStorage_postfix),
-                    PatchType.Postfix),
-            });
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

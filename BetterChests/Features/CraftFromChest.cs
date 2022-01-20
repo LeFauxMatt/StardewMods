@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using BetterChests.Enums;
 using Common.Helpers;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
@@ -23,7 +24,7 @@ using StardewValley.Objects;
 internal class CraftFromChest : Feature
 {
     private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CraftFromChest"/> class.
@@ -34,10 +35,28 @@ internal class CraftFromChest : Feature
     public CraftFromChest(ModConfig config, IModHelper helper, ServiceCollection services)
         : base(config, helper, services)
     {
-        this._harmony = services.Lazy<HarmonyHelper>(CraftFromChest.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatches(
+                    this.Id,
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
+                            typeof(CraftFromChest),
+                            nameof(CraftFromChest.CraftingRecipe_consumeIngredients_transpiler),
+                            PatchType.Transpiler),
+                        new(
+                            AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                            typeof(CraftFromChest),
+                            nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
+                            PatchType.Postfix),
+                    });
+            });
     }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -45,7 +64,7 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(CraftFromChest));
+        this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -53,27 +72,9 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(CraftFromChest));
+        this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatches(
-            nameof(CraftFromChest),
-            new SavedPatch[] {
-                new (
-                    AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
-                    typeof(CraftFromChest),
-                    nameof(CraftFromChest.CraftingRecipe_consumeIngredients_transpiler),
-                    PatchType.Transpiler),
-                new (
-                    AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                    typeof(CraftFromChest),
-                    nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
-                    PatchType.Postfix),
-            });
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -190,8 +191,8 @@ internal class CraftFromChest : Feature
         private void SuccessCallback()
         {
             this._timeOut = 0;
-            var width = 800 + IClickableMenu.borderWidth * 2;
-            var height = 600 + IClickableMenu.borderWidth * 2;
+            var width = 800 + (IClickableMenu.borderWidth * 2);
+            var height = 600 + (IClickableMenu.borderWidth * 2);
             var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
             Game1.activeClickableMenu = new CraftingPage((int)x, (int)y, width, height, false, true, this._chests)
             {

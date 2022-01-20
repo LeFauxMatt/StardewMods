@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using BetterChests.Models;
-using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using FuryCore.Attributes;
@@ -35,7 +34,7 @@ internal class SearchItems : Feature
     private readonly PerScreen<TextBox> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
     private readonly PerScreen<ClickableComponent> _searchArea = new();
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
@@ -48,13 +47,36 @@ internal class SearchItems : Feature
         : base(config, helper, services)
     {
         SearchItems.Instance = this;
-        this._harmony = services.Lazy<HarmonyHelper>(SearchItems.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                var drawMenuWithInventory = new[]
+                {
+                    typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+                };
+
+                harmony.AddPatches(
+                    this.Id,
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                            typeof(SearchItems),
+                            nameof(SearchItems.ItemGrabMenu_draw_transpiler),
+                            PatchType.Transpiler),
+                        new(
+                            AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
+                            typeof(SearchItems),
+                            nameof(SearchItems.MenuWithInventory_draw_transpiler),
+                            PatchType.Transpiler),
+                    });
+            });
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static SearchItems Instance { get; set; }
 
-    private HarmonyHelper HarmonyHelper
+    private IHarmonyHelper HarmonyHelper
     {
         get => this._harmony.Value;
     }
@@ -101,7 +123,7 @@ internal class SearchItems : Feature
     /// <inheritdoc/>
     public override void Activate()
     {
-        this.HarmonyHelper.ApplyPatches(nameof(SearchItems));
+        this.HarmonyHelper.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
@@ -111,35 +133,11 @@ internal class SearchItems : Feature
     /// <inheritdoc/>
     public override void Deactivate()
     {
-        this.HarmonyHelper.UnapplyPatches(nameof(SearchItems));
+        this.HarmonyHelper.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        var drawMenuWithInventory = new[]
-        {
-            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
-        };
-
-        harmony.AddPatches(
-            nameof(SearchItems),
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                    typeof(SearchItems),
-                    nameof(SearchItems.ItemGrabMenu_draw_transpiler),
-                    PatchType.Transpiler),
-                new(
-                    AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
-                    typeof(SearchItems),
-                    nameof(SearchItems.MenuWithInventory_draw_transpiler),
-                    PatchType.Transpiler),
-            });
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)

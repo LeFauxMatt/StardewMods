@@ -25,13 +25,12 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class ResizeChestMenu : Feature
 {
-    private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<MenuComponent> _upArrow = new();
     private readonly PerScreen<MenuComponent> _downArrow = new();
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResizeChestMenu"/> class.
@@ -43,14 +42,47 @@ internal class ResizeChestMenu : Feature
         : base(config, helper, services)
     {
         ResizeChestMenu.Instance = this;
-        this._harmony = services.Lazy<HarmonyHelper>(ResizeChestMenu.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                var ctorItemGrabMenu = new[]
+                {
+                    typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+                };
+
+                var drawMenuWithInventory = new[]
+                {
+                    typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+                };
+
+                harmony.AddPatches(
+                    this.Id,
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Constructor(typeof(ItemGrabMenu), ctorItemGrabMenu),
+                            typeof(ResizeChestMenu),
+                            nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler),
+                            PatchType.Transpiler),
+                        new(
+                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                            typeof(ResizeChestMenu),
+                            nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
+                            PatchType.Transpiler),
+                        new(
+                            AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
+                            typeof(ResizeChestMenu),
+                            nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler),
+                            PatchType.Transpiler),
+                    });
+            });
         this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static ResizeChestMenu Instance { get; set; }
 
-    private HarmonyHelper HarmonyHelper
+    private IHarmonyHelper HarmonyHelper
     {
         get => this._harmony.Value;
     }
@@ -84,7 +116,7 @@ internal class ResizeChestMenu : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.HarmonyHelper.ApplyPatches(nameof(ResizeChestMenu));
+        this.HarmonyHelper.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
@@ -94,45 +126,11 @@ internal class ResizeChestMenu : Feature
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.HarmonyHelper.UnapplyPatches(nameof(ResizeChestMenu));
+        this.HarmonyHelper.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        var ctorItemGrabMenu = new[]
-        {
-            typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
-        };
-
-        var drawMenuWithInventory = new[]
-        {
-            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
-        };
-
-        harmony.AddPatches(
-            nameof(ResizeChestMenu),
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Constructor(typeof(ItemGrabMenu), ctorItemGrabMenu),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler),
-                    PatchType.Transpiler),
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
-                    PatchType.Transpiler),
-                new(
-                    AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler),
-                    PatchType.Transpiler),
-            });
     }
 
     /// <summary>Generate additional slots/rows for top inventory menu.</summary>

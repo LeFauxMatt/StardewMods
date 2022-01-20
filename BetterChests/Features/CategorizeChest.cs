@@ -28,7 +28,7 @@ internal class CategorizeChest : Feature
     private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
     private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
     private readonly Lazy<IMenuComponents> _customMenuComponents;
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CategorizeChest"/> class.
@@ -41,12 +41,31 @@ internal class CategorizeChest : Feature
     {
         CategorizeChest.Instance = this;
         this._customMenuComponents = services.Lazy<IMenuComponents>();
-        this._harmony = services.Lazy<HarmonyHelper>(CategorizeChest.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                if (!CategorizeChest.Instance.Helper.ModRegistry.IsLoaded(CategorizeChest.AutomateModUniqueId))
+                {
+                    return;
+                }
+
+                var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
+                    .GetType(CategorizeChest.AutomateChestContainerType)?
+                    .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+                if (storeMethod is not null)
+                {
+                    harmony.AddPatch(
+                        this.Id,
+                        storeMethod,
+                        typeof(CategorizeChest),
+                        nameof(CategorizeChest.Automate_Store_prefix));
+                }
+            });
     }
 
     private static CategorizeChest Instance { get; set; }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -83,7 +102,7 @@ internal class CategorizeChest : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(CategorizeChest));
+        this.Harmony.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
     }
@@ -91,29 +110,9 @@ internal class CategorizeChest : Feature
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(CategorizeChest));
+        this.Harmony.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        if (!CategorizeChest.Instance.Helper.ModRegistry.IsLoaded(CategorizeChest.AutomateModUniqueId))
-        {
-            return;
-        }
-
-        var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
-            .GetType(CategorizeChest.AutomateChestContainerType)?
-            .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-        if (storeMethod is not null)
-        {
-            harmony.AddPatch(
-                nameof(CategorizeChest),
-                storeMethod,
-                typeof(CategorizeChest),
-                nameof(CategorizeChest.Automate_Store_prefix));
-        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

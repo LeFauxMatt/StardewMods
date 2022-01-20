@@ -14,6 +14,7 @@ internal class CustomEvents : IFuryEvents, IService
 {
     private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
     private readonly MenuComponentPressed _menuComponentPressed;
+    private readonly MenuScrolled _menuScrolled;
     private readonly RenderedItemGrabMenu _renderedItemGrabMenu;
     private readonly RenderingItemGrabMenu _renderingItemGrabMenu;
 
@@ -26,6 +27,7 @@ internal class CustomEvents : IFuryEvents, IService
     {
         this._itemGrabMenuChanged = new(helper.Events.Display, services);
         this._menuComponentPressed = new(helper, services);
+        this._menuScrolled = new();
         this._renderedItemGrabMenu = new(helper.Events.Display, services);
         this._renderingItemGrabMenu = new(helper.Events.Display, services);
     }
@@ -42,6 +44,13 @@ internal class CustomEvents : IFuryEvents, IService
     {
         add => this._menuComponentPressed.Add(value);
         remove => this._menuComponentPressed.Remove(value);
+    }
+
+    /// <inheritdoc/>
+    public event EventHandler<MenuScrolledEventArgs> MenuScrolled
+    {
+        add => this._menuScrolled.Add(value);
+        remove => this._menuScrolled.Remove(value);
     }
 
     /// <inheritdoc/>

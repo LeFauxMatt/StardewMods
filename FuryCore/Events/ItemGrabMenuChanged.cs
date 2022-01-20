@@ -30,19 +30,20 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
             {
+                var id = $"{ModEntry.ModUniqueId}.{nameof(ItemGrabMenuChanged)}";
                 var ctorParams = new[]
                 {
                     typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
                 };
 
                 harmonyHelper.AddPatch(
-                    nameof(ItemGrabMenuChanged),
+                    id,
                     AccessTools.Constructor(typeof(ItemGrabMenu), ctorParams),
                     typeof(ItemGrabMenuChanged),
                     nameof(ItemGrabMenuChanged.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix);
 
-                harmonyHelper.ApplyPatches(nameof(ItemGrabMenuChanged));
+                harmonyHelper.ApplyPatches(id);
             });
 
         display.MenuChanged += this.OnMenuChanged;

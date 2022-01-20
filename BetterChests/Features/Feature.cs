@@ -6,6 +6,7 @@ using FuryCore.Services;
 using Models;
 using Services;
 using StardewModdingAPI;
+using StardewValley.Menus;
 
 /// <inheritdoc />
 internal abstract class Feature : IService
@@ -21,11 +22,14 @@ internal abstract class Feature : IService
     /// <param name="services"></param>
     protected Feature(ModConfig config, IModHelper helper, ServiceCollection services)
     {
+        this.Id = $"{ModEntry.ModUniqueId}.{this.GetType().Name}";
         this.Config = config;
         this.Helper = helper;
         this._managedChests = services.Lazy<ManagedChests>();
         this._furyEvents = services.Lazy<IFuryEvents>();
     }
+
+    protected string Id { get; }
 
     protected IFuryEvents FuryEvents
     {

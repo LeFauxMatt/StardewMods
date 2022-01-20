@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
+using FuryCore.Interfaces;
 using FuryCore.Services;
 using HarmonyLib;
 using Models;
@@ -15,7 +16,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class OpenHeldChest : Feature
 {
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenHeldChest"/> class.
@@ -26,10 +27,18 @@ internal class OpenHeldChest : Feature
     public OpenHeldChest(ModConfig config, IModHelper helper, ServiceCollection services)
         : base(config, helper, services)
     {
-        this._harmony = services.Lazy<HarmonyHelper>(OpenHeldChest.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                    typeof(OpenHeldChest),
+                    nameof(OpenHeldChest.Chest_addItem_prefix));
+            });
     }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -37,7 +46,7 @@ internal class OpenHeldChest : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(OpenHeldChest));
+        this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
@@ -45,18 +54,9 @@ internal class OpenHeldChest : Feature
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(OpenHeldChest));
+        this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatch(
-            nameof(OpenHeldChest),
-            AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-            typeof(OpenHeldChest),
-            nameof(OpenHeldChest.Chest_addItem_prefix));
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
@@ -94,7 +94,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        if (!this.ManagedChests.FindChest(chest, out var managedChest))
+        if (!this.ManagedChests.FindChest(chest, out _))
         {
             return;
         }

@@ -44,13 +44,15 @@ internal class MenuComponents : IMenuComponents, IService
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
             {
+                var id = $"{ModEntry.ModUniqueId}.{nameof(MenuComponents)}";
+
                 harmonyHelper.AddPatch(
-                    nameof(MenuComponents),
+                    id,
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
                     typeof(MenuComponents),
                     nameof(MenuComponents.ItemGrabMenu_RepositionSideButtons_prefix));
 
-                harmonyHelper.ApplyPatches(nameof(MenuComponents));
+                harmonyHelper.ApplyPatches(id);
             });
 
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;

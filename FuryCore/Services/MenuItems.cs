@@ -50,14 +50,16 @@ internal class MenuItems : IMenuItems, IService
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
             {
+                var id = $"{ModEntry.ModUniqueId}.{nameof(MenuItems)}";
+
                 harmonyHelper.AddPatch(
-                    nameof(MenuItems),
+                    id,
                     AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
                     typeof(MenuItems),
                     nameof(MenuItems.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler);
 
-                harmonyHelper.ApplyPatches(nameof(MenuItems));
+                harmonyHelper.ApplyPatches(id);
             });
 
         services.Lazy<CustomEvents>(events =>

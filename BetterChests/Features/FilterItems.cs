@@ -23,7 +23,7 @@ internal class FilterItems : Feature
     private const string AutomateModUniqueId = "Pathochild.Automate";
 
     private readonly PerScreen<ItemGrabMenu> _menu = new();
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
@@ -36,13 +36,38 @@ internal class FilterItems : Feature
         : base(config, helper, services)
     {
         FilterItems.Instance = this;
-        this._harmony = services.Lazy<HarmonyHelper>(FilterItems.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                    typeof(FilterItems),
+                    nameof(FilterItems.Chest_addItem_prefix));
+
+                if (!FilterItems.Instance.Helper.ModRegistry.IsLoaded(FilterItems.AutomateModUniqueId))
+                {
+                    return;
+                }
+
+                var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
+                    .GetType(FilterItems.AutomateChestContainerType)?
+                    .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+                if (storeMethod is not null)
+                {
+                    harmony.AddPatch(
+                        this.Id,
+                        storeMethod,
+                        typeof(FilterItems),
+                        nameof(FilterItems.Automate_Store_prefix));
+                }
+            });
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static FilterItems Instance { get; set; }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -61,41 +86,15 @@ internal class FilterItems : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(FilterItems));
+        this.Harmony.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(FilterItems));
+        this.Harmony.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatch(
-            nameof(FilterItems),
-            AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-            typeof(FilterItems),
-            nameof(FilterItems.Chest_addItem_prefix));
-
-        if (!FilterItems.Instance.Helper.ModRegistry.IsLoaded(FilterItems.AutomateModUniqueId))
-        {
-            return;
-        }
-
-        var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
-            .GetType(FilterItems.AutomateChestContainerType)?
-            .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-        if (storeMethod is not null)
-        {
-            harmony.AddPatch(
-                nameof(FilterItems),
-                storeMethod,
-                typeof(FilterItems),
-                nameof(FilterItems.Automate_Store_prefix));
-        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

@@ -8,11 +8,14 @@ using StardewModdingAPI;
 /// <inheritdoc />
 public class ModEntry : Mod
 {
+    internal static string ModUniqueId { get; private set; }
+
     private ServiceCollection Services { get; } = new();
 
     /// <inheritdoc/>
     public override void Entry(IModHelper helper)
     {
+        ModEntry.ModUniqueId = this.ModManifest.UniqueID;
         Log.Init(this.Monitor);
 
         this.Services.AddRange(
@@ -20,7 +23,7 @@ public class ModEntry : Mod
             {
                 new MenuComponents(this.Helper, this.Services),
                 new CustomEvents(this.Helper, this.Services),
-                new HarmonyHelper(this.ModManifest),
+                new HarmonyHelper(),
                 new MenuItems(this.Helper.Events, this.Services),
             });
 

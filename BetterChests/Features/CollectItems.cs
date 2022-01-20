@@ -7,6 +7,7 @@ using System.Reflection.Emit;
 using BetterChests.Enums;
 using BetterChests.Models;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
@@ -20,7 +21,7 @@ using StardewValley.Objects;
 internal class CollectItems : Feature
 {
     private readonly PerScreen<IList<ManagedChest>> _eligibleChests = new();
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CollectItems"/> class.
@@ -32,12 +33,25 @@ internal class CollectItems : Feature
         : base(config, helper, services)
     {
         CollectItems.Instance ??= this;
-        this._harmony = services.Lazy<HarmonyHelper>(CollectItems.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatches(
+                    this.Id,
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
+                            typeof(CollectItems),
+                            nameof(CollectItems.Debris_collect_transpiler),
+                            PatchType.Transpiler),
+                    });
+            });
     }
 
     private static CollectItems Instance { get; set; }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -56,29 +70,15 @@ internal class CollectItems : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(CollectItems));
+        this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc/>
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(CollectItems));
+        this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatches(
-            nameof(CollectItems),
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                    typeof(CollectItems),
-                    nameof(CollectItems.Debris_collect_transpiler),
-                    PatchType.Transpiler),
-            });
     }
 
     private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)

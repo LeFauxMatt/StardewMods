@@ -13,6 +13,8 @@ using StardewModdingAPI.Events;
 /// <inheritdoc />
 public class ModEntry : Mod
 {
+    internal static string ModUniqueId { get; private set; }
+
     private ModConfig Config { get; set; }
 
     private ServiceCollection Services { get; } = new();
@@ -20,6 +22,7 @@ public class ModEntry : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        ModEntry.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
         Log.Init(this.Monitor);
 
@@ -29,9 +32,6 @@ public class ModEntry : Mod
         this.Services.AddRange(
             new IService[]
             {
-                // Common Services
-                new HarmonyHelper(this.ModManifest),
-
                 // Mod Services
                 new ManagedChests(this.Config, this.Helper),
                 new ModConfigMenu(this.Config, this.Helper, this.ModManifest),

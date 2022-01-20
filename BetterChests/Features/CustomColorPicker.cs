@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using BetterChests.Models;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using FuryCore.UI;
@@ -20,7 +21,7 @@ internal class CustomColorPicker : Feature
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
     private readonly PerScreen<ManagedChest> _managedChest = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
-    private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomColorPicker"/> class.
@@ -32,12 +33,40 @@ internal class CustomColorPicker : Feature
         : base(config, helper, services)
     {
         CustomColorPicker.Instance = this;
-        this._harmony = services.Lazy<HarmonyHelper>(CustomColorPicker.AddPatches);
+        this._harmony = services.Lazy<IHarmonyHelper>(
+            harmony =>
+            {
+                harmony.AddPatches(
+                    this.Id,
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getCurrentColor)),
+                            typeof(CustomColorPicker),
+                            nameof(CustomColorPicker.DiscreteColorPicker_GetCurrentColor_prefix),
+                            PatchType.Prefix),
+                        new(
+                            AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
+                            typeof(CustomColorPicker),
+                            nameof(CustomColorPicker.DiscreteColorPicker_GetColorFromSelection_prefix),
+                            PatchType.Prefix),
+                        new(
+                            AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
+                            typeof(CustomColorPicker),
+                            nameof(CustomColorPicker.DiscreteColorPicker_GetSelectionFromColor_prefix),
+                            PatchType.Prefix),
+                        new(
+                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                            typeof(CustomColorPicker),
+                            nameof(CustomColorPicker.ItemGrabMenu_setSourceItem_postfix),
+                            PatchType.Postfix),
+                    });
+            });
     }
 
     private static CustomColorPicker Instance { get; set; }
 
-    private HarmonyHelper Harmony
+    private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
@@ -63,44 +92,15 @@ internal class CustomColorPicker : Feature
     /// <inheritdoc />
     public override void Activate()
     {
-        this.Harmony.ApplyPatches(nameof(CustomColorPicker));
+        this.Harmony.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     public override void Deactivate()
     {
-        this.Harmony.UnapplyPatches(nameof(CustomColorPicker));
+        this.Harmony.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-    }
-
-    private static void AddPatches(HarmonyHelper harmony)
-    {
-        harmony.AddPatches(
-            nameof(CustomColorPicker),
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getCurrentColor)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.DiscreteColorPicker_GetCurrentColor_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.DiscreteColorPicker_GetColorFromSelection_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.DiscreteColorPicker_GetSelectionFromColor_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.ItemGrabMenu_setSourceItem_postfix),
-                    PatchType.Postfix),
-            });
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

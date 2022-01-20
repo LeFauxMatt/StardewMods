@@ -22,6 +22,11 @@ public interface IFuryEvents
     /// <summary>
     /// 
     /// </summary>
+    public event EventHandler<MenuScrolledEventArgs> MenuScrolled;
+
+    /// <summary>
+    /// 
+    /// </summary>
     public event EventHandler<RenderedActiveMenuEventArgs> RenderedItemGrabMenu;
 
     /// <summary>
