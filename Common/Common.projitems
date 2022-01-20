@@ -9,7 +9,9 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MenuWithInventoryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\Pattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternEnum.cs" />
@@ -35,6 +37,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\XSPlus\XSPlusIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\TagChangedEventArgs.cs" />
   </ItemGroup>
 </Project>

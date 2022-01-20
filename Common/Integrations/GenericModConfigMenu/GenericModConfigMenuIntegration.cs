@@ -8,7 +8,7 @@ internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfi
     private const string ModUniqueId = "spacechase0.GenericModConfigMenu";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GenericModConfigMenuIntegration"/> class.
+    ///     Initializes a new instance of the <see cref="GenericModConfigMenuIntegration" /> class.
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public GenericModConfigMenuIntegration(IModRegistry modRegistry)

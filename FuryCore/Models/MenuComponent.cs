@@ -17,8 +17,9 @@ public class MenuComponent
     /// Initializes a new instance of the <see cref="MenuComponent"/> class.
     /// </summary>
     /// <param name="component"></param>
-    public MenuComponent(ClickableTextureComponent component)
+    public MenuComponent(ClickableTextureComponent component, ComponentArea area = ComponentArea.Custom)
     {
+        this.Area = area;
         this._component = component;
     }
 
@@ -26,7 +27,20 @@ public class MenuComponent
     {
         this.Menu = menu;
         this.ComponentType = componentType;
+        this.Area = this.ComponentType switch
+        {
+            ComponentType.OrganizeButton => ComponentArea.Right,
+            ComponentType.FillStacksButton => ComponentArea.Right,
+            ComponentType.ColorPickerToggleButton => ComponentArea.Right,
+            ComponentType.SpecialButton => ComponentArea.Right,
+            ComponentType.JunimoNoteIcon => ComponentArea.Right,
+            _ => ComponentArea.Custom,
+        };
     }
+
+    public ComponentArea Area { get; }
+
+    public ComponentType ComponentType { get; }
 
     public ClickableTextureComponent Component
     {
@@ -56,8 +70,6 @@ public class MenuComponent
             return this.Component.myID;
         }
     }
-
-    private ComponentType ComponentType { get; }
 
     private ItemGrabMenu Menu { get; }
 

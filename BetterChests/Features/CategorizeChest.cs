@@ -27,7 +27,7 @@ internal class CategorizeChest : Feature
     private readonly PerScreen<MenuComponent> _configureButton = new();
     private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
     private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
-    private readonly Lazy<IFuryMenu> _customMenuComponents;
+    private readonly Lazy<IMenuComponents> _customMenuComponents;
     private readonly Lazy<HarmonyHelper> _harmony;
 
     /// <summary>
@@ -40,7 +40,7 @@ internal class CategorizeChest : Feature
         : base(config, helper, services)
     {
         CategorizeChest.Instance = this;
-        this._customMenuComponents = services.Lazy<IFuryMenu>();
+        this._customMenuComponents = services.Lazy<IMenuComponents>();
         this._harmony = services.Lazy<HarmonyHelper>(CategorizeChest.AddPatches);
     }
 
@@ -69,7 +69,7 @@ internal class CategorizeChest : Feature
         set => this._itemSelectionMenu.Value = value;
     }
 
-    private IFuryMenu FuryMenu
+    private IMenuComponents MenuComponents
     {
         get => this._customMenuComponents.Value;
     }
@@ -142,7 +142,7 @@ internal class CategorizeChest : Feature
                 {
                     Name = "Configure",
                 };
-                this.FuryMenu.SideComponents.Insert(0, this.ConfigureButton);
+                this.MenuComponents.Components.Insert(0, this.ConfigureButton);
                 this.ReturnMenu = e.ItemGrabMenu;
                 this.ManagedChest = managedChest;
                 return;

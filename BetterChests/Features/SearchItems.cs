@@ -3,13 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using BetterChests.Extensions;
 using BetterChests.Models;
+using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Helpers;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using FuryCore.UI;
@@ -21,20 +22,21 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class SearchItems : Feature
 {
     private const int SearchBarHeight = 24;
 
-    private readonly PerScreen<ManagedChest> _managedChest = new();
-    private readonly PerScreen<ItemsDisplayedEventArgs> _displayedItems = new();
+    private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
     private readonly PerScreen<TextBox> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
     private readonly PerScreen<ClickableComponent> _searchArea = new();
     private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchItems"/> class.
@@ -47,6 +49,7 @@ internal class SearchItems : Feature
     {
         SearchItems.Instance = this;
         this._harmony = services.Lazy<HarmonyHelper>(SearchItems.AddPatches);
+        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static SearchItems Instance { get; set; }
@@ -56,27 +59,26 @@ internal class SearchItems : Feature
         get => this._harmony.Value;
     }
 
-    private ItemsDisplayedEventArgs DisplayedItems
-    {
-        get => this._displayedItems.Value;
-        set => this._displayedItems.Value = value;
-    }
-
     private ItemMatcher ItemMatcher
     {
         get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
     }
 
-    private ManagedChest ManagedChest
+    private Chest Chest
     {
-        get => this._managedChest.Value;
-        set => this._managedChest.Value = value;
+        get => this._chest.Value;
+        set => this._chest.Value = value;
     }
 
     private ItemGrabMenu Menu
     {
         get => this._menu.Value;
         set => this._menu.Value = value;
+    }
+
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
     }
 
     private ClickableComponent SearchArea
@@ -91,7 +93,7 @@ internal class SearchItems : Feature
 
     private ClickableTextureComponent SearchIcon
     {
-        get => this._searchIcon.Value ??= this.GetSearchIcon();
+        get => this._searchIcon.Value ??= new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f);
     }
 
     private string SearchText { get; set; }
@@ -100,7 +102,6 @@ internal class SearchItems : Feature
     public override void Activate()
     {
         this.HarmonyHelper.ApplyPatches(nameof(SearchItems));
-        this.FuryEvents.ItemsDisplayed += this.OnItemsDisplayed;
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
@@ -111,7 +112,6 @@ internal class SearchItems : Feature
     public override void Deactivate()
     {
         this.HarmonyHelper.UnapplyPatches(nameof(SearchItems));
-        this.FuryEvents.ItemsDisplayed -= this.OnItemsDisplayed;
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
@@ -308,38 +308,31 @@ internal class SearchItems : Feature
 
     private int MenuPadding(MenuWithInventory menu)
     {
-        return ReferenceEquals(menu, this.Menu) && this.ManagedChest is not null
+        return ReferenceEquals(menu, this.Menu) && this.Chest is not null
             ? SearchItems.SearchBarHeight
             : 0;
-    }
-
-    private void OnItemsDisplayed(object sender, ItemsDisplayedEventArgs e)
-    {
-        this.DisplayedItems = e;
-        e.AddFilter(this.ItemMatcher);
     }
 
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (ReferenceEquals(this.Menu, e.ItemGrabMenu))
-        {
-            return;
-        }
-
         this.Menu = e.ItemGrabMenu;
-        if (this.Menu?.IsPlayerChestMenu(out _) != true || !this.ManagedChests.FindChest(e.Chest, out var managedChest))
+
+        if (this.Menu is null)
         {
-            this.Menu = null;
             return;
         }
 
-        if (!ReferenceEquals(this.ManagedChest, managedChest))
+        if (!ReferenceEquals(e.Chest, this.Chest))
         {
-            this.ManagedChest = managedChest;
+            this.Chest = e.Chest;
             this.SearchText = string.Empty;
         }
 
+        // Add filter to Menu Items
+        this.MenuItems.AddFilter(this.ItemMatcher);
+
+        // Expand ItemsToGrabMenu by Search Bar Height
         if (e.IsNew)
         {
             var padding = this.MenuPadding(this.Menu);
@@ -351,6 +344,7 @@ internal class SearchItems : Feature
             }
         }
 
+        // Reposition Search Bar to top of ItemsToGrabMenu
         this.SearchField.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = this.Menu.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom);
         this.SearchField.Selected = false;
@@ -373,7 +367,6 @@ internal class SearchItems : Feature
         {
             this.SearchText = this.SearchField.Text;
             this.ItemMatcher.StringValue = this.SearchText;
-            this.DisplayedItems?.ForceRefresh();
         }
     }
 
@@ -416,10 +409,5 @@ internal class SearchItems : Feature
     private TextBox GetSearchField()
     {
         return new(Game1.content.Load<Texture2D>(@"LooseSprites\textBox"), null, Game1.smallFont, Game1.textColor);
-    }
-
-    private ClickableTextureComponent GetSearchIcon()
-    {
-        return new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f);
     }
 }

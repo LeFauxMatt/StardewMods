@@ -3,10 +3,10 @@
 using System;
 using System.Linq;
 using BetterChests.Enums;
+using BetterChests.Interfaces;
+using BetterChests.Models;
 using Common.Integrations.GenericModConfigMenu;
 using FuryCore.Interfaces;
-using Interfaces;
-using Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 

@@ -8,7 +8,7 @@ internal class PatternEnum<TItem> : IEnumerator<TItem>
     private TItem _currentItem;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PatternEnum{TRecord}"/> class.
+    ///     Initializes a new instance of the <see cref="PatternEnum{TRecord}" /> class.
     /// </summary>
     /// <param name="items"></param>
     public PatternEnum(IList<TItem> items)
@@ -16,23 +16,23 @@ internal class PatternEnum<TItem> : IEnumerator<TItem>
         this.Items = items;
     }
 
-    /// <inheritdoc/>
+    private IList<TItem> Items { get; }
+
+    private int Index { get; set; } = -1;
+
+    /// <inheritdoc />
     public object Current
     {
         get => this._currentItem;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     TItem IEnumerator<TItem>.Current
     {
         get => this._currentItem;
     }
 
-    private IList<TItem> Items { get; }
-
-    private int Index { get; set; } = -1;
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool MoveNext()
     {
         // Loop
@@ -46,13 +46,13 @@ internal class PatternEnum<TItem> : IEnumerator<TItem>
         return true;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Reset()
     {
         this.Index = -1;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Dispose()
     {
         // Nothing

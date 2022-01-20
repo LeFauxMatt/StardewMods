@@ -18,9 +18,10 @@ public class ModEntry : Mod
         this.Services.AddRange(
             new IService[]
             {
-                new CustomMenuComponents(this.Helper, this.Services),
+                new MenuComponents(this.Helper, this.Services),
                 new CustomEvents(this.Helper, this.Services),
                 new HarmonyHelper(this.ModManifest),
+                new MenuItems(this.Helper.Events, this.Services),
             });
 
         this.Services.ForceEvaluation();

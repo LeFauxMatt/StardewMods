@@ -21,11 +21,11 @@ internal class ChestMenuTabs : Feature
 {
     // TODO: Add MouseScroll event for switching tags
     private readonly PerScreen<Chest> _chest = new();
-    private readonly PerScreen<ItemsDisplayedEventArgs> _displayedItems = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int> _tabIndex = new(() => -1);
-    private readonly Lazy<IFuryMenu> _customMenuComponents;
+    private readonly Lazy<IMenuComponents> _menuComponents;
+    private readonly Lazy<IMenuItems> _menuItems;
     private readonly Lazy<Texture2D> _texture;
     private readonly Lazy<IList<Tab>> _tabs;
 
@@ -40,7 +40,8 @@ internal class ChestMenuTabs : Feature
     {
         this._texture = new(this.GetTexture);
         this._tabs = new(this.GetTabs);
-        this._customMenuComponents = services.Lazy<IFuryMenu>();
+        this._menuComponents = services.Lazy<IMenuComponents>();
+        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private Chest Chest
@@ -49,15 +50,20 @@ internal class ChestMenuTabs : Feature
         set => this._chest.Value = value;
     }
 
-    private ItemsDisplayedEventArgs DisplayedItems
+    private ItemGrabMenu Menu
     {
-        get => this._displayedItems.Value;
-        set => this._displayedItems.Value = value;
+        get => this._menu.Value;
+        set => this._menu.Value = value;
     }
 
-    private IFuryMenu FuryMenu
+    private IMenuComponents MenuComponents
     {
-        get => this._customMenuComponents.Value;
+        get => this._menuComponents.Value;
+    }
+
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
     }
 
     private int Index
@@ -69,12 +75,6 @@ internal class ChestMenuTabs : Feature
     private ItemMatcher ItemMatcher
     {
         get => this._itemMatcher.Value;
-    }
-
-    private ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
     }
 
     private IList<Tab> Tabs
@@ -91,7 +91,6 @@ internal class ChestMenuTabs : Feature
     public override void Activate()
     {
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.FuryEvents.ItemsDisplayed += this.OnItemsDisplayed;
         this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -100,7 +99,6 @@ internal class ChestMenuTabs : Feature
     public override void Deactivate()
     {
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.FuryEvents.ItemsDisplayed -= this.OnItemsDisplayed;
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
@@ -118,8 +116,11 @@ internal class ChestMenuTabs : Feature
             this.SetTab(-1);
         }
 
-        this.FuryMenu.BehindComponents.AddRange(this.Tabs);
+        this.MenuComponents.Components.AddRange(this.Tabs);
         this.Chest = e.Chest;
+
+        // Add filter to Menu Items
+        this.MenuItems.AddFilter(this.ItemMatcher);
 
         // Reposition tabs between inventory menus along a horizontal axis
         MenuComponent previousTab = null;
@@ -144,12 +145,6 @@ internal class ChestMenuTabs : Feature
 
             previousTab = tab;
         }
-    }
-
-    private void OnItemsDisplayed(object sender, ItemsDisplayedEventArgs e)
-    {
-        this.DisplayedItems = e;
-        e.AddFilter(this.ItemMatcher);
     }
 
     private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
@@ -212,8 +207,6 @@ internal class ChestMenuTabs : Feature
                 this.ItemMatcher.Add(tag);
             }
         }
-
-        this.DisplayedItems?.ForceRefresh();
     }
 
     private Texture2D GetTexture()

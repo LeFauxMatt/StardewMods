@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
-/// 
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 internal class PatternPatcher<TItem>
@@ -32,7 +31,7 @@ internal class PatternPatcher<TItem>
     private IList<TItem> ItemBuffer { get; } = new List<TItem>();
 
     /// <summary>
-    /// Allows patching a list in place after a specific pattern block is matched.
+    ///     Allows patching a list in place after a specific pattern block is matched.
     /// </summary>
     /// <param name="patternBlock">The pattern block to match.</param>
     /// <param name="patch">The patch to apply.</param>
@@ -51,18 +50,24 @@ internal class PatternPatcher<TItem>
     }
 
     /// <summary>
-    /// Allows patching a list in place after a specific sing-item pattern is matched.
+    ///     Allows patching a list in place after a specific sing-item pattern is matched.
     /// </summary>
     /// <param name="item">The item to match.</param>
     /// <param name="patch">The patch to apply.</param>
     /// <param name="repeat">Set to -1 to repeat infinitely, or a value greater than 0 to repeat a specific number of times.</param>
     public void AddPatch(TItem item, Action<IList<TItem>> patch, int repeat = 0)
     {
-        this.AddPatch(new[] { item }, patch, repeat);
+        this.AddPatch(
+            new[]
+            {
+                item,
+            },
+            patch,
+            repeat);
     }
 
     /// <summary>
-    /// Empty patch that will skip passed the pattern block.
+    ///     Empty patch that will skip passed the pattern block.
     /// </summary>
     /// <param name="patternBlock">The pattern block to match.</param>
     public void AddSeek(TItem[] patternBlock)
@@ -71,16 +76,20 @@ internal class PatternPatcher<TItem>
     }
 
     /// <summary>
-    /// Empty patch that skip passed the seeked single-item pattern.
+    ///     Empty patch that skip passed the seeked single-item pattern.
     /// </summary>
     /// <param name="item">The item to match.</param>
     public void AddSeek(TItem item)
     {
-        this.AddSeek(new[] { item });
+        this.AddSeek(
+            new[]
+            {
+                item,
+            });
     }
 
     /// <summary>
-    /// Matches the incoming items against patterns in sequence, and return the patched sequence.
+    ///     Matches the incoming items against patterns in sequence, and return the patched sequence.
     /// </summary>
     /// <param name="item">The next incoming item from the original list.</param>
     /// <returns>The patched sequence.</returns>
@@ -145,7 +154,7 @@ internal class PatternPatcher<TItem>
     }
 
     /// <summary>
-    /// Returns the remaining buffer of pattern items.
+    ///     Returns the remaining buffer of pattern items.
     /// </summary>
     /// <returns>The remaining items in buffer.</returns>
     public IEnumerable<TItem> FlushBuffer()

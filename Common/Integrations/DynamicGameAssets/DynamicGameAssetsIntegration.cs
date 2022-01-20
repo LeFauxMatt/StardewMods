@@ -8,7 +8,7 @@ internal class DynamicGameAssetsIntegration : ModIntegration<IDynamicGameAssetsA
     private const string ModUniqueId = "spacechase0.DynamicGameAssets";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DynamicGameAssetsIntegration"/> class.
+    ///     Initializes a new instance of the <see cref="DynamicGameAssetsIntegration" /> class.
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public DynamicGameAssetsIntegration(IModRegistry modRegistry)

@@ -3,13 +3,17 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Common.Extensions;
 using Common.Helpers;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
 using Models;
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -18,7 +22,9 @@ internal class FilterItems : Feature
     private const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
     private const string AutomateModUniqueId = "Pathochild.Automate";
 
+    private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly Lazy<HarmonyHelper> _harmony;
+    private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterItems"/> class.
@@ -31,6 +37,7 @@ internal class FilterItems : Feature
     {
         FilterItems.Instance = this;
         this._harmony = services.Lazy<HarmonyHelper>(FilterItems.AddPatches);
+        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static FilterItems Instance { get; set; }
@@ -40,18 +47,29 @@ internal class FilterItems : Feature
         get => this._harmony.Value;
     }
 
+    private ItemGrabMenu Menu
+    {
+        get => this._menu.Value;
+        set => this._menu.Value = value;
+    }
+
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
+    }
+
     /// <inheritdoc />
     public override void Activate()
     {
         this.Harmony.ApplyPatches(nameof(FilterItems));
-        this.FuryEvents.ItemsHighlighted += this.OnItemsHighlighted;
+        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     public override void Deactivate()
     {
         this.Harmony.UnapplyPatches(nameof(FilterItems));
-        this.FuryEvents.ItemsHighlighted -= this.OnItemsHighlighted;
+        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
     private static void AddPatches(HarmonyHelper harmony)
@@ -102,11 +120,15 @@ internal class FilterItems : Feature
         return false;
     }
 
-    private void OnItemsHighlighted(object sender, ItemsHighlightedEventArgs e)
+    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.ManagedChests.FindChest(e.Chest, out var managedChest))
+        this.Menu = e.ItemGrabMenu;
+        if (!this.Menu?.IsPlayerChestMenu(out _) != true || this.ManagedChests.FindChest(e.Chest, out var managedChest))
         {
-            e.AddHighlighter(managedChest.Config.ItemMatcher.Matches);
+            return;
         }
+
+        // Add highlighter to Menu Items
+        this.MenuItems.AddHighlighter(managedChest.Config.ItemMatcher);
     }
 }

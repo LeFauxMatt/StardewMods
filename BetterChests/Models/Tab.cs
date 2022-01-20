@@ -1,6 +1,7 @@
 ﻿namespace BetterChests.Models;
 
 using System.Collections.Generic;
+using FuryCore.Enums;
 using FuryCore.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,7 +17,7 @@ internal class Tab : MenuComponent
     /// <param name="component"></param>
     /// <param name="tags"></param>
     public Tab(ClickableTextureComponent component, IList<string> tags)
-        : base(component)
+        : base(component, ComponentArea.Bottom)
     {
         this.Tags = tags;
     }

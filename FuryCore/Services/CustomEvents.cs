@@ -13,8 +13,6 @@ using StardewModdingAPI.Events;
 internal class CustomEvents : IFuryEvents, IService
 {
     private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
-    private readonly ItemsDisplayed _itemsDisplayed;
-    private readonly ItemsHighlighted _itemsHighlighted;
     private readonly MenuComponentPressed _menuComponentPressed;
     private readonly RenderedItemGrabMenu _renderedItemGrabMenu;
     private readonly RenderingItemGrabMenu _renderingItemGrabMenu;
@@ -27,8 +25,6 @@ internal class CustomEvents : IFuryEvents, IService
     public CustomEvents(IModHelper helper, ServiceCollection services)
     {
         this._itemGrabMenuChanged = new(helper.Events.Display, services);
-        this._itemsDisplayed = new(helper.Events, services);
-        this._itemsHighlighted = new(services);
         this._menuComponentPressed = new(helper, services);
         this._renderedItemGrabMenu = new(helper.Events.Display, services);
         this._renderingItemGrabMenu = new(helper.Events.Display, services);
@@ -39,20 +35,6 @@ internal class CustomEvents : IFuryEvents, IService
     {
         add => this._itemGrabMenuChanged.Add(value);
         remove => this._itemGrabMenuChanged.Remove(value);
-    }
-
-    /// <inheritdoc/>
-    public event EventHandler<ItemsDisplayedEventArgs> ItemsDisplayed
-    {
-        add => this._itemsDisplayed.Add(value);
-        remove => this._itemsDisplayed.Remove(value);
-    }
-
-    /// <inheritdoc/>
-    public event EventHandler<ItemsHighlightedEventArgs> ItemsHighlighted
-    {
-        add => this._itemsHighlighted.Add(value);
-        remove => this._itemsHighlighted.Remove(value);
     }
 
     /// <inheritdoc/>

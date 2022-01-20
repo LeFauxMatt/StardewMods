@@ -5,12 +5,10 @@ using System.Linq;
 using System.Reflection;
 
 /// <summary>
-/// 
 /// </summary>
 internal static class ReflectionHelper
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>

@@ -10,12 +10,12 @@ internal static class CommonExtensions
 {
     public static int Remap(this float value, Range<float> sourceRange, Range<int> targetRange)
     {
-        return targetRange.Clamp((int)(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)))));
+        return targetRange.Clamp((int)(targetRange.Minimum + (targetRange.Maximum - targetRange.Minimum) * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
     }
 
     public static float Remap(this int value, Range<int> sourceRange, Range<float> targetRange)
     {
-        return targetRange.Clamp(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
+        return targetRange.Clamp(targetRange.Minimum + (targetRange.Maximum - targetRange.Minimum) * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)));
     }
 
     /// <summary>Rounds an int up to the next int by an interval.</summary>

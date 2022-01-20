@@ -15,23 +15,22 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IFuryMenu" />
+/// <inheritdoc cref="IMenuComponents" />
 [FuryCoreService(true)]
-internal class CustomMenuComponents : IFuryMenu, IService
+internal class MenuComponents : IMenuComponents, IService
 {
-    private readonly PerScreen<List<MenuComponent>> _behindComponents = new(() => new());
-    private readonly PerScreen<List<MenuComponent>> _sideComponents = new(() => new());
+    private readonly PerScreen<List<MenuComponent>> _components = new(() => new());
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CustomMenuComponents"/> class.
+    /// Initializes a new instance of the <see cref="MenuComponents"/> class.
     /// </summary>
     /// <param name="helper"></param>
     /// <param name="services"></param>
-    public CustomMenuComponents(IModHelper helper, ServiceCollection services)
+    public MenuComponents(IModHelper helper, ServiceCollection services)
     {
-        CustomMenuComponents.Instance = this;
+        MenuComponents.Instance = this;
         this.Helper = helper;
 
         services.Lazy<CustomEvents>(events =>
@@ -46,30 +45,24 @@ internal class CustomMenuComponents : IFuryMenu, IService
             harmonyHelper =>
             {
                 harmonyHelper.AddPatch(
-                    nameof(CustomMenuComponents),
+                    nameof(MenuComponents),
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-                    typeof(CustomMenuComponents),
-                    nameof(CustomMenuComponents.ItemGrabMenu_RepositionSideButtons_prefix));
+                    typeof(MenuComponents),
+                    nameof(MenuComponents.ItemGrabMenu_RepositionSideButtons_prefix));
 
-                harmonyHelper.ApplyPatches(nameof(CustomMenuComponents));
+                harmonyHelper.ApplyPatches(nameof(MenuComponents));
             });
 
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
     }
 
     /// <inheritdoc/>
-    public List<MenuComponent> SideComponents
+    public List<MenuComponent> Components
     {
-        get => this._sideComponents.Value;
+        get => this._components.Value;
     }
 
-    /// <inheritdoc/>
-    public List<MenuComponent> BehindComponents
-    {
-        get => this._behindComponents.Value;
-    }
-
-    private static CustomMenuComponents Instance { get; set; }
+    private static MenuComponents Instance { get; set; }
 
     private IModHelper Helper { get; }
 
@@ -89,7 +82,7 @@ internal class CustomMenuComponents : IFuryMenu, IService
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     private static bool ItemGrabMenu_RepositionSideButtons_prefix(ItemGrabMenu __instance)
     {
-        CustomMenuComponents.Instance.RepositionSideButtons(__instance);
+        MenuComponents.Instance.RepositionSideButtons(__instance);
         return false;
     }
 
@@ -102,7 +95,7 @@ internal class CustomMenuComponents : IFuryMenu, IService
 
         var (x, y) = Game1.getMousePosition(true);
         this.HoverText = string.Empty;
-        foreach (var component in this.SideComponents.Concat(this.BehindComponents))
+        foreach (var component in this.Components)
         {
             component.TryHover(x, y, 0.25f);
 
@@ -127,9 +120,8 @@ internal class CustomMenuComponents : IFuryMenu, IService
                                     .Where(component => component.Component is not null)
                                     .OrderBy(component => component.Component.bounds.Y);
 
-        this.BehindComponents.Clear();
-        this.SideComponents.Clear();
-        this.SideComponents.AddRange(vanillaComponents);
+        this.Components.Clear();
+        this.Components.AddRange(vanillaComponents);
     }
 
     [SortedEventPriority(EventPriority.Low)]
@@ -140,7 +132,7 @@ internal class CustomMenuComponents : IFuryMenu, IService
             return;
         }
 
-        foreach (var component in this.BehindComponents.Concat(this.SideComponents).Where(component => component.IsCustom))
+        foreach (var component in this.Components.Where(component => component.IsCustom))
         {
             this.Menu.allClickableComponents.Add(component.Component);
         }
@@ -150,7 +142,7 @@ internal class CustomMenuComponents : IFuryMenu, IService
 
     private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        foreach (var component in this.SideComponents.Where(component => component.IsCustom))
+        foreach (var component in this.Components.Where(component => component.IsCustom && component.Area is not ComponentArea.Bottom))
         {
             component.Draw(e.SpriteBatch);
         }
@@ -163,7 +155,7 @@ internal class CustomMenuComponents : IFuryMenu, IService
 
     private void OnRenderingItemGrabMenu(object sender, RenderingActiveMenuEventArgs e)
     {
-        foreach (var component in this.BehindComponents.Where(component => component.IsCustom))
+        foreach (var component in this.Components.Where(component => component.IsCustom && component.Area is ComponentArea.Bottom))
         {
             component.Draw(e.SpriteBatch);
         }
@@ -171,9 +163,10 @@ internal class CustomMenuComponents : IFuryMenu, IService
 
     private void RepositionSideButtons(IClickableMenu menu)
     {
-        var stepSize = this.SideComponents.Count >= 4 ? 72 : 80;
+        var sideComponents = this.Components.Where(component => component.Area is ComponentArea.Right).ToList();
+        var stepSize = sideComponents.Count >= 4 ? 72 : 80;
         MenuComponent previousComponent = null;
-        foreach (var (component, index) in this.SideComponents.AsEnumerable().Reverse().Select((component, index) => (component, index)))
+        foreach (var (component, index) in sideComponents.AsEnumerable().Reverse().Select((component, index) => (component, index)))
         {
             if (previousComponent is not null)
             {

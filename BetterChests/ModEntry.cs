@@ -2,11 +2,11 @@
 
 using System.Linq;
 using Common.Helpers;
-using Models;
-using Features;
+using BetterChests.Features;
+using BetterChests.Models;
+using BetterChests.Services;
 using FuryCore.Interfaces;
 using FuryCore.Services;
-using Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 

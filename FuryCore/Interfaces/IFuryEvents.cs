@@ -17,16 +17,6 @@ public interface IFuryEvents
     /// <summary>
     /// 
     /// </summary>
-    public event EventHandler<ItemsDisplayedEventArgs> ItemsDisplayed;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public event EventHandler<ItemsHighlightedEventArgs> ItemsHighlighted;
-
-    /// <summary>
-    /// 
-    /// </summary>
     public event EventHandler<MenuComponentPressedEventArgs> MenuComponentPressed;
 
     /// <summary>

@@ -11,7 +11,7 @@ using StardewValley;
 /// <inheritdoc />
 internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEventArgs>
 {
-    private readonly Lazy<CustomMenuComponents> _customMenuComponents;
+    private readonly Lazy<MenuComponents> _customMenuComponents;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MenuComponentPressed"/> class.
@@ -21,26 +21,26 @@ internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEve
     public MenuComponentPressed(IModHelper helper, ServiceCollection services)
     {
         this.Helper = helper;
-        this._customMenuComponents = services.Lazy<CustomMenuComponents>();
+        this._customMenuComponents = services.Lazy<MenuComponents>();
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     private IModHelper Helper { get; }
 
-    private CustomMenuComponents CustomMenuComponents
+    private MenuComponents MenuComponents
     {
         get => this._customMenuComponents.Value;
     }
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if ((e.Button != SButton.MouseLeft && !e.Button.IsActionButton()) || !(this.CustomMenuComponents.SideComponents.Any() || this.CustomMenuComponents.BehindComponents.Any()))
+        if ((e.Button != SButton.MouseLeft && !e.Button.IsActionButton()) || !this.MenuComponents.Components.Any())
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var component = this.CustomMenuComponents.SideComponents.Concat(this.CustomMenuComponents.BehindComponents).FirstOrDefault(component => component.Component.containsPoint(x, y));
+        var component = this.MenuComponents.Components.FirstOrDefault(component => component.Component.containsPoint(x, y));
         if (component is not null)
         {
             Game1.playSound("drumkit6");
