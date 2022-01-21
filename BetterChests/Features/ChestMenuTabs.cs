@@ -8,7 +8,7 @@ using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using Microsoft.Xna.Framework.Graphics;
-using Models;
+using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;

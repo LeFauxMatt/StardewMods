@@ -23,22 +23,22 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     }
 
     /// <summary>
-    /// Gets the ItemGrabMenu if it is the currently active menu.
+    ///     Gets the ItemGrabMenu if it is the currently active menu.
     /// </summary>
     public ItemGrabMenu ItemGrabMenu { get; }
 
     /// <summary>
-    /// Gets the Chest for which the ItemGrabMenu was opened.
+    ///     Gets the Chest for which the ItemGrabMenu was opened.
     /// </summary>
     public Chest Chest { get; }
 
     /// <summary>
-    /// Gets the screen id that the menu was opened on.
+    ///     Gets the screen id that the menu was opened on.
     /// </summary>
     public int ScreenId { get; }
 
     /// <summary>
-    /// Gets if the ItemGrabMenu is new. (false on change)
+    ///     Gets if the ItemGrabMenu is new. (false on change)
     /// </summary>
     public bool IsNew { get; }
 }

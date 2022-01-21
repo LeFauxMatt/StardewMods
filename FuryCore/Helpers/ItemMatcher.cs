@@ -13,7 +13,7 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <summary>
-/// Matches item name/tags against a set of search phrases.
+///     Matches item name/tags against a set of search phrases.
 /// </summary>
 public class ItemMatcher : ObservableCollection<string>
 {
@@ -78,43 +78,6 @@ public class ItemMatcher : ObservableCollection<string>
         }
     }
 
-    /// <inheritdoc/>
-    protected override void InsertItem(int index, string item)
-    {
-        if (!this.Contains(item))
-        {
-            base.InsertItem(index, item);
-        }
-    }
-
-    /// <inheritdoc/>
-    protected override void SetItem(int index, string item)
-    {
-        if (this.IndexOf(item) == -1)
-        {
-            base.SetItem(index, item);
-        }
-    }
-
-    /// <inheritdoc/>
-    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-    {
-        var added = this.Except(this._clean.Keys);
-        var removed = this._clean.Keys.Except(this);
-
-        foreach (var item in removed)
-        {
-            this._clean.Remove(item);
-        }
-
-        foreach (var item in added)
-        {
-            this._clean.Add(item, this.ParseString(item));
-        }
-
-        base.OnCollectionChanged(e);
-    }
-
     /// <summary>
     ///     Checks if an item matches the search phrases.
     /// </summary>
@@ -144,6 +107,43 @@ public class ItemMatcher : ObservableCollection<string>
         }
 
         return matchesAny;
+    }
+
+    /// <inheritdoc />
+    protected override void InsertItem(int index, string item)
+    {
+        if (!this.Contains(item))
+        {
+            base.InsertItem(index, item);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void SetItem(int index, string item)
+    {
+        if (this.IndexOf(item) == -1)
+        {
+            base.SetItem(index, item);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+    {
+        var added = this.Except(this._clean.Keys);
+        var removed = this._clean.Keys.Except(this);
+
+        foreach (var item in removed)
+        {
+            this._clean.Remove(item);
+        }
+
+        foreach (var item in added)
+        {
+            this._clean.Add(item, this.ParseString(item));
+        }
+
+        base.OnCollectionChanged(e);
     }
 
     private SearchPhrase ParseString(string value)

@@ -6,15 +6,13 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
 /// <summary>
-/// 
 /// </summary>
 public class MenuComponent
 {
-    private static int ComponentId = 69420;
     private readonly ClickableTextureComponent _component;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MenuComponent"/> class.
+    ///     Initializes a new instance of the <see cref="MenuComponent" /> class.
     /// </summary>
     /// <param name="component"></param>
     public MenuComponent(ClickableTextureComponent component, ComponentArea area = ComponentArea.Custom)
@@ -71,8 +69,6 @@ public class MenuComponent
         }
     }
 
-    private ItemGrabMenu Menu { get; }
-
     public virtual string HoverText
     {
         get => this.Component.hoverText;
@@ -89,6 +85,10 @@ public class MenuComponent
         get => this.Component.name;
         set => this.Component.name = value;
     }
+
+    private static int ComponentId { get; set; } = 69420;
+
+    private ItemGrabMenu Menu { get; }
 
     public virtual void Draw(SpriteBatch spriteBatch)
     {

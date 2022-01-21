@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using BetterChests.Enums;
 using Common.Integrations.BetterChests;
 using FuryCore.Services;
-using Models;
-using Services;
+using BetterChests.Models;
+using BetterChests.Services;
 using StardewModdingAPI;
 
 /// <inheritdoc />

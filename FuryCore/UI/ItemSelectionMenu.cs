@@ -16,14 +16,14 @@ using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>
-/// A menu for selecting items.
+///     A menu for selecting items.
 /// </summary>
 public class ItemSelectionMenu : ItemGrabMenu
 {
     private int _offset;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ItemSelectionMenu" /> class.
+    ///     Initializes a new instance of the <see cref="ItemSelectionMenu" /> class.
     /// </summary>
     /// <param name="inputHelper">API for changing input states.</param>
     /// <param name="itemMatcher">Matches items against name and context tags.</param>
@@ -56,7 +56,7 @@ public class ItemSelectionMenu : ItemGrabMenu
 
         this.SearchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
         {
-            bounds = new(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32),
+            bounds = new(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom) + 6, 32, 32),
         };
 
         this.SearchArea = new(new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height), string.Empty);
@@ -93,6 +93,7 @@ public class ItemSelectionMenu : ItemGrabMenu
                 this.SortedItems = this.ItemMatcher.Any()
                     ? ItemSelectionMenu.AllItems.OrderBy(item => this.ItemMatcher.Matches(item.Item) ? 0 : 1)
                     : ItemSelectionMenu.AllItems.AsEnumerable();
+
                 this.DisplayedItems = null;
             }
 
@@ -122,7 +123,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     private Range<int> Range { get; } = new();
 
     /// <summary>
-    /// Allows the <see cref="ItemSelectionMenu" /> to register SMAPI events for handling input.
+    ///     Allows the <see cref="ItemSelectionMenu" /> to register SMAPI events for handling input.
     /// </summary>
     /// <param name="inputEvents">Events raised for player inputs.</param>
     public void RegisterEvents(IInputEvents inputEvents)
@@ -132,7 +133,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     }
 
     /// <summary>
-    /// Allows the <see cref="ItemSelectionMenu" /> to unregister SMAPI events from handling input.
+    ///     Allows the <see cref="ItemSelectionMenu" /> to unregister SMAPI events from handling input.
     /// </summary>
     /// <param name="inputEvents">Events raised for player inputs.</param>
     public void UnregisterEvents(IInputEvents inputEvents)
@@ -388,11 +389,12 @@ public class ItemSelectionMenu : ItemGrabMenu
 
     private void RefreshTags()
     {
-        this.inventory.inventory = this.ItemMatcher.Select(value =>
-        {
-            var (textWidth, textHeight) = Game1.smallFont.MeasureString(value).ToPoint();
-            return new ClickableComponent(new(0, 0, textWidth, textHeight), value);
-        }).ToList();
+        this.inventory.inventory = this.ItemMatcher.Select(
+            value =>
+            {
+                var (textWidth, textHeight) = Game1.smallFont.MeasureString(value).ToPoint();
+                return new ClickableComponent(new(0, 0, textWidth, textHeight), value);
+            }).ToList();
 
         if (!this.inventory.inventory.Any())
         {

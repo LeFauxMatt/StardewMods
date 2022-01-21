@@ -16,10 +16,6 @@ internal class PatternEnum<TItem> : IEnumerator<TItem>
         this.Items = items;
     }
 
-    private IList<TItem> Items { get; }
-
-    private int Index { get; set; } = -1;
-
     /// <inheritdoc />
     public object Current
     {
@@ -31,6 +27,10 @@ internal class PatternEnum<TItem> : IEnumerator<TItem>
     {
         get => this._currentItem;
     }
+
+    private IList<TItem> Items { get; }
+
+    private int Index { get; set; } = -1;
 
     /// <inheritdoc />
     public bool MoveNext()

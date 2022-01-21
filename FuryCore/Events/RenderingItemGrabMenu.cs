@@ -14,7 +14,7 @@ internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEve
     private readonly PerScreen<ItemGrabMenuChangedEventArgs> _menu = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RenderingItemGrabMenu"/> class.
+    ///     Initializes a new instance of the <see cref="RenderingItemGrabMenu" /> class.
     /// </summary>
     /// <param name="display"></param>
     /// <param name="services"></param>
@@ -40,7 +40,7 @@ internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEve
         this._menu.Value = e;
     }
 
-    [EventPriority(EventPriority.High)]
+    [EventPriority(EventPriority.High + 1000)]
     private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
     {
         if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)

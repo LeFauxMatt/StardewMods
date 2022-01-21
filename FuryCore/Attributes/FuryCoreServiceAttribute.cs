@@ -7,7 +7,7 @@ using System;
 internal class FuryCoreServiceAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FuryCoreServiceAttribute"/> class.
+    ///     Initializes a new instance of the <see cref="FuryCoreServiceAttribute" /> class.
     /// </summary>
     /// <param name="exportable"></param>
     public FuryCoreServiceAttribute(bool exportable)

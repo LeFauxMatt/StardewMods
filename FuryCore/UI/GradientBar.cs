@@ -9,14 +9,14 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 
 /// <summary>
-/// Represents a gradient bar as a list of rectangles and colors.
+///     Represents a gradient bar as a list of rectangles and colors.
 /// </summary>
 internal class GradientBar
 {
     private const int Cells = 16;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GradientBar" /> class.
+    ///     Initializes a new instance of the <see cref="GradientBar" /> class.
     /// </summary>
     /// <param name="orientation">The direction to orient the gradient.</param>
     /// <param name="area">The rectangular area of the gradient bar.</param>
@@ -31,16 +31,17 @@ internal class GradientBar
         this.Bars = new List<Rectangle>();
         for (var i = 0; i < GradientBar.Cells; i++)
         {
-            this.Bars.Add(new(
-                this.Area.Left + this.Orientation switch { Axis.Horizontal => i * cellSize, Axis.Vertical => 0, _ => 0 },
-                this.Area.Top + this.Orientation switch { Axis.Horizontal => 0, Axis.Vertical => i * cellSize, _ => 0 },
-                this.Orientation switch { Axis.Horizontal => cellSize, Axis.Vertical => this.Area.Width, _ => 1 },
-                this.Orientation switch { Axis.Horizontal => this.Area.Height, Axis.Vertical => cellSize, _ => 1 }));
+            this.Bars.Add(
+                new(
+                    this.Area.Left + this.Orientation switch { Axis.Horizontal => i * cellSize, Axis.Vertical => 0, _ => 0 },
+                    this.Area.Top + this.Orientation switch { Axis.Horizontal => 0, Axis.Vertical => i * cellSize, _ => 0 },
+                    this.Orientation switch { Axis.Horizontal => cellSize, Axis.Vertical => this.Area.Width, _ => 1 },
+                    this.Orientation switch { Axis.Horizontal => this.Area.Height, Axis.Vertical => cellSize, _ => 1 }));
         }
     }
 
     /// <summary>
-    /// Gets the rectangular area of the gradient bar.
+    ///     Gets the rectangular area of the gradient bar.
     /// </summary>
     public Rectangle Area { get; }
 
@@ -51,7 +52,7 @@ internal class GradientBar
     private Axis Orientation { get; }
 
     /// <summary>
-    /// Draws color bars from the gradient.
+    ///     Draws color bars from the gradient.
     /// </summary>
     /// <param name="spriteBatch">The SpriteBatch to draw bars to.</param>
     public void Draw(SpriteBatch spriteBatch)

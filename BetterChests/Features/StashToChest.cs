@@ -4,7 +4,7 @@ using System.Linq;
 using BetterChests.Enums;
 using Common.Helpers;
 using FuryCore.Services;
-using Models;
+using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;

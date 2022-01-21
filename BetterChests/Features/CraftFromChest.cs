@@ -12,7 +12,7 @@ using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
-using Models;
+using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;

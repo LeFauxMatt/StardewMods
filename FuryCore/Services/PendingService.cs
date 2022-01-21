@@ -10,7 +10,7 @@ internal class PendingService<TServiceType> : IPendingService
     private readonly Lazy<TServiceType> _service;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PendingService{TServiceType}"/> class.
+    ///     Initializes a new instance of the <see cref="PendingService{TServiceType}" /> class.
     /// </summary>
     /// <param name="valueFactory"></param>
     public PendingService(Func<TServiceType> valueFactory)

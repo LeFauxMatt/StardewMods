@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using BetterChests.Enums;
 
 /// <summary>
-/// 
+///
 /// </summary>
 internal interface IChestConfig
 {
@@ -34,7 +34,7 @@ internal interface IChestConfig
     public HashSet<string> FilterItems { get; set; }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="other"></param>
     /// <typeparam name="TOther"></typeparam>

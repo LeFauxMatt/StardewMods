@@ -14,7 +14,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
-/// A widget for choosing a color using HSL sliders.
+///     A widget for choosing a color using HSL sliders.
 /// </summary>
 public class HslColorPicker : DiscreteColorPicker
 {
@@ -27,22 +27,20 @@ public class HslColorPicker : DiscreteColorPicker
 
     private HslColor _hslColor;
     private int _hueCoord;
-    private int _saturationCoord;
     private int _lightnessCoord;
+    private int _saturationCoord;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HslColorPicker" /> class.
+    ///     Initializes a new instance of the <see cref="HslColorPicker" /> class.
     /// </summary>
     /// <param name="contentHelper">Load assets from mod folder.</param>
-    /// <param name="inputHelper">API for changing input states.</param>
     /// <param name="xPosition">The X coordinate to draw the HslColorPicker at.</param>
     /// <param name="yPosition">The Y coordinate to draw the HslColorPicker at.</param>
     /// <param name="initColor">The initial color to set the color picker to.</param>
     /// <param name="itemToDrawColored">The item to draw next to the color picker.</param>
-    public HslColorPicker(IContentHelper contentHelper, IInputHelper inputHelper, int xPosition, int yPosition, Color initColor = default, Item itemToDrawColored = null)
+    public HslColorPicker(IContentHelper contentHelper, int xPosition, int yPosition, Color initColor = default, Item itemToDrawColored = null)
         : base(xPosition, yPosition, 0, itemToDrawColored)
     {
-        this.InputHelper = inputHelper;
         if (HslColorPicker.HueBar is null)
         {
             HslColorPicker.HueBar = contentHelper.Load<Texture2D>("assets/hue.png");
@@ -97,8 +95,6 @@ public class HslColorPicker : DiscreteColorPicker
     private static HslColor[] HslValues { get; set; }
 
     private static Range<int> HslTrack { get; set; }
-
-    private IInputHelper InputHelper { get; }
 
     private TrackThumb HeldThumb { get; set; } = TrackThumb.None;
 
@@ -189,7 +185,7 @@ public class HslColorPicker : DiscreteColorPicker
     }
 
     /// <summary>
-    /// Allows the <see cref="HslColorPicker" /> to register SMAPI events for handling input.
+    ///     Allows the <see cref="HslColorPicker" /> to register SMAPI events for handling input.
     /// </summary>
     /// <param name="inputEvents">Events raised for player inputs.</param>
     public void RegisterEvents(IInputEvents inputEvents)
@@ -201,7 +197,7 @@ public class HslColorPicker : DiscreteColorPicker
     }
 
     /// <summary>
-    /// Allows the <see cref="HslColorPicker" /> to unregister SMAPI events from handling input.
+    ///     Allows the <see cref="HslColorPicker" /> to unregister SMAPI events from handling input.
     /// </summary>
     /// <param name="inputEvents">Events raised for player inputs.</param>
     public void UnregisterEvents(IInputEvents inputEvents)
@@ -219,7 +215,7 @@ public class HslColorPicker : DiscreteColorPicker
         return this.IsBlack ? Color.Black : this._hslColor.ToRgbColor();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
         if (!this.visible)

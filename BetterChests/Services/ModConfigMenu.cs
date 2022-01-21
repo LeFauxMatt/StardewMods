@@ -202,18 +202,7 @@ internal class ModConfigMenu : IService
             I18n.Config_NextTab_Tooltip);
     }
 
-    private void GenerateChestConfigOptions(string name)
-    {
-        if (!this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
-        {
-            chestConfig = new();
-            this.Config.ChestConfigs.Add(name, chestConfig);
-        }
-
-        this.GenerateChestConfigOptions(chestConfig);
-    }
-
-    internal void GenerateChestConfigOptions(IChestConfig chestConfig, IManifest manifest = null, string[] features = null)
+    public void GenerateChestConfigOptions(IChestConfig chestConfig, IManifest manifest = null, string[] features = null)
     {
         manifest ??= this.Manifest;
         features ??= new[] { "capacity", "access-carried", "carry-chest", "collect-items", "crafting-range", "stashing-range" };
@@ -312,7 +301,7 @@ internal class ModConfigMenu : IService
 
     private static FeatureOption GetOptionValue(string value)
     {
-        return Enum.TryParse(value, out FeatureOption option) ? option: FeatureOption.Default;
+        return Enum.TryParse(value, out FeatureOption option) ? option : FeatureOption.Default;
     }
 
     private static string GetRangeName(FeatureOptionRange option)
@@ -330,7 +319,18 @@ internal class ModConfigMenu : IService
 
     private static FeatureOptionRange GetRangeValue(string value)
     {
-        return Enum.TryParse(value, out FeatureOptionRange option) ? option: FeatureOptionRange.Default;
+        return Enum.TryParse(value, out FeatureOptionRange option) ? option : FeatureOptionRange.Default;
+    }
+
+    private void GenerateChestConfigOptions(string name)
+    {
+        if (!this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
+        {
+            chestConfig = new();
+            this.Config.ChestConfigs.Add(name, chestConfig);
+        }
+
+        this.GenerateChestConfigOptions(chestConfig);
     }
 
     private void Reset()

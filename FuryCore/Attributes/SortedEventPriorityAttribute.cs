@@ -8,7 +8,7 @@ using StardewModdingAPI.Events;
 public class SortedEventPriorityAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SortedEventPriorityAttribute"/> class.
+    ///     Initializes a new instance of the <see cref="SortedEventPriorityAttribute" /> class.
     /// </summary>
     /// <param name="priority"></param>
     public SortedEventPriorityAttribute(EventPriority priority)

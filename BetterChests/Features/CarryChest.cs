@@ -9,7 +9,7 @@ using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
-using Models;
+using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -171,17 +171,17 @@ internal class CarryChest : Feature
     [EventPriority(EventPriority.High)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || Game1.player.CurrentTool is not null)
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton())
         {
             return;
         }
 
         var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
+        var x = (int)pos.X * Game1.tileSize;
+        var y = (int)pos.Y * Game1.tileSize;
 
         // Object exists at pos and is within reach of player
-        if (!Utility.withinRadiusOfPlayer((int)(64 * pos.X), (int)(64 * pos.Y), 1, Game1.player)
+        if (!Utility.withinRadiusOfPlayer(x, y, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
         {
             return;

@@ -19,7 +19,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     private readonly PerScreen<IClickableMenu> _menu = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ItemGrabMenuChanged"/> class.
+    ///     Initializes a new instance of the <see cref="ItemGrabMenuChanged" /> class.
     /// </summary>
     /// <param name="display"></param>
     /// <param name="services"></param>
@@ -62,7 +62,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     {
         ItemGrabMenuChanged.Instance.Menu = __instance;
 
-        if (__instance is not {shippingBin: false, context: Chest {playerChest.Value: true} chest})
+        if (__instance is not { shippingBin: false, context: Chest { playerChest.Value: true } chest })
         {
             ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, null, -1, false));
             return;

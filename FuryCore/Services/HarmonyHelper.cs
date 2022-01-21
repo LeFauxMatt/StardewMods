@@ -16,13 +16,18 @@ internal class HarmonyHelper : IHarmonyHelper, IService
     private readonly IDictionary<string, Harmony> _harmony = new Dictionary<string, Harmony>();
     private readonly IDictionary<string, List<SavedPatch>> _savedPatches = new Dictionary<string, List<SavedPatch>>();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddPatch(string id, MethodBase original, Type type, string name, PatchType patchType = PatchType.Prefix)
     {
-        this.AddPatches(id,  new[] { new SavedPatch(original, type, name, patchType) });
+        this.AddPatches(
+            id,
+            new[]
+            {
+                new SavedPatch(original, type, name, patchType),
+            });
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddPatches(string id, IEnumerable<SavedPatch> patches)
     {
         if (!this._savedPatches.TryGetValue(id, out var savedPatches))
@@ -34,7 +39,7 @@ internal class HarmonyHelper : IHarmonyHelper, IService
         savedPatches.AddRange(patches);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void ApplyPatches(string id)
     {
         if (!this._savedPatches.TryGetValue(id, out var patches))
@@ -67,7 +72,7 @@ internal class HarmonyHelper : IHarmonyHelper, IService
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void UnapplyPatches(string id)
     {
         if (!this._savedPatches.TryGetValue(id, out var patches))

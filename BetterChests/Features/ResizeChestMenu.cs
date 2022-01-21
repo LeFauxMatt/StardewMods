@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection.Emit;
+using BetterChests.Models;
 using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
@@ -14,7 +16,6 @@ using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
-using Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -25,15 +26,18 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class ResizeChestMenu : Feature
 {
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
-    private readonly PerScreen<MenuComponent> _upArrow = new();
+    private readonly PerScreen<MenuWithInventory> _menuWithInventory = new();
+    private readonly PerScreen<int?> _menuCapacity = new();
+    private readonly PerScreen<int?> _menuRows = new();
+    private readonly PerScreen<int?> _menuOffset = new();
     private readonly PerScreen<MenuComponent> _downArrow = new();
+    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
-    private readonly Lazy<IHarmonyHelper> _harmony;
+    private readonly PerScreen<MenuComponent> _upArrow = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ResizeChestMenu"/> class.
+    ///     Initializes a new instance of the <see cref="ResizeChestMenu" /> class.
     /// </summary>
     /// <param name="config"></param>
     /// <param name="helper"></param>
@@ -65,7 +69,13 @@ internal class ResizeChestMenu : Feature
                             nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler),
                             PatchType.Transpiler),
                         new(
-                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                            AccessTools.Method(
+                                typeof(ItemGrabMenu),
+                                nameof(ItemGrabMenu.draw),
+                                new[]
+                                {
+                                    typeof(SpriteBatch),
+                                }),
                             typeof(ResizeChestMenu),
                             nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
                             PatchType.Transpiler),
@@ -76,6 +86,7 @@ internal class ResizeChestMenu : Feature
                             PatchType.Transpiler),
                     });
             });
+
         this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
     }
@@ -87,6 +98,76 @@ internal class ResizeChestMenu : Feature
         get => this._harmony.Value;
     }
 
+    private MenuWithInventory Menu
+    {
+        get => this._menuWithInventory.Value;
+        set
+        {
+            if (!ReferenceEquals(this._menuWithInventory.Value, value))
+            {
+                this._menuWithInventory.Value = value;
+                this._menuCapacity.Value = null;
+                this._menuRows.Value = null;
+                this._menuOffset.Value = null;
+            }
+        }
+    }
+
+    private int MenuCapacity
+    {
+        get
+        {
+            if (this._menuCapacity.Value.HasValue)
+            {
+                return this._menuCapacity.Value ?? default;
+            }
+
+            if (!this.Menu.IsPlayerChestMenu(out var chest))
+            {
+                return this._menuCapacity.Value ??= -1; // Vanilla
+            }
+
+            var capacity = Math.Max(chest.items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
+            return this._menuCapacity.Value ??= capacity switch
+            {
+                Chest.capacity => -1, // Vanilla
+                < 72 => Math.Min(this.Config.MenuRows * 12, capacity.RoundUp(12)), // Variable
+                _ => this.Config.MenuRows * 12, // Large
+            };
+        }
+    }
+
+    private int MenuRows
+    {
+        get
+        {
+            if (this._menuRows.Value.HasValue)
+            {
+                return this._menuRows.Value ?? default;
+            }
+
+            if (!this.Menu.IsPlayerChestMenu(out var chest))
+            {
+                return this._menuRows.Value ??= 3; // Vanilla
+            }
+
+            var capacity = Math.Max(chest.items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
+            return this._menuRows.Value ??= capacity switch
+            {
+                < 72 => (int)Math.Min(this.Config.MenuRows, Math.Ceiling(capacity / 12f)), // Variable
+                _ => this.Config.MenuRows, // Large
+            };
+        }
+    }
+
+    private int MenuOffset
+    {
+        get
+        {
+            return this._menuOffset.Value ??= Game1.tileSize * (this.MenuRows - 3);
+        }
+    }
+
     private IMenuComponents MenuComponents
     {
         get => this._menuComponents.Value;
@@ -95,12 +176,6 @@ internal class ResizeChestMenu : Feature
     private IMenuItems MenuItems
     {
         get => this._menuItems.Value;
-    }
-
-    private ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
     }
 
     private MenuComponent UpArrow
@@ -150,13 +225,6 @@ internal class ResizeChestMenu : Feature
         // This forces (InventoryMenu) ItemsToGrabMenu to be instantiated with the a capacity of 36
         // and prevents large capacity chests from freezing the game and leaking memory
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Isinst, typeof(Chest)),
-                new(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity))),
-                new(OpCodes.Ldc_I4_S, (sbyte)36),
-                new(OpCodes.Beq_S),
-            },
             code =>
             {
                 Log.Trace("Changing jump condition from Beq 36 to Bge 10.", true);
@@ -165,7 +233,11 @@ internal class ResizeChestMenu : Feature
                 code.RemoveAt(code.Count - 1);
                 code.Add(new(OpCodes.Ldc_I4_S, (sbyte)10));
                 code.Add(new(OpCodes.Bge_S, top?.operand));
-            });
+            },
+            new(OpCodes.Isinst, typeof(Chest)),
+            new(OpCodes.Callvirt, AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity))),
+            new(OpCodes.Ldc_I4_S, (sbyte)36),
+            new(OpCodes.Beq_S));
 
         // Original:
         //      this.ItemsToGrabMenu = new InventoryMenu(base.xPositionOnScreen + 32, base.yPositionOnScreen, false, inventory, highlightFunction, -1, 3, 0, 0, true);
@@ -175,17 +247,17 @@ internal class ResizeChestMenu : Feature
         // This replaces the default capacity/rows of -1 and 3 with ResizeChestMenu methods to
         // allow customized capacity and rows
         patcher.AddSeek(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Newobj, AccessTools.Constructor(typeof(InventoryMenu), new[] { typeof(int), typeof(int), typeof(bool), typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool) })),
-                new(OpCodes.Stfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-            });
+            new(
+                OpCodes.Newobj,
+                AccessTools.Constructor(
+                    typeof(InventoryMenu),
+                    new[]
+                    {
+                        typeof(int), typeof(int), typeof(bool), typeof(IList<Item>), typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool),
+                    })),
+            new(OpCodes.Stfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))));
+
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldc_I4_M1),
-                new(OpCodes.Ldc_I4_3),
-            },
             code =>
             {
                 Log.Trace("Overriding default values for capacity and rows.", true);
@@ -195,7 +267,9 @@ internal class ResizeChestMenu : Feature
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuCapacity))));
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuRows))));
-            });
+            },
+            new(OpCodes.Ldc_I4_M1),
+            new(OpCodes.Ldc_I4_3));
 
         // Fill code buffer
         foreach (var inCode in instructions)
@@ -231,15 +305,15 @@ internal class ResizeChestMenu : Feature
         // This adds ResizeChestMenu.GetMenuOffset() to the y-coordinate of the backpack sprite
         patcher.AddSeek(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
         patcher.AddPatch(
-            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-            code =>
-            {
-                Log.Trace("Moving backpack icon down by expanded menu extra height.", true);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
-                code.Add(new(OpCodes.Add));
-            },
-            2);
+                   code =>
+                   {
+                       Log.Trace("Moving backpack icon down by expanded menu extra height.", true);
+                       code.Add(new(OpCodes.Ldarg_0));
+                       code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
+                       code.Add(new(OpCodes.Add));
+                   },
+                   new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
+               .Repeat(2);
 
         // Fill code buffer
         foreach (var inCode in instructions)
@@ -275,44 +349,38 @@ internal class ResizeChestMenu : Feature
         // Move Dialogue Patch
         // This adds ResizeChestMenu.GetMenuOffset() to the y-coordinate of the inventory dialogue
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldc_I4_S, (sbyte)64),
-                new(OpCodes.Add),
-            },
             code =>
             {
                 Log.Trace("Moving bottom dialogue box down by expanded menu height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
                 code.Add(new(OpCodes.Add));
-            });
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldc_I4_S, (sbyte)64),
+            new(OpCodes.Add));
 
         // ****************************************************************************************
         // Shrink Dialogue Patch
         // This subtracts ResizeChestMenu.GetMenuOffset() from the height of the inventory dialogue
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldc_I4, 192),
-                new(OpCodes.Add),
-            },
             code =>
             {
                 Log.Trace("Shrinking bottom dialogue box height by expanded menu height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetMenuOffset))));
                 code.Add(new(OpCodes.Add));
-            });
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldc_I4, 192),
+            new(OpCodes.Add));
 
         // Fill code buffer
         foreach (var inCode in instructions)
@@ -339,124 +407,78 @@ internal class ResizeChestMenu : Feature
 
     private static int GetMenuCapacity(MenuWithInventory menu)
     {
-        return ResizeChestMenu.Instance.MenuCapacity(menu);
+        ResizeChestMenu.Instance.Menu = menu;
+        return ResizeChestMenu.Instance.MenuCapacity;
     }
 
     private static int GetMenuRows(MenuWithInventory menu)
     {
-        return ResizeChestMenu.Instance.MenuRows(menu);
+        ResizeChestMenu.Instance.Menu = menu;
+        return ResizeChestMenu.Instance.MenuRows;
     }
 
     private static int GetMenuOffset(MenuWithInventory menu)
     {
-        return ResizeChestMenu.Instance.MenuOffset(menu);
-    }
-
-    private int MenuCapacity(MenuWithInventory menu)
-    {
-        if (!menu.IsPlayerChestMenu(out var chest))
-        {
-            return -1; // Vanilla
-        }
-
-        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.Config.Capacity == 0)
-        {
-            return -1;
-        }
-
-        return managedChest.Config.Capacity switch
-        {
-            -1 => this.Config.MenuRows * 12, // "Infinite"
-            < 72 => Math.Min(this.Config.MenuRows * 12, managedChest.Config.Capacity.RoundUp(12)), // Variable
-            _ => this.Config.MenuRows * 12, // Large
-        };
-    }
-
-    private int MenuRows(MenuWithInventory menu)
-    {
-        if (!menu.IsPlayerChestMenu(out var chest))
-        {
-            return 3; // Vanilla
-        }
-
-        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.Config.Capacity == 0)
-        {
-            return 3;
-        }
-
-        return managedChest.Config.Capacity switch
-        {
-            -1 => this.Config.MenuRows,
-            < 72 => (int)Math.Min(this.Config.MenuRows, Math.Ceiling(managedChest.Config.Capacity / 12f)),
-            _ => this.Config.MenuRows,
-        };
-    }
-
-    private int MenuOffset(MenuWithInventory menu)
-    {
-        if (!menu.IsPlayerChestMenu(out var chest))
-        {
-            return 0; // Vanilla
-        }
-
-        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.Config.Capacity == 0)
-        {
-            return 0;
-        }
-
-        var rows = this.MenuRows(menu);
-        return Game1.tileSize * (rows - 3);
+        ResizeChestMenu.Instance.Menu = menu;
+        return ResizeChestMenu.Instance.MenuOffset;
     }
 
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.ItemGrabMenu?.IsPlayerChestMenu(out _) != true || !e.IsNew || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.Config.Capacity == 0)
+        if (e.ItemGrabMenu?.IsPlayerChestMenu(out var chest) != true)
         {
-            this.Menu = null;
             return;
         }
 
         this.Menu = e.ItemGrabMenu;
-
-        // Shift components down for increased ItemsToGrabMenu size
-        var offset = this.MenuOffset(this.Menu);
-        this.Menu.height += offset;
-        this.Menu.inventory.movePosition(0, offset);
-        if (this.Menu.okButton is not null)
+        if (e.IsNew && this.MenuOffset != 0)
         {
-            this.Menu.okButton.bounds.Y += offset;
+            // Shift components down for increased ItemsToGrabMenu size
+            e.ItemGrabMenu.height += this.MenuOffset;
+            e.ItemGrabMenu.inventory.movePosition(0, this.MenuOffset);
+            if (e.ItemGrabMenu.okButton is not null)
+            {
+                e.ItemGrabMenu.okButton.bounds.Y += this.MenuOffset;
+            }
+
+            if (e.ItemGrabMenu.trashCan is not null)
+            {
+                e.ItemGrabMenu.trashCan.bounds.Y += this.MenuOffset;
+            }
+
+            if (e.ItemGrabMenu.dropItemInvisibleButton is not null)
+            {
+                e.ItemGrabMenu.dropItemInvisibleButton.bounds.Y += this.MenuOffset;
+            }
         }
 
-        if (this.Menu.trashCan is not null)
+        if (this.MenuComponents.Menu is not null)
         {
-            this.Menu.trashCan.bounds.Y += offset;
+            // Add Up/Down Arrows
+            this.MenuComponents.Components.Add(this.UpArrow);
+            this.MenuComponents.Components.Add(this.DownArrow);
+
+            // Initialize Arrow visibility
+            this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
+            this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
+
+            // Align to ItemsToGrabMenu top/bottom inventory slots
+            var topSlot = e.ItemGrabMenu.GetColumnCount() - 1;
+            var bottomSlot = e.ItemGrabMenu.ItemsToGrabMenu.capacity - 1;
+            this.UpArrow.Component.bounds.X = e.ItemGrabMenu.ItemsToGrabMenu.xPositionOnScreen + e.ItemGrabMenu.ItemsToGrabMenu.width + 8;
+            this.UpArrow.Component.bounds.Y = e.ItemGrabMenu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
+            this.DownArrow.Component.bounds.X = e.ItemGrabMenu.ItemsToGrabMenu.xPositionOnScreen + e.ItemGrabMenu.ItemsToGrabMenu.width + 8;
+            this.DownArrow.Component.bounds.Y = e.ItemGrabMenu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
+
+            // Assign Neighbor IDs
+            this.UpArrow.Component.leftNeighborID = e.ItemGrabMenu.ItemsToGrabMenu.inventory[topSlot].myID;
+            e.ItemGrabMenu.ItemsToGrabMenu.inventory[topSlot].rightNeighborID = this.UpArrow.Id;
+            this.DownArrow.Component.leftNeighborID = e.ItemGrabMenu.ItemsToGrabMenu.inventory[bottomSlot].myID;
+            e.ItemGrabMenu.ItemsToGrabMenu.inventory[bottomSlot].rightNeighborID = this.DownArrow.Id;
+            this.UpArrow.Component.downNeighborID = this.DownArrow.Id;
+            this.DownArrow.Component.upNeighborID = this.UpArrow.Id;
         }
-
-        if (this.Menu.dropItemInvisibleButton is not null)
-        {
-            this.Menu.dropItemInvisibleButton.bounds.Y += offset;
-        }
-
-        // Add Up/Down Arrows
-        this.MenuComponents.Components.Add(this.UpArrow);
-        this.MenuComponents.Components.Add(this.DownArrow);
-
-        // Align to ItemsToGrabMenu top/bottom inventory slots
-        var topSlot = this.Menu.GetColumnCount() - 1;
-        var bottomSlot = this.Menu.ItemsToGrabMenu.capacity - 1;
-        this.UpArrow.Component.bounds.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width + 8;
-        this.UpArrow.Component.bounds.Y = this.Menu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
-        this.DownArrow.Component.bounds.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width + 8;
-        this.DownArrow.Component.bounds.Y = this.Menu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
-
-        // Assign Neighbor IDs
-        this.UpArrow.Component.leftNeighborID = this.Menu.ItemsToGrabMenu.inventory[topSlot].myID;
-        this.Menu.ItemsToGrabMenu.inventory[topSlot].rightNeighborID = this.UpArrow.Id;
-        this.DownArrow.Component.leftNeighborID = this.Menu.ItemsToGrabMenu.inventory[bottomSlot].myID;
-        this.Menu.ItemsToGrabMenu.inventory[bottomSlot].rightNeighborID = this.DownArrow.Id;
-        this.UpArrow.Component.downNeighborID = this.DownArrow.Id;
-        this.DownArrow.Component.upNeighborID = this.UpArrow.Id;
     }
 
     private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
@@ -469,11 +491,18 @@ internal class ResizeChestMenu : Feature
         {
             this.MenuItems.Offset++;
         }
+        else
+        {
+            return;
+        }
+
+        this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
+        this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
     }
 
     private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
     {
-        if (this.Menu is null)
+        if (this.MenuItems.Menu is null)
         {
             return;
         }
@@ -489,11 +518,14 @@ internal class ResizeChestMenu : Feature
             default:
                 return;
         }
+
+        this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
+        this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
     }
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (this.Menu is null)
+        if (this.MenuItems.Menu is null)
         {
             return;
         }

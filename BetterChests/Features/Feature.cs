@@ -3,10 +3,9 @@
 using System;
 using FuryCore.Interfaces;
 using FuryCore.Services;
-using Models;
-using Services;
+using BetterChests.Models;
+using BetterChests.Services;
 using StardewModdingAPI;
-using StardewValley.Menus;
 
 /// <inheritdoc />
 internal abstract class Feature : IService

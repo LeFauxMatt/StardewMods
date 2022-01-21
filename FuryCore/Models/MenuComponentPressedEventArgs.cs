@@ -6,7 +6,7 @@ using System;
 public class MenuComponentPressedEventArgs : EventArgs
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="MenuComponentPressedEventArgs"/> class.
+    ///     Initializes a new instance of the <see cref="MenuComponentPressedEventArgs" /> class.
     /// </summary>
     /// <param name="component"></param>
     /// <param name="suppressInput"></param>

@@ -5,7 +5,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 /// <summary>
-/// 
+///
 /// </summary>
 internal class ModConfig
 {

@@ -10,7 +10,7 @@ public class ServiceCollection : List<IService>, IServiceLocator, IService
 {
     private IDictionary<Type, IPendingService> PendingServices { get; } = new Dictionary<Type, IPendingService>();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default)
     {
         var type = typeof(TServiceType);
@@ -33,7 +33,7 @@ public class ServiceCollection : List<IService>, IServiceLocator, IService
         return default;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void ForceEvaluation()
     {
         // Force evaluation of Lazy Instances
@@ -46,13 +46,13 @@ public class ServiceCollection : List<IService>, IServiceLocator, IService
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public TServiceType FindService<TServiceType>()
     {
         return (TServiceType)this.FindService(typeof(TServiceType), new List<IServiceLocator>());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public object FindService(Type type, IList<IServiceLocator> exclude)
     {
         // Find from local

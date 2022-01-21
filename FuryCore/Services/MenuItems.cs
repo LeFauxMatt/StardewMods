@@ -27,19 +27,19 @@ using StardewValley.Objects;
 internal class MenuItems : IMenuItems, IService
 {
     private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
+    private readonly PerScreen<IDictionary<string, bool>> _itemFilterCache = new(() => new Dictionary<string, bool>());
+    private readonly PerScreen<HashSet<ItemMatcher>> _itemFilters = new(() => new());
+    private readonly PerScreen<IDictionary<string, bool>> _itemHighlightCache = new(() => new Dictionary<string, bool>());
+    private readonly PerScreen<HashSet<ItemMatcher>> _itemHighlighters = new(() => new());
     private readonly PerScreen<IList<int>> _itemIndexes = new();
     private readonly PerScreen<IList<Item>> _itemsFiltered = new();
-    private readonly PerScreen<IDictionary<string, bool>> _itemFilterCache = new(() => new Dictionary<string, bool>());
-    private readonly PerScreen<IDictionary<string, bool>> _itemHighlightCache = new(() => new Dictionary<string, bool>());
-    private readonly PerScreen<HashSet<ItemMatcher>> _itemFilters = new(() => new());
-    private readonly PerScreen<HashSet<ItemMatcher>> _itemHighlighters = new(() => new());
     private readonly PerScreen<int> _menuColumns = new();
     private readonly PerScreen<int> _offset = new(() => 0);
     private readonly PerScreen<Range<int>> _range = new(() => new());
     private readonly PerScreen<bool> _refreshInventory = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MenuItems"/> class.
+    ///     Initializes a new instance of the <see cref="MenuItems" /> class.
     /// </summary>
     /// <param name="modEvents"></param>
     /// <param name="services"></param>
@@ -54,7 +54,13 @@ internal class MenuItems : IMenuItems, IService
 
                 harmonyHelper.AddPatch(
                     id,
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                    AccessTools.Method(
+                        typeof(InventoryMenu),
+                        nameof(InventoryMenu.draw),
+                        new[]
+                        {
+                            typeof(SpriteBatch), typeof(int), typeof(int), typeof(int),
+                        }),
                     typeof(MenuItems),
                     nameof(MenuItems.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler);
@@ -62,28 +68,25 @@ internal class MenuItems : IMenuItems, IService
                 harmonyHelper.ApplyPatches(id);
             });
 
-        services.Lazy<CustomEvents>(events =>
-        {
-            events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        });
+        services.Lazy<CustomEvents>(events => { events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged; });
 
         modEvents.World.ChestInventoryChanged += this.OnChestInventoryChanged;
         modEvents.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Chest Chest { get; private set; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ItemGrabMenu Menu { get; private set; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IList<Item> ActualInventory
     {
         get => this.Menu?.ItemsToGrabMenu.actualInventory;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IEnumerable<Item> ItemsDisplayed
     {
         get
@@ -91,12 +94,6 @@ internal class MenuItems : IMenuItems, IService
             if (this.Menu is null)
             {
                 return null;
-            }
-
-            if (this.ItemsFiltered is null)
-            {
-                this.ItemsFiltered = this.ActualInventory.Where(this.FilterMethod).ToList();
-                this.ItemIndexes = this.ItemsFiltered.Select(item => this.ActualInventory.IndexOf(item)).ToList();
             }
 
             if (this.RefreshInventory)
@@ -113,7 +110,7 @@ internal class MenuItems : IMenuItems, IService
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int Offset
     {
         get
@@ -134,17 +131,42 @@ internal class MenuItems : IMenuItems, IService
         }
     }
 
+    /// <inheritdoc />
+    public int Rows
+    {
+        get => this.Range.Maximum;
+    }
+
     private static MenuItems Instance { get; set; }
 
     private IList<int> ItemIndexes
     {
-        get => this._itemIndexes.Value;
+        get
+        {
+            if (this._itemIndexes.Value is null)
+            {
+                this._itemIndexes.Value = this.ItemsFiltered.Select(item => this.ActualInventory.IndexOf(item)).ToList();
+                this.RefreshInventory = true;
+            }
+
+            return this._itemIndexes.Value;
+        }
         set => this._itemIndexes.Value = value;
     }
 
     private IList<Item> ItemsFiltered
     {
-        get => this._itemsFiltered.Value;
+        get
+        {
+            if (this._itemsFiltered.Value is null)
+            {
+                this._itemsFiltered.Value = this.ActualInventory.Where(this.FilterMethod).ToList();
+                this.ItemIndexes = null;
+            }
+
+            return this._itemsFiltered.Value;
+        }
+
         set => this._itemsFiltered.Value = value;
     }
 
@@ -180,38 +202,37 @@ internal class MenuItems : IMenuItems, IService
         set => this._menuColumns.Value = value;
     }
 
-    private Range<int> Range
-    {
-        get => this._range.Value;
-    }
-
     private InventoryMenu.highlightThisItem OldHighlightMethod
     {
         get => this._highlightMethod.Value;
         set => this._highlightMethod.Value = value;
     }
 
-    /// <inheritdoc/>
+    private Range<int> Range
+    {
+        get => this._range.Value;
+    }
+
+    /// <inheritdoc />
     public void AddFilter(ItemMatcher itemMatcher)
     {
         this.ItemFilters.Add(itemMatcher);
         itemMatcher.CollectionChanged += this.OnItemFilterChanged;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddHighlighter(ItemMatcher itemMatcher)
     {
         this.ItemHighlighters.Add(itemMatcher);
         itemMatcher.CollectionChanged += this.OnItemHighlighterChanged;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void ForceRefresh()
     {
         this.ItemFilterCache.Clear();
         this.ItemHighlightCache.Clear();
         this.ItemsFiltered = null;
-        this.RefreshInventory = true;
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -223,18 +244,14 @@ internal class MenuItems : IMenuItems, IService
         // Actual Inventory Patch
         // Replaces all actualInventory with ItemsDisplayed.DisplayedItems(actualInventory)
         // which can filter/sort items separately from the actual inventory.
-        patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))),
-            },
+        patcher.AddPatchLoop(
             code =>
             {
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(MenuItems), nameof(MenuItems.DisplayedItems))));
             },
-            -1);
+            new(OpCodes.Ldarg_0),
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))));
 
         // Fill code buffer
         foreach (var inCode in instructions)
@@ -261,12 +278,12 @@ internal class MenuItems : IMenuItems, IService
 
     private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
     {
-        return ReferenceEquals(inventoryMenu, MenuItems.Instance.Menu?.ItemsToGrabMenu)
+        return MenuItems.Instance.Menu is not null && ReferenceEquals(inventoryMenu, MenuItems.Instance.Menu.ItemsToGrabMenu)
             ? MenuItems.Instance.ItemsDisplayed.Take(inventoryMenu.capacity).ToList()
             : actualInventory;
     }
 
-    [SortedEventPriority(EventPriority.High)]
+    [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         this.Menu = e.ItemGrabMenu.IsPlayerChestMenu(out _)
@@ -283,6 +300,8 @@ internal class MenuItems : IMenuItems, IService
                 this.OldHighlightMethod = this.Menu.inventory.highlightMethod;
                 this.Menu.inventory.highlightMethod = this.HighlightMethod;
             }
+
+            this.ForceRefresh();
         }
 
         foreach (var itemMatcher in this.ItemFilters)
@@ -298,7 +317,6 @@ internal class MenuItems : IMenuItems, IService
         if (this.Menu is not null && ReferenceEquals(e.Chest, this.Chest))
         {
             this.ItemsFiltered = null;
-            this.RefreshInventory = true;
         }
     }
 
@@ -307,7 +325,6 @@ internal class MenuItems : IMenuItems, IService
         if (e.IsLocalPlayer)
         {
             this.ItemsFiltered = null;
-            this.RefreshInventory = true;
         }
     }
 
@@ -315,7 +332,6 @@ internal class MenuItems : IMenuItems, IService
     {
         this.ItemFilterCache.Clear();
         this.ItemsFiltered = null;
-        this.RefreshInventory = true;
     }
 
     private void OnItemHighlighterChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -30,6 +30,7 @@ public interface IGenericModConfigMenuApi
     /****
     ** Basic options
     ****/
+
     /// <summary>Add a section title at the current position in the form.</summary>
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="text">The title text shown in the form.</param>
@@ -155,6 +156,7 @@ public interface IGenericModConfigMenuApi
     /****
     ** Multi-page management
     ****/
+
     /// <summary>
     ///     Start a new page in the mod's config UI, or switch to that page if it already exists. All options registered
     ///     after this will be part of that page.
@@ -178,6 +180,7 @@ public interface IGenericModConfigMenuApi
     /****
     ** Advanced
     ****/
+
     /// <summary>Add an option at the current position in the form using custom rendering logic.</summary>
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="name">The label text to show in the form.</param>

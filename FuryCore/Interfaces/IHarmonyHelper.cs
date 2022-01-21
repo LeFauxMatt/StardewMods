@@ -9,7 +9,6 @@ using FuryCore.Models;
 public interface IHarmonyHelper
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="id"></param>
     /// <param name="original"></param>
@@ -19,20 +18,17 @@ public interface IHarmonyHelper
     public void AddPatch(string id, MethodBase original, Type type, string name, PatchType patchType = PatchType.Prefix);
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="id"></param>
     /// <param name="patches"></param>
     public void AddPatches(string id, IEnumerable<SavedPatch> patches);
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="id"></param>
     public void ApplyPatches(string id);
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="id"></param>
     public void UnapplyPatches(string id);

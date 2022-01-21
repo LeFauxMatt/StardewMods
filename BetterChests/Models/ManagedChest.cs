@@ -1,13 +1,14 @@
 ﻿namespace BetterChests.Models;
 
 using System.Linq;
+using BetterChests.Interfaces;
 using FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Objects;
 
 internal record ManagedChest
 {
-    public ManagedChest(Chest chest, ChestType config)
+    public ManagedChest(Chest chest, IChestConfigExtended config)
     {
         this.Chest = chest;
         this.Config = config;
@@ -21,7 +22,7 @@ internal record ManagedChest
 
     public Chest Chest { get; }
 
-    public ChestType Config { get; }
+    public IChestConfigExtended Config { get; }
 
     public ItemMatcher ItemMatcher { get; }
 

@@ -14,7 +14,7 @@ internal static class MenuWithInventoryExtensions
     /// <returns></returns>
     public static bool IsPlayerChestMenu(this MenuWithInventory menu, out Chest chest)
     {
-        chest = menu is ItemGrabMenu {shippingBin: false, context: Chest outChest} && outChest.IsPlayerChest()
+        chest = menu is ItemGrabMenu { shippingBin: false, context: Chest outChest } && outChest.IsPlayerChest()
             ? outChest
             : null;
 

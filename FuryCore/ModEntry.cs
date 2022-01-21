@@ -12,7 +12,7 @@ public class ModEntry : Mod
 
     private ServiceCollection Services { get; } = new();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         ModEntry.ModUniqueId = this.ModManifest.UniqueID;
@@ -21,10 +21,7 @@ public class ModEntry : Mod
         this.Services.AddRange(
             new IService[]
             {
-                new MenuComponents(this.Helper, this.Services),
-                new CustomEvents(this.Helper, this.Services),
-                new HarmonyHelper(),
-                new MenuItems(this.Helper.Events, this.Services),
+                new MenuComponents(this.Helper, this.Services), new CustomEvents(this.Helper, this.Services), new HarmonyHelper(), new MenuItems(this.Helper.Events, this.Services),
             });
 
         this.Services.ForceEvaluation();

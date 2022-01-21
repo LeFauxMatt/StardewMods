@@ -1,10 +1,12 @@
 ﻿{
   "Name": "FuryCore",
   "Author": "furyx639",
-  "Version": "1.0.0-alpha.1",
+  "Version": "1.0.0-alpha.2",
   "Description": "Framework used primarily by Better Chests.",
   "UniqueID": "furyx639.FuryCore",
   "EntryDll": "FuryCore.dll",
   "MinimumApiVersion": "1.0.0",
-  "UpdateKeys": [ "Nexus:10696" ],
+  "UpdateKeys": [
+    "Nexus:10696"
+  ]
 }

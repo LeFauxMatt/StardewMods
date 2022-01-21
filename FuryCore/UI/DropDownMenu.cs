@@ -13,7 +13,7 @@ using StardewValley.Menus;
 public class DropDownMenu : MenuComponent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContextMenu"/> class.
+    ///     Initializes a new instance of the <see cref="ContextMenu" /> class.
     /// </summary>
     /// <param name="values"></param>
     /// <param name="x"></param>
@@ -39,7 +39,7 @@ public class DropDownMenu : MenuComponent
 
     private IList<ClickableComponent> Values { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void Draw(SpriteBatch spriteBatch)
     {
         IClickableMenu.drawTextureBox(
@@ -67,7 +67,7 @@ public class DropDownMenu : MenuComponent
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
     {
         var value = this.Values.FirstOrDefault(value => value.bounds.Contains(x, y));
@@ -78,7 +78,7 @@ public class DropDownMenu : MenuComponent
     }
 
     /// <summary>
-    /// Pass left mouse button pressed input to the Context Menu.
+    ///     Pass left mouse button pressed input to the Context Menu.
     /// </summary>
     /// <param name="x"></param>
     /// <param name="y"></param>

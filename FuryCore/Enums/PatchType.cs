@@ -1,7 +1,7 @@
 ﻿namespace FuryCore.Enums;
 
 /// <summary>
-/// Type type of patch to apply.
+///     Type type of patch to apply.
 /// </summary>
 public enum PatchType
 {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Common.Extensions;
 using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
@@ -24,7 +25,7 @@ internal class MenuComponents : IMenuComponents, IService
     private readonly PerScreen<ItemGrabMenu> _menu = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MenuComponents"/> class.
+    ///     Initializes a new instance of the <see cref="MenuComponents" /> class.
     /// </summary>
     /// <param name="helper"></param>
     /// <param name="services"></param>
@@ -33,13 +34,14 @@ internal class MenuComponents : IMenuComponents, IService
         MenuComponents.Instance = this;
         this.Helper = helper;
 
-        services.Lazy<CustomEvents>(events =>
-        {
-            events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-            events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged_After;
-            events.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
-            events.RenderingItemGrabMenu += this.OnRenderingItemGrabMenu;
-        });
+        services.Lazy<CustomEvents>(
+            events =>
+            {
+                events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+                events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged_After;
+                events.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
+                events.RenderingItemGrabMenu += this.OnRenderingItemGrabMenu;
+            });
 
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
@@ -58,10 +60,17 @@ internal class MenuComponents : IMenuComponents, IService
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public List<MenuComponent> Components
     {
         get => this._components.Value;
+    }
+
+    /// <inheritdoc/>
+    public ItemGrabMenu Menu
+    {
+        get => this._menu.Value;
+        private set => this._menu.Value = value;
     }
 
     private static MenuComponents Instance { get; set; }
@@ -72,12 +81,6 @@ internal class MenuComponents : IMenuComponents, IService
     {
         get => this._hoverText.Value;
         set => this._hoverText.Value = value;
-    }
-
-    private ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -108,25 +111,29 @@ internal class MenuComponents : IMenuComponents, IService
         }
     }
 
-    [SortedEventPriority(EventPriority.High)]
+    [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu;
+        this.Menu = e.ItemGrabMenu.IsPlayerChestMenu(out _)
+            ? e.ItemGrabMenu
+            : null;
+
+        this.Components.Clear();
+
         if (this.Menu is null)
         {
             return;
         }
 
-        var vanillaComponents = Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
-                                    .Select(componentType => new MenuComponent(this.Menu, componentType))
-                                    .Where(component => component.Component is not null)
-                                    .OrderBy(component => component.Component.bounds.Y);
-
-        this.Components.Clear();
-        this.Components.AddRange(vanillaComponents);
+        // Add vanilla components
+        this.Components.AddRange(
+            Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
+                .Select(componentType => new MenuComponent(this.Menu, componentType))
+                .Where(component => component.Component is not null)
+                .OrderBy(component => component.Component.bounds.Y));
     }
 
-    [SortedEventPriority(EventPriority.Low)]
+    [SortedEventPriority(EventPriority.Low - 1000)]
     private void OnItemGrabMenuChanged_After(object sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.Menu is null)

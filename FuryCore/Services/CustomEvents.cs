@@ -14,12 +14,11 @@ internal class CustomEvents : IFuryEvents, IService
 {
     private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
     private readonly MenuComponentPressed _menuComponentPressed;
-    private readonly MenuScrolled _menuScrolled;
     private readonly RenderedItemGrabMenu _renderedItemGrabMenu;
     private readonly RenderingItemGrabMenu _renderingItemGrabMenu;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CustomEvents"/> class.
+    ///     Initializes a new instance of the <see cref="CustomEvents" /> class.
     /// </summary>
     /// <param name="helper"></param>
     /// <param name="services"></param>
@@ -27,40 +26,32 @@ internal class CustomEvents : IFuryEvents, IService
     {
         this._itemGrabMenuChanged = new(helper.Events.Display, services);
         this._menuComponentPressed = new(helper, services);
-        this._menuScrolled = new();
         this._renderedItemGrabMenu = new(helper.Events.Display, services);
         this._renderingItemGrabMenu = new(helper.Events.Display, services);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
     {
         add => this._itemGrabMenuChanged.Add(value);
         remove => this._itemGrabMenuChanged.Remove(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event EventHandler<MenuComponentPressedEventArgs> MenuComponentPressed
     {
         add => this._menuComponentPressed.Add(value);
         remove => this._menuComponentPressed.Remove(value);
     }
 
-    /// <inheritdoc/>
-    public event EventHandler<MenuScrolledEventArgs> MenuScrolled
-    {
-        add => this._menuScrolled.Add(value);
-        remove => this._menuScrolled.Remove(value);
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event EventHandler<RenderedActiveMenuEventArgs> RenderedItemGrabMenu
     {
         add => this._renderedItemGrabMenu.Add(value);
         remove => this._renderedItemGrabMenu.Remove(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event EventHandler<RenderingActiveMenuEventArgs> RenderingItemGrabMenu
     {
         add => this._renderingItemGrabMenu.Add(value);

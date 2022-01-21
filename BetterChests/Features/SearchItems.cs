@@ -150,7 +150,6 @@ internal class SearchItems : Feature
         // This adds SearchItems.GetMenuPadding() to the y-coordinate of the backpack sprite
         patcher.AddSeek(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
         patcher.AddPatch(
-            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
             code =>
             {
                 Log.Trace("Moving backpack icon down by search bar height.", true);
@@ -158,52 +157,47 @@ internal class SearchItems : Feature
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                 code.Add(new(OpCodes.Add));
             },
-            2);
+            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
+               .Repeat(2);
 
         // ****************************************************************************************
         // Move Dialogue Patch
         // This subtracts SearchItems.GetMenuPadding() from the y-coordinate of the ItemsToGrabMenu
         // dialogue box
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                new(OpCodes.Sub),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                new(OpCodes.Sub),
-            },
             code =>
             {
                 Log.Trace("Moving top dialogue box up by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                 code.Add(new(OpCodes.Sub));
-            });
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Sub),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Sub));
 
         // ****************************************************************************************
         // Expand Dialogue Patch
         // This adds SearchItems.GetMenuPadding() to the height of the ItemsToGrabMenu dialogue box
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                new(OpCodes.Ldc_I4_2),
-                new(OpCodes.Mul),
-                new(OpCodes.Add),
-            },
             code =>
             {
                 Log.Trace("Expanding top dialogue box by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                 code.Add(new(OpCodes.Add));
-            });
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Ldc_I4_2),
+            new(OpCodes.Mul),
+            new(OpCodes.Add));
 
         // Fill code buffer
         foreach (var inCode in instructions)
@@ -237,44 +231,38 @@ internal class SearchItems : Feature
         // Move Dialogue Patch
         // This adds SearchItems.GetMenuPadding() to the y-coordinate of the inventory dialogue box
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldc_I4_S, (sbyte)64),
-                new(OpCodes.Add),
-            },
             code =>
             {
                 Log.Trace("Moving bottom dialogue box down by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                 code.Add(new(OpCodes.Add));
-            });
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldc_I4_S, (sbyte)64),
+            new(OpCodes.Add));
 
         // ****************************************************************************************
         // Shrink Dialogue Patch
         // This adds SearchItems.GetMenuPadding() to the height of the inventory dialogue box
         patcher.AddPatch(
-            new CodeInstruction[]
-            {
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-                new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-                new(OpCodes.Add),
-                new(OpCodes.Ldc_I4, 192),
-                new(OpCodes.Add),
-            },
             code =>
             {
                 Log.Trace("Shrinking bottom dialogue box height by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
                 code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetMenuPadding))));
                 code.Add(new(OpCodes.Add));
-            });
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldc_I4, 192),
+            new(OpCodes.Add));
 
         // Fill code buffer
         foreach (var inCode in instructions)

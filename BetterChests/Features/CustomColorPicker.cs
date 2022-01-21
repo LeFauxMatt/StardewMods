@@ -187,7 +187,6 @@ internal class CustomColorPicker : Feature
 
         this.ColorPicker = new(
             this.Helper.Content,
-            this.Helper.Input,
             this.Menu.xPositionOnScreen + this.Menu.width + 96 + (IClickableMenu.borderWidth / 2),
             this.Menu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2),
             chest.playerChoiceColor.Value,

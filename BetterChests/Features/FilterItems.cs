@@ -9,7 +9,7 @@ using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
-using Models;
+using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -122,7 +122,7 @@ internal class FilterItems : Feature
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         this.Menu = e.ItemGrabMenu;
-        if (!this.Menu?.IsPlayerChestMenu(out _) != true || this.ManagedChests.FindChest(e.Chest, out var managedChest))
+        if (!this.Menu?.IsPlayerChestMenu(out _) != true || !this.ManagedChests.FindChest(e.Chest, out var managedChest))
         {
             return;
         }

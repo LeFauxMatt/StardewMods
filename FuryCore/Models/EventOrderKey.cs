@@ -7,7 +7,7 @@ using StardewModdingAPI.Events;
 internal readonly struct EventOrderKey : IComparable<EventOrderKey>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventOrderKey"/> struct.
+    ///     Initializes a new instance of the <see cref="EventOrderKey" /> struct.
     /// </summary>
     /// <param name="eventPriority"></param>
     public EventOrderKey(EventPriority eventPriority)
@@ -28,7 +28,7 @@ internal readonly struct EventOrderKey : IComparable<EventOrderKey>
         registrationOrder = this.RegistrationOrder;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int CompareTo(EventOrderKey other)
     {
         var (eventPriority, registrationOrder) = other;

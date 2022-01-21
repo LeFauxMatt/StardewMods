@@ -69,9 +69,9 @@ internal struct HslColor
                 hsl.S = delta / (2 - max - min);
             }
 
-            var deltaR = ((max - fR) / 6f + delta / 2f) / delta;
-            var deltaG = ((max - fG) / 6f + delta / 2f) / delta;
-            var deltaB = ((max - fB) / 6f + delta / 2f) / delta;
+            var deltaR = (((max - fR) / 6f) + (delta / 2f)) / delta;
+            var deltaG = (((max - fG) / 6f) + (delta / 2f)) / delta;
+            var deltaB = (((max - fB) / 6f) + (delta / 2f)) / delta;
 
             if (Math.Abs(fR - max) < HslColor.Tolerance)
             {
@@ -79,11 +79,11 @@ internal struct HslColor
             }
             else if (Math.Abs(fG - max) < HslColor.Tolerance)
             {
-                hsl.H = 1f / 3f + deltaR - deltaB;
+                hsl.H = (1f / 3f) + deltaR - deltaB;
             }
             else if (Math.Abs(fB - max) < HslColor.Tolerance)
             {
-                hsl.H = 2f / 3f + deltaG - deltaR;
+                hsl.H = (2f / 3f) + deltaG - deltaR;
             }
 
             if (hsl.H < 0)
@@ -126,17 +126,17 @@ internal struct HslColor
         }
         else
         {
-            var v2 = this.L + this.S - this.S * this.L;
+            var v2 = this.L + this.S - (this.S * this.L);
             if (this.L < 0.5f)
             {
                 v2 = this.L * (1 + this.S);
             }
 
-            var v1 = 2f * this.L - v2;
+            var v1 = (2f * this.L) - v2;
 
-            c.R = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H + 1f / 3f));
+            c.R = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H + (1f / 3f)));
             c.G = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H));
-            c.B = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H - 1f / 3f));
+            c.B = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H - (1f / 3f)));
         }
 
         c.A = 255;
@@ -151,7 +151,7 @@ internal struct HslColor
 
         if (6 * vH < 1)
         {
-            ret = v1 + (v2 - v1) * 6 * vH;
+            ret = v1 + ((v2 - v1) * 6 * vH);
         }
         else if (2 * vH < 1)
         {
@@ -159,7 +159,7 @@ internal struct HslColor
         }
         else if (3 * vH < 2)
         {
-            ret = v1 + (v2 - v1) * (2f / 3f - vH) * 6f;
+            ret = v1 + ((v2 - v1) * ((2f / 3f) - vH) * 6f);
         }
 
         return MathHelper.Clamp(ret, 0, 1);

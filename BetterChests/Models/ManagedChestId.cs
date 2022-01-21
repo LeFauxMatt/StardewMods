@@ -25,8 +25,11 @@ internal readonly record struct ManagedChestId : IEquatable<Chest>
     }
 
     public GameLocation Location { get; }
+
     public Vector2 Position { get; }
+
     public Farmer Player { get; }
+
     public int Index { get; }
 
     public static implicit operator Chest(ManagedChestId managedChestId)

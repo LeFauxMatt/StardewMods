@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using BetterChests.Enums;
-using Interfaces;
+using BetterChests.Interfaces;
 
 /// <inheritdoc />
 internal class ChestConfig : IChestConfig

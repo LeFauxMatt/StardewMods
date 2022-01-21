@@ -6,12 +6,12 @@ using FuryCore.Enums;
 using HarmonyLib;
 
 /// <summary>
-/// Stores info about Harmony patches.
+///     Stores info about Harmony patches.
 /// </summary>
 public class SavedPatch
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SavedPatch"/> class.
+    ///     Initializes a new instance of the <see cref="SavedPatch" /> class.
     /// </summary>
     /// <param name="original"></param>
     /// <param name="type"></param>

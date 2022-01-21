@@ -30,62 +30,53 @@ internal class PatternPatcher<TItem>
 
     private IList<TItem> ItemBuffer { get; } = new List<TItem>();
 
+    private PatternPatch LastPatch { get; set; }
+
     /// <summary>
     ///     Allows patching a list in place after a specific pattern block is matched.
     /// </summary>
-    /// <param name="patternBlock">The pattern block to match.</param>
     /// <param name="patch">The patch to apply.</param>
-    /// <param name="repeat">Set to -1 to repeat infinitely, or a value greater than 0 to repeat a specific number of times.</param>
-    public void AddPatch(TItem[] patternBlock, Action<IList<TItem>> patch, int repeat = 0)
+    /// <param name="patternBlock">The pattern block to match.</param>
+    public PatternPatcher<TItem> AddPatch(Action<IList<TItem>> patch, params TItem[] patternBlock)
     {
-        this.Patches.Enqueue(new(patternBlock, patch, repeat == -1));
+        this.LastPatch = new(patternBlock, patch, false);
+        this.Patches.Enqueue(this.LastPatch);
         this.TotalPatches++;
 
-        // Add extra copies for repeat-N times patches
-        while (--repeat >= 0)
-        {
-            this.Patches.Enqueue(new(patternBlock, patch, false));
-            this.TotalPatches++;
-        }
+        return this;
     }
 
     /// <summary>
-    ///     Allows patching a list in place after a specific sing-item pattern is matched.
+    ///     Allows patching a list in place after a specific pattern block is matched.
     /// </summary>
-    /// <param name="item">The item to match.</param>
     /// <param name="patch">The patch to apply.</param>
-    /// <param name="repeat">Set to -1 to repeat infinitely, or a value greater than 0 to repeat a specific number of times.</param>
-    public void AddPatch(TItem item, Action<IList<TItem>> patch, int repeat = 0)
+    /// <param name="patternBlock">The pattern block to match.</param>
+    public void AddPatchLoop(Action<IList<TItem>> patch, params TItem[] patternBlock)
     {
-        this.AddPatch(
-            new[]
-            {
-                item,
-            },
-            patch,
-            repeat);
+        this.LastPatch = new(patternBlock, patch, true);
+        this.Patches.Enqueue(this.LastPatch);
+        this.TotalPatches++;
     }
 
     /// <summary>
     ///     Empty patch that will skip passed the pattern block.
     /// </summary>
     /// <param name="patternBlock">The pattern block to match.</param>
-    public void AddSeek(TItem[] patternBlock)
+    public PatternPatcher<TItem> AddSeek(params TItem[] patternBlock)
     {
-        this.AddPatch(patternBlock, null);
+        return this.AddPatch(null, patternBlock);
     }
 
-    /// <summary>
-    ///     Empty patch that skip passed the seeked single-item pattern.
-    /// </summary>
-    /// <param name="item">The item to match.</param>
-    public void AddSeek(TItem item)
+    public PatternPatcher<TItem> Repeat(int repeat)
     {
-        this.AddSeek(
-            new[]
-            {
-                item,
-            });
+        // Add extra copies for repeat-N times patches
+        while (--repeat >= 0)
+        {
+            this.Patches.Enqueue(new(this.LastPatch.Pattern, this.LastPatch.Patch, false));
+            this.TotalPatches++;
+        }
+
+        return this;
     }
 
     /// <summary>

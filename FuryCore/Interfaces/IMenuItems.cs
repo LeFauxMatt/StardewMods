@@ -8,7 +8,6 @@ using StardewValley.Objects;
 
 public interface IMenuItems
 {
-
     public Chest Chest { get; }
 
     public ItemGrabMenu Menu { get; }
@@ -21,6 +20,11 @@ public interface IMenuItems
     ///     Gets or sets the number of slots the currently displayed items are offset by.
     /// </summary>
     public int Offset { get; set; }
+
+    /// <summary>
+    /// Gets the total number of rows in the menu.
+    /// </summary>
+    public int Rows { get; }
 
     public void AddFilter(ItemMatcher itemMatcher);
 

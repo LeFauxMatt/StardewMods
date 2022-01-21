@@ -9,7 +9,7 @@ using FuryCore.Services;
 public class FuryCoreApi : ServiceCollection
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FuryCoreApi"/> class.
+    ///     Initializes a new instance of the <see cref="FuryCoreApi" /> class.
     /// </summary>
     /// <param name="services"></param>
     public FuryCoreApi(ServiceCollection services)
