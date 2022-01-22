@@ -8,6 +8,9 @@ using StardewModdingAPI;
 /// <inheritdoc />
 public class ModEntry : Mod
 {
+    /// <summary>
+    /// The unique Mod Id.
+    /// </summary>
     internal static string ModUniqueId { get; private set; }
 
     private ServiceCollection Services { get; } = new();

@@ -8,8 +8,15 @@ using FuryCore.Attributes;
 using FuryCore.Models;
 using StardewModdingAPI.Events;
 
+/// <summary>
+/// An event whose handlers support sorted priority.
+/// </summary>
+/// <typeparam name="TEventArgs">The type/class of event arguments.</typeparam>
 internal abstract class SortedEventHandler<TEventArgs>
 {
+    /// <summary>
+    /// Gets the total number of registered handlers.
+    /// </summary>
     protected int HandlerCount
     {
         get => this.Handlers.Count;
@@ -17,6 +24,10 @@ internal abstract class SortedEventHandler<TEventArgs>
 
     private SortedList<EventOrderKey, EventHandler<TEventArgs>> Handlers { get; } = new();
 
+    /// <summary>
+    /// Adds a new handler for this event.
+    /// </summary>
+    /// <param name="handler">The handler method top add.</param>
     public void Add(EventHandler<TEventArgs> handler)
     {
         lock (this.Handlers)
@@ -26,6 +37,10 @@ internal abstract class SortedEventHandler<TEventArgs>
         }
     }
 
+    /// <summary>
+    /// Removes a handler from this event.
+    /// </summary>
+    /// <param name="handler">The handler method to remove.</param>
     public void Remove(EventHandler<TEventArgs> handler)
     {
         lock (this.Handlers)
@@ -41,6 +56,10 @@ internal abstract class SortedEventHandler<TEventArgs>
         }
     }
 
+    /// <summary>
+    /// Invokes all registered handlers.
+    /// </summary>
+    /// <param name="eventArgs">The event arguments to send to handlers.</param>
     protected void InvokeAll(TEventArgs eventArgs)
     {
         foreach (var handler in this.Handlers.Values)

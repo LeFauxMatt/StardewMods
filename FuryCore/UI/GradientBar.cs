@@ -13,7 +13,7 @@ using StardewValley;
 /// </summary>
 internal class GradientBar
 {
-    private const int Cells = 16;
+    private const int DefaultCells = 16;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="GradientBar" /> class.
@@ -21,23 +21,20 @@ internal class GradientBar
     /// <param name="orientation">The direction to orient the gradient.</param>
     /// <param name="area">The rectangular area of the gradient bar.</param>
     /// <param name="getColor">Function that returns a color shade based an an input value between 0 and 1.</param>
-    public GradientBar(Axis orientation, Rectangle area, Func<float, Color> getColor)
+    /// <param name="cells">The number of cells to generate for the gradient bar.</param>
+    public GradientBar(Axis orientation, Rectangle area, Func<float, Color> getColor, int cells = GradientBar.DefaultCells)
     {
         this.Orientation = orientation;
         this.Area = area;
+        this.Cells = cells;
         this.GetColor = getColor;
 
-        var cellSize = area.Height / GradientBar.Cells;
-        this.Bars = new List<Rectangle>();
-        for (var i = 0; i < GradientBar.Cells; i++)
-        {
-            this.Bars.Add(
-                new(
-                    this.Area.Left + this.Orientation switch { Axis.Horizontal => i * cellSize, Axis.Vertical => 0, _ => 0 },
-                    this.Area.Top + this.Orientation switch { Axis.Horizontal => 0, Axis.Vertical => i * cellSize, _ => 0 },
-                    this.Orientation switch { Axis.Horizontal => cellSize, Axis.Vertical => this.Area.Width, _ => 1 },
-                    this.Orientation switch { Axis.Horizontal => this.Area.Height, Axis.Vertical => cellSize, _ => 1 }));
-        }
+        var cellSize = this.Orientation switch { Axis.Horizontal => area.Width, Axis.Vertical => area.Height, _ => 0 } / this.Cells;
+        this.Bars = Enumerable.Range(0, this.Cells).Select(i => new Rectangle(
+            this.Area.Left + this.Orientation switch { Axis.Horizontal => i * cellSize, Axis.Vertical => 0, _ => 0 },
+            this.Area.Top + this.Orientation switch { Axis.Horizontal => 0, Axis.Vertical => i * cellSize, _ => 0 },
+            this.Orientation switch { Axis.Horizontal => cellSize, Axis.Vertical => this.Area.Width, _ => 1 },
+            this.Orientation switch { Axis.Horizontal => this.Area.Height, Axis.Vertical => cellSize, _ => 1 })).ToList();
     }
 
     /// <summary>
@@ -51,13 +48,15 @@ internal class GradientBar
 
     private Axis Orientation { get; }
 
+    private int Cells { get; }
+
     /// <summary>
     ///     Draws color bars from the gradient.
     /// </summary>
     /// <param name="spriteBatch">The SpriteBatch to draw bars to.</param>
     public void Draw(SpriteBatch spriteBatch)
     {
-        foreach (var (bar, color) in this.Bars.Select((bar, index) => (bar, this.GetColor((float)index / GradientBar.Cells))))
+        foreach (var (bar, color) in this.Bars.Select((bar, index) => (bar, this.GetColor((float)index / this.Cells))))
         {
             spriteBatch.Draw(Game1.staminaRect, bar, color);
         }

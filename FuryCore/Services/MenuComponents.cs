@@ -66,7 +66,7 @@ internal class MenuComponents : IMenuComponents, IService
         get => this._components.Value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ItemGrabMenu Menu
     {
         get => this._menu.Value;

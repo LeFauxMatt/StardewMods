@@ -12,6 +12,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using static HslColorPicker;
 
 /// <summary>
 ///     A widget for choosing a color using HSL sliders.
