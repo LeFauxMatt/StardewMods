@@ -21,9 +21,9 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemGrabMenuChanged" /> class.
     /// </summary>
-    /// <param name="display"></param>
+    /// <param name="gameLoop"></param>
     /// <param name="services"></param>
-    public ItemGrabMenuChanged(IDisplayEvents display, ServiceCollection services)
+    public ItemGrabMenuChanged(IGameLoopEvents gameLoop, ServiceCollection services)
     {
         ItemGrabMenuChanged.Instance ??= this;
 
@@ -46,7 +46,8 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
                 harmonyHelper.ApplyPatches(id);
             });
 
-        display.MenuChanged += this.OnMenuChanged;
+        gameLoop.UpdateTicked += this.OnUpdateTicked;
+        gameLoop.UpdateTicking += this.OnUpdateTicking;
     }
 
     private static ItemGrabMenuChanged Instance { get; set; }
@@ -71,14 +72,28 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, chest, Context.ScreenId, true));
     }
 
-    private void OnMenuChanged(object sender, MenuChangedEventArgs e)
+    [EventPriority(EventPriority.Low - 1000)]
+    private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
     {
-        if (ReferenceEquals(e.NewMenu, this.Menu))
+        this.InvokeIfMenuChanged();
+    }
+
+    [EventPriority(EventPriority.Low - 1000)]
+    private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
+    {
+        this.InvokeIfMenuChanged();
+    }
+
+    private void InvokeIfMenuChanged()
+    {
+        var menu = Game1.activeClickableMenu;
+
+        if (ReferenceEquals(this.Menu, menu))
         {
             return;
         }
 
-        this.Menu = e.NewMenu;
+        this.Menu = Game1.activeClickableMenu;
         if (this.Menu is not ItemGrabMenu { shippingBin: false, context: Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin } chest } itemGrabMenu)
         {
             this.InvokeAll(new(this.Menu as ItemGrabMenu, null, -1, false));

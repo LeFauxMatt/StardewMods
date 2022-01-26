@@ -2,11 +2,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using BetterChests.Enums;
 using BetterChests.Interfaces;
-using FuryCore.Helpers;
 using FuryCore.Interfaces;
 using BetterChests.Models;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -18,37 +17,47 @@ using SObject = StardewValley.Object;
 /// <inheritdoc />
 internal class ManagedChests : IService
 {
-    private readonly PerScreen<IDictionary<ManagedChestId, ManagedChest>> _placedChests = new();
-    private readonly PerScreen<IDictionary<ManagedChestId, ManagedChest>> _accessibleChests = new();
-    private IDictionary<ManagedChestId, ManagedChest> _playerChests;
+    private readonly PerScreen<IList<ManagedChest>> _placedChests = new(() => null);
+    private readonly PerScreen<IList<ManagedChest>> _accessibleChests = new(() => null);
+    private IList<ManagedChest> _playerChests;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ManagedChests"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    public ManagedChests(ModConfig config, IModHelper helper)
+    /// <param name="chestData">The <see cref="IChestData" /> configured for each chest.</param>
+    /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public ManagedChests(Dictionary<string, ChestData> chestData, IConfigModel config, IModHelper helper, IServiceLocator services)
     {
+        this.ChestData = chestData;
         this.Config = config;
         this.Helper = helper;
-        this.ChestConfigs = config.ChestConfigs.Keys.ToDictionary(key => key, key => (IChestConfigExtended)new ManagedChestConfig(this.Config, key));
+        this.Services = services;
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         this.Helper.Events.Player.Warped += this.OnWarped;
         this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
     }
 
-    public IDictionary<ManagedChestId, ManagedChest> AccessibleChests
+    /// <summary>
+    /// Gets all <see cref="Chest" /> that are accessible to the player.
+    /// </summary>
+    public IEnumerable<ManagedChest> AccessibleChests
     {
-        get => this._accessibleChests.Value ??= this.PlayerChests.Concat(this.PlacedChests).ToDictionary(item => item.Key, item => item.Value);
+        get => this._accessibleChests.Value ??= this.PlayerChests.Concat(this.PlacedChests).ToList();
     }
 
-    public IDictionary<string, IChestConfigExtended> ChestConfigs { get; }
+    private Dictionary<string, ChestData> ChestData { get; }
 
-    private ModConfig Config { get; }
+    private IConfigModel Config { get; }
 
     private IModHelper Helper { get; }
 
-    private IDictionary<ManagedChestId, ManagedChest> PlacedChests
+    private IServiceLocator Services { get; }
+
+    private IDictionary<string, IChestModel> ChestConfigs { get; } = new Dictionary<string, IChestModel>();
+
+    private IEnumerable<ManagedChest> PlacedChests
     {
         get
         {
@@ -64,24 +73,38 @@ internal class ManagedChests : IService
                       && chest.playerChest.Value
                       && chest.SpecialChestType is Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin
                       && Game1.bigCraftablesInformation.ContainsKey(chest.ParentSheetIndex)
-                select (chest: item.Value as Chest, id: new ManagedChestId(location, item.Key));
+                select (chest: item.Value as Chest, location, position: item.Key, name: Game1.bigCraftablesInformation[item.Value.ParentSheetIndex].Split('/')[0]);
 
-            return this._placedChests.Value = placedChests.ToDictionary(
-                t => t.id,
+            // Add fridge
+            var farmHouses = this.AccessibleLocations.OfType<FarmHouse>().Where(farmHouse => farmHouse.fridge.Value is not null).ToList();
+            if (farmHouses.Any(farmHouse => farmHouse.fridge.Value is not null))
+            {
+                placedChests = placedChests.Concat(
+                    from location in farmHouses
+                    select (chest: location.fridge.Value, (GameLocation)location, position: Vector2.Zero, name: "Fridge"));
+            }
+
+            return this._placedChests.Value = placedChests.Select(
                 t =>
                 {
-                    var name = Game1.bigCraftablesInformation[t.chest.ParentSheetIndex].Split('/')[0];
+                    var (chest, location, position, name) = t;
                     if (!this.ChestConfigs.TryGetValue(name, out var config))
                     {
-                        config = new ManagedChestConfig(this.Config, name);
+                        if (this.Helper.Content.Load<Dictionary<string, ChestData>>($"{ModEntry.ModUniqueId}/Chests", ContentSource.GameContent)?.TryGetValue(name, out var chestData) != true)
+                        {
+                            chestData = new();
+                            this.ChestData.Add(name, chestData);
+                        }
+
+                        config = new ChestModel(this.Config, chestData);
                     }
 
-                    return new ManagedChest(t.chest, config);
-                });
+                    return new ManagedChest(chest, config, location, position);
+                }).ToList();
         }
     }
 
-    private IDictionary<ManagedChestId, ManagedChest> PlayerChests
+    private IEnumerable<ManagedChest> PlayerChests
     {
         get
         {
@@ -98,20 +121,26 @@ internal class ManagedChests : IService
                       && chest.SpecialChestType is Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin
                       && chest.Stack == 1
                       && Game1.bigCraftablesInformation.ContainsKey(chest.ParentSheetIndex)
-                select (chest: item.item as Chest, id: new ManagedChestId(player, item.index));
+                select (chest: item.item as Chest, player, item.index, name: Game1.bigCraftablesInformation[item.item.ParentSheetIndex].Split('/')[0]);
 
-            return this._playerChests = playerChests.ToDictionary(
-                t => t.id,
+            return this._playerChests = playerChests.Select(
                 t =>
                 {
-                    var name = Game1.bigCraftablesInformation[t.chest.ParentSheetIndex].Split('/')[0];
+                    var (chest, player, index, name) = t;
                     if (!this.ChestConfigs.TryGetValue(name, out var config))
                     {
-                        config = new ManagedChestConfig(this.Config, name);
+                        if (this.Helper.Content.Load<Dictionary<string, ChestData>>($"{ModEntry.ModUniqueId}/Chests", ContentSource.GameContent)?.TryGetValue(name, out var chestData) != true)
+                        {
+                            chestData = new();
+                            this.ChestData.Add(name, chestData);
+                        }
+
+                        config = new ChestModel(this.Config, chestData);
+                        this.ChestConfigs.Add(name, config);
                     }
 
-                    return new ManagedChest(t.chest, config);
-                });
+                    return new ManagedChest(chest, config, player, index);
+                }).ToList();
         }
     }
 
@@ -126,9 +155,15 @@ internal class ManagedChests : IService
             : this.Helper.Multiplayer.GetActiveLocations();
     }
 
+    /// <summary>
+    /// Attempts to find a <see cref="ManagedChest" /> that matches a <see cref="Chest" /> instance.
+    /// </summary>
+    /// <param name="chest">The <see cref="Chest" /> to find.</param>
+    /// <param name="managedChest">The <see cref="ManagedChest" /> to return if it matches the <see cref="Chest" />.</param>
+    /// <returns>Returns true if a matching <see cref="ManagedChest" /> could be found.</returns>
     public bool FindChest(Chest chest, out ManagedChest managedChest)
     {
-        managedChest = this.AccessibleChests.SingleOrDefault(item => item.Key.Equals(chest)).Value;
+        managedChest = this.AccessibleChests.FirstOrDefault(item => item.MatchesChest(chest));
         return managedChest is not null;
     }
 
@@ -151,122 +186,5 @@ internal class ManagedChests : IService
     {
         this._placedChests.Value = null;
         this._accessibleChests.Value = null;
-    }
-
-    /// <inheritdoc cref="BetterChests.Interfaces.IChestConfig" />
-    private class ManagedChestConfig : IChestConfigExtended
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ManagedChestConfig"/> class.
-        /// </summary>
-        /// <param name="config"></param>
-        /// <param name="name"></param>
-        public ManagedChestConfig(ModConfig config, string name)
-        {
-            if (!config.ChestConfigs.TryGetValue(name, out var chestConfig))
-            {
-                chestConfig = new();
-            }
-
-            this.ChestConfig = chestConfig;
-            if (ManagedChestConfig.Default is null && string.IsNullOrWhiteSpace(name))
-            {
-                this.IsDefault = true;
-                ManagedChestConfig.Default = this;
-            }
-        }
-
-        /// <inheritdoc />
-        public int Capacity
-        {
-            get
-            {
-                if (this.ChestConfig.Capacity != 0)
-                {
-                    return this.ChestConfig.Capacity;
-                }
-
-                return this.IsDefault ? 60 : ManagedChestConfig.Default.Capacity;
-            }
-            set => this.ChestConfig.Capacity = value;
-        }
-
-        /// <inheritdoc />
-        public FeatureOption CollectItems
-        {
-            get
-            {
-                if (this.ChestConfig.CollectItems != FeatureOption.Default)
-                {
-                    return this.ChestConfig.CollectItems;
-                }
-
-                return this.IsDefault ? FeatureOption.Enabled : ManagedChestConfig.Default.CollectItems;
-            }
-            set => this.ChestConfig.CollectItems = value;
-        }
-
-        /// <inheritdoc />
-        public FeatureOptionRange CraftingRange
-        {
-            get
-            {
-                if (this.ChestConfig.CraftingRange != FeatureOptionRange.Default)
-                {
-                    return this.ChestConfig.CraftingRange;
-                }
-
-                return this.IsDefault ? FeatureOptionRange.Location : ManagedChestConfig.Default.CraftingRange;
-            }
-            set => this.ChestConfig.CraftingRange = value;
-        }
-
-        /// <inheritdoc />
-        public FeatureOptionRange StashingRange
-        {
-            get
-            {
-                if (this.ChestConfig.StashingRange != FeatureOptionRange.Default)
-                {
-                    return this.ChestConfig.StashingRange;
-                }
-
-                return this.IsDefault ? FeatureOptionRange.Location : ManagedChestConfig.Default.StashingRange;
-            }
-            set => this.ChestConfig.StashingRange = value;
-        }
-
-        /// <inheritdoc />
-        public HashSet<string> FilterItems
-        {
-            get
-            {
-                if (this.ChestConfig.FilterItems.Any())
-                {
-                    return this.ChestConfig.FilterItems;
-                }
-
-                return ManagedChestConfig.Default.FilterItems ??= new();
-            }
-
-            set
-            {
-                this.ChestConfig.FilterItems = value;
-                this.ItemMatcher.Clear();
-                foreach (var filterItem in this.FilterItems)
-                {
-                    this.ItemMatcher.Add(filterItem);
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public ItemMatcher ItemMatcher { get; } = new(true);
-
-        private static IChestConfig Default { get; set; }
-
-        private ChestConfig ChestConfig { get; }
-
-        private bool IsDefault { get; }
     }
 }

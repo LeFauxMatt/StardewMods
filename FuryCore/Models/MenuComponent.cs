@@ -60,19 +60,18 @@ public class MenuComponent
     {
         get
         {
-            if (this.Component.myID == -500)
+            if (this.Component?.myID == -500)
             {
                 this.Component.myID = MenuComponent.ComponentId++;
             }
 
-            return this.Component.myID;
+            return this.Component?.myID ?? 0;
         }
     }
 
     public virtual string HoverText
     {
-        get => this.Component.hoverText;
-        set => this.Component.hoverText = value;
+        get => this.Component?.hoverText;
     }
 
     public bool IsCustom
@@ -92,11 +91,11 @@ public class MenuComponent
 
     public virtual void Draw(SpriteBatch spriteBatch)
     {
-        this.Component.draw(spriteBatch);
+        this.Component?.draw(spriteBatch);
     }
 
     public virtual void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
     {
-        this.Component.tryHover(x, y, maxScaleIncrease);
+        this.Component?.tryHover(x, y, maxScaleIncrease);
     }
 }

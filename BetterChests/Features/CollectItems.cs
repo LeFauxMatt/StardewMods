@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using BetterChests.Enums;
+using BetterChests.Interfaces;
 using BetterChests.Models;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
@@ -26,10 +27,10 @@ internal class CollectItems : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="CollectItems"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public CollectItems(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public CollectItems(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         CollectItems.Instance ??= this;
@@ -59,23 +60,24 @@ internal class CollectItems : Feature
     private IList<ManagedChest> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from item in this.ManagedChests.AccessibleChests
-            where item.Value.Config.CollectItems == FeatureOption.Enabled
-                  && ReferenceEquals(item.Key.Player, Game1.player)
-                  && item.Value.Chest.Stack == 1
-            select item.Value).ToList();
+            from managedChest in this.ManagedChests.AccessibleChests
+            where managedChest.CollectItems == FeatureOption.Enabled
+                  && managedChest.CollectionType == ItemCollectionType.PlayerInventory
+                  && ReferenceEquals(managedChest.Player, Game1.player)
+                  && managedChest.Chest.Stack == 1
+            select managedChest).ToList();
         set => this._eligibleChests.Value = value;
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc/>
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;

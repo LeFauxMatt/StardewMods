@@ -41,16 +41,14 @@ internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEve
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var component = this.Components.Components.FirstOrDefault(component => component.Component.containsPoint(x, y));
+        var component = this.Components.Components.FirstOrDefault(component => component.Component?.containsPoint(x, y) == true);
         if (component is not null)
         {
             Game1.playSound("drumkit6");
-            var eventArgs = new MenuComponentPressedEventArgs(
+            this.InvokeAll(new(
                 component,
                 () => this.Helper.Input.Suppress(SButton.MouseLeft),
-                () => this.Helper.Input.IsSuppressed(SButton.MouseLeft));
-
-            this.InvokeAll(eventArgs);
+                () => this.Helper.Input.IsSuppressed(SButton.MouseLeft)));
         }
     }
 }

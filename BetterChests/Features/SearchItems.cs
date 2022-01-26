@@ -3,7 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using BetterChests.Models;
+using BetterChests.Interfaces;
+using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using FuryCore.Attributes;
@@ -40,10 +41,10 @@ internal class SearchItems : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchItems"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public SearchItems(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public SearchItems(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         SearchItems.Instance = this;
@@ -121,7 +122,7 @@ internal class SearchItems : Feature
     private string SearchText { get; set; }
 
     /// <inheritdoc/>
-    public override void Activate()
+    protected override void Activate()
     {
         this.HarmonyHelper.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
@@ -131,7 +132,7 @@ internal class SearchItems : Feature
     }
 
     /// <inheritdoc/>
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.HarmonyHelper.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
@@ -302,7 +303,9 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu;
+        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+            ? e.ItemGrabMenu
+            : null;
 
         if (this.Menu is null)
         {

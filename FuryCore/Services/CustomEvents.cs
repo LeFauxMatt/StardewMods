@@ -24,7 +24,7 @@ internal class CustomEvents : IFuryEvents, IService
     /// <param name="services"></param>
     public CustomEvents(IModHelper helper, ServiceCollection services)
     {
-        this._itemGrabMenuChanged = new(helper.Events.Display, services);
+        this._itemGrabMenuChanged = new(helper.Events.GameLoop, services);
         this._menuComponentPressed = new(helper, services);
         this._renderedItemGrabMenu = new(helper.Events.Display, services);
         this._renderingItemGrabMenu = new(helper.Events.Display, services);

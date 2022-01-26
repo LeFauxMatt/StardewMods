@@ -3,10 +3,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using BetterChests.Interfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using BetterChests.Models;
 using Common.Helpers;
+using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
@@ -33,10 +35,10 @@ internal class CategorizeChest : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="CategorizeChest"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public CategorizeChest(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public CategorizeChest(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         CategorizeChest.Instance = this;
@@ -78,8 +80,16 @@ internal class CategorizeChest : Feature
 
     private MenuComponent ConfigureButton
     {
-        get => this._configureButton.Value;
-        set => this._configureButton.Value = value;
+        get => this._configureButton.Value ??= new(
+            new(
+                new(0, 0, Game1.tileSize, Game1.tileSize),
+                this.Helper.Content.Load<Texture2D>("assets/configure.png"),
+                Rectangle.Empty,
+                Game1.pixelZoom),
+            ComponentArea.Right)
+        {
+            Name = "Configure",
+        };
     }
 
     private ItemSelectionMenu CurrentItemSelectionMenu
@@ -100,7 +110,7 @@ internal class CategorizeChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
@@ -108,7 +118,7 @@ internal class CategorizeChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
@@ -120,7 +130,7 @@ internal class CategorizeChest : Feature
     private static bool Automate_Store_prefix(Chest ___Chest, object stack)
     {
         var item = CategorizeChest.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !CategorizeChest.Instance.ManagedChests.FindChest(___Chest, out var managedChest) || managedChest.ItemMatcher.Matches(item);
+        return !CategorizeChest.Instance.ManagedChests.FindChest(___Chest, out var managedChest) || managedChest.ItemMatcherByType.Matches(item);
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
@@ -133,14 +143,6 @@ internal class CategorizeChest : Feature
 
             // Enter an Eligible ItemGrabMenu
             case not null when this.ManagedChests.FindChest(e.Chest, out var managedChest):
-                this.ConfigureButton ??= new(new(
-                    new(0, 0, Game1.tileSize, Game1.tileSize),
-                    this.Helper.Content.Load<Texture2D>("assets/configure.png"),
-                    Rectangle.Empty,
-                    Game1.pixelZoom))
-                {
-                    Name = "Configure",
-                };
                 this.MenuComponents.Components.Insert(0, this.ConfigureButton);
                 this.ReturnMenu = e.ItemGrabMenu;
                 this.ManagedChest = managedChest;
@@ -149,7 +151,7 @@ internal class CategorizeChest : Feature
             // Exit ItemSelectionMenu
             case null when this.ReturnMenu is not null && this.CurrentItemSelectionMenu is not null && this.ManagedChest is not null:
                 // Save ItemSelectionMenu to ModData
-                var filterItems = this.ManagedChest.ItemMatcher.StringValue;
+                var filterItems = this.ManagedChest.ItemMatcherByType.StringValue;
                 if (string.IsNullOrWhiteSpace(filterItems))
                 {
                     this.ManagedChest.Chest.modData.Remove("FilterItems");
@@ -178,7 +180,7 @@ internal class CategorizeChest : Feature
         }
 
         this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
-        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.ManagedChest.ItemMatcher);
+        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.ManagedChest.ItemMatcherByType);
         this.CurrentItemSelectionMenu.RegisterEvents(this.Helper.Events.Input);
 
         Game1.activeClickableMenu = this.CurrentItemSelectionMenu;

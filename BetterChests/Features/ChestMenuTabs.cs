@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BetterChests.Interfaces;
 using FuryCore.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Models;
@@ -27,15 +28,15 @@ internal class ChestMenuTabs : Feature
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
     private readonly Lazy<Texture2D> _texture;
-    private readonly Lazy<IList<Tab>> _tabs;
+    private readonly Lazy<IList<TabComponent>> _tabs;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChestMenuTabs"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public ChestMenuTabs(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public ChestMenuTabs(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         this._texture = new(this.GetTexture);
@@ -48,12 +49,6 @@ internal class ChestMenuTabs : Feature
     {
         get => this._chest.Value;
         set => this._chest.Value = value;
-    }
-
-    private ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
     }
 
     private IMenuComponents MenuComponents
@@ -77,7 +72,7 @@ internal class ChestMenuTabs : Feature
         get => this._itemMatcher.Value;
     }
 
-    private IList<Tab> Tabs
+    private IList<TabComponent> Tabs
     {
         get => this._tabs.Value;
     }
@@ -88,7 +83,7 @@ internal class ChestMenuTabs : Feature
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
@@ -96,7 +91,7 @@ internal class ChestMenuTabs : Feature
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
@@ -105,51 +100,53 @@ internal class ChestMenuTabs : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu;
-        if (this.Menu is null)
+        if (this.MenuItems.Menu is not null)
         {
-            return;
+            // Add filter to Menu Items
+            this.MenuItems.AddFilter(this.ItemMatcher);
         }
 
-        if (!ReferenceEquals(e.Chest, this.Chest))
+        if (this.MenuComponents.Menu is not null)
         {
-            this.SetTab(-1);
-        }
+            this.MenuComponents.Components.AddRange(this.Tabs);
 
-        this.MenuComponents.Components.AddRange(this.Tabs);
-        this.Chest = e.Chest;
-
-        // Add filter to Menu Items
-        this.MenuItems.AddFilter(this.ItemMatcher);
-
-        // Reposition tabs between inventory menus along a horizontal axis
-        MenuComponent previousTab = null;
-        var slot = this.Menu.ItemsToGrabMenu.capacity - (this.Menu.ItemsToGrabMenu.capacity / this.Menu.ItemsToGrabMenu.rows);
-        foreach (var (tab, index) in this.Tabs.Select((tab, index) => (tab, index)))
-        {
-            tab.BaseY = this.Menu.ItemsToGrabMenu.yPositionOnScreen + this.Menu.ItemsToGrabMenu.height + Game1.pixelZoom;
-            tab.Component.bounds.X = previousTab is not null
-                ? previousTab.Component.bounds.Right
-                : this.Menu.ItemsToGrabMenu.xPositionOnScreen;
-
-            tab.Component.upNeighborID = this.Menu.ItemsToGrabMenu.inventory[slot + index].myID;
-            tab.Component.downNeighborID = this.Menu.inventory.inventory[index].myID;
-            this.Menu.ItemsToGrabMenu.inventory[slot + index].downNeighborID = tab.Id;
-            this.Menu.inventory.inventory[index].upNeighborID = tab.Id;
-
-            if (previousTab is not null)
+            // Reposition tabs between inventory menus along a horizontal axis
+            MenuComponent previousTab = null;
+            var itemsToGrabMenu = this.MenuComponents.Menu.ItemsToGrabMenu;
+            var inventoryMenu = this.MenuComponents.Menu.inventory.inventory;
+            var slot = itemsToGrabMenu.capacity - (itemsToGrabMenu.capacity / itemsToGrabMenu.rows);
+            foreach (var (tab, index) in this.Tabs.Select((tab, index) => (tab, index)))
             {
-                previousTab.Component.rightNeighborID = tab.Id;
-                tab.Component.leftNeighborID = previousTab.Id;
+                tab.BaseY = itemsToGrabMenu.yPositionOnScreen + itemsToGrabMenu.height + Game1.pixelZoom;
+                tab.Component.bounds.X = previousTab is not null
+                    ? previousTab.Component.bounds.Right
+                    : itemsToGrabMenu.xPositionOnScreen;
+
+                tab.Component.upNeighborID = itemsToGrabMenu.inventory[slot + index].myID;
+                tab.Component.downNeighborID = inventoryMenu[index].myID;
+                itemsToGrabMenu.inventory[slot + index].downNeighborID = tab.Id;
+                inventoryMenu[index].upNeighborID = tab.Id;
+
+                if (previousTab is not null)
+                {
+                    previousTab.Component.rightNeighborID = tab.Id;
+                    tab.Component.leftNeighborID = previousTab.Id;
+                }
+
+                previousTab = tab;
             }
 
-            previousTab = tab;
+            if (!ReferenceEquals(e.Chest, this.Chest))
+            {
+                this.Chest = e.Chest;
+                this.SetTab(-1);
+            }
         }
     }
 
     private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
     {
-        if (this.Menu is null || e.Component is not Tab tab)
+        if (e.Component is not TabComponent tab)
         {
             return;
         }
@@ -165,7 +162,7 @@ internal class ChestMenuTabs : Feature
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (this.Menu is null)
+        if (this.MenuComponents.Menu is null)
         {
             return;
         }
@@ -195,8 +192,8 @@ internal class ChestMenuTabs : Feature
         if (this.Index != -1)
         {
             this.Tabs[this.Index].Selected = true;
-            this.Menu.setCurrentlySnappedComponentTo(this.Tabs[this.Index].Id);
-            this.Menu.snapCursorToCurrentSnappedComponent();
+            this.MenuComponents.Menu.setCurrentlySnappedComponentTo(this.Tabs[this.Index].Id);
+            this.MenuComponents.Menu.snapCursorToCurrentSnappedComponent();
         }
 
         this.ItemMatcher.Clear();
@@ -214,10 +211,10 @@ internal class ChestMenuTabs : Feature
         return this.Helper.Content.Load<Texture2D>("assets/tabs.png");
     }
 
-    private IList<Tab> GetTabs()
+    private IList<TabComponent> GetTabs()
     {
         return this.Helper.Content.Load<List<TabData>>("assets/tabs.json").Select(
-            (tab, i) => new Tab(
+            (tab, i) => new TabComponent(
                 new(
                     new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
                     this.Texture,

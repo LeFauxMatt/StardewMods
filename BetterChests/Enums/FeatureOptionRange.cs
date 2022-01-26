@@ -1,10 +1,22 @@
 ﻿namespace BetterChests.Enums;
 
+/// <summary>
+/// Indicates at what range a feature will be enabled.
+/// </summary>
 internal enum FeatureOptionRange
 {
+    /// <summary>Feature inherits from a parent config.</summary>
     Default = 0,
-    Disabled = 1,
-    Inventory = 2,
-    Location = 3,
-    World = 4,
+
+    /// <summary>Feature is disabled.</summary>
+    Disabled = -1,
+
+    /// <summary>Feature is enabled for chests in the player's inventory.</summary>
+    Inventory = 1,
+
+    /// <summary>Feature is enabled for chests in the player's current location.</summary>
+    Location = 2,
+
+    /// <summary>Feature is enabled for any chest in an accessible location to the player.</summary>
+    World = 3,
 }

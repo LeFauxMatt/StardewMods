@@ -1,5 +1,6 @@
 ﻿namespace BetterChests;
 
+using System.Collections.Generic;
 using System.Linq;
 using Common.Helpers;
 using BetterChests.Features;
@@ -10,12 +11,17 @@ using FuryCore.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 
-/// <inheritdoc />
-public class ModEntry : Mod
+/// <inheritdoc cref="StardewModdingAPI.Mod" />
+public class ModEntry : Mod, IAssetLoader
 {
+    /// <summary>
+    /// Gets the unique Mod Id.
+    /// </summary>
     internal static string ModUniqueId { get; private set; }
 
-    private ModConfig Config { get; set; }
+    private ConfigModel Config { get; set; }
+
+    private Dictionary<string, ChestData> ChestData { get; set; }
 
     private ServiceCollection Services { get; } = new();
 
@@ -26,14 +32,33 @@ public class ModEntry : Mod
         I18n.Init(helper.Translation);
         Log.Init(this.Monitor);
 
-        this.Config = this.Helper.ReadConfig<ModConfig>();
+        // Mod Config
+        var config = this.Helper.ReadConfig<ConfigData>();
+        this.Config = new(config, this.Helper, this.Services);
+
+        // Chest Data
+        this.ChestData = this.Helper.Data.ReadJsonFile<Dictionary<string, ChestData>>("assets/chests.json");
+        if (this.ChestData is null)
+        {
+            this.ChestData = new()
+            {
+                { "Chest", new() },
+                { "Stone Chest", new() },
+                { "Junimo Chest", new() },
+                { "Mini-Fridge", new() },
+                { "Mini-Shipping Bin", new() },
+                { "Fridge", new() },
+                { "Auto-Grabber", new() },
+            };
+            this.Helper.Data.WriteJsonFile("assets/chests.json", this.ChestData);
+        }
 
         // Services
         this.Services.AddRange(
             new IService[]
             {
                 // Mod Services
-                new ManagedChests(this.Config, this.Helper),
+                new ManagedChests(this.ChestData, this.Config, this.Helper, this.Services),
                 new ModConfigMenu(this.Config, this.Helper, this.ModManifest),
 
                 // Features
@@ -56,10 +81,16 @@ public class ModEntry : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
-    /// <inheritdoc />
-    public override object GetApi()
+    /// <inheritdoc/>
+    public bool CanLoad<T>(IAssetInfo asset)
     {
-        return new BetterChestsApi(this.Config, this.Services);
+        return asset.AssetNameEquals($"{ModEntry.ModUniqueId}/Chests");
+    }
+
+    /// <inheritdoc/>
+    public T Load<T>(IAssetInfo asset)
+    {
+        return (T)(object)this.ChestData;
     }
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -71,7 +102,7 @@ public class ModEntry : Mod
         // Activate Features
         foreach (var feature in this.Services.OfType<Feature>())
         {
-            feature.Activate();
+            feature.Toggle();
         }
     }
 }

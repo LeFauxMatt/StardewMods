@@ -2,11 +2,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using BetterChests.Interfaces;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Services;
 using HarmonyLib;
-using Models;
 using StardewModdingAPI;
 using StardewValley.Objects;
 
@@ -18,10 +18,10 @@ internal class ResizeChest : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="ResizeChest"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public ResizeChest(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public ResizeChest(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         ResizeChest.Instance = this;
@@ -45,13 +45,13 @@ internal class ResizeChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
     }
@@ -60,10 +60,10 @@ internal class ResizeChest : Feature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (ResizeChest.Instance.ManagedChests.FindChest(__instance, out var managedChest) && managedChest.Config.Capacity != 0)
+        if (ResizeChest.Instance.ManagedChests.FindChest(__instance, out var managedChest) && managedChest.ResizeChestCapacity != 0)
         {
-            __result = managedChest.Config.Capacity > 0
-                ? managedChest.Config.Capacity
+            __result = managedChest.ResizeChestCapacity > 0
+                ? managedChest.ResizeChestCapacity
                 : int.MaxValue;
         }
     }

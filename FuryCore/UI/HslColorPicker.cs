@@ -78,6 +78,8 @@ public class HslColorPicker : DiscreteColorPicker
             this.SaturationCoord = initHsl.S.Remap(HslColorPicker.UnitRange, this.SaturationTrack);
             this.LightnessCoord = initHsl.L.Remap(HslColorPicker.UnitRange, this.LightnessTrack);
         }
+
+        this.colorSelection = HslColorPicker.GetSelectionFromColor(this.getCurrentColor());
     }
 
     private enum TrackThumb
@@ -216,6 +218,11 @@ public class HslColorPicker : DiscreteColorPicker
         return this.IsBlack ? Color.Black : this._hslColor.ToRgbColor();
     }
 
+    /// <inheritdoc/>
+    public override void receiveLeftClick(int x, int y, bool playSound = true)
+    {
+    }
+
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
@@ -312,6 +319,7 @@ public class HslColorPicker : DiscreteColorPicker
             this.HueCoord = 0;
             this.SaturationCoord = 0;
             this.LightnessCoord = 0;
+            this.colorSelection = 0;
             this.IsBlack = true;
         }
         else if (this.HueBarArea.Contains(x, y))

@@ -1,9 +1,9 @@
 ﻿namespace BetterChests.Features;
 
 using System;
+using BetterChests.Enums;
+using BetterChests.Interfaces;
 using FuryCore.Interfaces;
-using FuryCore.Services;
-using BetterChests.Models;
 using BetterChests.Services;
 using StardewModdingAPI;
 
@@ -16,35 +16,96 @@ internal abstract class Feature : IService
     /// <summary>
     /// Initializes a new instance of the <see cref="Feature"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    protected Feature(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    protected Feature(IConfigModel config, IModHelper helper, IServiceLocator services)
     {
         this.Id = $"{ModEntry.ModUniqueId}.{this.GetType().Name}";
-        this.Config = config;
         this.Helper = helper;
+        this.Config = config;
         this._managedChests = services.Lazy<ManagedChests>();
         this._furyEvents = services.Lazy<IFuryEvents>();
     }
 
+    /// <summary>
+    /// Gets an Id that uniquely describes the mod and feature.
+    /// </summary>
     protected string Id { get; }
 
+    /// <summary>
+    /// Gets custom events provided by FuryCore.
+    /// </summary>
     protected IFuryEvents FuryEvents
     {
         get => this._furyEvents.Value;
     }
 
+    /// <summary>
+    /// Gets SMAPIs Helper API for events, input, and content.
+    /// </summary>
     protected IModHelper Helper { get; }
 
+    /// <summary>
+    /// Gets the <see cref="ManagedChests" /> service to track placed and player chests in the game.
+    /// </summary>
     protected ManagedChests ManagedChests
     {
         get => this._managedChests.Value;
     }
 
-    protected ModConfig Config { get; }
+    /// <summary>
+    /// Gets the player configured mod options.
+    /// </summary>
+    protected IConfigModel Config { get; }
 
-    public abstract void Activate();
+    /// <summary>
+    /// Gets or sets a value indicating whether the feature is currently enabled.
+    /// </summary>
+    private bool Enabled { get; set; }
 
-    public abstract void Deactivate();
+    /// <summary>
+    /// Toggles a feature on or off based on <see cref="IConfigData" />.
+    /// </summary>
+    public void Toggle()
+    {
+        var enabled = this switch
+        {
+            CarryChest => this.Config.CarryChest != FeatureOption.Disabled,
+            CategorizeChest => this.Config.CategorizeChest != FeatureOption.Disabled,
+            ChestMenuTabs => this.Config.ChestMenuTabs != FeatureOption.Disabled,
+            CollectItems => this.Config.CollectItems != FeatureOption.Disabled,
+            CraftFromChest => this.Config.CraftFromChest != FeatureOptionRange.Disabled,
+            CustomColorPicker => this.Config.CustomColorPicker != FeatureOption.Disabled,
+            FilterItems => this.Config.FilterItems != FeatureOption.Disabled,
+            OpenHeldChest => this.Config.OpenHeldChest != FeatureOption.Disabled,
+            ResizeChest => this.Config.ResizeChest != FeatureOption.Disabled,
+            ResizeChestMenu => this.Config.ResizeChestMenu != FeatureOption.Disabled,
+            SearchItems => this.Config.SearchItems != FeatureOption.Disabled,
+            StashToChest => this.Config.StashToChest != FeatureOptionRange.Disabled,
+            _ => throw new InvalidOperationException($"Invalid feature toggle {this.GetType().Name}."),
+        };
+
+        switch (enabled)
+        {
+            case true when !this.Enabled:
+                this.Activate();
+                this.Enabled = true;
+                return;
+            case false when this.Enabled:
+                this.Deactivate();
+                this.Enabled = false;
+                return;
+        }
+    }
+
+    /// <summary>
+    /// Subscribe to events and apply any Harmony patches.
+    /// </summary>
+    protected abstract void Activate();
+
+    /// <summary>
+    /// Unsubscribe from events, and reverse any Harmony patches.
+    /// </summary>
+    protected abstract void Deactivate();
 }

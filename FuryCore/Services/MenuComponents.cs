@@ -23,6 +23,7 @@ internal class MenuComponents : IMenuComponents, IService
     private readonly PerScreen<List<MenuComponent>> _components = new(() => new());
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<bool> _refreshComponents = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuComponents" /> class.
@@ -38,7 +39,6 @@ internal class MenuComponents : IMenuComponents, IService
             events =>
             {
                 events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-                events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged_After;
                 events.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
                 events.RenderingItemGrabMenu += this.OnRenderingItemGrabMenu;
             });
@@ -83,6 +83,12 @@ internal class MenuComponents : IMenuComponents, IService
         set => this._hoverText.Value = value;
     }
 
+    private bool RefreshComponents
+    {
+        get => this._refreshComponents.Value;
+        set => this._refreshComponents.Value = value;
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     private static bool ItemGrabMenu_RepositionSideButtons_prefix(ItemGrabMenu __instance)
@@ -93,7 +99,7 @@ internal class MenuComponents : IMenuComponents, IService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
-        if (this.Menu is null)
+        if (!ReferenceEquals(this.Menu, Game1.activeClickableMenu))
         {
             return;
         }
@@ -104,7 +110,7 @@ internal class MenuComponents : IMenuComponents, IService
         {
             component.TryHover(x, y, 0.25f);
 
-            if (component.Component.containsPoint(x, y))
+            if (component.Component?.containsPoint(x, y) == true)
             {
                 this.HoverText = component.HoverText;
             }
@@ -114,7 +120,7 @@ internal class MenuComponents : IMenuComponents, IService
     [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu.IsPlayerChestMenu(out _)
+        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
             ? e.ItemGrabMenu
             : null;
 
@@ -130,23 +136,9 @@ internal class MenuComponents : IMenuComponents, IService
             Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
                 .Select(componentType => new MenuComponent(this.Menu, componentType))
                 .Where(component => component.Component is not null)
-                .OrderBy(component => component.Component.bounds.Y));
-    }
-
-    [SortedEventPriority(EventPriority.Low - 1000)]
-    private void OnItemGrabMenuChanged_After(object sender, ItemGrabMenuChangedEventArgs e)
-    {
-        if (this.Menu is null)
-        {
-            return;
-        }
-
-        foreach (var component in this.Components.Where(component => component.IsCustom))
-        {
-            this.Menu.allClickableComponents.Add(component.Component);
-        }
-
-        this.RepositionSideButtons(this.Menu);
+                .OrderBy(component => component.Component.bounds.X)
+                .ThenBy(component => component.Component.bounds.Y));
+        this.RefreshComponents = true;
     }
 
     private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
@@ -164,6 +156,22 @@ internal class MenuComponents : IMenuComponents, IService
 
     private void OnRenderingItemGrabMenu(object sender, RenderingActiveMenuEventArgs e)
     {
+        if (this.RefreshComponents && this.Menu is not null)
+        {
+            foreach (var component in this.Components.Where(component => component.Component is null).ToList())
+            {
+                this.Components.Remove(component);
+            }
+
+            foreach (var component in this.Components.Where(component => component.IsCustom))
+            {
+                this.Menu.allClickableComponents.Add(component.Component);
+            }
+
+            this.RepositionSideButtons(this.Menu);
+            this.RefreshComponents = false;
+        }
+
         foreach (var component in this.Components.Where(component => component.IsCustom && component.Area is ComponentArea.Bottom))
         {
             component.Draw(e.SpriteBatch);
@@ -172,7 +180,12 @@ internal class MenuComponents : IMenuComponents, IService
 
     private void RepositionSideButtons(IClickableMenu menu)
     {
-        var sideComponents = this.Components.Where(component => component.Area is ComponentArea.Right).ToList();
+        if (!ReferenceEquals(this.Menu, menu))
+        {
+            return;
+        }
+
+        var sideComponents = this.Components.Where(component => component.Area is ComponentArea.Right && component.Component is not null).ToList();
         var stepSize = sideComponents.Count >= 4 ? 72 : 80;
         MenuComponent previousComponent = null;
         foreach (var (component, index) in sideComponents.AsEnumerable().Reverse().Select((component, index) => (component, index)))

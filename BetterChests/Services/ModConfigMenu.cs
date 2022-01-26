@@ -1,7 +1,5 @@
 ﻿namespace BetterChests.Services;
 
-using System;
-using System.Linq;
 using BetterChests.Enums;
 using BetterChests.Interfaces;
 using BetterChests.Models;
@@ -18,15 +16,15 @@ internal class ModConfigMenu : IService
     /// <summary>
     /// Initializes a new instance of the <see cref="ModConfigMenu"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="manifest"></param>
-    public ModConfigMenu(ModConfig config, IModHelper helper, IManifest manifest)
+    /// <param name="config">The data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
+    /// <param name="manifest">The mod manifest to subscribe to GMCM with.</param>
+    public ModConfigMenu(IConfigModel config, IModHelper helper, IManifest manifest)
     {
-        this.Config = config;
         this.Helper = helper;
         this.Manifest = manifest;
         this.GMCM = new(this.Helper.ModRegistry);
+        this.Config = config;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
@@ -36,7 +34,7 @@ internal class ModConfigMenu : IService
 
     private IManifest Manifest { get; }
 
-    private ModConfig Config { get; set; }
+    private IConfigModel Config { get; }
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
@@ -45,10 +43,10 @@ internal class ModConfigMenu : IService
             return;
         }
 
-        this.GenerateModConfigMenu();
+        this.GenerateConfig();
     }
 
-    private void GenerateModConfigMenu()
+    private void GenerateConfig()
     {
         if (this._isRegistered)
         {
@@ -58,100 +56,197 @@ internal class ModConfigMenu : IService
         this._isRegistered = true;
 
         // Register mod configuration
-        this.GMCM.API.Register(this.Manifest, this.Reset, this.Save);
+        this.GMCM.API.Register(this.Manifest, this.Config.Reset, this.Config.Save);
 
-        // Mod Config
-        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_General_Name);
-        this.GenerateModConfigOptions();
+        // Pages
+        this.GMCM.API.AddPageLink(this.Manifest, "General", I18n.Section_General_Name);
+        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_General_Description);
+        this.GMCM.API.AddPageLink(this.Manifest, "Features", I18n.Section_Features_Name);
+        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Features_Description);
+        this.GMCM.API.AddPageLink(this.Manifest, "Controls", I18n.Section_Controls_Name);
+        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Controls_Description);
 
-        // Controls
-        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_Controls_Name);
-        this.GenerateControlOptions();
+        // General
+        this.GMCM.API.AddPage(this.Manifest, "General");
+        this.GeneralConfig();
 
-        // Global Chest Config
-        this.GMCM.API.AddPageLink(this.Manifest, "Default Options", I18n.Section_DefaultOptions_Name);
+        // Features
+        this.GMCM.API.AddPage(this.Manifest, "Features");
+        this.FeatureConfig();
 
-        // Chest Configs
-        var chestTypes = this.Config.ChestConfigs.Keys.OrderBy(name => name).Distinct().ToList();
-        chestTypes.Remove(string.Empty);
-        foreach (var chestType in chestTypes)
-        {
-            this.GMCM.API.AddPageLink(this.Manifest, chestType, () => chestType);
-        }
-
-        this.GMCM.API.AddPage(this.Manifest, "Default Options");
-        this.GenerateChestConfigOptions(string.Empty);
-
-        foreach (var chestType in chestTypes)
-        {
-            this.GMCM.API.AddPage(this.Manifest, chestType);
-            this.GenerateChestConfigOptions(chestType);
-        }
+        // Controller
+        this.GMCM.API.AddPage(this.Manifest, "Controls");
+        this.ControllerConfig();
     }
 
-    private void GenerateModConfigOptions()
+    private void GeneralConfig()
     {
-        // Categorize Chest
-        this.GMCM.API.AddBoolOption(
-            this.Manifest,
-            () => this.Config.CategorizedChests,
-            value => this.Config.CategorizedChests = value,
-            I18n.Config_CategorizeChest_Name,
-            I18n.Config_CategorizeChest_Tooltip);
+        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Config_CraftFromChest_Name, I18n.Config_CraftFromChest_Tooltip);
 
-        // Chest Tabs
-        this.GMCM.API.AddBoolOption(
+        // Craft from Chest Distance
+        this.GMCM.API.AddNumberOption(
             this.Manifest,
-            () => this.Config.ChestTabs,
-            value => this.Config.ChestTabs = value,
-            I18n.Config_ChestTabs_Name,
-            I18n.Config_ChestTabs_Tooltip);
+            () => this.Config.CraftFromChestDistance,
+            value => this.Config.CraftFromChestDistance = value,
+            I18n.Config_CraftFromChestDistance_Name,
+            I18n.Config_CraftFromChestDistance_Tooltip);
 
-        // Color Picker
-        this.GMCM.API.AddBoolOption(
+        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Config_CustomColorPicker_Name, I18n.Config_CustomColorPicker_Tooltip);
+
+        // Custom Color Picker Area
+        this.GMCM.API.AddTextOption(
             this.Manifest,
-            () => this.Config.ColorPicker,
-            value => this.Config.ColorPicker = value,
-            I18n.Config_ColorPicker_Name,
-            I18n.Config_ColorPicker_Tooltip);
+            () => this.Config.CustomColorPickerAreaString,
+            value => this.Config.CustomColorPickerAreaString = value,
+            I18n.Config_CustomColorPickerArea_Name,
+            I18n.Config_CustomColorPickerArea_Tooltip,
+            ConfigModel.AreaValues,
+            ConfigModel.FormatAreaValue);
+
+        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Config_SearchItems_Name, I18n.Config_SearchItems_Tooltip);
+
+        // Search Tag Symbol
+        this.GMCM.API.AddTextOption(
+            this.Manifest,
+            () => this.Config.SearchTagSymbolString,
+            value => this.Config.SearchTagSymbolString = value,
+            I18n.Config_SearchItemsSymbol_Name,
+            I18n.Config_SearchItemsSymbol_Tooltip);
+
+        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Config_StashToChest_Name, I18n.Config_StashToChest_Tooltip);
+
+        // Stash to Chest Distance
+        this.GMCM.API.AddNumberOption(
+            this.Manifest,
+            () => this.Config.StashToChestDistance,
+            value => this.Config.StashToChestDistance = value,
+            I18n.Config_StashToChestDistance_Name,
+            I18n.Config_StashToChestDistance_Tooltip);
 
         // Fill Stacks
         this.GMCM.API.AddBoolOption(
             this.Manifest,
             () => this.Config.FillStacks,
             value => this.Config.FillStacks = value,
-            I18n.Config_FillStacks_Name,
-            I18n.Config_FillStacks_Tooltip);
+            I18n.Config_StashToChestStacks_Name,
+            I18n.Config_StashToChestStacks_Tooltip);
+    }
 
-        // Menu Rows
+    private void FeatureConfig()
+    {
+        // Carry Chest
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.CarryChest != FeatureOption.Disabled,
+            value => this.Config.CarryChest = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_CarryChest_Name,
+            I18n.Config_CarryChest_Tooltip);
+
+        // Categorize Chest
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.CategorizeChest != FeatureOption.Disabled,
+            value => this.Config.CategorizeChest = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_CategorizeChest_Name,
+            I18n.Config_CategorizeChest_Tooltip);
+
+        // Chest Menu Tabs
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.ChestMenuTabs != FeatureOption.Disabled,
+            value => this.Config.ChestMenuTabs = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_ChestMenuTabs_Name,
+            I18n.Config_ChestMenuTabs_Tooltip);
+
+        // Collect Items
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.CollectItems != FeatureOption.Disabled,
+            value => this.Config.CollectItems = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_CollectItems_Name,
+            I18n.Config_CollectItems_Tooltip);
+
+        // Craft from Chest
+        this.GMCM.API.AddTextOption(
+            this.Manifest,
+            () => this.Config.CraftFromChestString,
+            value => this.Config.CraftFromChestString = value,
+            I18n.Config_CraftFromChest_Name,
+            I18n.Config_CraftFromChest_Tooltip,
+            ConfigModel.RangeValues,
+            ConfigModel.FormatRangeValue);
+
+        // Custom Color Picker
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.CustomColorPicker != FeatureOption.Disabled,
+            value => this.Config.CustomColorPicker = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_CustomColorPicker_Name,
+            I18n.Config_CustomColorPicker_Tooltip);
+
+        // Open Held Chest
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.OpenHeldChest != FeatureOption.Disabled,
+            value => this.Config.OpenHeldChest = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_OpenHeldChest_Name,
+            I18n.Config_OpenHeldChest_Tooltip);
+
+        // Resize Chest
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.ResizeChest != FeatureOption.Disabled,
+            value => this.Config.ResizeChest = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_OpenHeldChest_Name,
+            I18n.Config_OpenHeldChest_Tooltip);
+
+        // Resize Chest Menu
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.ResizeChestMenu != FeatureOption.Disabled,
+            value => this.Config.ResizeChestMenu = value ? FeatureOption.Enabled : FeatureOption.Disabled,
+            I18n.Config_OpenHeldChest_Name,
+            I18n.Config_OpenHeldChest_Tooltip);
+
+        // Resize Chest
         this.GMCM.API.AddNumberOption(
             this.Manifest,
-            () => this.Config.MenuRows,
-            value => this.Config.MenuRows = value,
-            I18n.Config_MenuRows_Name,
-            I18n.Config_MenuRows_Tooltip,
-            3,
+            () => this.Config.ResizeChestCapacity,
+            value => this.Config.ResizeChestCapacity = value,
+            I18n.Config_ResizeChest_Name,
+            I18n.Config_ResizeChest_Tooltip);
+
+        // Resize Chest Menu
+        this.GMCM.API.AddNumberOption(
+            this.Manifest,
+            () => this.Config.ResizeChestMenuRows,
+            value => this.Config.ResizeChestMenuRows = value,
+            I18n.Config_ResizeChestMenu_Name,
+            I18n.Config_ResizeChestMenu_Tooltip,
+            0,
             6,
             1);
 
         // Search Items
         this.GMCM.API.AddBoolOption(
             this.Manifest,
-            () => this.Config.SearchItems,
-            value => this.Config.SearchItems = value,
+            () => this.Config.SearchItems != FeatureOption.Disabled,
+            value => this.Config.SearchItems = value ? FeatureOption.Enabled : FeatureOption.Disabled,
             I18n.Config_SearchItems_Name,
             I18n.Config_SearchItems_Tooltip);
 
-        // Search Tag Symbol
+        // Stash to Chest Range
         this.GMCM.API.AddTextOption(
             this.Manifest,
-            () => this.Config.SearchTagSymbol.ToString(),
-            value => this.Config.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.Trim().ToCharArray()[0],
-            I18n.Config_SearchTagSymbol_Name,
-            I18n.Config_SearchTagSymbol_Tooltip);
+            () => this.Config.StashToChestString,
+            value => this.Config.StashToChestString = value,
+            I18n.Config_StashToChest_Name,
+            I18n.Config_StashToChest_Tooltip,
+            ConfigModel.RangeValues,
+            ConfigModel.FormatRangeValue);
     }
 
-    private void GenerateControlOptions()
+    private void ControllerConfig()
     {
         // Open Crafting
         this.GMCM.API.AddKeybindList(
@@ -200,146 +295,5 @@ internal class ModConfigMenu : IService
             value => this.Config.NextTab = value,
             I18n.Config_NextTab_Name,
             I18n.Config_NextTab_Tooltip);
-    }
-
-    public void GenerateChestConfigOptions(IChestConfig chestConfig, IManifest manifest = null, string[] features = null)
-    {
-        manifest ??= this.Manifest;
-        features ??= new[] { "capacity", "access-carried", "carry-chest", "collect-items", "crafting-range", "stashing-range" };
-
-        var optionValues = new[]
-        {
-            "Default",
-            "Disabled",
-            "Enabled",
-        };
-
-        var rangeValues = new[]
-        {
-            "Default",
-            "Disabled",
-            "Inventory",
-            "Location",
-            "World",
-        };
-
-        // Capacity
-        if (features.Contains("capacity"))
-        {
-            this.GMCM.API.AddNumberOption(
-                manifest,
-                () => chestConfig.Capacity,
-                value => chestConfig.Capacity = value,
-                I18n.Config_Capacity_Name,
-                I18n.Config_Capacity_Tooltip);
-        }
-
-        // Collect Items
-        if (features.Contains("collect-items"))
-        {
-            this.GMCM.API.AddTextOption(
-                manifest,
-                () => ModConfigMenu.GetOptionName(chestConfig.CollectItems),
-                value => chestConfig.CollectItems = ModConfigMenu.GetOptionValue(value),
-                I18n.Config_CollectItems_Name,
-                I18n.Config_CollectItems_Tooltip,
-                optionValues,
-                ModConfigMenu.FormatAllowedValue);
-        }
-
-        // Crafting Range
-        if (features.Contains("crafting-range"))
-        {
-            this.GMCM.API.AddTextOption(
-                manifest,
-                () => ModConfigMenu.GetRangeName(chestConfig.CraftingRange),
-                value => chestConfig.CraftingRange = ModConfigMenu.GetRangeValue(value),
-                I18n.Config_CraftingRange_Name,
-                I18n.Config_CraftingRange_Tooltip,
-                rangeValues,
-                ModConfigMenu.FormatAllowedValue);
-        }
-
-        // Stashing Range
-        if (features.Contains("stashing-range"))
-        {
-            this.GMCM.API.AddTextOption(
-                manifest,
-                () => ModConfigMenu.GetRangeName(chestConfig.StashingRange),
-                value => chestConfig.StashingRange = ModConfigMenu.GetRangeValue(value),
-                I18n.Config_StashingRange_Name,
-                I18n.Config_StashingRange_Tooltip,
-                rangeValues,
-                ModConfigMenu.FormatAllowedValue);
-        }
-    }
-
-    private static string FormatAllowedValue(string value)
-    {
-        return value switch
-        {
-            "Default" => I18n.Option_Default_Name(),
-            "Disabled" => I18n.Option_Disabled_Name(),
-            "Enabled" => I18n.Option_Enabled_Name(),
-            "Inventory" => I18n.Option_Inventory_Name(),
-            "Location" => I18n.Option_Location_Name(),
-            "World" => I18n.Option_World_Name(),
-            _ => I18n.Option_Default_Name(),
-        };
-    }
-
-    private static string GetOptionName(FeatureOption option)
-    {
-        return option switch
-        {
-            FeatureOption.Default => I18n.Option_Default_Name(),
-            FeatureOption.Disabled => I18n.Option_Disabled_Name(),
-            FeatureOption.Enabled => I18n.Option_Enabled_Name(),
-            _ => throw new ArgumentOutOfRangeException(nameof(option), option, null),
-        };
-    }
-
-    private static FeatureOption GetOptionValue(string value)
-    {
-        return Enum.TryParse(value, out FeatureOption option) ? option : FeatureOption.Default;
-    }
-
-    private static string GetRangeName(FeatureOptionRange option)
-    {
-        return option switch
-        {
-            FeatureOptionRange.Default => I18n.Option_Default_Name(),
-            FeatureOptionRange.Disabled => I18n.Option_Disabled_Name(),
-            FeatureOptionRange.Inventory => I18n.Option_Inventory_Name(),
-            FeatureOptionRange.Location => I18n.Option_Location_Name(),
-            FeatureOptionRange.World => I18n.Option_World_Name(),
-            _ => throw new ArgumentOutOfRangeException(nameof(option), option, null),
-        };
-    }
-
-    private static FeatureOptionRange GetRangeValue(string value)
-    {
-        return Enum.TryParse(value, out FeatureOptionRange option) ? option : FeatureOptionRange.Default;
-    }
-
-    private void GenerateChestConfigOptions(string name)
-    {
-        if (!this.Config.ChestConfigs.TryGetValue(name, out var chestConfig))
-        {
-            chestConfig = new();
-            this.Config.ChestConfigs.Add(name, chestConfig);
-        }
-
-        this.GenerateChestConfigOptions(chestConfig);
-    }
-
-    private void Reset()
-    {
-        this.Config = new();
-    }
-
-    private void Save()
-    {
-        this.Helper.WriteConfig(this.Config);
     }
 }

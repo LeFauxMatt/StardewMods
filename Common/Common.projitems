@@ -21,8 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\SearchableItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\DynamicGameAssets\DynamicGameAssetsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\DynamicGameAssets\IDynamicGameAssetsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs" />

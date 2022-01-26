@@ -286,7 +286,7 @@ internal class MenuItems : IMenuItems, IService
     [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu.IsPlayerChestMenu(out _)
+        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
             ? e.ItemGrabMenu
             : null;
 

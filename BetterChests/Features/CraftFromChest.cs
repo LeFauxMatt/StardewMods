@@ -6,13 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using BetterChests.Enums;
+using BetterChests.Interfaces;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
-using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -29,10 +29,10 @@ internal class CraftFromChest : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="CraftFromChest"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public CraftFromChest(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public CraftFromChest(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         this._harmony = services.Lazy<IHarmonyHelper>(
@@ -62,7 +62,7 @@ internal class CraftFromChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
@@ -70,7 +70,7 @@ internal class CraftFromChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
@@ -133,15 +133,22 @@ internal class CraftFromChest : Feature
         }
 
         var eligibleChests = (
-                from item in this.ManagedChests.AccessibleChests
-                where item.Value.Config.CraftingRange switch
-                {
-                    FeatureOptionRange.Inventory => ReferenceEquals(item.Key.Player, Game1.player),
-                    FeatureOptionRange.Location => ReferenceEquals(item.Key.Location, Game1.currentLocation),
-                    FeatureOptionRange.World => true,
-                    _ => false,
-                }
-                select item.Value.Chest).ToList();
+            from managedChest in this.ManagedChests.AccessibleChests
+            where managedChest.CollectionType switch
+            {
+                ItemCollectionType.GameLocation when managedChest.CraftFromChest == FeatureOptionRange.World => true,
+                ItemCollectionType.GameLocation when this.Config.CraftFromChestDistance == -1 =>
+                    managedChest.CraftFromChest >= FeatureOptionRange.Location
+                    && ReferenceEquals(managedChest.Location, Game1.currentLocation),
+                ItemCollectionType.GameLocation when this.Config.CraftFromChestDistance >= 1 =>
+                    managedChest.CraftFromChest >= FeatureOptionRange.Location
+                    && ReferenceEquals(managedChest.Location, Game1.currentLocation)
+                    && Utility.withinRadiusOfPlayer((int)managedChest.Position.X * 64, (int)managedChest.Position.Y * 64, this.Config.CraftFromChestDistance, Game1.player),
+                ItemCollectionType.PlayerInventory =>
+                    managedChest.CraftFromChest >= FeatureOptionRange.Inventory
+                    && ReferenceEquals(managedChest.Player, Game1.player),
+            }
+            select managedChest.Chest).ToList();
 
         if (!eligibleChests.Any())
         {

@@ -3,18 +3,23 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using BetterChests.Enums;
+using BetterChests.Interfaces;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
-using BetterChests.Models;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
 /// <inheritdoc />
 internal class CarryChest : Feature
@@ -25,10 +30,10 @@ internal class CarryChest : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="CarryChest"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public CarryChest(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public CarryChest(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         this._harmony = services.Lazy<IHarmonyHelper>(
@@ -39,10 +44,30 @@ internal class CarryChest : Feature
                     new SavedPatch[]
                     {
                         new(
+                            AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
+                            typeof(CarryChest),
+                            nameof(CarryChest.Chest_drawInMenu_postfix),
+                            PatchType.Postfix),
+                        new(
+                            AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.InventoryMenu_rightClick_prefix),
+                            PatchType.Prefix),
+                        new(
+                            AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.InventoryMenu_rightClick_postfix),
+                            PatchType.Postfix),
+                        new(
                             AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
                             typeof(CarryChest),
                             nameof(CarryChest.Item_canStackWith_postfix),
                             PatchType.Postfix),
+                        new(
+                            AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.Object_drawWhenHeld_prefix),
+                            PatchType.Prefix),
                         new(
                             AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
                             typeof(CarryChest),
@@ -64,7 +89,7 @@ internal class CarryChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
@@ -73,12 +98,64 @@ internal class CarryChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.World.ObjectListChanged -= this.OnObjectListChanged;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    private static void Chest_drawInMenu_postfix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, Color color)
+    {
+        // Draw Items count
+        var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+        if (items > 0)
+        {
+            Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize), 2f * scaleSize), 3f * scaleSize, 1f, color);
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref ItemSlot __state)
+    {
+        var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        if (slot is null)
+        {
+            return;
+        }
+
+        var slotNumber = int.Parse(slot.name);
+        var item = __instance.actualInventory.ElementAtOrDefault(slotNumber);
+        if (item is not null)
+        {
+            __state = new(item, slotNumber);
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    private static void InventoryMenu_rightClick_postfix(InventoryMenu __instance, ref Item __result, ref ItemSlot __state)
+    {
+        var (item, slotNumber) = __state;
+
+        if (item is null || __result is null)
+        {
+            return;
+        }
+
+        if (item.ParentSheetIndex != __result.ParentSheetIndex)
+        {
+            return;
+        }
+
+        if (__instance.actualInventory.ElementAtOrDefault(slotNumber) is not null)
+        {
+            return;
+        }
+
+        __result = item;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -135,6 +212,20 @@ internal class CarryChest : Feature
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
+    {
+        if (__instance is not Chest chest)
+        {
+            return true;
+        }
+
+        var (x, y) = objectPosition;
+        chest.draw(spriteBatch, (int)x, (int)y + 64, 1f, true);
+        return false;
+    }
+
     private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
     {
         Log.Verbose("Recursively iterating chests in farmer inventory.");
@@ -187,7 +278,7 @@ internal class CarryChest : Feature
             return;
         }
 
-        if (!this.ManagedChests.FindChest(obj as Chest, out _))
+        if (!this.ManagedChests.FindChest(obj as Chest, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
         {
             return;
         }
@@ -231,4 +322,6 @@ internal class CarryChest : Feature
             chest.modData[key] = value;
         }
     }
+
+    private record ItemSlot(Item Item, int SlotNumber);
 }

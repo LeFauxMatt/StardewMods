@@ -3,11 +3,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using BetterChests.Interfaces;
 using Common.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Services;
 using HarmonyLib;
-using BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -21,10 +21,10 @@ internal class OpenHeldChest : Feature
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenHeldChest"/> class.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public OpenHeldChest(ModConfig config, IModHelper helper, ServiceCollection services)
+    /// <param name="config">Data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
+    public OpenHeldChest(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
         this._harmony = services.Lazy<IHarmonyHelper>(
@@ -44,7 +44,7 @@ internal class OpenHeldChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Activate()
+    protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
@@ -52,7 +52,7 @@ internal class OpenHeldChest : Feature
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
