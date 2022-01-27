@@ -3,17 +3,28 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using BetterChests.Interfaces;
+using Common.Extensions;
+using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
+using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
+using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ResizeChest : Feature
 {
+    private readonly PerScreen<MenuComponent> _downArrow = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
+    private readonly Lazy<IMenuComponents> _menuComponents;
+    private readonly Lazy<IMenuItems> _menuItems;
+    private readonly PerScreen<MenuComponent> _upArrow = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResizeChest"/> class.
@@ -35,6 +46,8 @@ internal class ResizeChest : Feature
                     nameof(ResizeChest.Chest_GetActualCapacity_postfix),
                     PatchType.Postfix);
             });
+        this._menuComponents = services.Lazy<IMenuComponents>();
+        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static ResizeChest Instance { get; set; }
@@ -44,16 +57,44 @@ internal class ResizeChest : Feature
         get => this._harmony.Value;
     }
 
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
+    }
+
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
+    }
+
+    private MenuComponent UpArrow
+    {
+        get => this._upArrow.Value ??= new(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 459, 11, 12), Game1.pixelZoom));
+    }
+
+    private MenuComponent DownArrow
+    {
+        get => this._downArrow.Value ??= new(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
+        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
+        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -65,6 +106,100 @@ internal class ResizeChest : Feature
             __result = managedChest.ResizeChestCapacity > 0
                 ? managedChest.ResizeChestCapacity
                 : int.MaxValue;
+        }
+    }
+
+    [SortedEventPriority(EventPriority.High)]
+    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    {
+        if (this.MenuComponents.Menu is not null)
+        {
+            // Add Up/Down Arrows
+            this.MenuComponents.Components.Add(this.UpArrow);
+            this.MenuComponents.Components.Add(this.DownArrow);
+
+            // Initialize Arrow visibility
+            this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
+            this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
+
+            // Align to ItemsToGrabMenu top/bottom inventory slots
+            var topSlot = this.MenuComponents.Menu.GetColumnCount() - 1;
+            var bottomSlot = this.MenuComponents.Menu.ItemsToGrabMenu.capacity - 1;
+            this.UpArrow.Component.bounds.X = this.MenuComponents.Menu.ItemsToGrabMenu.xPositionOnScreen + this.MenuComponents.Menu.ItemsToGrabMenu.width + 8;
+            this.UpArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
+            this.DownArrow.Component.bounds.X = this.MenuComponents.Menu.ItemsToGrabMenu.xPositionOnScreen + this.MenuComponents.Menu.ItemsToGrabMenu.width + 8;
+            this.DownArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
+
+            // Assign Neighbor IDs
+            this.UpArrow.Component.leftNeighborID = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].myID;
+            this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].rightNeighborID = this.UpArrow.Id;
+            this.DownArrow.Component.leftNeighborID = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].myID;
+            this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].rightNeighborID = this.DownArrow.Id;
+            this.UpArrow.Component.downNeighborID = this.DownArrow.Id;
+            this.DownArrow.Component.upNeighborID = this.UpArrow.Id;
+        }
+    }
+
+    private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
+    {
+        if (e.Component == this.UpArrow)
+        {
+            this.MenuItems.Offset--;
+        }
+        else if (e.Component == this.DownArrow)
+        {
+            this.MenuItems.Offset++;
+        }
+        else
+        {
+            return;
+        }
+
+        this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
+        this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
+    }
+
+    private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
+    {
+        if (this.MenuItems.Menu is null)
+        {
+            return;
+        }
+
+        switch (e.Delta)
+        {
+            case > 0:
+                this.MenuItems.Offset--;
+                break;
+            case < 0:
+                this.MenuItems.Offset++;
+                break;
+            default:
+                return;
+        }
+
+        this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
+        this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
+    }
+
+    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    {
+        if (this.MenuItems.Menu is null)
+        {
+            return;
+        }
+
+        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        {
+            this.MenuItems.Offset--;
+            this.Config.ControlScheme.ScrollUp.Suppress();
+            return;
+        }
+
+        if (this.Config.ControlScheme.ScrollDown.JustPressed())
+        {
+            this.MenuItems.Offset++;
+            this.Config.ControlScheme.ScrollDown.Suppress();
         }
     }
 }

@@ -71,18 +71,19 @@ internal abstract class Feature : IService
     {
         var enabled = this switch
         {
-            CarryChest => this.Config.CarryChest != FeatureOption.Disabled,
-            CategorizeChest => this.Config.CategorizeChest != FeatureOption.Disabled,
-            ChestMenuTabs => this.Config.ChestMenuTabs != FeatureOption.Disabled,
-            CollectItems => this.Config.CollectItems != FeatureOption.Disabled,
-            CraftFromChest => this.Config.CraftFromChest != FeatureOptionRange.Disabled,
-            CustomColorPicker => this.Config.CustomColorPicker != FeatureOption.Disabled,
-            FilterItems => this.Config.FilterItems != FeatureOption.Disabled,
-            OpenHeldChest => this.Config.OpenHeldChest != FeatureOption.Disabled,
-            ResizeChest => this.Config.ResizeChest != FeatureOption.Disabled,
-            ResizeChestMenu => this.Config.ResizeChestMenu != FeatureOption.Disabled,
-            SearchItems => this.Config.SearchItems != FeatureOption.Disabled,
-            StashToChest => this.Config.StashToChest != FeatureOptionRange.Disabled,
+            CarryChest => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled,
+            CategorizeChest => this.Config.DefaultChest.CategorizeChest != FeatureOption.Disabled,
+            ChestMenuTabs => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled,
+            CollectItems => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled,
+            CraftFromChest => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled,
+            CustomColorPicker => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled,
+            FilterItems => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled,
+            OpenHeldChest => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled,
+            ResizeChest => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled,
+            ResizeChestMenu => this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled,
+            SearchItems => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled,
+            SlotLock => this.Config.SlotLock,
+            StashToChest => this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled,
             _ => throw new InvalidOperationException($"Invalid feature toggle {this.GetType().Name}."),
         };
 

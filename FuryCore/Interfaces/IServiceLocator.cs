@@ -22,13 +22,21 @@ public interface IServiceLocator
     public void ForceEvaluation();
 
     /// <summary>
-    ///     Returns an instantiated service by it's type.
+    ///     Finds a service that is an instance of a type.
     /// </summary>
     /// <typeparam name="TServiceType">The class/type of a service.</typeparam>
     /// <returns>Returns the first <see cref="IService" /> that matches the condition.</returns>
     public TServiceType FindService<TServiceType>();
 
     /// <summary>
+    ///     Returns an instantiated service by it's type.
+    /// </summary>
+    /// <typeparam name="TServiceType">The class/type of a service.</typeparam>
+    /// <returns>Returns the first <see cref="IService" /> that matches the condition.</returns>
+    public IEnumerable<TServiceType> FindServices<TServiceType>();
+
+    /// <summary>
+    ///     Finds services that are an instance of a type.
     /// </summary>
     /// <param name="type">The class/type of a service.</param>
     /// <param name="exclude">
@@ -36,5 +44,5 @@ public interface IServiceLocator
     ///     once.
     /// </param>
     /// <returns>Returns the first <see cref="IService" /> that matches the condition.</returns>
-    public object FindService(Type type, IList<IServiceLocator> exclude);
+    public IEnumerable<IService> FindServices(Type type, IList<IServiceLocator> exclude);
 }

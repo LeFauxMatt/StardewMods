@@ -39,7 +39,9 @@ internal class ChestModel : IChestModel
                 return this.Data.CarryChest;
             }
 
-            return this.Config.CarryChest != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.CarryChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.CarryChest = value;
     }
@@ -54,7 +56,9 @@ internal class ChestModel : IChestModel
                 return this.Data.CategorizeChest;
             }
 
-            return this.Config.CategorizeChest != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.CategorizeChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.CategorizeChest = value;
     }
@@ -69,7 +73,9 @@ internal class ChestModel : IChestModel
                 return this.Data.ChestMenuTabs;
             }
 
-            return this.Config.ChestMenuTabs != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.ChestMenuTabs = value;
     }
@@ -84,7 +90,9 @@ internal class ChestModel : IChestModel
                 return this.Data.CollectItems;
             }
 
-            return this.Config.CollectItems != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.CollectItems != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.CollectItems = value;
     }
@@ -99,7 +107,9 @@ internal class ChestModel : IChestModel
                 return this.Data.CraftFromChest;
             }
 
-            return this.Config.CraftFromChest == FeatureOptionRange.Default ? FeatureOptionRange.Location : this.Config.CraftFromChest;
+            return this.Config.DefaultChest.CraftFromChest == FeatureOptionRange.Default
+                ? FeatureOptionRange.Location
+                : this.Config.DefaultChest.CraftFromChest;
         }
         set => this.Data.CraftFromChest = value;
     }
@@ -114,7 +124,9 @@ internal class ChestModel : IChestModel
                 return this.Data.CustomColorPicker;
             }
 
-            return this.Config.CustomColorPicker != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.CustomColorPicker = value;
     }
@@ -129,7 +141,9 @@ internal class ChestModel : IChestModel
                 return this.Data.FilterItems;
             }
 
-            return this.Config.FilterItems != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.FilterItems != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.FilterItems = value;
     }
@@ -144,7 +158,9 @@ internal class ChestModel : IChestModel
                 return this.Data.OpenHeldChest;
             }
 
-            return this.Config.OpenHeldChest != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.OpenHeldChest = value;
     }
@@ -159,7 +175,9 @@ internal class ChestModel : IChestModel
                 return this.Data.ResizeChest;
             }
 
-            return this.Config.ResizeChest != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.ResizeChest = value;
     }
@@ -174,7 +192,9 @@ internal class ChestModel : IChestModel
                 return this.Data.ResizeChestMenu;
             }
 
-            return this.Config.ResizeChestMenu != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.ResizeChestMenu = value;
     }
@@ -189,7 +209,9 @@ internal class ChestModel : IChestModel
                 return this.Data.SearchItems;
             }
 
-            return this.Config.SearchItems != FeatureOption.Disabled ? FeatureOption.Enabled : FeatureOption.Disabled;
+            return this.Config.DefaultChest.SearchItems != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
         }
         set => this.Data.SearchItems = value;
     }
@@ -204,7 +226,9 @@ internal class ChestModel : IChestModel
                 return this.Data.StashToChest;
             }
 
-            return this.Config.StashToChest == FeatureOptionRange.Default ? FeatureOptionRange.Location : this.Config.CraftFromChest;
+            return this.Config.DefaultChest.StashToChest == FeatureOptionRange.Default
+                ? FeatureOptionRange.Location
+                : this.Config.DefaultChest.CraftFromChest;
         }
         set => this.Data.StashToChest = value;
     }
@@ -222,7 +246,9 @@ internal class ChestModel : IChestModel
                 return this.Data.CraftFromChestDistance;
             }
 
-            return this.Config.CraftFromChestDistance == 0 ? -1 : this.Config.CraftFromChestDistance;
+            return this.Config.DefaultChest.CraftFromChestDistance == 0
+                ? -1
+                : this.Config.DefaultChest.CraftFromChestDistance;
         }
         set => this.Data.CraftFromChestDistance = value;
     }
@@ -230,15 +256,17 @@ internal class ChestModel : IChestModel
     /// <inheritdoc/>
     public HashSet<string> FilterItemsList
     {
-        get => this.Data.FilterItemsList.Any() ? this.Data.FilterItemsList : this.Config.FilterItemsList;
+        get => this.Data.FilterItemsList.Any()
+            ? this.Data.FilterItemsList
+            : this.Config.DefaultChest.FilterItemsList;
         set => this.Data.FilterItemsList = value;
     }
 
     /// <inheritdoc/>
-    public bool FillStacks
+    public bool StashToChestStacks
     {
-        get => this.Data.FillStacks;
-        set => this.Data.FillStacks = value;
+        get => this.Data.StashToChestStacks;
+        set => this.Data.StashToChestStacks = value;
     }
 
     /// <inheritdoc/>
@@ -251,7 +279,9 @@ internal class ChestModel : IChestModel
                 return this.Data.ResizeChestCapacity;
             }
 
-            return this.Config.ResizeChestCapacity == 0 ? 60 : this.Config.ResizeChestCapacity;
+            return this.Config.DefaultChest.ResizeChestCapacity == 0
+                ? 60
+                : this.Config.DefaultChest.ResizeChestCapacity;
         }
         set => this.Data.ResizeChestCapacity = value;
     }
@@ -266,7 +296,9 @@ internal class ChestModel : IChestModel
                 return this.Data.ResizeChestMenuRows;
             }
 
-            return this.Config.ResizeChestMenuRows == 0 ? 5 : this.Config.ResizeChestCapacity;
+            return this.Config.DefaultChest.ResizeChestMenuRows == 0
+                ? 5
+                : this.Config.DefaultChest.ResizeChestMenuRows;
         }
         set => this.Data.ResizeChestMenuRows = value;
     }
@@ -281,7 +313,9 @@ internal class ChestModel : IChestModel
                 return this.Data.StashToChestDistance;
             }
 
-            return this.Config.StashToChestDistance == 0 ? -1 : this.Config.StashToChestDistance;
+            return this.Config.DefaultChest.StashToChestDistance == 0
+                ? -1
+                : this.Config.DefaultChest.StashToChestDistance;
         }
         set => this.Data.StashToChestDistance = value;
     }

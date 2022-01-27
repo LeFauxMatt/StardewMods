@@ -56,7 +56,7 @@ internal class ChestData : IChestData
     public HashSet<string> FilterItemsList { get; set; } = new();
 
     /// <inheritdoc/>
-    public bool FillStacks { get; set; } = true;
+    public bool StashToChestStacks { get; set; } = true;
 
     /// <inheritdoc/>
     public int ResizeChestCapacity { get; set; } = 0;

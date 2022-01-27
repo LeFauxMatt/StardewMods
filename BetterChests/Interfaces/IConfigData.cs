@@ -1,13 +1,13 @@
 ﻿namespace BetterChests.Interfaces;
 
+using BetterChests.Models;
 using FuryCore.Enums;
 using FuryCore.UI;
-using StardewModdingAPI.Utilities;
 
 /// <summary>
-/// Mod config data related to BetterChests features.
+/// Mod config data.
 /// </summary>
-internal interface IConfigData : IChestData
+internal interface IConfigData
 {
     // ****************************************************************************************
     // General
@@ -22,55 +22,39 @@ internal interface IConfigData : IChestData
     /// </summary>
     public char SearchTagSymbol { get; set; }
 
-    // ****************************************************************************************
-    // Controls
+    /// <summary>
+    /// Gets or sets a value indicating whether the slot lock feature is enabled.
+    /// </summary>
+    public bool SlotLock { get; set; }
 
     /// <summary>
-    /// Gets or sets controls to open <see cref="StardewValley.Menus.CraftingPage" />.
+    /// Gets or sets the slots that are currently locked by the player.
     /// </summary>
-    public KeybindList OpenCrafting { get; set; }
+    public bool[] LockedSlots { get; set; }
 
     /// <summary>
-    /// Gets or sets controls to stash player items into <see cref="StardewValley.Objects.Chest" />.
+    /// Gets or sets the control scheme.
     /// </summary>
-    public KeybindList StashItems { get; set; }
+    ControlScheme ControlScheme { get; set; }
 
     /// <summary>
-    /// Gets or sets controls to scroll <see cref="StardewValley.Menus.ItemGrabMenu" /> up.
+    /// Gets or sets the default chest configuration.
     /// </summary>
-    public KeybindList ScrollUp { get; set; }
-
-    /// <summary>
-    /// Gets or sets controls to scroll <see cref="StardewValley.Menus.ItemGrabMenu" /> down.
-    /// </summary>
-    public KeybindList ScrollDown { get; set; }
-
-    /// <summary>
-    /// Gets or sets controls to switch to previous tab.
-    /// </summary>
-    public KeybindList PreviousTab { get; set; }
-
-    /// <summary>
-    /// Gets or sets controls to switch to next tab.
-    /// </summary>
-    public KeybindList NextTab { get; set; }
+    ChestData DefaultChest { get; set; }
 
     /// <summary>
     /// Copies data from one <see cref="IConfigData" /> to another.
     /// </summary>
     /// <param name="other">The <see cref="IConfigData" /> to copy values to.</param>
     /// <typeparam name="TOther">The class/type of the other <see cref="IConfigData" />.</typeparam>
-    public void CopyConfigDataTo<TOther>(TOther other)
+    public void CopyTo<TOther>(TOther other)
         where TOther : IConfigData
     {
         other.CustomColorPickerArea = this.CustomColorPickerArea;
         other.SearchTagSymbol = this.SearchTagSymbol;
-        other.OpenCrafting = this.OpenCrafting;
-        other.StashItems = this.StashItems;
-        other.ScrollUp = this.ScrollUp;
-        other.ScrollDown = this.ScrollDown;
-        other.PreviousTab = this.PreviousTab;
-        other.NextTab = this.NextTab;
-        other.CopyChestDataTo(this);
+        other.SlotLock = this.SlotLock;
+        other.LockedSlots = this.LockedSlots;
+        ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
+        ((IChestData)other.DefaultChest).CopyTo(this.DefaultChest);
     }
 }

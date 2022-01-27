@@ -83,7 +83,7 @@ internal interface IChestData
     /// <summary>
     /// Gets or sets a value indicating whether stashing will fill existing stacks.
     /// </summary>
-    public bool FillStacks { get; set; }
+    public bool StashToChestStacks { get; set; }
 
     /// <summary>
     /// Gets or sets the items that the chest will accept.
@@ -110,7 +110,7 @@ internal interface IChestData
     /// </summary>
     /// <param name="other">The <see cref="IChestData" /> to copy values to.</param>
     /// <typeparam name="TOther">The class/type of the other <see cref="IChestData" />.</typeparam>
-    public void CopyChestDataTo<TOther>(TOther other)
+    public void CopyTo<TOther>(TOther other)
         where TOther : IChestData
     {
         other.CarryChest = this.CarryChest;
@@ -126,7 +126,7 @@ internal interface IChestData
         other.SearchItems = this.SearchItems;
         other.StashToChest = this.StashToChest;
         other.CraftFromChestDistance = this.CraftFromChestDistance;
-        other.FillStacks = this.FillStacks;
+        other.StashToChestStacks = this.StashToChestStacks;
         other.FilterItemsList = this.FilterItemsList;
         other.ResizeChestCapacity = this.ResizeChestCapacity;
         other.ResizeChestMenuRows = this.ResizeChestMenuRows;

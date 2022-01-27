@@ -3,8 +3,8 @@
 using System.Linq;
 using BetterChests.Enums;
 using BetterChests.Interfaces;
+using Common.Extensions;
 using Common.Helpers;
-using FuryCore.Services;
 using FuryCore.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -36,40 +36,50 @@ internal class StashToChest : Feature
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
-    /// <summary>Stash inventory items into all supported chests.</summary>
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.Config.StashItems.JustPressed())
+        if (Context.IsPlayerFree && this.Config.ControlScheme.StashItems.JustPressed() && this.StashItems())
         {
-            return;
+            this.Config.ControlScheme.StashItems.Suppress();
         }
+    }
+
+    private bool StashItems()
+    {
         var eligibleChests = (
             from managedChest in this.ManagedChests.AccessibleChests
             where managedChest.CollectionType switch
             {
                 ItemCollectionType.GameLocation when managedChest.StashToChest == FeatureOptionRange.World => true,
-                ItemCollectionType.GameLocation when this.Config.StashToChestDistance == -1 =>
+                ItemCollectionType.GameLocation when managedChest.StashToChestDistance == -1 =>
                     managedChest.StashToChest >= FeatureOptionRange.Location
                     && ReferenceEquals(managedChest.Location, Game1.currentLocation),
-                ItemCollectionType.GameLocation when this.Config.StashToChestDistance >= 1 =>
+                ItemCollectionType.GameLocation when managedChest.StashToChestDistance >= 1 =>
                     managedChest.StashToChest >= FeatureOptionRange.Location
                     && ReferenceEquals(managedChest.Location, Game1.currentLocation)
-                    && Utility.withinRadiusOfPlayer((int)managedChest.Position.X * 64, (int)managedChest.Position.Y * 64, this.Config.StashToChestDistance, Game1.player),
+                    && Utility.withinRadiusOfPlayer((int)managedChest.Position.X * 64, (int)managedChest.Position.Y * 64, managedChest.StashToChestDistance, Game1.player),
                 ItemCollectionType.PlayerInventory =>
                     managedChest.StashToChest >= FeatureOptionRange.Inventory
                     && ReferenceEquals(managedChest.Player, Game1.player),
+                ItemCollectionType.ChestInventory => false,
+                _ => false,
             }
             select managedChest).ToList();
 
         if (!eligibleChests.Any())
         {
             Log.Trace("No eligible chests found to stash items into");
-            return;
+            return false;
         }
 
-        for (var i = Game1.player.Items.Count - 1; i >= 0; i--)
+        for (var index = Game1.player.Items.Count - 1; index >= 0; index--)
         {
-            var item = Game1.player.Items[i];
+            if (this.Config.SlotLock && this.Config.LockedSlots.ElementAtOrDefault(index))
+            {
+                continue;
+            }
+
+            var item = Game1.player.Items[index];
             if (item is null)
             {
                 continue;
@@ -77,16 +87,16 @@ internal class StashToChest : Feature
 
             foreach (var eligibleChest in eligibleChests)
             {
-                item = eligibleChest.StashItem(item, this.Config.FillStacks);
+                item = eligibleChest.StashItem(item);
                 if (item is null)
                 {
-                    Game1.player.Items[i] = null;
+                    Game1.player.Items[index] = null;
                     break;
                 }
             }
         }
 
         Game1.playSound("Ship");
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.StashItems);
+        return true;
     }
 }

@@ -15,7 +15,7 @@ internal interface IManagedChest : IChestModel
     public Chest Chest { get; }
 
     /// <summary>
-    /// Denotes the collection that an <see cref="Chest" /> belongs to.
+    /// Gets the type of collection that a <see cref="Chest" /> belongs to.
     /// </summary>
     public ItemCollectionType CollectionType { get; }
 
@@ -55,7 +55,6 @@ internal interface IManagedChest : IChestModel
     /// Attempt to stash an item into the chest based on categorization and existing items.
     /// </summary>
     /// <param name="item">The item to stash.</param>
-    /// <param name="fillStacks">If the item should stack with current items in the chest.</param>
     /// <returns>Returns the item if it could not be stashed completely, or null if it could.</returns>
-    public Item StashItem(Item item, bool fillStacks = false);
+    public Item StashItem(Item item);
 }

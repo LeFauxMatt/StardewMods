@@ -30,11 +30,7 @@ internal class ResizeChestMenu : Feature
     private readonly PerScreen<int?> _menuCapacity = new();
     private readonly PerScreen<int?> _menuRows = new();
     private readonly PerScreen<int?> _menuOffset = new();
-    private readonly PerScreen<MenuComponent> _downArrow = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly Lazy<IMenuComponents> _menuComponents;
-    private readonly Lazy<IMenuItems> _menuItems;
-    private readonly PerScreen<MenuComponent> _upArrow = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ResizeChestMenu" /> class.
@@ -86,9 +82,6 @@ internal class ResizeChestMenu : Feature
                             PatchType.Transpiler),
                     });
             });
-
-        this._menuComponents = services.Lazy<IMenuComponents>();
-        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static ResizeChestMenu Instance { get; set; }
@@ -122,7 +115,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuCapacity.Value ?? default;
             }
 
-            if (this.Menu?.IsPlayerChestMenu(out var chest) != true)
+            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
             {
                 return this._menuCapacity.Value ??= -1; // Vanilla
             }
@@ -131,8 +124,8 @@ internal class ResizeChestMenu : Feature
             return this._menuCapacity.Value ??= capacity switch
             {
                 Chest.capacity => -1, // Vanilla
-                < 72 => Math.Min(this.Config.ResizeChestMenuRows * 12, capacity.RoundUp(12)), // Variable
-                _ => this.Config.ResizeChestMenuRows * 12, // Large
+                < 72 => Math.Min(managedChest.ResizeChestMenuRows * 12, capacity.RoundUp(12)), // Variable
+                _ => managedChest.ResizeChestMenuRows * 12, // Large
             };
         }
     }
@@ -146,7 +139,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuRows.Value ?? default;
             }
 
-            if (this.Menu?.IsPlayerChestMenu(out var chest) != true)
+            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
             {
                 return this._menuRows.Value ??= 3; // Vanilla
             }
@@ -154,8 +147,8 @@ internal class ResizeChestMenu : Feature
             var capacity = Math.Max(chest.items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
             return this._menuRows.Value ??= capacity switch
             {
-                < 72 => (int)Math.Min(this.Config.ResizeChestMenuRows, Math.Ceiling(capacity / 12f)), // Variable
-                _ => this.Config.ResizeChestMenuRows, // Large
+                < 72 => (int)Math.Min(managedChest.ResizeChestMenuRows, Math.Ceiling(capacity / 12f)), // Variable
+                _ => managedChest.ResizeChestMenuRows, // Large
             };
         }
     }
@@ -168,34 +161,11 @@ internal class ResizeChestMenu : Feature
         }
     }
 
-    private IMenuComponents MenuComponents
-    {
-        get => this._menuComponents.Value;
-    }
-
-    private IMenuItems MenuItems
-    {
-        get => this._menuItems.Value;
-    }
-
-    private MenuComponent UpArrow
-    {
-        get => this._upArrow.Value ??= new(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 459, 11, 12), Game1.pixelZoom));
-    }
-
-    private MenuComponent DownArrow
-    {
-        get => this._downArrow.Value ??= new(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
-    }
-
     /// <inheritdoc />
     protected override void Activate()
     {
         this.HarmonyHelper.ApplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
@@ -203,9 +173,6 @@ internal class ResizeChestMenu : Feature
     {
         this.HarmonyHelper.UnapplyPatches(this.Id);
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
     /// <summary>Generate additional slots/rows for top inventory menu.</summary>
@@ -454,96 +421,6 @@ internal class ResizeChestMenu : Feature
             {
                 this.Menu.dropItemInvisibleButton.bounds.Y += this.MenuOffset;
             }
-        }
-
-        if (this.MenuComponents.Menu is not null)
-        {
-            // Add Up/Down Arrows
-            this.MenuComponents.Components.Add(this.UpArrow);
-            this.MenuComponents.Components.Add(this.DownArrow);
-
-            // Initialize Arrow visibility
-            this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
-            this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
-
-            // Align to ItemsToGrabMenu top/bottom inventory slots
-            var topSlot = this.Menu.GetColumnCount() - 1;
-            var bottomSlot = this.Menu.ItemsToGrabMenu.capacity - 1;
-            this.UpArrow.Component.bounds.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width + 8;
-            this.UpArrow.Component.bounds.Y = this.Menu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
-            this.DownArrow.Component.bounds.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width + 8;
-            this.DownArrow.Component.bounds.Y = this.Menu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
-
-            // Assign Neighbor IDs
-            this.UpArrow.Component.leftNeighborID = this.Menu.ItemsToGrabMenu.inventory[topSlot].myID;
-            this.Menu.ItemsToGrabMenu.inventory[topSlot].rightNeighborID = this.UpArrow.Id;
-            this.DownArrow.Component.leftNeighborID = this.Menu.ItemsToGrabMenu.inventory[bottomSlot].myID;
-            this.Menu.ItemsToGrabMenu.inventory[bottomSlot].rightNeighborID = this.DownArrow.Id;
-            this.UpArrow.Component.downNeighborID = this.DownArrow.Id;
-            this.DownArrow.Component.upNeighborID = this.UpArrow.Id;
-        }
-    }
-
-    private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
-    {
-        if (e.Component == this.UpArrow)
-        {
-            this.MenuItems.Offset--;
-        }
-        else if (e.Component == this.DownArrow)
-        {
-            this.MenuItems.Offset++;
-        }
-        else
-        {
-            return;
-        }
-
-        this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
-        this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
-    }
-
-    private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
-    {
-        if (this.MenuItems.Menu is null)
-        {
-            return;
-        }
-
-        switch (e.Delta)
-        {
-            case > 0:
-                this.MenuItems.Offset--;
-                break;
-            case < 0:
-                this.MenuItems.Offset++;
-                break;
-            default:
-                return;
-        }
-
-        this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
-        this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
-    }
-
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
-    {
-        if (this.MenuItems.Menu is null)
-        {
-            return;
-        }
-
-        if (this.Config.ScrollUp.JustPressed())
-        {
-            this.MenuItems.Offset--;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ScrollUp);
-            return;
-        }
-
-        if (this.Config.ScrollDown.JustPressed())
-        {
-            this.MenuItems.Offset++;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ScrollDown);
         }
     }
 }

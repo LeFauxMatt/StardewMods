@@ -178,27 +178,92 @@ internal class MenuComponents : IMenuComponents, IService
         }
     }
 
-    private void RepositionSideButtons(IClickableMenu menu)
+    private void RepositionSideButtons(ItemGrabMenu menu)
     {
         if (!ReferenceEquals(this.Menu, menu))
         {
             return;
         }
 
-        var sideComponents = this.Components.Where(component => component.Area is ComponentArea.Right && component.Component is not null).ToList();
-        var stepSize = sideComponents.Count >= 4 ? 72 : 80;
-        MenuComponent previousComponent = null;
-        foreach (var (component, index) in sideComponents.AsEnumerable().Reverse().Select((component, index) => (component, index)))
+        foreach (var componentArea in Enum.GetValues<ComponentArea>())
         {
-            if (previousComponent is not null)
+            if (componentArea == ComponentArea.Custom)
             {
-                previousComponent.Component.upNeighborID = component.Id;
-                component.Component.downNeighborID = previousComponent.Id;
+                continue;
             }
 
-            component.Component.bounds.X = menu.xPositionOnScreen + menu.width;
-            component.Component.bounds.Y = menu.yPositionOnScreen + (menu.height / 3) - 64 - (stepSize * index);
-            previousComponent = component;
+            var components = this.Components
+                                 .Where(component => component.Area == componentArea && component.Component is not null)
+                                 .Reverse()
+                                 .Select((component, index) => (component, index))
+                                 .ToList();
+            MenuComponent previousComponent = null;
+            var stepSize = componentArea switch
+            {
+                ComponentArea.Top => Game1.tileSize,
+                ComponentArea.Right => components.Count >= 4 ? 72 : 80,
+                ComponentArea.Bottom => Game1.tileSize,
+                ComponentArea.Left => components.Count >= 4 ? 72 : 80,
+            };
+            var topMenu = menu.ItemsToGrabMenu;
+            var bottomMenu = menu.inventory;
+            var slot = topMenu.capacity - (topMenu.capacity / topMenu.rows);
+
+            foreach (var (component, index) in components)
+            {
+                switch (componentArea)
+                {
+                    case ComponentArea.Top:
+                    case ComponentArea.Bottom:
+                        component.X = menu.xPositionOnScreen + (Game1.tileSize * index);
+                        break;
+                    case ComponentArea.Left:
+                    case ComponentArea.Right:
+                        component.Y = menu.yPositionOnScreen + (menu.height / 3) - Game1.tileSize - (stepSize * index);
+                        break;
+                }
+
+                switch (componentArea)
+                {
+                    case ComponentArea.Top:
+                        component.Y = menu.yPositionOnScreen - Game1.tileSize;
+                        component.Component.downNeighborID = topMenu.inventory[index].myID;
+                        break;
+                    case ComponentArea.Bottom:
+                        component.Y = topMenu.yPositionOnScreen + topMenu.height + Game1.pixelZoom;
+                        component.Component.upNeighborID = topMenu.inventory[slot + index].myID;
+                        component.Component.downNeighborID = bottomMenu.inventory[index].myID;
+                        break;
+                    case ComponentArea.Left:
+                        component.X = menu.xPositionOnScreen - Game1.tileSize;
+                        break;
+                    case ComponentArea.Right:
+                        component.X = menu.xPositionOnScreen + menu.width;
+                        break;
+                }
+
+                if (previousComponent is null)
+                {
+                    previousComponent = component;
+                    continue;
+                }
+
+                switch (componentArea)
+                {
+                    case ComponentArea.Top:
+                    case ComponentArea.Bottom:
+                        previousComponent.Component.upNeighborID = component.Id;
+                        component.Component.downNeighborID = previousComponent.Id;
+                        break;
+                    case ComponentArea.Left:
+                    case ComponentArea.Right:
+                        previousComponent.Component.leftNeighborID = component.Id;
+                        component.Component.rightNeighborID = previousComponent.Id;
+                        break;
+                }
+
+                previousComponent = component;
+            }
         }
     }
 }

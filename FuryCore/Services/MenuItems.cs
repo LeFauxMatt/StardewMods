@@ -51,7 +51,6 @@ internal class MenuItems : IMenuItems, IService
             harmonyHelper =>
             {
                 var id = $"{ModEntry.ModUniqueId}.{nameof(MenuItems)}";
-
                 harmonyHelper.AddPatch(
                     id,
                     AccessTools.Method(
@@ -64,7 +63,6 @@ internal class MenuItems : IMenuItems, IService
                     typeof(MenuItems),
                     nameof(MenuItems.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler);
-
                 harmonyHelper.ApplyPatches(id);
             });
 

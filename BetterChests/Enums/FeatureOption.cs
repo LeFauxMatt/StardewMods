@@ -5,12 +5,12 @@
 /// </summary>
 internal enum FeatureOption
 {
-    /// <summary>Feature inherits from a parent config.</summary>
-    Default = 0,
-
     /// <summary>Feature is disabled.</summary>
-    Disabled = -1,
+    Disabled = 0,
+
+    /// <summary>Feature inherits from a parent config.</summary>
+    Default = 1,
 
     /// <summary>Feature is enabled.</summary>
-    Enabled = 1,
+    Enabled = 2,
 }

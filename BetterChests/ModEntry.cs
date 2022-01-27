@@ -6,6 +6,7 @@ using Common.Helpers;
 using BetterChests.Features;
 using BetterChests.Models;
 using BetterChests.Services;
+using Common.Extensions;
 using FuryCore.Interfaces;
 using FuryCore.Services;
 using StardewModdingAPI;
@@ -30,7 +31,8 @@ public class ModEntry : Mod, IAssetLoader
     {
         ModEntry.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
-        Log.Init(this.Monitor);
+        Log.Monitor = this.Monitor;
+        KeybindListExtensions.InputHelper = this.Helper.Input;
 
         // Mod Config
         var config = this.Helper.ReadConfig<ConfigData>();
@@ -59,7 +61,7 @@ public class ModEntry : Mod, IAssetLoader
             {
                 // Mod Services
                 new ManagedChests(this.ChestData, this.Config, this.Helper, this.Services),
-                new ModConfigMenu(this.Config, this.Helper, this.ModManifest),
+                new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
 
                 // Features
                 new CarryChest(this.Config, this.Helper, this.Services),
@@ -72,6 +74,7 @@ public class ModEntry : Mod, IAssetLoader
                 new ResizeChestMenu(this.Config, this.Helper, this.Services),
                 new ResizeChest(this.Config, this.Helper, this.Services),
                 new SearchItems(this.Config, this.Helper, this.Services),
+                new SlotLock(this.Config, this.Helper, this.Services),
                 new StashToChest(this.Config, this.Helper, this.Services),
                 new CollectItems(this.Config, this.Helper, this.Services),
             });

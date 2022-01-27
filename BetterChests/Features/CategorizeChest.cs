@@ -130,7 +130,7 @@ internal class CategorizeChest : Feature
     private static bool Automate_Store_prefix(Chest ___Chest, object stack)
     {
         var item = CategorizeChest.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !CategorizeChest.Instance.ManagedChests.FindChest(___Chest, out var managedChest) || managedChest.ItemMatcherByType.Matches(item);
+        return !CategorizeChest.Instance.ManagedChests.FindChest(___Chest, out var managedChest) || managedChest.ItemMatcherByChest.Matches(item);
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
@@ -151,14 +151,14 @@ internal class CategorizeChest : Feature
             // Exit ItemSelectionMenu
             case null when this.ReturnMenu is not null && this.CurrentItemSelectionMenu is not null && this.ManagedChest is not null:
                 // Save ItemSelectionMenu to ModData
-                var filterItems = this.ManagedChest.ItemMatcherByType.StringValue;
+                var filterItems = this.ManagedChest.ItemMatcherByChest.StringValue;
                 if (string.IsNullOrWhiteSpace(filterItems))
                 {
-                    this.ManagedChest.Chest.modData.Remove("FilterItems");
+                    this.ManagedChest.Chest.modData.Remove($"{ModEntry.ModUniqueId}/CategorizeChest");
                 }
                 else
                 {
-                    this.ManagedChest.Chest.modData["FilterItems"] = filterItems;
+                    this.ManagedChest.Chest.modData[$"{ModEntry.ModUniqueId}/CategorizeChest"] = filterItems;
                 }
 
                 this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
@@ -180,7 +180,7 @@ internal class CategorizeChest : Feature
         }
 
         this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
-        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.ManagedChest.ItemMatcherByType);
+        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.ManagedChest.ItemMatcherByChest);
         this.CurrentItemSelectionMenu.RegisterEvents(this.Helper.Events.Input);
 
         Game1.activeClickableMenu = this.CurrentItemSelectionMenu;

@@ -32,16 +32,14 @@ internal class TabComponent : MenuComponent
     /// </summary>
     public bool Selected { get; set; }
 
-    /// <summary>
-    /// Gets or sets the base alignment for each tab. The currently selected tab is slightly offset.
-    /// </summary>
-    public int BaseY { get; set; }
+    /// <inheritdoc/>
+    public override int Y { get; set; }
 
     /// <inheritdoc/>
     public override void Draw(SpriteBatch spriteBatch)
     {
         var color = this.Selected ? Color.White : Color.Gray;
-        this.Component.bounds.Y = this.BaseY + (this.Selected ? Game1.pixelZoom : 0);
+        this.Component.bounds.Y = this.Y + (this.Selected ? Game1.pixelZoom : 0);
         this.Component.draw(spriteBatch, color, 0.86f + (this.Component.bounds.Y / 20000f));
     }
 

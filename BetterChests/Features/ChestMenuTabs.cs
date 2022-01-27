@@ -10,11 +10,11 @@ using FuryCore.Models;
 using FuryCore.Services;
 using Microsoft.Xna.Framework.Graphics;
 using BetterChests.Models;
+using Common.Extensions;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -23,7 +23,6 @@ internal class ChestMenuTabs : Feature
     // TODO: Add MouseScroll event for switching tags
     private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
@@ -110,32 +109,6 @@ internal class ChestMenuTabs : Feature
         {
             this.MenuComponents.Components.AddRange(this.Tabs);
 
-            // Reposition tabs between inventory menus along a horizontal axis
-            MenuComponent previousTab = null;
-            var itemsToGrabMenu = this.MenuComponents.Menu.ItemsToGrabMenu;
-            var inventoryMenu = this.MenuComponents.Menu.inventory.inventory;
-            var slot = itemsToGrabMenu.capacity - (itemsToGrabMenu.capacity / itemsToGrabMenu.rows);
-            foreach (var (tab, index) in this.Tabs.Select((tab, index) => (tab, index)))
-            {
-                tab.BaseY = itemsToGrabMenu.yPositionOnScreen + itemsToGrabMenu.height + Game1.pixelZoom;
-                tab.Component.bounds.X = previousTab is not null
-                    ? previousTab.Component.bounds.Right
-                    : itemsToGrabMenu.xPositionOnScreen;
-
-                tab.Component.upNeighborID = itemsToGrabMenu.inventory[slot + index].myID;
-                tab.Component.downNeighborID = inventoryMenu[index].myID;
-                itemsToGrabMenu.inventory[slot + index].downNeighborID = tab.Id;
-                inventoryMenu[index].upNeighborID = tab.Id;
-
-                if (previousTab is not null)
-                {
-                    previousTab.Component.rightNeighborID = tab.Id;
-                    tab.Component.leftNeighborID = previousTab.Id;
-                }
-
-                previousTab = tab;
-            }
-
             if (!ReferenceEquals(e.Chest, this.Chest))
             {
                 this.Chest = e.Chest;
@@ -167,17 +140,17 @@ internal class ChestMenuTabs : Feature
             return;
         }
 
-        if (this.Config.NextTab.JustPressed())
+        if (this.Config.ControlScheme.NextTab.JustPressed())
         {
             this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.NextTab);
+            this.Config.ControlScheme.NextTab.Suppress();
             return;
         }
 
-        if (this.Config.PreviousTab.JustPressed())
+        if (this.Config.ControlScheme.PreviousTab.JustPressed())
         {
             this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.PreviousTab);
+            this.Config.ControlScheme.PreviousTab.Suppress();
         }
     }
 
@@ -192,8 +165,11 @@ internal class ChestMenuTabs : Feature
         if (this.Index != -1)
         {
             this.Tabs[this.Index].Selected = true;
-            this.MenuComponents.Menu.setCurrentlySnappedComponentTo(this.Tabs[this.Index].Id);
-            this.MenuComponents.Menu.snapCursorToCurrentSnappedComponent();
+            if (this.MenuComponents.Menu.currentlySnappedComponent is not null && Game1.options.SnappyMenus)
+            {
+                this.MenuComponents.Menu.setCurrentlySnappedComponentTo(this.Tabs[this.Index].Id);
+                this.MenuComponents.Menu.snapCursorToCurrentSnappedComponent();
+            }
         }
 
         this.ItemMatcher.Clear();

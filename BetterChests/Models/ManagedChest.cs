@@ -17,11 +17,11 @@ internal class ManagedChest : IManagedChest
     /// Initializes a new instance of the <see cref="ManagedChest"/> class.
     /// </summary>
     /// <param name="chest">The <see cref="Chest" /> managed by this mod.</param>
-    /// <param name="config">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
+    /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
     /// <param name="location">The <see cref="GameLocation" /> where the Chest is placed.</param>
     /// <param name="position">The coordinates where the Chest is placed.</param>
-    public ManagedChest(Chest chest, IChestModel config, GameLocation location, Vector2 position)
-        : this(chest, config)
+    public ManagedChest(Chest chest, IChestModel data, GameLocation location, Vector2 position)
+        : this(chest, data)
     {
         this.CollectionType = ItemCollectionType.GameLocation;
         this.Location = location;
@@ -32,22 +32,30 @@ internal class ManagedChest : IManagedChest
     /// Initializes a new instance of the <see cref="ManagedChest"/> class.
     /// </summary>
     /// <param name="chest">The <see cref="Chest" /> managed by this mod.</param>
-    /// <param name="config">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
+    /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
     /// <param name="player">The <see cref="Farmer" /> whose inventory contains the Chest.</param>
     /// <param name="index">The item slot where the Chest is being stored.</param>
-    public ManagedChest(Chest chest, IChestModel config, Farmer player, int index)
-        : this(chest, config)
+    public ManagedChest(Chest chest, IChestModel data, Farmer player, int index)
+        : this(chest, data)
     {
         this.CollectionType = ItemCollectionType.PlayerInventory;
         this.Player = player;
         this.Index = index;
     }
 
-    private ManagedChest(Chest chest, IChestModel config)
+    private ManagedChest(Chest chest, IChestModel data)
     {
         this.Chest = chest;
-        this.Config = config;
-        if (this.Chest.modData.TryGetValue("FilterItems", out var filterItems) && !string.IsNullOrWhiteSpace(filterItems))
+        this.Data = data;
+
+        if (this.Chest.modData.TryGetValue("FilterItems", out var filterItems))
+        {
+            // Migrate Legacy Keys
+            this.Chest.modData[$"{ModEntry.ModUniqueId}/CategorizeChest"] = filterItems;
+            this.Chest.modData.Remove("FilterItems");
+            this.ItemMatcherByChest.StringValue = filterItems;
+        }
+        else if (this.Chest.modData.TryGetValue($"{ModEntry.ModUniqueId}/CategorizeChest", out filterItems) && !string.IsNullOrWhiteSpace(filterItems))
         {
             this.ItemMatcherByChest.StringValue = filterItems;
         }
@@ -80,7 +88,7 @@ internal class ManagedChest : IManagedChest
     /// <inheritdoc/>
     public ItemMatcher ItemMatcherByType
     {
-        get => this.Config.ItemMatcherByType;
+        get => this.Data.ItemMatcherByType;
     }
 
     // ****************************************************************************************
@@ -89,85 +97,85 @@ internal class ManagedChest : IManagedChest
     /// <inheritdoc/>
     public FeatureOption CarryChest
     {
-        get => this.Config.CarryChest;
-        set => this.Config.CarryChest = value;
+        get => this.Data.CarryChest;
+        set => this.Data.CarryChest = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption CategorizeChest
     {
-        get => this.Config.CategorizeChest;
-        set => this.Config.CategorizeChest = value;
+        get => this.Data.CategorizeChest;
+        set => this.Data.CategorizeChest = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption ChestMenuTabs
     {
-        get => this.Config.ChestMenuTabs;
-        set => this.Config.ChestMenuTabs = value;
+        get => this.Data.ChestMenuTabs;
+        set => this.Data.ChestMenuTabs = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption CollectItems
     {
-        get => this.Config.CollectItems;
-        set => this.Config.CollectItems = value;
+        get => this.Data.CollectItems;
+        set => this.Data.CollectItems = value;
     }
 
     /// <inheritdoc/>
     public FeatureOptionRange CraftFromChest
     {
-        get => this.Config.CraftFromChest;
-        set => this.Config.CraftFromChest = value;
+        get => this.Data.CraftFromChest;
+        set => this.Data.CraftFromChest = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption CustomColorPicker
     {
-        get => this.Config.CustomColorPicker;
-        set => this.Config.CustomColorPicker = value;
+        get => this.Data.CustomColorPicker;
+        set => this.Data.CustomColorPicker = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption FilterItems
     {
-        get => this.Config.FilterItems;
-        set => this.Config.FilterItems = value;
+        get => this.Data.FilterItems;
+        set => this.Data.FilterItems = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption OpenHeldChest
     {
-        get => this.Config.OpenHeldChest;
-        set => this.Config.OpenHeldChest = value;
+        get => this.Data.OpenHeldChest;
+        set => this.Data.OpenHeldChest = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption ResizeChest
     {
-        get => this.Config.ResizeChest;
-        set => this.Config.ResizeChest = value;
+        get => this.Data.ResizeChest;
+        set => this.Data.ResizeChest = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption ResizeChestMenu
     {
-        get => this.Config.ResizeChestMenu;
-        set => this.Config.ResizeChestMenu = value;
+        get => this.Data.ResizeChestMenu;
+        set => this.Data.ResizeChestMenu = value;
     }
 
     /// <inheritdoc/>
     public FeatureOption SearchItems
     {
-        get => this.Config.SearchItems;
-        set => this.Config.SearchItems = value;
+        get => this.Data.SearchItems;
+        set => this.Data.SearchItems = value;
     }
 
     /// <inheritdoc/>
     public FeatureOptionRange StashToChest
     {
-        get => this.Config.StashToChest;
-        set => this.Config.StashToChest = value;
+        get => this.Data.StashToChest;
+        set => this.Data.StashToChest = value;
     }
 
     // ****************************************************************************************
@@ -176,46 +184,46 @@ internal class ManagedChest : IManagedChest
     /// <inheritdoc/>
     public int CraftFromChestDistance
     {
-        get => this.Config.CraftFromChestDistance;
-        set => this.Config.CraftFromChestDistance = value;
+        get => this.Data.CraftFromChestDistance;
+        set => this.Data.CraftFromChestDistance = value;
     }
 
     /// <inheritdoc/>
     public HashSet<string> FilterItemsList
     {
-        get => this.Config.FilterItemsList;
-        set => this.Config.FilterItemsList = value;
+        get => this.Data.FilterItemsList;
+        set => this.Data.FilterItemsList = value;
     }
 
     /// <inheritdoc/>
-    public bool FillStacks
+    public bool StashToChestStacks
     {
-        get => this.Config.FillStacks;
-        set => this.Config.FillStacks = value;
+        get => this.Data.StashToChestStacks;
+        set => this.Data.StashToChestStacks = value;
     }
 
     /// <inheritdoc/>
     public int ResizeChestCapacity
     {
-        get => this.Config.ResizeChestCapacity;
-        set => this.Config.ResizeChestCapacity = value;
+        get => this.Data.ResizeChestCapacity;
+        set => this.Data.ResizeChestCapacity = value;
     }
 
     /// <inheritdoc/>
     public int ResizeChestMenuRows
     {
-        get => this.Config.ResizeChestMenuRows;
-        set => this.Config.ResizeChestMenuRows = value;
+        get => this.Data.ResizeChestMenuRows;
+        set => this.Data.ResizeChestMenuRows = value;
     }
 
     /// <inheritdoc/>
     public int StashToChestDistance
     {
-        get => this.Config.StashToChestDistance;
-        set => this.Config.StashToChestDistance = value;
+        get => this.Data.StashToChestDistance;
+        set => this.Data.StashToChestDistance = value;
     }
 
-    private IChestModel Config { get; }
+    private IChestModel Data { get; }
 
     /// <inheritdoc/>
     public bool MatchesChest(Chest other)
@@ -231,11 +239,11 @@ internal class ManagedChest : IManagedChest
     }
 
     /// <inheritdoc/>
-    public Item StashItem(Item item, bool fillStacks = false)
+    public Item StashItem(Item item)
     {
         var stack = item.Stack;
 
-        if ((this.Config.ItemMatcherByType.Any() || this.ItemMatcherByType.Any()) && this.Config.ItemMatcherByType.Matches(item) && this.ItemMatcherByType.Matches(item))
+        if ((this.Data.ItemMatcherByType.Any() || this.ItemMatcherByType.Any()) && this.Data.ItemMatcherByType.Matches(item) && this.ItemMatcherByType.Matches(item))
         {
             var tmp = this.Chest.addItem(item);
             if (tmp is null || tmp.Stack <= 0)
@@ -249,7 +257,7 @@ internal class ManagedChest : IManagedChest
             }
         }
 
-        if (fillStacks)
+        if (this.Data.StashToChestStacks)
         {
             foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem.maximumStackSize() > 1 && chestItem.canStackWith(item)))
             {

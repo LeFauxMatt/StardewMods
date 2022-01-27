@@ -39,41 +39,38 @@ public class ServiceCollection : List<IService>, IServiceLocator, IService
         // Force evaluation of Lazy Instances
         foreach (var (type, pendingService) in this.PendingServices)
         {
-            if (this.FindService(type, new List<IServiceLocator>()) is not null)
+            if (this.FindServices(type, new List<IServiceLocator>()).Any())
             {
                 pendingService.ForceEvaluation();
             }
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public TServiceType FindService<TServiceType>()
     {
-        return (TServiceType)this.FindService(typeof(TServiceType), new List<IServiceLocator>());
+        return this.FindServices<TServiceType>().SingleOrDefault();
     }
 
     /// <inheritdoc />
-    public object FindService(Type type, IList<IServiceLocator> exclude)
+    public IEnumerable<TServiceType> FindServices<TServiceType>()
+    {
+        return this.FindServices(typeof(TServiceType), new List<IServiceLocator>()).Cast<TServiceType>();
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IService> FindServices(Type type, IList<IServiceLocator> exclude)
     {
         // Find from local
-        object service = this.SingleOrDefault(type.IsInstanceOfType);
-        if (service is not null)
-        {
-            return service;
-        }
+        var services = this.Where(type.IsInstanceOfType);
 
         // Recursive search in external services
         exclude.Add(this);
-        foreach (var serviceCollection in this.OfType<IServiceLocator>().Except(exclude))
-        {
-            service = serviceCollection.FindService(type, exclude);
-            if (service is not null)
-            {
-                return service;
-            }
-        }
+        services = services.Concat(
+            from serviceLocator in this.OfType<IServiceLocator>().Except(exclude)
+            from service in serviceLocator.FindServices(type, exclude)
+            select service);
 
-        // Not found
-        return default;
+        return services;
     }
 }

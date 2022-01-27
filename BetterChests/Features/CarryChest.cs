@@ -9,7 +9,6 @@ using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -138,6 +137,11 @@ internal class CarryChest : Feature
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     private static void InventoryMenu_rightClick_postfix(InventoryMenu __instance, ref Item __result, ref ItemSlot __state)
     {
+        if (__state is null)
+        {
+            return;
+        }
+
         var (item, slotNumber) = __state;
 
         if (item is null || __result is null)

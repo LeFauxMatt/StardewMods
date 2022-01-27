@@ -9,7 +9,7 @@ using StardewModdingAPI;
 public class ModEntry : Mod
 {
     /// <summary>
-    /// The unique Mod Id.
+    /// Gets the unique Mod Id.
     /// </summary>
     internal static string ModUniqueId { get; private set; }
 
@@ -19,7 +19,7 @@ public class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         ModEntry.ModUniqueId = this.ModManifest.UniqueID;
-        Log.Init(this.Monitor);
+        Log.Monitor = this.Monitor;
 
         this.Services.AddRange(
             new IService[]

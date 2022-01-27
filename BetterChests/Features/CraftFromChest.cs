@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using BetterChests.Enums;
 using BetterChests.Interfaces;
+using Common.Extensions;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
@@ -127,7 +128,7 @@ internal class CraftFromChest : Feature
     /// <summary>Open crafting menu for all chests in inventory.</summary>
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.Config.OpenCrafting.JustPressed())
+        if (!Context.IsPlayerFree || !this.Config.ControlScheme.OpenCrafting.JustPressed())
         {
             return;
         }
@@ -137,16 +138,18 @@ internal class CraftFromChest : Feature
             where managedChest.CollectionType switch
             {
                 ItemCollectionType.GameLocation when managedChest.CraftFromChest == FeatureOptionRange.World => true,
-                ItemCollectionType.GameLocation when this.Config.CraftFromChestDistance == -1 =>
+                ItemCollectionType.GameLocation when managedChest.CraftFromChestDistance == -1 =>
                     managedChest.CraftFromChest >= FeatureOptionRange.Location
                     && ReferenceEquals(managedChest.Location, Game1.currentLocation),
-                ItemCollectionType.GameLocation when this.Config.CraftFromChestDistance >= 1 =>
+                ItemCollectionType.GameLocation when managedChest.CraftFromChestDistance >= 1 =>
                     managedChest.CraftFromChest >= FeatureOptionRange.Location
                     && ReferenceEquals(managedChest.Location, Game1.currentLocation)
-                    && Utility.withinRadiusOfPlayer((int)managedChest.Position.X * 64, (int)managedChest.Position.Y * 64, this.Config.CraftFromChestDistance, Game1.player),
+                    && Utility.withinRadiusOfPlayer((int)managedChest.Position.X * 64, (int)managedChest.Position.Y * 64, managedChest.CraftFromChestDistance, Game1.player),
                 ItemCollectionType.PlayerInventory =>
                     managedChest.CraftFromChest >= FeatureOptionRange.Inventory
                     && ReferenceEquals(managedChest.Player, Game1.player),
+                ItemCollectionType.ChestInventory => false,
+                _ => false,
             }
             select managedChest.Chest).ToList();
 
@@ -157,7 +160,7 @@ internal class CraftFromChest : Feature
         }
 
         this._multipleChestCraftingPage.Value = new(eligibleChests);
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.OpenCrafting);
+        this.Config.ControlScheme.OpenCrafting.Suppress();
     }
 
     private class MultipleChestCraftingPage

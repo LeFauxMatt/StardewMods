@@ -107,7 +107,7 @@ internal class CollectItems : Feature
 
         foreach (var managedChest in CollectItems.Instance.EligibleChests)
         {
-            item = managedChest.StashItem(item, true);
+            item = managedChest.StashItem(item);
             if (item is null)
             {
                 break;

@@ -8,14 +8,7 @@ using StardewModdingAPI;
 internal static class Log
 {
     /// <inheritdoc cref="IMonitor" />
-    private static IMonitor Monitor { get; set; }
-
-    /// <summary>Initializes the <see cref="Log" /> class.</summary>
-    /// <param name="monitor">The instance of Monitor from the Mod.</param>
-    public static void Init(IMonitor monitor)
-    {
-        Log.Monitor = monitor;
-    }
+    public static IMonitor Monitor { get; set; }
 
     /// <summary>Logs a message at an <see cref="LogLevel.Alert" /> level.</summary>
     /// <param name="message">The message to log.</param>
