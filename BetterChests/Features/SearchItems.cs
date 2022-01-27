@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using BetterChests.Enums;
 using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
@@ -303,6 +304,11 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
+        if (e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
+        {
+            return;
+        }
+
         this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
             ? e.ItemGrabMenu
             : null;

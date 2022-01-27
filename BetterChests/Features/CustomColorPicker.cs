@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
+using BetterChests.Enums;
 using BetterChests.Interfaces;
 using BetterChests.Models;
 using Common.Extensions;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using FuryCore.UI;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -206,7 +206,7 @@ internal class CustomColorPicker : Feature
 
         CustomColorPicker.Instance.ColorPicker = new(
             CustomColorPicker.Instance.Helper.Content,
-            CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 96 - (IClickableMenu.borderWidth / 2) : menu.xPositionOnScreen + menu.width + 96 + (IClickableMenu.borderWidth / 2),
+            CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - (2 * Game1.tileSize) - (IClickableMenu.borderWidth / 2) : menu.xPositionOnScreen + menu.width + 96 + (IClickableMenu.borderWidth / 2),
             menu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2),
             chest.playerChoiceColor.Value,
             chestToDraw);
@@ -221,7 +221,7 @@ internal class CustomColorPicker : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest))
+        if (this.Menu is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
         {
             return;
         }

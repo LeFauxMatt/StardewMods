@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using BetterChests.Enums;
 using BetterChests.Interfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -135,6 +136,12 @@ internal class CategorizeChest : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
+        ManagedChest managedChest = null;
+        if (e.Chest is not null && this.ManagedChests.FindChest(e.Chest, out managedChest) && managedChest.ChestMenuTabs == FeatureOption.Disabled)
+        {
+            return;
+        }
+
         switch (e.ItemGrabMenu)
         {
             // Enter ItemSelectionMenu
@@ -142,7 +149,7 @@ internal class CategorizeChest : Feature
                 return;
 
             // Enter an Eligible ItemGrabMenu
-            case not null when this.ManagedChests.FindChest(e.Chest, out var managedChest):
+            case not null when managedChest is not null:
                 this.MenuComponents.Components.Insert(0, this.ConfigureButton);
                 this.ReturnMenu = e.ItemGrabMenu;
                 this.ManagedChest = managedChest;

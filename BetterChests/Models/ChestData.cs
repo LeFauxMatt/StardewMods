@@ -56,6 +56,9 @@ internal class ChestData : IChestData
     public int CraftFromChestDistance { get; set; } = 0;
 
     /// <inheritdoc/>
+    public HashSet<string> ChestMenuTabSet { get; set; } = new();
+
+    /// <inheritdoc/>
     public HashSet<string> FilterItemsList { get; set; } = new();
 
     /// <inheritdoc/>

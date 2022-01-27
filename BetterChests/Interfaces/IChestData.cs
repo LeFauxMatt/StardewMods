@@ -86,6 +86,11 @@ internal interface IChestData
     public int CraftFromChestDistance { get; set; }
 
     /// <summary>
+    /// Gets or sets the tabs that show up for a particular Chest.
+    /// </summary>
+    public HashSet<string> ChestMenuTabSet { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether stashing will fill existing stacks.
     /// </summary>
     public bool StashToChestStacks { get; set; }

@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using BetterChests.Enums;
 using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
@@ -110,7 +111,7 @@ internal class FilterItems : Feature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!FilterItems.Instance.ManagedChests.FindChest(__instance, out var managedChest) || managedChest.ItemMatcherByType.Matches(item))
+        if (!FilterItems.Instance.ManagedChests.FindChest(__instance, out var managedChest) || managedChest.FilterItems == FeatureOption.Disabled || managedChest.ItemMatcherByType.Matches(item))
         {
             return true;
         }
@@ -125,7 +126,7 @@ internal class FilterItems : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest))
+        if (this.Menu is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.FilterItems == FeatureOption.Disabled)
         {
             return;
         }

@@ -196,6 +196,13 @@ internal class ManagedChest : IManagedChest
     }
 
     /// <inheritdoc/>
+    public HashSet<string> ChestMenuTabSet
+    {
+        get => this.Data.ChestMenuTabSet;
+        set => this.Data.ChestMenuTabSet = value;
+    }
+
+    /// <inheritdoc/>
     public HashSet<string> FilterItemsList
     {
         get => this.Data.FilterItemsList;

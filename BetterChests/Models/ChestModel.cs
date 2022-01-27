@@ -270,6 +270,15 @@ internal class ChestModel : IChestModel
     }
 
     /// <inheritdoc/>
+    public HashSet<string> ChestMenuTabSet
+    {
+        get => this.Data.ChestMenuTabSet.Any()
+            ? this.Data.ChestMenuTabSet
+            : this.Config.DefaultChest.ChestMenuTabSet;
+        set => this.Data.ChestMenuTabSet = value;
+    }
+
+    /// <inheritdoc/>
     public HashSet<string> FilterItemsList
     {
         get => this.Data.FilterItemsList.Any()

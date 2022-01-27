@@ -1,5 +1,6 @@
 ﻿namespace BetterChests.Interfaces;
 
+using BetterChests.Features;
 using BetterChests.Models;
 using FuryCore.Enums;
 using FuryCore.UI;
@@ -13,7 +14,7 @@ internal interface IConfigData
     // General
 
     /// <summary>
-    /// Gets or sets the area that the <see cref="HslColorPicker" /> will be aligned to.
+    /// Gets or sets the <see cref="ComponentArea" /> that the <see cref="CustomColorPicker" /> will be aligned to.
     /// </summary>
     public ComponentArea CustomColorPickerArea { get; set; }
 

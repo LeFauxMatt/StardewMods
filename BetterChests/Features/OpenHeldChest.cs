@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using BetterChests.Enums;
 using BetterChests.Interfaces;
 using Common.Helpers;
 using FuryCore.Interfaces;
@@ -94,7 +95,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        if (!this.ManagedChests.FindChest(chest, out _))
+        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }

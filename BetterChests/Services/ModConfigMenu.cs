@@ -88,11 +88,6 @@ internal class ModConfigMenu : IService
 
     private void GeneralConfig()
     {
-        var areaValues =
-            new[] { ComponentArea.Right, ComponentArea.Left }
-                .Select(FormatHelper.GetAreaString)
-                .ToArray();
-
         this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_General_Name, I18n.Section_General_Description);
 
         // Custom Color Picker Area
@@ -102,7 +97,7 @@ internal class ModConfigMenu : IService
             value => this.Config.CustomColorPickerArea = Enum.TryParse(value, out ComponentArea area) ? area : ComponentArea.Right,
             I18n.Config_CustomColorPickerArea_Name,
             I18n.Config_CustomColorPickerArea_Tooltip,
-            areaValues,
+            new[] { ComponentArea.Left, ComponentArea.Right }.Select(FormatHelper.GetAreaString).ToArray(),
             FormatHelper.FormatArea,
             nameof(this.Config.CustomColorPickerArea));
 

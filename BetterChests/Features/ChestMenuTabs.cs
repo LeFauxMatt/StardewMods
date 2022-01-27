@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BetterChests.Enums;
 using BetterChests.Interfaces;
 using FuryCore.Helpers;
 using FuryCore.Interfaces;
@@ -87,6 +88,7 @@ internal class ChestMenuTabs : Feature
         this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
@@ -95,10 +97,16 @@ internal class ChestMenuTabs : Feature
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
+        if (e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.ChestMenuTabs == FeatureOption.Disabled)
+        {
+            return;
+        }
+
         if (this.MenuItems.Menu is not null)
         {
             // Add filter to Menu Items
@@ -107,7 +115,7 @@ internal class ChestMenuTabs : Feature
 
         if (this.MenuComponents.Menu is not null)
         {
-            this.MenuComponents.Components.AddRange(this.Tabs);
+            this.MenuComponents.Components.AddRange(managedChest.ChestMenuTabSet.Any() ? this.Tabs.Where(tab => managedChest.ChestMenuTabSet.Contains(tab.Name)) : this.Tabs);
 
             if (!ReferenceEquals(e.Chest, this.Chest))
             {
@@ -151,6 +159,32 @@ internal class ChestMenuTabs : Feature
         {
             this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
             this.Config.ControlScheme.PreviousTab.Suppress();
+        }
+    }
+
+    private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
+    {
+        if (this.MenuComponents.Menu is null)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        if (!this.Tabs.Any(tab => tab.Component.containsPoint(x, y)))
+        {
+            return;
+        }
+
+        switch (e.Delta)
+        {
+            case > 0:
+                this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
+                break;
+            case < 0:
+                this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
+                break;
+            default:
+                return;
         }
     }
 
