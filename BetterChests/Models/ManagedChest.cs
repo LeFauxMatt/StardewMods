@@ -178,6 +178,13 @@ internal class ManagedChest : IManagedChest
         set => this.Data.StashToChest = value;
     }
 
+    /// <inheritdoc/>
+    public FeatureOption UnloadChest
+    {
+        get => this.Data.UnloadChest;
+        set => this.Data.UnloadChest = value;
+    }
+
     // ****************************************************************************************
     // Feature Options
 

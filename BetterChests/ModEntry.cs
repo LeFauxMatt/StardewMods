@@ -67,16 +67,17 @@ public class ModEntry : Mod, IAssetLoader
                 new CarryChest(this.Config, this.Helper, this.Services),
                 new CategorizeChest(this.Config, this.Helper, this.Services),
                 new ChestMenuTabs(this.Config, this.Helper, this.Services),
-                new CustomColorPicker(this.Config, this.Helper, this.Services),
+                new CollectItems(this.Config, this.Helper, this.Services),
                 new CraftFromChest(this.Config, this.Helper, this.Services),
+                new CustomColorPicker(this.Config, this.Helper, this.Services),
                 new FilterItems(this.Config, this.Helper, this.Services),
                 new OpenHeldChest(this.Config, this.Helper, this.Services),
-                new ResizeChestMenu(this.Config, this.Helper, this.Services),
                 new ResizeChest(this.Config, this.Helper, this.Services),
+                new ResizeChestMenu(this.Config, this.Helper, this.Services),
                 new SearchItems(this.Config, this.Helper, this.Services),
                 new SlotLock(this.Config, this.Helper, this.Services),
                 new StashToChest(this.Config, this.Helper, this.Services),
-                new CollectItems(this.Config, this.Helper, this.Services),
+                new UnloadChest(this.Config, this.Helper, this.Services),
             });
         this.Services.ForceEvaluation();
 

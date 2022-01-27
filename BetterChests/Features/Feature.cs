@@ -84,6 +84,7 @@ internal abstract class Feature : IService
             SearchItems => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled,
             SlotLock => this.Config.SlotLock,
             StashToChest => this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled,
+            UnloadChest => this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled,
             _ => throw new InvalidOperationException($"Invalid feature toggle {this.GetType().Name}."),
         };
 

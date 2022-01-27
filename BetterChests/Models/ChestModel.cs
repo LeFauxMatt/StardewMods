@@ -233,6 +233,22 @@ internal class ChestModel : IChestModel
         set => this.Data.StashToChest = value;
     }
 
+    public FeatureOption UnloadChest
+    {
+        get
+        {
+            if (this.Data.UnloadChest != FeatureOption.Default)
+            {
+                return this.Data.UnloadChest;
+            }
+
+            return this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.UnloadChest = value;
+    }
+
     // ****************************************************************************************
     // Feature Options
 

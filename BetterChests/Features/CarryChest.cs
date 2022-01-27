@@ -266,7 +266,7 @@ internal class CarryChest : Feature
     [EventPriority(EventPriority.High)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton())
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button))
         {
             return;
         }
@@ -282,6 +282,7 @@ internal class CarryChest : Feature
             return;
         }
 
+        // Object is Chest and supports Carry Chest
         if (!this.ManagedChests.FindChest(obj as Chest, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
         {
             return;

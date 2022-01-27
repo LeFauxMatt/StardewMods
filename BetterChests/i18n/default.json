@@ -48,6 +48,8 @@
   "config.stash-to-chest-distance.tooltip": "The tiles away from the player that chests can be remotely stashed from.",
   "config.stash-to-chest-stacks.name": "Stash to Existing Stacks",
   "config.stash-to-chest-stacks.tooltip": "Stashing will fill existing stacks of items in a Chest.",
+  "config.unload-chest.name": "Unload Chest",
+  "config.unload-chest.tooltip":  "Using a held chest on a placed chest will transfer items into the placed one.",
 
   // Feature Option Formatting
   "config.resize-chest-capacity.value-unlimited": "Unlimited",

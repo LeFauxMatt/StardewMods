@@ -46,6 +46,9 @@ internal class ChestData : IChestData
     /// <inheritdoc/>
     public FeatureOptionRange StashToChest { get; set; } = FeatureOptionRange.Default;
 
+    /// <inheritdoc/>
+    public FeatureOption UnloadChest { get; set; } = FeatureOption.Default;
+
     // ****************************************************************************************
     // Feature Options
 

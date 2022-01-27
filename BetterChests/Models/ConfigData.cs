@@ -45,5 +45,6 @@ internal class ConfigData : IConfigData
         StashToChest = FeatureOptionRange.Location,
         StashToChestDistance = -1,
         StashToChestStacks = true,
+        UnloadChest = FeatureOption.Enabled,
     };
 }

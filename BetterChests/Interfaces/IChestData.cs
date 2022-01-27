@@ -72,6 +72,11 @@ internal interface IChestData
     /// </summary>
     public FeatureOptionRange StashToChest { get; set; }
 
+    /// <summary>
+    /// Gets or sets the feature that allows a chest to be unloaded into another chest.
+    /// </summary>
+    public FeatureOption UnloadChest { get; set; }
+
     // ****************************************************************************************
     // Feature Options
 

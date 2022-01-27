@@ -361,6 +361,17 @@ internal class ModConfigMenu : IService
             I18n.Config_StashToChestStacks_Name,
             I18n.Config_StashToChestStacks_Tooltip,
             nameof(IChestData.StashToChestStacks));
+
+        // Unload Chest
+        this.GMCM.API.AddTextOption(
+            this.Manifest,
+            () => FormatHelper.GetOptionString(config.UnloadChest),
+            value => config.UnloadChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            I18n.Config_SearchItems_Name,
+            I18n.Config_SearchItems_Tooltip,
+            optionValues,
+            FormatHelper.FormatOption,
+            nameof(UnloadChest));
     }
 
     private void ControlsConfig(IControlScheme config)
