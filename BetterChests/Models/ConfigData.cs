@@ -19,9 +19,6 @@ internal class ConfigData : IConfigData
     public bool SlotLock { get; set; } = true;
 
     /// <inheritdoc/>
-    public bool[] LockedSlots { get; set; } = new bool[36];
-
-    /// <inheritdoc/>
     public ControlScheme ControlScheme { get; set; } = new();
 
     /// <inheritdoc/>

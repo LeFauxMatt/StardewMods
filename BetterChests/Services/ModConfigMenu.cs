@@ -396,6 +396,15 @@ internal class ModConfigMenu : IService
             I18n.Config_StashItems_Tooltip,
             nameof(IControlScheme.StashItems));
 
+        // Lock Slots
+        this.GMCM.API.AddKeybindList(
+            this.Manifest,
+            () => config.LockSlot,
+            value => config.LockSlot = value,
+            I18n.Config_SlotLock_Name,
+            I18n.Config_SlotLock_Tooltip,
+            nameof(IControlScheme.LockSlot));
+
         // Scroll Up
         this.GMCM.API.AddKeybindList(
             this.Manifest,

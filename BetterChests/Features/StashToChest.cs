@@ -1,5 +1,6 @@
 ﻿namespace BetterChests.Features;
 
+using System;
 using System.Linq;
 using BetterChests.Enums;
 using BetterChests.Interfaces;
@@ -13,6 +14,8 @@ using StardewValley;
 /// <inheritdoc />
 internal class StashToChest : Feature
 {
+    private Lazy<SlotLock> _slotLock;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StashToChest"/> class.
     /// </summary>
@@ -22,6 +25,12 @@ internal class StashToChest : Feature
     public StashToChest(IConfigModel config, IModHelper helper, IServiceLocator services)
         : base(config, helper, services)
     {
+        this._slotLock = services.Lazy<SlotLock>();
+    }
+
+    private SlotLock SlotLock
+    {
+        get => this._slotLock.Value;
     }
 
     /// <inheritdoc />
@@ -72,9 +81,10 @@ internal class StashToChest : Feature
             return false;
         }
 
+        var lockedSlots = this.SlotLock.LockedSlots;
         for (var index = Game1.player.Items.Count - 1; index >= 0; index--)
         {
-            if (this.Config.SlotLock && this.Config.LockedSlots.ElementAtOrDefault(index))
+            if (this.Config.SlotLock && lockedSlots[index])
             {
                 continue;
             }

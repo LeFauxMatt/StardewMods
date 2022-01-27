@@ -46,13 +46,6 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc/>
-    public bool[] LockedSlots
-    {
-        get => this.Data.LockedSlots;
-        set => this.Data.LockedSlots = value;
-    }
-
-    /// <inheritdoc/>
     public ControlScheme ControlScheme
     {
         get => this.Data.ControlScheme;

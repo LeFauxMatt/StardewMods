@@ -37,7 +37,10 @@ internal class UnloadChest : Feature
     [EventPriority(EventPriority.High + 1)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || !this.ManagedChests.FindChest(Game1.player.CurrentItem as Chest, out var source) || source.UnloadChest == FeatureOption.Disabled)
+        if (!Context.IsPlayerFree
+            || !e.Button.IsUseToolButton()
+            || !this.ManagedChests.FindChest(Game1.player.CurrentItem as Chest, out var source)
+            || source.UnloadChest == FeatureOption.Disabled)
         {
             return;
         }

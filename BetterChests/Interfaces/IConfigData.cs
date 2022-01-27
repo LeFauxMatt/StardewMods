@@ -28,11 +28,6 @@ internal interface IConfigData
     public bool SlotLock { get; set; }
 
     /// <summary>
-    /// Gets or sets the slots that are currently locked by the player.
-    /// </summary>
-    public bool[] LockedSlots { get; set; }
-
-    /// <summary>
     /// Gets or sets the control scheme.
     /// </summary>
     ControlScheme ControlScheme { get; set; }
@@ -53,7 +48,6 @@ internal interface IConfigData
         other.CustomColorPickerArea = this.CustomColorPickerArea;
         other.SearchTagSymbol = this.SearchTagSymbol;
         other.SlotLock = this.SlotLock;
-        other.LockedSlots = this.LockedSlots;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         ((IChestData)other.DefaultChest).CopyTo(this.DefaultChest);
     }

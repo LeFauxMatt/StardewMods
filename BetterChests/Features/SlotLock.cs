@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -22,6 +23,7 @@ using StardewValley.Menus;
 internal class SlotLock : Feature
 {
     private readonly Lazy<IHarmonyHelper> _harmony;
+    private readonly PerScreen<IList<bool>> _lockedSlots = new(() => new List<bool>());
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SlotLock"/> class.
@@ -49,6 +51,35 @@ internal class SlotLock : Feature
                     nameof(SlotLock.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler);
             });
+    }
+
+    /// <summary>
+    /// Gets an array indicating which item slots are locked by the player.
+    /// </summary>
+    public IList<bool> LockedSlots
+    {
+        get
+        {
+            if (this._lockedSlots.Value.Count == 0)
+            {
+                var lockedSlots = Game1.player.modData.TryGetValue($"{ModEntry.ModUniqueId}/LockedSlots", out var lockedSlotsData) && !string.IsNullOrWhiteSpace(lockedSlotsData)
+                    ? lockedSlotsData.ToCharArray()
+                    : new char[Game1.player.Items.Count];
+                if (lockedSlots.Length < Game1.player.Items.Count)
+                {
+                    Array.Resize(ref lockedSlots, Game1.player.Items.Count);
+                }
+
+                this._lockedSlots.Value = lockedSlots.Select(slot => slot == '1').ToList();
+            }
+
+            return this._lockedSlots.Value;
+        }
+
+        private set
+        {
+            Game1.player.modData[$"{ModEntry.ModUniqueId}/LockedSlots"] = value.Select(slot => slot ? '1' : '0').ToString();
+        }
     }
 
     private static SlotLock Instance { get; set; }
@@ -149,22 +180,14 @@ internal class SlotLock : Feature
         }
 
         var index = Convert.ToInt32(slot.name);
-        if (index >= this.Config.LockedSlots.Length)
-        {
-            var lockedSlots = new bool[menu.capacity];
-            this.Config.LockedSlots.CopyTo(lockedSlots, 0);
-            this.Config.LockedSlots = lockedSlots;
-        }
-
-        this.Config.LockedSlots[index] = !this.Config.LockedSlots[index];
-        this.Config.Save();
+        var lockedSlots = this.LockedSlots;
+        lockedSlots[index] = !lockedSlots[index];
+        this.LockedSlots = lockedSlots;
         this.Config.ControlScheme.LockSlot.Suppress();
     }
 
     private Color GetTint(Color tint, int index)
     {
-        return this.Config.LockedSlots.ElementAtOrDefault(index) != true
-            ? tint
-            : Color.Red;
+        return this.LockedSlots.ElementAtOrDefault(index) ? Color.Red : tint;
     }
 }
