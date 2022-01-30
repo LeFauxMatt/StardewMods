@@ -30,6 +30,9 @@ public class ItemMatcher : ObservableCollection<string>
         this.SearchTagSymbol = searchTagSymbol ?? string.Empty;
     }
 
+    /// <summary>
+    /// Gets or sets a string representation of all registered search texts.
+    /// </summary>
     public string StringValue
     {
         get => string.Join(" ", this);

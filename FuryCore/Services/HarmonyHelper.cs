@@ -11,7 +11,7 @@ using HarmonyLib;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IHarmonyHelper" />
 [FuryCoreService(true)]
-internal class HarmonyHelper : IHarmonyHelper, IService
+internal class HarmonyHelper : IHarmonyHelper, IModService
 {
     private readonly IDictionary<string, Harmony> _harmony = new Dictionary<string, Harmony>();
     private readonly IDictionary<string, List<SavedPatch>> _savedPatches = new Dictionary<string, List<SavedPatch>>();

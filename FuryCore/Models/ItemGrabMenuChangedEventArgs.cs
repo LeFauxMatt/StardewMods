@@ -38,7 +38,8 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     public int ScreenId { get; }
 
     /// <summary>
-    ///     Gets if the ItemGrabMenu is new. (false on change)
+    ///     Gets a value indicating whether the ItemGrabMenu is new.
+    ///     Returns false when the active menu is changed to an existing ItemGrabMenu.
     /// </summary>
     public bool IsNew { get; }
 }

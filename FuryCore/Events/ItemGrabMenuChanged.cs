@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using HarmonyLib;
@@ -21,9 +22,9 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemGrabMenuChanged" /> class.
     /// </summary>
-    /// <param name="gameLoop"></param>
-    /// <param name="services"></param>
-    public ItemGrabMenuChanged(IGameLoopEvents gameLoop, ServiceCollection services)
+    /// <param name="gameLoop">SMAPI events linked to the the game's update loop.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ItemGrabMenuChanged(IGameLoopEvents gameLoop, IModServices services)
     {
         ItemGrabMenuChanged.Instance ??= this;
 
@@ -59,6 +60,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
         ItemGrabMenuChanged.Instance.Menu = __instance;
@@ -84,6 +86,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         this.InvokeIfMenuChanged();
     }
 
+    [SuppressMessage("StyleCop", "SA1101", Justification = "This is a pattern match not a local call")]
     private void InvokeIfMenuChanged()
     {
         var menu = Game1.activeClickableMenu;

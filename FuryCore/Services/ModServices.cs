@@ -5,10 +5,36 @@ using System.Collections.Generic;
 using System.Linq;
 using FuryCore.Interfaces;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IService" />
-public class ServiceCollection : List<IService>, IServiceLocator, IService
+/// <inheritdoc cref="IModService" />
+public class ModServices : IModServices, IModService
 {
+    /// <inheritdoc/>
+    public IEnumerable<IModService> All
+    {
+        get => this.Services;
+    }
+
     private IDictionary<Type, IPendingService> PendingServices { get; } = new Dictionary<Type, IPendingService>();
+
+    private List<IModService> Services { get; } = new();
+
+    /// <summary>
+    ///     Adds service(s) to this collection.
+    /// </summary>
+    /// <param name="services">The service(s) to add.</param>
+    public void Add(params IModService[] services)
+    {
+        this.Services.AddRange(services);
+
+        // Force evaluation of Lazy Instances
+        foreach (var (type, pendingService) in this.PendingServices)
+        {
+            if (this.FindServices(type, new List<IModServices>()).Any())
+            {
+                pendingService.ForceEvaluation();
+            }
+        }
+    }
 
     /// <inheritdoc />
     public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default)
@@ -33,19 +59,6 @@ public class ServiceCollection : List<IService>, IServiceLocator, IService
         return default;
     }
 
-    /// <inheritdoc />
-    public void ForceEvaluation()
-    {
-        // Force evaluation of Lazy Instances
-        foreach (var (type, pendingService) in this.PendingServices)
-        {
-            if (this.FindServices(type, new List<IServiceLocator>()).Any())
-            {
-                pendingService.ForceEvaluation();
-            }
-        }
-    }
-
     /// <inheritdoc/>
     public TServiceType FindService<TServiceType>()
     {
@@ -55,22 +68,17 @@ public class ServiceCollection : List<IService>, IServiceLocator, IService
     /// <inheritdoc />
     public IEnumerable<TServiceType> FindServices<TServiceType>()
     {
-        return this.FindServices(typeof(TServiceType), new List<IServiceLocator>()).Cast<TServiceType>();
+        return this.FindServices(typeof(TServiceType), new List<IModServices>()).Cast<TServiceType>();
     }
 
-    /// <inheritdoc />
-    public IEnumerable<IService> FindServices(Type type, IList<IServiceLocator> exclude)
+    /// <inheritdoc/>
+    public IEnumerable<IModService> FindServices(Type type, IList<IModServices> exclude)
     {
-        // Find from local
-        var services = this.Where(type.IsInstanceOfType);
-
-        // Recursive search in external services
         exclude.Add(this);
-        services = services.Concat(
-            from serviceLocator in this.OfType<IServiceLocator>().Except(exclude)
-            from service in serviceLocator.FindServices(type, exclude)
-            select service);
-
+        var services = this.Services.Where(type.IsInstanceOfType).Concat(
+            from serviceLocator in this.Services.OfType<IModServices>().Except(exclude)
+            from subService in serviceLocator.FindServices(type, exclude)
+            select subService).ToList();
         return services;
     }
 }

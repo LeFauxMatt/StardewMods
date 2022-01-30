@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using StardewModdingAPI;
@@ -16,9 +17,9 @@ internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEve
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuComponentPressed" /> class.
     /// </summary>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public MenuComponentPressed(IModHelper helper, ServiceCollection services)
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
+    public MenuComponentPressed(IModHelper helper, IModServices services)
     {
         this.Helper = helper;
         this._components = services.Lazy<MenuComponents>();

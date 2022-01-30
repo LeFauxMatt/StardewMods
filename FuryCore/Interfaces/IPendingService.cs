@@ -1,7 +1,7 @@
 ﻿namespace FuryCore.Interfaces;
 
 /// <summary>
-///     An <see cref="IService" /> which has not been instantiated yet.
+///     An <see cref="IModService" /> which has not been instantiated yet.
 /// </summary>
 internal interface IPendingService
 {

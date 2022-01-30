@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FuryCore.Enums;
 using FuryCore.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,24 +11,27 @@ using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-public class DropDownMenu : MenuComponent
+public class DropDownMenu : CustomMenuComponent
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ContextMenu" /> class.
+    ///     Initializes a new instance of the <see cref="DropDownMenu"/> class.
     /// </summary>
-    /// <param name="values"></param>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <param name="onSelect"></param>
+    /// <param name="values">The list of values to display.</param>
+    /// <param name="x">The x-coordinate of the dropdown.</param>
+    /// <param name="y">The y-coordinate of the dropdown.</param>
+    /// <param name="onSelect">The action to call when a value is selected.</param>
     public DropDownMenu(IList<string> values, int x, int y, Action<string> onSelect)
-        : base(new(new(x, y, 0, 0), Game1.mouseCursors, OptionsDropDown.dropDownBGSource, 1f))
+        : base(ComponentArea.Custom)
     {
-        this.OnSelect = onSelect;
-
         var textBounds = values.Select(value => Game1.smallFont.MeasureString(value)).ToList();
-        this.Component.bounds.Width = (int)textBounds.Max(textBound => textBound.X) + 16;
-        this.Component.bounds.Height = (int)textBounds.Sum(textBound => textBound.Y) + 16;
         var textHeight = (int)textBounds.Max(textBound => textBound.Y);
+
+        this.OnSelect = onSelect;
+        this.Component = new(
+            new(x, y, (int)textBounds.Max(textBound => textBound.X) + 16, (int)textBounds.Sum(textBound => textBound.Y) + 16),
+            Game1.mouseCursors,
+            OptionsDropDown.dropDownBGSource,
+            1f);
 
         var (fx, fy) = new Vector2(this.Component.bounds.X + 8, this.Component.bounds.Y + 8);
         this.Values = values.Select((value, index) => new ClickableComponent(new((int)fx, (int)fy + (textHeight * index), (int)textBounds[index].X, (int)textBounds[index].Y), value)).ToList();
@@ -80,8 +84,8 @@ public class DropDownMenu : MenuComponent
     /// <summary>
     ///     Pass left mouse button pressed input to the Context Menu.
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
+    /// <param name="x">The x-coordinate of the mouse.</param>
+    /// <param name="y">The y-coordinate of the mouse.</param>
     public void LeftClick(int x, int y)
     {
         var value = this.Values.FirstOrDefault(value => value.bounds.Contains(x, y));

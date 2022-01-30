@@ -9,32 +9,25 @@ internal readonly struct EventOrderKey : IComparable<EventOrderKey>
     /// <summary>
     ///     Initializes a new instance of the <see cref="EventOrderKey" /> struct.
     /// </summary>
-    /// <param name="eventPriority"></param>
+    /// <param name="eventPriority">The event priority for this method handler.</param>
     public EventOrderKey(EventPriority eventPriority)
     {
         this.EventPriority = (int)eventPriority;
         this.RegistrationOrder = EventOrderKey.TotalRegistrations++;
     }
 
-    public int EventPriority { get; }
-
-    public int RegistrationOrder { get; }
-
     private static int TotalRegistrations { get; set; }
 
-    public void Deconstruct(out int eventPriority, out int registrationOrder)
-    {
-        eventPriority = this.EventPriority;
-        registrationOrder = this.RegistrationOrder;
-    }
+    private int EventPriority { get; }
+
+    private int RegistrationOrder { get; }
 
     /// <inheritdoc />
     public int CompareTo(EventOrderKey other)
     {
-        var (eventPriority, registrationOrder) = other;
-        var priorityCompare = -this.EventPriority.CompareTo(eventPriority);
+        var priorityCompare = -this.EventPriority.CompareTo(other.EventPriority);
         return priorityCompare != 0
             ? priorityCompare
-            : this.RegistrationOrder.CompareTo(registrationOrder);
+            : this.RegistrationOrder.CompareTo(other.RegistrationOrder);
     }
 }

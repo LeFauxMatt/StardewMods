@@ -1,5 +1,6 @@
 ﻿namespace FuryCore.Events;
 
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using FuryCore.Services;
 using Microsoft.Xna.Framework;
@@ -16,9 +17,9 @@ internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEve
     /// <summary>
     ///     Initializes a new instance of the <see cref="RenderingItemGrabMenu" /> class.
     /// </summary>
-    /// <param name="display"></param>
-    /// <param name="services"></param>
-    public RenderingItemGrabMenu(IDisplayEvents display, ServiceCollection services)
+    /// <param name="display">SMAPI events related to UI and drawing to the screen.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
+    public RenderingItemGrabMenu(IDisplayEvents display, IModServices services)
     {
         services.Lazy<CustomEvents>(events => events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged);
         display.RenderingActiveMenu += this.OnRenderingActiveMenu;

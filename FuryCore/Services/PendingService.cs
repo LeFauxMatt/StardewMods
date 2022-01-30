@@ -12,17 +12,24 @@ internal class PendingService<TServiceType> : IPendingService
     /// <summary>
     ///     Initializes a new instance of the <see cref="PendingService{TServiceType}" /> class.
     /// </summary>
-    /// <param name="valueFactory"></param>
+    /// <param name="valueFactory">The function which returns an instance of the service.</param>
     public PendingService(Func<TServiceType> valueFactory)
     {
         this._service = new(valueFactory);
         this.LazyInstance = new(this.ValueFactory);
     }
 
+    /// <summary>
+    /// Gets the actions to complete after the service is instantiated.
+    /// </summary>
     public List<Action<TServiceType>> Actions { get; } = new();
 
+    /// <summary>
+    /// Gets the lazy instance of the service.
+    /// </summary>
     public Lazy<TServiceType> LazyInstance { get; }
 
+    /// <inheritdoc/>
     public void ForceEvaluation()
     {
         _ = this.LazyInstance.Value;

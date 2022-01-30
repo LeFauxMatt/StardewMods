@@ -24,8 +24,9 @@ using StardewValley.Objects;
 
 /// <inheritdoc cref="IMenuItems" />
 [FuryCoreService(true)]
-internal class MenuItems : IMenuItems, IService
+internal class MenuItems : IMenuItems, IModService
 {
+    private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
     private readonly PerScreen<IDictionary<string, bool>> _itemFilterCache = new(() => new Dictionary<string, bool>());
     private readonly PerScreen<HashSet<ItemMatcher>> _itemFilters = new(() => new());
@@ -33,6 +34,7 @@ internal class MenuItems : IMenuItems, IService
     private readonly PerScreen<HashSet<ItemMatcher>> _itemHighlighters = new(() => new());
     private readonly PerScreen<IList<int>> _itemIndexes = new();
     private readonly PerScreen<IList<Item>> _itemsFiltered = new();
+    private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int> _menuColumns = new();
     private readonly PerScreen<int> _offset = new(() => 0);
     private readonly PerScreen<Range<int>> _range = new(() => new());
@@ -41,9 +43,9 @@ internal class MenuItems : IMenuItems, IService
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuItems" /> class.
     /// </summary>
-    /// <param name="modEvents"></param>
-    /// <param name="services"></param>
-    public MenuItems(IModEvents modEvents, ServiceCollection services)
+    /// <param name="modEvents">Provides access to all SMAPI events.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
+    public MenuItems(IModEvents modEvents, IModServices services)
     {
         MenuItems.Instance = this;
 
@@ -73,10 +75,18 @@ internal class MenuItems : IMenuItems, IService
     }
 
     /// <inheritdoc />
-    public Chest Chest { get; private set; }
+    public Chest Chest
+    {
+        get => this._chest.Value;
+        private set => this._chest.Value = value;
+    }
 
     /// <inheritdoc />
-    public ItemGrabMenu Menu { get; private set; }
+    public ItemGrabMenu Menu
+    {
+        get => this._menu.Value;
+        private set => this._menu.Value = value;
+    }
 
     /// <inheritdoc />
     public IList<Item> ActualInventory
@@ -141,13 +151,7 @@ internal class MenuItems : IMenuItems, IService
     {
         get
         {
-            if (this._itemIndexes.Value is null)
-            {
-                this._itemIndexes.Value = this.ItemsFiltered.Select(item => this.ActualInventory.IndexOf(item)).ToList();
-                this.RefreshInventory = true;
-            }
-
-            return this._itemIndexes.Value;
+            return this._itemIndexes.Value ??= this.ItemsFiltered.Select(item => this.ActualInventory.IndexOf(item)).ToList();
         }
         set => this._itemIndexes.Value = value;
     }
@@ -160,6 +164,7 @@ internal class MenuItems : IMenuItems, IService
             {
                 this._itemsFiltered.Value = this.ActualInventory.Where(this.FilterMethod).ToList();
                 this.ItemIndexes = null;
+                this.RefreshInventory = true;
             }
 
             return this._itemsFiltered.Value;
@@ -276,9 +281,12 @@ internal class MenuItems : IMenuItems, IService
 
     private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
     {
-        return MenuItems.Instance.Menu is not null && ReferenceEquals(inventoryMenu, MenuItems.Instance.Menu.ItemsToGrabMenu)
-            ? MenuItems.Instance.ItemsDisplayed.Take(inventoryMenu.capacity).ToList()
-            : actualInventory;
+        if (MenuItems.Instance.Menu is null || !ReferenceEquals(inventoryMenu, MenuItems.Instance.Menu.ItemsToGrabMenu))
+        {
+            return actualInventory;
+        }
+
+        return MenuItems.Instance.ItemsDisplayed.Take(inventoryMenu.capacity).ToList();
     }
 
     [SortedEventPriority(EventPriority.High + 1000)]
@@ -308,6 +316,7 @@ internal class MenuItems : IMenuItems, IService
         }
 
         this.ItemFilters.Clear();
+        this.ItemHighlighters.Clear();
     }
 
     private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)

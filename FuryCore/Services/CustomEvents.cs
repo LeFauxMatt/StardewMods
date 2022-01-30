@@ -10,7 +10,7 @@ using StardewModdingAPI.Events;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IFuryEvents" />
 [FuryCoreService(true)]
-internal class CustomEvents : IFuryEvents, IService
+internal class CustomEvents : IFuryEvents, IModService
 {
     private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
     private readonly MenuComponentPressed _menuComponentPressed;
@@ -20,9 +20,9 @@ internal class CustomEvents : IFuryEvents, IService
     /// <summary>
     ///     Initializes a new instance of the <see cref="CustomEvents" /> class.
     /// </summary>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public CustomEvents(IModHelper helper, ServiceCollection services)
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
+    public CustomEvents(IModHelper helper, IModServices services)
     {
         this._itemGrabMenuChanged = new(helper.Events.GameLoop, services);
         this._menuComponentPressed = new(helper, services);

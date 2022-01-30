@@ -17,7 +17,7 @@ public interface IFuryEvents
     public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged;
 
     /// <summary>
-    ///     Triggers when a vanilla or custom <see cref="MenuComponent" /> is pressed on an <see cref="ItemGrabMenu" />.
+    ///     Triggers when a vanilla or custom <see cref="VanillaMenuComponent" /> is pressed on an <see cref="ItemGrabMenu" />.
     /// </summary>
     public event EventHandler<MenuComponentPressedEventArgs> MenuComponentPressed;
 

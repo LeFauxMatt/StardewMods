@@ -7,6 +7,9 @@ using StardewValley.Menus;
 /// </summary>
 public enum ComponentType
 {
+    /// <summary>A custom component.</summary>
+    Custom,
+
     /// <summary>The Organize Button.</summary>
     OrganizeButton,
 

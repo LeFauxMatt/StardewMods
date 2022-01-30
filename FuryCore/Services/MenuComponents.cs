@@ -18,9 +18,9 @@ using StardewValley.Menus;
 
 /// <inheritdoc cref="IMenuComponents" />
 [FuryCoreService(true)]
-internal class MenuComponents : IMenuComponents, IService
+internal class MenuComponents : IMenuComponents, IModService
 {
-    private readonly PerScreen<List<MenuComponent>> _components = new(() => new());
+    private readonly PerScreen<List<IMenuComponent>> _components = new(() => new());
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<bool> _refreshComponents = new();
@@ -28,9 +28,9 @@ internal class MenuComponents : IMenuComponents, IService
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuComponents" /> class.
     /// </summary>
-    /// <param name="helper"></param>
-    /// <param name="services"></param>
-    public MenuComponents(IModHelper helper, ServiceCollection services)
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
+    public MenuComponents(IModHelper helper, IModServices services)
     {
         MenuComponents.Instance = this;
         this.Helper = helper;
@@ -61,7 +61,7 @@ internal class MenuComponents : IMenuComponents, IService
     }
 
     /// <inheritdoc />
-    public List<MenuComponent> Components
+    public List<IMenuComponent> Components
     {
         get => this._components.Value;
     }
@@ -91,6 +91,7 @@ internal class MenuComponents : IMenuComponents, IService
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static bool ItemGrabMenu_RepositionSideButtons_prefix(ItemGrabMenu __instance)
     {
         MenuComponents.Instance.RepositionSideButtons(__instance);
@@ -133,24 +134,26 @@ internal class MenuComponents : IMenuComponents, IService
 
         // Add vanilla components
         this.Components.AddRange(
-            Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
-                .Select(componentType => new MenuComponent(this.Menu, componentType))
-                .Where(component => component.Component is not null)
-                .OrderBy(component => component.Component.bounds.X)
-                .ThenBy(component => component.Component.bounds.Y));
+            from component in
+                from componentType in Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>()
+                where componentType is not ComponentType.Custom
+                select new VanillaMenuComponent(this.Menu, componentType)
+            where component.Component is not null
+            orderby component.Component.bounds.X, component.Component.bounds.Y
+            select component);
         this.RefreshComponents = true;
     }
 
     private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        foreach (var component in this.Components.Where(component => component.IsCustom && component.Area is not ComponentArea.Bottom))
+        foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom && component.Area is not ComponentArea.Bottom))
         {
             component.Draw(e.SpriteBatch);
         }
 
-        if (string.IsNullOrWhiteSpace(this.Menu.hoverText) && !string.IsNullOrWhiteSpace(this._hoverText.Value))
+        if (string.IsNullOrWhiteSpace(this.Menu.hoverText) && !string.IsNullOrWhiteSpace(this.HoverText))
         {
-            this.Menu.hoverText = this._hoverText.Value;
+            this.Menu.hoverText = this.HoverText;
         }
     }
 
@@ -163,7 +166,7 @@ internal class MenuComponents : IMenuComponents, IService
                 this.Components.Remove(component);
             }
 
-            foreach (var component in this.Components.Where(component => component.IsCustom))
+            foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom))
             {
                 this.Menu.allClickableComponents.Add(component.Component);
             }
@@ -172,7 +175,7 @@ internal class MenuComponents : IMenuComponents, IService
             this.RefreshComponents = false;
         }
 
-        foreach (var component in this.Components.Where(component => component.IsCustom && component.Area is ComponentArea.Bottom))
+        foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom && component.Area is ComponentArea.Bottom))
         {
             component.Draw(e.SpriteBatch);
         }
@@ -185,40 +188,33 @@ internal class MenuComponents : IMenuComponents, IService
             return;
         }
 
-        foreach (var componentArea in Enum.GetValues<ComponentArea>())
+        foreach (var componentArea in Enum.GetValues<ComponentArea>().Where(componentType => componentType is not ComponentArea.Custom))
         {
-            if (componentArea == ComponentArea.Custom)
+            var components = this.Components.Where(component => component.Area == componentArea && component.Component is not null).ToList();
+            if (componentArea is ComponentArea.Left or ComponentArea.Right)
             {
-                continue;
+                components.Reverse();
             }
 
-            var components = this.Components
-                                 .Where(component => component.Area == componentArea && component.Component is not null)
-                                 .Reverse()
-                                 .Select((component, index) => (component, index))
-                                 .ToList();
-            MenuComponent previousComponent = null;
+            IMenuComponent previousComponent = null;
             var stepSize = componentArea switch
             {
-                ComponentArea.Top => Game1.tileSize,
-                ComponentArea.Right => components.Count >= 4 ? 72 : 80,
-                ComponentArea.Bottom => Game1.tileSize,
-                ComponentArea.Left => components.Count >= 4 ? 72 : 80,
+                ComponentArea.Right or ComponentArea.Left => components.Count >= 4 ? 72 : 80,
+                _ => Game1.tileSize,
             };
+
             var topMenu = menu.ItemsToGrabMenu;
             var bottomMenu = menu.inventory;
             var slot = topMenu.capacity - (topMenu.capacity / topMenu.rows);
 
-            foreach (var (component, index) in components)
+            foreach (var (component, index) in components.Select((component, index) => (component, index)))
             {
                 switch (componentArea)
                 {
-                    case ComponentArea.Top:
-                    case ComponentArea.Bottom:
-                        component.X = menu.xPositionOnScreen + (Game1.tileSize * index);
+                    case ComponentArea.Top or ComponentArea.Bottom:
+                        component.X = topMenu.inventory[0].bounds.X + (stepSize * index);
                         break;
-                    case ComponentArea.Left:
-                    case ComponentArea.Right:
+                    case ComponentArea.Left or ComponentArea.Right:
                         component.Y = menu.yPositionOnScreen + (menu.height / 3) - Game1.tileSize - (stepSize * index);
                         break;
                 }
@@ -233,6 +229,8 @@ internal class MenuComponents : IMenuComponents, IService
                         component.Y = topMenu.yPositionOnScreen + topMenu.height + Game1.pixelZoom;
                         component.Component.upNeighborID = topMenu.inventory[slot + index].myID;
                         component.Component.downNeighborID = bottomMenu.inventory[index].myID;
+                        topMenu.inventory[slot + index].downNeighborID = component.Id;
+                        bottomMenu.inventory[index].upNeighborID = component.Id;
                         break;
                     case ComponentArea.Left:
                         component.X = menu.xPositionOnScreen - Game1.tileSize;
@@ -250,15 +248,13 @@ internal class MenuComponents : IMenuComponents, IService
 
                 switch (componentArea)
                 {
-                    case ComponentArea.Top:
-                    case ComponentArea.Bottom:
+                    case ComponentArea.Top or ComponentArea.Bottom:
+                        previousComponent.Component.rightNeighborID = component.Id;
+                        component.Component.leftNeighborID = previousComponent.Id;
+                        break;
+                    case ComponentArea.Left or ComponentArea.Right:
                         previousComponent.Component.upNeighborID = component.Id;
                         component.Component.downNeighborID = previousComponent.Id;
-                        break;
-                    case ComponentArea.Left:
-                    case ComponentArea.Right:
-                        previousComponent.Component.leftNeighborID = component.Id;
-                        component.Component.rightNeighborID = previousComponent.Id;
                         break;
                 }
 

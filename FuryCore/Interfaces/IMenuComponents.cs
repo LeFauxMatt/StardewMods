@@ -11,12 +11,12 @@ using StardewValley.Menus;
 public interface IMenuComponents
 {
     /// <summary>
-    ///     The <see cref="ItemGrabMenu" /> that <see cref="MenuComponent" /> can be added to.
+    ///     Gets the <see cref="ItemGrabMenu" /> that <see cref="VanillaMenuComponent" /> can be added to.
     /// </summary>
     public ItemGrabMenu Menu { get; }
 
     /// <summary>
     ///     Gets <see cref="ClickableTextureComponent" /> that are added to the <see cref="ItemGrabMenu" />.
     /// </summary>
-    public List<MenuComponent> Components { get; }
+    public List<IMenuComponent> Components { get; }
 }
