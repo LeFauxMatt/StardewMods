@@ -1,6 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
-using FuryCore.Enums;
+using StardewMods.FuryCore.Enums;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 
@@ -43,7 +43,7 @@ internal class ConfigData : IConfigData
         SearchItems = FeatureOption.Enabled,
         StashToChest = FeatureOptionRange.Location,
         StashToChestDistance = -1,
-        StashToChestStacks = true,
+        StashToChestStacks = FeatureOption.Enabled,
         UnloadChest = FeatureOption.Enabled,
     };
 }

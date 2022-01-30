@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

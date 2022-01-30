@@ -59,7 +59,7 @@ public class ChestData : IChestData
     public HashSet<string> FilterItemsList { get; set; } = new();
 
     /// <inheritdoc/>
-    public bool StashToChestStacks { get; set; } = true;
+    public FeatureOption StashToChestStacks { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc/>
     public int ResizeChestCapacity { get; set; }

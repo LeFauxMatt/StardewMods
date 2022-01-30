@@ -9,7 +9,7 @@ using StardewMods.BetterChests.Interfaces;
 /// <inheritdoc cref="IChestModel" />
 internal class ChestModel : IChestModel
 {
-    private ChestData _chestData;
+    private IChestData _chestData;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChestModel"/> class.
@@ -324,9 +324,19 @@ internal class ChestModel : IChestModel
     }
 
     /// <inheritdoc/>
-    public bool StashToChestStacks
+    public FeatureOption StashToChestStacks
     {
-        get => this.Data.StashToChestStacks;
+        get
+        {
+            if (this.Data.StashToChestStacks != FeatureOption.Default)
+            {
+                return this.Data.StashToChestStacks;
+            }
+
+            return this.Config.DefaultChest.StashToChestStacks != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
         set => this.Data.StashToChestStacks = value;
     }
 
@@ -336,6 +346,6 @@ internal class ChestModel : IChestModel
 
     private IChestData Data
     {
-        get => this._chestData ??= this.ContentHelper.Load<ChestData>($"{BetterChests.ModUniqueId}/Chests/{this.Name}", ContentSource.GameContent);
+        get => this._chestData ??= new SerializedChestData(this.ContentHelper.Load<IDictionary<string, string>>($"{BetterChests.ModUniqueId}/Chests/{this.Name}", ContentSource.GameContent));
     }
 }

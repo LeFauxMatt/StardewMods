@@ -1,44 +1,36 @@
 ﻿namespace StardewMods.BetterChestsConfigurator;
 
+using System.Collections.Generic;
+using System.Linq;
 using Common.Helpers;
 using Common.Integrations.BetterChests;
 using Common.Integrations.GenericModConfigMenu;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Objects;
 
 /// <inheritdoc />
 public class BetterChestsConfigurator : Mod
 {
-    private BetterChestsIntegration BetterChestsMod { get; set; }
+    private BetterChestsIntegration BetterChests { get; set; }
 
     private GenericModConfigMenuIntegration GMCM { get; set; }
 
     private ModConfig Config { get; set; }
 
-    private ConfigurableChest ChestData { get; set; }
+    private Chest CurrentChest { get; set; }
 
-    private bool MenuOpened { get; set; }
+    private IDictionary<string, string> ChestData { get; set; }
 
     /// <inheritdoc/>
     public override void Entry(IModHelper helper)
     {
         // Init
         Log.Monitor = this.Monitor;
-        I18n.Init(helper.Translation);
-        this.BetterChestsMod = new(this.Helper.ModRegistry);
+        this.BetterChests = new(this.Helper.ModRegistry);
         this.GMCM = new(this.Helper.ModRegistry);
         this.Config = this.Helper.ReadConfig<ModConfig>();
-
-        // Console Commands
-        this.Helper.ConsoleCommands.Add(
-            "chest_config",
-            I18n.Command_ChestConfig_Description(),
-            this.ConfigureChest);
 
         // Events
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
@@ -47,16 +39,17 @@ public class BetterChestsConfigurator : Mod
 
     private void OnMenuChanged(object sender, MenuChangedEventArgs e)
     {
-        if (this.MenuOpened && e.OldMenu?.GetType().Name == "SpecificModConfigMenu")
+        if (this.ChestData is not null && e.OldMenu?.GetType().Name == "SpecificModConfigMenu")
         {
             this.GMCM.Unregister(this.ModManifest);
-            this.MenuOpened = false;
+            this.ChestData = null;
+            this.CurrentChest = null;
         }
     }
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!this.BetterChestsMod.IsLoaded
+        if (!this.BetterChests.IsLoaded
             || !this.GMCM.IsLoaded
             || !Context.IsPlayerFree
             || Game1.player.CurrentItem is not Chest chest
@@ -65,39 +58,37 @@ public class BetterChestsConfigurator : Mod
             return;
         }
 
-        this.ConfigureChest(chest);
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ConfigureChest);
-    }
-
-    private void ConfigureChest(string command, string[] args)
-    {
-        if (!this.BetterChestsMod.IsLoaded
-            || !this.GMCM.IsLoaded
-            || !Context.IsPlayerFree
-            || Game1.player.CurrentItem is not Chest chest)
-        {
-            return;
-        }
-
-        this.ConfigureChest(chest);
-    }
-
-    private void ConfigureChest(Chest chest)
-    {
-        this.ChestData = new(chest, this.BetterChestsMod.UniqueId);
+        this.CurrentChest = chest;
+        this.ChestData = this.CurrentChest.modData.Pairs
+                             .Where(modData => modData.Key.StartsWith($"{this.BetterChests.UniqueId}"))
+                             .ToDictionary(
+                                 modData => modData.Key,
+                                 modData => modData.Value);
         this.GMCM.Register(this.ModManifest, this.Reset, this.Save);
-        BetterChests.Integration.ChestConfig(this.ModManifest, this.ChestData);
+        this.BetterChests.API.AddChestOptions(this.ModManifest, this.ChestData);
         this.GMCM.API.OpenModMenu(this.ModManifest);
-        this.MenuOpened = true;
     }
 
     private void Reset()
     {
-        ((IChestData)new ChestData()).CopyTo(this.ChestData);
+        foreach (var (key, _) in this.ChestData)
+        {
+            this.ChestData[key] = string.Empty;
+        }
     }
 
     private void Save()
     {
-        this.ChestData.Save();
+        foreach (var (key, value) in this.ChestData)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                this.CurrentChest.modData.Remove(key);
+                continue;
+            }
+
+            this.CurrentChest.modData[key] = value;
+        }
     }
 }

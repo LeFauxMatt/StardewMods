@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FuryCore.Helpers;
-using FuryCore.Interfaces;
-using FuryCore.Models;
+using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

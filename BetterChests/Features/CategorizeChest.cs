@@ -1,10 +1,10 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
-using FuryCore.Enums;
-using FuryCore.Interfaces;
-using FuryCore.Models;
-using FuryCore.UI;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;

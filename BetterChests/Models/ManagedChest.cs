@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FuryCore.Helpers;
+using StardewMods.FuryCore.Helpers;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
@@ -319,12 +319,16 @@ internal class ManagedChest : IManagedChest
     }
 
     /// <inheritdoc/>
-    public bool StashToChestStacks
+    public FeatureOption StashToChestStacks
     {
-        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestStacks", out var value) && bool.TryParse(value, out var stacks)
-            ? stacks
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestStacks", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.StashToChestStacks,
+                _ => option,
+            }
             : this.Data.StashToChestStacks;
-        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestStacks"] = value.ToString();
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestStacks"] = FormatHelper.GetOptionString(value);
     }
 
     private IChestModel Data { get; }
@@ -361,7 +365,7 @@ internal class ManagedChest : IManagedChest
             }
         }
 
-        if (this.StashToChestStacks)
+        if (this.StashToChestStacks != FeatureOption.Disabled)
         {
             foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem.maximumStackSize() > 1 && chestItem.canStackWith(item)))
             {

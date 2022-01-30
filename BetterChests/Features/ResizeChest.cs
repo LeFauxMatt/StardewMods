@@ -2,10 +2,10 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using FuryCore.Attributes;
-using FuryCore.Enums;
-using FuryCore.Interfaces;
-using FuryCore.Models;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

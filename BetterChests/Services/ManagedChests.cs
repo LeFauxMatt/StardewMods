@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

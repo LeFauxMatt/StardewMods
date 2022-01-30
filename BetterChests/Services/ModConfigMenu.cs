@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Integrations.GenericModConfigMenu;
-using FuryCore.Enums;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
@@ -15,7 +15,7 @@ using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IModService" />
-internal class ModConfigMenu : IModService, IModConfigMenu
+internal class ModConfigMenu : IModService
 {
     private const string CraftablesData = "Data/BigCraftablesInformation";
 
@@ -51,10 +51,15 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         get => this.Helper.Content.Load<Dictionary<int, string>>(ModConfigMenu.CraftablesData, ContentSource.GameContent).Values.Select(info => info.Split('/'));
     }
 
-    /// <inheritdoc/>
-    public void ChestConfig(IManifest manifest, IChestData config)
+    /// <summary>
+    /// Add chest options to GMCM based on a dictionary of string keys/values representing Chest Data.
+    /// </summary>
+    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="data">The chest data to base the config on.</param>
+    public void ChestConfig(IManifest manifest, IDictionary<string, string> data)
     {
-        this.ChestConfig(manifest, config, false);
+        var chestData = new SerializedChestData(data);
+        this.ChestConfig(manifest, chestData, false);
     }
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
@@ -128,7 +133,7 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         foreach (var (name, data) in knownChests)
         {
             this.GMCM.API.AddPage(this.Manifest, name);
-            this.ChestConfig(this.Manifest, data);
+            this.ChestConfig(this.Manifest, data, false);
         }
     }
 
@@ -179,9 +184,9 @@ internal class ModConfigMenu : IModService, IModConfigMenu
     /// Adds GMCM options for chest data.
     /// </summary>
     /// <param name="manifest">The mod's manifest.</param>
-    /// <param name="config">The chest data to configure.</param>
+    /// <param name="chestData">The chest data to configure.</param>
     /// <param name="defaultConfig">Set to true if configuring the default chest config options.</param>
-    private void ChestConfig(IManifest manifest, IChestData config, bool defaultConfig)
+    private void ChestConfig(IManifest manifest, IChestData chestData, bool defaultConfig)
     {
         var optionValues = (defaultConfig
                                ? new[] { FeatureOption.Disabled, FeatureOption.Enabled }
@@ -201,8 +206,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Carry Chest
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.CarryChest),
-            value => config.CarryChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.CarryChest),
+            value => chestData.CarryChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_CarryChest_Name,
             I18n.Config_CarryChest_Tooltip,
             optionValues,
@@ -212,8 +217,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Chest Menu Tabs
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.ChestMenuTabs),
-            value => config.ChestMenuTabs = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.ChestMenuTabs),
+            value => chestData.ChestMenuTabs = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_ChestMenuTabs_Name,
             I18n.Config_ChestMenuTabs_Tooltip,
             optionValues,
@@ -223,8 +228,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Collect Items
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.CollectItems),
-            value => config.CollectItems = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.CollectItems),
+            value => chestData.CollectItems = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_CollectItems_Name,
             I18n.Config_CollectItems_Tooltip,
             optionValues,
@@ -234,8 +239,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Craft from Chest
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetRangeString(config.CraftFromChest),
-            value => config.CraftFromChest = Enum.TryParse(value, out FeatureOptionRange range) ? range : defaultRange,
+            () => FormatHelper.GetRangeString(chestData.CraftFromChest),
+            value => chestData.CraftFromChest = Enum.TryParse(value, out FeatureOptionRange range) ? range : defaultRange,
             I18n.Config_CraftFromChest_Name,
             I18n.Config_CraftFromChest_Tooltip,
             rangeValues,
@@ -245,12 +250,12 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Craft from Chest Distance
         this.GMCM.API.AddNumberOption(
             manifest,
-            () => config.CraftFromChestDistance switch
+            () => chestData.CraftFromChestDistance switch
             {
                 -1 => 6,
-                _ => config.CraftFromChestDistance,
+                _ => chestData.CraftFromChestDistance,
             },
-            value => config.CraftFromChestDistance = value switch
+            value => chestData.CraftFromChestDistance = value switch
             {
                 6 => -1,
                 _ => value,
@@ -266,8 +271,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Custom Color Picker
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.CustomColorPicker),
-            value => config.CustomColorPicker = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.CustomColorPicker),
+            value => chestData.CustomColorPicker = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_CustomColorPicker_Name,
             I18n.Config_CustomColorPicker_Tooltip,
             optionValues,
@@ -277,8 +282,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Filter Items
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.FilterItems),
-            value => config.FilterItems = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.FilterItems),
+            value => chestData.FilterItems = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_FilterItems_Name,
             I18n.Config_FilterItems_Tooltip,
             optionValues,
@@ -288,8 +293,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Open Held Chest
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.OpenHeldChest),
-            value => config.OpenHeldChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.OpenHeldChest),
+            value => chestData.OpenHeldChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_OpenHeldChest_Name,
             I18n.Config_OpenHeldChest_Tooltip,
             optionValues,
@@ -299,22 +304,22 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Resize Chest Capacity
         this.GMCM.API.AddNumberOption(
             manifest,
-            () => config.ResizeChestCapacity switch
+            () => chestData.ResizeChestCapacity switch
             {
-                0 when config.ResizeChest is FeatureOption.Disabled => 0,
+                0 when chestData.ResizeChest is FeatureOption.Disabled => 0,
                 0 => 1, // Default
                 -1 => 8, // Unlimited
-                _ => 1 + (config.ResizeChestCapacity / 12),
+                _ => 1 + (chestData.ResizeChestCapacity / 12),
             },
             value =>
             {
-                config.ResizeChestCapacity = value switch
+                chestData.ResizeChestCapacity = value switch
                 {
                     0 or 1 => 0, // Disabled or Default
                     8 => -1, // Unlimited
                     _ => (value - 1) * 12,
                 };
-                config.ResizeChest = value switch
+                chestData.ResizeChest = value switch
                 {
                     0 => FeatureOption.Disabled,
                     1 => FeatureOption.Default,
@@ -332,20 +337,20 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Resize Chest Menu
         this.GMCM.API.AddNumberOption(
             manifest,
-            () => config.ResizeChestMenuRows switch
+            () => chestData.ResizeChestMenuRows switch
             {
-                0 when config.ResizeChestMenu is FeatureOption.Disabled => 0,
+                0 when chestData.ResizeChestMenu is FeatureOption.Disabled => 0,
                 0 => 1, // Default
-                _ => config.ResizeChestMenuRows + 1,
+                _ => chestData.ResizeChestMenuRows + 1,
             },
             value =>
             {
-                config.ResizeChestMenuRows = value switch
+                chestData.ResizeChestMenuRows = value switch
                 {
                     0 or 1 => 0, // Disabled or Default
                     _ => value - 1,
                 };
-                config.ResizeChestMenu = value switch
+                chestData.ResizeChestMenu = value switch
                 {
                     0 => FeatureOption.Disabled,
                     1 => FeatureOption.Default,
@@ -363,8 +368,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Search Items
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.SearchItems),
-            value => config.SearchItems = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.SearchItems),
+            value => chestData.SearchItems = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_SearchItems_Name,
             I18n.Config_SearchItems_Tooltip,
             optionValues,
@@ -374,8 +379,8 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Stash to Chest
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetRangeString(config.StashToChest),
-            value => config.StashToChest = Enum.TryParse(value, out FeatureOptionRange range) ? range : defaultRange,
+            () => FormatHelper.GetRangeString(chestData.StashToChest),
+            value => chestData.StashToChest = Enum.TryParse(value, out FeatureOptionRange range) ? range : defaultRange,
             I18n.Config_StashToChest_Name,
             I18n.Config_StashToChest_Tooltip,
             rangeValues,
@@ -385,12 +390,12 @@ internal class ModConfigMenu : IModService, IModConfigMenu
         // Stash to Chest Distance
         this.GMCM.API.AddNumberOption(
             manifest,
-            () => config.StashToChestDistance switch
+            () => chestData.StashToChestDistance switch
             {
                 -1 => 6,
-                _ => config.StashToChestDistance,
+                _ => chestData.StashToChestDistance,
             },
-            value => config.StashToChestDistance = value switch
+            value => chestData.StashToChestDistance = value switch
             {
                 6 => -1,
                 _ => value,
@@ -404,19 +409,21 @@ internal class ModConfigMenu : IModService, IModConfigMenu
             nameof(IChestData.StashToChestDistance));
 
         // Stash to Chest Stacks
-        this.GMCM.API.AddBoolOption(
+        this.GMCM.API.AddTextOption(
             manifest,
-            () => config.StashToChestStacks,
-            value => config.StashToChestStacks = value,
+            () => FormatHelper.GetOptionString(chestData.StashToChestStacks),
+            value => chestData.StashToChestStacks = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_StashToChestStacks_Name,
             I18n.Config_StashToChestStacks_Tooltip,
+            optionValues,
+            FormatHelper.FormatOption,
             nameof(IChestData.StashToChestStacks));
 
         // Unload Chest
         this.GMCM.API.AddTextOption(
             manifest,
-            () => FormatHelper.GetOptionString(config.UnloadChest),
-            value => config.UnloadChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            () => FormatHelper.GetOptionString(chestData.UnloadChest),
+            value => chestData.UnloadChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
             I18n.Config_SearchItems_Name,
             I18n.Config_SearchItems_Tooltip,
             optionValues,

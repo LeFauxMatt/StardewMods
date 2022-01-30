@@ -3,24 +3,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Helpers;
-using FuryCore.Interfaces;
-using FuryCore.Services;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
 
 /// <inheritdoc cref="StardewModdingAPI.Mod" />
 public class BetterChests : Mod, IAssetLoader
 {
-    /// <summary>
-    /// Gets the public surface of the Better Chests mod for direct integration.
-    /// </summary>
-    public static IModIntegration Integration { get; private set; }
-
     /// <summary>
     /// Gets the unique Mod Id.
     /// </summary>
@@ -35,7 +29,6 @@ public class BetterChests : Mod, IAssetLoader
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        BetterChests.Integration = new Integration(this.Services);
         BetterChests.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
@@ -87,7 +80,7 @@ public class BetterChests : Mod, IAssetLoader
     /// <inheritdoc/>
     public override object GetApi()
     {
-        return new BetterChestsApi(this.ChestData, this.Helper);
+        return new BetterChestsApi(this.ChestData, this.Helper, this.Services);
     }
 
     /// <inheritdoc/>
@@ -102,10 +95,10 @@ public class BetterChests : Mod, IAssetLoader
         var key = PathUtilities.GetSegments(asset.AssetName)[2];
         if (!this.ChestData.TryGetValue(key, out var chestData))
         {
-            chestData = this.ChestData[key] = new();
+            return default;
         }
 
-        return (T)(object)chestData;
+        return (T)(object)SerializedChestData.GetData(chestData);
     }
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)

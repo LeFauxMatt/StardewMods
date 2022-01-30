@@ -88,7 +88,7 @@ public interface IChestData
     /// <summary>
     /// Gets or sets a value indicating whether stashing will fill existing stacks.
     /// </summary>
-    public bool StashToChestStacks { get; set; }
+    public FeatureOption StashToChestStacks { get; set; }
 
     /// <summary>
     /// Gets or sets the items that the chest will accept.
@@ -134,8 +134,8 @@ public interface IChestData
         other.ResizeChestMenuRows = this.ResizeChestMenuRows;
         other.SearchItems = this.SearchItems;
         other.StashToChest = this.StashToChest;
-        other.StashToChestStacks = this.StashToChestStacks;
         other.StashToChestDistance = this.StashToChestDistance;
+        other.StashToChestStacks = this.StashToChestStacks;
         other.UnloadChest = this.UnloadChest;
     }
 }

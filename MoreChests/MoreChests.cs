@@ -1,24 +1,29 @@
-﻿namespace MoreChests;
+﻿namespace StardewMods.MoreChests;
 
 using Common.Helpers;
-using Common.Integrations.MoreChests;
-using Services;
 using StardewModdingAPI;
+using StardewMods.FuryCore.Services;
+using StardewMods.MoreChests.Services;
 
-public class ModEntry : Mod
+/// <inheritdoc />
+public class MoreChests : Mod
 {
-    internal const string ModPrefix = "MoreChests";
-    private IMoreChestsApi _api;
+    /// <summary>
+    /// Gets the unique Mod Id.
+    /// </summary>
+    internal static string ModUniqueId { get; private set; }
 
-    internal ServiceLocator ServiceLocator { get; private set; }
+    private ModServices Services { get; } = new();
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        // Init
-        Log.Init(this.Monitor);
-        this.ServiceLocator = new(this.Helper, this.ModManifest);
-        this._api = new MoreChestsApi(this);
+        Log.Monitor = this.Monitor;
+
+        // Services
+        this.Services.Add(
+            new AssetHandler(this.Services));
+
 
         // Services
         this.ServiceLocator.Create(new []

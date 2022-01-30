@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Helpers;
 
 using System;
-using FuryCore.Enums;
+using StardewMods.FuryCore.Enums;
 using StardewMods.BetterChests.Enums;
 
 /// <summary>
