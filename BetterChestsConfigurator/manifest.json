@@ -1,0 +1,20 @@
+﻿{
+  "Name": "Better Chests Configurator",
+  "Author": "furyx639",
+  "Version": "1.0.0-alpha.1",
+  "Description": "Adds menus and tools to configure Better Chests.",
+  "UniqueID": "furyx639.BetterChestsConfigurator",
+  "EntryDll": "BetterChestsConfigurator.dll",
+  "MinimumApiVersion": "3.13.0",
+  "UpdateKeys": [ "Nexus:9791@Configurator" ],
+  "Dependencies": [
+    {
+      "UniqueID": "furyx639.BetterChests",
+      "IsRequired": true
+    },
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "IsRequired": true
+    }
+  ]
+}
