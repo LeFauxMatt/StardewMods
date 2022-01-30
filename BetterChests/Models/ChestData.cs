@@ -1,20 +1,17 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
 using System.Collections.Generic;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 
 /// <inheritdoc />
-internal class ChestData : IChestData
+public class ChestData : IChestData
 {
     // ****************************************************************************************
     // Features
 
     /// <inheritdoc/>
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
-
-    /// <inheritdoc/>
-    public FeatureOption CategorizeChest { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc/>
     public FeatureOption ChestMenuTabs { get; set; } = FeatureOption.Default;
@@ -53,7 +50,7 @@ internal class ChestData : IChestData
     // Feature Options
 
     /// <inheritdoc/>
-    public int CraftFromChestDistance { get; set; } = 0;
+    public int CraftFromChestDistance { get; set; }
 
     /// <inheritdoc/>
     public HashSet<string> ChestMenuTabSet { get; set; } = new();
@@ -65,11 +62,11 @@ internal class ChestData : IChestData
     public bool StashToChestStacks { get; set; } = true;
 
     /// <inheritdoc/>
-    public int ResizeChestCapacity { get; set; } = 0;
+    public int ResizeChestCapacity { get; set; }
 
     /// <inheritdoc/>
-    public int ResizeChestMenuRows { get; set; } = 0;
+    public int ResizeChestMenuRows { get; set; }
 
     /// <inheritdoc/>
-    public int StashToChestDistance { get; set; } = 0;
+    public int StashToChestDistance { get; set; }
 }

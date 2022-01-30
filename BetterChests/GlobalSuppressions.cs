@@ -5,5 +5,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1633:File should have header", Justification = "License is repo/solution level.", Scope = "module")]
-[assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1309:Field names should not begin with underscore", Justification = "Private field names should begin with underscore", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1633", Justification = "License is repo/solution level.", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1309", Justification = "Private field names should begin with underscore", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1507", Justification = "Externally provided interface", Scope = "namespaceanddescendants", Target = "Common.Integrations")]
+[assembly: SuppressMessage("StyleCop", "SA1514", Justification = "Externally provided interface", Scope = "namespaceanddescendants", Target = "Common.Integrations")]
+[assembly: SuppressMessage("StyleCop", "SA1515", Justification = "Externally provided interface", Scope = "namespaceanddescendants", Target = "Common.Integrations")]

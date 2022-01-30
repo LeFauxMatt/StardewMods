@@ -1,10 +1,9 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
@@ -13,6 +12,7 @@ using FuryCore.Interfaces;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -23,15 +23,15 @@ using StardewValley.Menus;
 internal class SlotLock : Feature
 {
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly PerScreen<IList<bool>> _lockedSlots = new(() => new List<bool>());
+    private readonly PerScreen<bool[]> _lockedSlots = new(() => new bool[Game1.player.Items.Count]);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SlotLock"/> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public SlotLock(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public SlotLock(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         SlotLock.Instance = this;
@@ -60,25 +60,21 @@ internal class SlotLock : Feature
     {
         get
         {
-            if (this._lockedSlots.Value.Count == 0)
+            var lockedSlots = Game1.player.modData.TryGetValue($"{BetterChests.ModUniqueId}/LockedSlots", out var lockedSlotsData) && !string.IsNullOrWhiteSpace(lockedSlotsData)
+                ? lockedSlotsData.ToCharArray()
+                : new char[Game1.player.Items.Count];
+            if (lockedSlots.Length < Game1.player.Items.Count)
             {
-                var lockedSlots = Game1.player.modData.TryGetValue($"{ModEntry.ModUniqueId}/LockedSlots", out var lockedSlotsData) && !string.IsNullOrWhiteSpace(lockedSlotsData)
-                    ? lockedSlotsData.ToCharArray()
-                    : new char[Game1.player.Items.Count];
-                if (lockedSlots.Length < Game1.player.Items.Count)
-                {
-                    Array.Resize(ref lockedSlots, Game1.player.Items.Count);
-                }
-
-                this._lockedSlots.Value = lockedSlots.Select(slot => slot == '1').ToList();
+                Array.Resize(ref lockedSlots, Game1.player.Items.Count);
             }
 
+            this._lockedSlots.Value = lockedSlots.Select(slot => slot == '1').ToArray();
             return this._lockedSlots.Value;
         }
 
         private set
         {
-            Game1.player.modData[$"{ModEntry.ModUniqueId}/LockedSlots"] = value.Select(slot => slot ? '1' : '0').ToString();
+            Game1.player.modData[$"{BetterChests.ModUniqueId}/LockedSlots"] = new(value.Select(slot => slot ? '1' : '0').ToArray());
         }
     }
 

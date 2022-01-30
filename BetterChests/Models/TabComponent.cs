@@ -1,15 +1,16 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
 using System.Collections.Generic;
 using FuryCore.Enums;
+using FuryCore.Interfaces;
 using FuryCore.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc />
-internal class TabComponent : MenuComponent
+/// <inheritdoc cref="FuryCore.Interfaces.IMenuComponent" />
+internal class TabComponent : CustomMenuComponent, IMenuComponent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TabComponent"/> class.
@@ -33,7 +34,7 @@ internal class TabComponent : MenuComponent
     public bool Selected { get; set; }
 
     /// <inheritdoc/>
-    public override int Y { get; set; }
+    public int Y { get; set; }
 
     /// <inheritdoc/>
     public override void Draw(SpriteBatch spriteBatch)

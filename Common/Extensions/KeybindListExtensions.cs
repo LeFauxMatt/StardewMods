@@ -4,7 +4,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 /// <summary>
-/// 
+/// Extensions to KeybindList as a shortcut to InputHelper methods.
 /// </summary>
 internal static class KeybindListExtensions
 {

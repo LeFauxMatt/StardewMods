@@ -1,11 +1,10 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
-using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
@@ -13,9 +12,9 @@ using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -37,8 +36,8 @@ internal class ResizeChestMenu : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public ResizeChestMenu(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ResizeChestMenu(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         ResizeChestMenu.Instance = this;
@@ -420,6 +419,13 @@ internal class ResizeChestMenu : Feature
             if (this.Menu.dropItemInvisibleButton is not null)
             {
                 this.Menu.dropItemInvisibleButton.bounds.Y += this.MenuOffset;
+            }
+
+            // Set upNeighborId for first row of player inventory
+            var slot = this.Menu.ItemsToGrabMenu.capacity - (this.Menu.ItemsToGrabMenu.capacity / this.Menu.ItemsToGrabMenu.rows);
+            for (var index = 0; index < 12; index++)
+            {
+                this.Menu.inventory.inventory[index].upNeighborID = this.Menu.ItemsToGrabMenu.inventory[slot + index].myID;
             }
         }
     }

@@ -1,13 +1,13 @@
-﻿namespace BetterChests.Helpers;
+﻿namespace Mod.BetterChests.Helpers;
 
 using System;
-using BetterChests.Enums;
 using FuryCore.Enums;
+using Mod.BetterChests.Enums;
 
 /// <summary>
-/// 
+/// Helper methods to convert between different text formats.
 /// </summary>
-internal static class FormatHelper
+public static class FormatHelper
 {
     /// <summary>
     /// Gets a string representation of an area value.
@@ -164,8 +164,9 @@ internal static class FormatHelper
         return value switch
         {
             0 => I18n.Option_Disabled_Name(),
-            1 => I18n.Config_ResizeChestMenuRows_ValueOne(),
-            _ => string.Format(I18n.Config_ResizeChestMenuRows_ValueMany(), value.ToString()),
+            1 => I18n.Option_Default_Name(),
+            2 => I18n.Config_ResizeChestMenuRows_ValueOne(),
+            _ => string.Format(I18n.Config_ResizeChestMenuRows_ValueMany(), (value - 1).ToString()),
         };
     }
 
@@ -178,6 +179,7 @@ internal static class FormatHelper
     {
         return value switch
         {
+            0 => I18n.Option_Default_Name(),
             1 => I18n.Config_RangeDistance_ValueOne(),
             6 => I18n.Config_RangeDistance_ValueUnlimited(),
             _ => string.Format(I18n.Config_RangeDistance_ValueMany(), value.ToString()),

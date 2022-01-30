@@ -1,9 +1,9 @@
-﻿namespace BetterChests.Enums;
+﻿namespace Mod.BetterChests.Enums;
 
 /// <summary>
 /// Indicates at what range a feature will be enabled.
 /// </summary>
-internal enum FeatureOptionRange
+public enum FeatureOptionRange
 {
     /// <summary>Feature inherits from a parent config.</summary>
     Default = 0,

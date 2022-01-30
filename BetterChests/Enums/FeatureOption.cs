@@ -1,9 +1,9 @@
-﻿namespace BetterChests.Enums;
+﻿namespace Mod.BetterChests.Enums;
 
 /// <summary>
 /// Indicates if a feature is enabled, disabled, or will inherit from a parent config.
 /// </summary>
-internal enum FeatureOption
+public enum FeatureOption
 {
     /// <summary>Feature is disabled.</summary>
     Disabled = 0,

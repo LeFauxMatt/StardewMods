@@ -1,38 +1,36 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using BetterChests.Interfaces;
 using Common.Extensions;
 using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using HarmonyLib;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ResizeChest : Feature
 {
-    private readonly PerScreen<MenuComponent> _downArrow = new();
+    private readonly PerScreen<IMenuComponent> _downArrow = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
-    private readonly PerScreen<MenuComponent> _upArrow = new();
+    private readonly PerScreen<IMenuComponent> _upArrow = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResizeChest"/> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public ResizeChest(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ResizeChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         ResizeChest.Instance = this;
@@ -67,14 +65,14 @@ internal class ResizeChest : Feature
         get => this._menuItems.Value;
     }
 
-    private MenuComponent UpArrow
+    private IMenuComponent UpArrow
     {
-        get => this._upArrow.Value ??= new(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 459, 11, 12), Game1.pixelZoom));
+        get => this._upArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 459, 11, 12), Game1.pixelZoom));
     }
 
-    private MenuComponent DownArrow
+    private IMenuComponent DownArrow
     {
-        get => this._downArrow.Value ??= new(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
+        get => this._downArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
     }
 
     /// <inheritdoc />
@@ -99,6 +97,7 @@ internal class ResizeChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
         if (ResizeChest.Instance.ManagedChests.FindChest(__instance, out var managedChest) && managedChest.ResizeChestCapacity != 0)
@@ -162,6 +161,12 @@ internal class ResizeChest : Feature
     private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
     {
         if (this.MenuItems.Menu is null)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        if (!this.MenuItems.Menu.ItemsToGrabMenu.isWithinBounds(x, y))
         {
             return;
         }

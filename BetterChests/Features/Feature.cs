@@ -1,14 +1,14 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using FuryCore.Interfaces;
-using BetterChests.Services;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
+using Mod.BetterChests.Services;
 using StardewModdingAPI;
 
 /// <inheritdoc />
-internal abstract class Feature : IService
+internal abstract class Feature : IModService
 {
     private readonly Lazy<ManagedChests> _managedChests;
     private readonly Lazy<IFuryEvents> _furyEvents;
@@ -18,10 +18,10 @@ internal abstract class Feature : IService
     /// </summary>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    protected Feature(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    protected Feature(IConfigModel config, IModHelper helper, IModServices services)
     {
-        this.Id = $"{ModEntry.ModUniqueId}.{this.GetType().Name}";
+        this.Id = $"{BetterChests.ModUniqueId}.{this.GetType().Name}";
         this.Helper = helper;
         this.Config = config;
         this._managedChests = services.Lazy<ManagedChests>();
@@ -72,7 +72,7 @@ internal abstract class Feature : IService
         var enabled = this switch
         {
             CarryChest => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled,
-            CategorizeChest => this.Config.DefaultChest.CategorizeChest != FeatureOption.Disabled,
+            CategorizeChest => this.Config.CategorizeChest,
             ChestMenuTabs => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled,
             CollectItems => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled,
             CraftFromChest => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled,

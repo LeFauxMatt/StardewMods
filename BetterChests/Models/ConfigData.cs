@@ -1,8 +1,8 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using FuryCore.Enums;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 
 /// <summary>
 /// Mod config data related to BetterChests features.
@@ -10,13 +10,16 @@ using FuryCore.Enums;
 internal class ConfigData : IConfigData
 {
     /// <inheritdoc/>
+    public bool CategorizeChest { get; set; } = true;
+
+    /// <inheritdoc/>
+    public bool SlotLock { get; set; } = true;
+
+    /// <inheritdoc/>
     public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
 
     /// <inheritdoc/>
     public char SearchTagSymbol { get; set; } = '#';
-
-    /// <inheritdoc/>
-    public bool SlotLock { get; set; } = true;
 
     /// <inheritdoc/>
     public ControlScheme ControlScheme { get; set; } = new();
@@ -25,7 +28,6 @@ internal class ConfigData : IConfigData
     public ChestData DefaultChest { get; set; } = new()
     {
         CarryChest = FeatureOption.Enabled,
-        CategorizeChest = FeatureOption.Enabled,
         ChestMenuTabs = FeatureOption.Enabled,
         CollectItems = FeatureOption.Enabled,
         CraftFromChest = FeatureOptionRange.Location,

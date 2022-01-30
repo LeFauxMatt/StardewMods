@@ -1,15 +1,27 @@
-﻿namespace BetterChests.Interfaces;
+﻿namespace Mod.BetterChests.Interfaces;
 
-using BetterChests.Features;
-using BetterChests.Models;
 using FuryCore.Enums;
-using FuryCore.UI;
+using Mod.BetterChests.Features;
+using Mod.BetterChests.Models;
 
 /// <summary>
 /// Mod config data.
 /// </summary>
 internal interface IConfigData
 {
+    // ****************************************************************************************
+    // Features
+
+    /// <summary>
+    /// Gets or sets a value indicating whether chests can be categorized.
+    /// </summary>
+    public bool CategorizeChest { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the slot lock feature is enabled.
+    /// </summary>
+    public bool SlotLock { get; set; }
+
     // ****************************************************************************************
     // General
 
@@ -22,11 +34,6 @@ internal interface IConfigData
     /// Gets or sets the symbol used to denote context tags in searches.
     /// </summary>
     public char SearchTagSymbol { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the slot lock feature is enabled.
-    /// </summary>
-    public bool SlotLock { get; set; }
 
     /// <summary>
     /// Gets or sets the control scheme.
@@ -46,9 +53,10 @@ internal interface IConfigData
     public void CopyTo<TOther>(TOther other)
         where TOther : IConfigData
     {
+        other.CategorizeChest = this.CategorizeChest;
+        other.SlotLock = this.SlotLock;
         other.CustomColorPickerArea = this.CustomColorPickerArea;
         other.SearchTagSymbol = this.SearchTagSymbol;
-        other.SlotLock = this.SlotLock;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         ((IChestData)other.DefaultChest).CopyTo(this.DefaultChest);
     }

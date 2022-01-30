@@ -1,12 +1,12 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Linq;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
 using FuryCore.Interfaces;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -14,15 +14,15 @@ using StardewValley;
 /// <inheritdoc />
 internal class StashToChest : Feature
 {
-    private Lazy<SlotLock> _slotLock;
+    private readonly Lazy<SlotLock> _slotLock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StashToChest"/> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public StashToChest(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public StashToChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         this._slotLock = services.Lazy<SlotLock>();

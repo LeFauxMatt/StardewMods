@@ -1,10 +1,8 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
@@ -12,6 +10,8 @@ using FuryCore.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -31,8 +31,8 @@ internal class CarryChest : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public CarryChest(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public CarryChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         this._harmony = services.Lazy<IHarmonyHelper>(
@@ -76,7 +76,7 @@ internal class CarryChest : Feature
             });
     }
 
-    private Chest Chest
+    private Chest CurrentChest
     {
         get => this._chest.Value;
         set => this._chest.Value = value;
@@ -107,6 +107,7 @@ internal class CarryChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Chest_drawInMenu_postfix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, Color color)
     {
         // Draw Items count
@@ -118,6 +119,7 @@ internal class CarryChest : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref ItemSlot __state)
     {
         var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
@@ -135,6 +137,7 @@ internal class CarryChest : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void InventoryMenu_rightClick_postfix(InventoryMenu __instance, ref Item __result, ref ItemSlot __state)
     {
         if (__state is null)
@@ -163,6 +166,7 @@ internal class CarryChest : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result)
@@ -218,6 +222,7 @@ internal class CarryChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
     {
         if (__instance is not Chest chest)
@@ -259,7 +264,7 @@ internal class CarryChest : Feature
     {
         if (Context.IsPlayerFree)
         {
-            this.Chest = Game1.player.CurrentItem as Chest;
+            this.CurrentChest = Game1.player.CurrentItem as Chest;
         }
     }
 
@@ -271,12 +276,14 @@ internal class CarryChest : Feature
             return;
         }
 
-        var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
-        var x = (int)pos.X * Game1.tileSize;
-        var y = (int)pos.Y * Game1.tileSize;
+        var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
+        var x = (int)pos.X;
+        var y = (int)pos.Y;
+        pos.X = x;
+        pos.Y = y;
 
         // Object exists at pos and is within reach of player
-        if (!Utility.withinRadiusOfPlayer(x, y, 1, Game1.player)
+        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
         {
             return;
@@ -300,7 +307,7 @@ internal class CarryChest : Feature
     [EventPriority(EventPriority.High)]
     private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
     {
-        if (!e.IsCurrentLocation || this.Chest is null)
+        if (!e.IsCurrentLocation || this.CurrentChest is null)
         {
             return;
         }
@@ -311,18 +318,18 @@ internal class CarryChest : Feature
             return;
         }
 
-        chest.Name = this.Chest.Name;
-        chest.SpecialChestType = this.Chest.SpecialChestType;
-        chest.fridge.Value = this.Chest.fridge.Value;
-        chest.lidFrameCount.Value = this.Chest.lidFrameCount.Value;
-        chest.playerChoiceColor.Value = this.Chest.playerChoiceColor.Value;
+        chest.Name = this.CurrentChest.Name;
+        chest.SpecialChestType = this.CurrentChest.SpecialChestType;
+        chest.fridge.Value = this.CurrentChest.fridge.Value;
+        chest.lidFrameCount.Value = this.CurrentChest.lidFrameCount.Value;
+        chest.playerChoiceColor.Value = this.CurrentChest.playerChoiceColor.Value;
 
-        if (this.Chest.items.Any())
+        if (this.CurrentChest.items.Any())
         {
-            chest.items.CopyFrom(this.Chest.items);
+            chest.items.CopyFrom(this.CurrentChest.items);
         }
 
-        foreach (var (key, value) in this.Chest.modData.Pairs)
+        foreach (var (key, value) in this.CurrentChest.modData.Pairs)
         {
             chest.modData[key] = value;
         }

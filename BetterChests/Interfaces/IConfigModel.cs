@@ -1,4 +1,4 @@
-﻿namespace BetterChests.Interfaces;
+﻿namespace Mod.BetterChests.Interfaces;
 
 /// <inheritdoc />
 internal interface IConfigModel : IConfigData

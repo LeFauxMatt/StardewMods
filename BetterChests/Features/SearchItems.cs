@@ -1,10 +1,8 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
@@ -13,11 +11,12 @@ using FuryCore.Enums;
 using FuryCore.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using FuryCore.UI;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -44,8 +43,8 @@ internal class SearchItems : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public SearchItems(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public SearchItems(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         SearchItems.Instance = this;
@@ -304,16 +303,11 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
-        {
-            return;
-        }
-
         this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null)
+        if (this.Menu is null || e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
         {
             return;
         }
@@ -321,11 +315,12 @@ internal class SearchItems : Feature
         if (!ReferenceEquals(e.Chest, this.Chest))
         {
             this.Chest = e.Chest;
-            this.SearchText = string.Empty;
+            this.SearchField.Text = string.Empty;
         }
 
         // Add filter to Menu Items
         this.MenuItems.AddFilter(this.ItemMatcher);
+        this.ItemMatcher.StringValue = this.SearchText = this.SearchField.Text;
 
         // Expand ItemsToGrabMenu by Search Bar Height
         if (e.IsNew)
@@ -367,7 +362,7 @@ internal class SearchItems : Feature
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (this.Menu is null)
+        if (this.Menu is null || !ReferenceEquals(this.Menu, Game1.activeClickableMenu))
         {
             return;
         }

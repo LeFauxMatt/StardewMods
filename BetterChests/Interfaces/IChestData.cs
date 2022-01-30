@@ -1,13 +1,13 @@
-﻿namespace BetterChests.Interfaces;
+﻿namespace Mod.BetterChests.Interfaces;
 
 using System.Collections.Generic;
-using BetterChests.Enums;
+using Mod.BetterChests.Enums;
 using StardewValley.Objects;
 
 /// <summary>
 /// <see cref="Chest" /> data related to BetterChests features.
 /// </summary>
-internal interface IChestData
+public interface IChestData
 {
     // ****************************************************************************************
     // Features
@@ -16,11 +16,6 @@ internal interface IChestData
     /// Gets or sets the feature that allows the chest to be carried by the player.
     /// </summary>
     public FeatureOption CarryChest { get; set; }
-
-    /// <summary>
-    /// Gets or sets the feature that allows the chest to be categorized.
-    /// </summary>
-    public FeatureOption CategorizeChest { get; set; }
 
     /// <summary>
     /// Gets or sets the feature that adds tabs to the chest menu.
@@ -124,22 +119,23 @@ internal interface IChestData
         where TOther : IChestData
     {
         other.CarryChest = this.CarryChest;
-        other.CategorizeChest = this.CategorizeChest;
         other.ChestMenuTabs = this.ChestMenuTabs;
+        other.ChestMenuTabSet = this.ChestMenuTabSet;
         other.CollectItems = this.CollectItems;
         other.CraftFromChest = this.CraftFromChest;
+        other.CraftFromChestDistance = this.CraftFromChestDistance;
         other.CustomColorPicker = this.CustomColorPicker;
         other.FilterItems = this.FilterItems;
+        other.FilterItemsList = this.FilterItemsList;
         other.OpenHeldChest = this.OpenHeldChest;
         other.ResizeChest = this.ResizeChest;
+        other.ResizeChestCapacity = this.ResizeChestCapacity;
         other.ResizeChestMenu = this.ResizeChestMenu;
+        other.ResizeChestMenuRows = this.ResizeChestMenuRows;
         other.SearchItems = this.SearchItems;
         other.StashToChest = this.StashToChest;
-        other.CraftFromChestDistance = this.CraftFromChestDistance;
         other.StashToChestStacks = this.StashToChestStacks;
-        other.FilterItemsList = this.FilterItemsList;
-        other.ResizeChestCapacity = this.ResizeChestCapacity;
-        other.ResizeChestMenuRows = this.ResizeChestMenuRows;
         other.StashToChestDistance = this.StashToChestDistance;
+        other.UnloadChest = this.UnloadChest;
     }
 }

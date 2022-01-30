@@ -1,19 +1,18 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using Common.Extensions;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using HarmonyLib;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -32,8 +31,8 @@ internal class CraftFromChest : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public CraftFromChest(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         this._harmony = services.Lazy<IHarmonyHelper>(
@@ -80,6 +79,7 @@ internal class CraftFromChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void CraftingPage_getContainerContents_postfix(CraftingPage __instance, ref IList<Item> __result)
     {
         if (__instance._materialContainers is null)

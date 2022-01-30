@@ -1,30 +1,31 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
 using System.Collections.Generic;
 using System.Linq;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
-using FuryCore.Helpers;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
+using StardewModdingAPI;
 
-/// <inheritdoc cref="BetterChests.Interfaces.IChestModel" />
+/// <inheritdoc cref="IChestModel" />
 internal class ChestModel : IChestModel
 {
+    private ChestData _chestData;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChestModel"/> class.
     /// </summary>
+    /// <param name="name">The name of the chest.</param>
     /// <param name="configData">The <see cref="IConfigData" /> for options set by the player.</param>
-    /// <param name="chestData">The <see cref="IChestData" /> for options set by the player.</param>
-    public ChestModel(IConfigModel configData, IChestData chestData)
+    /// <param name="contentHelper">API for loading content assets.</param>
+    public ChestModel(string name, IConfigModel configData, IContentHelper contentHelper)
     {
+        this.Name = name;
         this.Config = configData;
-        this.Data = chestData;
+        this.ContentHelper = contentHelper;
     }
 
-    // ****************************************************************************************
-    // General
-
     /// <inheritdoc/>
-    public ItemMatcher ItemMatcherByType { get; } = new(true);
+    public string Name { get; }
 
     // ****************************************************************************************
     // Features
@@ -44,23 +45,6 @@ internal class ChestModel : IChestModel
                 : FeatureOption.Disabled;
         }
         set => this.Data.CarryChest = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption CategorizeChest
-    {
-        get
-        {
-            if (this.Data.CategorizeChest != FeatureOption.Default)
-            {
-                return this.Data.CategorizeChest;
-            }
-
-            return this.Config.DefaultChest.CategorizeChest != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.CategorizeChest = value;
     }
 
     /// <inheritdoc/>
@@ -233,6 +217,7 @@ internal class ChestModel : IChestModel
         set => this.Data.StashToChest = value;
     }
 
+    /// <inheritdoc/>
     public FeatureOption UnloadChest
     {
         get
@@ -288,13 +273,6 @@ internal class ChestModel : IChestModel
     }
 
     /// <inheritdoc/>
-    public bool StashToChestStacks
-    {
-        get => this.Data.StashToChestStacks;
-        set => this.Data.StashToChestStacks = value;
-    }
-
-    /// <inheritdoc/>
     public int ResizeChestCapacity
     {
         get
@@ -345,7 +323,19 @@ internal class ChestModel : IChestModel
         set => this.Data.StashToChestDistance = value;
     }
 
+    /// <inheritdoc/>
+    public bool StashToChestStacks
+    {
+        get => this.Data.StashToChestStacks;
+        set => this.Data.StashToChestStacks = value;
+    }
+
     private IConfigModel Config { get; }
 
-    private IChestData Data { get; }
+    private IContentHelper ContentHelper { get; }
+
+    private IChestData Data
+    {
+        get => this._chestData ??= this.ContentHelper.Load<ChestData>($"{BetterChests.ModUniqueId}/Chests/{this.Name}", ContentSource.GameContent);
+    }
 }

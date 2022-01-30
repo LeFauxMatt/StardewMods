@@ -1,4 +1,4 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
 using System.Collections.Generic;
 using StardewValley.Menus;

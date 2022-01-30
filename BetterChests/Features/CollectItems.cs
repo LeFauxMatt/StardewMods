@@ -1,17 +1,16 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
-using BetterChests.Models;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using HarmonyLib;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
+using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -29,8 +28,8 @@ internal class CollectItems : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public CollectItems(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public CollectItems(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         CollectItems.Instance ??= this;

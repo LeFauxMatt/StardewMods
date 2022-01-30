@@ -1,12 +1,10 @@
-﻿namespace BetterChests.Interfaces;
-
-using FuryCore.Helpers;
+﻿namespace Mod.BetterChests.Interfaces;
 
 /// <inheritdoc />
 internal interface IChestModel : IChestData
 {
     /// <summary>
-    /// Gets an <see cref="ItemMatcher" /> that is configured for each <see cref="IChestData" />.
+    /// Gets the name of the chest.
     /// </summary>
-    public ItemMatcher ItemMatcherByType { get; }
+    public string Name { get; }
 }

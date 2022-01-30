@@ -1,11 +1,13 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using FuryCore.Helpers;
 using Microsoft.Xna.Framework;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Helpers;
+using Mod.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -48,21 +50,20 @@ internal class ManagedChest : IManagedChest
         this.Chest = chest;
         this.Data = data;
 
-        if (this.Chest.modData.TryGetValue("FilterItems", out var filterItems))
+        foreach (var item in this.FilterItemsList)
         {
-            // Migrate Legacy Keys
-            this.Chest.modData[$"{ModEntry.ModUniqueId}/CategorizeChest"] = filterItems;
-            this.Chest.modData.Remove("FilterItems");
-            this.ItemMatcherByChest.StringValue = filterItems;
-        }
-        else if (this.Chest.modData.TryGetValue($"{ModEntry.ModUniqueId}/CategorizeChest", out filterItems) && !string.IsNullOrWhiteSpace(filterItems))
-        {
-            this.ItemMatcherByChest.StringValue = filterItems;
+            this.ItemMatcher.Add(item);
         }
     }
 
     // ****************************************************************************************
     // General
+
+    /// <inheritdoc/>
+    public string Name
+    {
+        get => this.Data.Name;
+    }
 
     /// <inheritdoc/>
     public Chest Chest { get; }
@@ -83,13 +84,7 @@ internal class ManagedChest : IManagedChest
     public int Index { get; }
 
     /// <inheritdoc/>
-    public ItemMatcher ItemMatcherByChest { get; } = new(true);
-
-    /// <inheritdoc/>
-    public ItemMatcher ItemMatcherByType
-    {
-        get => this.Data.ItemMatcherByType;
-    }
+    public ItemMatcher ItemMatcher { get; } = new(true);
 
     // ****************************************************************************************
     // Features
@@ -97,92 +92,157 @@ internal class ManagedChest : IManagedChest
     /// <inheritdoc/>
     public FeatureOption CarryChest
     {
-        get => this.Data.CarryChest;
-        set => this.Data.CarryChest = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption CategorizeChest
-    {
-        get => this.Data.CategorizeChest;
-        set => this.Data.CategorizeChest = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CarryChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.CarryChest,
+                _ => option,
+            }
+            : this.Data.CarryChest;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CarryChest"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption ChestMenuTabs
     {
-        get => this.Data.ChestMenuTabs;
-        set => this.Data.ChestMenuTabs = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/ChestMenuTabs", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.ChestMenuTabs,
+                _ => option,
+            }
+            : this.Data.ChestMenuTabs;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/ChestMenuTabs"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption CollectItems
     {
-        get => this.Data.CollectItems;
-        set => this.Data.CollectItems = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CollectItems", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.CollectItems,
+                _ => option,
+            }
+            : this.Data.CollectItems;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CollectItems"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOptionRange CraftFromChest
     {
-        get => this.Data.CraftFromChest;
-        set => this.Data.CraftFromChest = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
+            ? range switch
+            {
+                FeatureOptionRange.Default => this.Data.CraftFromChest,
+                _ => range,
+            }
+            : this.Data.CraftFromChest;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CraftFromChest"] = FormatHelper.GetRangeString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption CustomColorPicker
     {
-        get => this.Data.CustomColorPicker;
-        set => this.Data.CustomColorPicker = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CustomColorPicker", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.CustomColorPicker,
+                _ => option,
+            }
+            : this.Data.CustomColorPicker;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CustomColorPicker"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption FilterItems
     {
-        get => this.Data.FilterItems;
-        set => this.Data.FilterItems = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/FilterItems", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.FilterItems,
+                _ => option,
+            }
+            : this.Data.FilterItems;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/FilterItems"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption OpenHeldChest
     {
-        get => this.Data.OpenHeldChest;
-        set => this.Data.OpenHeldChest = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/OpenHeldChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.OpenHeldChest,
+                _ => option,
+            }
+            : this.Data.OpenHeldChest;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/OpenHeldChest"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption ResizeChest
     {
-        get => this.Data.ResizeChest;
-        set => this.Data.ResizeChest = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.ResizeChest,
+                _ => option,
+            }
+            : this.Data.ResizeChest;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/ResizeChest"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption ResizeChestMenu
     {
-        get => this.Data.ResizeChestMenu;
-        set => this.Data.ResizeChestMenu = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChestMenu", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.ResizeChestMenu,
+                _ => option,
+            }
+            : this.Data.ResizeChestMenu;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/ResizeChestMenu"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption SearchItems
     {
-        get => this.Data.SearchItems;
-        set => this.Data.SearchItems = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/SearchItems", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.SearchItems,
+                _ => option,
+            }
+            : this.Data.SearchItems;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/SearchItems"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOptionRange StashToChest
     {
-        get => this.Data.StashToChest;
-        set => this.Data.StashToChest = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
+            ? range switch
+            {
+                FeatureOptionRange.Default => this.Data.StashToChest,
+                _ => range,
+            }
+            : this.Data.StashToChest;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChest"] = FormatHelper.GetRangeString(value);
     }
 
     /// <inheritdoc/>
     public FeatureOption UnloadChest
     {
-        get => this.Data.UnloadChest;
-        set => this.Data.UnloadChest = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/UnloadChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.UnloadChest,
+                _ => option,
+            }
+            : this.Data.UnloadChest;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/UnloadChest"] = FormatHelper.GetOptionString(value);
     }
 
     // ****************************************************************************************
@@ -191,50 +251,80 @@ internal class ManagedChest : IManagedChest
     /// <inheritdoc/>
     public int CraftFromChestDistance
     {
-        get => this.Data.CraftFromChestDistance;
-        set => this.Data.CraftFromChestDistance = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChestDistance", out var value) && int.TryParse(value, out var distance)
+            ? distance switch
+            {
+                0 => this.Data.CraftFromChestDistance,
+                _ => distance,
+            }
+            : this.Data.CraftFromChestDistance;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CraftFromChestDistance"] = value.ToString();
     }
 
     /// <inheritdoc/>
     public HashSet<string> ChestMenuTabSet
     {
-        get => this.Data.ChestMenuTabSet;
-        set => this.Data.ChestMenuTabSet = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/ChestMenuTabSet", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(value.Split(','))
+            : this.Data.ChestMenuTabSet;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/ChestMenuTabSet"] = string.Join(",", value);
     }
 
     /// <inheritdoc/>
     public HashSet<string> FilterItemsList
     {
-        get => this.Data.FilterItemsList;
-        set => this.Data.FilterItemsList = value;
-    }
-
-    /// <inheritdoc/>
-    public bool StashToChestStacks
-    {
-        get => this.Data.StashToChestStacks;
-        set => this.Data.StashToChestStacks = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/FilterItemsList", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(this.Data.FilterItemsList.Concat(value.Split(',')))
+            : this.Data.FilterItemsList;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/FilterItemsList"] = string.Join(",", value);
     }
 
     /// <inheritdoc/>
     public int ResizeChestCapacity
     {
-        get => this.Data.ResizeChestCapacity;
-        set => this.Data.ResizeChestCapacity = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChestCapacity", out var value) && int.TryParse(value, out var capacity)
+            ? capacity switch
+            {
+                0 => this.Data.ResizeChestCapacity,
+                _ => capacity,
+            }
+            : this.Data.ResizeChestCapacity;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/ResizeChestCapacity"] = value.ToString();
     }
 
     /// <inheritdoc/>
     public int ResizeChestMenuRows
     {
-        get => this.Data.ResizeChestMenuRows;
-        set => this.Data.ResizeChestMenuRows = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChestMenuRows", out var value) && int.TryParse(value, out var rows)
+            ? rows switch
+            {
+                0 => this.Data.ResizeChestMenuRows,
+                _ => rows,
+            }
+            : this.Data.ResizeChestMenuRows;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/ResizeChestMenuRows"] = value.ToString();
     }
 
     /// <inheritdoc/>
     public int StashToChestDistance
     {
-        get => this.Data.StashToChestDistance;
-        set => this.Data.StashToChestDistance = value;
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestDistance", out var value) && int.TryParse(value, out var distance)
+            ? distance switch
+            {
+                0 => this.Data.StashToChestDistance,
+                _ => distance,
+            }
+            : this.Data.StashToChestDistance;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestDistance"] = value.ToString();
+    }
+
+    /// <inheritdoc/>
+    public bool StashToChestStacks
+    {
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestStacks", out var value) && bool.TryParse(value, out var stacks)
+            ? stacks
+            : this.Data.StashToChestStacks;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestStacks"] = value.ToString();
     }
 
     private IChestModel Data { get; }
@@ -257,7 +347,7 @@ internal class ManagedChest : IManagedChest
     {
         var stack = item.Stack;
 
-        if ((this.Data.ItemMatcherByType.Any() || this.ItemMatcherByType.Any()) && this.Data.ItemMatcherByType.Matches(item) && this.ItemMatcherByType.Matches(item))
+        if (this.ItemMatcher.Any() && this.ItemMatcher.Matches(item))
         {
             var tmp = this.Chest.addItem(item);
             if (tmp is null || tmp.Stack <= 0)
@@ -271,7 +361,7 @@ internal class ManagedChest : IManagedChest
             }
         }
 
-        if (this.Data.StashToChestStacks)
+        if (this.StashToChestStacks)
         {
             foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem.maximumStackSize() > 1 && chestItem.canStackWith(item)))
             {

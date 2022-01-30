@@ -1,11 +1,11 @@
-﻿namespace BetterChests.Services;
+﻿namespace Mod.BetterChests.Services;
 
 using System.Collections.Generic;
 using System.Linq;
-using BetterChests.Interfaces;
 using FuryCore.Interfaces;
-using BetterChests.Models;
 using Microsoft.Xna.Framework;
+using Mod.BetterChests.Interfaces;
+using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -15,25 +15,23 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc />
-internal class ManagedChests : IService
+internal class ManagedChests : IModService
 {
+    private const string CraftablesData = "Data/BigCraftablesInformation";
     private readonly PerScreen<IList<ManagedChest>> _placedChests = new(() => null);
     private readonly PerScreen<IList<ManagedChest>> _accessibleChests = new(() => null);
+    private Dictionary<int, string[]> _craftables;
     private IList<ManagedChest> _playerChests;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ManagedChests"/> class.
     /// </summary>
-    /// <param name="chestData">The <see cref="IChestData" /> configured for each chest.</param>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public ManagedChests(Dictionary<string, ChestData> chestData, IConfigModel config, IModHelper helper, IServiceLocator services)
+    public ManagedChests(IConfigModel config, IModHelper helper)
     {
-        this.ChestData = chestData;
         this.Config = config;
         this.Helper = helper;
-        this.Services = services;
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         this.Helper.Events.Player.Warped += this.OnWarped;
         this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
@@ -47,15 +45,19 @@ internal class ManagedChests : IService
         get => this._accessibleChests.Value ??= this.PlayerChests.Concat(this.PlacedChests).ToList();
     }
 
-    private Dictionary<string, ChestData> ChestData { get; }
-
     private IConfigModel Config { get; }
 
     private IModHelper Helper { get; }
 
-    private IServiceLocator Services { get; }
-
     private IDictionary<string, IChestModel> ChestConfigs { get; } = new Dictionary<string, IChestModel>();
+
+    private Dictionary<int, string[]> Craftables
+    {
+        get => this._craftables ??= this.Helper.Content.Load<Dictionary<int, string>>(ManagedChests.CraftablesData, ContentSource.GameContent)
+                   .ToDictionary(
+                       info => info.Key,
+                       info => info.Value.Split('/'));
+    }
 
     private IEnumerable<ManagedChest> PlacedChests
     {
@@ -69,11 +71,12 @@ internal class ManagedChests : IService
             var placedChests =
                 from location in this.AccessibleLocations
                 from item in location.Objects.Pairs
+                from info in this.Craftables
                 where item.Value is Chest chest
                       && chest.playerChest.Value
                       && chest.SpecialChestType is Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin
-                      && Game1.bigCraftablesInformation.ContainsKey(chest.ParentSheetIndex)
-                select (chest: item.Value as Chest, location, position: item.Key, name: Game1.bigCraftablesInformation[item.Value.ParentSheetIndex].Split('/')[0]);
+                      && info.Key == chest.ParentSheetIndex
+                select (chest: item.Value as Chest, location, position: item.Key, name: info.Value[0]);
 
             // Add fridge
             var farmHouses = this.AccessibleLocations.OfType<FarmHouse>().Where(farmHouse => farmHouse.fridge.Value is not null).ToList();
@@ -90,13 +93,7 @@ internal class ManagedChests : IService
                     var (chest, location, position, name) = t;
                     if (!this.ChestConfigs.TryGetValue(name, out var config))
                     {
-                        if (this.Helper.Content.Load<Dictionary<string, ChestData>>($"{ModEntry.ModUniqueId}/Chests", ContentSource.GameContent)?.TryGetValue(name, out var chestData) != true)
-                        {
-                            chestData = new();
-                            this.ChestData.Add(name, chestData);
-                        }
-
-                        config = new ChestModel(this.Config, chestData);
+                        config = this.ChestConfigs[name] = new ChestModel(name, this.Config, this.Helper.Content);
                     }
 
                     return new ManagedChest(chest, config, location, position);
@@ -116,12 +113,13 @@ internal class ManagedChests : IService
             var playerChests =
                 from player in Game1.getOnlineFarmers()
                 from item in player.Items.Select((item, index) => (item, index))
+                from info in this.Craftables
                 where item.item is Chest chest
                       && chest.playerChest.Value
                       && chest.SpecialChestType is Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin
                       && chest.Stack == 1
-                      && Game1.bigCraftablesInformation.ContainsKey(chest.ParentSheetIndex)
-                select (chest: item.item as Chest, player, item.index, name: Game1.bigCraftablesInformation[item.item.ParentSheetIndex].Split('/')[0]);
+                      && info.Key == chest.ParentSheetIndex
+                select (chest: item.item as Chest, player, item.index, name: info.Value[0]);
 
             return this._playerChests = playerChests.Select(
                 t =>
@@ -129,14 +127,7 @@ internal class ManagedChests : IService
                     var (chest, player, index, name) = t;
                     if (!this.ChestConfigs.TryGetValue(name, out var config))
                     {
-                        if (this.Helper.Content.Load<Dictionary<string, ChestData>>($"{ModEntry.ModUniqueId}/Chests", ContentSource.GameContent)?.TryGetValue(name, out var chestData) != true)
-                        {
-                            chestData = new();
-                            this.ChestData.Add(name, chestData);
-                        }
-
-                        config = new ChestModel(this.Config, chestData);
-                        this.ChestConfigs.Add(name, config);
+                        config = this.ChestConfigs[name] = new ChestModel(name, this.Config, this.Helper.Content);
                     }
 
                     return new ManagedChest(chest, config, player, index);

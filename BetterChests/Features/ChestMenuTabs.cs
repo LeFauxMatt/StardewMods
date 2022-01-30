@@ -1,17 +1,16 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using FuryCore.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Models;
-using FuryCore.Services;
 using Microsoft.Xna.Framework.Graphics;
-using BetterChests.Models;
 using Common.Extensions;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
+using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -21,29 +20,30 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class ChestMenuTabs : Feature
 {
-    // TODO: Add MouseScroll event for switching tags
     private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<int> _tabIndex = new(() => -1);
+    private readonly PerScreen<IList<TabComponent>> _tabs = new(ChestMenuTabs.GetTabs);
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
-    private readonly Lazy<Texture2D> _texture;
-    private readonly Lazy<IList<TabComponent>> _tabs;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChestMenuTabs"/> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public ChestMenuTabs(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ChestMenuTabs(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
-        this._texture = new(this.GetTexture);
-        this._tabs = new(this.GetTabs);
+        ChestMenuTabs.Instance = this;
+        this.Texture = this.Helper.Content.Load<Texture2D>("assets/tabs.png");
+        this.TabData = this.Helper.Content.Load<List<TabData>>("assets/tabs.json");
         this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
     }
+
+    private static ChestMenuTabs Instance { get; set; }
 
     private Chest Chest
     {
@@ -72,15 +72,14 @@ internal class ChestMenuTabs : Feature
         get => this._itemMatcher.Value;
     }
 
+    private IList<TabData> TabData { get; }
+
     private IList<TabComponent> Tabs
     {
         get => this._tabs.Value;
     }
 
-    private Texture2D Texture
-    {
-        get => this._texture.Value;
-    }
+    private Texture2D Texture { get; }
 
     /// <inheritdoc />
     protected override void Activate()
@@ -98,6 +97,22 @@ internal class ChestMenuTabs : Feature
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+    }
+
+    private static IList<TabComponent> GetTabs()
+    {
+        return ChestMenuTabs.Instance.TabData.Select(
+            (tab, i) => new TabComponent(
+                new(
+                    new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                    ChestMenuTabs.Instance.Texture,
+                    new(16 * i, 0, 16, 16),
+                    Game1.pixelZoom)
+                {
+                    hoverText = ChestMenuTabs.Instance.Helper.Translation.Get($"tabs.{tab.Name}.name"),
+                    name = tab.Name,
+                },
+                tab.Tags)).ToList();
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
@@ -178,10 +193,10 @@ internal class ChestMenuTabs : Feature
         switch (e.Delta)
         {
             case > 0:
-                this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
+                this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
                 break;
             case < 0:
-                this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
+                this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
                 break;
             default:
                 return;
@@ -214,26 +229,5 @@ internal class ChestMenuTabs : Feature
                 this.ItemMatcher.Add(tag);
             }
         }
-    }
-
-    private Texture2D GetTexture()
-    {
-        return this.Helper.Content.Load<Texture2D>("assets/tabs.png");
-    }
-
-    private IList<TabComponent> GetTabs()
-    {
-        return this.Helper.Content.Load<List<TabData>>("assets/tabs.json").Select(
-            (tab, i) => new TabComponent(
-                new(
-                    new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    this.Texture,
-                    new(16 * i, 0, 16, 16),
-                    Game1.pixelZoom)
-                {
-                    hoverText = this.Helper.Translation.Get($"tabs.{tab.Name}.name"),
-                    name = tab.Name,
-                },
-                tab.Tags)).ToList();
     }
 }

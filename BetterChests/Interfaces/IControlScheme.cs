@@ -1,4 +1,4 @@
-﻿namespace BetterChests.Interfaces;
+﻿namespace Mod.BetterChests.Interfaces;
 
 using StardewModdingAPI.Utilities;
 

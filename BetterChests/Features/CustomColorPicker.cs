@@ -1,12 +1,9 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
-using BetterChests.Models;
 using Common.Extensions;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
@@ -14,6 +11,9 @@ using FuryCore.Models;
 using FuryCore.UI;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
+using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -33,8 +33,8 @@ internal class CustomColorPicker : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public CustomColorPicker(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public CustomColorPicker(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         CustomColorPicker.Instance = this;
@@ -124,6 +124,7 @@ internal class CustomColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetCurrentColor_postfix(DiscreteColorPicker __instance, ref Color __result)
     {
         if (__instance is not HslColorPicker colorPicker || !ReferenceEquals(colorPicker, CustomColorPicker.Instance.ColorPicker))
@@ -135,12 +136,14 @@ internal class CustomColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetColorFromSelection_postfix(DiscreteColorPicker __instance, int selection, ref Color __result)
     {
         __result = HslColorPicker.GetColorFromSelection(selection);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetSelectionFromColor_postfix(DiscreteColorPicker __instance, Color c, ref int __result)
     {
         __result = HslColorPicker.GetSelectionFromColor(c);
@@ -170,6 +173,7 @@ internal class CustomColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
         if (__instance.context is not Chest chest || !ReferenceEquals(chest, CustomColorPicker.Instance.ManagedChest.Chest))

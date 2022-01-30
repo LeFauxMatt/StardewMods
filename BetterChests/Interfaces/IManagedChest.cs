@@ -1,8 +1,8 @@
-﻿namespace BetterChests.Interfaces;
+﻿namespace Mod.BetterChests.Interfaces;
 
-using BetterChests.Enums;
 using FuryCore.Helpers;
 using Microsoft.Xna.Framework;
+using Mod.BetterChests.Enums;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -40,9 +40,9 @@ internal interface IManagedChest : IChestModel
     public int Index { get; }
 
     /// <summary>
-    /// Gets an <see cref="ItemMatcher" /> that is uniquely assigned to each type of chest.
+    /// Gets an <see cref="FuryCore.Helpers.ItemMatcher" /> that is uniquely assigned to each type of chest.
     /// </summary>
-    public ItemMatcher ItemMatcherByChest { get; }
+    public ItemMatcher ItemMatcher { get; }
 
     /// <summary>
     /// Determines if the placed or player <see cref="Chest" /> refers to another <see cref="Chest" /> instance.

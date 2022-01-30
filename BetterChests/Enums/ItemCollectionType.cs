@@ -1,6 +1,7 @@
-﻿namespace BetterChests.Enums;
+﻿namespace Mod.BetterChests.Enums;
 
 using StardewValley;
+using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <summary>

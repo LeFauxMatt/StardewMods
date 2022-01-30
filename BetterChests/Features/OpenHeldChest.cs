@@ -1,14 +1,13 @@
-﻿namespace BetterChests.Features;
+﻿namespace Mod.BetterChests.Features;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using BetterChests.Enums;
-using BetterChests.Interfaces;
 using Common.Helpers;
 using FuryCore.Interfaces;
-using FuryCore.Services;
 using HarmonyLib;
+using Mod.BetterChests.Enums;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -24,8 +23,8 @@ internal class OpenHeldChest : Feature
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Internal and external dependency <see cref="IService" />.</param>
-    public OpenHeldChest(IConfigModel config, IModHelper helper, IServiceLocator services)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public OpenHeldChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
         this._harmony = services.Lazy<IHarmonyHelper>(
@@ -63,6 +62,7 @@ internal class OpenHeldChest : Feature
     /// <summary>Prevent adding chest into itself.</summary>
     [HarmonyPriority(Priority.High)]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
         if (!ReferenceEquals(__instance, item))

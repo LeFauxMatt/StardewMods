@@ -1,6 +1,6 @@
-﻿namespace BetterChests.Models;
+﻿namespace Mod.BetterChests.Models;
 
-using BetterChests.Interfaces;
+using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 

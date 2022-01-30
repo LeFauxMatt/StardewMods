@@ -6,6 +6,8 @@
   "section.features.description": "Default options that applies to any chest.",
   "section.controls.name": "Controls",
   "section.controls.description": "Controller/keyboard configurations.",
+  "section.chests.name": "Chests",
+  "section.chests.description":  "Configure each chest type individually.",
 
   // Feature Config
   "config.carry-chest.name": "Carry Chest",
@@ -28,6 +30,8 @@
   "config.custom-color-picker-area.tooltip": "The area next to the inventory menu that the color picker will be.",
   "config.filter-items.name": "Filter Items",
   "config.filter-items.tooltip": "Restrict what items can be added to a Chest.",
+  "config.filter-items-block.name": "Filter Items Block",
+  "config.filter-items-block.tooltip": "Chests will reject items that do not meet the Filter Items condition.",
   "config.open-held-chest.name": "Open Held Chest",
   "config.open-held-chest.tooltip": "Open a currently held Chest and access its contents.",
   "config.resize-chest.name": "Resize Chest",
@@ -63,6 +67,8 @@
   "config.range-distance.value-many": "{0} tiles",
 
   // Controls Config
+  "config.lock-slot.name": "Lock Item Slot",
+  "config.lock-slot.tooltip":  "Key to lock an item slot so that the item in it will not be stashed.",
   "config.open-crafting.name": "Open Crafting Button",
   "config.open-crafting.tooltip": "Key to open the crafting menu for accessible chests.",
   "config.stash-items.name": "Stash Items Button",
