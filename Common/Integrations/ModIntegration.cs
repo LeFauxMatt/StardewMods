@@ -7,9 +7,6 @@ using StardewModdingAPI;
 internal abstract class ModIntegration<T>
     where T : class
 {
-    private readonly IModRegistry _modRegistry;
-    private readonly string _modUniqueId;
-    private bool _isInitialized;
     private bool _isLoaded;
     private T _modAPI = null!;
 
@@ -18,19 +15,24 @@ internal abstract class ModIntegration<T>
     /// <param name="modUniqueId">The unique id of the external mod.</param>
     internal ModIntegration(IModRegistry modRegistry, string modUniqueId)
     {
-        this._modRegistry = modRegistry;
-        this._modUniqueId = modUniqueId;
+        this.ModRegistry = modRegistry;
+        this.UniqueId = modUniqueId;
     }
+
+    /// <summary>
+    /// Gets the Unique Id for this mod.
+    /// </summary>
+    protected internal string UniqueId { get; }
 
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
     protected internal T API
     {
         get
         {
-            if (!this._isInitialized)
+            if (!this.IsInitialized)
             {
-                this._modAPI = this._modRegistry.GetApi<T>(this._modUniqueId);
-                this._isInitialized = true;
+                this._modAPI = this.ModRegistry.GetApi<T>(this.UniqueId);
+                this.IsInitialized = true;
             }
 
             return this._modAPI;
@@ -40,6 +42,10 @@ internal abstract class ModIntegration<T>
     /// <summary>Gets the loaded status of the mod.</summary>
     protected internal bool IsLoaded
     {
-        get => this._isLoaded = this._isLoaded || this._modRegistry.IsLoaded(this._modUniqueId);
+        get => this._isLoaded = this._isLoaded || this.ModRegistry.IsLoaded(this.UniqueId);
     }
+
+    private IModRegistry ModRegistry { get; }
+
+    private bool IsInitialized { get; set; }
 }
