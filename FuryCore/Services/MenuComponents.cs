@@ -46,7 +46,7 @@ internal class MenuComponents : IMenuComponents, IModService
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
             {
-                var id = $"{ModEntry.ModUniqueId}.{nameof(MenuComponents)}";
+                var id = $"{FuryCore.ModUniqueId}.{nameof(MenuComponents)}";
 
                 harmonyHelper.AddPatch(
                     id,

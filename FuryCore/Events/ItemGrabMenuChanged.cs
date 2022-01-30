@@ -31,7 +31,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
             {
-                var id = $"{ModEntry.ModUniqueId}.{nameof(ItemGrabMenuChanged)}";
+                var id = $"{FuryCore.ModUniqueId}.{nameof(ItemGrabMenuChanged)}";
                 var ctorParams = new[]
                 {
                     typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),

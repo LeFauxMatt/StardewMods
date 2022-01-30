@@ -5,7 +5,7 @@ using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 
 /// <inheritdoc />
-public class ModEntry : Mod
+public class FuryCore : Mod
 {
     /// <summary>
     /// Gets the unique Mod Id.
@@ -17,7 +17,7 @@ public class ModEntry : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        ModEntry.ModUniqueId = this.ModManifest.UniqueID;
+        FuryCore.ModUniqueId = this.ModManifest.UniqueID;
         Log.Monitor = this.Monitor;
         this.Services.Add(
             new MenuComponents(this.Helper, this.Services),

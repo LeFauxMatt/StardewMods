@@ -12,7 +12,7 @@ using StardewValley;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-public class ModEntry : Mod
+public class BetterChestsConfigurator : Mod
 {
     private BetterChestsIntegration BetterChestsMod { get; set; }
 

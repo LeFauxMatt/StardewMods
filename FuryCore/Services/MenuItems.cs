@@ -52,7 +52,7 @@ internal class MenuItems : IMenuItems, IModService
         services.Lazy<HarmonyHelper>(
             harmonyHelper =>
             {
-                var id = $"{ModEntry.ModUniqueId}.{nameof(MenuItems)}";
+                var id = $"{FuryCore.ModUniqueId}.{nameof(MenuItems)}";
                 harmonyHelper.AddPatch(
                     id,
                     AccessTools.Method(
