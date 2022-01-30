@@ -1,10 +1,10 @@
-﻿namespace Mod.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models;
 
 using System.Collections.Generic;
 using System.Linq;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
 
 /// <inheritdoc cref="IChestModel" />
 internal class ChestModel : IChestModel

@@ -1,18 +1,17 @@
-﻿namespace Mod.BetterChests;
+﻿namespace StardewMods.BetterChests;
 
 using System.Collections.Generic;
 using System.Linq;
 using Common.Helpers;
-using Common.Extensions;
 using FuryCore.Interfaces;
 using FuryCore.Services;
-using Mod.BetterChests.Features;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Models;
-using Mod.BetterChests.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Services;
 
 /// <inheritdoc cref="StardewModdingAPI.Mod" />
 public class BetterChests : Mod, IAssetLoader
@@ -40,7 +39,6 @@ public class BetterChests : Mod, IAssetLoader
         BetterChests.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
-        KeybindListExtensions.InputHelper = this.Helper.Input;
 
         // Mod Config
         var config = this.Helper.ReadConfig<ConfigData>();

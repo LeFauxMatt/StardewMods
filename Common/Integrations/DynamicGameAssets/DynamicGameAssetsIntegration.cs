@@ -1,5 +1,6 @@
 ﻿namespace Common.Integrations.DynamicGameAssets;
 
+using Common.Integrations;
 using StardewModdingAPI;
 
 /// <inheritdoc />

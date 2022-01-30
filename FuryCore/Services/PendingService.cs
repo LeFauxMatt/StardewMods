@@ -1,8 +1,8 @@
-﻿namespace FuryCore.Services;
+﻿namespace StardewMods.FuryCore.Services;
 
 using System;
 using System.Collections.Generic;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc />
 internal class PendingService<TServiceType> : IPendingService

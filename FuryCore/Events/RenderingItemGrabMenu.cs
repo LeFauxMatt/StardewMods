@@ -1,8 +1,8 @@
-﻿namespace FuryCore.Events;
+﻿namespace StardewMods.FuryCore.Events;
 
-using FuryCore.Interfaces;
-using FuryCore.Models;
-using FuryCore.Services;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Services;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

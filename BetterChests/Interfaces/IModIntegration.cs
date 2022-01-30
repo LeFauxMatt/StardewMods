@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
 /// <summary>
 /// The public surface of BetterChests mod for direct integration.

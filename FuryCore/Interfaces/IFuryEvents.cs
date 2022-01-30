@@ -1,7 +1,7 @@
-﻿namespace FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces;
 
 using System;
-using FuryCore.Models;
+using StardewMods.FuryCore.Models;
 using StardewModdingAPI.Events;
 using StardewValley.Menus;
 

@@ -1,9 +1,9 @@
-﻿namespace Mod.BetterChests;
+﻿namespace StardewMods.BetterChests;
 
 using FuryCore.Interfaces;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Services;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Services;
 
 /// <inheritdoc />
 internal class Integration : IModIntegration

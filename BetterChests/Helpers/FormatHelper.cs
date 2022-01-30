@@ -1,8 +1,8 @@
-﻿namespace Mod.BetterChests.Helpers;
+﻿namespace StardewMods.BetterChests.Helpers;
 
 using System;
 using FuryCore.Enums;
-using Mod.BetterChests.Enums;
+using StardewMods.BetterChests.Enums;
 
 /// <summary>
 /// Helper methods to convert between different text formats.

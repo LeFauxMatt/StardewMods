@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces;
 
 using System;
 using System.Collections.Generic;

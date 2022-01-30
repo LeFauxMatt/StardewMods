@@ -1,9 +1,9 @@
-﻿namespace FuryCore.Services;
+﻿namespace StardewMods.FuryCore.Services;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc cref="IModService" />
 public class ModServices : IModServices, IModService

@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Enums;
+﻿namespace StardewMods.BetterChests.Enums;
 
 /// <summary>
 /// Indicates at what range a feature will be enabled.

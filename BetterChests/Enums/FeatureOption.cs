@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Enums;
+﻿namespace StardewMods.BetterChests.Enums;
 
 /// <summary>
 /// Indicates if a feature is enabled, disabled, or will inherit from a parent config.

@@ -1,14 +1,13 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Linq;
-using Common.Extensions;
 using Common.Helpers;
 using FuryCore.Interfaces;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 
 /// <inheritdoc />
@@ -49,7 +48,7 @@ internal class StashToChest : Feature
     {
         if (Context.IsPlayerFree && this.Config.ControlScheme.StashItems.JustPressed() && this.StashItems())
         {
-            this.Config.ControlScheme.StashItems.Suppress();
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.StashItems);
         }
     }
 

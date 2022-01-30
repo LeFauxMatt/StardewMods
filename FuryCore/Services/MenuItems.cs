@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Services;
+﻿namespace StardewMods.FuryCore.Services;
 
 using System;
 using System.Collections.Generic;
@@ -9,11 +9,11 @@ using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using Common.Models;
-using FuryCore.Attributes;
-using FuryCore.Enums;
-using FuryCore.Helpers;
-using FuryCore.Interfaces;
-using FuryCore.Models;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;

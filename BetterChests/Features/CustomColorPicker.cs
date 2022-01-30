@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
@@ -11,11 +11,11 @@ using FuryCore.Models;
 using FuryCore.UI;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;

@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
 /// <inheritdoc />
 internal interface IChestModel : IChestData

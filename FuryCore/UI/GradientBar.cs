@@ -1,9 +1,9 @@
-﻿namespace FuryCore.UI;
+﻿namespace StardewMods.FuryCore.UI;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FuryCore.Enums;
+using StardewMods.FuryCore.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;

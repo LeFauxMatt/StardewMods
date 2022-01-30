@@ -1,12 +1,12 @@
-﻿namespace BetterChestsConfigurator;
+﻿namespace StardewMods.BetterChestsConfigurator;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Helpers;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Models;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley.Objects;
 
 /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace BetterChestsConfigurator;
+﻿namespace StardewMods.BetterChestsConfigurator;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;

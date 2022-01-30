@@ -1,10 +1,10 @@
-﻿namespace Mod.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models;
 
 using FuryCore.Enums;
 using FuryCore.Interfaces;
-using Mod.BetterChests.Features;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Interfaces;
 
 /// <summary>
 /// Encapsulates a <see cref="ConfigData" /> wrapper class.

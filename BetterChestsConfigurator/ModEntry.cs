@@ -1,14 +1,13 @@
-﻿namespace BetterChestsConfigurator;
+﻿namespace StardewMods.BetterChestsConfigurator;
 
-using Common.Extensions;
 using Common.Helpers;
-using Mod.BetterChests.Models;
 using Common.Integrations.BetterChests;
 using Common.Integrations.GenericModConfigMenu;
-using Mod.BetterChests;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Objects;
 

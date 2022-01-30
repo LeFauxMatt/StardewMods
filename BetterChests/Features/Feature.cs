@@ -1,11 +1,11 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using FuryCore.Interfaces;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Services;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Services;
 
 /// <inheritdoc />
 internal abstract class Feature : IModService

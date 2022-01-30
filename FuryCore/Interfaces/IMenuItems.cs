@@ -1,7 +1,7 @@
-﻿namespace FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces;
 
 using System.Collections.Generic;
-using FuryCore.Helpers;
+using StardewMods.FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;

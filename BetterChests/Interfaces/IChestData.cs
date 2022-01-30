@@ -1,7 +1,7 @@
-﻿namespace Mod.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
 using System.Collections.Generic;
-using Mod.BetterChests.Enums;
+using StardewMods.BetterChests.Enums;
 using StardewValley.Objects;
 
 /// <summary>

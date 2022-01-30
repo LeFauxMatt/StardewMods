@@ -1,10 +1,10 @@
-﻿namespace FuryCore.Events;
+﻿namespace StardewMods.FuryCore.Events;
 
 using System;
 using System.Linq;
-using FuryCore.Interfaces;
-using FuryCore.Models;
-using FuryCore.Services;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;

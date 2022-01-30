@@ -1,10 +1,10 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using FuryCore.Interfaces;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
 

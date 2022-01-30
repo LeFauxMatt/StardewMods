@@ -1,8 +1,8 @@
-﻿namespace FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models;
 
 using System;
 using System.Reflection;
-using FuryCore.Enums;
+using StardewMods.FuryCore.Enums;
 using HarmonyLib;
 
 /// <summary>

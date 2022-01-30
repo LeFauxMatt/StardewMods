@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models;
 
 using System;
 using StardewValley.Menus;

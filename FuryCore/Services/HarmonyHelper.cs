@@ -1,12 +1,12 @@
-﻿namespace FuryCore.Services;
+﻿namespace StardewMods.FuryCore.Services;
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using FuryCore.Attributes;
-using FuryCore.Enums;
-using FuryCore.Interfaces;
-using FuryCore.Models;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using HarmonyLib;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IHarmonyHelper" />

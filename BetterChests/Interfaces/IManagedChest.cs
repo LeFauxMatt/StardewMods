@@ -1,8 +1,8 @@
-﻿namespace Mod.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
 using FuryCore.Helpers;
 using Microsoft.Xna.Framework;
-using Mod.BetterChests.Enums;
+using StardewMods.BetterChests.Enums;
 using StardewValley;
 using StardewValley.Objects;
 

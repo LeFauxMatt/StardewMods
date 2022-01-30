@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
@@ -7,13 +7,12 @@ using FuryCore.Helpers;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using Microsoft.Xna.Framework.Graphics;
-using Common.Extensions;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -166,14 +165,14 @@ internal class ChestMenuTabs : Feature
         if (this.Config.ControlScheme.NextTab.JustPressed())
         {
             this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
-            this.Config.ControlScheme.NextTab.Suppress();
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.NextTab);
             return;
         }
 
         if (this.Config.ControlScheme.PreviousTab.JustPressed())
         {
             this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
-            this.Config.ControlScheme.PreviousTab.Suppress();
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.PreviousTab);
         }
     }
 

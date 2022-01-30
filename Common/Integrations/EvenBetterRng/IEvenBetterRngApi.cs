@@ -1,4 +1,4 @@
-﻿namespace Common.Integrations.EvenBetterRNG;
+﻿namespace Common.Integrations.EvenBetterRng;
 
 using System;
 

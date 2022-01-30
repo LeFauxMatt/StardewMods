@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Attributes;
+﻿namespace StardewMods.FuryCore.Attributes;
 
 using System;
 using StardewModdingAPI.Events;

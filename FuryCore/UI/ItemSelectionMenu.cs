@@ -1,4 +1,4 @@
-﻿namespace FuryCore.UI;
+﻿namespace StardewMods.FuryCore.UI;
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using Common.Extensions;
 using Common.Helpers.ItemRepository;
 using Common.Models;
-using FuryCore.Helpers;
+using StardewMods.FuryCore.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;

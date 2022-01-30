@@ -1,18 +1,17 @@
-﻿namespace Mod.BetterChests.Services;
+﻿namespace StardewMods.BetterChests.Services;
 
 using System.Collections.Generic;
 using System.Linq;
 using FuryCore.Interfaces;
 using Microsoft.Xna.Framework;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
-using SObject = StardewValley.Object;
 
 /// <inheritdoc />
 internal class ManagedChests : IModService

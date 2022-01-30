@@ -1,11 +1,11 @@
-﻿namespace FuryCore.Events;
+﻿namespace StardewMods.FuryCore.Events;
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Common.Helpers;
-using FuryCore.Attributes;
-using FuryCore.Models;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Models;
 using StardewModdingAPI.Events;
 
 /// <summary>

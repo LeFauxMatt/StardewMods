@@ -1,8 +1,8 @@
-﻿namespace Mod.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models;
 
 using FuryCore.Enums;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
 
 /// <summary>
 /// Mod config data related to BetterChests features.

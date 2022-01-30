@@ -1,21 +1,20 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
-using Common.Extensions;
 using Common.Helpers;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using HarmonyLib;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -160,7 +159,7 @@ internal class CraftFromChest : Feature
         }
 
         this._multipleChestCraftingPage.Value = new(eligibleChests);
-        this.Config.ControlScheme.OpenCrafting.Suppress();
+        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
     }
 
     private class MultipleChestCraftingPage

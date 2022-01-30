@@ -1,10 +1,10 @@
-﻿namespace Mod.BetterChests;
+﻿namespace StardewMods.BetterChests;
 
 using System.Collections.Generic;
 using System.Linq;
 using Common.Integrations.BetterChests;
-using Mod.BetterChests.Models;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Models;
 
 /// <inheritdoc />
 internal class BetterChestsApi : IBetterChestsApi

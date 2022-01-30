@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Enums;
+﻿namespace StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Type type of patch to apply.

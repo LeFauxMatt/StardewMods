@@ -1,10 +1,9 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using FuryCore.Enums;
@@ -12,10 +11,10 @@ using FuryCore.Interfaces;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -179,7 +178,7 @@ internal class SlotLock : Feature
         var lockedSlots = this.LockedSlots;
         lockedSlots[index] = !lockedSlots[index];
         this.LockedSlots = lockedSlots;
-        this.Config.ControlScheme.LockSlot.Suppress();
+        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.LockSlot);
     }
 
     private Color GetTint(Color tint, int index)

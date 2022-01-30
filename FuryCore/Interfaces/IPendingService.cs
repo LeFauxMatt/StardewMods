@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces;
 
 /// <summary>
 ///     An <see cref="IModService" /> which has not been instantiated yet.

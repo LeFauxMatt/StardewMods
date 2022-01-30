@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Enums;
+﻿namespace StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Designates certain components to automatically align to an area around the menu.

@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Enums;
+﻿namespace StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Describes an axis in a 2-dimensional coordinate system.

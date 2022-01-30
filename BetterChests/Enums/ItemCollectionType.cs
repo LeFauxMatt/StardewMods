@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Enums;
+﻿namespace StardewMods.BetterChests.Enums;
 
 using StardewValley;
 using StardewValley.Objects;

@@ -1,11 +1,11 @@
-﻿namespace FuryCore;
+﻿namespace StardewMods.FuryCore;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using FuryCore.Attributes;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IModServices" />
 public class FuryCoreApi : IModServices, IModService

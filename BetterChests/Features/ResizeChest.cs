@@ -1,17 +1,16 @@
-﻿namespace Mod.BetterChests.Features;
+﻿namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Common.Extensions;
 using FuryCore.Attributes;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
 using FuryCore.Models;
 using HarmonyLib;
-using Mod.BetterChests.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -197,14 +196,14 @@ internal class ResizeChest : Feature
         if (this.Config.ControlScheme.ScrollUp.JustPressed())
         {
             this.MenuItems.Offset--;
-            this.Config.ControlScheme.ScrollUp.Suppress();
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
             return;
         }
 
         if (this.Config.ControlScheme.ScrollDown.JustPressed())
         {
             this.MenuItems.Offset++;
-            this.Config.ControlScheme.ScrollDown.Suppress();
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
         }
     }
 }

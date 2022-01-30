@@ -1,10 +1,10 @@
-﻿namespace FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces;
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using FuryCore.Enums;
-using FuryCore.Models;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Models;
 using StardewModdingAPI;
 
 /// <summary>

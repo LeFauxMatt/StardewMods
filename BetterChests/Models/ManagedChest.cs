@@ -1,13 +1,13 @@
-﻿namespace Mod.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using FuryCore.Helpers;
 using Microsoft.Xna.Framework;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Helpers;
-using Mod.BetterChests.Interfaces;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;

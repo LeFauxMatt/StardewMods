@@ -1,10 +1,10 @@
-﻿namespace FuryCore.Services;
+﻿namespace StardewMods.FuryCore.Services;
 
 using System;
-using FuryCore.Attributes;
-using FuryCore.Events;
-using FuryCore.Interfaces;
-using FuryCore.Models;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Events;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 

@@ -1,4 +1,4 @@
-﻿namespace FuryCore.Helpers;
+﻿namespace StardewMods.FuryCore.Helpers;
 
 using System;
 using System.Collections.Generic;

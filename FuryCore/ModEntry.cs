@@ -1,7 +1,7 @@
-﻿namespace FuryCore;
+﻿namespace StardewMods.FuryCore;
 
 using Common.Helpers;
-using FuryCore.Services;
+using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 
 /// <inheritdoc />

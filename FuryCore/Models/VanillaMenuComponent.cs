@@ -1,8 +1,8 @@
-﻿namespace FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models;
 
 using System;
-using FuryCore.Enums;
-using FuryCore.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 

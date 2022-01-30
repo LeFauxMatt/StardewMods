@@ -1,4 +1,4 @@
-﻿namespace Mod.BetterChests.Services;
+﻿namespace StardewMods.BetterChests.Services;
 
 using System;
 using System.Collections.Generic;
@@ -6,13 +6,13 @@ using System.Linq;
 using Common.Integrations.GenericModConfigMenu;
 using FuryCore.Enums;
 using FuryCore.Interfaces;
-using Mod.BetterChests.Enums;
-using Mod.BetterChests.Features;
-using Mod.BetterChests.Helpers;
-using Mod.BetterChests.Interfaces;
-using Mod.BetterChests.Models;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IModService" />
 internal class ModConfigMenu : IModService, IModConfigMenu

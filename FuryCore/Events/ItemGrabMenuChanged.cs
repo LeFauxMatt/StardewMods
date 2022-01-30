@@ -1,11 +1,11 @@
-﻿namespace FuryCore.Events;
+﻿namespace StardewMods.FuryCore.Events;
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using FuryCore.Enums;
-using FuryCore.Interfaces;
-using FuryCore.Models;
-using FuryCore.Services;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

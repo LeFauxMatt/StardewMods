@@ -1,7 +1,7 @@
-﻿namespace Mod.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
-using Mod.BetterChests.Services;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Services;
 
 /// <summary>
 /// The public surface of <see cref="ModConfigMenu" /> service.
