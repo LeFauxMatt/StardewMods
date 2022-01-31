@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Services;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewMods.FuryCore.Interfaces;
@@ -16,10 +17,9 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class ManagedChests : IModService
 {
-    private const string CraftablesData = "Data/BigCraftablesInformation";
     private readonly PerScreen<IList<ManagedChest>> _placedChests = new(() => null);
     private readonly PerScreen<IList<ManagedChest>> _accessibleChests = new(() => null);
-    private Dictionary<int, string[]> _craftables;
+    private readonly Lazy<AssetHandler> _assetHandler;
     private IList<ManagedChest> _playerChests;
 
     /// <summary>
@@ -27,10 +27,12 @@ internal class ManagedChests : IModService
     /// </summary>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    public ManagedChests(IConfigModel config, IModHelper helper)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ManagedChests(IConfigModel config, IModHelper helper, IModServices services)
     {
         this.Config = config;
         this.Helper = helper;
+        this._assetHandler = services.Lazy<AssetHandler>();
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         this.Helper.Events.Player.Warped += this.OnWarped;
         this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
@@ -48,15 +50,12 @@ internal class ManagedChests : IModService
 
     private IModHelper Helper { get; }
 
-    private IDictionary<string, IChestModel> ChestConfigs { get; } = new Dictionary<string, IChestModel>();
-
-    private Dictionary<int, string[]> Craftables
+    private AssetHandler Assets
     {
-        get => this._craftables ??= this.Helper.Content.Load<Dictionary<int, string>>(ManagedChests.CraftablesData, ContentSource.GameContent)
-                   .ToDictionary(
-                       info => info.Key,
-                       info => info.Value.Split('/'));
+        get => this._assetHandler.Value;
     }
+
+    private IDictionary<string, IChestData> ChestConfigs { get; } = new Dictionary<string, IChestData>();
 
     private IEnumerable<ManagedChest> PlacedChests
     {
@@ -70,7 +69,7 @@ internal class ManagedChests : IModService
             var placedChests =
                 from location in this.AccessibleLocations
                 from item in location.Objects.Pairs
-                from info in this.Craftables
+                from info in this.Assets.Craftables
                 where item.Value is Chest chest
                       && chest.playerChest.Value
                       && chest.SpecialChestType is Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin
@@ -92,7 +91,13 @@ internal class ManagedChests : IModService
                     var (chest, location, position, name) = t;
                     if (!this.ChestConfigs.TryGetValue(name, out var config))
                     {
-                        config = this.ChestConfigs[name] = new ChestModel(name, this.Config, this.Helper.Content);
+                        if (!this.Assets.ChestData.TryGetValue(name, out var chestData))
+                        {
+                            chestData = new ChestData();
+                            this.Assets.AddChestData(name, chestData);
+                        }
+
+                        config = this.ChestConfigs[name] = new ChestModel(chestData, this.Config.DefaultChest);
                     }
 
                     return new ManagedChest(chest, config, location, position);
@@ -112,7 +117,7 @@ internal class ManagedChests : IModService
             var playerChests =
                 from player in Game1.getOnlineFarmers()
                 from item in player.Items.Select((item, index) => (item, index))
-                from info in this.Craftables
+                from info in this.Assets.Craftables
                 where item.item is Chest chest
                       && chest.playerChest.Value
                       && chest.SpecialChestType is Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin
@@ -126,7 +131,13 @@ internal class ManagedChests : IModService
                     var (chest, player, index, name) = t;
                     if (!this.ChestConfigs.TryGetValue(name, out var config))
                     {
-                        config = this.ChestConfigs[name] = new ChestModel(name, this.Config, this.Helper.Content);
+                        if (!this.Assets.ChestData.TryGetValue(name, out var chestData))
+                        {
+                            chestData = new ChestData();
+                            this.Assets.AddChestData(name, chestData);
+                        }
+
+                        config = this.ChestConfigs[name] = new ChestModel(chestData, this.Config.DefaultChest);
                     }
 
                     return new ManagedChest(chest, config, player, index);

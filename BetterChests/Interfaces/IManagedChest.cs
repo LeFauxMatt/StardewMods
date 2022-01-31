@@ -7,7 +7,7 @@ using StardewValley;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal interface IManagedChest : IChestModel
+internal interface IManagedChest : IChestData
 {
     /// <summary>
     /// Gets the actual instance of the <see cref="Chest" /> being managed.

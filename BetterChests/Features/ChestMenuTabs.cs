@@ -22,7 +22,7 @@ internal class ChestMenuTabs : Feature
     private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<int> _tabIndex = new(() => -1);
-    private readonly PerScreen<IList<TabComponent>> _tabs = new(ChestMenuTabs.GetTabs);
+    private readonly PerScreen<IList<TabComponent>> _tabs = new();
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
 
@@ -35,14 +35,9 @@ internal class ChestMenuTabs : Feature
     public ChestMenuTabs(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
-        ChestMenuTabs.Instance = this;
-        this.Texture = this.Helper.Content.Load<Texture2D>("assets/tabs.png");
-        this.TabData = this.Helper.Content.Load<List<TabData>>("assets/tabs.json");
         this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
     }
-
-    private static ChestMenuTabs Instance { get; set; }
 
     private Chest Chest
     {
@@ -71,14 +66,26 @@ internal class ChestMenuTabs : Feature
         get => this._itemMatcher.Value;
     }
 
-    private IList<TabData> TabData { get; }
-
     private IList<TabComponent> Tabs
     {
-        get => this._tabs.Value;
+        get => this._tabs.Value ??= (
+                from tab in
+                    from data in this.Helper.Content.Load<Dictionary<string, string>>($"{BetterChests.ModUniqueId}/Tabs", ContentSource.GameContent)
+                    select (name: data.Key, info: data.Value.Split('/'))
+                orderby int.Parse(tab.info[2]), tab.info[0]
+                select new TabComponent(
+                    new(
+                        new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                        this.Helper.Content.Load<Texture2D>(tab.info[1], ContentSource.GameContent),
+                        new(16 * int.Parse(tab.info[2]), 0, 16, 16),
+                        Game1.pixelZoom)
+                    {
+                        hoverText = tab.info[0],
+                        name = tab.name,
+                    },
+                    tab.info[3].Split(' ')))
+            .ToList();
     }
-
-    private Texture2D Texture { get; }
 
     /// <inheritdoc />
     protected override void Activate()
@@ -98,22 +105,6 @@ internal class ChestMenuTabs : Feature
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
-    private static IList<TabComponent> GetTabs()
-    {
-        return ChestMenuTabs.Instance.TabData.Select(
-            (tab, i) => new TabComponent(
-                new(
-                    new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    ChestMenuTabs.Instance.Texture,
-                    new(16 * i, 0, 16, 16),
-                    Game1.pixelZoom)
-                {
-                    hoverText = ChestMenuTabs.Instance.Helper.Translation.Get($"tabs.{tab.Name}.name"),
-                    name = tab.Name,
-                },
-                tab.Tags)).ToList();
-    }
-
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         if (e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.ChestMenuTabs == FeatureOption.Disabled)
@@ -129,7 +120,12 @@ internal class ChestMenuTabs : Feature
 
         if (this.MenuComponents.Menu is not null)
         {
-            this.MenuComponents.Components.AddRange(managedChest.ChestMenuTabSet.Any() ? this.Tabs.Where(tab => managedChest.ChestMenuTabSet.Contains(tab.Name)) : this.Tabs);
+            var tabs = (
+                from tabSet in managedChest.ChestMenuTabSet.Select((name, index) => (name, index))
+                join tabData in this.Tabs on tabSet.name equals tabData.Name
+                orderby tabSet.index
+                select tabData).ToList();
+            this.MenuComponents.Components.AddRange(tabs.Any() ? tabs : this.Tabs);
 
             if (!ReferenceEquals(e.Chest, this.Chest))
             {

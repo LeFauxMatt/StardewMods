@@ -22,7 +22,7 @@ internal class ManagedChest : IManagedChest
     /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
     /// <param name="location">The <see cref="GameLocation" /> where the Chest is placed.</param>
     /// <param name="position">The coordinates where the Chest is placed.</param>
-    public ManagedChest(Chest chest, IChestModel data, GameLocation location, Vector2 position)
+    public ManagedChest(Chest chest, IChestData data, GameLocation location, Vector2 position)
         : this(chest, data)
     {
         this.CollectionType = ItemCollectionType.GameLocation;
@@ -37,7 +37,7 @@ internal class ManagedChest : IManagedChest
     /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
     /// <param name="player">The <see cref="Farmer" /> whose inventory contains the Chest.</param>
     /// <param name="index">The item slot where the Chest is being stored.</param>
-    public ManagedChest(Chest chest, IChestModel data, Farmer player, int index)
+    public ManagedChest(Chest chest, IChestData data, Farmer player, int index)
         : this(chest, data)
     {
         this.CollectionType = ItemCollectionType.PlayerInventory;
@@ -45,7 +45,7 @@ internal class ManagedChest : IManagedChest
         this.Index = index;
     }
 
-    private ManagedChest(Chest chest, IChestModel data)
+    private ManagedChest(Chest chest, IChestData data)
     {
         this.Chest = chest;
         this.Data = data;
@@ -58,12 +58,6 @@ internal class ManagedChest : IManagedChest
 
     // ****************************************************************************************
     // General
-
-    /// <inheritdoc/>
-    public string Name
-    {
-        get => this.Data.Name;
-    }
 
     /// <inheritdoc/>
     public Chest Chest { get; }
@@ -331,7 +325,7 @@ internal class ManagedChest : IManagedChest
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestStacks"] = FormatHelper.GetOptionString(value);
     }
 
-    private IChestModel Data { get; }
+    private IChestData Data { get; }
 
     /// <inheritdoc/>
     public bool MatchesChest(Chest other)

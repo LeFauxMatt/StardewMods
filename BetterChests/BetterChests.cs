@@ -1,19 +1,18 @@
 ﻿namespace StardewMods.BetterChests;
 
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using Common.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
 
-/// <inheritdoc cref="StardewModdingAPI.Mod" />
-public class BetterChests : Mod, IAssetLoader
+/// <inheritdoc />
+public class BetterChests : Mod
 {
     /// <summary>
     /// Gets the unique Mod Id.
@@ -21,8 +20,6 @@ public class BetterChests : Mod, IAssetLoader
     internal static string ModUniqueId { get; private set; }
 
     private ConfigModel Config { get; set; }
-
-    private Dictionary<string, ChestData> ChestData { get; set; }
 
     private ModServices Services { get; } = new();
 
@@ -34,30 +31,23 @@ public class BetterChests : Mod, IAssetLoader
         Log.Monitor = this.Monitor;
 
         // Mod Config
-        var config = this.Helper.ReadConfig<ConfigData>();
-        this.Config = new(config, this.Helper, this.Services);
-
-        // Chest Data
-        this.ChestData = this.Helper.Data.ReadJsonFile<Dictionary<string, ChestData>>("assets/chests.json");
-        if (this.ChestData is null)
+        IConfigData config = null;
+        try
         {
-            this.ChestData = new()
-            {
-                { "Chest", new() },
-                { "Stone Chest", new() },
-                { "Junimo Chest", new() },
-                { "Mini-Fridge", new() },
-                { "Mini-Shipping Bin", new() },
-                { "Fridge", new() },
-                { "Auto-Grabber", new() },
-            };
-            this.Helper.Data.WriteJsonFile("assets/chests.json", this.ChestData);
+            config = this.Helper.ReadConfig<ConfigData>();
         }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        this.Config = new(config ?? new ConfigData(), this.Helper, this.Services);
 
         // Services
         this.Services.Add(
-            new ManagedChests(this.Config, this.Helper),
-            new ModConfigMenu(this.ChestData, this.Config, this.Helper, this.ModManifest),
+            new AssetHandler(this.Config, this.Helper),
+            new ManagedChests(this.Config, this.Helper, this.Services),
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
             new CarryChest(this.Config, this.Helper, this.Services),
             new CategorizeChest(this.Config, this.Helper, this.Services),
             new ChestMenuTabs(this.Config, this.Helper, this.Services),
@@ -80,25 +70,7 @@ public class BetterChests : Mod, IAssetLoader
     /// <inheritdoc/>
     public override object GetApi()
     {
-        return new BetterChestsApi(this.ChestData, this.Helper, this.Services);
-    }
-
-    /// <inheritdoc/>
-    public bool CanLoad<T>(IAssetInfo asset)
-    {
-        return this.ChestData.Keys.Any(key => asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Chests/{key}"));
-    }
-
-    /// <inheritdoc/>
-    public T Load<T>(IAssetInfo asset)
-    {
-        var key = PathUtilities.GetSegments(asset.AssetName)[2];
-        if (!this.ChestData.TryGetValue(key, out var chestData))
-        {
-            return default;
-        }
-
-        return (T)(object)SerializedChestData.GetData(chestData);
+        return new BetterChestsApi(this.Services);
     }
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)

@@ -169,7 +169,7 @@ internal class CraftFromChest : Feature
         private readonly MultipleMutexRequest _multipleMutexRequest;
         private int _timeOut = MultipleChestCraftingPage.TimeOut;
 
-        public MultipleChestCraftingPage(List<Chest> managedChests)
+        public MultipleChestCraftingPage(IEnumerable<Chest> managedChests)
         {
             this._chests = managedChests.Where(chest => !chest.mutex.IsLocked()).ToList();
             var mutexes = this._chests.Select(chest => chest.mutex).ToList();

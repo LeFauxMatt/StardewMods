@@ -7,7 +7,7 @@ using System.Reflection;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Interfaces;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IModServices" />
+/// <inheritdoc cref="IModServices" />
 public class FuryCoreApi : IModServices, IModService
 {
     /// <summary>

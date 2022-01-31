@@ -18,27 +18,17 @@ public class MoreChests : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        MoreChests.ModUniqueId = this.ModManifest.UniqueID;
         Log.Monitor = this.Monitor;
 
         // Services
         this.Services.Add(
             new AssetHandler(this.Services));
-
-
-        // Services
-        this.ServiceLocator.Create(new []
-        {
-            typeof(AssetHandler),
-            typeof(ContentPackLoader),
-            typeof(CustomChestManager),
-            typeof(InventoryHandler),
-            typeof(ModConfigService),
-        });
     }
 
     /// <inheritdoc />
     public override object GetApi()
     {
-        return this._api;
+        return new MoreChestsApi(this.Services);
     }
 }

@@ -84,11 +84,11 @@ public class BetterChestsConfigurator : Mod
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                this.CurrentChest.modData.Remove(key);
+                this.CurrentChest.modData.Remove($"{this.BetterChests.UniqueId}/{key}");
                 continue;
             }
 
-            this.CurrentChest.modData[key] = value;
+            this.CurrentChest.modData[$"{this.BetterChests.UniqueId}/{key}"] = value;
         }
     }
 }

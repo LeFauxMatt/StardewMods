@@ -111,7 +111,7 @@ internal class SearchItems : Feature
 
     private TextBox SearchField
     {
-        get => this._searchField.Value ??= this.GetSearchField();
+        get => this._searchField.Value ??= new(this.Helper.Content.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent), null, Game1.smallFont, Game1.textColor);
     }
 
     private ClickableTextureComponent SearchIcon
@@ -394,10 +394,5 @@ internal class SearchItems : Feature
         {
             this.Helper.Input.Suppress(e.Button);
         }
-    }
-
-    private TextBox GetSearchField()
-    {
-        return new(Game1.content.Load<Texture2D>(@"LooseSprites\textBox"), null, Game1.smallFont, Game1.textColor);
     }
 }

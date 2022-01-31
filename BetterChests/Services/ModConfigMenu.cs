@@ -17,26 +17,29 @@ using StardewMods.BetterChests.Models;
 /// <inheritdoc cref="FuryCore.Interfaces.IModService" />
 internal class ModConfigMenu : IModService
 {
-    private const string CraftablesData = "Data/BigCraftablesInformation";
+    private readonly Lazy<AssetHandler> _assetHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ModConfigMenu"/> class.
     /// </summary>
-    /// <param name="chestData">The <see cref="IChestData" /> configured for each chest.</param>
     /// <param name="config">The data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
     /// <param name="manifest">The mod manifest to subscribe to GMCM with.</param>
-    public ModConfigMenu(Dictionary<string, ChestData> chestData, IConfigModel config, IModHelper helper, IManifest manifest)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ModConfigMenu(IConfigModel config, IModHelper helper, IManifest manifest, IModServices services)
     {
-        this.ChestData = chestData;
         this.Config = config;
         this.Helper = helper;
         this.Manifest = manifest;
         this.GMCM = new(this.Helper.ModRegistry);
+        this._assetHandler = services.Lazy<AssetHandler>();
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
-    private Dictionary<string, ChestData> ChestData { get; }
+    private AssetHandler Assets
+    {
+        get => this._assetHandler.Value;
+    }
 
     private GenericModConfigMenuIntegration GMCM { get; }
 
@@ -45,11 +48,6 @@ internal class ModConfigMenu : IModService
     private IModHelper Helper { get; }
 
     private IManifest Manifest { get; }
-
-    private IEnumerable<string[]> Craftables
-    {
-        get => this.Helper.Content.Load<Dictionary<int, string>>(ModConfigMenu.CraftablesData, ContentSource.GameContent).Values.Select(info => info.Split('/'));
-    }
 
     /// <summary>
     /// Add chest options to GMCM based on a dictionary of string keys/values representing Chest Data.
@@ -74,12 +72,12 @@ internal class ModConfigMenu : IModService
 
     private void GenerateConfig()
     {
-        var knownChests = this.ChestData
+        var knownChests = this.Assets.ChestData
                               .Select(chest =>
                               {
                                   var (key, chestData) = chest;
-                                  var name = (from info in this.Craftables where info[0] == key select info[8]).FirstOrDefault() ?? key;
-                                  return new KeyValuePair<string, ChestData>(name, chestData);
+                                  var name = (from info in this.Assets.Craftables where info.Value[0] == key select info.Value[8]).FirstOrDefault() ?? key;
+                                  return new KeyValuePair<string, IChestData>(name, chestData);
                               })
                               .OrderBy(chest => chest.Key).ToList();
 
@@ -97,7 +95,7 @@ internal class ModConfigMenu : IModService
             () =>
             {
                 this.Config.Save();
-                this.Helper.Data.WriteJsonFile("assets/chests.json", this.ChestData);
+                this.Assets.SaveChestData();
             });
 
         // General
@@ -424,8 +422,8 @@ internal class ModConfigMenu : IModService
             manifest,
             () => FormatHelper.GetOptionString(chestData.UnloadChest),
             value => chestData.UnloadChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
-            I18n.Config_SearchItems_Name,
-            I18n.Config_SearchItems_Tooltip,
+            I18n.Config_UnloadChest_Name,
+            I18n.Config_UnloadChest_Tooltip,
             optionValues,
             FormatHelper.FormatOption,
             nameof(UnloadChest));
