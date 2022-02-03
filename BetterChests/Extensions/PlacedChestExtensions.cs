@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Records;
-using StardewMods.BetterChests.Records;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;

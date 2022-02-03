@@ -12,7 +12,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Extensions;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
-using StardewMods.BetterChests.Records;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Locations;
