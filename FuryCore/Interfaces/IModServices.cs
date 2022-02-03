@@ -9,17 +9,9 @@ using System.Collections.Generic;
 public interface IModServices
 {
     /// <summary>
-    /// Gets all services in this collection.
+    ///     Gets all services in this collection.
     /// </summary>
     public IEnumerable<IModService> All { get; }
-
-    /// <summary>
-    ///     Request a lazy instance of an <see cref="IModService" />.
-    /// </summary>
-    /// <param name="action">An action to perform on the service instance.</param>
-    /// <typeparam name="TServiceType">The class/type of a service.</typeparam>
-    /// <returns>Returns the first <see cref="IModService" /> that matches the condition.</returns>
-    public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default);
 
     /// <summary>
     ///     Finds a service that is an instance of a type.
@@ -45,4 +37,12 @@ public interface IModServices
     /// </param>
     /// <returns>Returns the first <see cref="IModService" /> that matches the condition.</returns>
     public IEnumerable<IModService> FindServices(Type type, IList<IModServices> exclude);
+
+    /// <summary>
+    ///     Request a lazy instance of an <see cref="IModService" />.
+    /// </summary>
+    /// <param name="action">An action to perform on the service instance.</param>
+    /// <typeparam name="TServiceType">The class/type of a service.</typeparam>
+    /// <returns>Returns the first <see cref="IModService" /> that matches the condition.</returns>
+    public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default);
 }

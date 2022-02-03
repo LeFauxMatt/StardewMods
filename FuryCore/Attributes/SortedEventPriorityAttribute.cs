@@ -17,7 +17,7 @@ public class SortedEventPriorityAttribute : Attribute
     }
 
     /// <summary>
-    /// Gets the event priority for the handler.
+    ///     Gets the event priority for the handler.
     /// </summary>
     internal EventPriority Priority { get; }
 }

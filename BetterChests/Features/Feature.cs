@@ -1,20 +1,20 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
-using StardewMods.FuryCore.Interfaces;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Services;
+using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc />
 internal abstract class Feature : IModService
 {
-    private readonly Lazy<ManagedChests> _managedChests;
     private readonly Lazy<IFuryEvents> _furyEvents;
+    private readonly Lazy<ManagedChests> _managedChests;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Feature"/> class.
+    ///     Initializes a new instance of the <see cref="Feature" /> class.
     /// </summary>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -29,12 +29,12 @@ internal abstract class Feature : IModService
     }
 
     /// <summary>
-    /// Gets an Id that uniquely describes the mod and feature.
+    ///     Gets the player configured mod options.
     /// </summary>
-    protected string Id { get; }
+    protected IConfigModel Config { get; }
 
     /// <summary>
-    /// Gets custom events provided by FuryCore.
+    ///     Gets custom events provided by FuryCore.
     /// </summary>
     protected IFuryEvents FuryEvents
     {
@@ -42,12 +42,17 @@ internal abstract class Feature : IModService
     }
 
     /// <summary>
-    /// Gets SMAPIs Helper API for events, input, and content.
+    ///     Gets SMAPIs Helper API for events, input, and content.
     /// </summary>
     protected IModHelper Helper { get; }
 
     /// <summary>
-    /// Gets the <see cref="ManagedChests" /> service to track placed and player chests in the game.
+    ///     Gets an Id that uniquely describes the mod and feature.
+    /// </summary>
+    protected string Id { get; }
+
+    /// <summary>
+    ///     Gets the <see cref="ManagedChests" /> service to track placed and player chests in the game.
     /// </summary>
     protected ManagedChests ManagedChests
     {
@@ -55,17 +60,12 @@ internal abstract class Feature : IModService
     }
 
     /// <summary>
-    /// Gets the player configured mod options.
-    /// </summary>
-    protected IConfigModel Config { get; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the feature is currently enabled.
+    ///     Gets or sets a value indicating whether the feature is currently enabled.
     /// </summary>
     private bool Enabled { get; set; }
 
     /// <summary>
-    /// Toggles a feature on or off based on <see cref="IConfigData" />.
+    ///     Toggles a feature on or off based on <see cref="IConfigData" />.
     /// </summary>
     public void Toggle()
     {
@@ -102,12 +102,12 @@ internal abstract class Feature : IModService
     }
 
     /// <summary>
-    /// Subscribe to events and apply any Harmony patches.
+    ///     Subscribe to events and apply any Harmony patches.
     /// </summary>
     protected abstract void Activate();
 
     /// <summary>
-    /// Unsubscribe from events, and reverse any Harmony patches.
+    ///     Unsubscribe from events, and reverse any Harmony patches.
     /// </summary>
     protected abstract void Deactivate();
 }

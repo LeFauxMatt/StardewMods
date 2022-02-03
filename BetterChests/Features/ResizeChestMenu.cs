@@ -8,16 +8,16 @@ using System.Reflection.Emit;
 using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
-using StardewMods.FuryCore.Attributes;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -25,11 +25,11 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class ResizeChestMenu : Feature
 {
+    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int?> _menuCapacity = new();
-    private readonly PerScreen<int?> _menuRows = new();
     private readonly PerScreen<int?> _menuOffset = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
+    private readonly PerScreen<int?> _menuRows = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ResizeChestMenu" /> class.
@@ -129,6 +129,14 @@ internal class ResizeChestMenu : Feature
         }
     }
 
+    private int MenuOffset
+    {
+        get
+        {
+            return this._menuOffset.Value ??= Game1.tileSize * (this.MenuRows - 3);
+        }
+    }
+
     private int MenuRows
     {
         get
@@ -152,14 +160,6 @@ internal class ResizeChestMenu : Feature
         }
     }
 
-    private int MenuOffset
-    {
-        get
-        {
-            return this._menuOffset.Value ??= Game1.tileSize * (this.MenuRows - 3);
-        }
-    }
-
     /// <inheritdoc />
     protected override void Activate()
     {
@@ -174,12 +174,30 @@ internal class ResizeChestMenu : Feature
         this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
+    private static int GetMenuCapacity(MenuWithInventory menu)
+    {
+        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
+        return ResizeChestMenu.Instance.MenuCapacity;
+    }
+
+    private static int GetMenuOffset(MenuWithInventory menu)
+    {
+        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
+        return ResizeChestMenu.Instance.MenuOffset;
+    }
+
+    private static int GetMenuRows(MenuWithInventory menu)
+    {
+        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
+        return ResizeChestMenu.Instance.MenuRows;
+    }
+
     /// <summary>Generate additional slots/rows for top inventory menu.</summary>
     [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Boxing allocation is required for Harmony.")]
     private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.ctor");
-        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Jump Condition Patch
@@ -264,7 +282,7 @@ internal class ResizeChestMenu : Feature
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)}");
-        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Draw Backpack Patch
@@ -309,7 +327,7 @@ internal class ResizeChestMenu : Feature
     private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)}", true);
-        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Move Dialogue Patch
@@ -371,24 +389,6 @@ internal class ResizeChestMenu : Feature
         }
     }
 
-    private static int GetMenuCapacity(MenuWithInventory menu)
-    {
-        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
-        return ResizeChestMenu.Instance.MenuCapacity;
-    }
-
-    private static int GetMenuRows(MenuWithInventory menu)
-    {
-        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
-        return ResizeChestMenu.Instance.MenuRows;
-    }
-
-    private static int GetMenuOffset(MenuWithInventory menu)
-    {
-        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
-        return ResizeChestMenu.Instance.MenuOffset;
-    }
-
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
@@ -422,7 +422,7 @@ internal class ResizeChestMenu : Feature
             }
 
             // Set upNeighborId for first row of player inventory
-            var slot = this.Menu.ItemsToGrabMenu.capacity - (this.Menu.ItemsToGrabMenu.capacity / this.Menu.ItemsToGrabMenu.rows);
+            var slot = this.Menu.ItemsToGrabMenu.capacity - this.Menu.ItemsToGrabMenu.capacity / this.Menu.ItemsToGrabMenu.rows;
             for (var index = 0; index < 12; index++)
             {
                 this.Menu.inventory.inventory[index].upNeighborID = this.Menu.ItemsToGrabMenu.inventory[slot + index].myID;

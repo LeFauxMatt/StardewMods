@@ -4,11 +4,11 @@ using System;
 using System.Linq;
 using Common.Extensions;
 using Common.Models;
-using StardewMods.FuryCore.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.FuryCore.Enums;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -18,9 +18,9 @@ using StardewValley.Objects;
 /// </summary>
 public class HslColorPicker : DiscreteColorPicker
 {
-    private const int Width = 58;
-    private const int Height = 558;
     private const int Gap = 6;
+    private const int Height = 558;
+    private const int Width = 58;
 
     private static readonly Rectangle SelectRect = new(412, 495, 5, 4);
     private static readonly Range<float> UnitRange = new(0, 1);
@@ -53,13 +53,13 @@ public class HslColorPicker : DiscreteColorPicker
         this.width = HslColorPicker.Width;
         this.height = HslColorPicker.Height;
 
-        var barWidth = (this.width / 2) - HslColorPicker.Gap;
+        var barWidth = this.width / 2 - HslColorPicker.Gap;
         var barHeight = (this.height - HslColorPicker.Gap - 36) / 2;
-        var centerX = this.xPositionOnScreen + (this.width / 2);
+        var centerX = this.xPositionOnScreen + this.width / 2;
 
         this.HueBarArea = new(this.xPositionOnScreen, this.yPositionOnScreen + 36, barWidth, this.height - 36);
-        this.LightnessBar = new(Axis.Vertical, new(centerX + (HslColorPicker.Gap / 2), this.yPositionOnScreen + 36, barWidth, barHeight), this.GetLightnessShade);
-        this.SaturationBar = new(Axis.Vertical, new(centerX + (HslColorPicker.Gap / 2), this.yPositionOnScreen + 36 + barHeight + HslColorPicker.Gap, barWidth, barHeight), this.GetSaturationShade);
+        this.LightnessBar = new(Axis.Vertical, new(centerX + HslColorPicker.Gap / 2, this.yPositionOnScreen + 36, barWidth, barHeight), this.GetLightnessShade);
+        this.SaturationBar = new(Axis.Vertical, new(centerX + HslColorPicker.Gap / 2, this.yPositionOnScreen + 36 + barHeight + HslColorPicker.Gap, barWidth, barHeight), this.GetSaturationShade);
 
         this.HueTrack = new(this.HueBarArea.Top, this.HueBarArea.Bottom);
         this.LightnessTrack = new(this.LightnessBar.Area.Top, this.LightnessBar.Area.Bottom);
@@ -90,17 +90,17 @@ public class HslColorPicker : DiscreteColorPicker
         Transparent,
     }
 
-    private static Texture2D HueBar { get; set; }
-
     private static Color[] ColorValues { get; set; }
-
-    private static HslColor[] HslValues { get; set; }
 
     private static Range<int> HslTrack { get; set; }
 
+    private static HslColor[] HslValues { get; set; }
+
+    private static Texture2D HueBar { get; set; }
+
     private TrackThumb HeldThumb { get; set; } = TrackThumb.None;
 
-    private bool IsBlack { get; set; }
+    private Rectangle HueBarArea { get; }
 
     private int HueCoord
     {
@@ -121,16 +121,11 @@ public class HslColorPicker : DiscreteColorPicker
         }
     }
 
-    private int SaturationCoord
-    {
-        get => this._saturationCoord;
-        set
-        {
-            this._saturationCoord = this.SaturationTrack.Clamp(value);
-            this._hslColor.S = HslColorPicker.UnitRange.Clamp(value.Remap(this.SaturationTrack, HslColorPicker.UnitRange));
-            this.IsBlack = false;
-        }
-    }
+    private Range<int> HueTrack { get; }
+
+    private bool IsBlack { get; set; }
+
+    private GradientBar LightnessBar { get; }
 
     private int LightnessCoord
     {
@@ -143,34 +138,26 @@ public class HslColorPicker : DiscreteColorPicker
         }
     }
 
-    private Rectangle HueBarArea { get; }
+    private Range<int> LightnessTrack { get; }
 
     private ClickableTextureComponent NoColorButton { get; }
 
     private Rectangle NoColorButtonArea { get; }
 
-    private GradientBar LightnessBar { get; }
-
     private GradientBar SaturationBar { get; }
 
-    private Range<int> HueTrack { get; }
-
-    private Range<int> LightnessTrack { get; }
+    private int SaturationCoord
+    {
+        get => this._saturationCoord;
+        set
+        {
+            this._saturationCoord = this.SaturationTrack.Clamp(value);
+            this._hslColor.S = HslColorPicker.UnitRange.Clamp(value.Remap(this.SaturationTrack, HslColorPicker.UnitRange));
+            this.IsBlack = false;
+        }
+    }
 
     private Range<int> SaturationTrack { get; }
-
-    /// <summary>Converts a <see cref="Microsoft.Xna.Framework.Color" /> to an int value.</summary>
-    /// <param name="c">The Color to convert.</param>
-    /// <returns>An int value representing the color object.</returns>
-    public static int GetSelectionFromColor(Color c)
-    {
-        if (c == Color.Black)
-        {
-            return 0;
-        }
-
-        return (c.R << 0) | (c.G << 8) | (c.B << 16);
-    }
 
     /// <summary>Converts an int value to a <see cref="Microsoft.Xna.Framework.Color" /> object.</summary>
     /// <param name="selection">The int value to convert.</param>
@@ -186,40 +173,17 @@ public class HslColorPicker : DiscreteColorPicker
         return new(rgb[0], rgb[1], rgb[2]);
     }
 
-    /// <summary>
-    ///     Allows the <see cref="HslColorPicker" /> to register SMAPI events for handling input.
-    /// </summary>
-    /// <param name="inputEvents">Events raised for player inputs.</param>
-    public void RegisterEvents(IInputEvents inputEvents)
+    /// <summary>Converts a <see cref="Microsoft.Xna.Framework.Color" /> to an int value.</summary>
+    /// <param name="c">The Color to convert.</param>
+    /// <returns>An int value representing the color object.</returns>
+    public static int GetSelectionFromColor(Color c)
     {
-        inputEvents.ButtonPressed += this.OnButtonPressed;
-        inputEvents.ButtonReleased += this.OnButtonReleased;
-        inputEvents.CursorMoved += this.OnCursorMoved;
-        inputEvents.MouseWheelScrolled += this.OnMouseWheelScrolled;
-    }
+        if (c == Color.Black)
+        {
+            return 0;
+        }
 
-    /// <summary>
-    ///     Allows the <see cref="HslColorPicker" /> to unregister SMAPI events from handling input.
-    /// </summary>
-    /// <param name="inputEvents">Events raised for player inputs.</param>
-    public void UnregisterEvents(IInputEvents inputEvents)
-    {
-        inputEvents.ButtonPressed -= this.OnButtonPressed;
-        inputEvents.ButtonReleased -= this.OnButtonReleased;
-        inputEvents.CursorMoved -= this.OnCursorMoved;
-        inputEvents.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-    }
-
-    /// <summary>Gets the currently selected color.</summary>
-    /// <returns>The currently selected color.</returns>
-    public Color GetCurrentColor()
-    {
-        return this.IsBlack ? Color.Black : this._hslColor.ToRgbColor();
-    }
-
-    /// <inheritdoc/>
-    public override void receiveLeftClick(int x, int y, bool playSound = true)
-    {
+        return (c.R << 0) | (c.G << 8) | (c.B << 16);
     }
 
     /// <inheritdoc />
@@ -233,8 +197,8 @@ public class HslColorPicker : DiscreteColorPicker
         // Menu Background
         HslColorPicker.drawTextureBox(
             b,
-            this.xPositionOnScreen - (HslColorPicker.borderWidth / 2),
-            this.yPositionOnScreen - (HslColorPicker.borderWidth / 2),
+            this.xPositionOnScreen - HslColorPicker.borderWidth / 2,
+            this.yPositionOnScreen - HslColorPicker.borderWidth / 2,
             this.width + HslColorPicker.borderWidth,
             this.height + HslColorPicker.borderWidth,
             Color.LightGray);
@@ -300,8 +264,64 @@ public class HslColorPicker : DiscreteColorPicker
         // Colored Item if Chest
         if (this.itemToDrawColored is Chest chest)
         {
-            chest.draw(b, this.xPositionOnScreen, this.yPositionOnScreen - (HslColorPicker.borderWidth / 2) - Game1.tileSize, 1f, true);
+            chest.draw(b, this.xPositionOnScreen, this.yPositionOnScreen - HslColorPicker.borderWidth / 2 - Game1.tileSize, 1f, true);
         }
+    }
+
+    /// <summary>Gets the currently selected color.</summary>
+    /// <returns>The currently selected color.</returns>
+    public Color GetCurrentColor()
+    {
+        return this.IsBlack ? Color.Black : this._hslColor.ToRgbColor();
+    }
+
+    /// <inheritdoc />
+    public override void receiveLeftClick(int x, int y, bool playSound = true)
+    {
+    }
+
+    /// <summary>
+    ///     Allows the <see cref="HslColorPicker" /> to register SMAPI events for handling input.
+    /// </summary>
+    /// <param name="inputEvents">Events raised for player inputs.</param>
+    public void RegisterEvents(IInputEvents inputEvents)
+    {
+        inputEvents.ButtonPressed += this.OnButtonPressed;
+        inputEvents.ButtonReleased += this.OnButtonReleased;
+        inputEvents.CursorMoved += this.OnCursorMoved;
+        inputEvents.MouseWheelScrolled += this.OnMouseWheelScrolled;
+    }
+
+    /// <summary>
+    ///     Allows the <see cref="HslColorPicker" /> to unregister SMAPI events from handling input.
+    /// </summary>
+    /// <param name="inputEvents">Events raised for player inputs.</param>
+    public void UnregisterEvents(IInputEvents inputEvents)
+    {
+        inputEvents.ButtonPressed -= this.OnButtonPressed;
+        inputEvents.ButtonReleased -= this.OnButtonReleased;
+        inputEvents.CursorMoved -= this.OnCursorMoved;
+        inputEvents.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+    }
+
+    private Color GetLightnessShade(float value)
+    {
+        return new HslColor
+        {
+            H = this._hslColor.H,
+            S = this._hslColor.S,
+            L = value,
+        }.ToRgbColor();
+    }
+
+    private Color GetSaturationShade(float value)
+    {
+        return new HslColor
+        {
+            H = this._hslColor.H,
+            S = value,
+            L = Math.Max(0.01f, this._hslColor.L),
+        }.ToRgbColor();
     }
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -406,26 +426,6 @@ public class HslColorPicker : DiscreteColorPicker
         }
 
         this.UpdateItemColor();
-    }
-
-    private Color GetSaturationShade(float value)
-    {
-        return new HslColor
-        {
-            H = this._hslColor.H,
-            S = value,
-            L = Math.Max(0.01f, this._hslColor.L),
-        }.ToRgbColor();
-    }
-
-    private Color GetLightnessShade(float value)
-    {
-        return new HslColor
-        {
-            H = this._hslColor.H,
-            S = this._hslColor.S,
-            L = value,
-        }.ToRgbColor();
     }
 
     private void UpdateItemColor()

@@ -8,14 +8,28 @@ using Common.Models;
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions
 {
+    /// <summary>
+    ///     Maps a float value from one range to the same proportional value in another integer range.
+    /// </summary>
+    /// <param name="value">The float value to map.</param>
+    /// <param name="sourceRange">The source range of the float value.</param>
+    /// <param name="targetRange">The target range to map to.</param>
+    /// <returns>The integer value.</returns>
     public static int Remap(this float value, Range<float> sourceRange, Range<int> targetRange)
     {
-        return targetRange.Clamp((int)(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)))));
+        return targetRange.Clamp((int)(targetRange.Minimum + (targetRange.Maximum - targetRange.Minimum) * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
     }
 
+    /// <summary>
+    ///     Maps an integer value from one range to the same proportional value in another float range.
+    /// </summary>
+    /// <param name="value">The integer value to map.</param>
+    /// <param name="sourceRange">The source range of the integer value.</param>
+    /// <param name="targetRange">The target range to map to.</param>
+    /// <returns>The float value.</returns>
     public static float Remap(this int value, Range<int> sourceRange, Range<float> targetRange)
     {
-        return targetRange.Clamp(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
+        return targetRange.Clamp(targetRange.Minimum + (targetRange.Maximum - targetRange.Minimum) * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)));
     }
 
     /// <summary>Rounds an int up to the next int by an interval.</summary>

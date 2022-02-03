@@ -4,13 +4,12 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
-using StardewMods.FuryCore.Interfaces;
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -20,7 +19,7 @@ internal class OpenHeldChest : Feature
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenHeldChest"/> class.
+    ///     Initializes a new instance of the <see cref="OpenHeldChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>

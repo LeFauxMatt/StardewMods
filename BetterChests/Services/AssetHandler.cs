@@ -21,7 +21,7 @@ internal class AssetHandler : IModService, IAssetLoader
     private IReadOnlyDictionary<string, string[]> _cachedTabData;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AssetHandler"/> class.
+    ///     Initializes a new instance of the <see cref="AssetHandler" /> class.
     /// </summary>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -43,7 +43,7 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     /// <summary>
-    /// Gets the collection of chest data for all known chest types in the game.
+    ///     Gets the collection of chest data for all known chest types in the game.
     /// </summary>
     public IReadOnlyDictionary<string, IChestData> ChestData
     {
@@ -54,7 +54,18 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     /// <summary>
-    /// Gets the collection of tab data.
+    ///     Gets the game data for Big Craftables.
+    /// </summary>
+    public IReadOnlyDictionary<int, string[]> Craftables
+    {
+        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
+                                              .ToDictionary(
+                                                  info => info.Key,
+                                                  info => info.Value.Split('/'));
+    }
+
+    /// <summary>
+    ///     Gets the collection of tab data.
     /// </summary>
     public IReadOnlyDictionary<string, string[]> TabData
     {
@@ -69,27 +80,16 @@ internal class AssetHandler : IModService, IAssetLoader
                 data => data.info);
     }
 
-    /// <summary>
-    /// Gets the game data for Big Craftables.
-    /// </summary>
-    public IReadOnlyDictionary<int, string[]> Craftables
-    {
-        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
-                                        .ToDictionary(
-                                            info => info.Key,
-                                            info => info.Value.Split('/'));
-    }
-
     private IConfigModel Config { get; }
 
     private IModHelper Helper { get; }
 
-    private IDictionary<string, string> LocalTabData { get; set; }
-
     private IDictionary<string, IDictionary<string, string>> LocalChestData { get; set; }
 
+    private IDictionary<string, string> LocalTabData { get; set; }
+
     /// <summary>
-    /// Adds new Chest Data and saves to assets/chests.json.
+    ///     Adds new Chest Data and saves to assets/chests.json.
     /// </summary>
     /// <param name="id">The qualified item id of the chest.</param>
     /// <param name="data">The chest data to add.</param>
@@ -111,21 +111,7 @@ internal class AssetHandler : IModService, IAssetLoader
         return true;
     }
 
-    /// <summary>
-    /// Saves the currently cached chest data back to the local chest data.
-    /// </summary>
-    public void SaveChestData()
-    {
-        foreach (var (key, data) in this._cachedChestData)
-        {
-            this.LocalChestData[key] = SerializedChestData.GetData(data);
-        }
-
-        this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
-        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "ChestData", new[] { BetterChests.ModUniqueId });
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool CanLoad<T>(IAssetInfo asset)
     {
         return asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Chests")
@@ -133,7 +119,7 @@ internal class AssetHandler : IModService, IAssetLoader
                || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs/Texture");
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public T Load<T>(IAssetInfo asset)
     {
         var segment = PathUtilities.GetSegments(asset.AssetName);
@@ -157,41 +143,18 @@ internal class AssetHandler : IModService, IAssetLoader
         };
     }
 
-    private void OnDayEnding(object sender, DayEndingEventArgs e)
+    /// <summary>
+    ///     Saves the currently cached chest data back to the local chest data.
+    /// </summary>
+    public void SaveChestData()
     {
-        this._cachedCraftables = null;
-        this._cachedChestData = null;
-        this._cachedTabData = null;
-    }
-
-    private void OnPeerConnected(object sender, PeerConnectedEventArgs e)
-    {
-        if (e.Peer.IsHost)
+        foreach (var (key, data) in this._cachedChestData)
         {
-            return;
+            this.LocalChestData[key] = SerializedChestData.GetData(data);
         }
 
+        this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
         this.Helper.Multiplayer.SendMessage(this.LocalChestData, "ChestData", new[] { BetterChests.ModUniqueId });
-        this.Helper.Multiplayer.SendMessage(this.Config.DefaultChest, "DefaultChest", new[] { BetterChests.ModUniqueId });
-    }
-
-    private void OnModMessageReceived(object sender, ModMessageReceivedEventArgs e)
-    {
-        if (e.FromModID != BetterChests.ModUniqueId)
-        {
-            return;
-        }
-
-        switch (e.Type)
-        {
-            case "ChestData":
-                this.LocalChestData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
-                break;
-            case "DefaultChest":
-                var chestData = e.ReadAs<ChestData>();
-                ((IChestData)chestData).CopyTo(this.Config.DefaultChest);
-                break;
-        }
     }
 
     private void InitChestData()
@@ -275,5 +238,42 @@ internal class AssetHandler : IModService, IAssetLoader
             };
             this.Helper.Data.WriteJsonFile("assets/tabs.json", this.LocalTabData);
         }
+    }
+
+    private void OnDayEnding(object sender, DayEndingEventArgs e)
+    {
+        this._cachedCraftables = null;
+        this._cachedChestData = null;
+        this._cachedTabData = null;
+    }
+
+    private void OnModMessageReceived(object sender, ModMessageReceivedEventArgs e)
+    {
+        if (e.FromModID != BetterChests.ModUniqueId)
+        {
+            return;
+        }
+
+        switch (e.Type)
+        {
+            case "ChestData":
+                this.LocalChestData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
+                break;
+            case "DefaultChest":
+                var chestData = e.ReadAs<ChestData>();
+                ((IChestData)chestData).CopyTo(this.Config.DefaultChest);
+                break;
+        }
+    }
+
+    private void OnPeerConnected(object sender, PeerConnectedEventArgs e)
+    {
+        if (e.Peer.IsHost)
+        {
+            return;
+        }
+
+        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "ChestData", new[] { BetterChests.ModUniqueId });
+        this.Helper.Multiplayer.SendMessage(this.Config.DefaultChest, "DefaultChest", new[] { BetterChests.ModUniqueId });
     }
 }

@@ -2,8 +2,8 @@
 
 using System;
 using System.Reflection;
-using StardewMods.FuryCore.Enums;
 using HarmonyLib;
+using StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Stores info about Harmony patches.
@@ -26,14 +26,12 @@ public class SavedPatch
     }
 
     /// <summary>
-    ///     Gets the original method/constructor.
+    ///     Gets the original method to patch.
     /// </summary>
-    public MethodBase Original { get; }
-
-    /// <summary>
-    ///     Gets the patch class/type.
-    /// </summary>
-    public Type Type { get; }
+    public MethodInfo Method
+    {
+        get => AccessTools.Method(this.Type, this.Name);
+    }
 
     /// <summary>
     ///     Gets the patch method name.
@@ -41,9 +39,9 @@ public class SavedPatch
     public string Name { get; }
 
     /// <summary>
-    ///     Gets whether is patch is a postfix, prefix, or transpiler.
+    ///     Gets the original method/constructor.
     /// </summary>
-    public PatchType PatchType { get; }
+    public MethodBase Original { get; }
 
     /// <summary>
     ///     Gets the HarmonyMethod to patch with.
@@ -54,10 +52,12 @@ public class SavedPatch
     }
 
     /// <summary>
-    ///     Gets the original method to patch.
+    ///     Gets whether is patch is a postfix, prefix, or transpiler.
     /// </summary>
-    public MethodInfo Method
-    {
-        get => AccessTools.Method(this.Type, this.Name);
-    }
+    public PatchType PatchType { get; }
+
+    /// <summary>
+    ///     Gets the patch class/type.
+    /// </summary>
+    public Type Type { get; }
 }

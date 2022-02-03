@@ -4,40 +4,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-/// <summary>
-/// </summary>
-/// <typeparam name="TItem"></typeparam>
-internal class PatternPatcher<TItem>
+/// <inheritdoc />
+internal class PatternPatcher<TItem> : IPatternPatcher<TItem>
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="PatternPatcher{TItem}" /> class.
+    /// </summary>
+    /// <param name="comparer">A function that determines if an item in the list matches a item in the pattern.</param>
     public PatternPatcher(Func<TItem, TItem, bool> comparer)
     {
         this.Comparer = comparer;
     }
 
+    /// <inheritdoc />
+    public int AppliedPatches { get; private set; }
+
+    /// <inheritdoc />
     public int TotalPatches { get; private set; }
 
-    public int AppliedPatches { get; private set; }
+    private IEnumerator<TItem> CodeEnum { get; set; }
 
     private Func<TItem, TItem, bool> Comparer { get; }
 
-    private bool Done { get; set; }
-
     private PatternPatch CurrentPatch { get; set; }
 
-    private Queue<PatternPatch> Patches { get; } = new();
-
-    private IEnumerator<TItem> CodeEnum { get; set; }
+    private bool Done { get; set; }
 
     private IList<TItem> ItemBuffer { get; } = new List<TItem>();
 
     private PatternPatch LastPatch { get; set; }
 
-    /// <summary>
-    ///     Allows patching a list in place after a specific pattern block is matched.
-    /// </summary>
-    /// <param name="patch">The patch to apply.</param>
-    /// <param name="patternBlock">The pattern block to match.</param>
-    public PatternPatcher<TItem> AddPatch(Action<IList<TItem>> patch, params TItem[] patternBlock)
+    private Queue<PatternPatch> Patches { get; } = new();
+
+    /// <inheritdoc />
+    public IPatternPatcher<TItem> AddPatch(Action<IList<TItem>> patch, params TItem[] patternBlock)
     {
         this.LastPatch = new(patternBlock, patch, false);
         this.Patches.Enqueue(this.LastPatch);
@@ -46,11 +46,7 @@ internal class PatternPatcher<TItem>
         return this;
     }
 
-    /// <summary>
-    ///     Allows patching a list in place after a specific pattern block is matched.
-    /// </summary>
-    /// <param name="patch">The patch to apply.</param>
-    /// <param name="patternBlock">The pattern block to match.</param>
+    /// <inheritdoc />
     public void AddPatchLoop(Action<IList<TItem>> patch, params TItem[] patternBlock)
     {
         this.LastPatch = new(patternBlock, patch, true);
@@ -58,32 +54,24 @@ internal class PatternPatcher<TItem>
         this.TotalPatches++;
     }
 
-    /// <summary>
-    ///     Empty patch that will skip passed the pattern block.
-    /// </summary>
-    /// <param name="patternBlock">The pattern block to match.</param>
-    public PatternPatcher<TItem> AddSeek(params TItem[] patternBlock)
+    /// <inheritdoc />
+    public IPatternPatcher<TItem> AddSeek(params TItem[] patternBlock)
     {
         return this.AddPatch(null, patternBlock);
     }
 
-    public PatternPatcher<TItem> Repeat(int repeat)
+    /// <inheritdoc />
+    public IEnumerable<TItem> FlushBuffer()
     {
-        // Add extra copies for repeat-N times patches
-        while (--repeat >= 0)
+        foreach (var item in this.ItemBuffer)
         {
-            this.Patches.Enqueue(new(this.LastPatch.Pattern, this.LastPatch.Patch, false));
-            this.TotalPatches++;
+            yield return item;
         }
 
-        return this;
+        this.ItemBuffer.Clear();
     }
 
-    /// <summary>
-    ///     Matches the incoming items against patterns in sequence, and return the patched sequence.
-    /// </summary>
-    /// <param name="item">The next incoming item from the original list.</param>
-    /// <returns>The patched sequence.</returns>
+    /// <inheritdoc />
     public IEnumerable<TItem> From(TItem item)
     {
         // Add incoming item to buffer
@@ -144,18 +132,17 @@ internal class PatternPatcher<TItem>
         return this.FlushBuffer();
     }
 
-    /// <summary>
-    ///     Returns the remaining buffer of pattern items.
-    /// </summary>
-    /// <returns>The remaining items in buffer.</returns>
-    public IEnumerable<TItem> FlushBuffer()
+    /// <inheritdoc />
+    public IPatternPatcher<TItem> Repeat(int repeat)
     {
-        foreach (var item in this.ItemBuffer)
+        // Add extra copies for repeat-N times patches
+        while (--repeat >= 0)
         {
-            yield return item;
+            this.Patches.Enqueue(new(this.LastPatch.Pattern, this.LastPatch.Patch, false));
+            this.TotalPatches++;
         }
 
-        this.ItemBuffer.Clear();
+        return this;
     }
 
     private record PatternPatch(IEnumerable<TItem> Pattern, Action<IList<TItem>> Patch, bool Loop);

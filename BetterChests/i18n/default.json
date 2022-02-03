@@ -7,8 +7,7 @@
   "section.controls.name": "Controls",
   "section.controls.description": "Controller/keyboard configurations.",
   "section.chests.name": "Chests",
-  "section.chests.description":  "Configure each chest type individually.",
-
+  "section.chests.description": "Configure each chest type individually.",
   // Feature Config
   "config.carry-chest.name": "Carry Chest",
   "config.carry-chest.tooltip": "Allows chests placed in the world to be picked up with their items.",
@@ -60,15 +59,13 @@
   "config.stash-to-chest-stacks.tooltip": "Stashing will fill existing stacks of items in a Chest.",
   "config.unload-chest.name": "Unload Chest",
   "config.unload-chest.tooltip": "Using a held chest on a placed chest will transfer items into the placed one.",
-
   // Feature Option Formatting
   "config.range-distance.value-unlimited": "Unlimited",
   "config.range-distance.value-one": "1 tile",
   "config.range-distance.value-many": "{0} tiles",
-
   // Controls Config
   "config.lock-slot.name": "Lock Item Slot",
-  "config.lock-slot.tooltip":  "Key to lock an item slot so that the item in it will not be stashed.",
+  "config.lock-slot.tooltip": "Key to lock an item slot so that the item in it will not be stashed.",
   "config.open-crafting.name": "Open Crafting Button",
   "config.open-crafting.tooltip": "Key to open the crafting menu for accessible chests.",
   "config.stash-items.name": "Stash Items Button",
@@ -81,7 +78,6 @@
   "config.previous-tab.tooltip": "Key to switch to previous tab.",
   "config.next-tab.name": "Next Tab",
   "config.next-tab.tooltip": "Key to switch to next tab.",
-
   // Config Options
   "option.default.name": "Default",
   "option.enabled.name": "Enabled",
@@ -89,17 +85,14 @@
   "option.inventory.name": "Inventory",
   "option.location.name": "Location",
   "option.world.name": "World",
-
   // Menu Areas
   "area.top.name": "Above the inventory menu.",
   "area.right.name": "To the right of the inventory menu.",
   "area.bottom.name": "Below the inventory menu.",
   "area.left.name": "To the left of the inventory menu.",
   "area.custom.name": "A customized position.",
-
   // UI - Button
   "button.Configure.name": "Configure",
-
   // UI - Tabs
   "tabs.Clothing.name": "Clothing",
   "tabs.Cooking.name": "Cooking",

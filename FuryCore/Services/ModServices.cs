@@ -8,7 +8,7 @@ using StardewMods.FuryCore.Interfaces;
 /// <inheritdoc cref="IModService" />
 public class ModServices : IModServices, IModService
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IEnumerable<IModService> All
     {
         get => this.Services;
@@ -37,6 +37,29 @@ public class ModServices : IModServices, IModService
     }
 
     /// <inheritdoc />
+    public TServiceType FindService<TServiceType>()
+    {
+        return this.FindServices<TServiceType>().SingleOrDefault();
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<TServiceType> FindServices<TServiceType>()
+    {
+        return this.FindServices(typeof(TServiceType), new List<IModServices>()).Cast<TServiceType>();
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IModService> FindServices(Type type, IList<IModServices> exclude)
+    {
+        exclude.Add(this);
+        var services = this.Services.Where(type.IsInstanceOfType).Concat(
+            from serviceLocator in this.Services.OfType<IModServices>().Except(exclude)
+            from subService in serviceLocator.FindServices(type, exclude)
+            select subService).ToList();
+        return services;
+    }
+
+    /// <inheritdoc />
     public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default)
     {
         var type = typeof(TServiceType);
@@ -57,28 +80,5 @@ public class ModServices : IModServices, IModService
         }
 
         return default;
-    }
-
-    /// <inheritdoc/>
-    public TServiceType FindService<TServiceType>()
-    {
-        return this.FindServices<TServiceType>().SingleOrDefault();
-    }
-
-    /// <inheritdoc />
-    public IEnumerable<TServiceType> FindServices<TServiceType>()
-    {
-        return this.FindServices(typeof(TServiceType), new List<IModServices>()).Cast<TServiceType>();
-    }
-
-    /// <inheritdoc/>
-    public IEnumerable<IModService> FindServices(Type type, IList<IModServices> exclude)
-    {
-        exclude.Add(this);
-        var services = this.Services.Where(type.IsInstanceOfType).Concat(
-            from serviceLocator in this.Services.OfType<IModServices>().Except(exclude)
-            from subService in serviceLocator.FindServices(type, exclude)
-            select subService).ToList();
-        return services;
     }
 }

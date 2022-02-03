@@ -15,7 +15,7 @@ public class BetterChestsApi : IBetterChestsApi
     private readonly Lazy<ModConfigMenu> _modConfigMenu;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BetterChestsApi"/> class.
+    ///     Initializes a new instance of the <see cref="BetterChestsApi" /> class.
     /// </summary>
     /// <param name="services">Provides access to internal and external services.</param>
     public BetterChestsApi(IModServices services)
@@ -34,15 +34,15 @@ public class BetterChestsApi : IBetterChestsApi
         get => this._modConfigMenu.Value;
     }
 
-    /// <inheritdoc/>
-    public bool RegisterChest(string name)
-    {
-        return this.Assets.AddChestData(name, new ChestData());
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddChestOptions(IManifest manifest, IDictionary<string, string> data)
     {
         this.ModConfigMenu.ChestConfig(manifest, data);
+    }
+
+    /// <inheritdoc />
+    public bool RegisterChest(string name)
+    {
+        return this.Assets.AddChestData(name, new ChestData());
     }
 }

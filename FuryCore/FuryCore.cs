@@ -1,14 +1,14 @@
 ﻿namespace StardewMods.FuryCore;
 
 using Common.Helpers;
-using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
+using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
 public class FuryCore : Mod
 {
     /// <summary>
-    /// Gets the unique Mod Id.
+    ///     Gets the unique Mod Id.
     /// </summary>
     internal static string ModUniqueId { get; private set; }
 

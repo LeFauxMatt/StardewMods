@@ -412,6 +412,16 @@ namespace Common.Helpers.ItemRepository
             return GetAllRaw().Where(p => p != null);
         }
 
+        /// <summary>Get the color to use a given fish's roe.</summary>
+        /// <param name="fish">The fish whose roe to color.</param>
+        /// <remarks>Derived from <see cref="StardewValley.Buildings.FishPond.GetFishProduce" />.</remarks>
+        private Color GetRoeColor(SObject fish)
+        {
+            return fish.ParentSheetIndex == 698 // sturgeon
+                ? new Color(61, 55, 42)
+                : (TailoringMenu.GetDyeColor(fish) ?? Color.Orange);
+        }
+
         /*********
         ** Private methods
         *********/
@@ -433,51 +443,6 @@ namespace Common.Helpers.ItemRepository
                 else
                     complexTags.Add(data.RequiredTags);
             }
-        }
-
-        /// <summary>Try to load a data file, and return empty data if it's invalid.</summary>
-        /// <typeparam name="TKey">The asset key type.</typeparam>
-        /// <typeparam name="TValue">The asset value type.</typeparam>
-        /// <param name="assetName">The data asset name.</param>
-        private Dictionary<TKey, TValue> TryLoad<TKey, TValue>(string assetName)
-        {
-            try
-            {
-                return Game1.content.Load<Dictionary<TKey, TValue>>(assetName);
-            }
-            catch (ContentLoadException)
-            {
-                // generally due to a player incorrectly replacing a data file with an XNB mod
-                return new Dictionary<TKey, TValue>();
-            }
-        }
-
-        /// <summary>Create a searchable item if valid.</summary>
-        /// <param name="type">The item type.</param>
-        /// <param name="id">The unique ID (if different from the item's parent sheet index).</param>
-        /// <param name="createItem">Create an item instance.</param>
-        private SearchableItem TryCreate(ItemType type, int id, Func<SearchableItem, Item> createItem)
-        {
-            try
-            {
-                var item = new SearchableItem(type, id, createItem);
-                item.Item.getDescription(); // force-load item data, so it crashes here if it's invalid
-                return item;
-            }
-            catch
-            {
-                return null; // if some item data is invalid, just don't include it
-            }
-        }
-
-        /// <summary>Get the color to use a given fish's roe.</summary>
-        /// <param name="fish">The fish whose roe to color.</param>
-        /// <remarks>Derived from <see cref="StardewValley.Buildings.FishPond.GetFishProduce" />.</remarks>
-        private Color GetRoeColor(SObject fish)
-        {
-            return fish.ParentSheetIndex == 698 // sturgeon
-                ? new Color(61, 55, 42)
-                : (TailoringMenu.GetDyeColor(fish) ?? Color.Orange);
         }
 
         /// <summary>Get valid shirt IDs.</summary>
@@ -514,6 +479,41 @@ namespace Common.Helpers.ItemRepository
             {
                 if (!clothingIds.Contains(id))
                     yield return id;
+            }
+        }
+
+        /// <summary>Create a searchable item if valid.</summary>
+        /// <param name="type">The item type.</param>
+        /// <param name="id">The unique ID (if different from the item's parent sheet index).</param>
+        /// <param name="createItem">Create an item instance.</param>
+        private SearchableItem TryCreate(ItemType type, int id, Func<SearchableItem, Item> createItem)
+        {
+            try
+            {
+                var item = new SearchableItem(type, id, createItem);
+                item.Item.getDescription(); // force-load item data, so it crashes here if it's invalid
+                return item;
+            }
+            catch
+            {
+                return null; // if some item data is invalid, just don't include it
+            }
+        }
+
+        /// <summary>Try to load a data file, and return empty data if it's invalid.</summary>
+        /// <typeparam name="TKey">The asset key type.</typeparam>
+        /// <typeparam name="TValue">The asset value type.</typeparam>
+        /// <param name="assetName">The data asset name.</param>
+        private Dictionary<TKey, TValue> TryLoad<TKey, TValue>(string assetName)
+        {
+            try
+            {
+                return Game1.content.Load<Dictionary<TKey, TValue>>(assetName);
+            }
+            catch (ContentLoadException)
+            {
+                // generally due to a player incorrectly replacing a data file with an XNB mod
+                return new Dictionary<TKey, TValue>();
             }
         }
     }

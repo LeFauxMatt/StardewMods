@@ -3,13 +3,12 @@
 using System;
 using System.Linq;
 using Common.Helpers;
-using Microsoft.Xna.Framework;
-using StardewMods.FuryCore.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Extensions;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 
 /// <inheritdoc />
@@ -18,7 +17,7 @@ internal class StashToChest : Feature
     private readonly Lazy<SlotLock> _slotLock;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StashToChest"/> class.
+    ///     Initializes a new instance of the <see cref="StashToChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -70,8 +69,8 @@ internal class StashToChest : Feature
 
             var (location, _) = placedChest.GetPlacedObject();
             if (managedChest.Value.StashToChest == FeatureOptionRange.World
-                || (managedChest.Value.StashToChest == FeatureOptionRange.Location && managedChest.Value.StashToChestDistance == -1)
-                || (managedChest.Value.StashToChest == FeatureOptionRange.Location && (location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.StashToChestDistance, Game1.player))))
+                || managedChest.Value.StashToChest == FeatureOptionRange.Location && managedChest.Value.StashToChestDistance == -1
+                || managedChest.Value.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.StashToChestDistance, Game1.player))
             {
                 eligibleChests.Add(managedChest.Value);
             }

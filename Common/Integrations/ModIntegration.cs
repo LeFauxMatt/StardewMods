@@ -20,11 +20,6 @@ internal abstract class ModIntegration<T>
         this._modAPI = new(() => this.ModRegistry.GetApi<T>(this.UniqueId));
     }
 
-    /// <summary>
-    /// Gets the Unique Id for this mod.
-    /// </summary>
-    protected internal string UniqueId { get; }
-
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
     protected internal T API
     {
@@ -36,6 +31,11 @@ internal abstract class ModIntegration<T>
     {
         get => this.ModRegistry.IsLoaded(this.UniqueId);
     }
+
+    /// <summary>
+    ///     Gets the Unique Id for this mod.
+    /// </summary>
+    protected internal string UniqueId { get; }
 
     private IModRegistry ModRegistry { get; }
 }

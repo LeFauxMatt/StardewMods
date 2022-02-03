@@ -1,30 +1,24 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
-using StardewMods.FuryCore.Enums;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Enums;
 
 /// <summary>
-/// Mod config data related to BetterChests features.
+///     Mod config data related to BetterChests features.
 /// </summary>
 internal class ConfigData : IConfigData
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool CategorizeChest { get; set; } = true;
 
-    /// <inheritdoc/>
-    public bool SlotLock { get; set; } = true;
-
-    /// <inheritdoc/>
-    public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
-
-    /// <inheritdoc/>
-    public char SearchTagSymbol { get; set; } = '#';
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ControlScheme ControlScheme { get; set; } = new();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
+
+    /// <inheritdoc />
     public ChestData DefaultChest { get; set; } = new()
     {
         CarryChest = FeatureOption.Enabled,
@@ -46,4 +40,10 @@ internal class ConfigData : IConfigData
         StashToChestStacks = FeatureOption.Enabled,
         UnloadChest = FeatureOption.Enabled,
     };
+
+    /// <inheritdoc />
+    public char SearchTagSymbol { get; set; } = '#';
+
+    /// <inheritdoc />
+    public bool SlotLock { get; set; } = true;
 }

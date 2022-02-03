@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using HarmonyLib;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
-using HarmonyLib;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IHarmonyHelper" />
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IHarmonyHelper" />
 [FuryCoreService(true)]
 internal class HarmonyHelper : IHarmonyHelper, IModService
 {

@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -14,7 +14,7 @@ using StardewValley.Menus;
 public class DropDownMenu : CustomMenuComponent
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="DropDownMenu"/> class.
+    ///     Initializes a new instance of the <see cref="DropDownMenu" /> class.
     /// </summary>
     /// <param name="values">The list of values to display.</param>
     /// <param name="x">The x-coordinate of the dropdown.</param>
@@ -34,7 +34,7 @@ public class DropDownMenu : CustomMenuComponent
             1f);
 
         var (fx, fy) = new Vector2(this.Component.bounds.X + 8, this.Component.bounds.Y + 8);
-        this.Values = values.Select((value, index) => new ClickableComponent(new((int)fx, (int)fy + (textHeight * index), (int)textBounds[index].X, (int)textBounds[index].Y), value)).ToList();
+        this.Values = values.Select((value, index) => new ClickableComponent(new((int)fx, (int)fy + textHeight * index, (int)textBounds[index].X, (int)textBounds[index].Y), value)).ToList();
     }
 
     private Action<string> OnSelect { get; }
@@ -71,16 +71,6 @@ public class DropDownMenu : CustomMenuComponent
         }
     }
 
-    /// <inheritdoc />
-    public override void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
-    {
-        var value = this.Values.FirstOrDefault(value => value.bounds.Contains(x, y));
-        if (value is not null)
-        {
-            this.SelectedValue = value.name;
-        }
-    }
-
     /// <summary>
     ///     Pass left mouse button pressed input to the Context Menu.
     /// </summary>
@@ -93,6 +83,16 @@ public class DropDownMenu : CustomMenuComponent
         {
             this.SelectedValue = value.name;
             this.OnSelect(this.SelectedValue);
+        }
+    }
+
+    /// <inheritdoc />
+    public override void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
+    {
+        var value = this.Values.FirstOrDefault(value => value.bounds.Contains(x, y));
+        if (value is not null)
+        {
+            this.SelectedValue = value.name;
         }
     }
 }

@@ -11,7 +11,7 @@ using StardewMods.BetterChests.Interfaces;
 internal class SerializedChestData : IChestData
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SerializedChestData"/> class.
+    ///     Initializes a new instance of the <see cref="SerializedChestData" /> class.
     /// </summary>
     /// <param name="data">The Dictionary of string keys/values representing the Chest Data.</param>
     public SerializedChestData(IDictionary<string, string> data)
@@ -19,7 +19,7 @@ internal class SerializedChestData : IChestData
         this.Data = data;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption CarryChest
     {
         get => this.Data.TryGetValue("CarryChest", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -28,7 +28,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["CarryChest"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
         get => this.Data.TryGetValue("ChestMenuTabs", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -37,7 +37,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["ChestMenuTabs"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public HashSet<string> ChestMenuTabSet
     {
         get => this.Data.TryGetValue("ChestMenuTabSet", out var value) && !string.IsNullOrWhiteSpace(value)
@@ -46,7 +46,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["ChestMenuTabSet"] = !value.Any() ? string.Empty : string.Join(",", value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption CollectItems
     {
         get => this.Data.TryGetValue("CollectItems", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -55,7 +55,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["CollectItems"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
         get => this.Data.TryGetValue("CraftFromChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
@@ -64,7 +64,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["CraftFromChest"] = value == FeatureOptionRange.Default ? string.Empty : FormatHelper.GetRangeString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int CraftFromChestDistance
     {
         get => this.Data.TryGetValue("CraftFromChestDistance", out var value) && int.TryParse(value, out var distance)
@@ -73,7 +73,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["CraftFromChestDistance"] = value == 0 ? string.Empty : value.ToString();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption CustomColorPicker
     {
         get => this.Data.TryGetValue("CustomColorPicker", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -82,7 +82,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["CustomColorPicker"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption FilterItems
     {
         get => this.Data.TryGetValue("FilterItems", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -91,7 +91,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["FilterItems"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public HashSet<string> FilterItemsList
     {
         get => this.Data.TryGetValue("FilterItemsList", out var value) && !string.IsNullOrWhiteSpace(value)
@@ -100,7 +100,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["FilterItemsList"] = !value.Any() ? string.Empty : string.Join(",", value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
         get => this.Data.TryGetValue("OpenHeldChest", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -109,7 +109,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["OpenHeldChest"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption ResizeChest
     {
         get => this.Data.TryGetValue("ResizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -118,7 +118,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["ResizeChest"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int ResizeChestCapacity
     {
         get => this.Data.TryGetValue("ResizeChestCapacity", out var value) && int.TryParse(value, out var capacity)
@@ -127,7 +127,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["ResizeChestCapacity"] = value == 0 ? string.Empty : value.ToString();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption ResizeChestMenu
     {
         get => this.Data.TryGetValue("ResizeChestMenu", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -136,7 +136,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["ResizeChestMenu"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int ResizeChestMenuRows
     {
         get => this.Data.TryGetValue("ResizeChestMenuRows", out var value) && int.TryParse(value, out var rows)
@@ -145,7 +145,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["ResizeChestMenuRows"] = value == 0 ? string.Empty : value.ToString();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption SearchItems
     {
         get => this.Data.TryGetValue("SearchItems", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -154,7 +154,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["SearchItems"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOptionRange StashToChest
     {
         get => this.Data.TryGetValue("StashToChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
@@ -163,7 +163,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["StashToChest"] = value == FeatureOptionRange.Default ? string.Empty : FormatHelper.GetRangeString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int StashToChestDistance
     {
         get => this.Data.TryGetValue("StashToChestDistance", out var value) && int.TryParse(value, out var distance)
@@ -172,7 +172,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["StashToChestDistance"] = value == 0 ? string.Empty : value.ToString();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
         get => this.Data.TryGetValue("StashToChestStacks", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -181,7 +181,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["StashToChestStacks"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption UnloadChest
     {
         get => this.Data.TryGetValue("UnloadChest", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -193,7 +193,7 @@ internal class SerializedChestData : IChestData
     private IDictionary<string, string> Data { get; }
 
     /// <summary>
-    /// Converts a Chest Data instance into a dictionary representation.
+    ///     Converts a Chest Data instance into a dictionary representation.
     /// </summary>
     /// <param name="data">The Chest Data to create a data dictionary out of.</param>
     /// <returns>A dictionary of string keys/values representing the Chest Data.</returns>

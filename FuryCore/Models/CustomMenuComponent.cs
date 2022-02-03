@@ -1,8 +1,8 @@
 ﻿namespace StardewMods.FuryCore.Models;
 
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -22,7 +22,7 @@ public class CustomMenuComponent : IMenuComponent
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CustomMenuComponent"/> class.
+    ///     Initializes a new instance of the <see cref="CustomMenuComponent" /> class.
     /// </summary>
     /// <param name="area">The area of the screen to orient the component to.</param>
     protected CustomMenuComponent(ComponentArea area)
@@ -31,22 +31,22 @@ public class CustomMenuComponent : IMenuComponent
         this.ComponentType = ComponentType.Custom;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ComponentArea Area { get; protected init; }
 
-    /// <inheritdoc/>
-    public ComponentType ComponentType { get; protected init; }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ClickableTextureComponent Component { get; protected init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public ComponentType ComponentType { get; protected init; }
+
+    /// <inheritdoc />
     public int Id
     {
         get => this._myId ??= this.Component.myID = CustomMenuComponent.ComponentId++;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string Name
     {
         get => this.Component.name;
@@ -54,13 +54,13 @@ public class CustomMenuComponent : IMenuComponent
 
     private static int ComponentId { get; set; } = 69420;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void Draw(SpriteBatch spriteBatch)
     {
         this.Component?.draw(spriteBatch);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
     {
         this.Component?.tryHover(x, y, maxScaleIncrease);

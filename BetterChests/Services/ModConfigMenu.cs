@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Integrations.GenericModConfigMenu;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
@@ -13,6 +11,8 @@ using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc cref="FuryCore.Interfaces.IModService" />
 internal class ModConfigMenu : IModService
@@ -20,7 +20,7 @@ internal class ModConfigMenu : IModService
     private readonly Lazy<AssetHandler> _assetHandler;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ModConfigMenu"/> class.
+    ///     Initializes a new instance of the <see cref="ModConfigMenu" /> class.
     /// </summary>
     /// <param name="config">The data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
@@ -41,16 +41,16 @@ internal class ModConfigMenu : IModService
         get => this._assetHandler.Value;
     }
 
-    private GenericModConfigMenuIntegration GMCM { get; }
-
     private IConfigModel Config { get; }
+
+    private GenericModConfigMenuIntegration GMCM { get; }
 
     private IModHelper Helper { get; }
 
     private IManifest Manifest { get; }
 
     /// <summary>
-    /// Add chest options to GMCM based on a dictionary of string keys/values representing Chest Data.
+    ///     Add chest options to GMCM based on a dictionary of string keys/values representing Chest Data.
     /// </summary>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="data">The chest data to base the config on.</param>
@@ -60,126 +60,8 @@ internal class ModConfigMenu : IModService
         this.ChestConfig(manifest, chestData, false);
     }
 
-    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-    {
-        if (!this.GMCM.IsLoaded)
-        {
-            return;
-        }
-
-        this.GenerateConfig();
-    }
-
-    private void GenerateConfig()
-    {
-        var knownChests = this.Assets.ChestData
-                              .Select(chest =>
-                              {
-                                  var (key, chestData) = chest;
-                                  var name = (from info in this.Assets.Craftables where info.Value[0] == key select info.Value[8]).FirstOrDefault() ?? key;
-                                  return new KeyValuePair<string, IChestData>(name, chestData);
-                              })
-                              .OrderBy(chest => chest.Key).ToList();
-
-        // Register mod configuration
-        this.GMCM.Register(
-            this.Manifest,
-            () =>
-            {
-                this.Config.Reset();
-                foreach (var (_, data) in knownChests)
-                {
-                    ((IChestData)new ChestData()).CopyTo(data);
-                }
-            },
-            () =>
-            {
-                this.Config.Save();
-                this.Assets.SaveChestData();
-            });
-
-        // General
-        this.GeneralConfig();
-
-        // Pages
-        this.GMCM.API.AddPageLink(this.Manifest, "Features", I18n.Section_Features_Name);
-        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Features_Description);
-        this.GMCM.API.AddPageLink(this.Manifest, "Controls", I18n.Section_Controls_Name);
-        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Controls_Description);
-        this.GMCM.API.AddPageLink(this.Manifest, "Chests", I18n.Section_Chests_Name);
-        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Chests_Description);
-
-        // Features
-        this.GMCM.API.AddPage(this.Manifest, "Features");
-        this.ChestConfig(this.Manifest, this.Config.DefaultChest, true);
-
-        // Controller
-        this.GMCM.API.AddPage(this.Manifest, "Controls");
-        this.ControlsConfig(this.Config.ControlScheme);
-
-        // Chests
-        this.GMCM.API.AddPage(this.Manifest, "Chests");
-
-        foreach (var (name, _) in knownChests)
-        {
-            this.GMCM.API.AddPageLink(
-                this.Manifest,
-                name,
-                () => name);
-        }
-
-        foreach (var (name, data) in knownChests)
-        {
-            this.GMCM.API.AddPage(this.Manifest, name);
-            this.ChestConfig(this.Manifest, data, false);
-        }
-    }
-
-    private void GeneralConfig()
-    {
-        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_General_Name, I18n.Section_General_Description);
-
-        // Categorize Chest
-        this.GMCM.API.AddBoolOption(
-            this.Manifest,
-            () => this.Config.CategorizeChest,
-            value => this.Config.CategorizeChest = value,
-            I18n.Config_CategorizeChest_Name,
-            I18n.Config_CategorizeChest_Tooltip,
-            nameof(CategorizeChest));
-
-        // Slot Lock
-        this.GMCM.API.AddBoolOption(
-            this.Manifest,
-            () => this.Config.SlotLock,
-            value => this.Config.SlotLock = value,
-            I18n.Config_SlotLock_Name,
-            I18n.Config_SlotLock_Tooltip,
-            nameof(SlotLock));
-
-        // Custom Color Picker Area
-        this.GMCM.API.AddTextOption(
-            this.Manifest,
-            () => FormatHelper.GetAreaString(this.Config.CustomColorPickerArea),
-            value => this.Config.CustomColorPickerArea = Enum.TryParse(value, out ComponentArea area) ? area : ComponentArea.Right,
-            I18n.Config_CustomColorPickerArea_Name,
-            I18n.Config_CustomColorPickerArea_Tooltip,
-            new[] { ComponentArea.Left, ComponentArea.Right }.Select(FormatHelper.GetAreaString).ToArray(),
-            FormatHelper.FormatArea,
-            nameof(this.Config.CustomColorPickerArea));
-
-        // Search Tag Symbol
-        this.GMCM.API.AddTextOption(
-            this.Manifest,
-            () => this.Config.SearchTagSymbol.ToString(),
-            value => this.Config.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
-            I18n.Config_SearchItemsSymbol_Name,
-            I18n.Config_SearchItemsSymbol_Tooltip,
-            fieldId: nameof(this.Config.SearchTagSymbol));
-    }
-
     /// <summary>
-    /// Adds GMCM options for chest data.
+    ///     Adds GMCM options for chest data.
     /// </summary>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="chestData">The chest data to configure.</param>
@@ -307,7 +189,7 @@ internal class ModConfigMenu : IModService
                 0 when chestData.ResizeChest is FeatureOption.Disabled => 0,
                 0 => 1, // Default
                 -1 => 8, // Unlimited
-                _ => 1 + (chestData.ResizeChestCapacity / 12),
+                _ => 1 + chestData.ResizeChestCapacity / 12,
             },
             value =>
             {
@@ -495,5 +377,123 @@ internal class ModConfigMenu : IModService
             I18n.Config_NextTab_Name,
             I18n.Config_NextTab_Tooltip,
             nameof(IControlScheme.NextTab));
+    }
+
+    private void GeneralConfig()
+    {
+        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_General_Name, I18n.Section_General_Description);
+
+        // Categorize Chest
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.CategorizeChest,
+            value => this.Config.CategorizeChest = value,
+            I18n.Config_CategorizeChest_Name,
+            I18n.Config_CategorizeChest_Tooltip,
+            nameof(CategorizeChest));
+
+        // Slot Lock
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.SlotLock,
+            value => this.Config.SlotLock = value,
+            I18n.Config_SlotLock_Name,
+            I18n.Config_SlotLock_Tooltip,
+            nameof(SlotLock));
+
+        // Custom Color Picker Area
+        this.GMCM.API.AddTextOption(
+            this.Manifest,
+            () => FormatHelper.GetAreaString(this.Config.CustomColorPickerArea),
+            value => this.Config.CustomColorPickerArea = Enum.TryParse(value, out ComponentArea area) ? area : ComponentArea.Right,
+            I18n.Config_CustomColorPickerArea_Name,
+            I18n.Config_CustomColorPickerArea_Tooltip,
+            new[] { ComponentArea.Left, ComponentArea.Right }.Select(FormatHelper.GetAreaString).ToArray(),
+            FormatHelper.FormatArea,
+            nameof(this.Config.CustomColorPickerArea));
+
+        // Search Tag Symbol
+        this.GMCM.API.AddTextOption(
+            this.Manifest,
+            () => this.Config.SearchTagSymbol.ToString(),
+            value => this.Config.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
+            I18n.Config_SearchItemsSymbol_Name,
+            I18n.Config_SearchItemsSymbol_Tooltip,
+            fieldId: nameof(this.Config.SearchTagSymbol));
+    }
+
+    private void GenerateConfig()
+    {
+        var knownChests = this.Assets.ChestData
+                              .Select(chest =>
+                              {
+                                  var (key, chestData) = chest;
+                                  var name = (from info in this.Assets.Craftables where info.Value[0] == key select info.Value[8]).FirstOrDefault() ?? key;
+                                  return new KeyValuePair<string, IChestData>(name, chestData);
+                              })
+                              .OrderBy(chest => chest.Key).ToList();
+
+        // Register mod configuration
+        this.GMCM.Register(
+            this.Manifest,
+            () =>
+            {
+                this.Config.Reset();
+                foreach (var (_, data) in knownChests)
+                {
+                    ((IChestData)new ChestData()).CopyTo(data);
+                }
+            },
+            () =>
+            {
+                this.Config.Save();
+                this.Assets.SaveChestData();
+            });
+
+        // General
+        this.GeneralConfig();
+
+        // Pages
+        this.GMCM.API.AddPageLink(this.Manifest, "Features", I18n.Section_Features_Name);
+        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Features_Description);
+        this.GMCM.API.AddPageLink(this.Manifest, "Controls", I18n.Section_Controls_Name);
+        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Controls_Description);
+        this.GMCM.API.AddPageLink(this.Manifest, "Chests", I18n.Section_Chests_Name);
+        this.GMCM.API.AddParagraph(this.Manifest, I18n.Section_Chests_Description);
+
+        // Features
+        this.GMCM.API.AddPage(this.Manifest, "Features");
+        this.ChestConfig(this.Manifest, this.Config.DefaultChest, true);
+
+        // Controller
+        this.GMCM.API.AddPage(this.Manifest, "Controls");
+        this.ControlsConfig(this.Config.ControlScheme);
+
+        // Chests
+        this.GMCM.API.AddPage(this.Manifest, "Chests");
+
+        foreach (var (name, _) in knownChests)
+        {
+            this.GMCM.API.AddPageLink(
+                this.Manifest,
+                name,
+                () => name);
+        }
+
+        foreach (var (name, data) in knownChests)
+        {
+            this.GMCM.API.AddPage(this.Manifest, name);
+            this.ChestConfig(this.Manifest, data, false);
+        }
+    }
+
+    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    {
+        if (!this.GMCM.IsLoaded)
+        {
+            return;
+        }
+
+        this.GenerateConfig();
     }
 }

@@ -20,16 +20,16 @@ internal class PendingService<TServiceType> : IPendingService
     }
 
     /// <summary>
-    /// Gets the actions to complete after the service is instantiated.
+    ///     Gets the actions to complete after the service is instantiated.
     /// </summary>
     public List<Action<TServiceType>> Actions { get; } = new();
 
     /// <summary>
-    /// Gets the lazy instance of the service.
+    ///     Gets the lazy instance of the service.
     /// </summary>
     public Lazy<TServiceType> LazyInstance { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void ForceEvaluation()
     {
         _ = this.LazyInstance.Value;

@@ -21,7 +21,7 @@ internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfi
     private HashSet<string> Registered { get; } = new();
 
     /// <summary>
-    /// <inheritdoc cref="IGenericModConfigMenuApi.Register" />
+    ///     <inheritdoc cref="IGenericModConfigMenuApi.Register" />
     /// </summary>
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="reset">Reset the mod's config to its default values.</param>
@@ -35,7 +35,7 @@ internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfi
     }
 
     /// <summary>
-    /// <inheritdoc cref="IGenericModConfigMenuApi.Unregister" />
+    ///     <inheritdoc cref="IGenericModConfigMenuApi.Unregister" />
     /// </summary>
     /// <param name="mod">The mod's manifest.</param>
     public void Unregister(IManifest mod)

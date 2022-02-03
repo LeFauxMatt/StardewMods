@@ -3,9 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewMods.FuryCore.Helpers;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -14,22 +11,25 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
+using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ChestMenuTabs : Feature
 {
+    private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<Chest> _chest = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
-    private readonly PerScreen<int> _tabIndex = new(() => -1);
-    private readonly PerScreen<IList<TabComponent>> _tabs = new();
-    private readonly Lazy<AssetHandler> _assetHandler;
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
+    private readonly PerScreen<int> _tabIndex = new(() => -1);
+    private readonly PerScreen<IList<TabComponent>> _tabs = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChestMenuTabs"/> class.
+    ///     Initializes a new instance of the <see cref="ChestMenuTabs" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -53,16 +53,6 @@ internal class ChestMenuTabs : Feature
         set => this._chest.Value = value;
     }
 
-    private IMenuComponents MenuComponents
-    {
-        get => this._menuComponents.Value;
-    }
-
-    private IMenuItems MenuItems
-    {
-        get => this._menuItems.Value;
-    }
-
     private int Index
     {
         get => this._tabIndex.Value;
@@ -72,6 +62,16 @@ internal class ChestMenuTabs : Feature
     private ItemMatcher ItemMatcher
     {
         get => this._itemMatcher.Value;
+    }
+
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
+    }
+
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
     }
 
     private IList<TabComponent> Tabs
@@ -108,6 +108,27 @@ internal class ChestMenuTabs : Feature
         this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+    }
+
+    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    {
+        if (this.MenuComponents.Menu is null)
+        {
+            return;
+        }
+
+        if (this.Config.ControlScheme.NextTab.JustPressed())
+        {
+            this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.NextTab);
+            return;
+        }
+
+        if (this.Config.ControlScheme.PreviousTab.JustPressed())
+        {
+            this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.PreviousTab);
+        }
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
@@ -154,27 +175,6 @@ internal class ChestMenuTabs : Feature
         }
 
         this.SetTab(this.Index == index ? -1 : index);
-    }
-
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
-    {
-        if (this.MenuComponents.Menu is null)
-        {
-            return;
-        }
-
-        if (this.Config.ControlScheme.NextTab.JustPressed())
-        {
-            this.SetTab(this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1);
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.NextTab);
-            return;
-        }
-
-        if (this.Config.ControlScheme.PreviousTab.JustPressed())
-        {
-            this.SetTab(this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1);
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.PreviousTab);
-        }
     }
 
     private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)

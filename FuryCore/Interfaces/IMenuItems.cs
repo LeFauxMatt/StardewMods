@@ -12,24 +12,24 @@ using StardewValley.Objects;
 public interface IMenuItems
 {
     /// <summary>
-    ///     Gets the source chest that actual items are associated with.
-    /// </summary>
-    public Chest Chest { get; }
-
-    /// <summary>
-    ///     Gets the current menu that is displaying items.
-    /// </summary>
-    public ItemGrabMenu Menu { get; }
-
-    /// <summary>
     ///     Gets the actual inventory of the Chest/Menu.
     /// </summary>
     public IList<Item> ActualInventory { get; }
 
     /// <summary>
+    ///     Gets the source chest that actual items are associated with.
+    /// </summary>
+    public Chest Chest { get; }
+
+    /// <summary>
     ///     Gets the currently displayed items of the Menu.
     /// </summary>
     public IEnumerable<Item> ItemsDisplayed { get; }
+
+    /// <summary>
+    ///     Gets the current menu that is displaying items.
+    /// </summary>
+    public ItemGrabMenu Menu { get; }
 
     /// <summary>
     ///     Gets or sets the number of slots the currently displayed items are offset by.

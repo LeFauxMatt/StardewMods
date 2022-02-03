@@ -31,7 +31,7 @@ public class ItemMatcher : ObservableCollection<string>
     }
 
     /// <summary>
-    /// Gets or sets a string representation of all registered search texts.
+    ///     Gets or sets a string representation of all registered search texts.
     /// </summary>
     public string StringValue
     {
@@ -53,6 +53,11 @@ public class ItemMatcher : ObservableCollection<string>
 
     private string SearchTagSymbol { get; }
 
+    /// <summary>
+    ///     Gets all context tags for an item including custom ones.
+    /// </summary>
+    /// <param name="item">The item to get context tags for.</param>
+    /// <returns>A list of context tags from the item.</returns>
     public static IEnumerable<string> GetContextTags(Item item)
     {
         foreach (var contextTag in item.GetContextTags().Where(contextTag => !contextTag.StartsWith("id_")))
@@ -122,15 +127,6 @@ public class ItemMatcher : ObservableCollection<string>
     }
 
     /// <inheritdoc />
-    protected override void SetItem(int index, string item)
-    {
-        if (this.IndexOf(item) == -1)
-        {
-            base.SetItem(index, item);
-        }
-    }
-
-    /// <inheritdoc />
     protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {
         var added = this.Except(this._clean.Keys);
@@ -147,6 +143,15 @@ public class ItemMatcher : ObservableCollection<string>
         }
 
         base.OnCollectionChanged(e);
+    }
+
+    /// <inheritdoc />
+    protected override void SetItem(int index, string item)
+    {
+        if (this.IndexOf(item) == -1)
+        {
+            base.SetItem(index, item);
+        }
     }
 
     private SearchPhrase ParseString(string value)

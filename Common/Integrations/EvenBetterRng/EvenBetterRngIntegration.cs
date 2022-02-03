@@ -1,6 +1,5 @@
 ﻿namespace Common.Integrations.EvenBetterRng;
 
-using Common.Integrations;
 using StardewModdingAPI;
 
 /// <inheritdoc />

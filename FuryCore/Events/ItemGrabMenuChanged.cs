@@ -2,14 +2,15 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.Services;
+using Common.Extensions;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -65,25 +66,13 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     {
         ItemGrabMenuChanged.Instance.Menu = __instance;
 
-        if (__instance is not { shippingBin: false, context: Chest { playerChest.Value: true } chest })
+        if (__instance is not { shippingBin: false, context: Chest chest } || !chest.IsPlayerChest())
         {
             ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, null, -1, false));
             return;
         }
 
         ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, chest, Context.ScreenId, true));
-    }
-
-    [EventPriority(EventPriority.Low - 1000)]
-    private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
-    {
-        this.InvokeIfMenuChanged();
-    }
-
-    [EventPriority(EventPriority.Low - 1000)]
-    private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
-    {
-        this.InvokeIfMenuChanged();
     }
 
     [SuppressMessage("StyleCop", "SA1101", Justification = "This is a pattern match not a local call")]
@@ -97,12 +86,24 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         }
 
         this.Menu = Game1.activeClickableMenu;
-        if (this.Menu is not ItemGrabMenu { shippingBin: false, context: Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None or Chest.SpecialChestTypes.JunimoChest or Chest.SpecialChestTypes.MiniShippingBin } chest } itemGrabMenu)
+        if (this.Menu is not ItemGrabMenu itemGrabMenu || !itemGrabMenu.IsPlayerChestMenu(out var chest))
         {
             this.InvokeAll(new(this.Menu as ItemGrabMenu, null, -1, false));
             return;
         }
 
         this.InvokeAll(new(itemGrabMenu, chest, Context.ScreenId, false));
+    }
+
+    [EventPriority(EventPriority.Low - 1000)]
+    private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+    {
+        this.InvokeIfMenuChanged();
+    }
+
+    [EventPriority(EventPriority.Low - 1000)]
+    private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
+    {
+        this.InvokeIfMenuChanged();
     }
 }

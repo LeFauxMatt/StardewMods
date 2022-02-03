@@ -2,15 +2,15 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using StardewMods.FuryCore.Attributes;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -24,7 +24,7 @@ internal class ResizeChest : Feature
     private readonly PerScreen<IMenuComponent> _upArrow = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ResizeChest"/> class.
+    ///     Initializes a new instance of the <see cref="ResizeChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -49,6 +49,11 @@ internal class ResizeChest : Feature
 
     private static ResizeChest Instance { get; set; }
 
+    private IMenuComponent DownArrow
+    {
+        get => this._downArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
+    }
+
     private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
@@ -67,11 +72,6 @@ internal class ResizeChest : Feature
     private IMenuComponent UpArrow
     {
         get => this._upArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 459, 11, 12), Game1.pixelZoom));
-    }
-
-    private IMenuComponent DownArrow
-    {
-        get => this._downArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
     }
 
     /// <inheritdoc />
@@ -107,6 +107,27 @@ internal class ResizeChest : Feature
         }
     }
 
+    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    {
+        if (this.MenuItems.Menu is null)
+        {
+            return;
+        }
+
+        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        {
+            this.MenuItems.Offset--;
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+            return;
+        }
+
+        if (this.Config.ControlScheme.ScrollDown.JustPressed())
+        {
+            this.MenuItems.Offset++;
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
+        }
+    }
+
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
@@ -124,9 +145,9 @@ internal class ResizeChest : Feature
             var topSlot = this.MenuComponents.Menu.GetColumnCount() - 1;
             var bottomSlot = this.MenuComponents.Menu.ItemsToGrabMenu.capacity - 1;
             this.UpArrow.Component.bounds.X = this.MenuComponents.Menu.ItemsToGrabMenu.xPositionOnScreen + this.MenuComponents.Menu.ItemsToGrabMenu.width + 8;
-            this.UpArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
+            this.UpArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - 6 * Game1.pixelZoom;
             this.DownArrow.Component.bounds.X = this.MenuComponents.Menu.ItemsToGrabMenu.xPositionOnScreen + this.MenuComponents.Menu.ItemsToGrabMenu.width + 8;
-            this.DownArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
+            this.DownArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - 6 * Game1.pixelZoom;
 
             // Assign Neighbor IDs
             this.UpArrow.Component.leftNeighborID = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].myID;
@@ -184,26 +205,5 @@ internal class ResizeChest : Feature
 
         this.UpArrow.Component.visible = this.MenuItems.Offset > 0;
         this.DownArrow.Component.visible = this.MenuItems.Offset < this.MenuItems.Rows;
-    }
-
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
-    {
-        if (this.MenuItems.Menu is null)
-        {
-            return;
-        }
-
-        if (this.Config.ControlScheme.ScrollUp.JustPressed())
-        {
-            this.MenuItems.Offset--;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
-            return;
-        }
-
-        if (this.Config.ControlScheme.ScrollDown.JustPressed())
-        {
-            this.MenuItems.Offset++;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
-        }
     }
 }

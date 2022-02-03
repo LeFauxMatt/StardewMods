@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -23,7 +23,7 @@ internal class CollectItems : Feature
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CollectItems"/> class.
+    ///     Initializes a new instance of the <see cref="CollectItems" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -50,11 +50,6 @@ internal class CollectItems : Feature
 
     private static CollectItems Instance { get; set; }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
-
     private IList<IManagedChest> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
@@ -65,6 +60,11 @@ internal class CollectItems : Feature
         set => this._eligibleChests.Value = value;
     }
 
+    private IHarmonyHelper Harmony
+    {
+        get => this._harmony.Value;
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
@@ -72,26 +72,11 @@ internal class CollectItems : Feature
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
-    }
-
-    private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
-            {
-                yield return new(OpCodes.Call, AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
     }
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item item, bool makeActiveObject)
@@ -111,6 +96,21 @@ internal class CollectItems : Feature
         }
 
         return item is null || farmer.addItemToInventoryBool(item, makeActiveObject);
+    }
+
+    private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
+            {
+                yield return new(OpCodes.Call, AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
     }
 
     private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)

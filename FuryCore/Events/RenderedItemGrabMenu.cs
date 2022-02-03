@@ -1,11 +1,11 @@
 ﻿namespace StardewMods.FuryCore.Events;
 
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
 

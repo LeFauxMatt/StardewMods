@@ -1,31 +1,31 @@
 ﻿namespace StardewMods.FuryCore.Interfaces;
 
-using StardewMods.FuryCore.Enums;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.FuryCore.Enums;
 using StardewValley.Menus;
 
 /// <summary>
-/// Represents a <see cref="ClickableTextureComponent" /> that is drawn to the active menu.
+///     Represents a <see cref="ClickableTextureComponent" /> that is drawn to the active menu.
 /// </summary>
 public interface IMenuComponent
 {
     /// <summary>
-    /// gets the area of the screen that the component is oriented to.
+    ///     gets the area of the screen that the component is oriented to.
     /// </summary>
     public ComponentArea Area { get; }
 
     /// <summary>
-    /// Gets the type of component.
-    /// </summary>
-    public ComponentType ComponentType { get; }
-
-    /// <summary>
-    /// Gets the <see cref="ClickableTextureComponent" />.
+    ///     Gets the <see cref="ClickableTextureComponent" />.
     /// </summary>
     public ClickableTextureComponent Component { get; }
 
     /// <summary>
-    /// Gets the text to display while hovering over this component.
+    ///     Gets the type of component.
+    /// </summary>
+    public ComponentType ComponentType { get; }
+
+    /// <summary>
+    ///     Gets the text to display while hovering over this component.
     /// </summary>
     public virtual string HoverText
     {
@@ -33,17 +33,17 @@ public interface IMenuComponent
     }
 
     /// <summary>
-    /// Gets the Id of the component used for game controllers.
+    ///     Gets the Id of the component used for game controllers.
     /// </summary>
     public int Id { get; }
 
     /// <summary>
-    /// Gets the name of the component.
+    ///     Gets the name of the component.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// Gets or sets the x-coordinate of the component.
+    ///     Gets or sets the x-coordinate of the component.
     /// </summary>
     public virtual int X
     {
@@ -52,7 +52,7 @@ public interface IMenuComponent
     }
 
     /// <summary>
-    /// Gets or sets the y-coordinate of the component.
+    ///     Gets or sets the y-coordinate of the component.
     /// </summary>
     public virtual int Y
     {
@@ -61,13 +61,13 @@ public interface IMenuComponent
     }
 
     /// <summary>
-    /// Draw the component to the screen.
+    ///     Draw the component to the screen.
     /// </summary>
     /// <param name="spriteBatch">The sprite batch to draw the component to.</param>
     public void Draw(SpriteBatch spriteBatch);
 
     /// <summary>
-    /// Performs an action when the component is hovered over.
+    ///     Performs an action when the component is hovered over.
     /// </summary>
     /// <param name="x">The x-coordinate of the mouse.</param>
     /// <param name="y">The y-coordinate of the mouse.</param>

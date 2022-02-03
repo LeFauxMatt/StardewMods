@@ -6,12 +6,12 @@ using StardewValley.Locations;
 using SObject = StardewValley.Object;
 
 /// <summary>
-/// A record to represent the location and position of a placed object.
+///     A record to represent the location and position of a placed object.
 /// </summary>
 internal readonly record struct PlacedObject(GameLocation Location, Vector2 Position)
 {
     /// <summary>
-    /// Gets the <see cref="SObject" /> referred to by this record.
+    ///     Gets the <see cref="SObject" /> referred to by this record.
     /// </summary>
     public SObject Object
     {

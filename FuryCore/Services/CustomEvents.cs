@@ -1,14 +1,14 @@
 ﻿namespace StardewMods.FuryCore.Services;
 
 using System;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IFuryEvents" />
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IFuryEvents" />
 [FuryCoreService(true)]
 internal class CustomEvents : IFuryEvents, IModService
 {

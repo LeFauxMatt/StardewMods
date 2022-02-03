@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using StardewModdingAPI;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Models;
-using StardewModdingAPI;
 
 /// <summary>
 ///     Saves a list of <see cref="SavedPatch" /> which can be applied or reversed at any time.

@@ -1,16 +1,16 @@
 ﻿namespace StardewMods.FuryCore.Models;
 
 using System;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class VanillaMenuComponent : IMenuComponent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="VanillaMenuComponent"/> class.
+    ///     Initializes a new instance of the <see cref="VanillaMenuComponent" /> class.
     /// </summary>
     /// <param name="menu">The ItemGrabMenu.</param>
     /// <param name="componentType">A component on the ItemGrabMenu.</param>
@@ -29,13 +29,10 @@ internal class VanillaMenuComponent : IMenuComponent
         };
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ComponentArea Area { get; }
 
-    /// <inheritdoc/>
-    public ComponentType ComponentType { get; }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ClickableTextureComponent Component
     {
         get => this.ComponentType switch
@@ -49,13 +46,16 @@ internal class VanillaMenuComponent : IMenuComponent
         };
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public ComponentType ComponentType { get; }
+
+    /// <inheritdoc />
     public int Id
     {
         get => this.Component.myID;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string Name
     {
         get => this.Component.name;
@@ -63,13 +63,13 @@ internal class VanillaMenuComponent : IMenuComponent
 
     private ItemGrabMenu Menu { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Draw(SpriteBatch spriteBatch)
     {
         this.Component?.draw(spriteBatch);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
     {
         this.Component?.tryHover(x, y, maxScaleIncrease);

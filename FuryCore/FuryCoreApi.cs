@@ -19,7 +19,7 @@ public class FuryCoreApi : IModServices, IModService
         this.Services = services;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IEnumerable<IModService> All
     {
         get => this.Services.All.Where(service => service.GetType().GetCustomAttribute<FuryCoreServiceAttribute>()?.Exportable == true);
@@ -27,15 +27,7 @@ public class FuryCoreApi : IModServices, IModService
 
     private IModServices Services { get; }
 
-    /// <inheritdoc/>
-    public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default)
-    {
-        return typeof(TServiceType).GetCustomAttribute<FuryCoreServiceAttribute>()?.Exportable == true
-            ? this.Services.Lazy(action)
-            : default;
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public TServiceType FindService<TServiceType>()
     {
         return typeof(TServiceType).GetCustomAttribute<FuryCoreServiceAttribute>()?.Exportable == true
@@ -43,15 +35,23 @@ public class FuryCoreApi : IModServices, IModService
             : default;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IEnumerable<TServiceType> FindServices<TServiceType>()
     {
         return this.Services.FindServices<TServiceType>().Where(service => service.GetType().GetCustomAttribute<FuryCoreServiceAttribute>()?.Exportable == true);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IEnumerable<IModService> FindServices(Type type, IList<IModServices> exclude)
     {
         return this.Services.FindServices(type, exclude).Where(service => service.GetType().GetCustomAttribute<FuryCoreServiceAttribute>()?.Exportable == true);
+    }
+
+    /// <inheritdoc />
+    public Lazy<TServiceType> Lazy<TServiceType>(Action<TServiceType> action = default)
+    {
+        return typeof(TServiceType).GetCustomAttribute<FuryCoreServiceAttribute>()?.Exportable == true
+            ? this.Services.Lazy(action)
+            : default;
     }
 }

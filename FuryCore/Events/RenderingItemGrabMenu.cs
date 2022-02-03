@@ -1,12 +1,12 @@
 ﻿namespace StardewMods.FuryCore.Events;
 
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.Services;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Services;
 using StardewValley;
 
 /// <inheritdoc />

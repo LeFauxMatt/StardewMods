@@ -6,9 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -16,6 +13,9 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Extensions;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -23,11 +23,11 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class CraftFromChest : Feature
 {
-    private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
+    private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CraftFromChest"/> class.
+    ///     Initializes a new instance of the <see cref="CraftFromChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -115,16 +115,6 @@ internal class CraftFromChest : Feature
         }
     }
 
-    private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
-    {
-        if (this._multipleChestCraftingPage.Value is null || this._multipleChestCraftingPage.Value.Timeout)
-        {
-            return;
-        }
-
-        this._multipleChestCraftingPage.Value.UpdateChests();
-    }
-
     /// <summary>Open crafting menu for all chests in inventory.</summary>
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
@@ -147,8 +137,8 @@ internal class CraftFromChest : Feature
 
             var (location, _) = placedChest.GetPlacedObject();
             if (managedChest.Value.CraftFromChest == FeatureOptionRange.World
-                || (managedChest.Value.CraftFromChest == FeatureOptionRange.Location && managedChest.Value.CraftFromChestDistance == -1)
-                || (managedChest.Value.CraftFromChest == FeatureOptionRange.Location && (location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.CraftFromChestDistance, Game1.player))))
+                || managedChest.Value.CraftFromChest == FeatureOptionRange.Location && managedChest.Value.CraftFromChestDistance == -1
+                || managedChest.Value.CraftFromChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.CraftFromChestDistance, Game1.player))
             {
                 eligibleChests.Add(managedChest.Value);
             }
@@ -162,6 +152,16 @@ internal class CraftFromChest : Feature
 
         this._multipleChestCraftingPage.Value = new(eligibleChests);
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+    }
+
+    private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+    {
+        if (this._multipleChestCraftingPage.Value is null || this._multipleChestCraftingPage.Value.Timeout)
+        {
+            return;
+        }
+
+        this._multipleChestCraftingPage.Value.UpdateChests();
     }
 
     private class MultipleChestCraftingPage
@@ -199,16 +199,10 @@ internal class CraftFromChest : Feature
             }
         }
 
-        private void SuccessCallback()
+        private void ExitFunction()
         {
-            this._timeOut = 0;
-            var width = 800 + (IClickableMenu.borderWidth * 2);
-            var height = 600 + (IClickableMenu.borderWidth * 2);
-            var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
-            Game1.activeClickableMenu = new CraftingPage((int)x, (int)y, width, height, false, true, this._chests)
-            {
-                exitFunction = this.ExitFunction,
-            };
+            this._multipleMutexRequest.ReleaseLocks();
+            this._timeOut = MultipleChestCraftingPage.TimeOut;
         }
 
         private void FailureCallback()
@@ -217,10 +211,16 @@ internal class CraftFromChest : Feature
             this._timeOut = 0;
         }
 
-        private void ExitFunction()
+        private void SuccessCallback()
         {
-            this._multipleMutexRequest.ReleaseLocks();
-            this._timeOut = MultipleChestCraftingPage.TimeOut;
+            this._timeOut = 0;
+            var width = 800 + IClickableMenu.borderWidth * 2;
+            var height = 600 + IClickableMenu.borderWidth * 2;
+            var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
+            Game1.activeClickableMenu = new CraftingPage((int)x, (int)y, width, height, false, true, this._chests)
+            {
+                exitFunction = this.ExitFunction,
+            };
         }
     }
 }

@@ -6,8 +6,6 @@ using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,6 +13,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -25,7 +25,7 @@ internal class SlotLock : Feature
     private readonly PerScreen<bool[]> _lockedSlots = new(() => new bool[Game1.player.Items.Count]);
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SlotLock"/> class.
+    ///     Initializes a new instance of the <see cref="SlotLock" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -53,7 +53,7 @@ internal class SlotLock : Feature
     }
 
     /// <summary>
-    /// Gets an array indicating which item slots are locked by the player.
+    ///     Gets an array indicating which item slots are locked by the player.
     /// </summary>
     public IList<bool> LockedSlots
     {
@@ -84,14 +84,14 @@ internal class SlotLock : Feature
         get => this._harmony.Value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
@@ -101,7 +101,7 @@ internal class SlotLock : Feature
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)}");
-        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Item Tint Patch
@@ -153,6 +153,11 @@ internal class SlotLock : Feature
         };
     }
 
+    private Color GetTint(Color tint, int index)
+    {
+        return this.LockedSlots.ElementAtOrDefault(index) ? Color.Red : tint;
+    }
+
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
         var menu = Game1.activeClickableMenu switch
@@ -179,10 +184,5 @@ internal class SlotLock : Feature
         lockedSlots[index] = !lockedSlots[index];
         this.LockedSlots = lockedSlots;
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.LockSlot);
-    }
-
-    private Color GetTint(Color tint, int index)
-    {
-        return this.LockedSlots.ElementAtOrDefault(index) ? Color.Red : tint;
     }
 }

@@ -9,15 +9,15 @@ using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using Common.Models;
+using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
-using HarmonyLib;
-using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -75,23 +75,16 @@ internal class MenuItems : IMenuItems, IModService
     }
 
     /// <inheritdoc />
+    public IList<Item> ActualInventory
+    {
+        get => this.Menu?.ItemsToGrabMenu.actualInventory;
+    }
+
+    /// <inheritdoc />
     public Chest Chest
     {
         get => this._chest.Value;
         private set => this._chest.Value = value;
-    }
-
-    /// <inheritdoc />
-    public ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        private set => this._menu.Value = value;
-    }
-
-    /// <inheritdoc />
-    public IList<Item> ActualInventory
-    {
-        get => this.Menu?.ItemsToGrabMenu.actualInventory;
     }
 
     /// <inheritdoc />
@@ -106,7 +99,7 @@ internal class MenuItems : IMenuItems, IModService
 
             if (this.RefreshInventory)
             {
-                foreach (var (slot, index) in this.Menu.ItemsToGrabMenu.inventory.Select((slot, index) => (slot, index + (this.Offset * this.MenuColumns))))
+                foreach (var (slot, index) in this.Menu.ItemsToGrabMenu.inventory.Select((slot, index) => (slot, index + this.Offset * this.MenuColumns)))
                 {
                     slot.name = (index < this.ItemIndexes.Count ? this.ItemIndexes[index] : int.MaxValue).ToString();
                 }
@@ -116,6 +109,13 @@ internal class MenuItems : IMenuItems, IModService
 
             return this.ItemsFiltered.Skip(this.Offset * this.MenuColumns);
         }
+    }
+
+    /// <inheritdoc />
+    public ItemGrabMenu Menu
+    {
+        get => this._menu.Value;
+        private set => this._menu.Value = value;
     }
 
     /// <inheritdoc />
@@ -147,6 +147,26 @@ internal class MenuItems : IMenuItems, IModService
 
     private static MenuItems Instance { get; set; }
 
+    private IDictionary<string, bool> ItemFilterCache
+    {
+        get => this._itemFilterCache.Value;
+    }
+
+    private HashSet<ItemMatcher> ItemFilters
+    {
+        get => this._itemFilters.Value;
+    }
+
+    private IDictionary<string, bool> ItemHighlightCache
+    {
+        get => this._itemHighlightCache.Value;
+    }
+
+    private HashSet<ItemMatcher> ItemHighlighters
+    {
+        get => this._itemHighlighters.Value;
+    }
+
     private IList<int> ItemIndexes
     {
         get
@@ -173,32 +193,6 @@ internal class MenuItems : IMenuItems, IModService
         set => this._itemsFiltered.Value = value;
     }
 
-    private bool RefreshInventory
-    {
-        get => this._refreshInventory.Value;
-        set => this._refreshInventory.Value = value;
-    }
-
-    private IDictionary<string, bool> ItemFilterCache
-    {
-        get => this._itemFilterCache.Value;
-    }
-
-    private IDictionary<string, bool> ItemHighlightCache
-    {
-        get => this._itemHighlightCache.Value;
-    }
-
-    private HashSet<ItemMatcher> ItemFilters
-    {
-        get => this._itemFilters.Value;
-    }
-
-    private HashSet<ItemMatcher> ItemHighlighters
-    {
-        get => this._itemHighlighters.Value;
-    }
-
     private int MenuColumns
     {
         get => this._menuColumns.Value;
@@ -214,6 +208,12 @@ internal class MenuItems : IMenuItems, IModService
     private Range<int> Range
     {
         get => this._range.Value;
+    }
+
+    private bool RefreshInventory
+    {
+        get => this._refreshInventory.Value;
+        set => this._refreshInventory.Value = value;
     }
 
     /// <inheritdoc />
@@ -238,10 +238,20 @@ internal class MenuItems : IMenuItems, IModService
         this.ItemsFiltered = null;
     }
 
+    private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
+    {
+        if (MenuItems.Instance.Menu is null || !ReferenceEquals(inventoryMenu, MenuItems.Instance.Menu.ItemsToGrabMenu))
+        {
+            return actualInventory;
+        }
+
+        return MenuItems.Instance.ItemsDisplayed.Take(inventoryMenu.capacity).ToList();
+    }
+
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)}");
-        var patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Actual Inventory Patch
@@ -279,14 +289,58 @@ internal class MenuItems : IMenuItems, IModService
         }
     }
 
-    private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
+    private bool FilterMethod(Item item)
     {
-        if (MenuItems.Instance.Menu is null || !ReferenceEquals(inventoryMenu, MenuItems.Instance.Menu.ItemsToGrabMenu))
+        if (item is null)
         {
-            return actualInventory;
+            return false;
         }
 
-        return MenuItems.Instance.ItemsDisplayed.Take(inventoryMenu.capacity).ToList();
+        if (!this.ItemFilterCache.TryGetValue(item.Name, out var filtered))
+        {
+            filtered = this.ItemFilters.All(itemMatcher => itemMatcher.Matches(item));
+            this.ItemFilterCache.Add(item.Name, filtered);
+        }
+
+        return filtered;
+    }
+
+    private bool HighlightMethod(Item item)
+    {
+        if (item is null || this.OldHighlightMethod?.Invoke(item) == false)
+        {
+            return false;
+        }
+
+        if (!this.ItemHighlightCache.TryGetValue(item.Name, out var highlighted))
+        {
+            highlighted = this.ItemHighlighters.All(itemMatcher => itemMatcher.Matches(item));
+            this.ItemHighlightCache.Add(item.Name, highlighted);
+        }
+
+        return highlighted;
+    }
+
+    private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
+    {
+        if (this.Menu is not null && ReferenceEquals(e.Chest, this.Chest))
+        {
+            this.ItemsFiltered = null;
+        }
+    }
+
+    private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+    {
+        if (e.IsLocalPlayer)
+        {
+            this.ItemsFiltered = null;
+        }
+    }
+
+    private void OnItemFilterChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.ItemFilterCache.Clear();
+        this.ItemsFiltered = null;
     }
 
     [SortedEventPriority(EventPriority.High + 1000)]
@@ -319,62 +373,8 @@ internal class MenuItems : IMenuItems, IModService
         this.ItemHighlighters.Clear();
     }
 
-    private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
-    {
-        if (this.Menu is not null && ReferenceEquals(e.Chest, this.Chest))
-        {
-            this.ItemsFiltered = null;
-        }
-    }
-
-    private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
-    {
-        if (e.IsLocalPlayer)
-        {
-            this.ItemsFiltered = null;
-        }
-    }
-
-    private void OnItemFilterChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-        this.ItemFilterCache.Clear();
-        this.ItemsFiltered = null;
-    }
-
     private void OnItemHighlighterChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         this.ItemHighlightCache.Clear();
-    }
-
-    private bool FilterMethod(Item item)
-    {
-        if (item is null)
-        {
-            return false;
-        }
-
-        if (!this.ItemFilterCache.TryGetValue(item.Name, out var filtered))
-        {
-            filtered = this.ItemFilters.All(itemMatcher => itemMatcher.Matches(item));
-            this.ItemFilterCache.Add(item.Name, filtered);
-        }
-
-        return filtered;
-    }
-
-    private bool HighlightMethod(Item item)
-    {
-        if (item is null || this.OldHighlightMethod?.Invoke(item) == false)
-        {
-            return false;
-        }
-
-        if (!this.ItemHighlightCache.TryGetValue(item.Name, out var highlighted))
-        {
-            highlighted = this.ItemHighlighters.All(itemMatcher => itemMatcher.Matches(item));
-            this.ItemHighlightCache.Add(item.Name, highlighted);
-        }
-
-        return highlighted;
     }
 }

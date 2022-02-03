@@ -7,11 +7,11 @@ using System.Linq;
 using Common.Extensions;
 using Common.Helpers.ItemRepository;
 using Common.Models;
-using StardewMods.FuryCore.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -49,14 +49,14 @@ public class ItemSelectionMenu : ItemGrabMenu
         this.SearchField = new(Game1.content.Load<Texture2D>(@"LooseSprites\textBox"), null, Game1.smallFont, Game1.textColor)
         {
             X = this.ItemsToGrabMenu.xPositionOnScreen,
-            Y = this.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom),
+            Y = this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom,
             Width = this.ItemsToGrabMenu.width,
             Selected = false,
         };
 
         this.SearchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
         {
-            bounds = new(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom) + 6, 32, 32),
+            bounds = new(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32),
         };
 
         this.SearchArea = new(new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height), string.Empty);
@@ -64,25 +64,13 @@ public class ItemSelectionMenu : ItemGrabMenu
 
     private static IList<SearchableItem> AllItems { get; set; }
 
-    private IInputHelper InputHelper { get; }
-
     private int Columns { get; }
-
-    private ClickableComponent SearchArea { get; }
-
-    private TextBox SearchField { get; }
-
-    private ClickableTextureComponent SearchIcon { get; }
-
-    private DropDownMenu TagMenu { get; set; }
-
-    private ItemMatcher ItemMatcher { get; }
 
     private IList<SearchableItem> DisplayedItems { get; set; }
 
-    private string SearchText { get; set; }
+    private IInputHelper InputHelper { get; }
 
-    private IEnumerable<SearchableItem> SortedItems { get; set; }
+    private ItemMatcher ItemMatcher { get; }
 
     private IEnumerable<SearchableItem> Items
     {
@@ -122,24 +110,117 @@ public class ItemSelectionMenu : ItemGrabMenu
 
     private Range<int> Range { get; } = new();
 
-    /// <summary>
-    ///     Allows the <see cref="ItemSelectionMenu" /> to register SMAPI events for handling input.
-    /// </summary>
-    /// <param name="inputEvents">Events raised for player inputs.</param>
-    public void RegisterEvents(IInputEvents inputEvents)
+    private ClickableComponent SearchArea { get; }
+
+    private TextBox SearchField { get; }
+
+    private ClickableTextureComponent SearchIcon { get; }
+
+    private string SearchText { get; set; }
+
+    private IEnumerable<SearchableItem> SortedItems { get; set; }
+
+    private DropDownMenu TagMenu { get; set; }
+
+    /// <inheritdoc />
+    public override void draw(SpriteBatch b)
     {
-        inputEvents.ButtonPressed += this.OnButtonPressed;
-        this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
+        if (this.drawBG)
+        {
+            b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
+        }
+
+        Game1.drawDialogueBox(
+            this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
+            this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
+            this.ItemsToGrabMenu.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
+            this.ItemsToGrabMenu.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 + 24,
+            false,
+            true);
+
+        Game1.drawDialogueBox(
+            this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
+            this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder,
+            this.inventory.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
+            this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2,
+            false,
+            true);
+
+        this.ItemsToGrabMenu.draw(b);
+
+        foreach (var (item, index) in this.Items.Take(this.ItemsToGrabMenu.capacity).Select((item, index) => (item.Item, index)))
+        {
+            var highlight = this.ItemMatcher.Matches(item);
+            var x = this.ItemsToGrabMenu.xPositionOnScreen + (this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (index % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows));
+            var y = this.yPositionOnScreen + (this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (index / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)) - 4;
+            item.drawInMenu(
+                b,
+                new(x, y),
+                this.ItemsToGrabMenu.inventory[index].scale,
+                highlight ? 1f : 0.25f,
+                0.865f,
+                StackDrawType.Hide,
+                Color.White,
+                highlight);
+        }
+
+        this.SearchField.Draw(b, false);
+        this.SearchIcon.draw(b);
+        this.okButton.draw(b);
+
+        foreach (var tag in this.inventory.inventory)
+        {
+            if (this.hoverText == tag.name)
+            {
+                Utility.drawTextWithShadow(b, tag.name, Game1.smallFont, new(tag.bounds.X, tag.bounds.Y), Game1.textColor, 1f, 0.1f);
+            }
+            else
+            {
+                b.DrawString(Game1.smallFont, tag.name, new(tag.bounds.X, tag.bounds.Y), Game1.textColor);
+            }
+        }
+
+        if (this.TagMenu is not null)
+        {
+            this.TagMenu.Draw(b);
+        }
+        else if (this.hoveredItem != null)
+        {
+            ItemSelectionMenu.drawToolTip(b, this.hoveredItem.getDescription(), this.hoveredItem.DisplayName, this.hoveredItem);
+        }
+
+        Game1.mouseCursorTransparency = 1f;
+        this.drawMouse(b);
     }
 
-    /// <summary>
-    ///     Allows the <see cref="ItemSelectionMenu" /> to unregister SMAPI events from handling input.
-    /// </summary>
-    /// <param name="inputEvents">Events raised for player inputs.</param>
-    public void UnregisterEvents(IInputEvents inputEvents)
+    /// <inheritdoc />
+    public override void performHoverAction(int x, int y)
     {
-        inputEvents.ButtonPressed -= this.OnButtonPressed;
-        this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
+        this.okButton.scale = this.okButton.containsPoint(x, y)
+            ? Math.Min(1.1f, this.okButton.scale + 0.05f)
+            : Math.Max(1f, this.okButton.scale - 0.05f);
+
+        this.TagMenu?.TryHover(x, y);
+
+        var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        if (cc is not null)
+        {
+            var slotNumber = Convert.ToInt32(cc.name);
+            this.hoveredItem = this.Items.ElementAtOrDefault(slotNumber)?.Item;
+            this.hoverText = string.Empty;
+            return;
+        }
+
+        cc = this.inventory.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        if (cc is not null)
+        {
+            this.hoveredItem = null;
+            this.hoverText = cc.name ?? string.Empty;
+            return;
+        }
+
+        this.hoveredItem = null;
+        this.hoverText = string.Empty;
     }
 
     /// <inheritdoc />
@@ -220,34 +301,24 @@ public class ItemSelectionMenu : ItemGrabMenu
         }
     }
 
-    /// <inheritdoc />
-    public override void performHoverAction(int x, int y)
+    /// <summary>
+    ///     Allows the <see cref="ItemSelectionMenu" /> to register SMAPI events for handling input.
+    /// </summary>
+    /// <param name="inputEvents">Events raised for player inputs.</param>
+    public void RegisterEvents(IInputEvents inputEvents)
     {
-        this.okButton.scale = this.okButton.containsPoint(x, y)
-            ? Math.Min(1.1f, this.okButton.scale + 0.05f)
-            : Math.Max(1f, this.okButton.scale - 0.05f);
+        inputEvents.ButtonPressed += this.OnButtonPressed;
+        this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
+    }
 
-        this.TagMenu?.TryHover(x, y);
-
-        var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (cc is not null)
-        {
-            var slotNumber = Convert.ToInt32(cc.name);
-            this.hoveredItem = this.Items.ElementAtOrDefault(slotNumber)?.Item;
-            this.hoverText = string.Empty;
-            return;
-        }
-
-        cc = this.inventory.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (cc is not null)
-        {
-            this.hoveredItem = null;
-            this.hoverText = cc.name ?? string.Empty;
-            return;
-        }
-
-        this.hoveredItem = null;
-        this.hoverText = string.Empty;
+    /// <summary>
+    ///     Allows the <see cref="ItemSelectionMenu" /> to unregister SMAPI events from handling input.
+    /// </summary>
+    /// <param name="inputEvents">Events raised for player inputs.</param>
+    public void UnregisterEvents(IInputEvents inputEvents)
+    {
+        inputEvents.ButtonPressed -= this.OnButtonPressed;
+        this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
     }
 
     /// <inheritdoc />
@@ -260,75 +331,14 @@ public class ItemSelectionMenu : ItemGrabMenu
         }
     }
 
-    /// <inheritdoc />
-    public override void draw(SpriteBatch b)
+    private void AddTag(string tag)
     {
-        if (this.drawBG)
+        if (this.InputHelper.IsDown(SButton.LeftShift) || this.InputHelper.IsDown(SButton.RightShift))
         {
-            b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
+            tag = $"!{tag}";
         }
 
-        Game1.drawDialogueBox(
-            this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
-            this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
-            this.ItemsToGrabMenu.width + (ItemSelectionMenu.borderWidth * 2) + (ItemSelectionMenu.spaceToClearSideBorder * 2),
-            this.ItemsToGrabMenu.height + ItemSelectionMenu.spaceToClearTopBorder + (ItemSelectionMenu.borderWidth * 2) + 24,
-            false,
-            true);
-
-        Game1.drawDialogueBox(
-            this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
-            this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder,
-            this.inventory.width + (ItemSelectionMenu.borderWidth * 2) + (ItemSelectionMenu.spaceToClearSideBorder * 2),
-            this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + (ItemSelectionMenu.borderWidth * 2),
-            false,
-            true);
-
-        this.ItemsToGrabMenu.draw(b);
-
-        foreach (var (item, index) in this.Items.Take(this.ItemsToGrabMenu.capacity).Select((item, index) => (item.Item, index)))
-        {
-            var highlight = this.ItemMatcher.Matches(item);
-            var x = this.ItemsToGrabMenu.xPositionOnScreen + ((this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (index % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)));
-            var y = this.yPositionOnScreen + ((this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (index / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows))) - 4;
-            item.drawInMenu(
-                b,
-                new(x, y),
-                this.ItemsToGrabMenu.inventory[index].scale,
-                highlight ? 1f : 0.25f,
-                0.865f,
-                StackDrawType.Hide,
-                Color.White,
-                highlight);
-        }
-
-        this.SearchField.Draw(b, false);
-        this.SearchIcon.draw(b);
-        this.okButton.draw(b);
-
-        foreach (var tag in this.inventory.inventory)
-        {
-            if (this.hoverText == tag.name)
-            {
-                Utility.drawTextWithShadow(b, tag.name, Game1.smallFont, new(tag.bounds.X, tag.bounds.Y), Game1.textColor, 1f, 0.1f);
-            }
-            else
-            {
-                b.DrawString(Game1.smallFont, tag.name, new(tag.bounds.X, tag.bounds.Y), Game1.textColor);
-            }
-        }
-
-        if (this.TagMenu is not null)
-        {
-            this.TagMenu.Draw(b);
-        }
-        else if (this.hoveredItem != null)
-        {
-            ItemSelectionMenu.drawToolTip(b, this.hoveredItem.getDescription(), this.hoveredItem.DisplayName, this.hoveredItem);
-        }
-
-        Game1.mouseCursorTransparency = 1f;
-        this.drawMouse(b);
+        this.ItemMatcher.Add(tag);
     }
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -375,16 +385,6 @@ public class ItemSelectionMenu : ItemGrabMenu
     {
         this.SortedItems = null;
         this.RefreshTags();
-    }
-
-    private void AddTag(string tag)
-    {
-        if (this.InputHelper.IsDown(SButton.LeftShift) || this.InputHelper.IsDown(SButton.RightShift))
-        {
-            tag = $"!{tag}";
-        }
-
-        this.ItemMatcher.Add(tag);
     }
 
     private void RefreshTags()

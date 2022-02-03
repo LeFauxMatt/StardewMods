@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Extensions;
-using StardewMods.FuryCore.Attributes;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -205,17 +205,17 @@ internal class MenuComponents : IMenuComponents, IModService
 
             var topMenu = menu.ItemsToGrabMenu;
             var bottomMenu = menu.inventory;
-            var slot = topMenu.capacity - (topMenu.capacity / topMenu.rows);
+            var slot = topMenu.capacity - topMenu.capacity / topMenu.rows;
 
             foreach (var (component, index) in components.Select((component, index) => (component, index)))
             {
                 switch (componentArea)
                 {
                     case ComponentArea.Top or ComponentArea.Bottom:
-                        component.X = topMenu.inventory[0].bounds.X + (stepSize * index);
+                        component.X = topMenu.inventory[0].bounds.X + stepSize * index;
                         break;
                     case ComponentArea.Left or ComponentArea.Right:
-                        component.Y = menu.yPositionOnScreen + (menu.height / 3) - Game1.tileSize - (stepSize * index);
+                        component.Y = menu.yPositionOnScreen + menu.height / 3 - Game1.tileSize - stepSize * index;
                         break;
                 }
 

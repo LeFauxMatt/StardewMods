@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewMods.FuryCore.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.FuryCore.Enums;
 using StardewValley;
 
 /// <summary>
@@ -44,11 +44,11 @@ internal class GradientBar
 
     private IList<Rectangle> Bars { get; }
 
+    private int Cells { get; }
+
     private Func<float, Color> GetColor { get; }
 
     private Axis Orientation { get; }
-
-    private int Cells { get; }
 
     /// <summary>
     ///     Draws color bars from the gradient.

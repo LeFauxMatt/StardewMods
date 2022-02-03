@@ -6,7 +6,9 @@
   "UniqueID": "furyx639.BetterChestsConfigurator",
   "EntryDll": "BetterChestsConfigurator.dll",
   "MinimumApiVersion": "3.13.0",
-  "UpdateKeys": [ "Nexus:9791@Configurator" ],
+  "UpdateKeys": [
+    "Nexus:9791@Configurator"
+  ],
   "Dependencies": [
     {
       "UniqueID": "furyx639.BetterChests",

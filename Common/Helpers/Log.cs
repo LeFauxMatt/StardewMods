@@ -50,14 +50,6 @@ internal static class Log
         Log.LogMessage(message, once, LogLevel.Trace);
     }
 
-    /// <summary>Logs a message at an <see cref="LogLevel.Warn" /> level.</summary>
-    /// <param name="message">The message to log.</param>
-    /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Warn(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Warn);
-    }
-
     /// <summary>Logs a message that only appears when <see cref="IMonitor.IsVerbose" /> is enabled.</summary>
     /// <param name="message">The message to log.</param>
     public static void Verbose(string message)
@@ -77,6 +69,14 @@ internal static class Log
         {
             Log.Monitor.VerboseLog(string.Format(message, args));
         }
+    }
+
+    /// <summary>Logs a message at an <see cref="LogLevel.Warn" /> level.</summary>
+    /// <param name="message">The message to log.</param>
+    /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
+    public static void Warn(string message, bool once = false)
+    {
+        Log.LogMessage(message, once, LogLevel.Warn);
     }
 
     private static void LogMessage(string message, bool once, LogLevel logLevel)

@@ -4,12 +4,12 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Common.Helpers;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -23,7 +23,7 @@ internal class FilterItems : Feature
     private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FilterItems"/> class.
+    ///     Initializes a new instance of the <see cref="FilterItems" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>

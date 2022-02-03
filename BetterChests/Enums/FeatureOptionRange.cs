@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Enums;
 
 /// <summary>
-/// Indicates at what range a feature will be enabled.
+///     Indicates at what range a feature will be enabled.
 /// </summary>
 public enum FeatureOptionRange
 {

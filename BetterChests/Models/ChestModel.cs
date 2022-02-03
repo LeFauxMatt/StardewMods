@@ -9,7 +9,7 @@ using StardewMods.BetterChests.Interfaces;
 internal class ChestModel : IChestData
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChestModel"/> class.
+    ///     Initializes a new instance of the <see cref="ChestModel" /> class.
     /// </summary>
     /// <param name="chestData">ChestData representing this chest type.</param>
     /// <param name="defaultChest">ChestData representing the default options.</param>
@@ -22,7 +22,7 @@ internal class ChestModel : IChestData
     // ****************************************************************************************
     // Features
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption CarryChest
     {
         get
@@ -39,7 +39,7 @@ internal class ChestModel : IChestData
         set => this.Data.CarryChest = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
         get
@@ -56,7 +56,16 @@ internal class ChestModel : IChestData
         set => this.Data.ChestMenuTabs = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public HashSet<string> ChestMenuTabSet
+    {
+        get => this.Data.ChestMenuTabSet.Any()
+            ? this.Data.ChestMenuTabSet
+            : this.DefaultChest.ChestMenuTabSet;
+        set => this.Data.ChestMenuTabSet = value;
+    }
+
+    /// <inheritdoc />
     public FeatureOption CollectItems
     {
         get
@@ -73,7 +82,7 @@ internal class ChestModel : IChestData
         set => this.Data.CollectItems = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
         get
@@ -90,146 +99,10 @@ internal class ChestModel : IChestData
         set => this.Data.CraftFromChest = value;
     }
 
-    /// <inheritdoc/>
-    public FeatureOption CustomColorPicker
-    {
-        get
-        {
-            if (this.Data.CustomColorPicker != FeatureOption.Default)
-            {
-                return this.Data.CustomColorPicker;
-            }
-
-            return this.DefaultChest.CustomColorPicker != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.CustomColorPicker = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption FilterItems
-    {
-        get
-        {
-            if (this.Data.FilterItems != FeatureOption.Default)
-            {
-                return this.Data.FilterItems;
-            }
-
-            return this.DefaultChest.FilterItems != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.FilterItems = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption OpenHeldChest
-    {
-        get
-        {
-            if (this.Data.OpenHeldChest != FeatureOption.Default)
-            {
-                return this.Data.OpenHeldChest;
-            }
-
-            return this.DefaultChest.OpenHeldChest != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.OpenHeldChest = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption ResizeChest
-    {
-        get
-        {
-            if (this.Data.ResizeChest != FeatureOption.Default)
-            {
-                return this.Data.ResizeChest;
-            }
-
-            return this.DefaultChest.ResizeChest != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.ResizeChest = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption ResizeChestMenu
-    {
-        get
-        {
-            if (this.Data.ResizeChestMenu != FeatureOption.Default)
-            {
-                return this.Data.ResizeChestMenu;
-            }
-
-            return this.DefaultChest.ResizeChestMenu != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.ResizeChestMenu = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption SearchItems
-    {
-        get
-        {
-            if (this.Data.SearchItems != FeatureOption.Default)
-            {
-                return this.Data.SearchItems;
-            }
-
-            return this.DefaultChest.SearchItems != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.SearchItems = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOptionRange StashToChest
-    {
-        get
-        {
-            if (this.Data.StashToChest != FeatureOptionRange.Default)
-            {
-                return this.Data.StashToChest;
-            }
-
-            return this.DefaultChest.StashToChest == FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultChest.CraftFromChest;
-        }
-        set => this.Data.StashToChest = value;
-    }
-
-    /// <inheritdoc/>
-    public FeatureOption UnloadChest
-    {
-        get
-        {
-            if (this.Data.UnloadChest != FeatureOption.Default)
-            {
-                return this.Data.UnloadChest;
-            }
-
-            return this.DefaultChest.UnloadChest != FeatureOption.Disabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
-        set => this.Data.UnloadChest = value;
-    }
-
     // ****************************************************************************************
     // Feature Options
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int CraftFromChestDistance
     {
         get
@@ -246,16 +119,41 @@ internal class ChestModel : IChestData
         set => this.Data.CraftFromChestDistance = value;
     }
 
-    /// <inheritdoc/>
-    public HashSet<string> ChestMenuTabSet
+    /// <inheritdoc />
+    public FeatureOption CustomColorPicker
     {
-        get => this.Data.ChestMenuTabSet.Any()
-            ? this.Data.ChestMenuTabSet
-            : this.DefaultChest.ChestMenuTabSet;
-        set => this.Data.ChestMenuTabSet = value;
+        get
+        {
+            if (this.Data.CustomColorPicker != FeatureOption.Default)
+            {
+                return this.Data.CustomColorPicker;
+            }
+
+            return this.DefaultChest.CustomColorPicker != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.CustomColorPicker = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public FeatureOption FilterItems
+    {
+        get
+        {
+            if (this.Data.FilterItems != FeatureOption.Default)
+            {
+                return this.Data.FilterItems;
+            }
+
+            return this.DefaultChest.FilterItems != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.FilterItems = value;
+    }
+
+    /// <inheritdoc />
     public HashSet<string> FilterItemsList
     {
         get => this.Data.FilterItemsList.Any()
@@ -264,7 +162,41 @@ internal class ChestModel : IChestData
         set => this.Data.FilterItemsList = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public FeatureOption OpenHeldChest
+    {
+        get
+        {
+            if (this.Data.OpenHeldChest != FeatureOption.Default)
+            {
+                return this.Data.OpenHeldChest;
+            }
+
+            return this.DefaultChest.OpenHeldChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.OpenHeldChest = value;
+    }
+
+    /// <inheritdoc />
+    public FeatureOption ResizeChest
+    {
+        get
+        {
+            if (this.Data.ResizeChest != FeatureOption.Default)
+            {
+                return this.Data.ResizeChest;
+            }
+
+            return this.DefaultChest.ResizeChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.ResizeChest = value;
+    }
+
+    /// <inheritdoc />
     public int ResizeChestCapacity
     {
         get
@@ -281,7 +213,24 @@ internal class ChestModel : IChestData
         set => this.Data.ResizeChestCapacity = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public FeatureOption ResizeChestMenu
+    {
+        get
+        {
+            if (this.Data.ResizeChestMenu != FeatureOption.Default)
+            {
+                return this.Data.ResizeChestMenu;
+            }
+
+            return this.DefaultChest.ResizeChestMenu != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.ResizeChestMenu = value;
+    }
+
+    /// <inheritdoc />
     public int ResizeChestMenuRows
     {
         get
@@ -298,7 +247,41 @@ internal class ChestModel : IChestData
         set => this.Data.ResizeChestMenuRows = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public FeatureOption SearchItems
+    {
+        get
+        {
+            if (this.Data.SearchItems != FeatureOption.Default)
+            {
+                return this.Data.SearchItems;
+            }
+
+            return this.DefaultChest.SearchItems != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.SearchItems = value;
+    }
+
+    /// <inheritdoc />
+    public FeatureOptionRange StashToChest
+    {
+        get
+        {
+            if (this.Data.StashToChest != FeatureOptionRange.Default)
+            {
+                return this.Data.StashToChest;
+            }
+
+            return this.DefaultChest.StashToChest == FeatureOptionRange.Default
+                ? FeatureOptionRange.Location
+                : this.DefaultChest.CraftFromChest;
+        }
+        set => this.Data.StashToChest = value;
+    }
+
+    /// <inheritdoc />
     public int StashToChestDistance
     {
         get
@@ -315,7 +298,7 @@ internal class ChestModel : IChestData
         set => this.Data.StashToChestDistance = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
         get
@@ -332,7 +315,24 @@ internal class ChestModel : IChestData
         set => this.Data.StashToChestStacks = value;
     }
 
-    private IChestData DefaultChest { get; }
+    /// <inheritdoc />
+    public FeatureOption UnloadChest
+    {
+        get
+        {
+            if (this.Data.UnloadChest != FeatureOption.Default)
+            {
+                return this.Data.UnloadChest;
+            }
+
+            return this.DefaultChest.UnloadChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.UnloadChest = value;
+    }
 
     private IChestData Data { get; }
+
+    private IChestData DefaultChest { get; }
 }

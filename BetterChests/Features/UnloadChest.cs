@@ -1,10 +1,10 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
-using StardewMods.FuryCore.Interfaces;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -12,7 +12,7 @@ using StardewValley.Objects;
 internal class UnloadChest : Feature
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UnloadChest"/> class.
+    ///     Initializes a new instance of the <see cref="UnloadChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -22,13 +22,13 @@ internal class UnloadChest : Feature
     {
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void Activate()
     {
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;

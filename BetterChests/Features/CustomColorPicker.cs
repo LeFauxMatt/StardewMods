@@ -5,17 +5,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.Extensions;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.UI;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -24,12 +23,12 @@ using StardewValley.Objects;
 internal class CustomColorPicker : Feature
 {
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
+    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<IManagedChest> _managedChest = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CustomColorPicker"/> class.
+    ///     Initializes a new instance of the <see cref="CustomColorPicker" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -86,15 +85,15 @@ internal class CustomColorPicker : Feature
 
     private static CustomColorPicker Instance { get; set; }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
-
     private HslColorPicker ColorPicker
     {
         get => this._colorPicker.Value;
         set => this._colorPicker.Value = value;
+    }
+
+    private IHarmonyHelper Harmony
+    {
+        get => this._harmony.Value;
     }
 
     private IManagedChest ManagedChest
@@ -124,6 +123,14 @@ internal class CustomColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void DiscreteColorPicker_GetColorFromSelection_postfix(int selection, ref Color __result)
+    {
+        __result = HslColorPicker.GetColorFromSelection(selection);
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetCurrentColor_postfix(DiscreteColorPicker __instance, ref Color __result)
     {
@@ -138,16 +145,45 @@ internal class CustomColorPicker : Feature
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void DiscreteColorPicker_GetColorFromSelection_postfix(DiscreteColorPicker __instance, int selection, ref Color __result)
-    {
-        __result = HslColorPicker.GetColorFromSelection(selection);
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void DiscreteColorPicker_GetSelectionFromColor_postfix(DiscreteColorPicker __instance, Color c, ref int __result)
+    private static void DiscreteColorPicker_GetSelectionFromColor_postfix(Color c, ref int __result)
     {
         __result = HslColorPicker.GetSelectionFromColor(c);
+    }
+
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    private static DiscreteColorPicker GetColorPicker(int xPosition, int yPosition, int startingColor, Item itemToDrawColored, ItemGrabMenu menu)
+    {
+        CustomColorPicker.Instance.ColorPicker?.UnregisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
+
+        var item = CustomColorPicker.Instance.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
+        if (item is not Chest chest || !chest.IsPlayerChest())
+        {
+            CustomColorPicker.Instance.ColorPicker = null;
+            return new(xPosition, yPosition, startingColor, itemToDrawColored);
+        }
+
+        if (itemToDrawColored is not Chest chestToDraw)
+        {
+            chestToDraw = new(true, chest.ParentSheetIndex);
+        }
+
+        chestToDraw.Name = chest.Name;
+        chestToDraw.lidFrameCount.Value = chest.lidFrameCount.Value;
+        chestToDraw.playerChoiceColor.Value = chest.playerChoiceColor.Value;
+        foreach (var (key, value) in chest.modData.Pairs)
+        {
+            chestToDraw.modData.Add(key, value);
+        }
+
+        CustomColorPicker.Instance.ColorPicker = new(
+            CustomColorPicker.Instance.Helper.Content,
+            CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
+            menu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2,
+            chest.playerChoiceColor.Value,
+            chestToDraw);
+        CustomColorPicker.Instance.ColorPicker.RegisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
+
+        return CustomColorPicker.Instance.ColorPicker;
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_DiscreteColorPicker_Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -183,41 +219,6 @@ internal class CustomColorPicker : Feature
         }
 
         __instance.discreteColorPickerCC = null;
-    }
-
-    private static DiscreteColorPicker GetColorPicker(int xPosition, int yPosition, int startingColor, Item itemToDrawColored, ItemGrabMenu menu)
-    {
-        CustomColorPicker.Instance.ColorPicker?.UnregisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
-
-        var item = CustomColorPicker.Instance.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
-        if (item is not Chest chest || !chest.IsPlayerChest())
-        {
-            CustomColorPicker.Instance.ColorPicker = null;
-            return new(xPosition, yPosition, startingColor, itemToDrawColored);
-        }
-
-        if (itemToDrawColored is not Chest chestToDraw)
-        {
-            chestToDraw = new(true, chest.ParentSheetIndex);
-        }
-
-        chestToDraw.Name = chest.Name;
-        chestToDraw.lidFrameCount.Value = chest.lidFrameCount.Value;
-        chestToDraw.playerChoiceColor.Value = chest.playerChoiceColor.Value;
-        foreach (var (key, value) in chest.modData.Pairs)
-        {
-            chestToDraw.modData.Add(key, value);
-        }
-
-        CustomColorPicker.Instance.ColorPicker = new(
-            CustomColorPicker.Instance.Helper.Content,
-            CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - (2 * Game1.tileSize) - (IClickableMenu.borderWidth / 2) : menu.xPositionOnScreen + menu.width + 96 + (IClickableMenu.borderWidth / 2),
-            menu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2),
-            chest.playerChoiceColor.Value,
-            chestToDraw);
-        CustomColorPicker.Instance.ColorPicker.RegisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
-
-        return CustomColorPicker.Instance.ColorPicker;
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)

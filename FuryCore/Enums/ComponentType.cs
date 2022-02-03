@@ -3,7 +3,7 @@
 using StardewValley.Menus;
 
 /// <summary>
-///     <see cref="ClickableTextureComponent" /> that are added to the <see cref="ItemGrabMenu" />
+///     <see cref="ClickableTextureComponent" /> that are added to the <see cref="ItemGrabMenu" />.
 /// </summary>
 public enum ComponentType
 {

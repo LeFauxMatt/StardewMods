@@ -1,29 +1,29 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class CategorizeChest : Feature
 {
-    private readonly PerScreen<IManagedChest> _managedChest = new();
     private readonly PerScreen<IMenuComponent> _configureButton = new();
-    private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
-    private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
     private readonly Lazy<IMenuComponents> _customMenuComponents;
+    private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
+    private readonly PerScreen<IManagedChest> _managedChest = new();
+    private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CategorizeChest"/> class.
+    ///     Initializes a new instance of the <see cref="CategorizeChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -32,12 +32,6 @@ internal class CategorizeChest : Feature
         : base(config, helper, services)
     {
         this._customMenuComponents = services.Lazy<IMenuComponents>();
-    }
-
-    private IManagedChest ManagedChest
-    {
-        get => this._managedChest.Value;
-        set => this._managedChest.Value = value;
     }
 
     private IMenuComponent ConfigureButton
@@ -59,6 +53,12 @@ internal class CategorizeChest : Feature
     {
         get => this._itemSelectionMenu.Value;
         set => this._itemSelectionMenu.Value = value;
+    }
+
+    private IManagedChest ManagedChest
+    {
+        get => this._managedChest.Value;
+        set => this._managedChest.Value = value;
     }
 
     private IMenuComponents MenuComponents

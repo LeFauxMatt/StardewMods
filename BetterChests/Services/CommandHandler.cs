@@ -18,7 +18,7 @@ internal class CommandHandler : IModService
     private readonly Lazy<ManagedChests> _managedChests;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CommandHandler"/> class.
+    ///     Initializes a new instance of the <see cref="CommandHandler" /> class.
     /// </summary>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -35,87 +35,37 @@ internal class CommandHandler : IModService
             this.DumpInfo);
     }
 
-    private IConfigData Config { get; }
-
-    private IModHelper Helper { get; }
-
     private AssetHandler Assets
     {
         get => this._assetHandler.Value;
     }
+
+    private IConfigData Config { get; }
+
+    private IModHelper Helper { get; }
 
     private ManagedChests ManagedChests
     {
         get => this._managedChests.Value;
     }
 
-    private void DumpInfo(string command, string[] args)
+    private void AppendChestData(StringBuilder sb, IChestData data, string chestName)
     {
-        var sb = new StringBuilder();
-
-        // Main Header
-        sb.AppendLine("Better Chests Info");
-
-        // Log Config
-        this.DumpConfig(sb);
-
-        // Iterate known chests and features
-        foreach (var (name, chestData) in this.Assets.ChestData)
+        var dictData = SerializedChestData.GetData(data);
+        if (dictData.Values.All(string.IsNullOrWhiteSpace))
         {
-            this.AppendChestData(sb, chestData, $"\"{name}\" Config");
+            return;
         }
 
-        // Iterate managed chests and features
-        foreach (var (playerItem, managedChest) in this.ManagedChests.PlayerChests)
-        {
-            var (player, index) = playerItem;
-            this.AppendChestData(sb, managedChest, $"\nChest with farmer {player.Name} in slot {index.ToString()}\n");
-        }
+        this.AppendHeader(sb, chestName);
 
-        foreach (var (placedChest, lazyManagedChest) in this.ManagedChests.PlacedChests)
+        foreach (var (key, value) in dictData)
         {
-            var (locationName, x, y, chestName) = placedChest;
-            if (placedChest.GetChest() is not null)
+            if (!string.IsNullOrWhiteSpace(value))
             {
-                this.AppendChestData(sb, lazyManagedChest.Value, $"Chest \"{chestName}\" at location {locationName} at coordinates ({x.ToString()},{y.ToString()})");
+                sb.AppendFormat("{0,25}: {1}\n", key, value);
             }
         }
-
-        Log.Info(sb.ToString());
-    }
-
-    private void DumpConfig(StringBuilder sb)
-    {
-        // Main Header
-        this.AppendHeader(sb, "Mod Config");
-
-        // Features
-        sb.AppendFormat(
-            "{0,25}: {1}\n",
-            nameof(this.Config.CategorizeChest),
-            this.Config.CategorizeChest.ToString());
-
-        sb.AppendFormat(
-            "{0,25}: {1}\n",
-            nameof(this.Config.SlotLock),
-            this.Config.SlotLock.ToString());
-
-        // General
-        sb.AppendFormat(
-            "{0,25}: {1}\n",
-            nameof(this.Config.CustomColorPickerArea),
-            FormatHelper.GetAreaString(this.Config.CustomColorPickerArea));
-
-        sb.AppendFormat(
-            "{0,25}: {1}\n",
-            nameof(this.Config.SearchTagSymbol),
-            this.Config.SearchTagSymbol.ToString());
-
-        // Control Scheme
-        this.AppendControls(sb, this.Config.ControlScheme);
-
-        // Default Chest
-        this.AppendChestData(sb, this.Config.DefaultChest, "\"Default Chest\" Config");
     }
 
     private void AppendControls(StringBuilder sb, IControlScheme controls)
@@ -158,28 +108,78 @@ internal class CommandHandler : IModService
             controls.LockSlot);
     }
 
-    private void AppendChestData(StringBuilder sb, IChestData data, string chestName)
-    {
-        var dictData = SerializedChestData.GetData(data);
-        if (dictData.Values.All(string.IsNullOrWhiteSpace))
-        {
-            return;
-        }
-
-        this.AppendHeader(sb, chestName);
-
-        foreach (var (key, value) in dictData)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                sb.AppendFormat("{0,25}: {1}\n", key, value);
-            }
-        }
-    }
-
     private void AppendHeader(StringBuilder sb, string text)
     {
-        sb.AppendFormat($"\n{{0,{(25 + (text.Length / 2)).ToString()}}}\n", text);
-        sb.AppendFormat($"{{0,{(25 + (text.Length / 2)).ToString()}}}\n", new string('-', text.Length));
+        sb.AppendFormat($"\n{{0,{(25 + text.Length / 2).ToString()}}}\n", text);
+        sb.AppendFormat($"{{0,{(25 + text.Length / 2).ToString()}}}\n", new string('-', text.Length));
+    }
+
+    private void DumpConfig(StringBuilder sb)
+    {
+        // Main Header
+        this.AppendHeader(sb, "Mod Config");
+
+        // Features
+        sb.AppendFormat(
+            "{0,25}: {1}\n",
+            nameof(this.Config.CategorizeChest),
+            this.Config.CategorizeChest.ToString());
+
+        sb.AppendFormat(
+            "{0,25}: {1}\n",
+            nameof(this.Config.SlotLock),
+            this.Config.SlotLock.ToString());
+
+        // General
+        sb.AppendFormat(
+            "{0,25}: {1}\n",
+            nameof(this.Config.CustomColorPickerArea),
+            FormatHelper.GetAreaString(this.Config.CustomColorPickerArea));
+
+        sb.AppendFormat(
+            "{0,25}: {1}\n",
+            nameof(this.Config.SearchTagSymbol),
+            this.Config.SearchTagSymbol.ToString());
+
+        // Control Scheme
+        this.AppendControls(sb, this.Config.ControlScheme);
+
+        // Default Chest
+        this.AppendChestData(sb, this.Config.DefaultChest, "\"Default Chest\" Config");
+    }
+
+    private void DumpInfo(string command, string[] args)
+    {
+        var sb = new StringBuilder();
+
+        // Main Header
+        sb.AppendLine("Better Chests Info");
+
+        // Log Config
+        this.DumpConfig(sb);
+
+        // Iterate known chests and features
+        foreach (var (name, chestData) in this.Assets.ChestData)
+        {
+            this.AppendChestData(sb, chestData, $"\"{name}\" Config");
+        }
+
+        // Iterate managed chests and features
+        foreach (var (playerItem, managedChest) in this.ManagedChests.PlayerChests)
+        {
+            var (player, index) = playerItem;
+            this.AppendChestData(sb, managedChest, $"\nChest with farmer {player.Name} in slot {index.ToString()}\n");
+        }
+
+        foreach (var (placedChest, lazyManagedChest) in this.ManagedChests.PlacedChests)
+        {
+            var (locationName, x, y, chestName) = placedChest;
+            if (placedChest.GetChest() is not null)
+            {
+                this.AppendChestData(sb, lazyManagedChest.Value, $"Chest \"{chestName}\" at location {locationName} at coordinates ({x.ToString()},{y.ToString()})");
+            }
+        }
+
+        Log.Info(sb.ToString());
     }
 }

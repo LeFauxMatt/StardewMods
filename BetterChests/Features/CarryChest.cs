@@ -4,17 +4,16 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -23,11 +22,10 @@ using SObject = StardewValley.Object;
 /// <inheritdoc />
 internal class CarryChest : Feature
 {
-    private readonly PerScreen<Chest> _chest = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CarryChest"/> class.
+    ///     Initializes a new instance of the <see cref="CarryChest" /> class.
     /// </summary>
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -81,12 +79,6 @@ internal class CarryChest : Feature
             });
     }
 
-    private Chest CurrentChest
-    {
-        get => this._chest.Value;
-        set => this._chest.Value = value;
-    }
-
     private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
@@ -115,25 +107,7 @@ internal class CarryChest : Feature
         var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
         if (items > 0)
         {
-            Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize), 2f * scaleSize), 3f * scaleSize, 1f, color);
-        }
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref ItemSlot __state)
-    {
-        var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (slot is null)
-        {
-            return;
-        }
-
-        var slotNumber = int.Parse(slot.name);
-        var item = __instance.actualInventory.ElementAtOrDefault(slotNumber);
-        if (item is not null)
-        {
-            __state = new(item, slotNumber);
+            Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
         }
     }
 
@@ -168,6 +142,24 @@ internal class CarryChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref ItemSlot __state)
+    {
+        var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        if (slot is null)
+        {
+            return;
+        }
+
+        var slotNumber = int.Parse(slot.name);
+        var item = __instance.actualInventory.ElementAtOrDefault(slotNumber);
+        if (item is not null)
+        {
+            __state = new(item, slotNumber);
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result)
@@ -179,8 +171,8 @@ internal class CarryChest : Feature
         var otherChest = other as Chest;
 
         // Block if either chest has any items
-        if ((chest is not null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
-            || (otherChest is not null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
+        if (chest is not null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()
+            || otherChest is not null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
             return;
@@ -269,18 +261,6 @@ internal class CarryChest : Feature
         }
     }
 
-    private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
-    {
-        Log.Verbose("Recursively iterating chests in farmer inventory.");
-        foreach (var farmer in Game1.getAllFarmers())
-        {
-            foreach (var chest in farmer.Items.OfType<Chest>())
-            {
-                CarryChest.RecursiveIterate(chest, action);
-            }
-        }
-    }
-
     private static void RecursiveIterate(Chest chest, Action<Item> action)
     {
         if (chest.SpecialChestType is Chest.SpecialChestTypes.None)
@@ -292,6 +272,18 @@ internal class CarryChest : Feature
         }
 
         action(chest);
+    }
+
+    private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
+    {
+        Log.Verbose("Recursively iterating chests in farmer inventory.");
+        foreach (var farmer in Game1.getAllFarmers())
+        {
+            foreach (var chest in farmer.Items.OfType<Chest>())
+            {
+                CarryChest.RecursiveIterate(chest, action);
+            }
+        }
     }
 
     [EventPriority(EventPriority.High)]

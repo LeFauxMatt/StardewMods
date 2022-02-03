@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Services;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewValley;
 
 /// <inheritdoc />
@@ -26,17 +26,17 @@ internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEve
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
-    private IModHelper Helper { get; }
-
     private MenuComponents Components
     {
         get => this._components.Value;
     }
 
+    private IModHelper Helper { get; }
+
     [EventPriority(EventPriority.High + 1000)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if ((e.Button != SButton.MouseLeft && !e.Button.IsActionButton()) || !this.Components.Components.Any())
+        if (e.Button != SButton.MouseLeft && !e.Button.IsActionButton() || !this.Components.Components.Any())
         {
             return;
         }

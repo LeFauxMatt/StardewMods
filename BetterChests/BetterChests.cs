@@ -2,20 +2,20 @@
 
 using System;
 using Common.Helpers;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
+using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
 public class BetterChests : Mod
 {
     /// <summary>
-    /// Gets the unique Mod Id.
+    ///     Gets the unique Mod Id.
     /// </summary>
     internal static string ModUniqueId { get; private set; }
 
@@ -68,7 +68,7 @@ public class BetterChests : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override object GetApi()
     {
         return new BetterChestsApi(this.Services);
