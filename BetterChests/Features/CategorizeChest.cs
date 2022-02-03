@@ -10,14 +10,13 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class CategorizeChest : Feature
 {
-    private readonly PerScreen<ManagedChest> _managedChest = new();
+    private readonly PerScreen<IManagedChest> _managedChest = new();
     private readonly PerScreen<IMenuComponent> _configureButton = new();
     private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
     private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
@@ -35,7 +34,7 @@ internal class CategorizeChest : Feature
         this._customMenuComponents = services.Lazy<IMenuComponents>();
     }
 
-    private ManagedChest ManagedChest
+    private IManagedChest ManagedChest
     {
         get => this._managedChest.Value;
         set => this._managedChest.Value = value;

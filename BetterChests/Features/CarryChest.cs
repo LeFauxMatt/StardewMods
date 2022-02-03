@@ -68,6 +68,11 @@ internal class CarryChest : Feature
                             nameof(CarryChest.Object_drawWhenHeld_prefix),
                             PatchType.Prefix),
                         new(
+                            AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.Object_placementAction_postfix),
+                            PatchType.Postfix),
+                        new(
                             AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
                             typeof(CarryChest),
                             nameof(CarryChest.Utility_iterateChestsAndStorage_postfix),
@@ -91,24 +96,20 @@ internal class CarryChest : Feature
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.Helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.World.ObjectListChanged -= this.OnObjectListChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void Chest_drawInMenu_postfix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, Color color)
+    private static void Chest_drawInMenu_postfix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, Color color)
     {
         // Draw Items count
         var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
@@ -235,6 +236,39 @@ internal class CarryChest : Feature
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y)
+    {
+        if (!location.Objects.TryGetValue(new(x / 64, y / 64), out var obj) || obj is not Chest chest)
+        {
+            return;
+        }
+
+        chest.Name = __instance.Name;
+        foreach (var (key, value) in __instance.modData.Pairs)
+        {
+            chest.modData[key] = value;
+        }
+
+        if (__instance is not Chest other)
+        {
+            return;
+        }
+
+        chest.SpecialChestType = other.SpecialChestType;
+        chest.fridge.Value = other.fridge.Value;
+        chest.lidFrameCount.Value = other.lidFrameCount.Value;
+        chest.playerChoiceColor.Value = other.playerChoiceColor.Value;
+
+        if (other.items.Any())
+        {
+            chest.items.CopyFrom(other.items);
+        }
+    }
+
     private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
     {
         Log.Verbose("Recursively iterating chests in farmer inventory.");
@@ -258,14 +292,6 @@ internal class CarryChest : Feature
         }
 
         action(chest);
-    }
-
-    private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
-    {
-        if (Context.IsPlayerFree)
-        {
-            this.CurrentChest = Game1.player.CurrentItem as Chest;
-        }
     }
 
     [EventPriority(EventPriority.High)]
@@ -302,37 +328,6 @@ internal class CarryChest : Feature
 
         Game1.currentLocation.Objects.Remove(pos);
         this.Helper.Input.Suppress(e.Button);
-    }
-
-    [EventPriority(EventPriority.High)]
-    private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
-    {
-        if (!e.IsCurrentLocation || this.CurrentChest is null)
-        {
-            return;
-        }
-
-        var chest = e.Added.Select(added => added.Value).OfType<Chest>().SingleOrDefault();
-        if (chest is null)
-        {
-            return;
-        }
-
-        chest.Name = this.CurrentChest.Name;
-        chest.SpecialChestType = this.CurrentChest.SpecialChestType;
-        chest.fridge.Value = this.CurrentChest.fridge.Value;
-        chest.lidFrameCount.Value = this.CurrentChest.lidFrameCount.Value;
-        chest.playerChoiceColor.Value = this.CurrentChest.playerChoiceColor.Value;
-
-        if (this.CurrentChest.items.Any())
-        {
-            chest.items.CopyFrom(this.CurrentChest.items);
-        }
-
-        foreach (var (key, value) in this.CurrentChest.modData.Pairs)
-        {
-            chest.modData[key] = value;
-        }
     }
 
     private record ItemSlot(Item Item, int SlotNumber);

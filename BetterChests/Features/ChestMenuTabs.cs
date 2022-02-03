@@ -13,6 +13,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Services;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -23,6 +24,7 @@ internal class ChestMenuTabs : Feature
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly PerScreen<IList<TabComponent>> _tabs = new();
+    private readonly Lazy<AssetHandler> _assetHandler;
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
 
@@ -35,8 +37,14 @@ internal class ChestMenuTabs : Feature
     public ChestMenuTabs(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        this._assetHandler = services.Lazy<AssetHandler>();
         this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
+    }
+
+    private AssetHandler Assets
+    {
+        get => this._assetHandler.Value;
     }
 
     private Chest Chest
@@ -69,21 +77,18 @@ internal class ChestMenuTabs : Feature
     private IList<TabComponent> Tabs
     {
         get => this._tabs.Value ??= (
-                from tab in
-                    from data in this.Helper.Content.Load<Dictionary<string, string>>($"{BetterChests.ModUniqueId}/Tabs", ContentSource.GameContent)
-                    select (name: data.Key, info: data.Value.Split('/'))
-                orderby int.Parse(tab.info[2]), tab.info[0]
+                from tab in this.Assets.TabData
                 select new TabComponent(
                     new(
                         new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                        this.Helper.Content.Load<Texture2D>(tab.info[1], ContentSource.GameContent),
-                        new(16 * int.Parse(tab.info[2]), 0, 16, 16),
+                        this.Helper.Content.Load<Texture2D>(tab.Value[1], ContentSource.GameContent),
+                        new(16 * int.Parse(tab.Value[2]), 0, 16, 16),
                         Game1.pixelZoom)
                     {
-                        hoverText = tab.info[0],
-                        name = tab.name,
+                        hoverText = tab.Value[0],
+                        name = tab.Key,
                     },
-                    tab.info[3].Split(' ')))
+                    tab.Value[3].Split(' ')))
             .ToList();
     }
 

@@ -13,14 +13,13 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CollectItems : Feature
 {
-    private readonly PerScreen<IList<ManagedChest>> _eligibleChests = new();
+    private readonly PerScreen<IList<IManagedChest>> _eligibleChests = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
@@ -56,13 +55,11 @@ internal class CollectItems : Feature
         get => this._harmony.Value;
     }
 
-    private IList<ManagedChest> EligibleChests
+    private IList<IManagedChest> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from managedChest in this.ManagedChests.AccessibleChests
+            from managedChest in this.ManagedChests.PlayerChests.Values
             where managedChest.CollectItems == FeatureOption.Enabled
-                  && managedChest.CollectionType == ItemCollectionType.PlayerInventory
-                  && ReferenceEquals(managedChest.Player, Game1.player)
                   && managedChest.Chest.Stack == 1
             select managedChest).ToList();
         set => this._eligibleChests.Value = value;

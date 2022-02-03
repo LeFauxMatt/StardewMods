@@ -6,6 +6,7 @@ using System.Linq;
 using Common.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
@@ -47,16 +48,22 @@ internal class OpenHeldChest : Feature
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        if (Context.IsMainPlayer)
+        {
+            this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
+        }
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        if (Context.IsMainPlayer)
+        {
+            this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
+        }
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
@@ -81,9 +88,12 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        foreach (var chest in Game1.player.Items.Take(12).OfType<Chest>())
+        foreach (var player in Game1.getOnlineFarmers())
         {
-            chest.updateWhenCurrentLocation(Game1.currentGameTime, Game1.player.currentLocation);
+            foreach (var chest in player.Items.Take(12).OfType<Chest>())
+            {
+                chest.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
+            }
         }
     }
 
@@ -107,6 +117,7 @@ internal class OpenHeldChest : Feature
         }
         else
         {
+            Game1.player.currentLocation.localSound("openChest");
             chest.ShowMenu();
         }
 

@@ -4,12 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewMods.FuryCore.Helpers;
-using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -20,36 +18,10 @@ internal class ManagedChest : IManagedChest
     /// </summary>
     /// <param name="chest">The <see cref="Chest" /> managed by this mod.</param>
     /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
-    /// <param name="location">The <see cref="GameLocation" /> where the Chest is placed.</param>
-    /// <param name="position">The coordinates where the Chest is placed.</param>
-    public ManagedChest(Chest chest, IChestData data, GameLocation location, Vector2 position)
-        : this(chest, data)
-    {
-        this.CollectionType = ItemCollectionType.GameLocation;
-        this.Location = location;
-        this.Position = position;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ManagedChest"/> class.
-    /// </summary>
-    /// <param name="chest">The <see cref="Chest" /> managed by this mod.</param>
-    /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
-    /// <param name="player">The <see cref="Farmer" /> whose inventory contains the Chest.</param>
-    /// <param name="index">The item slot where the Chest is being stored.</param>
-    public ManagedChest(Chest chest, IChestData data, Farmer player, int index)
-        : this(chest, data)
-    {
-        this.CollectionType = ItemCollectionType.PlayerInventory;
-        this.Player = player;
-        this.Index = index;
-    }
-
-    private ManagedChest(Chest chest, IChestData data)
+    public ManagedChest(Chest chest, IChestData data)
     {
         this.Chest = chest;
         this.Data = data;
-
         foreach (var item in this.FilterItemsList)
         {
             this.ItemMatcher.Add(item);
@@ -61,21 +33,6 @@ internal class ManagedChest : IManagedChest
 
     /// <inheritdoc/>
     public Chest Chest { get; }
-
-    /// <inheritdoc/>
-    public ItemCollectionType CollectionType { get; }
-
-    /// <inheritdoc/>
-    public GameLocation Location { get; }
-
-    /// <inheritdoc/>
-    public Farmer Player { get; }
-
-    /// <inheritdoc/>
-    public Vector2 Position { get; }
-
-    /// <inheritdoc/>
-    public int Index { get; }
 
     /// <inheritdoc/>
     public ItemMatcher ItemMatcher { get; } = new(true);
@@ -326,19 +283,6 @@ internal class ManagedChest : IManagedChest
     }
 
     private IChestData Data { get; }
-
-    /// <inheritdoc/>
-    public bool MatchesChest(Chest other)
-    {
-        var chest = (this.Location, this.Position, this.Player, this.Index) switch
-        {
-            (FarmHouse farmHouse, var pos, _, _) when pos == Vector2.Zero => farmHouse.fridge.Value,
-            (not null, _, _, _) when this.Location.Objects.TryGetValue(this.Position, out var obj) => obj as Chest,
-            (_, _, not null, > -1) => this.Player.Items.ElementAtOrDefault(this.Index) as Chest,
-            _ => null,
-        };
-        return chest is not null && ReferenceEquals(chest, other);
-    }
 
     /// <inheritdoc/>
     public Item StashItem(Item item)

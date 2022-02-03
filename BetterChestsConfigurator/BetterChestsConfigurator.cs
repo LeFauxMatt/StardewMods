@@ -33,8 +33,32 @@ public class BetterChestsConfigurator : Mod
         this.Config = this.Helper.ReadConfig<ModConfig>();
 
         // Events
+        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+    }
+
+    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    {
+        if (!this.GMCM.IsLoaded)
+        {
+            return;
+        }
+
+        this.GMCM.API.Register(
+            this.ModManifest,
+            () => this.Config = new(), 
+            () => this.Helper.WriteConfig(this.Config));
+        this.GMCM.API.AddParagraph(
+            this.ModManifest, 
+            () => this.Helper.Translation.Get("config.description.text"));
+        this.GMCM.API.SetTitleScreenOnlyForNextOptions(this.ModManifest, true);
+        this.GMCM.API.AddKeybindList(
+            this.ModManifest,
+            () => this.Config.ConfigureChest,
+            value => this.Config.ConfigureChest = value,
+            () => this.Helper.Translation.Get("config.configure-chest.name"),
+            () => this.Helper.Translation.Get("config.configure-chest.tooltip"));
     }
 
     private void OnMenuChanged(object sender, MenuChangedEventArgs e)
@@ -63,7 +87,7 @@ public class BetterChestsConfigurator : Mod
         this.ChestData = this.CurrentChest.modData.Pairs
                              .Where(modData => modData.Key.StartsWith($"{this.BetterChests.UniqueId}"))
                              .ToDictionary(
-                                 modData => modData.Key,
+                                 modData => modData.Key[(this.BetterChests.UniqueId.Length + 1)..],
                                  modData => modData.Value);
         this.GMCM.Register(this.ModManifest, this.Reset, this.Save);
         this.BetterChests.API.AddChestOptions(this.ModManifest, this.ChestData);

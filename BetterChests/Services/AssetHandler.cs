@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -17,8 +16,9 @@ internal class AssetHandler : IModService, IAssetLoader
 {
     private const string CraftablesData = "Data/BigCraftablesInformation";
 
-    private IDictionary<string, IChestData> _cachedChestData;
-    private Dictionary<int, string[]> _cachedCraftables;
+    private IReadOnlyDictionary<string, IChestData> _cachedChestData;
+    private IReadOnlyDictionary<int, string[]> _cachedCraftables;
+    private IReadOnlyDictionary<string, string[]> _cachedTabData;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetHandler"/> class.
@@ -45,15 +45,34 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <summary>
     /// Gets the collection of chest data for all known chest types in the game.
     /// </summary>
-    public ReadOnlyDictionary<string, IChestData> ChestData
+    public IReadOnlyDictionary<string, IChestData> ChestData
     {
-        get => new(this.CachedChestData);
+        get => this._cachedChestData ??= (
+                from data in this.Helper.Content.Load<IDictionary<string, IDictionary<string, string>>>($"{BetterChests.ModUniqueId}/Chests", ContentSource.GameContent)
+                select (data.Key, Value: new SerializedChestData(data.Value)))
+            .ToDictionary(data => data.Key, data => (IChestData)data.Value);
+    }
+
+    /// <summary>
+    /// Gets the collection of tab data.
+    /// </summary>
+    public IReadOnlyDictionary<string, string[]> TabData
+    {
+        get => this._cachedTabData ??= (
+                from tab in
+                    from data in this.Helper.Content.Load<IDictionary<string, string>>($"{BetterChests.ModUniqueId}/Tabs", ContentSource.GameContent)
+                    select (data.Key, info: data.Value.Split('/'))
+                orderby int.Parse(tab.info[2]), tab.info[0]
+                select (tab.Key, tab.info))
+            .ToDictionary(
+                data => data.Key,
+                data => data.info);
     }
 
     /// <summary>
     /// Gets the game data for Big Craftables.
     /// </summary>
-    public IDictionary<int, string[]> Craftables
+    public IReadOnlyDictionary<int, string[]> Craftables
     {
         get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
                                         .ToDictionary(
@@ -68,14 +87,6 @@ internal class AssetHandler : IModService, IAssetLoader
     private IDictionary<string, string> LocalTabData { get; set; }
 
     private IDictionary<string, IDictionary<string, string>> LocalChestData { get; set; }
-
-    private IDictionary<string, IChestData> CachedChestData
-    {
-        get => this._cachedChestData ??= (
-                from data in this.Helper.Content.Load<IDictionary<string, IDictionary<string, string>>>($"{BetterChests.ModUniqueId}/Chests", ContentSource.GameContent)
-                select (data.Key, Value: new SerializedChestData(data.Value)))
-            .ToDictionary(data => data.Key, data => (IChestData)data.Value);
-    }
 
     /// <summary>
     /// Adds new Chest Data and saves to assets/chests.json.
@@ -105,12 +116,13 @@ internal class AssetHandler : IModService, IAssetLoader
     /// </summary>
     public void SaveChestData()
     {
-        foreach (var (key, data) in this.CachedChestData)
+        foreach (var (key, data) in this._cachedChestData)
         {
             this.LocalChestData[key] = SerializedChestData.GetData(data);
         }
 
         this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
+        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "ChestData", new[] { BetterChests.ModUniqueId });
     }
 
     /// <inheritdoc/>
@@ -149,6 +161,7 @@ internal class AssetHandler : IModService, IAssetLoader
     {
         this._cachedCraftables = null;
         this._cachedChestData = null;
+        this._cachedTabData = null;
     }
 
     private void OnPeerConnected(object sender, PeerConnectedEventArgs e)

@@ -24,7 +24,7 @@ using StardewValley.Objects;
 internal class CustomColorPicker : Feature
 {
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
-    private readonly PerScreen<ManagedChest> _managedChest = new();
+    private readonly PerScreen<IManagedChest> _managedChest = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
 
@@ -97,7 +97,7 @@ internal class CustomColorPicker : Feature
         set => this._colorPicker.Value = value;
     }
 
-    private ManagedChest ManagedChest
+    private IManagedChest ManagedChest
     {
         get => this._managedChest.Value;
         set => this._managedChest.Value = value;
@@ -136,6 +136,7 @@ internal class CustomColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetColorFromSelection_postfix(DiscreteColorPicker __instance, int selection, ref Color __result)
     {

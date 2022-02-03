@@ -46,6 +46,7 @@ public class BetterChests : Mod
         // Services
         this.Services.Add(
             new AssetHandler(this.Config, this.Helper),
+            new CommandHandler(this.Config, this.Helper, this.Services),
             new ManagedChests(this.Config, this.Helper, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
             new CarryChest(this.Config, this.Helper, this.Services),

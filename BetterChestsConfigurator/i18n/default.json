@@ -1,0 +1,5 @@
+{
+  "config.description.text": "Better Chests Configurator is an addon to Better Chests that allows you to configure individual chests by picking them up and hitting a key.",
+  "config.configure-chest.name": "Configure Chest",
+  "config.configure-chest.tooltip": "The button to press to bring up the configure chest menu",
+}
