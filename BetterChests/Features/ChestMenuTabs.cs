@@ -96,8 +96,8 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
@@ -105,8 +105,8 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }

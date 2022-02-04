@@ -8,7 +8,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Custom Events raised by FuryCore.
 /// </summary>
-public interface IFuryEvents
+public interface ICustomEvents
 {
     /// <summary>
     ///     Triggers when an <see cref="ItemGrabMenu" /> is constructed or when an the Active Menu switches to/from an

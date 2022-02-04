@@ -43,7 +43,7 @@ internal class MenuComponents : IMenuComponents, IModService
                 events.RenderingItemGrabMenu += this.OnRenderingItemGrabMenu;
             });
 
-        services.Lazy<HarmonyHelper>(
+        services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
             {
                 var id = $"{FuryCore.ModUniqueId}.{nameof(MenuComponents)}";

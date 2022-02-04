@@ -18,8 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AD9704D5-65CD-48E6-AF6F-8CEE74477ADD}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		README.md = README.md
 		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetterChestsConfigurator", "BetterChestsConfigurator\BetterChestsConfigurator.csproj", "{806A01A3-E018-49B3-958D-F53FC36F3F82}"
@@ -38,7 +38,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSPlus", "archived\XSPlus\X
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Common\Common.projitems*{2c89c1dc-c501-40be-b981-2fefe30e80b8}*SharedItemsImports = 5
 		Common\Common.projitems*{806a01a3-e018-49b3-958d-f53fc36f3f82}*SharedItemsImports = 5
 		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
@@ -100,13 +99,13 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{D591B042-7360-4FA1-9D17-064C6929ECD9} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{E6085D20-0427-4196-954A-8958DE22ACC9} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{98F22749-5C13-4CBD-85D3-9F4BB89EB016} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
 	EndGlobalSection
 EndGlobal

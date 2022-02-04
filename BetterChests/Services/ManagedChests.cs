@@ -103,7 +103,7 @@ internal class ManagedChests : IModService
     {
         get
         {
-            foreach (var item in Game1.player.Items)
+            foreach (var item in Game1.player.Items.Where(item => item is not null))
             {
                 // Add untracked objects to cache
                 if (!this.CachedObjects.TryGetValue(item, out var managedChest))

@@ -164,14 +164,14 @@ internal class ResizeChestMenu : Feature
     protected override void Activate()
     {
         this.HarmonyHelper.ApplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.HarmonyHelper.UnapplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
     private static int GetMenuCapacity(MenuWithInventory menu)

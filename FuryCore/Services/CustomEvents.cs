@@ -8,9 +8,9 @@ using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 
-/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IFuryEvents" />
+/// <inheritdoc cref="ICustomEvents" />
 [FuryCoreService(true)]
-internal class CustomEvents : IFuryEvents, IModService
+internal class CustomEvents : ICustomEvents, IModService
 {
     private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
     private readonly MenuComponentPressed _menuComponentPressed;

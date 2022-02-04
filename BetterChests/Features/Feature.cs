@@ -10,7 +10,7 @@ using StardewMods.FuryCore.Interfaces;
 /// <inheritdoc />
 internal abstract class Feature : IModService
 {
-    private readonly Lazy<IFuryEvents> _furyEvents;
+    private readonly Lazy<ICustomEvents> _customEvents;
     private readonly Lazy<ManagedChests> _managedChests;
 
     /// <summary>
@@ -25,7 +25,7 @@ internal abstract class Feature : IModService
         this.Helper = helper;
         this.Config = config;
         this._managedChests = services.Lazy<ManagedChests>();
-        this._furyEvents = services.Lazy<IFuryEvents>();
+        this._customEvents = services.Lazy<ICustomEvents>();
     }
 
     /// <summary>
@@ -36,9 +36,9 @@ internal abstract class Feature : IModService
     /// <summary>
     ///     Gets custom events provided by FuryCore.
     /// </summary>
-    protected IFuryEvents FuryEvents
+    protected ICustomEvents CustomEvents
     {
-        get => this._furyEvents.Value;
+        get => this._customEvents.Value;
     }
 
     /// <summary>

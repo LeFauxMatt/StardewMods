@@ -266,7 +266,9 @@ public class ItemSelectionMenu : ItemGrabMenu
             && int.TryParse(itemSlot.name, out var slotNumber)
             && this.Items.ElementAtOrDefault(slotNumber) is { Item: { } item })
         {
-            var tags = ItemMatcher.GetContextTags(item).ToList();
+            var tags = new HashSet<string>(item.GetContextTags().Where(tag => !tag.StartsWith("id_")));
+
+            // Add extra quality levels
             if (tags.Contains("quality_none"))
             {
                 tags.Add("quality_silver");
@@ -274,7 +276,7 @@ public class ItemSelectionMenu : ItemGrabMenu
                 tags.Add("quality_iridium");
             }
 
-            this.TagMenu = new(tags, x, y, this.AddTag);
+            this.TagMenu = new(tags.ToList(), x, y, this.AddTag);
         }
     }
 

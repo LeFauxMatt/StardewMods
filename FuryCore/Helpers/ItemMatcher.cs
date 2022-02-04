@@ -8,8 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using StardewValley;
-using StardewValley.Locations;
-using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <summary>
@@ -52,39 +50,6 @@ public class ItemMatcher : ObservableCollection<string>
     private bool ExactMatch { get; }
 
     private string SearchTagSymbol { get; }
-
-    /// <summary>
-    ///     Gets all context tags for an item including custom ones.
-    /// </summary>
-    /// <param name="item">The item to get context tags for.</param>
-    /// <returns>A list of context tags from the item.</returns>
-    public static IEnumerable<string> GetContextTags(Item item)
-    {
-        foreach (var contextTag in item.GetContextTags().Where(contextTag => !contextTag.StartsWith("id_")))
-        {
-            yield return contextTag;
-        }
-
-        if (item is Furniture)
-        {
-            yield return SearchPhrase.CategoryFurniture;
-        }
-
-        if (item is SObject { Type: "Arch" })
-        {
-            yield return SearchPhrase.CategoryArtifact;
-        }
-
-        if (item is SObject obj && SearchPhrase.CanDonateToBundle(obj))
-        {
-            yield return SearchPhrase.DonateBundle;
-        }
-
-        if (SearchPhrase.CanDonateToMuseum(item))
-        {
-            yield return SearchPhrase.DonateMuseum;
-        }
-    }
 
     /// <summary>
     ///     Checks if an item matches the search phrases.
@@ -168,11 +133,6 @@ public class ItemMatcher : ObservableCollection<string>
 
     private record SearchPhrase
     {
-        public const string CategoryFurniture = "category_furniture";
-        public const string CategoryArtifact = "category_artifact";
-        public const string DonateMuseum = "donate_museum";
-        public const string DonateBundle = "donate_bundle";
-
         public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false)
         {
             this.NotMatch = value[..1] == "!";
@@ -203,29 +163,8 @@ public class ItemMatcher : ObservableCollection<string>
 
             return item switch
             {
-                Furniture when this.Matches(SearchPhrase.CategoryFurniture) => true,
-                SObject { Type: "Arch" } when this.Matches(SearchPhrase.CategoryArtifact) => true,
-                SObject { Type: "Arch" } when this.Matches(SearchPhrase.DonateMuseum) => SearchPhrase.CanDonateToMuseum(item),
-                SObject { Type: "Minerals" } when this.Matches(SearchPhrase.DonateMuseum) => SearchPhrase.CanDonateToMuseum(item),
-                SObject obj when this.Matches(SearchPhrase.DonateBundle) => SearchPhrase.CanDonateToBundle(obj),
                 _ => item.GetContextTags().Any(this.Matches) != this.NotMatch,
             };
-        }
-
-        public static bool CanDonateToMuseum(Item item)
-        {
-            return Game1.locations
-                        .OfType<LibraryMuseum>()
-                        .FirstOrDefault()?.isItemSuitableForDonation(item)
-                   ?? false;
-        }
-
-        public static bool CanDonateToBundle(SObject obj)
-        {
-            return Game1.locations
-                        .OfType<CommunityCenter>()
-                        .FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
-                   ?? false;
         }
 
         private bool Matches(string match)
