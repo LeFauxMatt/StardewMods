@@ -30,7 +30,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\MoreChests\IMoreChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Records\PlacedObject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Records\PlayerItem.cs" />
   </ItemGroup>
 </Project>

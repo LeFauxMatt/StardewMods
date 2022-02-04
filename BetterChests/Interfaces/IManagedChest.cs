@@ -18,6 +18,11 @@ internal interface IManagedChest : IChestData
     public ItemMatcher ItemMatcher { get; }
 
     /// <summary>
+    ///     Gets the Qualified Item Id of the Chest.
+    /// </summary>
+    public string QualifiedItemId { get; }
+
+    /// <summary>
     ///     Attempt to stash an item into the chest based on categorization and existing items.
     /// </summary>
     /// <param name="item">The item to stash.</param>

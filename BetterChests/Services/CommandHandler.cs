@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using Common.Helpers;
 using StardewModdingAPI;
-using StardewMods.BetterChests.Extensions;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces;
+using StardewValley;
 
 /// <inheritdoc />
 internal class CommandHandler : IModService
@@ -165,19 +165,14 @@ internal class CommandHandler : IModService
         }
 
         // Iterate managed chests and features
-        foreach (var (playerItem, managedChest) in this.ManagedChests.PlayerChests)
+        foreach (var managedChest in this.ManagedChests.PlayerChests)
         {
-            var (player, index) = playerItem;
-            this.AppendChestData(sb, managedChest, $"\nChest with farmer {player.Name} in slot {index.ToString()}\n");
+            this.AppendChestData(sb, managedChest, $"\nChest {managedChest.QualifiedItemId} with farmer {Game1.player.Name}\n");
         }
 
-        foreach (var (placedChest, lazyManagedChest) in this.ManagedChests.PlacedChests)
+        foreach (var ((location, pos), managedChest) in this.ManagedChests.PlacedChests)
         {
-            var (locationName, x, y, chestName) = placedChest;
-            if (!placedChest.ToChest(out _))
-            {
-                this.AppendChestData(sb, lazyManagedChest.Value, $"Chest \"{chestName}\" at location {locationName} at coordinates ({x.ToString()},{y.ToString()})");
-            }
+            this.AppendChestData(sb, managedChest, $"Chest \"{managedChest.QualifiedItemId}\" at location {location.NameOrUniqueName} at coordinates ({((int)pos.X).ToString()},{((int)pos.Y).ToString()})");
         }
 
         Log.Info(sb.ToString());
