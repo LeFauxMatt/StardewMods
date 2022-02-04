@@ -6,11 +6,10 @@ using System.Linq;
 using Common.Records;
 using StardewMods.BetterChests.Models;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>
-///     Extensions for the PlacedChest record to retrieve the associated Chest object.
+///     Extension methods for the PlacedChest record.
 /// </summary>
 internal static class PlacedChestExtensions
 {
@@ -22,27 +21,29 @@ internal static class PlacedChestExtensions
     /// <summary>
     ///     Gets the Chest associated with the PlacedChest.
     /// </summary>
-    /// <param name="placedChest">The PlacedChest to get the Chest for.</param>
-    /// <returns>Returns a Chest if it is accessible to the player.</returns>
-    public static Chest GetChest(this PlacedChest placedChest)
+    /// <param name="placedChest">The placed Chest to get the object for.</param>
+    /// <param name="chest">A Chest if it is accessible to the player.</param>
+    /// <returns>Returns true if the Placed Object is a Chest that is accessible to the player.</returns>
+    public static bool ToChest(this PlacedChest placedChest, out Chest chest)
     {
-        var placedObject = placedChest.GetPlacedObject();
-        var (location, position) = placedObject;
-        return location switch
+        if (!placedChest.ToPlacedObject(out var placedObject))
         {
-            FarmHouse farmHouse when farmHouse.fridgePosition.ToVector2().Equals(position) => farmHouse.fridge.Value,
-            not null => placedObject.Object as Chest,
-            _ => null,
-        };
+            chest = null;
+            return false;
+        }
+
+        return placedObject.ToChest(out chest);
     }
 
     /// <summary>
     ///     Gets an object placed in a location at a position.
     /// </summary>
     /// <param name="placedChest">The placed Chest to get the object for.</param>
-    /// <returns>Returns the PlacedObject representation of the object.</returns>
-    public static PlacedObject GetPlacedObject(this PlacedChest placedChest)
+    /// <param name="placedObject">The PlacedObject representation of the placed chest.</param>
+    /// <returns>Returns true if the PlacedObject could be found.</returns>
+    public static bool ToPlacedObject(this PlacedChest placedChest, out PlacedObject placedObject)
     {
-        return new(PlacedChestExtensions.GetAccessibleLocations().FirstOrDefault(location => location.NameOrUniqueName == placedChest.LocationName), new(placedChest.X, placedChest.Y));
+        placedObject = new(PlacedChestExtensions.GetAccessibleLocations().FirstOrDefault(location => location.NameOrUniqueName == placedChest.LocationName), new(placedChest.X, placedChest.Y));
+        return placedObject.Location is not null;
     }
 }

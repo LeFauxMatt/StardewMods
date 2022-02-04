@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
+using Common.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -104,6 +105,7 @@ internal class CategorizeChest : Feature
             // Exit ItemSelectionMenu
             case null when this.ReturnMenu is not null && this.CurrentItemSelectionMenu is not null && this.ManagedChest is not null:
                 // Save ItemSelectionMenu to ModData
+                Log.Trace($"Saving FilterItemsList to Chest {this.ManagedChest.Chest.Name}.");
                 this.ManagedChest.FilterItemsList = new(this.ManagedChest.ItemMatcher);
                 this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
                 this.CurrentItemSelectionMenu = null;

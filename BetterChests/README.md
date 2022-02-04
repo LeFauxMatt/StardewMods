@@ -3,37 +3,37 @@
 Adds enhanced chest features to the game.
 
 ## Contents
+
 * [Features](#features)
-  * [Carry Chest](#carry-chest)
-  * [Categorize Chest](#categorize-chest)
-  * [Chest Menu Tabs](#chest-menu-tabs)
-  * [Collect Items](#collect-items)
-  * [Craft From Chest](#craft-from-chest)
-  * [Custom Color Picker](#custom-color-picker)
-  * [Filter Items](#filter-items)
-  * [Open Held Chest](#open-held-chest)
-  * [Resize Chest](#resize-chest)
-  * [Resize Chest Menu](#resize-chest-menu)
-  * [Search Items](#search-items)
-  * [Slot Lock](#slot-lock)
-  * [Stash To Chest](#stash-to-chest)
-  * [Unload Chest](#unload-chest)
+    * [Carry Chest](#carry-chest)
+    * [Categorize Chest](#categorize-chest)
+    * [Chest Menu Tabs](#chest-menu-tabs)
+    * [Collect Items](#collect-items)
+    * [Craft From Chest](#craft-from-chest)
+    * [Custom Color Picker](#custom-color-picker)
+    * [Filter Items](#filter-items)
+    * [Open Held Chest](#open-held-chest)
+    * [Resize Chest](#resize-chest)
+    * [Resize Chest Menu](#resize-chest-menu)
+    * [Search Items](#search-items)
+    * [Slot Lock](#slot-lock)
+    * [Stash To Chest](#stash-to-chest)
+    * [Unload Chest](#unload-chest)
 * [Usage](#usage)
-  * [Custom Chests](#custom-chests)
-  * [Customized Tabs](#customized-tabs)
-  * [Item Tags](#item-tags)
+    * [Custom Chests](#custom-chests)
+    * [Customized Tabs](#customized-tabs)
+    * [Item Tags](#item-tags)
 * [Configurations](#configurations)
-  * [Config Inheritance](#config-inheritance)
-  * [Option Values](#option-values)
-  * [Range Values](#range-values)
+    * [Config Inheritance](#config-inheritance)
+    * [Option Values](#option-values)
+    * [Range Values](#range-values)
 * [Translations](#translations)
 
 ## Features
 
 ### Carry Chest
 
-With Carry Chest enabled, you can hit the Use Tool button to pick up chests
-into your inventory even if it has items.
+With Carry Chest enabled, you can hit the Use Tool button to pick up chests into your inventory even if it has items.
 
 | Config     | Description                      | Default Value | Other Value(s)                        |
 |:-----------|:---------------------------------|:--------------|:--------------------------------------|
@@ -43,8 +43,8 @@ into your inventory even if it has items.
 
 ### Categorize Chest
 
-Categorize Chest allows you to assign item categories to chests so that only
-those items can be stashed into that chest.<sup>1</sup>
+Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that
+chest.<sup>1</sup>
 
 | Config Option   | Description                           | Default Value | Other Value(s)                        |
 |:----------------|:--------------------------------------|:--------------|:--------------------------------------|
@@ -55,8 +55,7 @@ those items can be stashed into that chest.<sup>1</sup>
 
 ### Chest Menu Tabs
 
-Tabs are added to the Chest Menu to allow you to quickly toggle between
-categories of items.<sup>1</sup>
+Tabs are added to the Chest Menu to allow you to quickly toggle between categories of items.<sup>1</sup>
 
 | Config          | Description                                    | Default Value    | Other Value(s)                        |
 |:----------------|:-----------------------------------------------|------------------|:--------------------------------------|
@@ -72,8 +71,8 @@ categories of items.<sup>1</sup>
 
 ### Collect Items
 
-While you are carrying a chest in your inventory, any items you pick up may be
-collected directly into the chest, bypassing your inventory.<sup>1</sup>
+While you are carrying a chest in your inventory, any items you pick up may be collected directly into the chest,
+bypassing your inventory.<sup>1</sup>
 
 | Config       | Description                        | Default Value | Other Value(s)                        |
 |:-------------|:-----------------------------------|:--------------|:--------------------------------------|
@@ -84,8 +83,7 @@ collected directly into the chest, bypassing your inventory.<sup>1</sup>
 
 ### Craft From Chest
 
-Hit a configurable key (or controller button) to bring up a crafting menu that
-uses items stored in nearby chests.
+Hit a configurable key (or controller button) to bring up a crafting menu that uses items stored in nearby chests.
 
 | Config                 | Description                                           | Default Value | Other Value(s)                                                                 |
 |:-----------------------|:------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -95,12 +93,12 @@ uses items stored in nearby chests.
 
 1. See [Range Values](#range-values).
 2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
-3. Measured in tiles away from the player. Use `-1` for "unlimited" distance. 
+3. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
 ### Custom Color Picker
 
-Replaces the Chest Color Picker with a more precise version that lets you pick
-a color with sliders for hue, saturation, and lightness. 
+Replaces the Chest Color Picker with a more precise version that lets you pick a color with sliders for hue, saturation,
+and lightness.
 
 | Config                | Description                                   | Default Value | Other Value(s)                        |
 |:----------------------|:----------------------------------------------|:--------------|:--------------------------------------|
@@ -111,8 +109,8 @@ a color with sliders for hue, saturation, and lightness.
 
 ### Filter Items
 
-Impose restrictions on what types of items are allowed to go into a chest. With
-this enabled, items that are not part of the allowed list will be blocked.
+Impose restrictions on what types of items are allowed to go into a chest. With this enabled, items that are not part of
+the allowed list will be blocked.
 
 | Config          | Description                       | Default Value | Other Value(s)                        |
 |:----------------|:----------------------------------|:--------------|:--------------------------------------|
@@ -124,8 +122,8 @@ this enabled, items that are not part of the allowed list will be blocked.
 
 ### Open Held Chest
 
-With a chest as your active item, you can hit the action button to bring up the
-chest menu and access the chests contents.
+With a chest as your active item, you can hit the action button to bring up the chest menu and access the chests
+contents.
 
 | Config        | Description                          | Default Value | Other Value(s)                        |
 |:--------------|:-------------------------------------|:--------------|:--------------------------------------|
@@ -135,8 +133,8 @@ chest menu and access the chests contents.
 
 ### Resize Chest
 
-The default storage for a chest is 36 items. With Resize Chest enabled you can
-increase storage space up to virtually unlimited storage.<sup>1</sup>
+The default storage for a chest is 36 items. With Resize Chest enabled you can increase storage space up to virtually
+unlimited storage.<sup>1</sup>
 
 | Config              | Description                              | Default Value | Other Value(s)                            |
 |:--------------------|:-----------------------------------------|:--------------|:------------------------------------------|
@@ -152,8 +150,8 @@ increase storage space up to virtually unlimited storage.<sup>1</sup>
 
 ### Resize Chest Menu
 
-The default chest menu can show 3 rows of items at once. With Resize Chest Menu
-enabled you can display anywhere between 3 and 6 rows of items.
+The default chest menu can show 3 rows of items at once. With Resize Chest Menu enabled you can display anywhere between
+3 and 6 rows of items.
 
 | Config              | Description                            | Default Value | Other Value(s)                        |
 |:--------------------|:---------------------------------------|:--------------|:--------------------------------------|
@@ -164,8 +162,7 @@ enabled you can display anywhere between 3 and 6 rows of items.
 
 ### Search Items
 
-Adds a search bar to the top of the Chest Menu to only display items that meet
-a search criteria.
+Adds a search bar to the top of the Chest Menu to only display items that meet a search criteria.
 
 | Config          | Description                                              | Default Value | Other Value(s)                        |
 |:----------------|:---------------------------------------------------------|:--------------|:--------------------------------------|
@@ -177,8 +174,8 @@ a search criteria.
 
 ### Slot Lock
 
-Hover over an item slot in your backpack, and hit a configurable key to lock
-that slot which prevents any item in that slot from being stashed into a chest.
+Hover over an item slot in your backpack, and hit a configurable key to lock that slot which prevents any item in that
+slot from being stashed into a chest.
 
 | Config   | Description                             | Default Value | Other Value(s)                        |
 |:---------|:----------------------------------------|:--------------|:--------------------------------------|
@@ -190,8 +187,8 @@ that slot which prevents any item in that slot from being stashed into a chest.
 
 ### Stash To Chest
 
-Hit a configurable key (or controller button) to instantly stash items from
-your inventory into nearby chests.<sup>1</sup>
+Hit a configurable key (or controller button) to instantly stash items from your inventory into nearby chests.<sup>
+1</sup>
 
 | Config Option        | Description                                           | Default Value | Other Value(s)                                                                 |
 |:---------------------|:------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -206,8 +203,8 @@ your inventory into nearby chests.<sup>1</sup>
 
 ### Unload Chest
 
-While carrying a chest and facing another chest, hit the Use Tool button to
-unload the carried chests contents into the placed chest.
+While carrying a chest and facing another chest, hit the Use Tool button to unload the carried chests contents into the
+placed chest.
 
 | Config Option | Description                       | Default Value | Other Value(s)                        |
 |:--------------|:----------------------------------|:--------------|:--------------------------------------|
@@ -222,11 +219,9 @@ unload the carried chests contents into the placed chest.
 The config for chest types are stored in the `chests.json` in the `assets`
 folder.
 
-If `chests.json` is not found, a default one for vanilla chests is
-automatically generated with all default settings.
+If `chests.json` is not found, a default one for vanilla chests is automatically generated with all default settings.
 
-For mods adding custom chests, there are two ways to register them with Better
-Chests:
+For mods adding custom chests, there are two ways to register them with Better Chests:
 
 #### API
 
@@ -261,8 +256,7 @@ Sample `content.json`:
 
 ### Customized Tabs
 
-The default tabs are defined by the `tabs.json` and `tabs.png` files which are
-both found under the `assets` folder.
+The default tabs are defined by the `tabs.json` and `tabs.png` files which are both found under the `assets` folder.
 
 If `tabs.json` is not found, a default one is automatically generated:
 
@@ -277,8 +271,8 @@ If `tabs.json` is not found, a default one is automatically generated:
 | Misc            | Misc         | `furyx639.BetterChests\\Tabs\\Texture` | 6          | Big Craftable, Furniture, Junk                                                                               | 
 | Seeds           | Seeds        | `furyx639.BetterChests\\Tabs\\Texture` | 7          | Fertilizer, Seeds                                                                                            |
 
-You can edit these files directly for personal usage, or they may be targeted
-externally for edits from other mods at the following paths:
+You can edit these files directly for personal usage, or they may be targeted externally for edits from other mods at
+the following paths:
 
 `furyx639.BetterChests\\Tabs`  
 Add/replace tabs by editing entries.
@@ -326,8 +320,11 @@ to each item which are used throughout this mod.
 There are a few ways to see what context tags each item contains:
 
 * Enter the console command `debug listtags` to show all tags for the currently held item.
-* Refer to the [Modding Docs](https://stardewcommunitywiki.com/Modding:Context_tags) for some tags (note may be outdated).
-* Install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541), enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) in its config and hit F1 while hovering over any item.
+* Refer to the [Modding Docs](https://stardewcommunitywiki.com/Modding:Context_tags) for some tags (note may be
+  outdated).
+* Install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541),
+  enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) in its
+  config and hit F1 while hovering over any item.
 
 Here are examples of some useful tags:
 
@@ -352,32 +349,33 @@ In addition to the vanilla game tags, this also adds some custom tags to items:
 
 ## Configurations
 
-For ease of use, it is recommended to set config options from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098).
+For ease of use, it is recommended to set config options
+from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098).
 
 ### Config Inheritance
 
-For some config options, the same options can be applied to multiple levels.
-The lowest level config will always take precedence.
+For some config options, the same options can be applied to multiple levels. The lowest level config will always take
+precedence.
 
 * **Default Chest** - Every chest inherits from the Default Chest options.
 * **Chest Type** - Applies to a particular type of chest.
-  * Chest
-  * Stone Chest
-  * Junimo Chest
-  * Auto-Grabber
-  * Mini-Fridge
-  * Mini-Shipping Bin
-  * Fridge
-  * Custom chests added by other mods.<sup>1</sup>
+    * Chest
+    * Stone Chest
+    * Junimo Chest
+    * Auto-Grabber
+    * Mini-Fridge
+    * Mini-Shipping Bin
+    * Fridge
+    * Custom chests added by other mods.<sup>1</sup>
 * **Individual Chest** - A single instance of a chest can be configured individually.<sup>2</sup>
 
 1. External mod must "opt-in" by [registering custom chest](#custom-chests) with Better Chests.
-2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual chests.
+2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual
+   chests.
 
 ### Option Values
 
-The option value determines whether a feature will be enabled or disabled for
-a chest.
+The option value determines whether a feature will be enabled or disabled for a chest.
 
 * **Default** - The value will be inherited from a parent config.<sup>1</sup>
 * **Disabled** - The feature will be disabled.
@@ -387,8 +385,7 @@ a chest.
 
 ### Range Values
 
-The Range value limits which chests will be selected for a feature relative to
-the player.
+The Range value limits which chests will be selected for a feature relative to the player.
 
 * **Default** - The value will be inherited from a parent config.<sup>1</sup>
 * **Disabled** - The feature will be disabled.

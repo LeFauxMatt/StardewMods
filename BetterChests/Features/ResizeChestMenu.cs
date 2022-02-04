@@ -403,6 +403,8 @@ internal class ResizeChestMenu : Feature
 
         if (e.IsNew && this.MenuOffset != 0)
         {
+            Log.Trace($"Resizing Chest Menu for Chest {e.Chest.Name}");
+
             // Shift components down for increased ItemsToGrabMenu size
             this.Menu.height += this.MenuOffset;
             this.Menu.inventory.movePosition(0, this.MenuOffset);

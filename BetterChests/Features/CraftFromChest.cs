@@ -130,12 +130,12 @@ internal class CraftFromChest : Feature
 
         foreach (var (placedChest, managedChest) in this.ManagedChests.PlacedChests)
         {
-            if (placedChest.GetChest() is null || managedChest.Value.CraftFromChest == FeatureOptionRange.Disabled)
+            if (!placedChest.ToPlacedObject(out var placedObject) || !placedObject.ToChest(out _) || managedChest.Value.CraftFromChest == FeatureOptionRange.Disabled)
             {
                 continue;
             }
 
-            var (location, _) = placedChest.GetPlacedObject();
+            var (location, _) = placedObject;
             if (managedChest.Value.CraftFromChest == FeatureOptionRange.World
                 || managedChest.Value.CraftFromChest == FeatureOptionRange.Location && managedChest.Value.CraftFromChestDistance == -1
                 || managedChest.Value.CraftFromChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.CraftFromChestDistance, Game1.player))
@@ -150,6 +150,7 @@ internal class CraftFromChest : Feature
             return;
         }
 
+        Log.Trace("Launching CraftFromChest Menu.");
         this._multipleChestCraftingPage.Value = new(eligibleChests);
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
     }

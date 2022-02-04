@@ -361,6 +361,8 @@ internal class SearchItems : Feature
         // Expand ItemsToGrabMenu by Search Bar Height
         if (e.IsNew)
         {
+            Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {e.Chest.Name}");
+
             var padding = this.MenuPadding(this.Menu);
             this.Menu.yPositionOnScreen -= padding;
             this.Menu.height += padding;

@@ -62,12 +62,12 @@ internal class StashToChest : Feature
 
         foreach (var (placedChest, managedChest) in this.ManagedChests.PlacedChests)
         {
-            if (placedChest.GetChest() is null || managedChest.Value.StashToChest == FeatureOptionRange.Disabled)
+            if (!placedChest.ToPlacedObject(out var placedObject) || !placedObject.ToChest(out _) || managedChest.Value.StashToChest == FeatureOptionRange.Disabled)
             {
                 continue;
             }
 
-            var (location, _) = placedChest.GetPlacedObject();
+            var (location, _) = placedObject;
             if (managedChest.Value.StashToChest == FeatureOptionRange.World
                 || managedChest.Value.StashToChest == FeatureOptionRange.Location && managedChest.Value.StashToChestDistance == -1
                 || managedChest.Value.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.StashToChestDistance, Game1.player))
@@ -82,6 +82,7 @@ internal class StashToChest : Feature
             return false;
         }
 
+        Log.Trace("Stashing items into chests");
         var lockedSlots = this.SlotLock.LockedSlots;
         for (var index = Game1.player.Items.Count - 1; index >= 0; index--)
         {

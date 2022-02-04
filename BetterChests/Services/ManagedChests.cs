@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Extensions;
+using Common.Helpers;
 using Common.Records;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -16,6 +17,7 @@ using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
 /// <inheritdoc />
 internal class ManagedChests : IModService
@@ -110,7 +112,7 @@ internal class ManagedChests : IModService
 
         foreach (var (placedChest, lazyManagedChest) in this.PlacedChests)
         {
-            if (placedChest.GetChest() is { } otherChest && ReferenceEquals(otherChest, chest))
+            if (placedChest.ToChest(out var otherChest) && ReferenceEquals(otherChest, chest))
             {
                 managedChest = lazyManagedChest.Value;
                 return managedChest is not null;
@@ -128,26 +130,49 @@ internal class ManagedChests : IModService
 
     private void AddPlacedChest(PlacedChest placedChest)
     {
+        Log.Trace($"Placed Chest added to {placedChest.LocationName} at ({placedChest.X.ToString()}, {placedChest.Y.ToString()}).");
         if (!this._placedChests.Value.ContainsKey(placedChest))
         {
             this._placedChests.Value.Add(
                 placedChest,
                 new(() =>
                 {
+                    if (!placedChest.ToChest(out var chest))
+                    {
+                        return null;
+                    }
+
                     var config = this.GetChestData(placedChest.ChestName);
-                    return new ManagedChest(placedChest.GetChest(), config);
+                    return new ManagedChest(chest, config);
                 }));
         }
     }
 
     private void AddPlayerChest(Farmer player, int index)
     {
-        if (player.Items[index] is not Chest chest)
+        string name;
+        Chest chest;
+        switch (player.Items[index])
         {
+            case Chest playerChest when playerChest.IsPlayerChest():
+                chest = playerChest;
+                name = this.Assets.Craftables.SingleOrDefault(info => info.Key == chest.ParentSheetIndex).Value?[0];
+                break;
+            case SObject { heldObject.Value: Chest heldChest } heldObj when heldChest.IsPlayerChest():
+                chest = heldChest;
+                name = this.Assets.Craftables.SingleOrDefault(info => info.Key == heldObj.ParentSheetIndex).Value?[0];
+                break;
+            default:
+                return;
+        }
+
+        Log.Trace($"Player Chest {name} added to {player.Name} in slot {index.ToString()}.");
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Log.Error($"Tried adding an unknown chest {name}");
             return;
         }
 
-        var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == chest.ParentSheetIndex).Value[0];
         var config = this.GetChestData(name);
         this._playerChests.Value.Add(new(Game1.player, index), new ManagedChest(chest, config));
     }
@@ -175,24 +200,16 @@ internal class ManagedChests : IModService
             return;
         }
 
+        this._playerChests.Value.Clear();
         for (var index = 0; index < e.Player.Items.Count; index++)
         {
-            if (e.Player.Items[index] is null)
-            {
-                this._playerChests.Value.Remove(new(e.Player, index));
-            }
-        }
-
-        foreach (var added in e.Added.OfType<Chest>().Where(chest => chest.IsPlayerChest()))
-        {
-            var index = e.Player.Items.IndexOf(added);
             this.AddPlayerChest(e.Player, index);
         }
     }
 
     private void OnModMessageReceived(object sender, ModMessageReceivedEventArgs e)
     {
-        if (e.FromModID != BetterChests.ModUniqueId || this.Helper.Multiplayer.GetConnectedPlayers().Any(peer => peer.IsHost && peer.PlayerID != e.FromPlayerID))
+        if (e.FromModID != BetterChests.ModUniqueId)
         {
             return;
         }
@@ -203,6 +220,7 @@ internal class ManagedChests : IModService
         {
             case "InitPlacedChests":
                 placedChests = e.ReadAs<HashSet<PlacedChest>>();
+                this._placedChests.Value.Clear();
                 foreach (var placedChest in placedChests)
                 {
                     this.AddPlacedChest(placedChest);
@@ -221,6 +239,7 @@ internal class ManagedChests : IModService
                 placedChests = e.ReadAs<HashSet<PlacedChest>>();
                 foreach (var placedChest in placedChests)
                 {
+                    Log.Trace($"Placed Chest removed from {placedChest.LocationName} at ({placedChest.X.ToString()}, {placedChest.Y.ToString()}).");
                     this._placedChests.Value.Remove(placedChest);
                 }
 
@@ -230,24 +249,54 @@ internal class ManagedChests : IModService
 
     private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
     {
-        var removed = new HashSet<PlacedChest>(e.Removed
-                                                .Where(removed => removed.Value is Chest)
-                                                .Select(removed => new PlacedChest(e.Location.NameOrUniqueName, (int)removed.Key.X, (int)removed.Key.Y, this.Assets.Craftables.SingleOrDefault(info => info.Key == removed.Value.ParentSheetIndex).Value?[0])));
-        foreach (var placedChest in removed)
+        var removedChests = new HashSet<PlacedChest>();
+        foreach (var ((x, y), value) in e.Removed)
         {
+            if (value is Chest placedChest && placedChest.IsPlayerChest())
+            {
+                var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == placedChest.ParentSheetIndex).Value?[0];
+                removedChests.Add(new(e.Location.NameOrUniqueName, (int)x, (int)y, name));
+            }
+
+            if (value is { heldObject.Value: Chest heldChest } && heldChest.IsPlayerChest())
+            {
+                var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == value.ParentSheetIndex).Value?[0];
+                removedChests.Add(new(e.Location.NameOrUniqueName, (int)x, (int)y, name));
+            }
+        }
+
+        foreach (var placedChest in removedChests)
+        {
+            Log.Trace($"Placed Chest removed from {placedChest.LocationName} at ({placedChest.X.ToString()}, {placedChest.Y.ToString()}).");
             this._placedChests.Value.Remove(placedChest);
         }
 
-        var added = new HashSet<PlacedChest>(e.Added
-                                              .Where(added => added.Value is Chest chest && chest.IsPlayerChest())
-                                              .Select(added => new PlacedChest(e.Location.NameOrUniqueName, (int)added.Key.X, (int)added.Key.Y, this.Assets.Craftables.SingleOrDefault(info => info.Key == added.Value.ParentSheetIndex).Value?[0])));
-        foreach (var placedChest in added.Where(placedChest => !this._placedChests.Value.ContainsKey(placedChest)))
+        var addedChests = new HashSet<PlacedChest>();
+        foreach (var ((x, y), value) in e.Added)
+        {
+            if (value is Chest placedChest && placedChest.IsPlayerChest())
+            {
+                var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == placedChest.ParentSheetIndex).Value?[0];
+                addedChests.Add(new(e.Location.NameOrUniqueName, (int)x, (int)y, name));
+            }
+
+            if (value is { heldObject.Value: Chest heldChest } && heldChest.IsPlayerChest())
+            {
+                var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == value.ParentSheetIndex).Value?[0];
+                addedChests.Add(new(e.Location.NameOrUniqueName, (int)x, (int)y, name));
+            }
+        }
+
+        foreach (var placedChest in addedChests)
         {
             this.AddPlacedChest(placedChest);
         }
 
-        this.Helper.Multiplayer.SendMessage(removed, "RemovePlacedChests", new[] { BetterChests.ModUniqueId });
-        this.Helper.Multiplayer.SendMessage(added, "AddPlacedChests", new[] { BetterChests.ModUniqueId });
+        if (Context.IsMainPlayer)
+        {
+            this.Helper.Multiplayer.SendMessage(removedChests, "RemovePlacedChests", new[] { BetterChests.ModUniqueId });
+            this.Helper.Multiplayer.SendMessage(addedChests, "AddPlacedChests", new[] { BetterChests.ModUniqueId });
+        }
     }
 
     private void OnPeerConnected(object sender, PeerConnectedEventArgs e)
@@ -278,6 +327,13 @@ internal class ManagedChests : IModService
                 {
                     var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == chest.ParentSheetIndex).Value?[0];
                     this.AddPlacedChest(location.NameOrUniqueName, (int)x, (int)y, name);
+                    continue;
+                }
+
+                if (obj is { heldObject.Value: Chest heldChest } && heldChest.IsPlayerChest())
+                {
+                    var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == obj.ParentSheetIndex).Value?[0];
+                    this.AddPlacedChest(location.NameOrUniqueName, (int)x, (int)y, name);
                 }
             }
 
@@ -287,6 +343,9 @@ internal class ManagedChests : IModService
             }
         }
 
-        this.Helper.Multiplayer.SendMessage(this.PlacedChests.Keys, "InitPlacedChests", new[] { BetterChests.ModUniqueId });
+        if (Context.IsMainPlayer)
+        {
+            this.Helper.Multiplayer.SendMessage(this.PlacedChests.Keys, "InitPlacedChests", new[] { BetterChests.ModUniqueId });
+        }
     }
 }

@@ -109,7 +109,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        Log.Trace($"Opening Menu for Carried ${chest.Name}.");
+        Log.Trace($"Opening ItemGrabMenu for Held Chest ${chest.Name}.");
         if (Context.IsMainPlayer)
         {
             chest.checkForAction(Game1.player);

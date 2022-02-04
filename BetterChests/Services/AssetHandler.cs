@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -257,9 +258,11 @@ internal class AssetHandler : IModService, IAssetLoader
         switch (e.Type)
         {
             case "ChestData":
+                Log.Trace("Loading ChestData from Host");
                 this.LocalChestData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
                 break;
             case "DefaultChest":
+                Log.Trace("Loading DefaultChest Config from Host");
                 var chestData = e.ReadAs<ChestData>();
                 ((IChestData)chestData).CopyTo(this.Config.DefaultChest);
                 break;

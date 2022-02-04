@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Common.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -133,6 +134,8 @@ internal class ResizeChest : Feature
     {
         if (this.MenuComponents.Menu is not null)
         {
+            Log.Trace($"Resizing Chest {e.Chest.Name}");
+
             // Add Up/Down Arrows
             this.MenuComponents.Components.Add(this.UpArrow);
             this.MenuComponents.Components.Add(this.DownArrow);

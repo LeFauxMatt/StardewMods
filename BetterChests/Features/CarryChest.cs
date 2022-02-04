@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Common.Helpers;
 using HarmonyLib;
@@ -239,6 +240,7 @@ internal class CarryChest : Feature
             return;
         }
 
+        Log.Trace($"Placed chest {obj.Name} from inventory to {location.NameOrUniqueName} at ({(x / 64).ToString()}, {(y / 64).ToString()}).");
         chest.Name = __instance.Name;
         foreach (var (key, value) in __instance.modData.Pairs)
         {
@@ -318,6 +320,7 @@ internal class CarryChest : Feature
             return;
         }
 
+        Log.Trace($"Picked up chest {obj.Name} from {Game1.currentLocation.NameOrUniqueName} at ({pos.X.ToString(CultureInfo.InvariantCulture)}, {pos.Y.ToString(CultureInfo.InvariantCulture)}).");
         Game1.currentLocation.Objects.Remove(pos);
         this.Helper.Input.Suppress(e.Button);
     }

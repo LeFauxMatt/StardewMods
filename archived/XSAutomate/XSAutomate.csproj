@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets" />
+    <Import Project="..\build\common.targets"/>
     <PropertyGroup>
         <Version>1.1.0</Version>
         <EnableHarmony>true</EnableHarmony>
@@ -11,6 +11,6 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0"/>
     </ItemGroup>
 </Project>

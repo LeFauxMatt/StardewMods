@@ -174,7 +174,7 @@ internal class CommandHandler : IModService
         foreach (var (placedChest, lazyManagedChest) in this.ManagedChests.PlacedChests)
         {
             var (locationName, x, y, chestName) = placedChest;
-            if (placedChest.GetChest() is not null)
+            if (!placedChest.ToChest(out _))
             {
                 this.AppendChestData(sb, lazyManagedChest.Value, $"Chest \"{chestName}\" at location {locationName} at coordinates ({x.ToString()},{y.ToString()})");
             }

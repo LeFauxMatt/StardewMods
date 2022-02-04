@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.Extensions;
+using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -175,6 +176,7 @@ internal class CustomColorPicker : Feature
             chestToDraw.modData.Add(key, value);
         }
 
+        Log.Trace("Adding CustomColorPicker to ItemGrabMenu");
         CustomColorPicker.Instance.ColorPicker = new(
             CustomColorPicker.Instance.Helper.Content,
             CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,

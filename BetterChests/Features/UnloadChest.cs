@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
+using Common.Helpers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
@@ -96,6 +97,7 @@ internal class UnloadChest : Feature
             }
         }
 
+        Log.Trace($"Unloading items from Chest {source.Chest.Name} into Chest {target.Chest.Name}");
         source.Chest.clearNulls();
         this.Helper.Input.Suppress(e.Button);
     }

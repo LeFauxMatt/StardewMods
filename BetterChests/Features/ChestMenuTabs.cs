@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -213,6 +214,7 @@ internal class ChestMenuTabs : Feature
         this.Index = index;
         if (this.Index != -1)
         {
+            Log.Trace($"Switching to Tab {this.Tabs[this.Index].Name}.");
             this.Tabs[this.Index].Selected = true;
             if (this.MenuComponents.Menu.currentlySnappedComponent is not null && Game1.options.SnappyMenus)
             {

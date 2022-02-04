@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets" />
-    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\build\common.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Version>2.1.0</Version>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="content.json" CopyToOutputDirectory="Always" />
-        <Content Include="expanded-storage.json" CopyToOutputDirectory="Always" />
+        <Content Include="content.json" CopyToOutputDirectory="Always"/>
+        <Content Include="expanded-storage.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 </Project>
