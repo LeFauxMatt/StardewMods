@@ -1,43 +1,15 @@
-﻿namespace MoreChests
+﻿namespace StardewMods.MoreChests;
+
+using System.Collections.Generic;
+using Common.Integrations.MoreChests;
+using Services;
+using StardewModdingAPI;
+using StardewMods.FuryCore.Interfaces;
+
+/// <inheritdoc />
+public class MoreChestsApi : IMoreChestsApi
 {
-    using System.Collections.Generic;
-    using Common.Integrations.MoreChests;
-    using Common.Services;
-    using Services;
-    using StardewModdingAPI;
-
-    public class MoreChestsApi : IMoreChestsApi
+    public MoreChestsApi(IModServices services)
     {
-        private readonly ServiceManager _serviceManager;
-
-        public MoreChestsApi(ModEntry mod)
-        {
-            this._serviceManager = mod.ServiceManager;
-        }
-
-        public bool LoadContentPack(IManifest manifest, string path)
-        {
-            var contentPack = this._serviceManager.Helper.ContentPacks.CreateTemporary(
-                path,
-                manifest.UniqueID,
-                manifest.Name,
-                manifest.Description,
-                manifest.Author,
-                manifest.Version);
-
-            return this.LoadContentPack(contentPack);
-        }
-
-        public bool LoadContentPack(IContentPack contentPack)
-        {
-            var contentPackLoader = this._serviceManager.GetByType<ContentPackLoader>();
-            return contentPackLoader.LoadContentPack(contentPack);
-        }
-
-        public IEnumerable<string> GetAllChests()
-        {
-            var chestManager = this._serviceManager.GetByType<CustomChestManager>();
-            return chestManager.GetAllChests();
-        }
     }
 }

@@ -1,46 +1,41 @@
-﻿namespace Common.Integrations
+﻿namespace Common.Integrations;
+
+using System;
+using StardewModdingAPI;
+
+/// <summary>Provides an integration point for using external mods' APIs.</summary>
+/// <typeparam name="T">Interface for the external mod's API.</typeparam>
+internal abstract class ModIntegration<T>
+    where T : class
 {
-    using StardewModdingAPI;
+    private readonly Lazy<T> _modAPI;
 
-    /// <summary>Provides an integration point for using external mods' APIs.</summary>
-    /// <typeparam name="T">Interface for the external mod's API.</typeparam>
-    internal abstract class ModIntegration<T>
-        where T : class
+    /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
+    /// <param name="modRegistry">SMAPI's mod registry.</param>
+    /// <param name="modUniqueId">The unique id of the external mod.</param>
+    internal ModIntegration(IModRegistry modRegistry, string modUniqueId)
     {
-        private readonly IModRegistry _modRegistry;
-        private readonly string _modUniqueId;
-        private bool _isInitialized;
-        private bool _isLoaded;
-        private T _modAPI = null!;
-
-        /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
-        /// <param name="modRegistry">SMAPI's mod registry.</param>
-        /// <param name="modUniqueId">The unique id of the external mod.</param>
-        internal ModIntegration(IModRegistry modRegistry, string modUniqueId)
-        {
-            this._modRegistry = modRegistry;
-            this._modUniqueId = modUniqueId;
-        }
-
-        /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
-        protected internal T API
-        {
-            get
-            {
-                if (!this._isInitialized)
-                {
-                    this._modAPI = this._modRegistry.GetApi<T>(this._modUniqueId);
-                    this._isInitialized = true;
-                }
-
-                return this._modAPI;
-            }
-        }
-
-        /// <summary>Gets the loaded status of the mod.</summary>
-        protected internal bool IsLoaded
-        {
-            get => this._isLoaded = this._isLoaded || this._modRegistry.IsLoaded(this._modUniqueId);
-        }
+        this.ModRegistry = modRegistry;
+        this.UniqueId = modUniqueId;
+        this._modAPI = new(() => this.ModRegistry.GetApi<T>(this.UniqueId));
     }
+
+    /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
+    protected internal T API
+    {
+        get => this.IsLoaded ? this._modAPI.Value : default;
+    }
+
+    /// <summary>Gets a value indicating whether the mod is loaded.</summary>
+    protected internal bool IsLoaded
+    {
+        get => this.ModRegistry.IsLoaded(this.UniqueId);
+    }
+
+    /// <summary>
+    ///     Gets the Unique Id for this mod.
+    /// </summary>
+    protected internal string UniqueId { get; }
+
+    private IModRegistry ModRegistry { get; }
 }

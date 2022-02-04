@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets" />
-    <Import Project="..\Common\Common.projitems" Label="Shared" />
-    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared" />
+    <Import Project="..\build\common.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Version>1.0.0</Version>
         <EnableHarmony>true</EnableHarmony>
+        <RootNamespace>StardewMods.MoreChests</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="DynamicGameAssets, Version=1.2.1.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>G:\Steam\steamapps\common\Stardew Valley 1.5.5\Mods\DynamicGameAssets\DynamicGameAssets.dll</HintPath>
+        <Reference Include="FuryCore">
+            <HintPath>$(GameModsPath)\FuryCore\FuryCore.dll</HintPath>
+            <Private>false</Private>
         </Reference>
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
     </ItemGroup>
 </Project>

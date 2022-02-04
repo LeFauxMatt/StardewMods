@@ -1,11 +1,10 @@
-﻿namespace MoreChests.Models
+﻿namespace MoreChests.Models;
+
+using StardewModdingAPI;
+
+internal record ContentPackFor : IManifestContentPackFor
 {
-    using StardewModdingAPI;
+    public string UniqueID { get; set; }
 
-    internal record ContentPackFor : IManifestContentPackFor
-    {
-        public string UniqueID { get; set; }
-
-        public ISemanticVersion MinimumVersion { get; set; }
-    }
+    public ISemanticVersion MinimumVersion { get; set; }
 }

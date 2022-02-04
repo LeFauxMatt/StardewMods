@@ -1,14 +1,18 @@
-﻿namespace Common.Integrations.EvenBetterRNG
-{
-    using StardewModdingAPI;
+﻿namespace Common.Integrations.EvenBetterRng;
 
-    internal class EvenBetterRngIntegration : ModIntegration<IEvenBetterRngApi>
+using StardewModdingAPI;
+
+/// <inheritdoc />
+internal class EvenBetterRngIntegration : ModIntegration<IEvenBetterRngApi>
+{
+    private const string ModUniqueId = "pepoluan.EvenBetterRNG";
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="EvenBetterRngIntegration" /> class.
+    /// </summary>
+    /// <param name="modRegistry">SMAPI's mod registry.</param>
+    public EvenBetterRngIntegration(IModRegistry modRegistry)
+        : base(modRegistry, EvenBetterRngIntegration.ModUniqueId)
     {
-        /// <summary>Initializes a new instance of the <see cref="EvenBetterRngIntegration" /> class.</summary>
-        /// <param name="modRegistry">SMAPI's mod registry.</param>
-        public EvenBetterRngIntegration(IModRegistry modRegistry)
-            : base(modRegistry, "pepoluan.EvenBetterRNG")
-        {
-        }
     }
 }

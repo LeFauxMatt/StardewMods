@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common.targets"/>
+    <PropertyGroup>
+        <Version>1.1.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Automate">
+            <HintPath>$(GameModsPath)\Automate\Automate.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0"/>
+    </ItemGroup>
+</Project>

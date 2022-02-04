@@ -1,0 +1,22 @@
+{
+  "Name": "eXpanded Storage (Plus)",
+  "Author": "furyx639",
+  "Version": "1.0.2",
+  "Description": "Adds new features to chests.",
+  "UniqueID": "furyx639.XSPlus",
+  "EntryDll": "XSPlus.dll",
+  "MinimumApiVersion": "3.13.0",
+  "UpdateKeys": [
+    "Nexus:7431@XSPlus"
+  ],
+  "Dependencies": [
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "furyx639.BetterChests",
+      "IsRequired": false
+    }
+  ]
+}

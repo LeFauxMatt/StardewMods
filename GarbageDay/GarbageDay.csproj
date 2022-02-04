@@ -1,14 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets" />
-    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\build\common.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Version>2.1.0</Version>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="content.json" CopyToOutputDirectory="Always" />
-        <Content Include="expanded-storage.json" CopyToOutputDirectory="Always" />
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0" />
+        <Content Include="content.json" CopyToOutputDirectory="Always"/>
+        <Content Include="expanded-storage.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 </Project>

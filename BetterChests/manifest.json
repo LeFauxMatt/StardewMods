@@ -5,9 +5,15 @@
   "Description": "Framework that adds new features to chests.",
   "UniqueID": "furyx639.BetterChests",
   "EntryDll": "BetterChests.dll",
-  "MinimumApiVersion": "3.13.0-beta",
-  "UpdateKeys": [ "Nexus:9791" ],
+  "MinimumApiVersion": "3.13.0",
+  "UpdateKeys": [
+    "Nexus:9791"
+  ],
   "Dependencies": [
+    {
+      "UniqueID": "furyx639.FuryCore",
+      "IsRequired": true
+    },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "IsRequired": false
