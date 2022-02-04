@@ -7,10 +7,10 @@ Provides additional APIs for my other mods.
 * Helpers
     * [Item Matcher](#item-matcher)
 * Custom Events
-    * [ItemGrabMenu Changed](#itemgrabmenu changed)
-    * [MenuComponent Pressed](#menu component pressed)
-    * [Rendering ItemGrabMenu](#rendering itemgrabmenu)
-    * [Rendered ItemGrabMenu](#rendered itemgrabmenu)
+    * [ItemGrabMenu Changed](#itemgrabmenu-changed)
+    * [MenuComponent Pressed](#menucomponent-pressed)
+    * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
+    * [Rendered ItemGrabMenu](#rendered-itemgrabmenu)
 * Services
     * [Fury Events](#fury-events)
     * [Harmony Helper](#harmony-helper)
