@@ -70,7 +70,7 @@ public class BetterChestsConfigurator : Mod
 
         I18n.Init(this.Helper.Translation);
 
-        this.GMCM.API.Register(
+        this.GMCM.Register(
             this.ModManifest,
             () => this.Config = new(),
             () => this.Helper.WriteConfig(this.Config));
