@@ -85,11 +85,12 @@ bypassing your inventory.<sup>1</sup>
 
 Hit a configurable key (or controller button) to bring up a crafting menu that uses items stored in nearby chests.
 
-| Config                 | Description                                           | Default Value | Other Value(s)                                                                 |
-|:-----------------------|:------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
-| CraftFromChest         | Enables the Craft From Chest feature.                 | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>1</sup> |
-| OpenCrafting           | Assigns the keybind for opening the crafting menu.    | `"K"`         | Any valid button code.<sup>2</sup>                                             |
-| CraftFromChestDistance | Limits the distance that a chest can be crafted from. | -1            | Any positive integer or `-1`.<sup>3</sup>                                      |
+| Config                         | Description                                               | Default Value | Other Value(s)                                                                 |
+|:-------------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
+| CraftFromChest                 | Enables the Craft From Chest feature.                     | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>1</sup> |
+| OpenCrafting                   | Assigns the keybind for opening the crafting menu.        | `"K"`         | Any valid button code.<sup>2</sup>                                             |
+| CraftFromChestDisableLocations | A list of locations that crafting will not be allowed in. | `[]`          | The locations to block.                                                        |
+| CraftFromChestDistance         | Limits the distance that a chest can be crafted from.     | -1            | Any positive integer or `-1`.<sup>3</sup>                                      |
 
 1. See [Range Values](#range-values).
 2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
@@ -112,10 +113,10 @@ and lightness.
 Impose restrictions on what types of items are allowed to go into a chest. With this enabled, items that are not part of
 the allowed list will be blocked.
 
-| Config          | Description                       | Default Value | Other Value(s)                        |
-|:----------------|:----------------------------------|:--------------|:--------------------------------------|
-| FilterItems     | Enables the Filter Items feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| FilterItemsList | The list of allowed item tags.    | `[]`          | The tags to allow.<sup>2</sup>        |
+| Config          | Description                                          | Default Value | Other Value(s)                        |
+|:----------------|:-----------------------------------------------------|:--------------|:--------------------------------------|
+| FilterItems     | Enables the Filter Items feature.                    | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| FilterItemsList | A list of context tags used to select allowed items. | `[]`          | The tags to allow.<sup>2</sup>        |
 
 1. See [Option Values](#option-values).
 2. See [Item Tags](#item-tags).
@@ -190,11 +191,12 @@ slot from being stashed into a chest.
 Hit a configurable key (or controller button) to instantly stash items from your inventory into nearby chests.<sup>
 1</sup>
 
-| Config Option        | Description                                           | Default Value | Other Value(s)                                                                 |
-|:---------------------|:------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
-| StashToChest         | Enables the Stash To Chest feature.                   | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>2</sup> |
-| StashItems           | Assigns the keybind for stashing items.               | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
-| StashToChestDistance | Limits the distance that a chest can be stashed into. | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
+| Config Option                | Description                                               | Default Value | Other Value(s)                                                                 |
+|:-----------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
+| StashToChest                 | Enables the Stash To Chest feature.                       | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>2</sup> |
+| StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
+| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.                                                        |
+| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).

@@ -9,9 +9,6 @@ using StardewMods.FuryCore.Enums;
 /// </summary>
 internal interface IConfigData
 {
-    // ****************************************************************************************
-    // Features
-
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.
     /// </summary>
@@ -21,9 +18,6 @@ internal interface IConfigData
     ///     Gets or sets the control scheme.
     /// </summary>
     ControlScheme ControlScheme { get; set; }
-
-    // ****************************************************************************************
-    // General
 
     /// <summary>
     ///     Gets or sets the <see cref="ComponentArea" /> that the <see cref="CustomColorPicker" /> will be aligned to.
@@ -54,10 +48,10 @@ internal interface IConfigData
         where TOther : IConfigData
     {
         other.CategorizeChest = this.CategorizeChest;
-        other.SlotLock = this.SlotLock;
-        other.CustomColorPickerArea = this.CustomColorPickerArea;
-        other.SearchTagSymbol = this.SearchTagSymbol;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
+        other.CustomColorPickerArea = this.CustomColorPickerArea;
         ((IChestData)other.DefaultChest).CopyTo(this.DefaultChest);
+        other.SearchTagSymbol = this.SearchTagSymbol;
+        other.SlotLock = this.SlotLock;
     }
 }

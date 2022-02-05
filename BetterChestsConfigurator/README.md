@@ -3,6 +3,7 @@
 Optional add-on mod for [Better Chests](../BetterChests) that makes individual chests configurable.
 
 ## Contents
+
 * [Translations](#translations)
 
 ## Translations

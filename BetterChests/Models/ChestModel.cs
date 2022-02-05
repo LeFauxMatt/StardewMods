@@ -97,6 +97,15 @@ internal class ChestModel : IChestData
     }
 
     /// <inheritdoc />
+    public HashSet<string> CraftFromChestDisableLocations
+    {
+        get => this.Data.CraftFromChestDisableLocations.Any()
+            ? this.Data.CraftFromChestDisableLocations
+            : this.DefaultChest.CraftFromChestDisableLocations;
+        set => this.Data.CraftFromChestDisableLocations = value;
+    }
+
+    /// <inheritdoc />
     public int CraftFromChestDistance
     {
         get
@@ -273,6 +282,15 @@ internal class ChestModel : IChestData
                 : this.DefaultChest.CraftFromChest;
         }
         set => this.Data.StashToChest = value;
+    }
+
+    /// <inheritdoc />
+    public HashSet<string> StashToChestDisableLocations
+    {
+        get => this.Data.StashToChestDisableLocations.Any()
+            ? this.Data.StashToChestDisableLocations
+            : this.DefaultChest.StashToChestDisableLocations;
+        set => this.Data.StashToChestDisableLocations = value;
     }
 
     /// <inheritdoc />

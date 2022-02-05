@@ -28,7 +28,6 @@ internal class ConfigData : IConfigData
         CraftFromChestDistance = -1,
         CustomColorPicker = FeatureOption.Enabled,
         FilterItems = FeatureOption.Enabled,
-        FilterItemsList = new(),
         OpenHeldChest = FeatureOption.Enabled,
         ResizeChest = FeatureOption.Enabled,
         ResizeChestCapacity = 60,

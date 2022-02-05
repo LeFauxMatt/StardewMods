@@ -16,6 +16,7 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -129,7 +130,14 @@ internal class CraftFromChest : Feature
 
         foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
         {
-            if (managedChest.CraftFromChest == FeatureOptionRange.Disabled)
+            // Disabled in config or by location name
+            if (managedChest.CraftFromChest == FeatureOptionRange.Disabled || managedChest.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+            {
+                continue;
+            }
+
+            // Disabled in mines
+            if (managedChest.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
             {
                 continue;
             }
