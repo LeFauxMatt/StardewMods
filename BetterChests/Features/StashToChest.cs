@@ -9,6 +9,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
+using StardewValley.Locations;
 
 /// <inheritdoc />
 internal class StashToChest : Feature
@@ -61,7 +62,14 @@ internal class StashToChest : Feature
 
         foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
         {
-            if (managedChest.StashToChest == FeatureOptionRange.Disabled)
+            // Disabled in config or by location name
+            if (managedChest.StashToChest == FeatureOptionRange.Disabled || managedChest.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+            {
+                continue;
+            }
+
+            // Disabled in mines
+            if (managedChest.StashToChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
             {
                 continue;
             }

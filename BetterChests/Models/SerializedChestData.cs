@@ -65,6 +65,15 @@ internal class SerializedChestData : IChestData
     }
 
     /// <inheritdoc />
+    public HashSet<string> CraftFromChestDisableLocations
+    {
+        get => this.Data.TryGetValue("CraftFromChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(value.Split(','))
+            : new();
+        set => this.Data["CraftFromChestDisableLocations"] = !value.Any() ? string.Empty : string.Join(",", value);
+    }
+
+    /// <inheritdoc />
     public int CraftFromChestDistance
     {
         get => this.Data.TryGetValue("CraftFromChestDistance", out var value) && int.TryParse(value, out var distance)
@@ -161,6 +170,15 @@ internal class SerializedChestData : IChestData
             ? range
             : FeatureOptionRange.Default;
         set => this.Data["StashToChest"] = value == FeatureOptionRange.Default ? string.Empty : FormatHelper.GetRangeString(value);
+    }
+
+    /// <inheritdoc />
+    public HashSet<string> StashToChestDisableLocations
+    {
+        get => this.Data.TryGetValue("StashToChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(value.Split(','))
+            : new();
+        set => this.Data["StashToChestDisableLocations"] = !value.Any() ? string.Empty : string.Join(",", value);
     }
 
     /// <inheritdoc />

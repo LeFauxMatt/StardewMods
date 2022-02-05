@@ -95,6 +95,15 @@ internal class ManagedChest : IManagedChest
     }
 
     /// <inheritdoc />
+    public HashSet<string> CraftFromChestDisableLocations
+    {
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(this.Data.CraftFromChestDisableLocations.Concat(value.Split(',')))
+            : this.Data.CraftFromChestDisableLocations;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CraftFromChestDisableLocations"] = string.Join(",", value);
+    }
+
+    /// <inheritdoc />
     public int CraftFromChestDistance
     {
         get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChestDistance", out var value) && int.TryParse(value, out var distance)
@@ -237,6 +246,15 @@ internal class ManagedChest : IManagedChest
             }
             : this.Data.StashToChest;
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChest"] = FormatHelper.GetRangeString(value);
+    }
+
+    /// <inheritdoc />
+    public HashSet<string> StashToChestDisableLocations
+    {
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(this.Data.StashToChestDisableLocations.Concat(value.Split(',')))
+            : this.Data.StashToChestDisableLocations;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestDisableLocations"] = string.Join(",", value);
     }
 
     /// <inheritdoc />
