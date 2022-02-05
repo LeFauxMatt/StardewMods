@@ -19,9 +19,6 @@ internal class ChestModel : IChestData
         this.DefaultChest = defaultChest;
     }
 
-    // ****************************************************************************************
-    // Features
-
     /// <inheritdoc />
     public FeatureOption CarryChest
     {
@@ -98,9 +95,6 @@ internal class ChestModel : IChestData
         }
         set => this.Data.CraftFromChest = value;
     }
-
-    // ****************************************************************************************
-    // Feature Options
 
     /// <inheritdoc />
     public int CraftFromChestDistance

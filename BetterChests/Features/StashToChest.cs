@@ -6,7 +6,6 @@ using Common.Helpers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Extensions;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
@@ -56,23 +55,23 @@ internal class StashToChest : Feature
     private bool StashItems()
     {
         var eligibleChests = (
-            from managedChest in this.ManagedChests.PlayerChests.Values
+            from managedChest in this.ManagedChests.PlayerChests
             where managedChest.StashToChest >= FeatureOptionRange.Inventory
             select managedChest).ToList();
 
-        foreach (var (placedChest, managedChest) in this.ManagedChests.PlacedChests)
+        foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
         {
-            if (!placedChest.ToPlacedObject(out var placedObject) || !placedObject.ToChest(out _) || managedChest.Value.StashToChest == FeatureOptionRange.Disabled)
+            if (managedChest.StashToChest == FeatureOptionRange.Disabled)
             {
                 continue;
             }
 
-            var (location, _) = placedObject;
-            if (managedChest.Value.StashToChest == FeatureOptionRange.World
-                || managedChest.Value.StashToChest == FeatureOptionRange.Location && managedChest.Value.StashToChestDistance == -1
-                || managedChest.Value.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.StashToChestDistance, Game1.player))
+            var (location, (x, y)) = placedObject;
+            if (managedChest.StashToChest == FeatureOptionRange.World
+                || managedChest.StashToChest == FeatureOptionRange.Location && managedChest.StashToChestDistance == -1
+                || managedChest.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.StashToChestDistance, Game1.player))
             {
-                eligibleChests.Add(managedChest.Value);
+                eligibleChests.Add(managedChest);
             }
         }
 

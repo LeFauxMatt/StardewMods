@@ -2,6 +2,7 @@
 
 using Common.Helpers;
 using StardewModdingAPI;
+using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
@@ -12,6 +13,8 @@ public class FuryCore : Mod
     /// </summary>
     internal static string ModUniqueId { get; private set; }
 
+    private ConfigData Config { get; set; }
+
     private ModServices Services { get; } = new();
 
     /// <inheritdoc />
@@ -19,11 +22,16 @@ public class FuryCore : Mod
     {
         FuryCore.ModUniqueId = this.ModManifest.UniqueID;
         Log.Monitor = this.Monitor;
+        I18n.Init(this.Helper.Translation);
+        this.Config = this.Helper.ReadConfig<ConfigData>();
+
         this.Services.Add(
-            new MenuComponents(this.Helper, this.Services),
             new CustomEvents(this.Helper, this.Services),
+            new CustomTags(this.Config, this.Services),
             new HarmonyHelper(),
-            new MenuItems(this.Helper.Events, this.Services));
+            new MenuComponents(this.Helper, this.Services),
+            new MenuItems(this.Helper.Events, this.Services),
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest));
     }
 
     /// <inheritdoc />

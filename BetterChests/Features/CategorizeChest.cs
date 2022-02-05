@@ -76,15 +76,15 @@ internal class CategorizeChest : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
     }
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)

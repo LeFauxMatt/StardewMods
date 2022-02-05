@@ -18,18 +18,17 @@ internal class ManagedChest : IManagedChest
     /// </summary>
     /// <param name="chest">The <see cref="Chest" /> managed by this mod.</param>
     /// <param name="data">The <see cref="IChestData" /> associated with this type of <see cref="Chest" />.</param>
-    public ManagedChest(Chest chest, IChestData data)
+    /// <param name="qualifiedItemId">A unique Id associated with this chest type.</param>
+    public ManagedChest(Chest chest, IChestData data, string qualifiedItemId)
     {
         this.Chest = chest;
         this.Data = data;
+        this.QualifiedItemId = qualifiedItemId;
         foreach (var item in this.FilterItemsList)
         {
             this.ItemMatcher.Add(item);
         }
     }
-
-    // ****************************************************************************************
-    // Features
 
     /// <inheritdoc />
     public FeatureOption CarryChest
@@ -43,9 +42,6 @@ internal class ManagedChest : IManagedChest
             : this.Data.CarryChest;
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CarryChest"] = FormatHelper.GetOptionString(value);
     }
-
-    // ****************************************************************************************
-    // General
 
     /// <inheritdoc />
     public Chest Chest { get; }
@@ -97,9 +93,6 @@ internal class ManagedChest : IManagedChest
             : this.Data.CraftFromChest;
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CraftFromChest"] = FormatHelper.GetRangeString(value);
     }
-
-    // ****************************************************************************************
-    // Feature Options
 
     /// <inheritdoc />
     public int CraftFromChestDistance
@@ -164,6 +157,9 @@ internal class ManagedChest : IManagedChest
             : this.Data.OpenHeldChest;
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/OpenHeldChest"] = FormatHelper.GetOptionString(value);
     }
+
+    /// <inheritdoc />
+    public string QualifiedItemId { get; }
 
     /// <inheritdoc />
     public FeatureOption ResizeChest

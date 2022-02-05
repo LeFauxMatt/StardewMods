@@ -79,8 +79,8 @@ internal class ResizeChest : Feature
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
@@ -89,8 +89,8 @@ internal class ResizeChest : Feature
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.FuryEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }

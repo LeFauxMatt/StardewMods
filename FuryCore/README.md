@@ -12,7 +12,8 @@ Provides additional APIs for my other mods.
     * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
     * [Rendered ItemGrabMenu](#rendered-itemgrabmenu)
 * Services
-    * [Fury Events](#fury-events)
+    * [Custom Events](#custom-events)
+    * [Custom Tags](#custom-tags)
     * [Harmony Helper](#harmony-helper)
     * [Menu Components](#menu-components)
     * [Menu Items](#menu-items)
@@ -73,9 +74,13 @@ See [Fury Events](#fury-events)
 
 ### Services
 
-#### Fury Events
+#### Custom Events
 
-[ [Interface](Interfaces/IFuryEvents.cs) | [Source](Services/CustomEvents.cs) ]
+[ [Interface](Interfaces/ICustomEvents.cs) | [Source](Services/CustomEvents.cs) ]
+
+#### Custom Tags
+
+[ [Interface](Interfaces/ICustomTags.cs) | [Source](Services/CustomTags.cs) ]
 
 #### Harmony Helper
 

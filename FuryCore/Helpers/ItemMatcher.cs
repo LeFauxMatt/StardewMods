@@ -7,9 +7,8 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Common.Helpers;
 using StardewValley;
-using StardewValley.Locations;
-using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <summary>
@@ -54,39 +53,6 @@ public class ItemMatcher : ObservableCollection<string>
     private string SearchTagSymbol { get; }
 
     /// <summary>
-    ///     Gets all context tags for an item including custom ones.
-    /// </summary>
-    /// <param name="item">The item to get context tags for.</param>
-    /// <returns>A list of context tags from the item.</returns>
-    public static IEnumerable<string> GetContextTags(Item item)
-    {
-        foreach (var contextTag in item.GetContextTags().Where(contextTag => !contextTag.StartsWith("id_")))
-        {
-            yield return contextTag;
-        }
-
-        if (item is Furniture)
-        {
-            yield return SearchPhrase.CategoryFurniture;
-        }
-
-        if (item is SObject { Type: "Arch" })
-        {
-            yield return SearchPhrase.CategoryArtifact;
-        }
-
-        if (item is SObject obj && SearchPhrase.CanDonateToBundle(obj))
-        {
-            yield return SearchPhrase.DonateBundle;
-        }
-
-        if (SearchPhrase.CanDonateToMuseum(item))
-        {
-            yield return SearchPhrase.DonateMuseum;
-        }
-    }
-
-    /// <summary>
     ///     Checks if an item matches the search phrases.
     /// </summary>
     /// <param name="item">The item to check.</param>
@@ -120,7 +86,7 @@ public class ItemMatcher : ObservableCollection<string>
     /// <inheritdoc />
     protected override void InsertItem(int index, string item)
     {
-        if (!this.Contains(item))
+        if (!string.IsNullOrWhiteSpace(item) && !this.Contains(item))
         {
             base.InsertItem(index, item);
         }
@@ -139,7 +105,11 @@ public class ItemMatcher : ObservableCollection<string>
 
         foreach (var item in added)
         {
-            this._clean.Add(item, this.ParseString(item));
+            var clean = this.ParseString(item);
+            if (clean is not null)
+            {
+                this._clean.Add(item, clean);
+            }
         }
 
         base.OnCollectionChanged(e);
@@ -163,22 +133,25 @@ public class ItemMatcher : ObservableCollection<string>
             stringBuilder.Remove(0, this.SearchTagSymbol.Length);
         }
 
-        return new(stringBuilder.ToString(), tagMatch, this.ExactMatch);
+        var newValue = stringBuilder.ToString();
+        return string.IsNullOrWhiteSpace(newValue) ? null : new(newValue, tagMatch, this.ExactMatch);
     }
 
     private record SearchPhrase
     {
-        public const string CategoryFurniture = "category_furniture";
-        public const string CategoryArtifact = "category_artifact";
-        public const string DonateMuseum = "donate_museum";
-        public const string DonateBundle = "donate_bundle";
-
         public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false)
         {
-            this.NotMatch = value[..1] == "!";
-            this.ExactMatch = exactMatch;
-            this.TagMatch = tagMatch;
-            this.Value = this.NotMatch ? value[1..] : value;
+            try
+            {
+                this.NotMatch = value[..1] == "!";
+                this.ExactMatch = exactMatch;
+                this.TagMatch = tagMatch;
+                this.Value = this.NotMatch ? value[1..] : value;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"{ex.Message}");
+            }
         }
 
         public bool NotMatch { get; }
@@ -196,36 +169,7 @@ public class ItemMatcher : ObservableCollection<string>
         /// <returns>Returns true if item matches the search phrase.</returns>
         public bool Matches(Item item)
         {
-            if (!this.TagMatch)
-            {
-                return this.Matches(item.Name) != this.NotMatch;
-            }
-
-            return item switch
-            {
-                Furniture when this.Matches(SearchPhrase.CategoryFurniture) => true,
-                SObject { Type: "Arch" } when this.Matches(SearchPhrase.CategoryArtifact) => true,
-                SObject { Type: "Arch" } when this.Matches(SearchPhrase.DonateMuseum) => SearchPhrase.CanDonateToMuseum(item),
-                SObject { Type: "Minerals" } when this.Matches(SearchPhrase.DonateMuseum) => SearchPhrase.CanDonateToMuseum(item),
-                SObject obj when this.Matches(SearchPhrase.DonateBundle) => SearchPhrase.CanDonateToBundle(obj),
-                _ => item.GetContextTags().Any(this.Matches) != this.NotMatch,
-            };
-        }
-
-        public static bool CanDonateToMuseum(Item item)
-        {
-            return Game1.locations
-                        .OfType<LibraryMuseum>()
-                        .FirstOrDefault()?.isItemSuitableForDonation(item)
-                   ?? false;
-        }
-
-        public static bool CanDonateToBundle(SObject obj)
-        {
-            return Game1.locations
-                        .OfType<CommunityCenter>()
-                        .FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
-                   ?? false;
+            return (this.TagMatch ? item.GetContextTags().Any(this.Matches) : this.Matches(item.Name)) != this.NotMatch;
         }
 
         private bool Matches(string match)

@@ -30,8 +30,7 @@ Converts Garbage Cans on the map into storages
 ## [Help For Hire](https://www.nexusmods.com/stardewvalley/mods/5316)
 
 ( [source](HelpForHire)
-| docs 
-| changelog )
+| docs | changelog )
 
 Pay a daily rate to have chores automatically done for you every day.
 

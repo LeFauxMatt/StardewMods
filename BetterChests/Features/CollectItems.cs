@@ -53,7 +53,7 @@ internal class CollectItems : Feature
     private IList<IManagedChest> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from managedChest in this.ManagedChests.PlayerChests.Values
+            from managedChest in this.ManagedChests.PlayerChests
             where managedChest.CollectItems == FeatureOption.Enabled
                   && managedChest.Chest.Stack == 1
             select managedChest).ToList();

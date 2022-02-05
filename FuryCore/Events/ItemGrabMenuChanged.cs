@@ -10,7 +10,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -29,7 +28,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     {
         ItemGrabMenuChanged.Instance ??= this;
 
-        services.Lazy<HarmonyHelper>(
+        services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
             {
                 var id = $"{FuryCore.ModUniqueId}.{nameof(ItemGrabMenuChanged)}";

@@ -7,9 +7,6 @@ using StardewMods.BetterChests.Interfaces;
 /// <inheritdoc />
 public class ChestData : IChestData
 {
-    // ****************************************************************************************
-    // Features
-
     /// <inheritdoc />
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
 
@@ -24,9 +21,6 @@ public class ChestData : IChestData
 
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest { get; set; } = FeatureOptionRange.Default;
-
-    // ****************************************************************************************
-    // Feature Options
 
     /// <inheritdoc />
     public int CraftFromChestDistance { get; set; }

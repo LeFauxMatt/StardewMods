@@ -125,8 +125,8 @@ internal class SearchItems : Feature
     protected override void Activate()
     {
         this.HarmonyHelper.ApplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.FuryEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
@@ -135,8 +135,8 @@ internal class SearchItems : Feature
     protected override void Deactivate()
     {
         this.HarmonyHelper.UnapplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.FuryEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }

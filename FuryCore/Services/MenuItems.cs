@@ -49,7 +49,7 @@ internal class MenuItems : IMenuItems, IModService
     {
         MenuItems.Instance = this;
 
-        services.Lazy<HarmonyHelper>(
+        services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
             {
                 var id = $"{FuryCore.ModUniqueId}.{nameof(MenuItems)}";

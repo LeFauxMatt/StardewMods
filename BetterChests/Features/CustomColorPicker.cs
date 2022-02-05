@@ -113,14 +113,14 @@ internal class CustomColorPicker : Feature
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.FuryEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

@@ -11,7 +11,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Extensions;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
@@ -124,23 +123,23 @@ internal class CraftFromChest : Feature
         }
 
         var eligibleChests = (
-            from managedChest in this.ManagedChests.PlayerChests.Values
+            from managedChest in this.ManagedChests.PlayerChests
             where managedChest.CraftFromChest >= FeatureOptionRange.Inventory
             select managedChest).ToList();
 
-        foreach (var (placedChest, managedChest) in this.ManagedChests.PlacedChests)
+        foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
         {
-            if (!placedChest.ToPlacedObject(out var placedObject) || !placedObject.ToChest(out _) || managedChest.Value.CraftFromChest == FeatureOptionRange.Disabled)
+            if (managedChest.CraftFromChest == FeatureOptionRange.Disabled)
             {
                 continue;
             }
 
-            var (location, _) = placedObject;
-            if (managedChest.Value.CraftFromChest == FeatureOptionRange.World
-                || managedChest.Value.CraftFromChest == FeatureOptionRange.Location && managedChest.Value.CraftFromChestDistance == -1
-                || managedChest.Value.CraftFromChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer(placedChest.X * 64, placedChest.Y * 64, managedChest.Value.CraftFromChestDistance, Game1.player))
+            var (location, (x, y)) = placedObject;
+            if (managedChest.CraftFromChest == FeatureOptionRange.World
+                || managedChest.CraftFromChest == FeatureOptionRange.Location && managedChest.CraftFromChestDistance == -1
+                || managedChest.CraftFromChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player))
             {
-                eligibleChests.Add(managedChest.Value);
+                eligibleChests.Add(managedChest);
             }
         }
 
