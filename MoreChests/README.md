@@ -8,6 +8,7 @@ Allows custom items to be created as chests.
   * [Data Model](#data-model)
     * [Chest Attributes](#chest-attributes)
     * [Animation Frames](#animation-frames)
+* [Translations](#translations)
 
 ## Usage
 
@@ -107,3 +108,19 @@ For example:
 These can be mixed and matched:
 
 `1,3..5,2` would draw the 2nd frame, followed by the 4th through 6th, and finally the 3rd.
+
+## Translations
+
+| Language   | Status            | Credits |
+|:-----------|:------------------|:--------|
+| Chinese    | ❌️ Not Translated |         |
+| French     | ❌️ Not Translated |         |
+| German     | ❌️ Not Translated |         |
+| Hungarian  | ❌️ Not Translated |         |
+| Italian    | ❌️ Not Translated |         |
+| Japanese   | ❌️ Not Translated |         |
+| Korean     | ❌️ Not Translated |         |
+| Portuguese | ❌️ Not Translated |         |
+| Russian    | ❌️ Not Translated |         |
+| Spanish    | ❌️ Not Translated |         |
+| Turkish    | ❌️ Not Translated |         |

@@ -23,6 +23,7 @@ Provides additional APIs for my other mods.
     * [Gradient Bar](#gradient-bar)
     * [HSL Color Picker](#hsl-color-picker)
     * [Item Selection Menu](#item-selection-menu)
+* [Translations](#translations)
 
 ### Helpers
 
@@ -136,3 +137,19 @@ A menu that displays all items in the game, with search functionality by name, a
 an ItemMatcher.
 
 [Source](UI/ItemSelectionMenu.cs)
+
+## Translations
+
+| Language   | Status            | Credits |
+|:-----------|:------------------|:--------|
+| Chinese    | ❌️ Not Translated |         |
+| French     | ❌️ Not Translated |         |
+| German     | ❌️ Not Translated |         |
+| Hungarian  | ❌️ Not Translated |         |
+| Italian    | ❌️ Not Translated |         |
+| Japanese   | ❌️ Not Translated |         |
+| Korean     | ❌️ Not Translated |         |
+| Portuguese | ❌️ Not Translated |         |
+| Russian    | ❌️ Not Translated |         |
+| Spanish    | ❌️ Not Translated |         |
+| Turkish    | ❌️ Not Translated |         |

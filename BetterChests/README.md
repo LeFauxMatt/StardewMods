@@ -397,16 +397,16 @@ The Range value limits which chests will be selected for a feature relative to t
 
 ## Translations
 
-| Language                   | Status         | Credits     |
-|:---------------------------|:---------------|:------------|
-| Chinese                    | Not Translated |             |
-| [French](i18n/fr.json)     | Incomplete     | Ayatus      |
-| [German](i18n/de.json)     | Incomplete     | Loni4ever   |
-| [Hungarian](i18n/hu.json)  | Incomplete     | martin66789 |
-| Italian                    | Not Translated |             |
-| Japanese                   | Not Translated |             |
-| Korean                     | Not Translated |             |
-| [Portuguese](i18n/pt.json) | Incomplete     | Aulberon    |
-| [Russian](i18n/ru.json)    | Incomplete     | Newrotd     |
-| [Spanish](i18n/es.json)    | Incomplete     | Soraien     |
-| Turkish                    | Not Translated |             |
+| Language                   | Status            | Credits     |
+|:---------------------------|:------------------|:------------|
+| Chinese                    | ❌️ Not Translated |             |
+| [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus      |
+| [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever   |
+| [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |
+| Italian                    | ❌️ Not Translated |             |
+| Japanese                   | ❌️ Not Translated |             |
+| Korean                     | ❌️ Not Translated |             |
+| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon    |
+| [Russian](i18n/ru.json)    | ❔ Incomplete      | Newrotd     |
+| [Spanish](i18n/es.json)    | ❔ Incomplete      | Soraien     |
+| Turkish                    | ❌️ Not Translated |             |
