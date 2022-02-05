@@ -80,7 +80,7 @@ See [Fury Events](#fury-events)
 
 #### Custom Tags
 
-[ [Interface](Interfaces/ICustomTags.cs) | [Source](Services/CustomEvents.cs) ]
+[ [Interface](Interfaces/ICustomTags.cs) | [Source](Services/CustomTags.cs) ]
 
 #### Harmony Helper
 
