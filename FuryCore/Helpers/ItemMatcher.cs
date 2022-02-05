@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Common.Helpers;
 using StardewValley;
 using SObject = StardewValley.Object;
 
@@ -85,7 +86,7 @@ public class ItemMatcher : ObservableCollection<string>
     /// <inheritdoc />
     protected override void InsertItem(int index, string item)
     {
-        if (!this.Contains(item))
+        if (!string.IsNullOrWhiteSpace(item) && !this.Contains(item))
         {
             base.InsertItem(index, item);
         }
@@ -104,7 +105,11 @@ public class ItemMatcher : ObservableCollection<string>
 
         foreach (var item in added)
         {
-            this._clean.Add(item, this.ParseString(item));
+            var clean = this.ParseString(item);
+            if (clean is not null)
+            {
+                this._clean.Add(item, clean);
+            }
         }
 
         base.OnCollectionChanged(e);
@@ -128,17 +133,25 @@ public class ItemMatcher : ObservableCollection<string>
             stringBuilder.Remove(0, this.SearchTagSymbol.Length);
         }
 
-        return new(stringBuilder.ToString(), tagMatch, this.ExactMatch);
+        var newValue = stringBuilder.ToString();
+        return string.IsNullOrWhiteSpace(newValue) ? null : new(newValue, tagMatch, this.ExactMatch);
     }
 
     private record SearchPhrase
     {
         public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false)
         {
-            this.NotMatch = value[..1] == "!";
-            this.ExactMatch = exactMatch;
-            this.TagMatch = tagMatch;
-            this.Value = this.NotMatch ? value[1..] : value;
+            try
+            {
+                this.NotMatch = value[..1] == "!";
+                this.ExactMatch = exactMatch;
+                this.TagMatch = tagMatch;
+                this.Value = this.NotMatch ? value[1..] : value;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"{ex.Message}");
+            }
         }
 
         public bool NotMatch { get; }
@@ -156,15 +169,7 @@ public class ItemMatcher : ObservableCollection<string>
         /// <returns>Returns true if item matches the search phrase.</returns>
         public bool Matches(Item item)
         {
-            if (!this.TagMatch)
-            {
-                return this.Matches(item.Name) != this.NotMatch;
-            }
-
-            return item switch
-            {
-                _ => item.GetContextTags().Any(this.Matches) != this.NotMatch,
-            };
+            return (this.TagMatch ? item.GetContextTags().Any(this.Matches) : this.Matches(item.Name)) != this.NotMatch;
         }
 
         private bool Matches(string match)

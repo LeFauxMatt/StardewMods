@@ -106,7 +106,7 @@ internal class CustomTags : ICustomTags, IModService
         {
             try
             {
-                if (__result.Contains(tag) && predicate.Invoke(__instance))
+                if (!__result.Contains(tag) && predicate.Invoke(__instance))
                 {
                     __result.Add(tag);
                 }

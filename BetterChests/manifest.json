@@ -7,7 +7,7 @@
   "EntryDll": "BetterChests.dll",
   "MinimumApiVersion": "3.13.0",
   "UpdateKeys": [
-    "Nexus:9791"
+    "Nexus:9791@Enhanced"
   ],
   "Dependencies": [
     {
