@@ -13,11 +13,13 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -114,6 +116,11 @@ internal class ResizeChestMenu : Feature
                 return this._menuCapacity.Value ?? default;
             }
 
+            if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled)
+            {
+                return this._menuCapacity.Value ??= this.Config.DefaultChest.ResizeChestMenuRows * 12;
+            }
+
             if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
             {
                 return this._menuCapacity.Value ??= -1; // Vanilla
@@ -144,6 +151,11 @@ internal class ResizeChestMenu : Feature
             if (this._menuRows.Value.HasValue)
             {
                 return this._menuRows.Value ?? default;
+            }
+
+            if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled)
+            {
+                return this._menuRows.Value ??= this.Config.DefaultChest.ResizeChestMenuRows;
             }
 
             if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
@@ -392,7 +404,7 @@ internal class ResizeChestMenu : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true || e.ItemGrabMenu is ItemSelectionMenu
             ? e.ItemGrabMenu
             : null;
 
@@ -401,9 +413,12 @@ internal class ResizeChestMenu : Feature
             return;
         }
 
-        if (e.IsNew && this.MenuOffset != 0)
+        if ((e.IsNew && this.MenuOffset != 0) || this.Menu is ItemSelectionMenu)
         {
-            Log.Trace($"Resizing Chest Menu for Chest {e.Chest.Name}");
+            if (e.Chest is not null)
+            {
+                Log.Trace($"Resizing Chest Menu for Chest {e.Chest.Name}");
+            }
 
             // Shift components down for increased ItemsToGrabMenu size
             this.Menu.height += this.MenuOffset;
