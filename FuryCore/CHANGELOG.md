@@ -1,6 +1,6 @@
 ﻿# FuryCore Change Log
 
-## 1.1.0 (Unreleased)
+## 1.1.0 (February 5, 2022)
 
 * Added new ICustomTags service
 * Added GMCM integration for new config options
