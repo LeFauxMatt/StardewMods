@@ -16,6 +16,7 @@
     * List out eligible chests for CraftFromChest.
     * List out eligible chests for StashToChest.
 * Locked Slots now holds items in place when shifting the toolbar.
+* Added CarryChestSlow for speed debuff while carrying a chest.
 
 ## 1.1.0 (February 5, 2022)
 

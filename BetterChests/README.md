@@ -35,10 +35,11 @@ Adds enhanced chest features to the game.
 
 With Carry Chest enabled, you can hit the Use Tool button to pick up chests into your inventory even if it has items.
 
-| Config          | Description                            | Default Value | Other Value(s)                        |
-|:----------------|:---------------------------------------|:--------------|:--------------------------------------|
-| CarryChest      | Enables the Carry Chest feature.       | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| CarryChestLimit | Limits how many chests can be carried. | `0`           | Any positive integer.<sup>2</sup>     |
+| Config          | Description                             | Default Value | Other Value(s)                        |
+|:----------------|:----------------------------------------|:--------------|:--------------------------------------|
+| CarryChest      | Enables the Carry Chest feature.        | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| CarryChestLimit | Limits how many chests can be carried.  | `0`           | Any positive integer.<sup>2</sup>     |
+| CarryChestSlow  | Slowness debuff while carrying a chest. | `false`       | `true` or `false`                     |
 
 1. See [Option Values](#option-values).
 2. Use `0` for unlimited chests.
