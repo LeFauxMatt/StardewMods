@@ -33,6 +33,21 @@ public static class FormatHelper
     }
 
     /// <summary>
+    ///     Formats carry chest limit using localized text when available.
+    /// </summary>
+    /// <param name="value">The value for carry chest limit to format.</param>
+    /// <returns>Localized text for the carry chest limit value.</returns>
+    public static string FormatCarryChestLimit(int value)
+    {
+        return value switch
+        {
+            1 => I18n.Config_CarryChestLimit_ValueOne(),
+            7 => I18n.Config_CarryChestLimit_ValueUnlimited(),
+            _ => string.Format(I18n.Config_CarryChestLimit_ValueMany(), value.ToString()),
+        };
+    }
+
+    /// <summary>
     ///     Formats chest capacity using localized text when available.
     /// </summary>
     /// <param name="value">The value for capacity to format.</param>

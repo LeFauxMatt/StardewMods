@@ -10,6 +10,9 @@ using StardewMods.FuryCore.Enums;
 internal class ConfigData : IConfigData
 {
     /// <inheritdoc />
+    public int CarryChestLimit { get; set; } = 0;
+
+    /// <inheritdoc />
     public bool CategorizeChest { get; set; } = true;
 
     /// <inheritdoc />

@@ -1,4 +1,8 @@
 {
+  // Alerts
+  "alert.carry-chest-limit.hit-limit": "Cannot carry any more chests",
+  "alert.craft-from-chest.no-eligible": "No eligible chests found to craft items from",
+  "alert.stash-to-chest.no-eligible": "No eligible chests found to stash items into",
   // Config Pages
   "section.general.name": "General",
   "section.general.description": "General customization options for features.",
@@ -11,6 +15,11 @@
   // Feature Config
   "config.carry-chest.name": "Carry Chest",
   "config.carry-chest.tooltip": "Allows chests placed in the world to be picked up with their items.",
+  "config.carry-chest-limit.name": "Carry Chest Limit",
+  "config.carry-chest-limit.tooltip": "Limits the number of chests with items that can be carried at once.",
+  "config.carry-chest-limit.value-unlimited": "Unlimited",
+  "config.carry-chest-limit.value-one": "1 chest",
+  "config.carry-chest-limit.value-many": "{0} chests",
   "config.categorize-chest.name": "Categorize Chest",
   "config.categorize-chest.tooltip": "Organize chests by assigning categories of items (stashing will use these categories).",
   "config.chest-menu-tabs.name": "Chest Menu Tabs",

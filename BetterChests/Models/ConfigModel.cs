@@ -25,6 +25,13 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
+    public int CarryChestLimit
+    {
+        get => this.Data.CarryChestLimit;
+        set => this.Data.CarryChestLimit = value;
+    }
+
+    /// <inheritdoc />
     public bool CategorizeChest
     {
         get => this.Data.CategorizeChest;

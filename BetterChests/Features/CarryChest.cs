@@ -315,6 +315,14 @@ internal class CarryChest : Feature
             return;
         }
 
+        // Already carrying the limit
+        if (this.Config.CarryChestLimit > 0 && Game1.player.Items.Count(item => item is Chest chest && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count > 0) >= this.Config.CarryChestLimit)
+        {
+            Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
+            this.Helper.Input.Suppress(e.Button);
+            return;
+        }
+
         if (!Game1.player.addItemToInventoryBool(obj, true))
         {
             return;

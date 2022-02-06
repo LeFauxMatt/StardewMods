@@ -153,7 +153,7 @@ internal class CraftFromChest : Feature
 
         if (!eligibleChests.Any())
         {
-            Log.Trace("No eligible chests found to craft items from");
+            Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
             return;
         }
 

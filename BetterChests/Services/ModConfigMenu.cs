@@ -383,6 +383,27 @@ internal class ModConfigMenu : IModService
     {
         this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_General_Name, I18n.Section_General_Description);
 
+        // Carry Chest Limit
+        this.GMCM.API.AddNumberOption(
+            this.Manifest,
+            () => this.Config.CarryChestLimit switch
+            {
+                0 => 7,
+                _ => this.Config.CarryChestLimit,
+            },
+            value => this.Config.CarryChestLimit = value switch
+            {
+                7 => 0,
+                _ => value,
+            },
+            I18n.Config_CarryChestLimit_Name,
+            I18n.Config_CarryChestLimit_Tooltip,
+            1,
+            7,
+            1,
+            FormatHelper.FormatCarryChestLimit,
+            nameof(IConfigData.CarryChestLimit));
+
         // Categorize Chest
         this.GMCM.API.AddBoolOption(
             this.Manifest,

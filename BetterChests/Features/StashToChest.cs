@@ -85,7 +85,7 @@ internal class StashToChest : Feature
 
         if (!eligibleChests.Any())
         {
-            Log.Trace("No eligible chests found to stash items into");
+            Game1.showRedMessage(I18n.Alert_StashToChest_NoEligible());
             return false;
         }
 

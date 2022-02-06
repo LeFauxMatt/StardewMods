@@ -10,6 +10,11 @@ using StardewMods.FuryCore.Enums;
 internal interface IConfigData
 {
     /// <summary>
+    ///     Gets or sets a value indicating how many chests containing items can be carried at once.
+    /// </summary>
+    public int CarryChestLimit { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.
     /// </summary>
     public bool CategorizeChest { get; set; }
