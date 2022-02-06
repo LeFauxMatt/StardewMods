@@ -22,14 +22,6 @@ public class ChestData : IChestData
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest { get; set; } = FeatureOptionRange.Default;
 
-    /// <inheritdoc/>
-    public HashSet<FeatureOptionRange> CraftFromChestRange { get; set; } = new()
-    {
-        FeatureOptionRange.Inventory,
-        FeatureOptionRange.Location,
-        FeatureOptionRange.World,
-    };
-
     /// <inheritdoc />
     public HashSet<string> CraftFromChestDisableLocations { get; set; } = new();
 
@@ -65,14 +57,6 @@ public class ChestData : IChestData
 
     /// <inheritdoc />
     public FeatureOptionRange StashToChest { get; set; } = FeatureOptionRange.Default;
-
-    /// <inheritdoc/>
-    public HashSet<FeatureOptionRange> StashToChestRange { get; set; } = new()
-    {
-        FeatureOptionRange.Inventory,
-        FeatureOptionRange.Location,
-        FeatureOptionRange.World,
-    };
 
     /// <inheritdoc />
     public HashSet<string> StashToChestDisableLocations { get; set; } = new();

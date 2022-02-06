@@ -82,17 +82,18 @@ internal class ChestModel : IChestData
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
-        get => this.Data.CraftFromChest;
-        set => this.Data.CraftFromChest = value;
-    }
+        get
+        {
+            if (this.Data.CraftFromChest != FeatureOptionRange.Default)
+            {
+                return this.Data.CraftFromChest;
+            }
 
-    /// <inheritdoc/>
-    public HashSet<FeatureOptionRange> CraftFromChestRange
-    {
-        get => this.Data.CraftFromChestRange.All(range => range != FeatureOptionRange.Default)
-            ? this.Data.CraftFromChestRange
-            : this.DefaultChest.CraftFromChestRange;
-        set => this.Data.CraftFromChestRange = value;
+            return this.DefaultChest.CraftFromChest == FeatureOptionRange.Default
+                ? FeatureOptionRange.Location
+                : this.DefaultChest.CraftFromChest;
+        }
+        set => this.Data.CraftFromChest = value;
     }
 
     /// <inheritdoc />
@@ -269,17 +270,18 @@ internal class ChestModel : IChestData
     /// <inheritdoc />
     public FeatureOptionRange StashToChest
     {
-        get => this.Data.StashToChest;
-        set => this.Data.StashToChest = value;
-    }
+        get
+        {
+            if (this.Data.StashToChest != FeatureOptionRange.Default)
+            {
+                return this.Data.StashToChest;
+            }
 
-    /// <inheritdoc/>
-    public HashSet<FeatureOptionRange> StashToChestRange
-    {
-        get => this.Data.StashToChestRange.All(range => range != FeatureOptionRange.Default)
-            ? this.Data.StashToChestRange
-            : this.DefaultChest.StashToChestRange;
-        set => this.Data.StashToChestRange = value;
+            return this.DefaultChest.StashToChest == FeatureOptionRange.Default
+                ? FeatureOptionRange.Location
+                : this.DefaultChest.CraftFromChest;
+        }
+        set => this.Data.StashToChest = value;
     }
 
     /// <inheritdoc />
