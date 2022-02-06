@@ -35,11 +35,13 @@ Adds enhanced chest features to the game.
 
 With Carry Chest enabled, you can hit the Use Tool button to pick up chests into your inventory even if it has items.
 
-| Config     | Description                      | Default Value | Other Value(s)                        |
-|:-----------|:---------------------------------|:--------------|:--------------------------------------|
-| CarryChest | Enables the Carry Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| Config          | Description                            | Default Value | Other Value(s)                        |
+|:----------------|:---------------------------------------|:--------------|:--------------------------------------|
+| CarryChest      | Enables the Carry Chest feature.       | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| CarryChestLimit | Limits how many chests can be carried. | `0`           | Any positive integer.<sup>2</sup>     |
 
 1. See [Option Values](#option-values).
+2. Use `0` for unlimited chests.
 
 ### Categorize Chest
 
@@ -89,12 +91,13 @@ Hit a configurable key (or controller button) to bring up a crafting menu that u
 |:-------------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
 | CraftFromChest                 | Enables the Craft From Chest feature.                     | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>1</sup> |
 | OpenCrafting                   | Assigns the keybind for opening the crafting menu.        | `"K"`         | Any valid button code.<sup>2</sup>                                             |
-| CraftFromChestDisableLocations | A list of locations that crafting will not be allowed in. | `[]`          | The locations to block.                                                        |
-| CraftFromChestDistance         | Limits the distance that a chest can be crafted from.     | -1            | Any positive integer or `-1`.<sup>3</sup>                                      |
+| CraftFromChestDisableLocations | A list of locations that crafting will not be allowed in. | `[]`          | The locations to block.<sup>3</sup>                                            |
+| CraftFromChestDistance         | Limits the distance that a chest can be crafted from.     | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
 
 1. See [Range Values](#range-values).
 2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
-3. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
+3. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
+4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
 ### Custom Color Picker
 
@@ -195,13 +198,14 @@ Hit a configurable key (or controller button) to instantly stash items from your
 |:-----------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
 | StashToChest                 | Enables the Stash To Chest feature.                       | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>2</sup> |
 | StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
-| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.                                                        |
-| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
+| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                            |
+| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                      |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
 3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
-4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
+4. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
+5. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
 ### Unload Chest
 
