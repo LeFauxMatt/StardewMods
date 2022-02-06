@@ -15,6 +15,11 @@ internal interface IConfigData
     public int CarryChestLimit { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating if carrying any chest containing items will apply a slowness effect.
+    /// </summary>
+    public bool CarryChestSlow { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.
     /// </summary>
     public bool CategorizeChest { get; set; }
@@ -52,6 +57,8 @@ internal interface IConfigData
     public void CopyTo<TOther>(TOther other)
         where TOther : IConfigData
     {
+        other.CarryChestLimit = this.CarryChestLimit;
+        other.CarryChestSlow = this.CarryChestSlow;
         other.CategorizeChest = this.CategorizeChest;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         other.CustomColorPickerArea = this.CustomColorPickerArea;

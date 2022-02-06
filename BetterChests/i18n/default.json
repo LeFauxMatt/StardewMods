@@ -3,6 +3,8 @@
   "alert.carry-chest-limit.hit-limit": "Cannot carry any more chests",
   "alert.craft-from-chest.no-eligible": "No eligible chests found to craft items from",
   "alert.stash-to-chest.no-eligible": "No eligible chests found to stash items into",
+  // Effects
+  "effect.carry-chest-slow.description": "Overburdened -4 Speed",
   // Config Pages
   "section.general.name": "General",
   "section.general.description": "General customization options for features.",
@@ -20,6 +22,8 @@
   "config.carry-chest-limit.value-unlimited": "Unlimited",
   "config.carry-chest-limit.value-one": "1 chest",
   "config.carry-chest-limit.value-many": "{0} chests",
+  "config.carry-chest-slow.name": "Carry Chest Slow",
+  "config.carry-chest-slow.tooltip": "Carrying a chest that has items will apply a slowness effect.",
   "config.categorize-chest.name": "Categorize Chest",
   "config.categorize-chest.tooltip": "Organize chests by assigning categories of items (stashing will use these categories).",
   "config.chest-menu-tabs.name": "Chest Menu Tabs",

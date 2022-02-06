@@ -413,6 +413,15 @@ internal class ModConfigMenu : IModService
             FormatHelper.FormatCarryChestLimit,
             nameof(IConfigData.CarryChestLimit));
 
+        // Carry Chest Slow
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.CarryChestSlow,
+            value => this.Config.CarryChestSlow = value,
+            I18n.Config_CarryChestSlow_Name,
+            I18n.Config_CarryChestSlow_Tooltip,
+            nameof(IConfigData.CarryChestSlow));
+
         // Categorize Chest
         this.GMCM.API.AddBoolOption(
             this.Manifest,

@@ -23,6 +23,7 @@ using SObject = StardewValley.Object;
 /// <inheritdoc />
 internal class CarryChest : Feature
 {
+    private const int WhichBuff = 69420;
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
@@ -34,6 +35,7 @@ internal class CarryChest : Feature
     public CarryChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        CarryChest.Instance ??= this;
         this._harmony = services.Lazy<IHarmonyHelper>(
             harmony =>
             {
@@ -80,16 +82,25 @@ internal class CarryChest : Feature
             });
     }
 
+    private static CarryChest Instance { get; set; }
+
     private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
+
+    private Buff Overburdened { get; } = new(0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 0, 0, int.MaxValue / 700, string.Empty, string.Empty)
+    {
+        description = I18n.Effect_CarryChestSlow_Description(),
+        which = CarryChest.WhichBuff,
+    };
 
     /// <inheritdoc />
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
     }
 
     /// <inheritdoc />
@@ -97,6 +108,7 @@ internal class CarryChest : Feature
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Helper.Events.GameLoop.DayStarted -= this.OnDayStarted;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -233,7 +245,7 @@ internal class CarryChest : Feature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y)
+    private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y, ref bool __result)
     {
         if (!location.Objects.TryGetValue(new(x / 64, y / 64), out var obj) || obj is not Chest chest)
         {
@@ -261,6 +273,8 @@ internal class CarryChest : Feature
         {
             chest.items.CopyFrom(other.items);
         }
+
+        CarryChest.Instance.CheckForOverburdened(__result);
     }
 
     private static void RecursiveIterate(Chest chest, Action<Item> action)
@@ -286,6 +300,22 @@ internal class CarryChest : Feature
                 CarryChest.RecursiveIterate(chest, action);
             }
         }
+    }
+
+    private void CheckForOverburdened(bool excludeCurrent = false)
+    {
+        if (!this.Config.CarryChestSlow)
+        {
+            return;
+        }
+
+        if (Game1.player.Items.OfType<Chest>().Any(chest => chest.items.Any() && (!excludeCurrent || !ReferenceEquals(chest, Game1.player.CurrentItem))))
+        {
+            Game1.buffsDisplay.addOtherBuff(this.Overburdened);
+            return;
+        }
+
+        Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
     }
 
     [EventPriority(EventPriority.High)]
@@ -331,6 +361,12 @@ internal class CarryChest : Feature
         Log.Trace($"Picked up chest {obj.Name} from {Game1.currentLocation.NameOrUniqueName} at ({pos.X.ToString(CultureInfo.InvariantCulture)}, {pos.Y.ToString(CultureInfo.InvariantCulture)}).");
         Game1.currentLocation.Objects.Remove(pos);
         this.Helper.Input.Suppress(e.Button);
+        this.CheckForOverburdened();
+    }
+
+    private void OnDayStarted(object sender, DayStartedEventArgs e)
+    {
+        this.CheckForOverburdened();
     }
 
     private record ItemSlot(Item Item, int SlotNumber);
