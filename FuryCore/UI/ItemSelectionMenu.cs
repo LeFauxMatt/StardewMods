@@ -15,6 +15,8 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
+// TODO: List all tags in bottom menu
+
 /// <summary>
 ///     A menu for selecting items.
 /// </summary>
@@ -39,18 +41,27 @@ public class ItemSelectionMenu : ItemGrabMenu
             source: ItemSelectionMenu.source_none,
             context: new Chest(true))
     {
-        ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().ToList();
+        ItemSelectionMenu.AllItems ??= new(new ItemRepository().GetAll().Select(item => item.Item));
+        ItemSelectionMenu.AllTags ??= new(
+            from item in ItemSelectionMenu.AllItems
+            from tag in item.GetContextTags()
+            select tag);
         this.CustomEvents = services.FindService<ICustomEvents>();
         this.MenuItems = services.FindService<IMenuItems>();
-        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.AllItems.Select(item => item.Item).ToList();
         this.InputHelper = inputHelper;
         this.ItemMatcher = itemMatcher;
+
+        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.AllItems.ToList();
         this.ItemsToGrabMenu.highlightMethod = this.ItemMatcher.Matches;
+
         this.MenuItems.AddSortMethod(this.SortItems);
+
         this.RefreshTags();
     }
 
-    private static IList<SearchableItem> AllItems { get; set; }
+    private static HashSet<Item> AllItems { get; set; }
+
+    private static HashSet<string> AllTags { get; set; }
 
     private ICustomEvents CustomEvents { get; }
 

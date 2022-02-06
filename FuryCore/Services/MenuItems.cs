@@ -11,6 +11,7 @@ using Common.Helpers.PatternPatcher;
 using Common.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
@@ -27,6 +28,7 @@ using StardewValley.Objects;
 internal class MenuItems : IMenuItems, IModService
 {
     private readonly PerScreen<Chest> _chest = new();
+    private readonly PerScreen<IMenuComponent> _downArrow = new();
     private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
     private readonly PerScreen<IDictionary<string, bool>> _itemFilterCache = new(() => new Dictionary<string, bool>());
     private readonly PerScreen<HashSet<ItemMatcher>> _itemFilters = new(() => new());
@@ -37,19 +39,24 @@ internal class MenuItems : IMenuItems, IModService
     private readonly PerScreen<IEnumerable<Item>> _itemsSorted = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int> _menuColumns = new();
+    private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly PerScreen<int> _offset = new(() => 0);
     private readonly PerScreen<Range<int>> _range = new(() => new());
     private readonly PerScreen<bool> _refreshInventory = new();
     private readonly PerScreen<Func<Item, int>> _sortMethod = new();
+    private readonly PerScreen<IMenuComponent> _upArrow = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuItems" /> class.
     /// </summary>
-    /// <param name="modEvents">Provides access to all SMAPI events.</param>
+    /// <param name="config">The data for player configured mod options.</param>
+    /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public MenuItems(IModEvents modEvents, IModServices services)
+    public MenuItems(ConfigData config, IModHelper helper, IModServices services)
     {
         MenuItems.Instance = this;
+        this.Config = config;
+        this._menuComponents = services.Lazy<IMenuComponents>();
 
         services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
@@ -70,10 +77,15 @@ internal class MenuItems : IMenuItems, IModService
                 harmonyHelper.ApplyPatches(id);
             });
 
-        services.Lazy<CustomEvents>(events => { events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged; });
+        services.Lazy<CustomEvents>(events =>
+        {
+            events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+            events.MenuComponentPressed += this.OnMenuComponentPressed;
+        });
 
-        modEvents.World.ChestInventoryChanged += this.OnChestInventoryChanged;
-        modEvents.Player.InventoryChanged += this.OnInventoryChanged;
+        helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
+        helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
@@ -149,6 +161,13 @@ internal class MenuItems : IMenuItems, IModService
 
     private static MenuItems Instance { get; set; }
 
+    private ConfigData Config { get; }
+
+    private IMenuComponent DownArrow
+    {
+        get => this._downArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
+    }
+
     private IDictionary<string, bool> ItemFilterCache
     {
         get => this._itemFilterCache.Value;
@@ -219,6 +238,11 @@ internal class MenuItems : IMenuItems, IModService
         set => this._menuColumns.Value = value;
     }
 
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
+    }
+
     private InventoryMenu.highlightThisItem OldHighlightMethod
     {
         get => this._highlightMethod.Value;
@@ -240,6 +264,11 @@ internal class MenuItems : IMenuItems, IModService
     {
         get => this._sortMethod.Value;
         set => this._sortMethod.Value = value;
+    }
+
+    private IMenuComponent UpArrow
+    {
+        get => this._upArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 459, 11, 12), Game1.pixelZoom));
     }
 
     /// <inheritdoc />
@@ -379,26 +408,12 @@ internal class MenuItems : IMenuItems, IModService
         this.ItemsFiltered = null;
     }
 
-    [SortedEventPriority(EventPriority.High + 1000)]
+    [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
             ? e.ItemGrabMenu
             : null;
-
-        if (this.Menu is not null)
-        {
-            this.Chest = e.Chest;
-            this.MenuColumns = this.Menu.GetColumnCount();
-
-            if (this.Menu.inventory.highlightMethod.Target is not MenuItems)
-            {
-                this.OldHighlightMethod = this.Menu.inventory.highlightMethod;
-                this.Menu.inventory.highlightMethod = this.HighlightMethod;
-            }
-
-            this.ForceRefresh();
-        }
 
         foreach (var itemMatcher in this.ItemFilters)
         {
@@ -408,10 +423,106 @@ internal class MenuItems : IMenuItems, IModService
         this.ItemFilters.Clear();
         this.ItemHighlighters.Clear();
         this.SortMethod = null;
+
+        if (this.Menu is null)
+        {
+            return;
+        }
+
+        this.Chest = e.Chest;
+        this.MenuColumns = this.Menu.GetColumnCount();
+
+        if (this.Menu.inventory.highlightMethod.Target is not MenuItems)
+        {
+            this.OldHighlightMethod = this.Menu.inventory.highlightMethod;
+            this.Menu.inventory.highlightMethod = this.HighlightMethod;
+        }
+
+        this.ForceRefresh();
+
+        if (this.MenuComponents.Menu is not null && this.Config.ScrollMenuOverflow)
+        {
+            // Add Up/Down Arrows
+            this.MenuComponents.Components.Add(this.UpArrow);
+            this.MenuComponents.Components.Add(this.DownArrow);
+
+            // Initialize Arrow visibility
+            this.UpArrow.Component.visible = this.Offset > 0;
+            this.DownArrow.Component.visible = this.Offset < this.Rows;
+
+            // Align to ItemsToGrabMenu top/bottom inventory slots
+            var topSlot = this.MenuComponents.Menu.GetColumnCount() - 1;
+            var bottomSlot = this.MenuComponents.Menu.ItemsToGrabMenu.capacity - 1;
+            this.UpArrow.Component.bounds.X = this.MenuComponents.Menu.ItemsToGrabMenu.xPositionOnScreen + this.MenuComponents.Menu.ItemsToGrabMenu.width + 8;
+            this.UpArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].bounds.Center.Y - 6 * Game1.pixelZoom;
+            this.DownArrow.Component.bounds.X = this.MenuComponents.Menu.ItemsToGrabMenu.xPositionOnScreen + this.MenuComponents.Menu.ItemsToGrabMenu.width + 8;
+            this.DownArrow.Component.bounds.Y = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].bounds.Center.Y - 6 * Game1.pixelZoom;
+
+            // Assign Neighbor IDs
+            this.UpArrow.Component.leftNeighborID = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].myID;
+            this.MenuComponents.Menu.ItemsToGrabMenu.inventory[topSlot].rightNeighborID = this.UpArrow.Id;
+            this.DownArrow.Component.leftNeighborID = this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].myID;
+            this.MenuComponents.Menu.ItemsToGrabMenu.inventory[bottomSlot].rightNeighborID = this.DownArrow.Id;
+            this.UpArrow.Component.downNeighborID = this.DownArrow.Id;
+            this.DownArrow.Component.upNeighborID = this.UpArrow.Id;
+        }
     }
 
     private void OnItemHighlighterChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         this.ItemHighlightCache.Clear();
+    }
+
+    private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
+    {
+        if (!this.Config.ScrollMenuOverflow)
+        {
+            return;
+        }
+
+        if (e.Component == this.UpArrow)
+        {
+            this.Offset--;
+        }
+        else if (e.Component == this.DownArrow)
+        {
+            this.Offset++;
+        }
+        else
+        {
+            return;
+        }
+
+        this.UpArrow.Component.visible = this.Offset > 0;
+        this.DownArrow.Component.visible = this.Offset < this.Rows;
+    }
+
+    private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
+    {
+        if (this.Menu is null || !this.Config.ScrollMenuOverflow)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        if (!this.Menu.ItemsToGrabMenu.isWithinBounds(x, y))
+        {
+            return;
+        }
+
+        switch (e.Delta)
+        {
+            case > 0:
+                this.Offset--;
+                break;
+            case < 0:
+                this.Offset++;
+                break;
+            default:
+                return;
+        }
+
+        this.UpArrow.Component.visible = this.Offset > 0;
+        this.DownArrow.Component.visible = this.Offset < this.Rows;
     }
 }

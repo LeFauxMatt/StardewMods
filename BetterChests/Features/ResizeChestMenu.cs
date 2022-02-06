@@ -401,7 +401,7 @@ internal class ResizeChestMenu : Feature
         }
     }
 
-    [SortedEventPriority(EventPriority.High)]
+    [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true

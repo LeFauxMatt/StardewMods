@@ -9,6 +9,11 @@ using StardewMods.FuryCore.Enums;
 internal class ConfigData
 {
     /// <summary>
+    ///     Gets or sets a value indicating whether scrolling will be added to menus where items overflow the menu capacity.
+    /// </summary>
+    public bool ScrollMenuOverflow { get; set; } = true;
+
+    /// <summary>
     ///     Gets or sets which custom tags can be added to items.
     /// </summary>
     public HashSet<CustomTag> CustomTags { get; set; } = new()
@@ -25,6 +30,7 @@ internal class ConfigData
     /// <param name="other">The <see cref="ConfigData" /> to copy values to.</param>
     public void CopyTo(ConfigData other)
     {
+        other.ScrollMenuOverflow = this.ScrollMenuOverflow;
         other.CustomTags = this.CustomTags;
     }
 }
