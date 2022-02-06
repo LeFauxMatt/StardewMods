@@ -179,7 +179,8 @@ Adds a search bar to the top of the Chest Menu to only display items that meet a
 ### Slot Lock
 
 Hover over an item slot in your backpack, and hit a configurable key to lock that slot which prevents any item in that
-slot from being stashed into a chest.
+slot from being stashed into a chest. Items in locked slots will remain in place when you shift the toolbar by hitting
+Tab.
 
 | Config   | Description                             | Default Value | Other Value(s)                        |
 |:---------|:----------------------------------------|:--------------|:--------------------------------------|

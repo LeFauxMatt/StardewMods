@@ -22,7 +22,7 @@ using StardewValley.Menus;
 internal class SlotLock : Feature
 {
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly PerScreen<bool[]> _lockedSlots = new(() => new bool[Game1.player.Items.Count]);
+    private readonly PerScreen<bool[]> _lockedSlots = new(() => new bool[Game1.player.MaxItems]);
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SlotLock" /> class.
@@ -49,6 +49,21 @@ internal class SlotLock : Feature
                     typeof(SlotLock),
                     nameof(SlotLock.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler);
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(
+                        typeof(Farmer),
+                        nameof(Farmer.shiftToolbar)),
+                    typeof(SlotLock),
+                    nameof(SlotLock.Farmer_shiftToolbar_postfix),
+                    PatchType.Postfix);
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(
+                        typeof(Farmer),
+                        nameof(Farmer.shiftToolbar)),
+                    typeof(SlotLock),
+                    nameof(SlotLock.Farmer_shiftToolbar_prefix));
             });
     }
 
@@ -61,10 +76,10 @@ internal class SlotLock : Feature
         {
             var lockedSlots = Game1.player.modData.TryGetValue($"{BetterChests.ModUniqueId}/LockedSlots", out var lockedSlotsData) && !string.IsNullOrWhiteSpace(lockedSlotsData)
                 ? lockedSlotsData.ToCharArray()
-                : new char[Game1.player.Items.Count];
-            if (lockedSlots.Length < Game1.player.Items.Count)
+                : new char[Game1.player.MaxItems];
+            if (lockedSlots.Length < Game1.player.MaxItems)
             {
-                Array.Resize(ref lockedSlots, Game1.player.Items.Count);
+                Array.Resize(ref lockedSlots, Game1.player.MaxItems);
             }
 
             this._lockedSlots.Value = lockedSlots.Select(slot => slot == '1').ToArray();
@@ -96,6 +111,33 @@ internal class SlotLock : Feature
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+    }
+
+    private static void Farmer_shiftToolbar_postfix(ref Farmer __instance, ref IList<Item> __state)
+    {
+        if (__state is null || !SlotLock.Instance.Config.SlotLock)
+        {
+            return;
+        }
+
+        var lockedSlots = SlotLock.Instance.LockedSlots;
+        IList<int> excludedIndex = new List<int>();
+        for (var index = 0; index < __instance.Items.Count; index++)
+        {
+            if (lockedSlots.ElementAtOrDefault(index) && __state[index] is not null && !excludedIndex.Contains(index))
+            {
+                var newIndex = __instance.Items.IndexOf(__state[index]);
+                __instance.Items[index] = __state[index];
+                __instance.Items[newIndex] = __state[newIndex];
+                excludedIndex.Add(index);
+                excludedIndex.Add(newIndex);
+            }
+        }
+    }
+
+    private static void Farmer_shiftToolbar_prefix(ref Farmer __instance, bool right, ref IList<Item> __state)
+    {
+        __state = __instance.Items.ToList();
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)

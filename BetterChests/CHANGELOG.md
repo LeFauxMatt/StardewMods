@@ -15,6 +15,7 @@
 * Added more logging on `better_chests_info` command.
     * List out eligible chests for CraftFromChest.
     * List out eligible chests for StashToChest.
+* Locked Slots now holds items in place when shifting the toolbar.
 
 ## 1.1.0 (February 5, 2022)
 
