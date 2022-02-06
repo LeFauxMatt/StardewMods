@@ -270,6 +270,19 @@ internal class ManagedChest : IManagedChest
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestDistance"] = value.ToString();
     }
 
+    /// <inheritdoc/>
+    public int StashToChestPriority
+    {
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestPriority", out var value) && int.TryParse(value, out var priority)
+            ? priority switch
+            {
+                0 => this.Data.StashToChestPriority,
+                _ => priority,
+            }
+            : this.Data.StashToChestPriority;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestPriority"] = value.ToString();
+    }
+
     /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
@@ -319,7 +332,7 @@ internal class ManagedChest : IManagedChest
 
         if (this.StashToChestStacks != FeatureOption.Disabled)
         {
-            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem.maximumStackSize() > 1 && chestItem.canStackWith(item)))
+            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem?.maximumStackSize() > 1 && chestItem?.canStackWith(item) == true))
             {
                 if (chestItem.getRemainingStackSpace() > 0)
                 {

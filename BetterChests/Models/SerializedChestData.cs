@@ -190,6 +190,15 @@ internal class SerializedChestData : IChestData
         set => this.Data["StashToChestDistance"] = value == 0 ? string.Empty : value.ToString();
     }
 
+    /// <inheritdoc/>
+    public int StashToChestPriority
+    {
+        get => this.Data.TryGetValue("StashToChestPriority", out var value) && int.TryParse(value, out var distance)
+            ? distance
+            : 0;
+        set => this.Data["StashToChestPriority"] = value == 0 ? string.Empty : value.ToString();
+    }
+
     /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {

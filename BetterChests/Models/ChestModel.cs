@@ -310,6 +310,13 @@ internal class ChestModel : IChestData
         set => this.Data.StashToChestDistance = value;
     }
 
+    /// <inheritdoc/>
+    public int StashToChestPriority
+    {
+        get => this.Data.StashToChestPriority != 0 ? this.Data.StashToChestPriority : this.DefaultChest.StashToChestPriority;
+        set => this.Data.StashToChestPriority = value;
+    }
+
     /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
