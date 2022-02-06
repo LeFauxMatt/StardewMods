@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Common.Helpers;
 using StardewModdingAPI;
@@ -26,6 +27,46 @@ internal class StashToChest : Feature
         : base(config, helper, services)
     {
         this._slotLock = services.Lazy<SlotLock>();
+    }
+
+    /// <summary>
+    ///     Gets a value indicating which chests are eligible for stashing into.
+    /// </summary>
+    public IList<IManagedChest> EligibleChests
+    {
+        get
+        {
+            var eligibleChests = (
+                from managedChest in this.ManagedChests.PlayerChests
+                where managedChest.StashToChest >= FeatureOptionRange.Inventory
+                      && managedChest.OpenHeldChest == FeatureOption.Enabled
+                select managedChest).ToList();
+
+            foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
+            {
+                // Disabled in config or by location name
+                if (managedChest.StashToChest == FeatureOptionRange.Disabled || managedChest.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+                {
+                    continue;
+                }
+
+                // Disabled in mines
+                if (managedChest.StashToChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+                {
+                    continue;
+                }
+
+                var (location, (x, y)) = placedObject;
+                if (managedChest.StashToChest == FeatureOptionRange.World
+                    || managedChest.StashToChest == FeatureOptionRange.Location && managedChest.StashToChestDistance == -1
+                    || managedChest.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.StashToChestDistance, Game1.player))
+                {
+                    eligibleChests.Add(managedChest);
+                }
+            }
+
+            return eligibleChests.OrderByDescending(managedChest => managedChest.StashToChestPriority).ToList();
+        }
     }
 
     private SlotLock SlotLock
@@ -55,34 +96,7 @@ internal class StashToChest : Feature
 
     private bool StashItems()
     {
-        var eligibleChests = (
-            from managedChest in this.ManagedChests.PlayerChests
-            where managedChest.StashToChest >= FeatureOptionRange.Inventory
-            select managedChest).ToList();
-
-        foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
-        {
-            // Disabled in config or by location name
-            if (managedChest.StashToChest == FeatureOptionRange.Disabled || managedChest.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name))
-            {
-                continue;
-            }
-
-            // Disabled in mines
-            if (managedChest.StashToChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
-            {
-                continue;
-            }
-
-            var (location, (x, y)) = placedObject;
-            if (managedChest.StashToChest == FeatureOptionRange.World
-                || managedChest.StashToChest == FeatureOptionRange.Location && managedChest.StashToChestDistance == -1
-                || managedChest.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.StashToChestDistance, Game1.player))
-            {
-                eligibleChests.Add(managedChest);
-            }
-        }
-
+        var eligibleChests = this.EligibleChests;
         if (!eligibleChests.Any())
         {
             Game1.showRedMessage(I18n.Alert_StashToChest_NoEligible());
@@ -90,25 +104,30 @@ internal class StashToChest : Feature
         }
 
         Log.Trace("Stashing items into chests");
-        var lockedSlots = this.SlotLock.LockedSlots;
-        for (var index = Game1.player.Items.Count - 1; index >= 0; index--)
+        var lockedSlots = this.Config.SlotLock
+            ? this.SlotLock.LockedSlots
+            : Array.Empty<bool>();
+
+        var stashedAny = false;
+        foreach (var eligibleChest in eligibleChests)
         {
-            if (this.Config.SlotLock && lockedSlots[index])
+            for (var index = Game1.player.Items.Count - 1; index >= 0; index--)
             {
-                continue;
-            }
+                if (lockedSlots.ElementAtOrDefault(index))
+                {
+                    continue;
+                }
 
-            var item = Game1.player.Items[index];
-            if (item is null)
-            {
-                continue;
-            }
+                var item = Game1.player.Items[index];
+                if (item is null)
+                {
+                    continue;
+                }
 
-            foreach (var eligibleChest in eligibleChests)
-            {
                 item = eligibleChest.StashItem(item);
                 if (item is null)
                 {
+                    stashedAny = true;
                     eligibleChest.Chest.shakeTimer = 100;
                     Game1.player.Items[index] = null;
                     break;
@@ -116,7 +135,13 @@ internal class StashToChest : Feature
             }
         }
 
-        Game1.playSound("Ship");
-        return true;
+        if (stashedAny)
+        {
+            Game1.playSound("Ship");
+            return true;
+        }
+
+        Game1.showRedMessage(I18n.Alert_StashToChest_NoEligible());
+        return false;
     }
 }

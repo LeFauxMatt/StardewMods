@@ -24,8 +24,8 @@ Provides additional APIs for my other mods.
     * [HSL Color Picker](#hsl-color-picker)
     * [Item Selection Menu](#item-selection-menu)
 * [Configure](#configure)
-  * [Add Custom Tags](#add-custom-tags)
-  * [Scroll Menu Overflow](#scroll-menu-overflow)
+    * [Add Custom Tags](#add-custom-tags)
+    * [Scroll Menu Overflow](#scroll-menu-overflow)
 * [Translations](#translations)
 
 ### Helpers

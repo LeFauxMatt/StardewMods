@@ -82,18 +82,17 @@ internal class ChestModel : IChestData
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
-        get
-        {
-            if (this.Data.CraftFromChest != FeatureOptionRange.Default)
-            {
-                return this.Data.CraftFromChest;
-            }
-
-            return this.DefaultChest.CraftFromChest == FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultChest.CraftFromChest;
-        }
+        get => this.Data.CraftFromChest;
         set => this.Data.CraftFromChest = value;
+    }
+
+    /// <inheritdoc/>
+    public HashSet<FeatureOptionRange> CraftFromChestRange
+    {
+        get => this.Data.CraftFromChestRange.All(range => range != FeatureOptionRange.Default)
+            ? this.Data.CraftFromChestRange
+            : this.DefaultChest.CraftFromChestRange;
+        set => this.Data.CraftFromChestRange = value;
     }
 
     /// <inheritdoc />
@@ -270,18 +269,17 @@ internal class ChestModel : IChestData
     /// <inheritdoc />
     public FeatureOptionRange StashToChest
     {
-        get
-        {
-            if (this.Data.StashToChest != FeatureOptionRange.Default)
-            {
-                return this.Data.StashToChest;
-            }
-
-            return this.DefaultChest.StashToChest == FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultChest.CraftFromChest;
-        }
+        get => this.Data.StashToChest;
         set => this.Data.StashToChest = value;
+    }
+
+    /// <inheritdoc/>
+    public HashSet<FeatureOptionRange> StashToChestRange
+    {
+        get => this.Data.StashToChestRange.All(range => range != FeatureOptionRange.Default)
+            ? this.Data.StashToChestRange
+            : this.DefaultChest.StashToChestRange;
+        set => this.Data.StashToChestRange = value;
     }
 
     /// <inheritdoc />
@@ -310,7 +308,7 @@ internal class ChestModel : IChestData
         set => this.Data.StashToChestDistance = value;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int StashToChestPriority
     {
         get => this.Data.StashToChestPriority != 0 ? this.Data.StashToChestPriority : this.DefaultChest.StashToChestPriority;

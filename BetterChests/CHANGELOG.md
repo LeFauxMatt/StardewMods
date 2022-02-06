@@ -8,9 +8,17 @@
     * SearchItems will add the search bar to the ItemSelectionMenu.
 * Added CarryChestLimit option to limit the number of chests that can be carried at once.
 * Added red text alerts to certain features.
-  * When CarryChestLimit is reached and attempting to carry another chest.
-  * When attempting to Craft from Chests and no eligible chests were found.
-  * When attempting to Stash to Chests and no eligible chests were found.
+    * When CarryChestLimit is reached and attempting to carry another chest.
+    * When attempting to Craft from Chests and no eligible chests were found.
+    * When attempting to Stash to Chests and no eligible chests were found.
+* Added StashToChestPriority to Chest Data.
+* Added CraftFromChestRange which allows ranges to be toggled individually.
+  * Deprecated CraftFromChest.
+* Added StashToChestRange which allows ranges to be toggled individually.
+  * Deprecated StashToChest.
+* Added more logging on `better_chests_info` command.
+  * List out eligible chests for CraftFromChest.
+  * List out eligible chests for StashToChest.
 
 ## 1.1.0 (February 5, 2022)
 

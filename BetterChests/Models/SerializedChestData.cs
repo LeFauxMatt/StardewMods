@@ -64,6 +64,17 @@ internal class SerializedChestData : IChestData
         set => this.Data["CraftFromChest"] = value == FeatureOptionRange.Default ? string.Empty : FormatHelper.GetRangeString(value);
     }
 
+    /// <inheritdoc/>
+    public HashSet<FeatureOptionRange> CraftFromChestRange
+    {
+        get => this.Data.TryGetValue("CraftFromChestRange", out var values) && !string.IsNullOrWhiteSpace(values)
+            ? new(from value in values.Split(',')
+                  where Enum.TryParse(value, out FeatureOptionRange _)
+                  select Enum.Parse<FeatureOptionRange>(value))
+            : new();
+        set => this.Data["CraftFromChestRange"] = !value.Any() ? string.Empty : string.Join(",", value);
+    }
+
     /// <inheritdoc />
     public HashSet<string> CraftFromChestDisableLocations
     {
@@ -172,6 +183,17 @@ internal class SerializedChestData : IChestData
         set => this.Data["StashToChest"] = value == FeatureOptionRange.Default ? string.Empty : FormatHelper.GetRangeString(value);
     }
 
+    /// <inheritdoc/>
+    public HashSet<FeatureOptionRange> StashToChestRange
+    {
+        get => this.Data.TryGetValue("StashToChestRange", out var values) && !string.IsNullOrWhiteSpace(values)
+            ? new(from value in values.Split(',')
+                  where Enum.TryParse(value, out FeatureOptionRange _)
+                  select Enum.Parse<FeatureOptionRange>(value))
+            : new();
+        set => this.Data["StashToChestRange"] = !value.Any() ? string.Empty : string.Join(",", value);
+    }
+
     /// <inheritdoc />
     public HashSet<string> StashToChestDisableLocations
     {
@@ -190,7 +212,7 @@ internal class SerializedChestData : IChestData
         set => this.Data["StashToChestDistance"] = value == 0 ? string.Empty : value.ToString();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int StashToChestPriority
     {
         get => this.Data.TryGetValue("StashToChestPriority", out var value) && int.TryParse(value, out var distance)

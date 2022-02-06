@@ -288,6 +288,15 @@ internal class ModConfigMenu : IModService
             FormatHelper.FormatRangeDistance,
             nameof(IChestData.StashToChestDistance));
 
+        // Stash to Chest Priority
+        this.GMCM.API.AddNumberOption(
+            manifest,
+            () => chestData.StashToChestPriority,
+            value => chestData.StashToChestPriority = value,
+            I18n.Config_StashToChestPriority_Name,
+            I18n.Config_StashToChestPriority_Tooltip,
+            fieldId: nameof(IChestData.StashToChestPriority));
+
         // Stash to Chest Stacks
         this.GMCM.API.AddTextOption(
             manifest,

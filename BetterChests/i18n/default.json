@@ -64,6 +64,8 @@
   "config.stash-to-chest.tooltip": "The default range that chests can be remotely stashed into.",
   "config.stash-to-chest-distance.name": "Stash to Chest Distance",
   "config.stash-to-chest-distance.tooltip": "The tiles away from the player that chests can be remotely stashed from.",
+  "config.stash-to-chest-priority.name": "Stash to Chest Priority",
+  "config.stash-to-chest-priority.tooltip": "Chests with a higher priority will be stashed into first.",
   "config.stash-to-chest-stacks.name": "Stash to Existing Stacks",
   "config.stash-to-chest-stacks.tooltip": "Stashing will fill existing stacks of items in a Chest.",
   "config.unload-chest.name": "Unload Chest",

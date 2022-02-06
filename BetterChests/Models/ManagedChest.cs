@@ -85,13 +85,21 @@ internal class ManagedChest : IManagedChest
     public FeatureOptionRange CraftFromChest
     {
         get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
-            ? range switch
-            {
-                FeatureOptionRange.Default => this.Data.CraftFromChest,
-                _ => range,
-            }
+            ? range
             : this.Data.CraftFromChest;
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CraftFromChest"] = FormatHelper.GetRangeString(value);
+    }
+
+    /// <inheritdoc/>
+    public HashSet<FeatureOptionRange> CraftFromChestRange
+    {
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChestRange", out var values) && !string.IsNullOrWhiteSpace(values)
+            ? new(this.Data.CraftFromChestRange.Concat(
+                from value in values.Split(',')
+                where Enum.TryParse(value, out FeatureOptionRange _)
+                select Enum.Parse<FeatureOptionRange>(value)))
+            : this.Data.CraftFromChestRange;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/CraftFromChestRange"] = string.Join(",", value);
     }
 
     /// <inheritdoc />
@@ -239,13 +247,21 @@ internal class ManagedChest : IManagedChest
     public FeatureOptionRange StashToChest
     {
         get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
-            ? range switch
-            {
-                FeatureOptionRange.Default => this.Data.StashToChest,
-                _ => range,
-            }
+            ? range
             : this.Data.StashToChest;
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChest"] = FormatHelper.GetRangeString(value);
+    }
+
+    /// <inheritdoc/>
+    public HashSet<FeatureOptionRange> StashToChestRange
+    {
+        get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestRange", out var values) && !string.IsNullOrWhiteSpace(values)
+            ? new(this.Data.StashToChestRange.Concat(
+                from value in values.Split(',')
+                where Enum.TryParse(value, out FeatureOptionRange _)
+                select Enum.Parse<FeatureOptionRange>(value)))
+            : this.Data.StashToChestRange;
+        set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestRange"] = string.Join(",", value);
     }
 
     /// <inheritdoc />
@@ -270,7 +286,7 @@ internal class ManagedChest : IManagedChest
         set => this.Chest.modData[$"{BetterChests.ModUniqueId}/StashToChestDistance"] = value.ToString();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int StashToChestPriority
     {
         get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestPriority", out var value) && int.TryParse(value, out var priority)
@@ -332,7 +348,7 @@ internal class ManagedChest : IManagedChest
 
         if (this.StashToChestStacks != FeatureOption.Disabled)
         {
-            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem?.maximumStackSize() > 1 && chestItem?.canStackWith(item) == true))
+            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem?.maximumStackSize() > 1 && chestItem.canStackWith(item)))
             {
                 if (chestItem.getRemainingStackSpace() > 0)
                 {

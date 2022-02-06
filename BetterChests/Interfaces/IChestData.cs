@@ -35,6 +35,11 @@ public interface IChestData
     public FeatureOptionRange CraftFromChest { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating range(s) that the chest can be remotely crafted from.
+    /// </summary>
+    public HashSet<FeatureOptionRange> CraftFromChestRange { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
     ///     listed locations.
     /// </summary>
@@ -95,6 +100,11 @@ public interface IChestData
     ///     Gets or sets a value indicating if the chest can be remotely stashed into.
     /// </summary>
     public FeatureOptionRange StashToChest { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating range(s) that the chest can be remotely stashed into.
+    /// </summary>
+    public HashSet<FeatureOptionRange> StashToChestRange { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
