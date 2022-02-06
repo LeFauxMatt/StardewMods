@@ -343,12 +343,16 @@ internal class SearchItems : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
+        if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.SearchItems == FeatureOption.Enabled)
+        {
+            this.Chest = e.Chest;
+            this.SearchField.Text = string.Empty;
+        }
+        else if (this.Menu is null || e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
         {
             return;
         }
-
-        if (!ReferenceEquals(e.Chest, this.Chest))
+        else if (!ReferenceEquals(e.Chest, this.Chest))
         {
             this.Chest = e.Chest;
             this.SearchField.Text = string.Empty;
@@ -361,7 +365,10 @@ internal class SearchItems : Feature
         // Expand ItemsToGrabMenu by Search Bar Height
         if (e.IsNew)
         {
-            Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {e.Chest.Name}");
+            if (e.Chest is not null)
+            {
+                Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {e.Chest.Name}");
+            }
 
             var padding = this.MenuPadding(this.Menu);
             this.Menu.yPositionOnScreen -= padding;

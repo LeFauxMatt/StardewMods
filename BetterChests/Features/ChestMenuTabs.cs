@@ -15,6 +15,7 @@ using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -134,7 +135,14 @@ internal class ChestMenuTabs : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.ChestMenuTabs == FeatureOption.Disabled)
+        IChestData chestData = e.ItemGrabMenu switch
+        {
+            ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => this.Config.DefaultChest,
+            _ when e.Chest is not null && this.ManagedChests.FindChest(e.Chest, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
+            _ => null,
+        };
+
+        if (chestData is null)
         {
             return;
         }
@@ -148,7 +156,7 @@ internal class ChestMenuTabs : Feature
         if (this.MenuComponents.Menu is not null)
         {
             var tabs = (
-                from tabSet in managedChest.ChestMenuTabSet.Select((name, index) => (name, index))
+                from tabSet in chestData.ChestMenuTabSet.Select((name, index) => (name, index))
                 join tabData in this.Tabs on tabSet.name equals tabData.Name
                 orderby tabSet.index
                 select tabData).ToList();

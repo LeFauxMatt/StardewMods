@@ -404,7 +404,7 @@ internal class ResizeChestMenu : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true || e.ItemGrabMenu is ItemSelectionMenu
+        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
             ? e.ItemGrabMenu
             : null;
 
@@ -413,7 +413,7 @@ internal class ResizeChestMenu : Feature
             return;
         }
 
-        if ((e.IsNew && this.MenuOffset != 0) || this.Menu is ItemSelectionMenu)
+        if (e.IsNew && this.MenuOffset != 0)
         {
             if (e.Chest is not null)
             {
