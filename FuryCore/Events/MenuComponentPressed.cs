@@ -36,6 +36,11 @@ internal class MenuComponentPressed : SortedEventHandler<MenuComponentPressedEve
     [EventPriority(EventPriority.High + 1000)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
+        if (this.HandlerCount == 0)
+        {
+            return;
+        }
+
         if (e.Button != SButton.MouseLeft && !e.Button.IsActionButton() || !this.Components.Components.Any())
         {
             return;

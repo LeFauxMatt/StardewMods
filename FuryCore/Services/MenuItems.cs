@@ -34,11 +34,13 @@ internal class MenuItems : IMenuItems, IModService
     private readonly PerScreen<HashSet<ItemMatcher>> _itemHighlighters = new(() => new());
     private readonly PerScreen<IList<int>> _itemIndexes = new();
     private readonly PerScreen<IList<Item>> _itemsFiltered = new();
+    private readonly PerScreen<IEnumerable<Item>> _itemsSorted = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int> _menuColumns = new();
     private readonly PerScreen<int> _offset = new(() => 0);
     private readonly PerScreen<Range<int>> _range = new(() => new());
     private readonly PerScreen<bool> _refreshInventory = new();
+    private readonly PerScreen<Func<Item, int>> _sortMethod = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuItems" /> class.
@@ -182,7 +184,7 @@ internal class MenuItems : IMenuItems, IModService
         {
             if (this._itemsFiltered.Value is null)
             {
-                this._itemsFiltered.Value = this.ActualInventory.Where(this.FilterMethod).ToList();
+                this._itemsFiltered.Value = this.ItemsSorted.Where(this.FilterMethod).ToList();
                 this.ItemIndexes = null;
                 this.RefreshInventory = true;
             }
@@ -191,6 +193,24 @@ internal class MenuItems : IMenuItems, IModService
         }
 
         set => this._itemsFiltered.Value = value;
+    }
+
+    private IEnumerable<Item> ItemsSorted
+    {
+        get
+        {
+            if (this._itemsSorted.Value is null)
+            {
+                this._itemsSorted.Value = this.SortMethod is not null
+                    ? this.ActualInventory.OrderBy(this.SortMethod)
+                    : this.ActualInventory.AsEnumerable();
+                this.ItemsFiltered = null;
+            }
+
+            return this._itemsSorted.Value;
+        }
+
+        set => this._itemsSorted.Value = value;
     }
 
     private int MenuColumns
@@ -216,6 +236,12 @@ internal class MenuItems : IMenuItems, IModService
         set => this._refreshInventory.Value = value;
     }
 
+    private Func<Item, int> SortMethod
+    {
+        get => this._sortMethod.Value;
+        set => this._sortMethod.Value = value;
+    }
+
     /// <inheritdoc />
     public void AddFilter(ItemMatcher itemMatcher)
     {
@@ -231,11 +257,19 @@ internal class MenuItems : IMenuItems, IModService
     }
 
     /// <inheritdoc />
+    public void AddSortMethod(Func<Item, int> sortMethod)
+    {
+        this.SortMethod = sortMethod;
+        this.ItemsSorted = null;
+    }
+
+    /// <inheritdoc />
     public void ForceRefresh()
     {
         this.ItemFilterCache.Clear();
         this.ItemHighlightCache.Clear();
         this.ItemsFiltered = null;
+        this.ItemsSorted = null;
     }
 
     private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
@@ -326,6 +360,7 @@ internal class MenuItems : IMenuItems, IModService
         if (this.Menu is not null && ReferenceEquals(e.Chest, this.Chest))
         {
             this.ItemsFiltered = null;
+            this.ItemsSorted = null;
         }
     }
 
@@ -334,6 +369,7 @@ internal class MenuItems : IMenuItems, IModService
         if (e.IsLocalPlayer)
         {
             this.ItemsFiltered = null;
+            this.ItemsSorted = null;
         }
     }
 
@@ -371,6 +407,7 @@ internal class MenuItems : IMenuItems, IModService
 
         this.ItemFilters.Clear();
         this.ItemHighlighters.Clear();
+        this.SortMethod = null;
     }
 
     private void OnItemHighlighterChanged(object sender, NotifyCollectionChangedEventArgs e)

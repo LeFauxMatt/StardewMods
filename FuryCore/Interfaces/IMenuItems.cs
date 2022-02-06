@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.FuryCore.Interfaces;
 
+using System;
 using System.Collections.Generic;
 using StardewMods.FuryCore.Helpers;
 using StardewValley;
@@ -52,6 +53,12 @@ public interface IMenuItems
     /// </summary>
     /// <param name="itemMatcher">Items where <see cref="ItemMatcher.Matches" /> returns true will be highlighted.</param>
     public void AddHighlighter(ItemMatcher itemMatcher);
+
+    /// <summary>
+    ///     Adds a sort method which displayed items will be sorted by.
+    /// </summary>
+    /// <param name="sortMethod">The sort method to add.</param>
+    public void AddSortMethod(Func<Item, int> sortMethod);
 
     /// <summary>
     ///     Clears internal cache of filtered/highlighted items.

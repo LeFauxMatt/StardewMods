@@ -4,30 +4,29 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Common.Extensions;
 using Common.Helpers.ItemRepository;
-using Common.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 /// <summary>
 ///     A menu for selecting items.
 /// </summary>
 public class ItemSelectionMenu : ItemGrabMenu
 {
-    private int _offset;
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemSelectionMenu" /> class.
     /// </summary>
     /// <param name="inputHelper">API for changing input states.</param>
+    /// <param name="services">Provides access to internal and external services.</param>
     /// <param name="itemMatcher">Matches items against name and context tags.</param>
-    public ItemSelectionMenu(IInputHelper inputHelper, ItemMatcher itemMatcher)
+    public ItemSelectionMenu(IInputHelper inputHelper, IModServices services, ItemMatcher itemMatcher)
         : base(
             new List<Item>(),
             false,
@@ -37,99 +36,35 @@ public class ItemSelectionMenu : ItemGrabMenu
             null,
             (_, _) => { },
             canBeExitedWithKey: false,
-            source: ItemSelectionMenu.source_none)
+            source: ItemSelectionMenu.source_none,
+            context: new Chest(true))
     {
         ItemSelectionMenu.AllItems ??= new ItemRepository().GetAll().ToList();
+        this.CustomEvents = services.FindService<ICustomEvents>();
+        this.MenuItems = services.FindService<IMenuItems>();
+        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.AllItems.Select(item => item.Item).ToList();
         this.InputHelper = inputHelper;
         this.ItemMatcher = itemMatcher;
         this.ItemsToGrabMenu.highlightMethod = this.ItemMatcher.Matches;
-        this.Columns = this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows;
+        this.MenuItems.AddSortMethod(this.SortItems);
         this.RefreshTags();
-
-        this.SearchField = new(Game1.content.Load<Texture2D>(@"LooseSprites\textBox"), null, Game1.smallFont, Game1.textColor)
-        {
-            X = this.ItemsToGrabMenu.xPositionOnScreen,
-            Y = this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom,
-            Width = this.ItemsToGrabMenu.width,
-            Selected = false,
-        };
-
-        this.SearchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
-        {
-            bounds = new(this.ItemsToGrabMenu.xPositionOnScreen + this.ItemsToGrabMenu.width - 38, this.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32),
-        };
-
-        this.SearchArea = new(new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height), string.Empty);
     }
 
     private static IList<SearchableItem> AllItems { get; set; }
 
-    private int Columns { get; }
-
-    private IList<SearchableItem> DisplayedItems { get; set; }
+    private ICustomEvents CustomEvents { get; }
 
     private IInputHelper InputHelper { get; }
 
     private ItemMatcher ItemMatcher { get; }
 
-    private IEnumerable<SearchableItem> Items
-    {
-        get
-        {
-            if (this.SortedItems is null)
-            {
-                this.SortedItems = this.ItemMatcher.Any()
-                    ? ItemSelectionMenu.AllItems.OrderBy(item => this.ItemMatcher.Matches(item.Item) ? 0 : 1)
-                    : ItemSelectionMenu.AllItems.AsEnumerable();
-
-                this.DisplayedItems = null;
-            }
-
-            this.DisplayedItems ??= string.IsNullOrWhiteSpace(this.SearchField.Text)
-                ? this.SortedItems.ToList()
-                : this.SortedItems.Where(item => item.NameContains(this.SearchField.Text)).ToList();
-
-            return this.DisplayedItems.Skip(this.Offset * this.Columns);
-        }
-    }
-
-    private int Offset
-    {
-        get
-        {
-            this.Range.Maximum = Math.Max(0, (this.DisplayedItems.Count - this.ItemsToGrabMenu.capacity).RoundUp(this.Columns) / this.Columns);
-            return this.Range.Clamp(this._offset);
-        }
-
-        set
-        {
-            this.Range.Maximum = Math.Max(0, (this.DisplayedItems.Count - this.ItemsToGrabMenu.capacity).RoundUp(this.Columns) / this.Columns);
-            this._offset = this.Range.Clamp(value);
-        }
-    }
-
-    private Range<int> Range { get; } = new();
-
-    private ClickableComponent SearchArea { get; }
-
-    private TextBox SearchField { get; }
-
-    private ClickableTextureComponent SearchIcon { get; }
-
-    private string SearchText { get; set; }
-
-    private IEnumerable<SearchableItem> SortedItems { get; set; }
+    private IMenuItems MenuItems { get; }
 
     private DropDownMenu TagMenu { get; set; }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        if (this.drawBG)
-        {
-            b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
-        }
-
         Game1.drawDialogueBox(
             this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
             this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
@@ -140,32 +75,13 @@ public class ItemSelectionMenu : ItemGrabMenu
 
         Game1.drawDialogueBox(
             this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
-            this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder,
+            this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder + 24,
             this.inventory.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
-            this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2,
+            this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 - 24,
             false,
             true);
 
         this.ItemsToGrabMenu.draw(b);
-
-        foreach (var (item, index) in this.Items.Take(this.ItemsToGrabMenu.capacity).Select((item, index) => (item.Item, index)))
-        {
-            var highlight = this.ItemMatcher.Matches(item);
-            var x = this.ItemsToGrabMenu.xPositionOnScreen + (this.ItemsToGrabMenu.horizontalGap + Game1.tileSize) * (index % (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows));
-            var y = this.yPositionOnScreen + (this.ItemsToGrabMenu.verticalGap + Game1.tileSize + 4) * (index / (this.ItemsToGrabMenu.capacity / this.ItemsToGrabMenu.rows)) - 4;
-            item.drawInMenu(
-                b,
-                new(x, y),
-                this.ItemsToGrabMenu.inventory[index].scale,
-                highlight ? 1f : 0.25f,
-                0.865f,
-                StackDrawType.Hide,
-                Color.White,
-                highlight);
-        }
-
-        this.SearchField.Draw(b, false);
-        this.SearchIcon.draw(b);
         this.okButton.draw(b);
 
         foreach (var tag in this.inventory.inventory)
@@ -179,18 +95,6 @@ public class ItemSelectionMenu : ItemGrabMenu
                 b.DrawString(Game1.smallFont, tag.name, new(tag.bounds.X, tag.bounds.Y), Game1.textColor);
             }
         }
-
-        if (this.TagMenu is not null)
-        {
-            this.TagMenu.Draw(b);
-        }
-        else if (this.hoveredItem != null)
-        {
-            ItemSelectionMenu.drawToolTip(b, this.hoveredItem.getDescription(), this.hoveredItem.DisplayName, this.hoveredItem);
-        }
-
-        Game1.mouseCursorTransparency = 1f;
-        this.drawMouse(b);
     }
 
     /// <inheritdoc />
@@ -200,13 +104,18 @@ public class ItemSelectionMenu : ItemGrabMenu
             ? Math.Min(1.1f, this.okButton.scale + 0.05f)
             : Math.Max(1f, this.okButton.scale - 0.05f);
 
-        this.TagMenu?.TryHover(x, y);
+        if (this.TagMenu is not null)
+        {
+            this.TagMenu?.TryHover(x, y);
+            this.hoveredItem = null;
+            this.hoverText = string.Empty;
+            return;
+        }
 
         var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (cc is not null)
+        if (cc is not null && int.TryParse(cc.name, out var slotNumber))
         {
-            var slotNumber = Convert.ToInt32(cc.name);
-            this.hoveredItem = this.Items.ElementAtOrDefault(slotNumber)?.Item;
+            this.hoveredItem = this.MenuItems.ActualInventory.ElementAtOrDefault(slotNumber);
             this.hoverText = string.Empty;
             return;
         }
@@ -264,7 +173,7 @@ public class ItemSelectionMenu : ItemGrabMenu
         // Right click an item slot to display dropdown with item's context tags
         if (this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y)) is { } itemSlot
             && int.TryParse(itemSlot.name, out var slotNumber)
-            && this.Items.ElementAtOrDefault(slotNumber) is { Item: { } item })
+            && this.MenuItems.ActualInventory.ElementAtOrDefault(slotNumber) is { } item)
         {
             var tags = new HashSet<string>(item.GetContextTags().Where(tag => !tag.StartsWith("id_")));
 
@@ -292,10 +201,10 @@ public class ItemSelectionMenu : ItemGrabMenu
         switch (direction)
         {
             case > 0:
-                this.Offset--;
+                this.MenuItems.Offset--;
                 return;
             case < 0:
-                this.Offset++;
+                this.MenuItems.Offset++;
                 return;
             default:
                 base.receiveScrollWheelAction(direction);
@@ -310,6 +219,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void RegisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed += this.OnButtonPressed;
+        this.CustomEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
         this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
@@ -320,17 +230,8 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void UnregisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed -= this.OnButtonPressed;
+        this.CustomEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
         this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
-    }
-
-    /// <inheritdoc />
-    public override void update(GameTime time)
-    {
-        if (this.SearchText != this.SearchField.Text)
-        {
-            this.SearchText = this.SearchField.Text;
-            this.DisplayedItems = null;
-        }
     }
 
     private void AddTag(string tag)
@@ -355,38 +256,33 @@ public class ItemSelectionMenu : ItemGrabMenu
                 return;
 
             case SButton.Escape:
-                this.InputHelper.Suppress(e.Button);
+                break;
+
+            case SButton.MouseLeft when this.TagMenu is not null:
+                this.TagMenu.LeftClick(x, y);
+                this.TagMenu = null;
+                break;
+
+            case SButton.MouseRight when this.TagMenu is not null:
+                this.TagMenu = null;
+                break;
+
+            default:
                 return;
-
-            case SButton.MouseLeft:
-                this.SearchField.Selected = this.SearchArea.containsPoint(x, y);
-                this.TagMenu?.LeftClick(x, y);
-                this.TagMenu = null;
-                break;
-
-            case SButton.MouseRight:
-                this.SearchField.Selected = this.SearchArea.containsPoint(x, y);
-                if (this.SearchField.Selected)
-                {
-                    this.SearchField.Text = string.Empty;
-                    this.Offset = 0;
-                }
-
-                this.TagMenu = null;
-
-                break;
         }
 
-        if (this.SearchField.Selected)
-        {
-            this.InputHelper.Suppress(e.Button);
-        }
+        this.InputHelper.Suppress(e.Button);
     }
 
     private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
-        this.SortedItems = null;
         this.RefreshTags();
+        this.MenuItems.ForceRefresh();
+    }
+
+    private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
+    {
+        this.TagMenu?.Draw(e.SpriteBatch);
     }
 
     private void RefreshTags()
@@ -421,5 +317,10 @@ public class ItemSelectionMenu : ItemGrabMenu
             tag.bounds.Y = y;
             x += tag.bounds.Width + horizontalSpacing;
         }
+    }
+
+    private int SortItems(Item item)
+    {
+        return this.ItemMatcher.Matches(item) ? 0 : 1;
     }
 }
