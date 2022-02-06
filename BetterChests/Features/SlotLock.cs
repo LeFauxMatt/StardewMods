@@ -174,12 +174,11 @@ internal class SlotLock : Feature
 
         var (x, y) = Game1.getMousePosition(true);
         var slot = menu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (slot is null)
+        if (slot is null || !int.TryParse(slot.name, out var index) || index == -1 || index >= this.LockedSlots.Count)
         {
             return;
         }
 
-        var index = Convert.ToInt32(slot.name);
         var lockedSlots = this.LockedSlots;
         lockedSlots[index] = !lockedSlots[index];
         this.LockedSlots = lockedSlots;
