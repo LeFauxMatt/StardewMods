@@ -149,7 +149,7 @@ internal class AssetHandler : IModService, IAssetLoader
     /// </summary>
     public void SaveChestData()
     {
-        foreach (var (key, data) in this._cachedChestData)
+        foreach (var (key, data) in this.ChestData)
         {
             this.LocalChestData[key] = SerializedChestData.GetData(data);
         }
