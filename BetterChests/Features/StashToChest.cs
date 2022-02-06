@@ -57,11 +57,21 @@ internal class StashToChest : Feature
                 }
 
                 var (location, (x, y)) = placedObject;
-                if (managedChest.StashToChest == FeatureOptionRange.World
-                    || managedChest.StashToChest == FeatureOptionRange.Location && managedChest.StashToChestDistance == -1
-                    || managedChest.StashToChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.StashToChestDistance, Game1.player))
+                switch (managedChest.StashToChest)
                 {
-                    eligibleChests.Add(managedChest);
+                    // Disabled if not current location for location chest
+                    case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
+                        continue;
+                    case FeatureOptionRange.World:
+                    case FeatureOptionRange.Location when managedChest.StashToChestDistance == -1:
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.StashToChestDistance, Game1.player):
+                        eligibleChests.Add(managedChest);
+                        continue;
+                    case FeatureOptionRange.Default:
+                    case FeatureOptionRange.Disabled:
+                    case FeatureOptionRange.Inventory:
+                    default:
+                        continue;
                 }
             }
 

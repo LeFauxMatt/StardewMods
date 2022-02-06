@@ -84,11 +84,21 @@ internal class CraftFromChest : Feature
                 }
 
                 var (location, (x, y)) = placedObject;
-                if (managedChest.CraftFromChest == FeatureOptionRange.World
-                    || managedChest.CraftFromChest == FeatureOptionRange.Location && managedChest.CraftFromChestDistance == -1
-                    || managedChest.CraftFromChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player))
+                switch (managedChest.CraftFromChest)
                 {
-                    eligibleChests.Add(managedChest);
+                    // Disabled if not current location for location chest
+                    case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
+                        continue;
+                    case FeatureOptionRange.World:
+                    case FeatureOptionRange.Location when managedChest.CraftFromChestDistance == -1:
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player):
+                        eligibleChests.Add(managedChest);
+                        continue;
+                    case FeatureOptionRange.Default:
+                    case FeatureOptionRange.Disabled:
+                    case FeatureOptionRange.Inventory:
+                    default:
+                        continue;
                 }
             }
 
