@@ -1,4 +1,10 @@
 ﻿{
+  // Alerts
+  "alert.carry-chest-limit.hit-limit": "Não é possível carregar mais baús",
+  "alert.craft-from-chest.no-eligible": "Nenhum baú disponível encontrado para criação de itens",
+  "alert.stash-to-chest.no-eligible": "Nenhum baú disponível encontrado para estocar itens",
+  // Effects
+  "effect.carry-chest-slow.description": "Sobrecarregado -{0} Velocidade",
   // Config Pages
   "section.general.name": "Geral",
   "section.general.description": "Opções de configuração de funções em geral.",
@@ -11,6 +17,15 @@
   // Feature Config
   "config.carry-chest.name": "Carregar Baú",
   "config.carry-chest.tooltip": "Permite transportar baús colocados no chão junto com seus conteúdos.",
+  "config.carry-chest-limit.name": "Limite de Baús Carregados",
+  "config.carry-chest-limit.tooltip": "Limita o número de baús com itens que podem ser carregados ao mesmo tempo.",
+  "config.carry-chest-limit.value-unlimited": "Ilimitado",
+  "config.carry-chest-limit.value-one": "1 baú",
+  "config.carry-chest-limit.value-many": "{0} baús",
+  "config.carry-chest-slow.name": "Lentidão ao Carregar Baús",
+  "config.carry-chest-slow.tooltip": "Carregar baús que possuam itens irá aplicar um efeito de lentidão.",
+  "config.carry-chest-slow.value-zero": "Velocidade normal",
+  "config.carry-chest-slow.value": "-{0}x Velocidade",
   "config.categorize-chest.name": "Categorizar Baús",
   "config.categorize-chest.tooltip": "Organize baús ao definir categorias de itens (estocar irá usar essas categorias).",
   "config.chest-menu-tabs.name": "Abas no Menu de Baú",
@@ -55,6 +70,8 @@
   "config.stash-to-chest.tooltip": "A distância padrão que os baús podem ser estocados remotamente.",
   "config.stash-to-chest-distance.name": "Distância para Estocar em Baús",
   "config.stash-to-chest-distance.tooltip": "A distância em células do jogador que os baús podem ser estocados remotamente.",
+  "config.stash-to-chest-priority.name": "Prioridade de Estocagem",
+  "config.stash-to-chest-priority.tooltip": "Baús com uma prioridade maior serão estocados primeiro.",
   "config.stash-to-chest-stacks.name": "Estocar em Estoques Existentes",
   "config.stash-to-chest-stacks.tooltip": "Estocar irá preencher estoques de itens já existentes no baú.",
   "config.unload-chest.name": "Descarregar Baú",
