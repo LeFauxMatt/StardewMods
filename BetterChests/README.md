@@ -430,7 +430,7 @@ The SaddleBag can have its own Better Chest config by adding an entry for a ches
 | [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus      |
 | [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever   |
 | [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |
-| Italian                    | ❌️ Not Translated |             |
+| [Italian](i18n/it.json)    | ✔️ Complete       | zomboide    |
 | Japanese                   | ❌️ Not Translated |             |
 | Korean                     | ❌️ Not Translated |             |
 | [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon    |
