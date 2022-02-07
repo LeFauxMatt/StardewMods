@@ -321,9 +321,6 @@ internal class ManagedChest : IManagedChest
     public Item StashItem(Item item)
     {
         var stack = item.Stack;
-        item.resetState();
-        this.Chest.clearNulls();
-
         if (this.ItemMatcher.Any() && this.ItemMatcher.Matches(item) && !this.FilterItemsList.SetEquals(this.Data.FilterItemsList))
         {
             var tmp = this.Chest.addItem(item);

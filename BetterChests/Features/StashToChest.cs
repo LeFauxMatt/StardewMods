@@ -121,7 +121,7 @@ internal class StashToChest : Feature
         var stashedAny = false;
         foreach (var eligibleChest in eligibleChests)
         {
-            for (var index = Game1.player.Items.Count - 1; index >= 0; index--)
+            for (var index = 0; index < Game1.player.MaxItems; index++)
             {
                 if (lockedSlots.ElementAtOrDefault(index))
                 {
@@ -140,7 +140,6 @@ internal class StashToChest : Feature
                     stashedAny = true;
                     eligibleChest.Chest.shakeTimer = 100;
                     Game1.player.Items[index] = null;
-                    break;
                 }
             }
         }
