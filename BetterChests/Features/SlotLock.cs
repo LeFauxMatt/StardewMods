@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
@@ -113,29 +114,41 @@ internal class SlotLock : Feature
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Farmer_shiftToolbar_postfix(ref Farmer __instance, ref IList<Item> __state)
     {
-        if (__state is null || !SlotLock.Instance.Config.SlotLock)
+        if (__state is null || !SlotLock.Instance.Config.SlotLock || __state.SequenceEqual(__instance.Items))
         {
             return;
         }
 
         var lockedSlots = SlotLock.Instance.LockedSlots;
         IList<int> excludedIndex = new List<int>();
-        for (var index = 0; index < __instance.Items.Count; index++)
+        for (var index = 0; index < __instance.MaxItems; index++)
         {
-            if (lockedSlots.ElementAtOrDefault(index) && __state[index] is not null && !excludedIndex.Contains(index))
+            if (excludedIndex.Contains(index))
             {
-                var newIndex = __instance.Items.IndexOf(__state[index]);
-                __instance.Items[index] = __state[index];
-                __instance.Items[newIndex] = __state[newIndex];
+                continue;
+            }
+
+            var originalItem = lockedSlots.ElementAtOrDefault(index) ? __state[index] : null;
+            if (originalItem is not null)
+            {
+                var newIndex = __instance.Items.IndexOf(originalItem);
+                var newItem = __instance.Items[index];
+                __instance.Items[newIndex] = newItem;
+                __instance.Items[index] = originalItem;
                 excludedIndex.Add(index);
                 excludedIndex.Add(newIndex);
             }
         }
     }
 
-    private static void Farmer_shiftToolbar_prefix(ref Farmer __instance, bool right, ref IList<Item> __state)
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
+    private static void Farmer_shiftToolbar_prefix(ref Farmer __instance, ref IList<Item> __state)
     {
         __state = __instance.Items.ToList();
     }

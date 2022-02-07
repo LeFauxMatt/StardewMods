@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Interfaces;
 
+using System.Collections.Generic;
 using StardewMods.FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Objects;
@@ -16,6 +17,11 @@ internal interface IManagedChest : IChestData
     ///     Gets an <see cref="FuryCore.Helpers.ItemMatcher" /> that is uniquely assigned to each type of chest.
     /// </summary>
     public ItemMatcher ItemMatcher { get; }
+
+    /// <summary>
+    ///     Gets the inventory of the Chest being managed.
+    /// </summary>
+    public IList<Item> Items { get; }
 
     /// <summary>
     ///     Gets the Qualified Item Id of the Chest.

@@ -15,9 +15,9 @@ internal interface IConfigData
     public int CarryChestLimit { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating if carrying any chest containing items will apply a slowness effect.
+    ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
     /// </summary>
-    public bool CarryChestSlow { get; set; }
+    public int CarryChestSlow { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.

@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -89,18 +90,13 @@ internal class CarryChest : Feature
         get => this._harmony.Value;
     }
 
-    private Buff Overburdened { get; } = new(0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 0, 0, int.MaxValue / 700, string.Empty, string.Empty)
-    {
-        description = I18n.Effect_CarryChestSlow_Description(),
-        which = CarryChest.WhichBuff,
-    };
-
     /// <inheritdoc />
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
+        this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc />
@@ -109,6 +105,7 @@ internal class CarryChest : Feature
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.GameLoop.DayStarted -= this.OnDayStarted;
+        this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -122,6 +119,15 @@ internal class CarryChest : Feature
         {
             Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
         }
+    }
+
+    private static Buff GetOverburdened(int speed)
+    {
+        return new(0, 0, 0, 0, 0, 0, 0, 0, 0, -speed, 0, 0, int.MaxValue / 700, string.Empty, string.Empty)
+        {
+            description = string.Format(I18n.Effect_CarryChestSlow_Description(), speed.ToString()),
+            which = CarryChest.WhichBuff,
+        };
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -242,7 +248,7 @@ internal class CarryChest : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
     [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y, ref bool __result)
@@ -269,21 +275,26 @@ internal class CarryChest : Feature
         chest.lidFrameCount.Value = other.lidFrameCount.Value;
         chest.playerChoiceColor.Value = other.playerChoiceColor.Value;
 
-        if (other.items.Any())
+        var items = other.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+        if (items.Any())
         {
-            chest.items.CopyFrom(other.items);
+            chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).CopyFrom(items);
         }
 
         CarryChest.Instance.CheckForOverburdened(__result);
     }
 
-    private static void RecursiveIterate(Chest chest, Action<Item> action)
+    private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ICollection<Chest> exclude)
     {
+        exclude.Add(chest);
         if (chest.SpecialChestType is Chest.SpecialChestTypes.None)
         {
-            foreach (var item in chest.items.OfType<Chest>())
+            foreach (var item in chest.GetItemsForPlayer(player.UniqueMultiplayerID).OfType<Chest>())
             {
-                CarryChest.RecursiveIterate(item, action);
+                if (!exclude.Contains(item))
+                {
+                    CarryChest.RecursiveIterate(player, item, action, exclude);
+                }
             }
         }
 
@@ -297,21 +308,22 @@ internal class CarryChest : Feature
         {
             foreach (var chest in farmer.Items.OfType<Chest>())
             {
-                CarryChest.RecursiveIterate(chest, action);
+                CarryChest.RecursiveIterate(farmer, chest, action, new List<Chest>());
             }
         }
     }
 
     private void CheckForOverburdened(bool excludeCurrent = false)
     {
-        if (!this.Config.CarryChestSlow)
+        if (this.Config.CarryChestSlow == 0)
         {
+            Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
             return;
         }
 
         if (Game1.player.Items.OfType<Chest>().Any(chest => chest.items.Any() && (!excludeCurrent || !ReferenceEquals(chest, Game1.player.CurrentItem))))
         {
-            Game1.buffsDisplay.addOtherBuff(this.Overburdened);
+            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(this.Config.CarryChestSlow));
             return;
         }
 
@@ -365,6 +377,11 @@ internal class CarryChest : Feature
     }
 
     private void OnDayStarted(object sender, DayStartedEventArgs e)
+    {
+        this.CheckForOverburdened();
+    }
+
+    private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
     {
         this.CheckForOverburdened();
     }

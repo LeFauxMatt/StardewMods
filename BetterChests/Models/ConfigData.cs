@@ -13,7 +13,7 @@ internal class ConfigData : IConfigData
     public int CarryChestLimit { get; set; } = 0;
 
     /// <inheritdoc />
-    public bool CarryChestSlow { get; set; } = false;
+    public int CarryChestSlow { get; set; } = 0;
 
     /// <inheritdoc />
     public bool CategorizeChest { get; set; } = true;

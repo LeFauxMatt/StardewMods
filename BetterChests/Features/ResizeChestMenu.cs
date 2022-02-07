@@ -126,7 +126,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuCapacity.Value ??= -1; // Vanilla
             }
 
-            var capacity = Math.Max(chest.items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
+            var capacity = Math.Max(managedChest.Items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
             return this._menuCapacity.Value ??= capacity switch
             {
                 Chest.capacity => -1, // Vanilla
@@ -163,7 +163,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuRows.Value ??= 3; // Vanilla
             }
 
-            var capacity = Math.Max(chest.items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
+            var capacity = Math.Max(managedChest.Items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
             return this._menuRows.Value ??= capacity switch
             {
                 < 72 => (int)Math.Min(managedChest.ResizeChestMenuRows, Math.Ceiling(capacity / 12f)), // Variable

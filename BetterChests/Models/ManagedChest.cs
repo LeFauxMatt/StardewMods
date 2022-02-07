@@ -155,6 +155,12 @@ internal class ManagedChest : IManagedChest
     public ItemMatcher ItemMatcher { get; } = new(true);
 
     /// <inheritdoc />
+    public IList<Item> Items
+    {
+        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    }
+
+    /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
         get => this.Chest.modData.TryGetValue($"{BetterChests.ModUniqueId}/OpenHeldChest", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -315,8 +321,10 @@ internal class ManagedChest : IManagedChest
     public Item StashItem(Item item)
     {
         var stack = item.Stack;
+        item.resetState();
+        this.Chest.clearNulls();
 
-        if (this.ItemMatcher.Any() && this.ItemMatcher.Matches(item))
+        if (this.ItemMatcher.Any() && this.ItemMatcher.Matches(item) && !this.FilterItemsList.SetEquals(this.Data.FilterItemsList))
         {
             var tmp = this.Chest.addItem(item);
             if (tmp is null || tmp.Stack <= 0)
@@ -332,7 +340,7 @@ internal class ManagedChest : IManagedChest
 
         if (this.StashToChestStacks != FeatureOption.Disabled)
         {
-            foreach (var chestItem in this.Chest.items.Where(chestItem => chestItem?.maximumStackSize() > 1 && chestItem.canStackWith(item)))
+            foreach (var chestItem in this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Where(chestItem => chestItem?.Stack >= 1 && chestItem.maximumStackSize() > 1 && chestItem.canStackWith(item)))
             {
                 if (chestItem.getRemainingStackSpace() > 0)
                 {

@@ -48,6 +48,20 @@ public static class FormatHelper
     }
 
     /// <summary>
+    ///     Formats carry chest slow using localized text when available.
+    /// </summary>
+    /// <param name="value">The value for carry chest slow to format.</param>
+    /// <returns>Localized text for the carry chest slow value.</returns>
+    public static string FormatCarryChestSlow(int value)
+    {
+        return value switch
+        {
+            0 => I18n.Config_CarryChestSlow_ValueZero(),
+            _ => string.Format(I18n.Config_CarryChestSlow_Value(), value.ToString()),
+        };
+    }
+
+    /// <summary>
     ///     Formats chest capacity using localized text when available.
     /// </summary>
     /// <param name="value">The value for capacity to format.</param>

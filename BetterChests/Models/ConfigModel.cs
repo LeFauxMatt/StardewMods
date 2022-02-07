@@ -32,7 +32,7 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
-    public bool CarryChestSlow
+    public int CarryChestSlow
     {
         get => this.Data.CarryChestSlow;
         set => this.Data.CarryChestSlow = value;
