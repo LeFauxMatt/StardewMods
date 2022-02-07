@@ -13,7 +13,7 @@
     {
       "UniqueID": "furyx639.FuryCore",
       "IsRequired": true,
-      "MinimumVersion": "1.2.0-alpha.2"
+      "MinimumVersion": "1.2.0"
     },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
