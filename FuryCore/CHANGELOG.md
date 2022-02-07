@@ -1,6 +1,6 @@
 ﻿# FuryCore Change Log
 
-## 1.2.0 (Unreleased)
+## 1.2.0 (February 6, 2022)
 
 * Item Selection Menu now lists most context tags on the bottom menu.
 

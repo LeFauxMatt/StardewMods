@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 1.2.0 (Unreleased)
+## 1.2.0 (February 6, 2022)
 
 * The ItemSelectionMenu is now affected by Better Chest features.
     * ResizeChestMenu will expand the ItemSelectionMenu.
