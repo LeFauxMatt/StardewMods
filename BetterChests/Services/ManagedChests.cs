@@ -49,15 +49,15 @@ internal class ManagedChests : IModService
                 switch (location)
                 {
                     // Attempt to load saddle bags
-                    case Farm farm when this.Integrations.ModIds.Contains(ModIntegrations.HorseOverhaulId):
+                    case Farm farm when this.Integrations.ModIds.Contains(ModIntegrations.HorseOverhaulModUniqueId):
                         foreach (var stable in farm.buildings.OfType<Stable>())
                         {
-                            if (!stable.modData.TryGetValue($"{ModIntegrations.HorseOverhaulId}/stableID", out var stableId) || !int.TryParse(stableId, out var x))
+                            if (!stable.modData.TryGetValue($"{ModIntegrations.HorseOverhaulModUniqueId}/stableID", out var stableId) || !int.TryParse(stableId, out var x))
                             {
                                 continue;
                             }
 
-                            if (!farm.Objects.TryGetValue(new(x, 0), out var obj) || obj is not Chest saddleBag || !saddleBag.modData.ContainsKey($"{ModIntegrations.HorseOverhaulId}/isSaddleBag"))
+                            if (!farm.Objects.TryGetValue(new(x, 0), out var obj) || obj is not Chest saddleBag || !saddleBag.modData.ContainsKey($"{ModIntegrations.HorseOverhaulModUniqueId}/isSaddleBag"))
                             {
                                 continue;
                             }

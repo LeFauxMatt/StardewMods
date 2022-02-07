@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 1.2.1 (February 6, 2022)
+
+* Quick hotfix for ModIntegration error.
+
 ## 1.2.0 (February 6, 2022)
 
 * The ItemSelectionMenu is now affected by Better Chest features.

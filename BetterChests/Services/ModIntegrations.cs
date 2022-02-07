@@ -9,14 +9,18 @@ using StardewMods.FuryCore.Interfaces;
 /// <inheritdoc />
 internal class ModIntegrations : IModService
 {
-    /// <summary>
-    ///     ModId Horse Overhaul
-    /// </summary>
-    public const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";
+    /// <summary>Unique ModId for Horse Overhaul.</summary>
+    public const string HorseOverhaulModUniqueId = "Goldenrevolver.HorseOverhaul";
+
+    /// <summary>Unique Mod Id for Automate.</summary>
+    public const string AutomateModUniqueId = "Pathochild.Automate";
+
+    /// <summary>Fully qualified name for Automate Container Type.</summary>
+    public const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
 
     private readonly List<string> _modIds = new()
     {
-        ModIntegrations.HorseOverhaulId,
+        ModIntegrations.HorseOverhaulModUniqueId,
     };
 
     /// <summary>
@@ -41,7 +45,8 @@ internal class ModIntegrations : IModService
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        foreach (var modId in this._modIds.Where(modId => !this.Helper.ModRegistry.IsLoaded(modId)))
+        var removedMods = this._modIds.Where(modId => !this.Helper.ModRegistry.IsLoaded(modId)).ToList();
+        foreach (var modId in removedMods)
         {
             this._modIds.Remove(modId);
         }

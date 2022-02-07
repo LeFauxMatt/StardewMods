@@ -8,6 +8,7 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
@@ -16,9 +17,6 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class FilterItems : Feature
 {
-    private const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
-    private const string AutomateModUniqueId = "Pathochild.Automate";
-
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuItems> _menuItems;
 
@@ -41,13 +39,13 @@ internal class FilterItems : Feature
                     typeof(FilterItems),
                     nameof(FilterItems.Chest_addItem_prefix));
 
-                if (!FilterItems.Instance.Helper.ModRegistry.IsLoaded(FilterItems.AutomateModUniqueId))
+                if (!FilterItems.Instance.Helper.ModRegistry.IsLoaded(ModIntegrations.AutomateModUniqueId))
                 {
                     return;
                 }
 
                 var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
-                    .GetType(FilterItems.AutomateChestContainerType)?
+                    .GetType(ModIntegrations.AutomateChestContainerType)?
                     .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
                 if (storeMethod is not null)
                 {
