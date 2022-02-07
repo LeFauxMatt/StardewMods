@@ -228,9 +228,13 @@ internal class MenuComponents : IMenuComponents, IModService
                     case ComponentArea.Bottom:
                         component.Y = topMenu.yPositionOnScreen + topMenu.height + Game1.pixelZoom;
                         component.Component.upNeighborID = topMenu.inventory[slot + index].myID;
-                        component.Component.downNeighborID = bottomMenu.inventory[index].myID;
                         topMenu.inventory[slot + index].downNeighborID = component.Id;
-                        bottomMenu.inventory[index].upNeighborID = component.Id;
+                        if (bottomMenu.inventory.Count > index)
+                        {
+                            component.Component.downNeighborID = bottomMenu.inventory[index].myID;
+                            bottomMenu.inventory[index].upNeighborID = component.Id;
+                        }
+
                         break;
                     case ComponentArea.Left:
                         component.X = menu.xPositionOnScreen - Game1.tileSize;

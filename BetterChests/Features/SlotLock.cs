@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
@@ -22,7 +23,7 @@ using StardewValley.Menus;
 internal class SlotLock : Feature
 {
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly PerScreen<bool[]> _lockedSlots = new(() => new bool[Game1.player.Items.Count]);
+    private readonly PerScreen<bool[]> _lockedSlots = new(() => new bool[Game1.player.MaxItems]);
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SlotLock" /> class.
@@ -49,6 +50,21 @@ internal class SlotLock : Feature
                     typeof(SlotLock),
                     nameof(SlotLock.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler);
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(
+                        typeof(Farmer),
+                        nameof(Farmer.shiftToolbar)),
+                    typeof(SlotLock),
+                    nameof(SlotLock.Farmer_shiftToolbar_postfix),
+                    PatchType.Postfix);
+                harmony.AddPatch(
+                    this.Id,
+                    AccessTools.Method(
+                        typeof(Farmer),
+                        nameof(Farmer.shiftToolbar)),
+                    typeof(SlotLock),
+                    nameof(SlotLock.Farmer_shiftToolbar_prefix));
             });
     }
 
@@ -61,10 +77,10 @@ internal class SlotLock : Feature
         {
             var lockedSlots = Game1.player.modData.TryGetValue($"{BetterChests.ModUniqueId}/LockedSlots", out var lockedSlotsData) && !string.IsNullOrWhiteSpace(lockedSlotsData)
                 ? lockedSlotsData.ToCharArray()
-                : new char[Game1.player.Items.Count];
-            if (lockedSlots.Length < Game1.player.Items.Count)
+                : new char[Game1.player.MaxItems];
+            if (lockedSlots.Length < Game1.player.MaxItems)
             {
-                Array.Resize(ref lockedSlots, Game1.player.Items.Count);
+                Array.Resize(ref lockedSlots, Game1.player.MaxItems);
             }
 
             this._lockedSlots.Value = lockedSlots.Select(slot => slot == '1').ToArray();
@@ -96,6 +112,45 @@ internal class SlotLock : Feature
     {
         this.Harmony.UnapplyPatches(this.Id);
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void Farmer_shiftToolbar_postfix(ref Farmer __instance, ref IList<Item> __state)
+    {
+        if (__state is null || !SlotLock.Instance.Config.SlotLock || __state.SequenceEqual(__instance.Items))
+        {
+            return;
+        }
+
+        var lockedSlots = SlotLock.Instance.LockedSlots;
+        IList<int> excludedIndex = new List<int>();
+        for (var index = 0; index < __instance.MaxItems; index++)
+        {
+            if (excludedIndex.Contains(index))
+            {
+                continue;
+            }
+
+            var originalItem = lockedSlots.ElementAtOrDefault(index) ? __state[index] : null;
+            if (originalItem is not null)
+            {
+                var newIndex = __instance.Items.IndexOf(originalItem);
+                var newItem = __instance.Items[index];
+                __instance.Items[newIndex] = newItem;
+                __instance.Items[index] = originalItem;
+                excludedIndex.Add(index);
+                excludedIndex.Add(newIndex);
+            }
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
+    private static void Farmer_shiftToolbar_prefix(ref Farmer __instance, ref IList<Item> __state)
+    {
+        __state = __instance.Items.ToList();
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -174,12 +229,11 @@ internal class SlotLock : Feature
 
         var (x, y) = Game1.getMousePosition(true);
         var slot = menu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (slot is null)
+        if (slot is null || !int.TryParse(slot.name, out var index) || index == -1 || index >= this.LockedSlots.Count)
         {
             return;
         }
 
-        var index = Convert.ToInt32(slot.name);
         var lockedSlots = this.LockedSlots;
         lockedSlots[index] = !lockedSlots[index];
         this.LockedSlots = lockedSlots;

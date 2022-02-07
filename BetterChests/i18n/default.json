@@ -1,4 +1,10 @@
 {
+  // Alerts
+  "alert.carry-chest-limit.hit-limit": "Cannot carry any more chests",
+  "alert.craft-from-chest.no-eligible": "No eligible chests found to craft items from",
+  "alert.stash-to-chest.no-eligible": "No eligible chests found to stash items into",
+  // Effects
+  "effect.carry-chest-slow.description": "Overburdened -{0} Speed",
   // Config Pages
   "section.general.name": "General",
   "section.general.description": "General customization options for features.",
@@ -11,6 +17,15 @@
   // Feature Config
   "config.carry-chest.name": "Carry Chest",
   "config.carry-chest.tooltip": "Allows chests placed in the world to be picked up with their items.",
+  "config.carry-chest-limit.name": "Carry Chest Limit",
+  "config.carry-chest-limit.tooltip": "Limits the number of chests with items that can be carried at once.",
+  "config.carry-chest-limit.value-unlimited": "Unlimited",
+  "config.carry-chest-limit.value-one": "1 chest",
+  "config.carry-chest-limit.value-many": "{0} chests",
+  "config.carry-chest-slow.name": "Carry Chest Slow",
+  "config.carry-chest-slow.tooltip": "Carrying a chest that has items will apply a slowness effect.",
+  "config.carry-chest-slow.value-zero": "Normal speed",
+  "config.carry-chest-slow.value": "-{0}x speed",
   "config.categorize-chest.name": "Categorize Chest",
   "config.categorize-chest.tooltip": "Organize chests by assigning categories of items (stashing will use these categories).",
   "config.chest-menu-tabs.name": "Chest Menu Tabs",
@@ -55,6 +70,8 @@
   "config.stash-to-chest.tooltip": "The default range that chests can be remotely stashed into.",
   "config.stash-to-chest-distance.name": "Stash to Chest Distance",
   "config.stash-to-chest-distance.tooltip": "The tiles away from the player that chests can be remotely stashed from.",
+  "config.stash-to-chest-priority.name": "Stash to Chest Priority",
+  "config.stash-to-chest-priority.tooltip": "Chests with a higher priority will be stashed into first.",
   "config.stash-to-chest-stacks.name": "Stash to Existing Stacks",
   "config.stash-to-chest-stacks.tooltip": "Stashing will fill existing stacks of items in a Chest.",
   "config.unload-chest.name": "Unload Chest",

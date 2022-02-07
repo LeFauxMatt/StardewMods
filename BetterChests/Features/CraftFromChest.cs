@@ -56,6 +56,56 @@ internal class CraftFromChest : Feature
             });
     }
 
+    /// <summary>
+    ///     Gets a value indicating which chests are eligible for crafting from.
+    /// </summary>
+    public IList<IManagedChest> EligibleChests
+    {
+        get
+        {
+            var eligibleChests = (
+                from managedChest in this.ManagedChests.PlayerChests
+                where managedChest.CraftFromChest >= FeatureOptionRange.Inventory
+                      && managedChest.OpenHeldChest == FeatureOption.Enabled
+                select managedChest).ToList();
+
+            foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
+            {
+                // Disabled in config or by location name
+                if (managedChest.CraftFromChest == FeatureOptionRange.Disabled || managedChest.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+                {
+                    continue;
+                }
+
+                // Disabled in mines
+                if (managedChest.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+                {
+                    continue;
+                }
+
+                var (location, (x, y)) = placedObject;
+                switch (managedChest.CraftFromChest)
+                {
+                    // Disabled if not current location for location chest
+                    case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
+                        continue;
+                    case FeatureOptionRange.World:
+                    case FeatureOptionRange.Location when managedChest.CraftFromChestDistance == -1:
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player):
+                        eligibleChests.Add(managedChest);
+                        continue;
+                    case FeatureOptionRange.Default:
+                    case FeatureOptionRange.Disabled:
+                    case FeatureOptionRange.Inventory:
+                    default:
+                        continue;
+                }
+            }
+
+            return eligibleChests;
+        }
+    }
+
     private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
@@ -123,37 +173,10 @@ internal class CraftFromChest : Feature
             return;
         }
 
-        var eligibleChests = (
-            from managedChest in this.ManagedChests.PlayerChests
-            where managedChest.CraftFromChest >= FeatureOptionRange.Inventory
-            select managedChest).ToList();
-
-        foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
-        {
-            // Disabled in config or by location name
-            if (managedChest.CraftFromChest == FeatureOptionRange.Disabled || managedChest.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
-            {
-                continue;
-            }
-
-            // Disabled in mines
-            if (managedChest.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
-            {
-                continue;
-            }
-
-            var (location, (x, y)) = placedObject;
-            if (managedChest.CraftFromChest == FeatureOptionRange.World
-                || managedChest.CraftFromChest == FeatureOptionRange.Location && managedChest.CraftFromChestDistance == -1
-                || managedChest.CraftFromChest == FeatureOptionRange.Location && location.Equals(Game1.currentLocation) && Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player))
-            {
-                eligibleChests.Add(managedChest);
-            }
-        }
-
+        var eligibleChests = this.EligibleChests;
         if (!eligibleChests.Any())
         {
-            Log.Trace("No eligible chests found to craft items from");
+            Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
             return;
         }
 

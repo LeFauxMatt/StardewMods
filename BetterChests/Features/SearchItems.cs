@@ -106,7 +106,7 @@ internal class SearchItems : Feature
 
     private ClickableComponent SearchArea
     {
-        get => this._searchArea.Value ??= new(new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height), string.Empty);
+        get => this._searchArea.Value ??= new(Rectangle.Empty, string.Empty);
     }
 
     private TextBox SearchField
@@ -343,12 +343,16 @@ internal class SearchItems : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
+        if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.SearchItems == FeatureOption.Enabled)
+        {
+            this.Chest = e.Chest;
+            this.SearchField.Text = string.Empty;
+        }
+        else if (this.Menu is null || e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
         {
             return;
         }
-
-        if (!ReferenceEquals(e.Chest, this.Chest))
+        else if (!ReferenceEquals(e.Chest, this.Chest))
         {
             this.Chest = e.Chest;
             this.SearchField.Text = string.Empty;
@@ -361,7 +365,10 @@ internal class SearchItems : Feature
         // Expand ItemsToGrabMenu by Search Bar Height
         if (e.IsNew)
         {
-            Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {e.Chest.Name}");
+            if (e.Chest is not null)
+            {
+                Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {e.Chest.Name}");
+            }
 
             var padding = this.MenuPadding(this.Menu);
             this.Menu.yPositionOnScreen -= padding;
@@ -376,6 +383,7 @@ internal class SearchItems : Feature
         this.SearchField.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
         this.SearchField.Selected = false;
+        this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
         this.SearchField.Width = this.Menu.ItemsToGrabMenu.width;
         this.SearchIcon.bounds = new(this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width - 38, this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
     }

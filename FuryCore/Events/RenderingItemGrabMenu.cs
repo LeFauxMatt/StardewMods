@@ -44,6 +44,11 @@ internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEve
     [EventPriority(EventPriority.High + 1000)]
     private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
     {
+        if (this.HandlerCount == 0)
+        {
+            return;
+        }
+
         if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
         {
             return;

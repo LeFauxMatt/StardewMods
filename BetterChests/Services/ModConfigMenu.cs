@@ -288,6 +288,15 @@ internal class ModConfigMenu : IModService
             FormatHelper.FormatRangeDistance,
             nameof(IChestData.StashToChestDistance));
 
+        // Stash to Chest Priority
+        this.GMCM.API.AddNumberOption(
+            manifest,
+            () => chestData.StashToChestPriority,
+            value => chestData.StashToChestPriority = value,
+            I18n.Config_StashToChestPriority_Name,
+            I18n.Config_StashToChestPriority_Tooltip,
+            fieldId: nameof(IChestData.StashToChestPriority));
+
         // Stash to Chest Stacks
         this.GMCM.API.AddTextOption(
             manifest,
@@ -382,6 +391,40 @@ internal class ModConfigMenu : IModService
     private void GeneralConfig()
     {
         this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_General_Name, I18n.Section_General_Description);
+
+        // Carry Chest Limit
+        this.GMCM.API.AddNumberOption(
+            this.Manifest,
+            () => this.Config.CarryChestLimit switch
+            {
+                0 => 7,
+                _ => this.Config.CarryChestLimit,
+            },
+            value => this.Config.CarryChestLimit = value switch
+            {
+                7 => 0,
+                _ => value,
+            },
+            I18n.Config_CarryChestLimit_Name,
+            I18n.Config_CarryChestLimit_Tooltip,
+            1,
+            7,
+            1,
+            FormatHelper.FormatCarryChestLimit,
+            nameof(IConfigData.CarryChestLimit));
+
+        // Carry Chest Slow
+        this.GMCM.API.AddNumberOption(
+            this.Manifest,
+            () => this.Config.CarryChestSlow,
+            value => this.Config.CarryChestSlow = value,
+            I18n.Config_CarryChestSlow_Name,
+            I18n.Config_CarryChestSlow_Tooltip,
+            0,
+            4,
+            1,
+            FormatHelper.FormatCarryChestSlow,
+            nameof(IConfigData.CarryChestSlow));
 
         // Categorize Chest
         this.GMCM.API.AddBoolOption(

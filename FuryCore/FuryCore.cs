@@ -30,7 +30,7 @@ public class FuryCore : Mod
             new CustomTags(this.Config, this.Services),
             new HarmonyHelper(),
             new MenuComponents(this.Helper, this.Services),
-            new MenuItems(this.Helper.Events, this.Services),
+            new MenuItems(this.Config, this.Helper, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest));
     }
 

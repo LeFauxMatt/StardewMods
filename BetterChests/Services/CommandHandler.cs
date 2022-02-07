@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Common.Helpers;
 using StardewModdingAPI;
+using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
@@ -15,7 +16,9 @@ using StardewValley;
 internal class CommandHandler : IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
+    private readonly Lazy<CraftFromChest> _craftFromChest;
     private readonly Lazy<ManagedChests> _managedChests;
+    private readonly Lazy<StashToChest> _stashToChest;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CommandHandler" /> class.
@@ -28,7 +31,9 @@ internal class CommandHandler : IModService
         this.Config = config;
         this.Helper = helper;
         this._assetHandler = services.Lazy<AssetHandler>();
+        this._craftFromChest = services.Lazy<CraftFromChest>();
         this._managedChests = services.Lazy<ManagedChests>();
+        this._stashToChest = services.Lazy<StashToChest>();
         this.Helper.ConsoleCommands.Add(
             "better_chests_info",
             "documentation",
@@ -42,6 +47,11 @@ internal class CommandHandler : IModService
 
     private IConfigData Config { get; }
 
+    private CraftFromChest CraftFromChest
+    {
+        get => this._craftFromChest.Value;
+    }
+
     private IModHelper Helper { get; }
 
     private ManagedChests ManagedChests
@@ -49,7 +59,12 @@ internal class CommandHandler : IModService
         get => this._managedChests.Value;
     }
 
-    private void AppendChestData(StringBuilder sb, IChestData data, string chestName)
+    private StashToChest StashToChest
+    {
+        get => this._stashToChest.Value;
+    }
+
+    private static void AppendChestData(StringBuilder sb, IChestData data, string chestName)
     {
         var dictData = SerializedChestData.GetData(data);
         if (dictData.Values.All(string.IsNullOrWhiteSpace))
@@ -57,7 +72,7 @@ internal class CommandHandler : IModService
             return;
         }
 
-        this.AppendHeader(sb, chestName);
+        CommandHandler.AppendHeader(sb, chestName);
 
         foreach (var (key, value) in dictData)
         {
@@ -68,9 +83,9 @@ internal class CommandHandler : IModService
         }
     }
 
-    private void AppendControls(StringBuilder sb, IControlScheme controls)
+    private static void AppendControls(StringBuilder sb, IControlScheme controls)
     {
-        this.AppendHeader(sb, "Controls");
+        CommandHandler.AppendHeader(sb, "Controls");
 
         sb.AppendFormat(
             "{0,25}: {1}\n",
@@ -108,7 +123,7 @@ internal class CommandHandler : IModService
             controls.LockSlot);
     }
 
-    private void AppendHeader(StringBuilder sb, string text)
+    private static void AppendHeader(StringBuilder sb, string text)
     {
         sb.AppendFormat($"\n{{0,{(25 + text.Length / 2).ToString()}}}\n", text);
         sb.AppendFormat($"{{0,{(25 + text.Length / 2).ToString()}}}\n", new string('-', text.Length));
@@ -117,7 +132,7 @@ internal class CommandHandler : IModService
     private void DumpConfig(StringBuilder sb)
     {
         // Main Header
-        this.AppendHeader(sb, "Mod Config");
+        CommandHandler.AppendHeader(sb, "Mod Config");
 
         // Features
         sb.AppendFormat(
@@ -142,10 +157,10 @@ internal class CommandHandler : IModService
             this.Config.SearchTagSymbol.ToString());
 
         // Control Scheme
-        this.AppendControls(sb, this.Config.ControlScheme);
+        CommandHandler.AppendControls(sb, this.Config.ControlScheme);
 
         // Default Chest
-        this.AppendChestData(sb, this.Config.DefaultChest, "\"Default Chest\" Config");
+        CommandHandler.AppendChestData(sb, this.Config.DefaultChest, "\"Default Chest\" Config");
     }
 
     private void DumpInfo(string command, string[] args)
@@ -161,18 +176,55 @@ internal class CommandHandler : IModService
         // Iterate known chests and features
         foreach (var (name, chestData) in this.Assets.ChestData)
         {
-            this.AppendChestData(sb, chestData, $"\"{name}\" Config");
+            CommandHandler.AppendChestData(sb, chestData, $"\"{name}\" Config");
         }
+
+        var eligibleCraftingChests = this.CraftFromChest.EligibleChests.ToDictionary(managedChest => managedChest, _ => string.Empty);
+        var eligibleStashingChests = this.StashToChest.EligibleChests.ToDictionary(managedChest => managedChest, _ => string.Empty);
 
         // Iterate managed chests and features
         foreach (var managedChest in this.ManagedChests.PlayerChests)
         {
-            this.AppendChestData(sb, managedChest, $"\nChest {managedChest.QualifiedItemId} with farmer {Game1.player.Name}\n");
+            CommandHandler.AppendChestData(sb, managedChest, $"\nChest {managedChest.QualifiedItemId} with farmer {Game1.player.Name}.\n");
+
+            if (eligibleCraftingChests.Keys.Contains(managedChest))
+            {
+                eligibleCraftingChests[managedChest] = $"Inventory of {Game1.player.Name}.";
+            }
+
+            if (eligibleStashingChests.Keys.Contains(managedChest))
+            {
+                eligibleStashingChests[managedChest] = $"Inventory of {Game1.player.Name}.";
+            }
         }
 
-        foreach (var ((location, pos), managedChest) in this.ManagedChests.PlacedChests)
+        foreach (var ((location, (x, y)), managedChest) in this.ManagedChests.PlacedChests)
         {
-            this.AppendChestData(sb, managedChest, $"Chest \"{managedChest.QualifiedItemId}\" at location {location.NameOrUniqueName} at coordinates ({((int)pos.X).ToString()},{((int)pos.Y).ToString()})");
+            CommandHandler.AppendChestData(sb, managedChest, $"Chest \"{managedChest.QualifiedItemId}\" at location {location.NameOrUniqueName} at coordinates ({((int)x).ToString()},{((int)y).ToString()}).");
+
+            if (eligibleCraftingChests.Keys.Contains(managedChest))
+            {
+                eligibleCraftingChests[managedChest] = $"Location {location.NameOrUniqueName} at ({((int)x).ToString()},{((int)y).ToString()}).";
+            }
+
+            if (eligibleStashingChests.Keys.Contains(managedChest))
+            {
+                eligibleStashingChests[managedChest] = $"Location {location.NameOrUniqueName} at ({((int)x).ToString()},{((int)y).ToString()}).";
+            }
+        }
+
+        // Craft from Chest Eligible Chests
+        CommandHandler.AppendHeader(sb, "Craft from Chests Eligible Chests");
+        foreach (var (managedChest, description) in eligibleCraftingChests)
+        {
+            sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, description);
+        }
+
+        // Stash to Chest Eligible Chests
+        CommandHandler.AppendHeader(sb, "Stash to Chest Eligible Chests");
+        foreach (var (managedChest, description) in eligibleStashingChests)
+        {
+            sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, description);
         }
 
         Log.Info(sb.ToString());

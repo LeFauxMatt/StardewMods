@@ -6,7 +6,7 @@ Provides additional APIs for my other mods.
 
 * Helpers
     * [Item Matcher](#item-matcher)
-* Custom Events
+* Events
     * [ItemGrabMenu Changed](#itemgrabmenu-changed)
     * [MenuComponent Pressed](#menucomponent-pressed)
     * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
@@ -23,6 +23,9 @@ Provides additional APIs for my other mods.
     * [Gradient Bar](#gradient-bar)
     * [HSL Color Picker](#hsl-color-picker)
     * [Item Selection Menu](#item-selection-menu)
+* [Configure](#configure)
+    * [Add Custom Tags](#add-custom-tags)
+    * [Scroll Menu Overflow](#scroll-menu-overflow)
 * [Translations](#translations)
 
 ### Helpers
@@ -35,7 +38,7 @@ furniture, an artifact, can be donated to a bundle, and/or can be donated to the
 
 [Source](Helpers/ItemMatcher.cs)
 
-### Custom Events
+### Events
 
 #### ItemGrabMenu Changed
 
@@ -43,7 +46,7 @@ Triggered whenever an ItemGrabMenu is constructed, and whenever the Active Menu 
 construction, this event triggers as a postfix to the vanilla ItemGrabMenu constructor so any changes made are before
 the menu is displayed to the screen.
 
-See [Fury Events](#fury-events)
+See [Custom Events](#custom-events)
 
 [Source](Events/ItemGrabMenuChanged.cs)
 
@@ -51,7 +54,7 @@ See [Fury Events](#fury-events)
 
 Triggers when a vanilla or custom component is pressed on an ItemGrabMenu.
 
-See [Fury Events](#fury-events)
+See [Custom Events](#custom-events)
 
 [Source](Events/MenuComponentPressed.cs)
 
@@ -60,7 +63,7 @@ See [Fury Events](#fury-events)
 Identical to RenderingActiveMenu except for it only triggers for ItemGrabMenu, and anything drawn to the SpriteBatch
 will be above the background fade but below the actual menu graphics. Great for menu underlays.
 
-See [Fury Events](#fury-events)
+See [Custom Events](#custom-events)
 
 [Source](Events/RenderedItemGrabMenu.cs)
 
@@ -69,7 +72,7 @@ See [Fury Events](#fury-events)
 Identical to RenderedActiveMenu except for it only triggers for ItemGrabMenu, and anything drawn to the SpriteBatch will
 be above the menu but below the cursor and any hover elements such as text or item.
 
-See [Fury Events](#fury-events)
+See [Custom Events](#custom-events)
 
 [Interface](Events/RenderingItemGrabMenu.cs)
 
@@ -107,7 +110,7 @@ displayed items or scrolling an overflow of items without affecting the source i
 
 All of FuryCores APIs are access through this service.
 
-[ [Interface](Interfaces/IModService) | [Source](Services/ModServices.cs) ]
+[ [Interface](Interfaces/IModService.cs) | [Source](Services/ModServices.cs) ]
 
 ### UI
 
@@ -137,6 +140,23 @@ A menu that displays all items in the game, with search functionality by name, a
 an ItemMatcher.
 
 [Source](UI/ItemSelectionMenu.cs)
+
+## Configure
+
+### Add Custom Tags
+
+Choose whether to allow adding custom tags to items.
+
+* `category_artifact` added to all items that are Artifacts.
+* `category_furniture` added to all items that are Furniture.
+* `donate_bundle` added to all items that can be donated to a Community Center bundle.
+* `donate_museum` added to all items that can be donated to the Museum.
+
+### Scroll Menu Overflow
+
+Choose whether to handle scrolling items that overflow an ItemGrabMenu.
+
+Enabling this option will capture the MouseWheelScrolled event and add up/down arrow buttons to scroll items.
 
 ## Translations
 

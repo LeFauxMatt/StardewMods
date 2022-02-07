@@ -85,6 +85,11 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         }
 
         this.Menu = Game1.activeClickableMenu;
+        if (this.HandlerCount == 0)
+        {
+            return;
+        }
+
         if (this.Menu is not ItemGrabMenu itemGrabMenu || !itemGrabMenu.IsPlayerChestMenu(out var chest))
         {
             this.InvokeAll(new(this.Menu as ItemGrabMenu, null, -1, false));

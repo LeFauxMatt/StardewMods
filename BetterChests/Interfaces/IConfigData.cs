@@ -10,6 +10,16 @@ using StardewMods.FuryCore.Enums;
 internal interface IConfigData
 {
     /// <summary>
+    ///     Gets or sets a value indicating how many chests containing items can be carried at once.
+    /// </summary>
+    public int CarryChestLimit { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
+    /// </summary>
+    public int CarryChestSlow { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.
     /// </summary>
     public bool CategorizeChest { get; set; }
@@ -47,6 +57,8 @@ internal interface IConfigData
     public void CopyTo<TOther>(TOther other)
         where TOther : IConfigData
     {
+        other.CarryChestLimit = this.CarryChestLimit;
+        other.CarryChestSlow = this.CarryChestSlow;
         other.CategorizeChest = this.CategorizeChest;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         other.CustomColorPickerArea = this.CustomColorPickerArea;

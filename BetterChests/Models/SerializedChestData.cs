@@ -191,6 +191,15 @@ internal class SerializedChestData : IChestData
     }
 
     /// <inheritdoc />
+    public int StashToChestPriority
+    {
+        get => this.Data.TryGetValue("StashToChestPriority", out var value) && int.TryParse(value, out var distance)
+            ? distance
+            : 0;
+        set => this.Data["StashToChestPriority"] = value == 0 ? string.Empty : value.ToString();
+    }
+
+    /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
         get => this.Data.TryGetValue("StashToChestStacks", out var value) && Enum.TryParse(value, out FeatureOption option)

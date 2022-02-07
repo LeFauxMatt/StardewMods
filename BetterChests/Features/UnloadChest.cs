@@ -64,9 +64,9 @@ internal class UnloadChest : Feature
         }
 
         // Stash items into target chest
-        for (var index = source.Chest.items.Count - 1; index >= 0; index--)
+        for (var index = source.Items.Count - 1; index >= 0; index--)
         {
-            var item = source.Chest.items[index];
+            var item = source.Items[index];
             if (item is null)
             {
                 continue;
@@ -76,14 +76,14 @@ internal class UnloadChest : Feature
 
             if (item is null)
             {
-                source.Chest.items[index] = null;
+                source.Items[index] = null;
             }
         }
 
         // Add remaining items to target chest
-        for (var index = source.Chest.items.Count - 1; index >= 0; index--)
+        for (var index = source.Items.Count - 1; index >= 0; index--)
         {
-            var item = source.Chest.items[index];
+            var item = source.Items[index];
             if (item is null)
             {
                 continue;
@@ -93,7 +93,7 @@ internal class UnloadChest : Feature
 
             if (item is null)
             {
-                source.Chest.items[index] = null;
+                source.Items[index] = null;
             }
         }
 

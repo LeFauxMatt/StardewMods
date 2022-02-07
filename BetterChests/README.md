@@ -27,6 +27,9 @@ Adds enhanced chest features to the game.
     * [Config Inheritance](#config-inheritance)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
+* [Integrations](#integrations)
+    * [Automate](#automate)
+    * [Horse Overhaul](#horse-overhaul) 
 * [Translations](#translations)
 
 ## Features
@@ -35,23 +38,25 @@ Adds enhanced chest features to the game.
 
 With Carry Chest enabled, you can hit the Use Tool button to pick up chests into your inventory even if it has items.
 
-| Config     | Description                      | Default Value | Other Value(s)                        |
-|:-----------|:---------------------------------|:--------------|:--------------------------------------|
-| CarryChest | Enables the Carry Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| Config          | Description                             | Default Value | Other Value(s)                                                       |
+|:----------------|:----------------------------------------|:--------------|:---------------------------------------------------------------------|
+| CarryChest      | Enables the Carry Chest feature.        | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+| CarryChestLimit | Limits how many chests can be carried.  | `0`           | Any positive integer.<sup>2</sup>                                    |
+| CarryChestSlow  | Slowness debuff while carrying a chest. | `0`           | Positive integer from `0` (normal speed) to `4` (slime speed debuff) |
 
 1. See [Option Values](#option-values).
+2. Use `0` for unlimited chests.
 
 ### Categorize Chest
 
 Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that
-chest.<sup>1</sup>
+chest.
 
 | Config Option   | Description                           | Default Value | Other Value(s)                        |
 |:----------------|:--------------------------------------|:--------------|:--------------------------------------|
-| CategorizeChest | Enables the Categorize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>2</sup> |
+| CategorizeChest | Enables the Categorize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
 
-1. Works with Automate to ensure that only allowed items can be pushed into those chests.
-2. See [Option Values](#option-values).
+1. See [Option Values](#option-values).
 
 ### Chest Menu Tabs
 
@@ -89,12 +94,13 @@ Hit a configurable key (or controller button) to bring up a crafting menu that u
 |:-------------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
 | CraftFromChest                 | Enables the Craft From Chest feature.                     | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>1</sup> |
 | OpenCrafting                   | Assigns the keybind for opening the crafting menu.        | `"K"`         | Any valid button code.<sup>2</sup>                                             |
-| CraftFromChestDisableLocations | A list of locations that crafting will not be allowed in. | `[]`          | The locations to block.                                                        |
-| CraftFromChestDistance         | Limits the distance that a chest can be crafted from.     | -1            | Any positive integer or `-1`.<sup>3</sup>                                      |
+| CraftFromChestDisableLocations | A list of locations that crafting will not be allowed in. | `[]`          | The locations to block.<sup>3</sup>                                            |
+| CraftFromChestDistance         | Limits the distance that a chest can be crafted from.     | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
 
 1. See [Range Values](#range-values).
 2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
-3. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
+3. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
+4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
 ### Custom Color Picker
 
@@ -176,7 +182,8 @@ Adds a search bar to the top of the Chest Menu to only display items that meet a
 ### Slot Lock
 
 Hover over an item slot in your backpack, and hit a configurable key to lock that slot which prevents any item in that
-slot from being stashed into a chest.
+slot from being stashed into a chest. Items in locked slots will remain in place when you shift the toolbar by hitting
+Tab.
 
 | Config   | Description                             | Default Value | Other Value(s)                        |
 |:---------|:----------------------------------------|:--------------|:--------------------------------------|
@@ -195,13 +202,14 @@ Hit a configurable key (or controller button) to instantly stash items from your
 |:-----------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
 | StashToChest                 | Enables the Stash To Chest feature.                       | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>2</sup> |
 | StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
-| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.                                                        |
-| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
+| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                            |
+| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                      |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
 3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
-4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
+4. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
+5. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
 ### Unload Chest
 
@@ -396,6 +404,23 @@ The Range value limits which chests will be selected for a feature relative to t
 * **World** - Any chest accessible to the player in the world.
 
 1. If parent value is unspecified, Location will be the default value.
+
+## Integrations
+
+### Automate
+
+When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
+[Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
+items into the chest if the Filter list does not allow it. 
+
+### Horse Overhaul
+
+Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911) saddlebags.
+The distance to the player's Horse will be considered for features such as [Craft from Chest](#craft-from-chest) and
+[Stash to Chest](#stash-to-chest).
+
+The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
+`BetterChests/assets/chests.json` file.
 
 ## Translations
 

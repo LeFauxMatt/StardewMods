@@ -39,7 +39,12 @@ internal class RenderedItemGrabMenu : SortedEventHandler<RenderedActiveMenuEvent
     [EventPriority(EventPriority.Low - 1000)]
     private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId || this.HandlerCount == 0)
+        if (this.HandlerCount == 0)
+        {
+            return;
+        }
+
+        if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
         {
             return;
         }

@@ -108,6 +108,11 @@ public interface IChestData
     public int StashToChestDistance { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating the priority that chests will be stashed into.
+    /// </summary>
+    public int StashToChestPriority { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if stashing into the chest will fill existing item stacks.
     /// </summary>
     public FeatureOption StashToChestStacks { get; set; }
@@ -144,6 +149,7 @@ public interface IChestData
         other.StashToChest = this.StashToChest;
         other.StashToChestDisableLocations = this.StashToChestDisableLocations;
         other.StashToChestDistance = this.StashToChestDistance;
+        other.StashToChestPriority = this.StashToChestPriority;
         other.StashToChestStacks = this.StashToChestStacks;
         other.UnloadChest = this.UnloadChest;
     }

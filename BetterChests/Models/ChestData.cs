@@ -65,6 +65,9 @@ public class ChestData : IChestData
     public int StashToChestDistance { get; set; }
 
     /// <inheritdoc />
+    public int StashToChestPriority { get; set; }
+
+    /// <inheritdoc />
     public FeatureOption StashToChestStacks { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />

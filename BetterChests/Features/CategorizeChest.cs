@@ -32,6 +32,7 @@ internal class CategorizeChest : Feature
     public CategorizeChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        this.Services = services;
         this._customMenuComponents = services.Lazy<IMenuComponents>();
     }
 
@@ -72,6 +73,8 @@ internal class CategorizeChest : Feature
         get => this._returnMenu.Value;
         set => this._returnMenu.Value = value;
     }
+
+    private IModServices Services { get; }
 
     /// <inheritdoc />
     protected override void Activate()
@@ -126,7 +129,7 @@ internal class CategorizeChest : Feature
         }
 
         this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
-        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.ManagedChest.ItemMatcher);
+        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.Services, this.ManagedChest.ItemMatcher);
         this.CurrentItemSelectionMenu.RegisterEvents(this.Helper.Events.Input);
 
         Game1.activeClickableMenu = this.CurrentItemSelectionMenu;
