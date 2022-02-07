@@ -17,6 +17,7 @@
     * List out eligible chests for StashToChest.
 * Locked Slots now holds items in place when shifting the toolbar.
 * Added CarryChestSlow for speed debuff while carrying a chest.
+* Added integration for HorseOverhaul mod.
 
 ## 1.1.0 (February 5, 2022)
 

@@ -27,6 +27,9 @@ Adds enhanced chest features to the game.
     * [Config Inheritance](#config-inheritance)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
+* [Integrations](#integrations)
+    * [Automate](#automate)
+    * [Horse Overhaul](#horse-overhaul) 
 * [Translations](#translations)
 
 ## Features
@@ -47,14 +50,13 @@ With Carry Chest enabled, you can hit the Use Tool button to pick up chests into
 ### Categorize Chest
 
 Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that
-chest.<sup>1</sup>
+chest.
 
 | Config Option   | Description                           | Default Value | Other Value(s)                        |
 |:----------------|:--------------------------------------|:--------------|:--------------------------------------|
-| CategorizeChest | Enables the Categorize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>2</sup> |
+| CategorizeChest | Enables the Categorize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
 
-1. Works with Automate to ensure that only allowed items can be pushed into those chests.
-2. See [Option Values](#option-values).
+1. See [Option Values](#option-values).
 
 ### Chest Menu Tabs
 
@@ -402,6 +404,23 @@ The Range value limits which chests will be selected for a feature relative to t
 * **World** - Any chest accessible to the player in the world.
 
 1. If parent value is unspecified, Location will be the default value.
+
+## Integrations
+
+### Automate
+
+When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
+[Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
+items into the chest if the Filter list does not allow it. 
+
+### Horse Overhaul
+
+Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911) saddlebags.
+The distance to the player's Horse will be considered for features such as [Craft from Chest](#craft-from-chest) and
+[Stash to Chest](#stash-to-chest).
+
+The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
+`BetterChests/assets/chests.json` file.
 
 ## Translations
 

@@ -11,6 +11,7 @@ using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
+using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
@@ -20,6 +21,7 @@ internal class ManagedChests : IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<IDictionary<Item, IManagedChest>> _cachedObjects = new(() => new Dictionary<Item, IManagedChest>());
+    private readonly Lazy<ModIntegrations> _modIntegrations;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ManagedChests" /> class.
@@ -32,6 +34,7 @@ internal class ManagedChests : IModService
         this.Config = config;
         this.Helper = helper;
         this._assetHandler = services.Lazy<AssetHandler>();
+        this._modIntegrations = services.Lazy<ModIntegrations>();
     }
 
     /// <summary>
@@ -43,18 +46,52 @@ internal class ManagedChests : IModService
         {
             foreach (var location in this.AccessibleLocations)
             {
-                // Return fridge if location is FarmHouse
-                if (location is FarmHouse { fridge.Value: { } fridge, fridgePosition: var point } && !point.ToVector2().Equals(Vector2.Zero))
+                switch (location)
                 {
-                    if (!this.CachedObjects.TryGetValue(fridge, out var managedChest))
-                    {
-                        managedChest = new ManagedChest(fridge, this.GetChestData("Fridge"), "Fridge");
-                        this.CachedObjects.Add(fridge, managedChest);
-                    }
+                    // Attempt to load saddle bags
+                    case Farm farm when this.Integrations.ModIds.Contains(ModIntegrations.HorseOverhaulId):
+                        foreach (var stable in farm.buildings.OfType<Stable>())
+                        {
+                            if (!stable.modData.TryGetValue($"{ModIntegrations.HorseOverhaulId}/stableID", out var stableId) || !int.TryParse(stableId, out var x))
+                            {
+                                continue;
+                            }
 
-                    if (managedChest is not null)
+                            if (!farm.Objects.TryGetValue(new(x, 0), out var obj) || obj is not Chest saddleBag || !saddleBag.modData.ContainsKey($"{ModIntegrations.HorseOverhaulId}/isSaddleBag"))
+                            {
+                                continue;
+                            }
+
+                            if (!this.CachedObjects.TryGetValue(saddleBag, out var managedChest))
+                            {
+                                managedChest = new ManagedChest(saddleBag, this.GetChestData("SaddleBag"), "SaddleBag");
+                                this.CachedObjects.Add(saddleBag, managedChest);
+                            }
+
+                            if (managedChest is not null)
+                            {
+                                var horse = stable.getStableHorse();
+                                yield return new(new(horse.currentLocation, horse.Position / 64f), managedChest);
+                            }
+                        }
+
+                        break;
+
+                    // Return fridge if location is FarmHouse
+                    case FarmHouse { fridge.Value: { } fridge, fridgePosition: var point } when !point.ToVector2().Equals(Vector2.Zero):
                     {
-                        yield return new(new(location, point.ToVector2()), managedChest);
+                        if (!this.CachedObjects.TryGetValue(fridge, out var managedChest))
+                        {
+                            managedChest = new ManagedChest(fridge, this.GetChestData("Fridge"), "Fridge");
+                            this.CachedObjects.Add(fridge, managedChest);
+                        }
+
+                        if (managedChest is not null)
+                        {
+                            yield return new(new(location, point.ToVector2()), managedChest);
+                        }
+
+                        break;
                     }
                 }
 
@@ -166,6 +203,11 @@ internal class ManagedChests : IModService
     private IConfigModel Config { get; }
 
     private IModHelper Helper { get; }
+
+    private ModIntegrations Integrations
+    {
+        get => this._modIntegrations.Value;
+    }
 
     /// <summary>
     ///     Attempts to find a <see cref="ManagedChest" /> that matches a <see cref="Chest" /> instance.

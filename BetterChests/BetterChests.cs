@@ -49,6 +49,7 @@ public class BetterChests : Mod
             new CommandHandler(this.Config, this.Helper, this.Services),
             new ManagedChests(this.Config, this.Helper, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
+            new ModIntegrations(this.Helper),
             new CarryChest(this.Config, this.Helper, this.Services),
             new CategorizeChest(this.Config, this.Helper, this.Services),
             new ChestMenuTabs(this.Config, this.Helper, this.Services),
