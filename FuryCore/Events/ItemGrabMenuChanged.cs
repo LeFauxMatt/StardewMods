@@ -67,7 +67,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
 
         if (__instance is not { shippingBin: false, context: Chest chest } || !chest.IsPlayerChest())
         {
-            ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, null, -1, false));
+            ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, __instance.context, -1, false));
             return;
         }
 
@@ -90,9 +90,15 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
             return;
         }
 
-        if (this.Menu is not ItemGrabMenu itemGrabMenu || !itemGrabMenu.IsPlayerChestMenu(out var chest))
+        if (this.Menu is not ItemGrabMenu itemGrabMenu)
         {
             this.InvokeAll(new(this.Menu as ItemGrabMenu, null, -1, false));
+            return;
+        }
+
+        if (!itemGrabMenu.IsPlayerChestMenu(out var chest))
+        {
+            this.InvokeAll(new(itemGrabMenu, itemGrabMenu.context, -1, false));
             return;
         }
 

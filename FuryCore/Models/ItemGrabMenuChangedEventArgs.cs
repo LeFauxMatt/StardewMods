@@ -1,6 +1,8 @@
 ﻿namespace StardewMods.FuryCore.Models;
 
 using System;
+using System.Collections.Generic;
+using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -11,21 +13,26 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     ///     Initializes a new instance of the <see cref="ItemGrabMenuChangedEventArgs" /> class.
     /// </summary>
     /// <param name="itemGrabMenu">The ItemGrabMenu currently active or null.</param>
-    /// <param name="chest">The Chest for the ItemGrabMenu or null.</param>
+    /// <param name="context">The object for the ItemGrabMenu or null.</param>
     /// <param name="screenId">The screen id the menu was opened on.</param>
     /// <param name="isNew">Indicate if the ItemGrabMenu was created.</param>
-    public ItemGrabMenuChangedEventArgs(ItemGrabMenu itemGrabMenu, Chest chest, int screenId, bool isNew)
+    public ItemGrabMenuChangedEventArgs(ItemGrabMenu itemGrabMenu, object context, int screenId, bool isNew)
     {
         this.ItemGrabMenu = itemGrabMenu;
-        this.Chest = chest;
+        this.Context = context;
         this.ScreenId = screenId;
         this.IsNew = isNew;
     }
 
     /// <summary>
-    ///     Gets the Chest for which the ItemGrabMenu was opened.
+    ///     Gets the object for which the ItemGrabMenu was opened.
     /// </summary>
-    public Chest Chest { get; }
+    public object Context { get; }
+
+    /// <summary>
+    ///     Gets the inventory of the ItemGrabMenu.
+    /// </summary>
+    public IList<Item> Items { get; }
 
     /// <summary>
     ///     Gets a value indicating whether the ItemGrabMenu is new.

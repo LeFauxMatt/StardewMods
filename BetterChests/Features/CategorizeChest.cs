@@ -13,14 +13,15 @@ using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CategorizeChest : Feature
 {
     private readonly PerScreen<IMenuComponent> _configureButton = new();
-    private readonly Lazy<IMenuComponents> _customMenuComponents;
+    private readonly PerScreen<IManagedStorage> _currentStorage = new();
     private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
-    private readonly PerScreen<IManagedStorage> _managedChest = new();
+    private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
 
     /// <summary>
@@ -33,7 +34,7 @@ internal class CategorizeChest : Feature
         : base(config, helper, services)
     {
         this.Services = services;
-        this._customMenuComponents = services.Lazy<IMenuComponents>();
+        this._menuComponents = services.Lazy<IMenuComponents>();
     }
 
     private IMenuComponent ConfigureButton
@@ -57,15 +58,15 @@ internal class CategorizeChest : Feature
         set => this._itemSelectionMenu.Value = value;
     }
 
-    private IManagedStorage ManagedStorage
+    private IManagedStorage CurrentStorage
     {
-        get => this._managedChest.Value;
-        set => this._managedChest.Value = value;
+        get => this._currentStorage.Value;
+        set => this._currentStorage.Value = value;
     }
 
     private IMenuComponents MenuComponents
     {
-        get => this._customMenuComponents.Value;
+        get => this._menuComponents.Value;
     }
 
     private ItemGrabMenu ReturnMenu
@@ -99,17 +100,17 @@ internal class CategorizeChest : Feature
                 return;
 
             // Enter an Eligible ItemGrabMenu
-            case not null when this.ManagedStorages.FindStorage(e.Chest, out var managedChest):
+            case not null when e.Context is not null && this.ManagedStorages.FindStorage(e.Context, out var managedStorage):
                 this.MenuComponents.Components.Insert(0, this.ConfigureButton);
                 this.ReturnMenu = e.ItemGrabMenu;
-                this.ManagedStorage = managedChest;
+                this.CurrentStorage = managedStorage;
                 return;
 
             // Exit ItemSelectionMenu
-            case null when this.ReturnMenu is not null && this.CurrentItemSelectionMenu is not null && this.ManagedStorage is not null:
+            case null when this.ReturnMenu is not null && this.CurrentItemSelectionMenu is not null && this.CurrentStorage is not null:
                 // Save ItemSelectionMenu to ModData
-                Log.Trace($"Saving FilterItemsList to Chest {this.ManagedStorage.QualifiedItemId}.");
-                this.ManagedStorage.FilterItemsList = new(this.ManagedStorage.ItemMatcher);
+                Log.Trace($"Saving FilterItemsList to Chest {this.CurrentStorage.QualifiedItemId}.");
+                this.CurrentStorage.FilterItemsList = new(this.CurrentStorage.ItemMatcher);
                 this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
                 this.CurrentItemSelectionMenu = null;
                 Game1.activeClickableMenu = this.ReturnMenu;
@@ -123,13 +124,13 @@ internal class CategorizeChest : Feature
 
     private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
     {
-        if (this.ManagedStorage is null || !ReferenceEquals(this.ConfigureButton, e.Component))
+        if (this.CurrentStorage is null || !ReferenceEquals(this.ConfigureButton, e.Component))
         {
             return;
         }
 
         this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
-        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.Services, this.ManagedStorage.ItemMatcher);
+        this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.Services, this.CurrentStorage.ItemMatcher);
         this.CurrentItemSelectionMenu.RegisterEvents(this.Helper.Events.Input);
 
         Game1.activeClickableMenu = this.CurrentItemSelectionMenu;

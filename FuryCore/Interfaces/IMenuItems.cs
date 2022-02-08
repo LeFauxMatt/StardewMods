@@ -20,7 +20,7 @@ public interface IMenuItems
     /// <summary>
     ///     Gets the source chest that actual items are associated with.
     /// </summary>
-    public Chest Chest { get; }
+    public object Context { get; }
 
     /// <summary>
     ///     Gets the currently displayed items of the Menu.

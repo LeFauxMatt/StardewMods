@@ -17,13 +17,12 @@ using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ChestMenuTabs : Feature
 {
     private readonly Lazy<AssetHandler> _assetHandler;
-    private readonly PerScreen<Chest> _chest = new();
+    private readonly PerScreen<object> _context = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
@@ -49,10 +48,10 @@ internal class ChestMenuTabs : Feature
         get => this._assetHandler.Value;
     }
 
-    private Chest Chest
+    private object Context
     {
-        get => this._chest.Value;
-        set => this._chest.Value = value;
+        get => this._context.Value;
+        set => this._context.Value = value;
     }
 
     private int Index
@@ -138,7 +137,7 @@ internal class ChestMenuTabs : Feature
         IStorageData storageData = e.ItemGrabMenu switch
         {
             ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => this.Config.DefaultChest,
-            _ when e.Chest is not null && this.ManagedStorages.FindStorage(e.Chest, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
+            _ when e.Context is not null && this.ManagedStorages.FindStorage(e.Context, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
             _ => null,
         };
 
@@ -162,9 +161,9 @@ internal class ChestMenuTabs : Feature
                 select tabData).ToList();
             this.MenuComponents.Components.AddRange(tabs.Any() ? tabs : this.Tabs);
 
-            if (!ReferenceEquals(e.Chest, this.Chest))
+            if (!ReferenceEquals(e.Context, this.Context))
             {
-                this.Chest = e.Chest;
+                this.Context = e.Context;
                 this.SetTab(-1);
             }
         }

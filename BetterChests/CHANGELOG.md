@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 1.3.0 (Unreleased)
+
+* SlotLock Keybind is now a modifier key.
+    * Must be held and left-click to lock a slot.
+* Refactor to handle different types of storages.
+
 ## 1.2.1 (February 6, 2022)
 
 * Quick hotfix for ModIntegration error.

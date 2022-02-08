@@ -1,5 +1,9 @@
 ﻿# FuryCore Change Log
 
+## 1.3.0 (Unreleased)
+
+* Refactor to handle different types of storages.
+
 ## 1.2.0 (February 6, 2022)
 
 * Item Selection Menu now lists most context tags on the bottom menu.

@@ -29,7 +29,7 @@ internal class SearchItems : Feature
 {
     private const int SearchBarHeight = 24;
 
-    private readonly PerScreen<Chest> _chest = new();
+    private readonly PerScreen<object> _context = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
@@ -77,10 +77,10 @@ internal class SearchItems : Feature
 
     private static SearchItems Instance { get; set; }
 
-    private Chest Chest
+    private object Context
     {
-        get => this._chest.Value;
-        set => this._chest.Value = value;
+        get => this._context.Value;
+        set => this._context.Value = value;
     }
 
     private IHarmonyHelper HarmonyHelper
@@ -295,7 +295,7 @@ internal class SearchItems : Feature
 
     private int MenuPadding(MenuWithInventory menu)
     {
-        return ReferenceEquals(menu, this.Menu) && this.Chest is not null
+        return ReferenceEquals(menu, this.Menu) && this.Context is not null
             ? SearchItems.SearchBarHeight
             : 0;
     }
@@ -343,18 +343,19 @@ internal class SearchItems : Feature
             ? e.ItemGrabMenu
             : null;
 
+        IManagedStorage managedStorage = null;
         if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.SearchItems == FeatureOption.Enabled)
         {
-            this.Chest = e.Chest;
+            this.Context = e.Context;
             this.SearchField.Text = string.Empty;
         }
-        else if (this.Menu is null || e.Chest is null || !this.ManagedStorages.FindStorage(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
+        else if (this.Menu is null || e.Context is null || !this.ManagedStorages.FindStorage(e.Context, out managedStorage) || managedStorage.SearchItems == FeatureOption.Disabled)
         {
             return;
         }
-        else if (!ReferenceEquals(e.Chest, this.Chest))
+        else if (!ReferenceEquals(e.Context, this.Context))
         {
-            this.Chest = e.Chest;
+            this.Context = e.Context;
             this.SearchField.Text = string.Empty;
         }
 
@@ -365,9 +366,9 @@ internal class SearchItems : Feature
         // Expand ItemsToGrabMenu by Search Bar Height
         if (e.IsNew)
         {
-            if (e.Chest is not null)
+            if (managedStorage is not null)
             {
-                Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {e.Chest.Name}");
+                Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {managedStorage.QualifiedItemId}");
             }
 
             var padding = this.MenuPadding(this.Menu);

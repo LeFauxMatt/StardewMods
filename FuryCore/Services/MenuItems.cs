@@ -27,7 +27,7 @@ using StardewValley.Objects;
 [FuryCoreService(true)]
 internal class MenuItems : IMenuItems, IModService
 {
-    private readonly PerScreen<Chest> _chest = new();
+    private readonly PerScreen<object> _context = new();
     private readonly PerScreen<IMenuComponent> _downArrow = new();
     private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
     private readonly PerScreen<IDictionary<string, bool>> _itemFilterCache = new(() => new Dictionary<string, bool>());
@@ -95,10 +95,10 @@ internal class MenuItems : IMenuItems, IModService
     }
 
     /// <inheritdoc />
-    public Chest Chest
+    public object Context
     {
-        get => this._chest.Value;
-        private set => this._chest.Value = value;
+        get => this._context.Value;
+        private set => this._context.Value = value;
     }
 
     /// <inheritdoc />
@@ -386,7 +386,7 @@ internal class MenuItems : IMenuItems, IModService
 
     private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
     {
-        if (this.Menu is not null && ReferenceEquals(e.Chest, this.Chest))
+        if (this.Menu is not null && ReferenceEquals(e.Chest, this.Context))
         {
             this.ItemsFiltered = null;
             this.ItemsSorted = null;
@@ -424,12 +424,12 @@ internal class MenuItems : IMenuItems, IModService
         this.ItemHighlighters.Clear();
         this.SortMethod = null;
 
-        if (this.Menu is null)
+        if (this.Menu is null || e.Context is null)
         {
             return;
         }
 
-        this.Chest = e.Chest;
+        this.Context = e.Context;
         this.MenuColumns = this.Menu.GetColumnCount();
 
         if (this.Menu.inventory.highlightMethod.Target is not MenuItems)

@@ -64,38 +64,33 @@ internal class CraftFromChest : Feature
     {
         get
         {
-            foreach (var playerChest in this.ManagedStorages.PlayerStorages)
-            {
-                if (playerChest.CraftFromChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
-                {
-                    yield return playerChest;
-                }
-            }
-
-            foreach (var (placedObject, managedChest) in this.ManagedStorages.LocationStorages)
+            IList<IManagedStorage> eligibleStorages =
+                this.ManagedStorages.PlayerStorages
+                    .Where(playerChest => playerChest.CraftFromChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
+                    .ToList();
+            foreach (var ((location, (x, y)), locationStorage) in this.ManagedStorages.LocationStorages)
             {
                 // Disabled in config or by location name
-                if (managedChest.CraftFromChest == FeatureOptionRange.Disabled || managedChest.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+                if (locationStorage.CraftFromChest == FeatureOptionRange.Disabled || locationStorage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
                 {
                     continue;
                 }
 
                 // Disabled in mines
-                if (managedChest.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+                if (locationStorage.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
                 {
                     continue;
                 }
 
-                var (location, (x, y)) = placedObject;
-                switch (managedChest.CraftFromChest)
+                switch (locationStorage.CraftFromChest)
                 {
                     // Disabled if not current location for location chest
                     case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
                         continue;
                     case FeatureOptionRange.World:
-                    case FeatureOptionRange.Location when managedChest.CraftFromChestDistance == -1:
-                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player):
-                        yield return managedChest;
+                    case FeatureOptionRange.Location when locationStorage.CraftFromChestDistance == -1:
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, locationStorage.CraftFromChestDistance, Game1.player):
+                        eligibleStorages.Add(locationStorage);
                         continue;
                     case FeatureOptionRange.Default:
                     case FeatureOptionRange.Disabled:
@@ -104,6 +99,8 @@ internal class CraftFromChest : Feature
                         continue;
                 }
             }
+
+            return eligibleStorages;
         }
     }
 

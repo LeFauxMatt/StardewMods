@@ -215,7 +215,7 @@ internal class CustomColorPicker : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance.context is not Chest chest || !ReferenceEquals(chest, CustomColorPicker.Instance.ManagedStorage.Context))
+        if (__instance.context is null || !ReferenceEquals(__instance.context, CustomColorPicker.Instance.ManagedStorage.Context))
         {
             return;
         }
@@ -229,7 +229,7 @@ internal class CustomColorPicker : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || !this.ManagedStorages.FindStorage(e.Chest, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
+        if (this.Menu is null || e.Context is not Chest || !this.ManagedStorages.FindStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
         {
             return;
         }

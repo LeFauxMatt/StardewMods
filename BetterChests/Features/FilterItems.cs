@@ -114,7 +114,7 @@ internal class FilterItems : Feature
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.MenuItems.Menu is null
-            || !this.ManagedStorages.FindStorage(e.Chest, out var managedChest)
+            || !this.ManagedStorages.FindStorage(e.Context, out var managedChest)
             || managedChest.FilterItems == FeatureOption.Disabled)
         {
             return;

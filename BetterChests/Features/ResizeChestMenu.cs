@@ -408,16 +408,20 @@ internal class ResizeChestMenu : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null)
+        IManagedStorage managedStorage = null;
+        if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled)
+        {
+        }
+        else if (this.Menu is null || e.Context is null || !this.ManagedStorages.FindStorage(e.Context, out managedStorage) || managedStorage.ResizeChestMenu == FeatureOption.Disabled)
         {
             return;
         }
 
         if (e.IsNew && this.MenuOffset != 0)
         {
-            if (e.Chest is not null)
+            if (managedStorage is not null)
             {
-                Log.Trace($"Resizing Chest Menu for Chest {e.Chest.Name}");
+                Log.Trace($"Resizing Chest Menu for Chest {managedStorage.QualifiedItemId}");
             }
 
             // Shift components down for increased ItemsToGrabMenu size

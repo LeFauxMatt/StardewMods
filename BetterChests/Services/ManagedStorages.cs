@@ -176,10 +176,10 @@ internal class ManagedStorages : IModService
     /// <summary>
     ///     Attempts to find a <see cref="BaseStorage" /> that matches a <see cref="Chest" /> instance.
     /// </summary>
-    /// <param name="context">The <see cref="Chest" /> to find.</param>
+    /// <param name="context">The contex object to find.</param>
     /// <param name="managedStorage">The <see cref="BaseStorage" /> to return if it matches the <see cref="Chest" />.</param>
     /// <returns>Returns true if a matching <see cref="BaseStorage" /> could be found.</returns>
-    public bool FindStorage(Chest context, out IManagedStorage managedStorage)
+    public bool FindStorage(object context, out IManagedStorage managedStorage)
     {
         if (context is null)
         {
