@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Interfaces;
 internal class ControlScheme : IControlScheme
 {
     /// <inheritdoc />
-    public KeybindList LockSlot { get; set; } = new(SButton.A);
+    public SButton LockSlot { get; set; } = SButton.LeftAlt;
 
     /// <inheritdoc />
     public KeybindList NextTab { get; set; } = new(SButton.DPadRight);

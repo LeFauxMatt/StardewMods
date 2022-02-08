@@ -325,7 +325,7 @@ internal class ModConfigMenu : IModService
         this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_Controls_Name, I18n.Section_Controls_Description);
 
         // Lock Slot
-        this.GMCM.API.AddKeybindList(
+        this.GMCM.API.AddKeybind(
             this.Manifest,
             () => config.LockSlot,
             value => config.LockSlot = value,

@@ -104,14 +104,14 @@ internal class SlotLock : Feature
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -217,9 +217,9 @@ internal class SlotLock : Feature
         }
     }
 
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!this.Config.ControlScheme.LockSlot.JustPressed())
+        if (e.Button != SButton.MouseLeft || !e.IsDown(this.Config.ControlScheme.LockSlot))
         {
             return;
         }
@@ -246,6 +246,6 @@ internal class SlotLock : Feature
         var lockedSlots = this.LockedSlots;
         lockedSlots[index] = !lockedSlots[index];
         this.LockedSlots = lockedSlots;
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.LockSlot);
+        this.Helper.Input.Suppress(SButton.MouseLeft);
     }
 }

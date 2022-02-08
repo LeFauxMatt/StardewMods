@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Interfaces;
 
+using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 /// <summary>
@@ -10,7 +11,7 @@ internal interface IControlScheme
     /// <summary>
     ///     Gets or sets controls to lock an item slot.
     /// </summary>
-    public KeybindList LockSlot { get; set; }
+    public SButton LockSlot { get; set; }
 
     /// <summary>
     ///     Gets or sets controls to switch to next tab.
