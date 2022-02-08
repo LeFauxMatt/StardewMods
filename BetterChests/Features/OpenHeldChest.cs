@@ -104,7 +104,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.OpenHeldChest == FeatureOption.Disabled)
+        if (!this.ManagedStorages.FindStorage(chest, out var managedChest) || managedChest.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }

@@ -60,10 +60,10 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
-    public ChestData DefaultChest
+    public StorageData DefaultChest
     {
         get => this.Data.DefaultChest;
-        set => ((IChestData)value).CopyTo(this.Data.DefaultChest);
+        set => ((IStorageData)value).CopyTo(this.Data.DefaultChest);
     }
 
     /// <inheritdoc />

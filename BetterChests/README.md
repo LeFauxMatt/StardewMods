@@ -29,7 +29,7 @@ Adds enhanced chest features to the game.
     * [Range Values](#range-values)
 * [Integrations](#integrations)
     * [Automate](#automate)
-    * [Horse Overhaul](#horse-overhaul) 
+    * [Horse Overhaul](#horse-overhaul)
 * [Translations](#translations)
 
 ## Features
@@ -49,8 +49,7 @@ With Carry Chest enabled, you can hit the Use Tool button to pick up chests into
 
 ### Categorize Chest
 
-Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that
-chest.
+Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that chest.
 
 | Config Option   | Description                           | Default Value | Other Value(s)                        |
 |:----------------|:--------------------------------------|:--------------|:--------------------------------------|
@@ -411,18 +410,21 @@ The Range value limits which chests will be selected for a feature relative to t
 
 When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
 [Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
-items into the chest if the Filter list does not allow it. 
+items into the chest if the Filter list does not allow it.
 
 ### Horse Overhaul
 
-Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911) saddlebags.
-The distance to the player's Horse will be considered for features such as [Craft from Chest](#craft-from-chest) and
+Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
+saddlebags. The distance to the player's Horse will be considered for features such
+as [Craft from Chest](#craft-from-chest) and
 [Stash to Chest](#stash-to-chest).
 
 The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
 `BetterChests/assets/chests.json` file.
 
 ## Translations
+
+See [here](i18n/default.json) for the base translation file.
 
 | Language                   | Status            | Credits     |
 |:---------------------------|:------------------|:------------|

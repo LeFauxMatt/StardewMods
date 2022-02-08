@@ -37,7 +37,7 @@ internal interface IConfigData
     /// <summary>
     ///     Gets or sets the default chest configuration.
     /// </summary>
-    ChestData DefaultChest { get; set; }
+    StorageData DefaultChest { get; set; }
 
     /// <summary>
     ///     Gets or sets the symbol used to denote context tags in searches.
@@ -62,7 +62,7 @@ internal interface IConfigData
         other.CategorizeChest = this.CategorizeChest;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         other.CustomColorPickerArea = this.CustomColorPickerArea;
-        ((IChestData)other.DefaultChest).CopyTo(this.DefaultChest);
+        ((IStorageData)other.DefaultChest).CopyTo(this.DefaultChest);
         other.SearchTagSymbol = this.SearchTagSymbol;
         other.SlotLock = this.SlotLock;
     }

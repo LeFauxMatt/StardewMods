@@ -17,7 +17,7 @@ internal class CommandHandler : IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly Lazy<CraftFromChest> _craftFromChest;
-    private readonly Lazy<ManagedChests> _managedChests;
+    private readonly Lazy<ManagedStorages> _managedChests;
     private readonly Lazy<StashToChest> _stashToChest;
 
     /// <summary>
@@ -32,7 +32,7 @@ internal class CommandHandler : IModService
         this.Helper = helper;
         this._assetHandler = services.Lazy<AssetHandler>();
         this._craftFromChest = services.Lazy<CraftFromChest>();
-        this._managedChests = services.Lazy<ManagedChests>();
+        this._managedChests = services.Lazy<ManagedStorages>();
         this._stashToChest = services.Lazy<StashToChest>();
         this.Helper.ConsoleCommands.Add(
             "better_chests_info",
@@ -54,7 +54,7 @@ internal class CommandHandler : IModService
 
     private IModHelper Helper { get; }
 
-    private ManagedChests ManagedChests
+    private ManagedStorages ManagedStorages
     {
         get => this._managedChests.Value;
     }
@@ -64,9 +64,9 @@ internal class CommandHandler : IModService
         get => this._stashToChest.Value;
     }
 
-    private static void AppendChestData(StringBuilder sb, IChestData data, string chestName)
+    private static void AppendChestData(StringBuilder sb, IStorageData data, string chestName)
     {
-        var dictData = SerializedChestData.GetData(data);
+        var dictData = SerializedStorageData.GetData(data);
         if (dictData.Values.All(string.IsNullOrWhiteSpace))
         {
             return;
@@ -180,10 +180,10 @@ internal class CommandHandler : IModService
         }
 
         var eligibleCraftingChests = this.CraftFromChest.EligibleChests.ToDictionary(managedChest => managedChest, _ => string.Empty);
-        var eligibleStashingChests = this.StashToChest.EligibleChests.ToDictionary(managedChest => managedChest, _ => string.Empty);
+        var eligibleStashingChests = this.StashToChest.EligibleStorages.ToDictionary(managedChest => managedChest, _ => string.Empty);
 
         // Iterate managed chests and features
-        foreach (var managedChest in this.ManagedChests.PlayerChests)
+        foreach (var managedChest in this.ManagedStorages.PlayerStorages)
         {
             CommandHandler.AppendChestData(sb, managedChest, $"\nChest {managedChest.QualifiedItemId} with farmer {Game1.player.Name}.\n");
 
@@ -198,7 +198,7 @@ internal class CommandHandler : IModService
             }
         }
 
-        foreach (var ((location, (x, y)), managedChest) in this.ManagedChests.PlacedChests)
+        foreach (var ((location, (x, y)), managedChest) in this.ManagedStorages.LocationStorages)
         {
             CommandHandler.AppendChestData(sb, managedChest, $"Chest \"{managedChest.QualifiedItemId}\" at location {location.NameOrUniqueName} at coordinates ({((int)x).ToString()},{((int)y).ToString()}).");
 

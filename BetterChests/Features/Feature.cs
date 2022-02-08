@@ -11,7 +11,7 @@ using StardewMods.FuryCore.Interfaces;
 internal abstract class Feature : IModService
 {
     private readonly Lazy<ICustomEvents> _customEvents;
-    private readonly Lazy<ManagedChests> _managedChests;
+    private readonly Lazy<ManagedStorages> _managedStorages;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Feature" /> class.
@@ -24,7 +24,7 @@ internal abstract class Feature : IModService
         this.Id = $"{BetterChests.ModUniqueId}.{this.GetType().Name}";
         this.Helper = helper;
         this.Config = config;
-        this._managedChests = services.Lazy<ManagedChests>();
+        this._managedStorages = services.Lazy<ManagedStorages>();
         this._customEvents = services.Lazy<ICustomEvents>();
     }
 
@@ -52,11 +52,11 @@ internal abstract class Feature : IModService
     protected string Id { get; }
 
     /// <summary>
-    ///     Gets the <see cref="ManagedChests" /> service to track placed and player chests in the game.
+    ///     Gets the <see cref="ManagedStorages" /> service to track placed and player chests in the game.
     /// </summary>
-    protected ManagedChests ManagedChests
+    protected ManagedStorages ManagedStorages
     {
-        get => this._managedChests.Value;
+        get => this._managedStorages.Value;
     }
 
     /// <summary>

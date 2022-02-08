@@ -121,7 +121,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuCapacity.Value ??= this.Config.DefaultChest.ResizeChestMenuRows * 12;
             }
 
-            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
+            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedStorages.FindStorage(chest, out var managedChest))
             {
                 return this._menuCapacity.Value ??= -1; // Vanilla
             }
@@ -158,7 +158,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuRows.Value ??= this.Config.DefaultChest.ResizeChestMenuRows;
             }
 
-            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
+            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedStorages.FindStorage(chest, out var managedChest))
             {
                 return this._menuRows.Value ??= 3; // Vanilla
             }

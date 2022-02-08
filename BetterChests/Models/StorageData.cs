@@ -5,7 +5,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 
 /// <inheritdoc />
-public class ChestData : IChestData
+public class StorageData : IStorageData
 {
     /// <inheritdoc />
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;

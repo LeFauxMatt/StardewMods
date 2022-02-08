@@ -19,7 +19,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class CollectItems : Feature
 {
-    private readonly PerScreen<IList<IManagedChest>> _eligibleChests = new();
+    private readonly PerScreen<IList<IManagedStorage>> _eligibleChests = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
@@ -50,12 +50,11 @@ internal class CollectItems : Feature
 
     private static CollectItems Instance { get; set; }
 
-    private IList<IManagedChest> EligibleChests
+    private IList<IManagedStorage> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from managedChest in this.ManagedChests.PlayerChests
+            from managedChest in this.ManagedStorages.PlayerStorages
             where managedChest.CollectItems == FeatureOption.Enabled
-                  && managedChest.Chest.Stack == 1
             select managedChest).ToList();
         set => this._eligibleChests.Value = value;
     }

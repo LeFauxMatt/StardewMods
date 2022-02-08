@@ -200,21 +200,30 @@ internal class SlotLock : Feature
 
     private static Color Tint(InventoryMenu menu, Color tint, int index)
     {
-        return Game1.activeClickableMenu switch
-        {
-            ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu) => SlotLock.Instance.GetTint(tint, index),
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage } && ReferenceEquals(inventoryPage, menu) => SlotLock.Instance.GetTint(tint, index),
-            _ => tint,
-        };
+        return SlotLock.Instance.GetTint(menu, tint, index);
     }
 
-    private Color GetTint(Color tint, int index)
+    private Color GetTint(InventoryMenu menu, Color tint, int index)
     {
-        return this.LockedSlots.ElementAtOrDefault(index) ? Color.Red : tint;
+        switch (Game1.activeClickableMenu)
+        {
+            case { } when !this.LockedSlots.ElementAtOrDefault(index):
+                return tint;
+            case ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu):
+            case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage } && ReferenceEquals(inventoryPage, menu):
+                return Color.Red;
+            default:
+                return tint;
+        }
     }
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
+        if (!this.Config.ControlScheme.LockSlot.JustPressed())
+        {
+            return;
+        }
+
         var menu = Game1.activeClickableMenu switch
         {
             ItemGrabMenu { inventory: { } itemGrabMenu } => itemGrabMenu,
@@ -222,7 +231,7 @@ internal class SlotLock : Feature
             _ => null,
         };
 
-        if (menu is null || !this.Config.ControlScheme.LockSlot.JustPressed())
+        if (menu is null)
         {
             return;
         }

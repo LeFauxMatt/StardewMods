@@ -7,7 +7,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     <see cref="Chest" /> data related to BetterChests features.
 /// </summary>
-public interface IChestData
+public interface IStorageData
 {
     /// <summary>
     ///     Gets or sets a value indicating if the chest can be carried by the player.
@@ -123,12 +123,12 @@ public interface IChestData
     public FeatureOption UnloadChest { get; set; }
 
     /// <summary>
-    ///     Copies data from one <see cref="IChestData" /> to another.
+    ///     Copies data from one <see cref="IStorageData" /> to another.
     /// </summary>
-    /// <param name="other">The <see cref="IChestData" /> to copy values to.</param>
-    /// <typeparam name="TOther">The class/type of the other <see cref="IChestData" />.</typeparam>
+    /// <param name="other">The <see cref="IStorageData" /> to copy values to.</param>
+    /// <typeparam name="TOther">The class/type of the other <see cref="IStorageData" />.</typeparam>
     public void CopyTo<TOther>(TOther other)
-        where TOther : IChestData
+        where TOther : IStorageData
     {
         other.CarryChest = this.CarryChest;
         other.ChestMenuTabs = this.ChestMenuTabs;

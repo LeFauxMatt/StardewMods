@@ -352,7 +352,7 @@ internal class CarryChest : Feature
         }
 
         // Object is Chest and supports Carry Chest
-        if (!this.ManagedChests.FindChest(obj as Chest, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
+        if (!this.ManagedStorages.FindStorage(obj as Chest, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
         {
             return;
         }

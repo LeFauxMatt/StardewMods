@@ -40,7 +40,7 @@ internal class UnloadChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
-            || !this.ManagedChests.FindChest(Game1.player.CurrentItem as Chest, out var source)
+            || !this.ManagedStorages.FindStorage(Game1.player.CurrentItem as Chest, out var source)
             || source.UnloadChest == FeatureOption.Disabled)
         {
             return;
@@ -58,7 +58,7 @@ internal class UnloadChest : Feature
         }
 
         // Object is Chest and supports Unload Chest
-        if (!this.ManagedChests.FindChest(obj as Chest, out var target))
+        if (!this.ManagedStorages.FindStorage(obj as Chest, out var target))
         {
             return;
         }
@@ -89,16 +89,15 @@ internal class UnloadChest : Feature
                 continue;
             }
 
-            item = target.Chest.addItem(item);
-
+            item = target.AddItem(item);
             if (item is null)
             {
                 source.Items[index] = null;
             }
         }
 
-        Log.Trace($"Unloading items from Chest {source.Chest.Name} into Chest {target.Chest.Name}");
-        source.Chest.clearNulls();
+        Log.Trace($"Unloading items from Chest {source.QualifiedItemId} into Chest {target.QualifiedItemId}");
+        source.ClearNulls();
         this.Helper.Input.Suppress(e.Button);
     }
 }

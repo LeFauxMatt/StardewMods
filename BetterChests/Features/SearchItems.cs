@@ -348,7 +348,7 @@ internal class SearchItems : Feature
             this.Chest = e.Chest;
             this.SearchField.Text = string.Empty;
         }
-        else if (this.Menu is null || e.Chest is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
+        else if (this.Menu is null || e.Chest is null || !this.ManagedStorages.FindStorage(e.Chest, out var managedChest) || managedChest.SearchItems == FeatureOption.Disabled)
         {
             return;
         }

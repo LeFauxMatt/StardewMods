@@ -43,6 +43,6 @@ public class BetterChestsApi : IBetterChestsApi
     /// <inheritdoc />
     public bool RegisterChest(string name)
     {
-        return this.Assets.AddChestData(name, new ChestData());
+        return this.Assets.AddChestData(name, new StorageData());
     }
 }

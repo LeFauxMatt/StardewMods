@@ -8,13 +8,13 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 
 /// <inheritdoc />
-internal class SerializedChestData : IChestData
+internal class SerializedStorageData : IStorageData
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SerializedChestData" /> class.
+    ///     Initializes a new instance of the <see cref="SerializedStorageData" /> class.
     /// </summary>
     /// <param name="data">The Dictionary of string keys/values representing the Chest Data.</param>
-    public SerializedChestData(IDictionary<string, string> data)
+    public SerializedStorageData(IDictionary<string, string> data)
     {
         this.Data = data;
     }
@@ -224,10 +224,10 @@ internal class SerializedChestData : IChestData
     /// </summary>
     /// <param name="data">The Chest Data to create a data dictionary out of.</param>
     /// <returns>A dictionary of string keys/values representing the Chest Data.</returns>
-    public static IDictionary<string, string> GetData(IChestData data)
+    public static IDictionary<string, string> GetData(IStorageData data)
     {
         var outDict = new Dictionary<string, string>();
-        data.CopyTo(new SerializedChestData(outDict));
+        data.CopyTo(new SerializedStorageData(outDict));
         return outDict;
     }
 }

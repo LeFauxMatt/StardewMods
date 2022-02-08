@@ -25,7 +25,7 @@ internal class ConfigData : IConfigData
     public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
 
     /// <inheritdoc />
-    public ChestData DefaultChest { get; set; } = new()
+    public StorageData DefaultChest { get; set; } = new()
     {
         CarryChest = FeatureOption.Enabled,
         ChestMenuTabs = FeatureOption.Enabled,

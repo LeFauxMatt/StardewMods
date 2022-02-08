@@ -70,7 +70,7 @@ internal class ResizeChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (ResizeChest.Instance.ManagedChests.FindChest(__instance, out var managedChest) && managedChest.ResizeChestCapacity != 0)
+        if (ResizeChest.Instance.ManagedStorages.FindStorage(__instance, out var managedChest) && managedChest.ResizeChestCapacity != 0)
         {
             __result = managedChest.ResizeChestCapacity > 0
                 ? managedChest.ResizeChestCapacity

@@ -17,7 +17,7 @@ internal class AssetHandler : IModService, IAssetLoader
 {
     private const string CraftablesData = "Data/BigCraftablesInformation";
 
-    private IReadOnlyDictionary<string, IChestData> _cachedChestData;
+    private IReadOnlyDictionary<string, IStorageData> _cachedChestData;
     private IReadOnlyDictionary<int, string[]> _cachedCraftables;
     private IReadOnlyDictionary<string, string[]> _cachedTabData;
 
@@ -46,12 +46,12 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <summary>
     ///     Gets the collection of chest data for all known chest types in the game.
     /// </summary>
-    public IReadOnlyDictionary<string, IChestData> ChestData
+    public IReadOnlyDictionary<string, IStorageData> ChestData
     {
         get => this._cachedChestData ??= (
                 from data in this.Helper.Content.Load<IDictionary<string, IDictionary<string, string>>>($"{BetterChests.ModUniqueId}/Chests", ContentSource.GameContent)
-                select (data.Key, Value: new SerializedChestData(data.Value)))
-            .ToDictionary(data => data.Key, data => (IChestData)data.Value);
+                select (data.Key, Value: new SerializedStorageData(data.Value)))
+            .ToDictionary(data => data.Key, data => (IStorageData)data.Value);
     }
 
     /// <summary>
@@ -95,20 +95,20 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <param name="id">The qualified item id of the chest.</param>
     /// <param name="data">The chest data to add.</param>
     /// <returns>True if new chest data was added.</returns>
-    public bool AddChestData(string id, IChestData data = default)
+    public bool AddChestData(string id, IStorageData data = default)
     {
         if (this.Craftables.All(info => info.Value[0] != id))
         {
             return false;
         }
 
-        data ??= new ChestData();
+        data ??= new StorageData();
         if (this.LocalChestData.ContainsKey(id))
         {
             return false;
         }
 
-        this.LocalChestData.Add(id, SerializedChestData.GetData(data));
+        this.LocalChestData.Add(id, SerializedStorageData.GetData(data));
         return true;
     }
 
@@ -151,7 +151,7 @@ internal class AssetHandler : IModService, IAssetLoader
     {
         foreach (var (key, data) in this.ChestData)
         {
-            this.LocalChestData[key] = SerializedChestData.GetData(data);
+            this.LocalChestData[key] = SerializedStorageData.GetData(data);
         }
 
         this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
@@ -175,13 +175,13 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             this.LocalChestData = new Dictionary<string, IDictionary<string, string>>
             {
-                { "Chest", SerializedChestData.GetData(new ChestData()) },
-                { "Stone Chest", SerializedChestData.GetData(new ChestData()) },
-                { "Junimo Chest", SerializedChestData.GetData(new ChestData()) },
-                { "Mini-Fridge", SerializedChestData.GetData(new ChestData()) },
-                { "Mini-Shipping Bin", SerializedChestData.GetData(new ChestData()) },
-                { "Fridge", SerializedChestData.GetData(new ChestData()) },
-                { "Auto-Grabber", SerializedChestData.GetData(new ChestData()) },
+                { "Chest", SerializedStorageData.GetData(new StorageData()) },
+                { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
+                { "Junimo Chest", SerializedStorageData.GetData(new StorageData()) },
+                { "Mini-Fridge", SerializedStorageData.GetData(new StorageData()) },
+                { "Mini-Shipping Bin", SerializedStorageData.GetData(new StorageData()) },
+                { "Fridge", SerializedStorageData.GetData(new StorageData()) },
+                { "Auto-Grabber", SerializedStorageData.GetData(new StorageData()) },
             };
             this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
         }
@@ -263,8 +263,8 @@ internal class AssetHandler : IModService, IAssetLoader
                 break;
             case "DefaultChest":
                 Log.Trace("Loading DefaultChest Config from Host");
-                var chestData = e.ReadAs<ChestData>();
-                ((IChestData)chestData).CopyTo(this.Config.DefaultChest);
+                var chestData = e.ReadAs<StorageData>();
+                ((IStorageData)chestData).CopyTo(this.Config.DefaultChest);
                 break;
         }
     }
