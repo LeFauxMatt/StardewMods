@@ -100,9 +100,7 @@ internal class FilterItems : Feature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!FilterItems.Instance.ManagedStorages.FindStorage(__instance, out var managedChest)
-            || managedChest.FilterItems == FeatureOption.Disabled
-            || managedChest.ItemMatcher.Matches(item))
+        if (!FilterItems.Instance.ManagedStorages.FindStorage(__instance, out var managedChest) || managedChest.FilterItems == FeatureOption.Disabled || managedChest.ItemMatcher.Matches(item))
         {
             return true;
         }
@@ -113,14 +111,12 @@ internal class FilterItems : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.MenuItems.Menu is null
-            || !this.ManagedStorages.FindStorage(e.Context, out var managedChest)
-            || managedChest.FilterItems == FeatureOption.Disabled)
+        if (this.MenuItems.Menu is null || e.Context is null || !this.ManagedStorages.FindStorage(e.Context, out var managedStorage) || managedStorage.FilterItems == FeatureOption.Disabled)
         {
             return;
         }
 
         // Add highlighter to Menu Items
-        this.MenuItems.AddHighlighter(managedChest.ItemMatcher);
+        this.MenuItems.AddHighlighter(managedStorage.ItemMatcher);
     }
 }

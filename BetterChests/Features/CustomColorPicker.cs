@@ -229,7 +229,7 @@ internal class CustomColorPicker : Feature
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || e.Context is not Chest || !this.ManagedStorages.FindStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
+        if (this.Menu is null || e.Context is null || !this.ManagedStorages.FindStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
         {
             return;
         }

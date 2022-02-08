@@ -64,14 +64,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
         ItemGrabMenuChanged.Instance.Menu = __instance;
-
-        if (__instance is not { shippingBin: false, context: Chest chest } || !chest.IsPlayerChest())
-        {
-            ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, __instance.context, -1, false));
-            return;
-        }
-
-        ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, chest, Context.ScreenId, true));
+        ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, __instance.context, Context.ScreenId, true));
     }
 
     [SuppressMessage("StyleCop", "SA1101", Justification = "This is a pattern match not a local call")]
@@ -90,19 +83,13 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
             return;
         }
 
-        if (this.Menu is not ItemGrabMenu itemGrabMenu)
+        if (this.Menu is ItemGrabMenu itemGrabMenu)
         {
-            this.InvokeAll(new(this.Menu as ItemGrabMenu, null, -1, false));
+            this.InvokeAll(new(itemGrabMenu, itemGrabMenu.context, Context.ScreenId, false));
             return;
         }
 
-        if (!itemGrabMenu.IsPlayerChestMenu(out var chest))
-        {
-            this.InvokeAll(new(itemGrabMenu, itemGrabMenu.context, -1, false));
-            return;
-        }
-
-        this.InvokeAll(new(itemGrabMenu, chest, Context.ScreenId, false));
+        this.InvokeAll(new(null, null, Context.ScreenId, false));
     }
 
     [EventPriority(EventPriority.Low - 1000)]

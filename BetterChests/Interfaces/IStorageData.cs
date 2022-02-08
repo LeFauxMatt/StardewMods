@@ -2,10 +2,9 @@
 
 using System.Collections.Generic;
 using StardewMods.BetterChests.Enums;
-using StardewValley.Objects;
 
 /// <summary>
-///     <see cref="Chest" /> data related to BetterChests features.
+///     Storage data related to BetterChests features.
 /// </summary>
 public interface IStorageData
 {

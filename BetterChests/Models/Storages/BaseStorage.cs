@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Helpers;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal abstract class BaseStorage : IManagedStorage
@@ -19,7 +18,7 @@ internal abstract class BaseStorage : IManagedStorage
     ///     Initializes a new instance of the <see cref="BaseStorage" /> class.
     /// </summary>
     /// <param name="context">The item storage object.</param>
-    /// <param name="data">The <see cref="IStorageData" /> associated with this type of <see cref="Chest" />.</param>
+    /// <param name="data">The <see cref="IStorageData" /> associated with this object.</param>
     /// <param name="qualifiedItemId">A unique Id associated with this chest type.</param>
     protected BaseStorage(object context, IStorageData data, string qualifiedItemId)
     {
@@ -159,7 +158,7 @@ internal abstract class BaseStorage : IManagedStorage
     public ItemMatcher ItemMatcher { get; } = new(true);
 
     /// <inheritdoc />
-    public abstract IList<Item> Items { get; }
+    public abstract List<Item> Items { get; }
 
     /// <inheritdoc />
     public abstract ModDataDictionary ModData { get; }
@@ -355,6 +354,9 @@ internal abstract class BaseStorage : IManagedStorage
             }
         }
     }
+
+    /// <inheritdoc/>
+    public abstract void ShowMenu();
 
     /// <inheritdoc />
     public Item StackItems(Item item)

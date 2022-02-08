@@ -248,40 +248,43 @@ internal class CarryChest : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
     [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y, ref bool __result)
     {
-        if (!location.Objects.TryGetValue(new(x / 64, y / 64), out var obj) || obj is not Chest chest)
+        if (!__result
+            || !location.Objects.TryGetValue(new(x / 64, y / 64), out var obj)
+            || !CarryChest.Instance.ManagedStorages.FindStorage(__instance, out var fromStorage)
+            || !CarryChest.Instance.ManagedStorages.FindStorage(obj, out var toStorage))
         {
             return;
         }
 
-        Log.Trace($"Placed chest {obj.Name} from inventory to {location.NameOrUniqueName} at ({(x / 64).ToString()}, {(y / 64).ToString()}).");
-        chest.Name = __instance.Name;
-        foreach (var (key, value) in __instance.modData.Pairs)
+        Log.Trace($"Placed storage {fromStorage.QualifiedItemId} from inventory to {location.NameOrUniqueName} at ({(x / 64).ToString()}, {(y / 64).ToString()}).");
+        obj.Name = __instance.Name;
+        foreach (var (key, value) in fromStorage.ModData.Pairs)
         {
-            chest.modData[key] = value;
+            toStorage.ModData[key] = value;
         }
 
-        if (__instance is not Chest other)
+        if (fromStorage.Items.Any())
         {
-            return;
+            toStorage.Items.Clear();
+            toStorage.Items.AddRange(fromStorage.Items);
         }
 
-        chest.SpecialChestType = other.SpecialChestType;
-        chest.fridge.Value = other.fridge.Value;
-        chest.lidFrameCount.Value = other.lidFrameCount.Value;
-        chest.playerChoiceColor.Value = other.playerChoiceColor.Value;
-
-        var items = other.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-        if (items.Any())
+        if (obj is Chest toChest && __instance is Chest fromChest)
         {
-            chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).CopyFrom(items);
+            toChest.SpecialChestType = fromChest.SpecialChestType;
+            toChest.fridge.Value = fromChest.fridge.Value;
+            toChest.lidFrameCount.Value = fromChest.lidFrameCount.Value;
+            toChest.playerChoiceColor.Value = fromChest.playerChoiceColor.Value;
         }
 
-        CarryChest.Instance.CheckForOverburdened(__result);
+        CarryChest.Instance.ManagedStorages.RemoveStorage(__instance);
+        CarryChest.Instance.CheckForOverburdened(true);
     }
 
     private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ICollection<Chest> exclude)

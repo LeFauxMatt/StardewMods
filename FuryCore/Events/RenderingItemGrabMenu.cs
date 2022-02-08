@@ -8,11 +8,13 @@ using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Services;
 using StardewValley;
+using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEventArgs>
 {
-    private readonly PerScreen<ItemGrabMenuChangedEventArgs> _menu = new();
+    private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<int> _screenId = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RenderingItemGrabMenu" /> class.
@@ -25,31 +27,29 @@ internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEve
         display.RenderingActiveMenu += this.OnRenderingActiveMenu;
     }
 
+    private ItemGrabMenu Menu
+    {
+        get => this._menu.Value;
+        set => this._menu.Value = value;
+    }
+
+    private int ScreenId
+    {
+        get => this._screenId.Value;
+        set => this._screenId.Value = value;
+    }
+
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.ItemGrabMenu is null)
-        {
-            this._menu.Value = null;
-            return;
-        }
-
-        if (e.IsNew)
-        {
-            e.ItemGrabMenu.setBackgroundTransparency(false);
-        }
-
-        this._menu.Value = e;
+        this.Menu = e.ItemGrabMenu;
+        this.ScreenId = e.ScreenId;
+        this.Menu?.setBackgroundTransparency(false);
     }
 
     [EventPriority(EventPriority.High + 1000)]
     private void OnRenderingActiveMenu(object sender, RenderingActiveMenuEventArgs e)
     {
-        if (this.HandlerCount == 0)
-        {
-            return;
-        }
-
-        if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
+        if (this.HandlerCount == 0 || this.Menu is null || this.ScreenId != Context.ScreenId)
         {
             return;
         }

@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Models.Storages;
 
 using System.Collections.Generic;
+using System.Linq;
 using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
@@ -33,14 +34,20 @@ internal class StorageChest : BaseStorage
     public Chest Chest { get; }
 
     /// <inheritdoc />
-    public override IList<Item> Items
+    public override List<Item> Items
     {
-        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).ToList();
     }
 
     /// <inheritdoc />
     public override ModDataDictionary ModData
     {
         get => this.Chest.modData;
+    }
+
+    /// <inheritdoc/>
+    public override void ShowMenu()
+    {
+        this.Chest.ShowMenu();
     }
 }

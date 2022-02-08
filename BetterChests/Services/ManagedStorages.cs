@@ -174,11 +174,11 @@ internal class ManagedStorages : IModService
     }
 
     /// <summary>
-    ///     Attempts to find a <see cref="BaseStorage" /> that matches a <see cref="Chest" /> instance.
+    ///     Attempts to find a <see cref="IManagedStorage" /> that matches a storage context instance.
     /// </summary>
-    /// <param name="context">The contex object to find.</param>
-    /// <param name="managedStorage">The <see cref="BaseStorage" /> to return if it matches the <see cref="Chest" />.</param>
-    /// <returns>Returns true if a matching <see cref="BaseStorage" /> could be found.</returns>
+    /// <param name="context">The context object to find.</param>
+    /// <param name="managedStorage">The <see cref="IManagedStorage" /> to return if it matches the context object.</param>
+    /// <returns>Returns true if a matching <see cref="IManagedStorage" /> could be found.</returns>
     public bool FindStorage(object context, out IManagedStorage managedStorage)
     {
         if (context is null)
@@ -214,6 +214,18 @@ internal class ManagedStorages : IModService
         return false;
     }
 
+    /// <summary>
+    ///     Removes a no longer needed context from cached objects.
+    /// </summary>
+    /// <param name="context">The object context to remove.</param>
+    public void RemoveStorage(object context)
+    {
+        if (context is not null)
+        {
+            this.CachedObjects.Remove(context);
+        }
+    }
+
     private IStorageData GetData(string name)
     {
         if (!this.ChestConfigs.TryGetValue(name, out var config))
@@ -230,19 +242,19 @@ internal class ManagedStorages : IModService
         return config;
     }
 
-    private bool TryGetStorage(Chest chest, string name, ICollection<object> exclude, out IManagedStorage managedStorage)
+    private bool TryGetStorage(Chest context, string name, ICollection<object> exclude, out IManagedStorage managedStorage)
     {
-        if (chest is null || exclude.Contains(chest))
+        if (context is null || exclude.Contains(context))
         {
             managedStorage = null;
             return false;
         }
 
-        exclude.Add(chest);
-        if (!this.CachedObjects.TryGetValue(chest, out managedStorage))
+        exclude.Add(context);
+        if (!this.CachedObjects.TryGetValue(context, out managedStorage))
         {
-            managedStorage = new StorageChest(chest, this.GetData(name), name);
-            this.CachedObjects.Add(chest, managedStorage);
+            managedStorage = new StorageChest(context, this.GetData(name), name);
+            this.CachedObjects.Add(context, managedStorage);
         }
 
         return managedStorage is not null;

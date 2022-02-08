@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using StardewMods.FuryCore.Helpers;
 using StardewValley;
+using StardewValley.Menus;
 
 /// <inheritdoc />
 internal interface IManagedStorage : IStorageData
@@ -25,7 +26,7 @@ internal interface IManagedStorage : IStorageData
     /// <summary>
     ///     Gets the inventory of the Chest being managed.
     /// </summary>
-    public IList<Item> Items { get; }
+    public List<Item> Items { get; }
 
     /// <summary>
     ///     Gets the ModData associated with the source object.
@@ -48,6 +49,11 @@ internal interface IManagedStorage : IStorageData
     ///     Removes null items from the storage.
     /// </summary>
     public void ClearNulls();
+
+    /// <summary>
+    ///     Opens an <see cref="ItemGrabMenu" /> for this storage object.
+    /// </summary>
+    public void ShowMenu();
 
     /// <summary>
     ///     Attempts to stack add an item into the storage based on existing items.

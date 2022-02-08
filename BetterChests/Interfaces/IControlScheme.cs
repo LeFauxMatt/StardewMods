@@ -39,7 +39,7 @@ internal interface IControlScheme
     public KeybindList ScrollUp { get; set; }
 
     /// <summary>
-    ///     Gets or sets controls to stash player items into <see cref="StardewValley.Objects.Chest" />.
+    ///     Gets or sets controls to stash player items into storages.
     /// </summary>
     public KeybindList StashItems { get; set; }
 

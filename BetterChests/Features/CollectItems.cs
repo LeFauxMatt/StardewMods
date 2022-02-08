@@ -114,7 +114,24 @@ internal class CollectItems : Feature
 
     private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
     {
-        if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any() || e.QuantityChanged.Any(stack => stack.Item is Chest && stack.NewSize == 1)))
+        if (!e.IsLocalPlayer)
+        {
+            return;
+        }
+
+        if (e.Added.Any(item => this.ManagedStorages.FindStorage(item, out _)))
+        {
+            this.EligibleChests = null;
+            return;
+        }
+
+        if (e.Removed.Any(item => this.ManagedStorages.FindStorage(item, out _)))
+        {
+            this.EligibleChests = null;
+            return;
+        }
+
+        if (e.QuantityChanged.Any(stack => this.ManagedStorages.FindStorage(stack.Item, out _)))
         {
             this.EligibleChests = null;
         }

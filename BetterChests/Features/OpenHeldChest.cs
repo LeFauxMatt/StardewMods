@@ -89,9 +89,9 @@ internal class OpenHeldChest : Feature
 
         foreach (var player in Game1.getOnlineFarmers())
         {
-            foreach (var chest in player.Items.Take(12).OfType<Chest>())
+            foreach (var item in player.Items.Take(12).OfType<StardewValley.Object>())
             {
-                chest.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
+                item.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
             }
         }
     }
@@ -99,25 +99,25 @@ internal class OpenHeldChest : Feature
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not Chest chest)
+        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not StardewValley.Object obj)
         {
             return;
         }
 
-        if (!this.ManagedStorages.FindStorage(chest, out var managedChest) || managedChest.OpenHeldChest == FeatureOption.Disabled)
+        if (!this.ManagedStorages.FindStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }
 
-        Log.Trace($"Opening ItemGrabMenu for Held Chest ${chest.Name}.");
+        Log.Trace($"Opening ItemGrabMenu for Held Chest ${managedStorage.QualifiedItemId}.");
         if (Context.IsMainPlayer)
         {
-            chest.checkForAction(Game1.player);
+            obj.checkForAction(Game1.player);
         }
         else
         {
             Game1.player.currentLocation.localSound("openChest");
-            chest.ShowMenu();
+            managedStorage.ShowMenu();
         }
 
         this.Helper.Input.Suppress(e.Button);
