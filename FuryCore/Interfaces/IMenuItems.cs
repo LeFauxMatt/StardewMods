@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using StardewMods.FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Allows displayed items to be handled separately from actual items.

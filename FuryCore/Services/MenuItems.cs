@@ -21,7 +21,6 @@ using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <inheritdoc cref="IMenuItems" />
 [FuryCoreService(true)]

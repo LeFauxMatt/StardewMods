@@ -14,7 +14,6 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CollectItems : Feature

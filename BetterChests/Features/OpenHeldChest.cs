@@ -12,6 +12,7 @@ using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 /// <inheritdoc />
 internal class OpenHeldChest : Feature
@@ -89,7 +90,7 @@ internal class OpenHeldChest : Feature
 
         foreach (var player in Game1.getOnlineFarmers())
         {
-            foreach (var item in player.Items.Take(12).OfType<StardewValley.Object>())
+            foreach (var item in player.Items.Take(12).OfType<Object>())
             {
                 item.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
             }
@@ -99,7 +100,7 @@ internal class OpenHeldChest : Feature
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not StardewValley.Object obj)
+        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not Object obj)
         {
             return;
         }

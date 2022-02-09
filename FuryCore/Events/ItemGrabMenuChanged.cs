@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Common.Extensions;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -12,7 +11,6 @@ using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEventArgs>

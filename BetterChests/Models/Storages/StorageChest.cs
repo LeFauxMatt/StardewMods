@@ -45,7 +45,7 @@ internal class StorageChest : BaseStorage
         get => this.Chest.modData;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void ShowMenu()
     {
         this.Chest.ShowMenu();

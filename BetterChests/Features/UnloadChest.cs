@@ -7,7 +7,6 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class UnloadChest : Feature

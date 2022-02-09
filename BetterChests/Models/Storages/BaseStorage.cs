@@ -355,7 +355,7 @@ internal abstract class BaseStorage : IManagedStorage
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public abstract void ShowMenu();
 
     /// <inheritdoc />
@@ -423,7 +423,7 @@ internal abstract class BaseStorage : IManagedStorage
     }
 
     /// <summary>
-    /// Initializes the ItemMatcher with FilterItemList.
+    ///     Initializes the ItemMatcher with FilterItemList.
     /// </summary>
     protected void InitFilterItems()
     {

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 public class ItemGrabMenuChangedEventArgs : EventArgs
@@ -30,11 +29,6 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     public object Context { get; }
 
     /// <summary>
-    ///     Gets the inventory of the ItemGrabMenu.
-    /// </summary>
-    public IList<Item> Items { get; }
-
-    /// <summary>
     ///     Gets a value indicating whether the ItemGrabMenu is new.
     ///     Returns false when the active menu is changed to an existing ItemGrabMenu.
     /// </summary>
@@ -44,6 +38,11 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     ///     Gets the ItemGrabMenu if it is the currently active menu.
     /// </summary>
     public ItemGrabMenu ItemGrabMenu { get; }
+
+    /// <summary>
+    ///     Gets the inventory of the ItemGrabMenu.
+    /// </summary>
+    public IList<Item> Items { get; }
 
     /// <summary>
     ///     Gets the screen id that the menu was opened on.

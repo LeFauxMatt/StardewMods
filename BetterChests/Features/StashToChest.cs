@@ -20,7 +20,6 @@ internal class StashToChest : Feature
 {
     private readonly PerScreen<IManagedStorage> _currentStorage = new();
     private readonly Lazy<IMenuComponents> _menuComponents;
-    private readonly Lazy<SlotLock> _slotLock;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="StashToChest" /> class.
@@ -32,7 +31,6 @@ internal class StashToChest : Feature
         : base(config, helper, services)
     {
         this._menuComponents = services.Lazy<IMenuComponents>();
-        this._slotLock = services.Lazy<SlotLock>();
     }
 
     /// <summary>
@@ -93,11 +91,6 @@ internal class StashToChest : Feature
         get => this._menuComponents.Value;
     }
 
-    private SlotLock SlotLock
-    {
-        get => this._slotLock.Value;
-    }
-
     /// <inheritdoc />
     protected override void Activate()
     {
@@ -144,19 +137,10 @@ internal class StashToChest : Feature
         }
 
         var stashedAny = false;
-        var lockedSlots = this.Config.SlotLock
-            ? this.SlotLock.LockedSlots
-            : Array.Empty<bool>();
-
         for (var index = 0; index < Game1.player.MaxItems; index++)
         {
-            if (lockedSlots.ElementAtOrDefault(index))
-            {
-                continue;
-            }
-
             var item = Game1.player.Items[index];
-            if (item is null)
+            if (item?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") != false)
             {
                 continue;
             }
@@ -179,22 +163,13 @@ internal class StashToChest : Feature
     private bool StashItems()
     {
         Log.Trace("Stashing items into chests");
-        var lockedSlots = this.Config.SlotLock
-            ? this.SlotLock.LockedSlots
-            : Array.Empty<bool>();
-
         var stashedAny = false;
         foreach (var eligibleChest in this.EligibleStorages)
         {
             for (var index = 0; index < Game1.player.MaxItems; index++)
             {
-                if (lockedSlots.ElementAtOrDefault(index))
-                {
-                    continue;
-                }
-
                 var item = Game1.player.Items[index];
-                if (item is null)
+                if (item?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") != false)
                 {
                     continue;
                 }

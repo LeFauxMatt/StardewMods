@@ -13,7 +13,6 @@ using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CategorizeChest : Feature
