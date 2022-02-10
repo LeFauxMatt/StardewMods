@@ -158,7 +158,7 @@ internal abstract class BaseStorage : IManagedStorage
     public ItemMatcher ItemMatcher { get; } = new(true);
 
     /// <inheritdoc />
-    public abstract List<Item> Items { get; }
+    public abstract IList<Item> Items { get; }
 
     /// <inheritdoc />
     public abstract ModDataDictionary ModData { get; }

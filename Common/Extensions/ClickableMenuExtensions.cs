@@ -1,7 +1,9 @@
 ﻿namespace Common.Extensions;
 
+using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
 /// <summary>
 ///     Extension methods for MenuWithInventory.
@@ -16,9 +18,13 @@ internal static class ClickableMenuExtensions
     /// <returns>True if the menu is an ItemGrabMenu for a Player Chest.</returns>
     public static bool IsPlayerChestMenu(this IClickableMenu menu, out Chest chest)
     {
-        chest = menu is ItemGrabMenu { shippingBin: false, context: Chest outChest } && outChest.IsPlayerChest()
-            ? outChest
-            : null;
+        chest = menu switch
+        {
+            ItemGrabMenu { shippingBin: false, context: Chest outChest } when outChest.IsPlayerChest() => outChest,
+            ItemGrabMenu { context: JunimoHut { output.Value: { } junimoHutChest } } when junimoHutChest.IsPlayerChest() => junimoHutChest,
+            ItemGrabMenu { context: SObject { ParentSheetIndex: 165, heldObject.Value: Chest heldChest } } when heldChest.IsPlayerChest() => heldChest,
+            _ => null,
+        };
 
         return chest is not null;
     }

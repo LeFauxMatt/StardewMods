@@ -4,7 +4,9 @@
 
 * SlotLock Keybind is now a modifier key.
     * Must be held and left-click to lock a slot.
+* LockedSlots are now attached to the item.
 * Refactor to handle different types of storages.
+* Added support for Junimo Hut.
 
 ## 1.2.1 (February 6, 2022)
 

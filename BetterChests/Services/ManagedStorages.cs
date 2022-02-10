@@ -89,7 +89,7 @@ internal class ManagedStorages : IModService
                         {
                             case JunimoHut junimoHut:
                                 // Try loading JunimoHut storage
-                                if (this.TryGetStorage(junimoHut.output.Value, "JunimoHut", exclude, out managedStorage))
+                                if (this.TryGetStorage(junimoHut, junimoHut.output.Value, "Junimo Hut", exclude, out managedStorage))
                                 {
                                     yield return new(new(location, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2)), managedStorage);
                                 }
@@ -226,6 +226,114 @@ internal class ManagedStorages : IModService
         }
     }
 
+    /// <summary>
+    ///     Tries to get an IManagedStorage for a Chest.
+    /// </summary>
+    /// <param name="chest">The Chest to get an IManagedStorage for.</param>
+    /// <param name="name">The name of the chest.</param>
+    /// <param name="exclude">A list of objects to exclude to prevent infinite recursion.</param>
+    /// <param name="managedStorage">The IManagedStorage if one could be returned.</param>
+    /// <returns>True if a matching IManagedStorage could be found.</returns>
+    public bool TryGetStorage(Chest chest, string name, ICollection<object> exclude, out IManagedStorage managedStorage)
+    {
+        return this.TryGetStorage(chest, chest, name, exclude, out managedStorage);
+    }
+
+    /// <summary>
+    ///     Tries to get an IManagedStorage for any context object.
+    /// </summary>
+    /// <param name="context">The context object to get an IManagedStorage for.</param>
+    /// <param name="chest">The actual chest containing the items.</param>
+    /// <param name="name">The name of the chest.</param>
+    /// <param name="exclude">A list of objects to exclude to prevent infinite recursion.</param>
+    /// <param name="managedStorage">The IManagedStorage if one could be returned.</param>
+    /// <returns>True if a matching IManagedStorage could be found.</returns>
+    public bool TryGetStorage(object context, Chest chest, string name, ICollection<object> exclude, out IManagedStorage managedStorage)
+    {
+        if (context is null || exclude.Contains(context))
+        {
+            managedStorage = null;
+            return false;
+        }
+
+        exclude.Add(chest);
+        if (!this.CachedObjects.TryGetValue(chest, out managedStorage))
+        {
+            exclude.Add(context);
+            if (!this.CachedObjects.TryGetValue(context, out managedStorage))
+            {
+                managedStorage = new StorageChest(chest, this.GetData(name), name);
+                this.CachedObjects.Add(context, managedStorage);
+            }
+
+            if (!ReferenceEquals(chest, context))
+            {
+                exclude.Add(context);
+                this.CachedObjects.Add(chest, managedStorage);
+            }
+        }
+
+        return managedStorage is not null;
+    }
+
+    /// <summary>
+    ///     Tries to get an IManagedStorage for any item.
+    /// </summary>
+    /// <param name="item">The item to get an IManagedStorage for.</param>
+    /// <param name="exclude">A list of objects to exclude to prevent infinite recursion.</param>
+    /// <param name="managedStorage">The IManagedStorage if one could be returned.</param>
+    /// <returns>True if a matching IManagedStorage could be found.</returns>
+    public bool TryGetStorage(Item item, ICollection<object> exclude, out IManagedStorage managedStorage)
+    {
+        if (item is null || exclude.Contains(item))
+        {
+            managedStorage = null;
+            return false;
+        }
+
+        exclude.Add(item);
+        if (!this.CachedObjects.TryGetValue(item, out managedStorage))
+        {
+            var chest = item switch
+            {
+                Chest { Stack: 1 } playerChest when playerChest.IsPlayerChest() => playerChest,
+                SObject { Stack: 1, ParentSheetIndex: 165, heldObject.Value: Chest heldChest } => heldChest,
+                _ => null,
+            };
+
+            if (chest is null)
+            {
+                this.CachedObjects.Add(item, null);
+                managedStorage = null;
+                return false;
+            }
+
+            if (!chest.playerChest.Value)
+            {
+                chest.playerChest.Value = true;
+            }
+
+            var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == item.ParentSheetIndex).Value?[0];
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                this.CachedObjects.Add(item, null);
+                managedStorage = null;
+                return false;
+            }
+
+            managedStorage = new StorageChest(chest, this.GetData(name), name);
+            this.CachedObjects.Add(item, managedStorage);
+
+            if (!ReferenceEquals(chest, item) && !this.CachedObjects.ContainsKey(chest))
+            {
+                exclude.Add(chest);
+                this.CachedObjects.Add(chest, managedStorage);
+            }
+        }
+
+        return managedStorage is not null;
+    }
+
     private IStorageData GetData(string name)
     {
         if (!this.ChestConfigs.TryGetValue(name, out var config))
@@ -240,63 +348,5 @@ internal class ManagedStorages : IModService
         }
 
         return config;
-    }
-
-    private bool TryGetStorage(Chest context, string name, ICollection<object> exclude, out IManagedStorage managedStorage)
-    {
-        if (context is null || exclude.Contains(context))
-        {
-            managedStorage = null;
-            return false;
-        }
-
-        exclude.Add(context);
-        if (!this.CachedObjects.TryGetValue(context, out managedStorage))
-        {
-            managedStorage = new StorageChest(context, this.GetData(name), name);
-            this.CachedObjects.Add(context, managedStorage);
-        }
-
-        return managedStorage is not null;
-    }
-
-    private bool TryGetStorage(Item item, ICollection<object> exclude, out IManagedStorage managedStorage)
-    {
-        if (item is null || exclude.Contains(item))
-        {
-            managedStorage = null;
-            return false;
-        }
-
-        exclude.Add(item);
-        if (!this.CachedObjects.TryGetValue(item, out managedStorage))
-        {
-            var chest = item switch
-            {
-                Chest { Stack: 1 } playerChest when playerChest.IsPlayerChest() => playerChest,
-                SObject { Stack: 1, heldObject.Value: Chest heldChest } when heldChest.IsPlayerChest() => heldChest,
-                _ => null,
-            };
-
-            if (chest is null)
-            {
-                this.CachedObjects.Add(item, null);
-                managedStorage = null;
-                return false;
-            }
-
-            var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == item.ParentSheetIndex).Value?[0];
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                this.CachedObjects.Add(item, null);
-                managedStorage = null;
-                return false;
-            }
-
-            managedStorage = new StorageChest(chest, this.GetData(name), name);
-            this.CachedObjects.Add(chest, managedStorage);
-        }
-
-        return managedStorage is not null;
     }
 }

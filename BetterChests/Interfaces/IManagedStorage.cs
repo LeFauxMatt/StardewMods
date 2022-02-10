@@ -26,7 +26,7 @@ internal interface IManagedStorage : IStorageData
     /// <summary>
     ///     Gets the inventory of the Chest being managed.
     /// </summary>
-    public List<Item> Items { get; }
+    public IList<Item> Items { get; }
 
     /// <summary>
     ///     Gets the ModData associated with the source object.

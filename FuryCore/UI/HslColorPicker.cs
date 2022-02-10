@@ -108,8 +108,10 @@ public class HslColorPicker : DiscreteColorPicker
         set
         {
             this._hueCoord = this.HueTrack.Clamp(value);
-            var hueIndex = this._hueCoord.Remap(this.HueTrack, HslColorPicker.UnitRange).Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack);
-            var hslColor = HslColorPicker.HslValues[hueIndex];
+            var hueIndex = HslColorPicker.HslTrack.Clamp(this._hueCoord
+                                                             .Remap(this.HueTrack, HslColorPicker.UnitRange)
+                                                             .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack));
+            var hslColor = HslColorPicker.HslValues.ElementAtOrDefault(hueIndex);
             this._hslColor.H = hslColor.H;
             if (this.IsBlack)
             {

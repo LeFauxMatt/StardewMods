@@ -175,13 +175,14 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             this.LocalChestData = new Dictionary<string, IDictionary<string, string>>
             {
+                { "Auto-Grabber", SerializedStorageData.GetData(new StorageData()) },
                 { "Chest", SerializedStorageData.GetData(new StorageData()) },
-                { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
+                { "Fridge", SerializedStorageData.GetData(new StorageData()) },
                 { "Junimo Chest", SerializedStorageData.GetData(new StorageData()) },
+                { "Junimo Hut", SerializedStorageData.GetData(new StorageData()) },
                 { "Mini-Fridge", SerializedStorageData.GetData(new StorageData()) },
                 { "Mini-Shipping Bin", SerializedStorageData.GetData(new StorageData()) },
-                { "Fridge", SerializedStorageData.GetData(new StorageData()) },
-                { "Auto-Grabber", SerializedStorageData.GetData(new StorageData()) },
+                { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
             };
             this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
         }
