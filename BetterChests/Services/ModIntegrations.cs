@@ -16,36 +16,30 @@ internal class ModIntegrations : IModService
     /// <summary>Fully qualified name for Automate Container Type.</summary>
     public const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
 
-    /// <summary>Unique Mod Id for Automate.</summary>
-    public const string AutomateModUniqueId = "Pathochild.Automate";
-
-    /// <summary>Unique ModId for Horse Overhaul.</summary>
-    public const string HorseOverhaulModUniqueId = "Goldenrevolver.HorseOverhaul";
-
-    private readonly List<string> _modIds = new()
-    {
-        ModIntegrations.HorseOverhaulModUniqueId,
-    };
+    private const string AutomateModUniqueId = "Pathochild.Automate";
+    private const string ExpandedStorageModUniqueId = "furyx639.ExpandedStorage";
+    private const string HorseOverhaulModUniqueId = "Goldenrevolver.HorseOverhaul";
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ModIntegrations" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    public ModIntegrations(IModHelper helper)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public ModIntegrations(IModHelper helper, IModServices services)
     {
         this.Helper = helper;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-    }
-
-    /// <summary>
-    ///     Gets a list of integrated Mod Ids.
-    /// </summary>
-    public IEnumerable<string> ModIds
-    {
-        get => this._modIds;
+        services.Lazy<AssetHandler>(assetHandler => { assetHandler.AddModDataKey($"{ModIntegrations.ExpandedStorageModUniqueId}/Storage"); });
     }
 
     private IModHelper Helper { get; }
+
+    private IDictionary<string, string> Mods { get; } = new Dictionary<string, string>
+    {
+        { "Automate", ModIntegrations.AutomateModUniqueId },
+        { "Expanded Storage", ModIntegrations.ExpandedStorageModUniqueId },
+        { "Horse Overhaul", ModIntegrations.HorseOverhaulModUniqueId },
+    };
 
     /// <summary>
     ///     Gets mod integrated placed storages.
@@ -54,7 +48,7 @@ internal class ModIntegrations : IModService
     /// <returns>An enumerable of location storages for integrated mods.</returns>
     public IEnumerable<LocationChest> GetLocationChests(GameLocation location)
     {
-        if (location is Farm farm && this.ModIds.Contains(ModIntegrations.HorseOverhaulModUniqueId))
+        if (location is Farm farm && this.IsLoaded("Horse Overhaul"))
         {
             // Attempt to load saddle bags
             foreach (var stable in farm.buildings.OfType<Stable>())
@@ -85,7 +79,7 @@ internal class ModIntegrations : IModService
     /// <returns>An enumerable of storages for integrated mods.</returns>
     public IEnumerable<PlayerChest> GetPlayerChests(Farmer player)
     {
-        if (this.ModIds.Contains(ModIntegrations.HorseOverhaulModUniqueId) && player.mount is not null)
+        if (this.IsLoaded("Horse Overhaul") && player.mount is not null)
         {
             // Attempt to load saddle bags
             var farm = Game1.getFarm();
@@ -109,12 +103,22 @@ internal class ModIntegrations : IModService
         }
     }
 
+    /// <summary>
+    ///     Checks if an integrated mod is loaded.
+    /// </summary>
+    /// <param name="name">The name of the mod to check.</param>
+    /// <returns>True if the mod is loaded.</returns>
+    public bool IsLoaded(string name)
+    {
+        return this.Mods.ContainsKey(name);
+    }
+
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        var removedMods = this._modIds.Where(modId => !this.Helper.ModRegistry.IsLoaded(modId)).ToList();
-        foreach (var modId in removedMods)
+        var removedMods = this.Mods.Where(mod => !this.Helper.ModRegistry.IsLoaded(mod.Value)).ToList();
+        foreach (var (key, _) in removedMods)
         {
-            this._modIds.Remove(modId);
+            this.Mods.Remove(key);
         }
     }
 }

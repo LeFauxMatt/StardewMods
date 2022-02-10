@@ -313,7 +313,7 @@ internal class ManagedStorages : IModService
                 chest.playerChest.Value = true;
             }
 
-            var name = this.Assets.Craftables.SingleOrDefault(info => info.Key == item.ParentSheetIndex).Value?[0];
+            var name = this.Assets.GetStorageName(item);
             if (string.IsNullOrWhiteSpace(name))
             {
                 this.CachedObjects.Add(item, null);

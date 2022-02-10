@@ -39,7 +39,7 @@ internal class FilterItems : Feature
                     typeof(FilterItems),
                     nameof(FilterItems.Chest_addItem_prefix));
 
-                if (!FilterItems.Instance.Helper.ModRegistry.IsLoaded(ModIntegrations.AutomateModUniqueId))
+                if (services.FindService<ModIntegrations>()?.IsLoaded("Automate") != true)
                 {
                     return;
                 }

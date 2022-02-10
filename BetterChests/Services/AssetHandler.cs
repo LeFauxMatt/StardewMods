@@ -11,6 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces;
+using StardewValley;
 
 /// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IModService" />
 internal class AssetHandler : IModService, IAssetLoader
@@ -89,6 +90,8 @@ internal class AssetHandler : IModService, IAssetLoader
 
     private IDictionary<string, string> LocalTabData { get; set; }
 
+    private HashSet<string> ModDataKeys { get; } = new();
+
     /// <summary>
     ///     Adds new Chest Data and saves to assets/chests.json.
     /// </summary>
@@ -97,11 +100,6 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <returns>True if new chest data was added.</returns>
     public bool AddChestData(string id, IStorageData data = default)
     {
-        if (this.Craftables.All(info => info.Value[0] != id))
-        {
-            return false;
-        }
-
         data ??= new StorageData();
         if (this.LocalChestData.ContainsKey(id))
         {
@@ -112,12 +110,39 @@ internal class AssetHandler : IModService, IAssetLoader
         return true;
     }
 
+    /// <summary>
+    ///     Adds new Chest Data and saves to assets/chests.json.
+    /// </summary>
+    /// <param name="key">The qualified item id of the chest.</param>
+    public void AddModDataKey(string key)
+    {
+        this.ModDataKeys.Add(key);
+    }
+
     /// <inheritdoc />
     public bool CanLoad<T>(IAssetInfo asset)
     {
         return asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Chests")
                || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs")
                || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs/Texture");
+    }
+
+    /// <summary>
+    ///     Gets the storage name from an Item.
+    /// </summary>
+    /// <param name="item">The item to get the storage name for.</param>
+    /// <returns>The name of the storage.</returns>
+    public string GetStorageName(Item item)
+    {
+        foreach (var key in this.ModDataKeys)
+        {
+            if (item.modData.TryGetValue(key, out var name))
+            {
+                return name;
+            }
+        }
+
+        return this.Craftables.SingleOrDefault(info => info.Key == item.ParentSheetIndex).Value?[0];
     }
 
     /// <inheritdoc />

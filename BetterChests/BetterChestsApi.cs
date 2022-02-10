@@ -45,4 +45,10 @@ public class BetterChestsApi : IBetterChestsApi
     {
         return this.Assets.AddChestData(name, new StorageData());
     }
+
+    /// <inheritdoc />
+    public void RegisterModDataKey(string key)
+    {
+        this.Assets.AddModDataKey(key);
+    }
 }
