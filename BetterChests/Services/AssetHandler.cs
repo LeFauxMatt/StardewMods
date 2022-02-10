@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
@@ -86,7 +87,7 @@ internal class AssetHandler : IModService, IAssetLoader
 
     private IModHelper Helper { get; }
 
-    private IDictionary<string, IDictionary<string, string>> LocalChestData { get; set; }
+    private IDictionary<string, IDictionary<string, string>> LocalChestData { get; } = new Dictionary<string, IDictionary<string, string>>();
 
     private IDictionary<string, string> LocalTabData { get; set; }
 
@@ -185,32 +186,52 @@ internal class AssetHandler : IModService, IAssetLoader
 
     private void InitChestData()
     {
-        // Load Chest Data
+        IDictionary<string, IDictionary<string, string>> chestData;
+
+        // Load existing chest data
         try
         {
-            this.LocalChestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>("assets/chests.json");
+            chestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>("assets/chests.json");
+            this.LoadChestData(chestData);
         }
         catch (Exception)
         {
             // ignored
         }
 
-        // Initialize Chest Data
-        if (this.LocalChestData is null)
+        // Load new chest data
+        var chestsDir = Path.Combine(this.Helper.DirectoryPath, "chests");
+        Directory.CreateDirectory(chestsDir);
+        foreach (var path in Directory.GetFiles(chestsDir, "*.json"))
         {
-            this.LocalChestData = new Dictionary<string, IDictionary<string, string>>
+            try
             {
-                { "Auto-Grabber", SerializedStorageData.GetData(new StorageData()) },
-                { "Chest", SerializedStorageData.GetData(new StorageData()) },
-                { "Fridge", SerializedStorageData.GetData(new StorageData()) },
-                { "Junimo Chest", SerializedStorageData.GetData(new StorageData()) },
-                { "Junimo Hut", SerializedStorageData.GetData(new StorageData()) },
-                { "Mini-Fridge", SerializedStorageData.GetData(new StorageData()) },
-                { "Mini-Shipping Bin", SerializedStorageData.GetData(new StorageData()) },
-                { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
-            };
-            this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
+                var chestPath = Path.GetRelativePath(this.Helper.DirectoryPath, path);
+                chestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>(chestPath);
+                this.LoadChestData(chestData);
+            }
+            catch (Exception e)
+            {
+                Log.Warn($"Failed loading chest data from {path}.\nError: {e.Message}");
+            }
         }
+
+        // Load missing vanilla chest data
+        chestData = new Dictionary<string, IDictionary<string, string>>
+        {
+            { "Auto-Grabber", SerializedStorageData.GetData(new StorageData()) },
+            { "Chest", SerializedStorageData.GetData(new StorageData()) },
+            { "Fridge", SerializedStorageData.GetData(new StorageData()) },
+            { "Junimo Chest", SerializedStorageData.GetData(new StorageData()) },
+            { "Junimo Hut", SerializedStorageData.GetData(new StorageData()) },
+            { "Mini-Fridge", SerializedStorageData.GetData(new StorageData()) },
+            { "Mini-Shipping Bin", SerializedStorageData.GetData(new StorageData()) },
+            { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
+        };
+        this.LoadChestData(chestData);
+
+        // Save to chests.json
+        this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
     }
 
     private void InitTabData()
@@ -267,6 +288,22 @@ internal class AssetHandler : IModService, IAssetLoader
         }
     }
 
+    private void LoadChestData(IDictionary<string, IDictionary<string, string>> chestData)
+    {
+        if (chestData is null)
+        {
+            return;
+        }
+
+        foreach (var (key, value) in chestData)
+        {
+            if (!this.LocalChestData.ContainsKey(key))
+            {
+                this.LocalChestData.Add(key, value);
+            }
+        }
+    }
+
     private void OnDayEnding(object sender, DayEndingEventArgs e)
     {
         this._cachedCraftables = null;
@@ -285,12 +322,14 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             case "ChestData":
                 Log.Trace("Loading ChestData from Host");
-                this.LocalChestData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
+                var chestData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
+                this.LocalChestData.Clear();
+                this.LoadChestData(chestData);
                 break;
             case "DefaultChest":
                 Log.Trace("Loading DefaultChest Config from Host");
-                var chestData = e.ReadAs<StorageData>();
-                ((IStorageData)chestData).CopyTo(this.Config.DefaultChest);
+                var storageData = e.ReadAs<StorageData>();
+                ((IStorageData)storageData).CopyTo(this.Config.DefaultChest);
                 break;
         }
     }

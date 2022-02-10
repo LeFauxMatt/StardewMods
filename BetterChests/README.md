@@ -66,7 +66,7 @@ Tabs are added to the Chest Menu to allow you to quickly toggle between categori
 | ChestMenuTabs   | Enables the Chest Menu Tabs feature.           | `"Enabled"`      | `"Disabled"`, `"Default"`<sup>2</sup> |
 | ChestMenuTabSet | Assigns what tabs to show/hide.                | `[]`<sup>3</sup> | The names of tabs to show.            |
 | NextTab         | Assigns a keybind to move to the next tab.     | `"DPadRight"`    | Any valid button code.<sup>4</sup>    |
-| NextTab         | Assigns a keybind to move to the previous tab. | `"DPadLeft"`     | Any valid button code.<sup>4</sup>    |
+| PreviousTab     | Assigns a keybind to move to the previous tab. | `"DPadLeft"`     | Any valid button code.<sup>4</sup>    |
 
 1. See [Customized Tabs](#customized-tabs).
 2. See [Option Values](#option-values).
@@ -180,8 +180,8 @@ Adds a search bar to the top of the Chest Menu to only display items that meet a
 
 ### Slot Lock
 
-Hover over an item slot in your backpack, and hit a configurable key to lock that item in its slot which prevents it
-from being stashed into a chest.
+Hover over an item slot in your backpack, and hit a configurable key to lock the item in its slot which prevents it from
+being stashed into a chest.
 
 | Config   | Description                             | Default Value | Other Value(s)                        |
 |:---------|:----------------------------------------|:--------------|:--------------------------------------|
