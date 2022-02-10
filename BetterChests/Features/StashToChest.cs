@@ -109,7 +109,42 @@ internal class StashToChest : Feature
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (Context.IsPlayerFree && this.Config.ControlScheme.StashItems.JustPressed() && this.StashItems())
+        if (!this.Config.ControlScheme.StashItems.JustPressed())
+        {
+            return;
+        }
+
+        // Stash to current
+        if (this.CurrentStorage is not null)
+        {
+            var stashedAny = false;
+            for (var index = 0; index < Game1.player.MaxItems; index++)
+            {
+                var item = Game1.player.Items[index];
+                if (item?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") != false)
+                {
+                    continue;
+                }
+
+                item = this.CurrentStorage.StashItem(item);
+                if (item is null)
+                {
+                    stashedAny = true;
+                    Game1.player.Items[index] = null;
+                }
+            }
+
+            if (stashedAny)
+            {
+                Game1.playSound("Ship");
+                this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.StashItems);
+            }
+
+            return;
+        }
+
+        // Stash to all
+        if (Context.IsPlayerFree && this.StashItems())
         {
             this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.StashItems);
         }

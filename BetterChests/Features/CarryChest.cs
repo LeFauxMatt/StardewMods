@@ -90,6 +90,27 @@ internal class CarryChest : Feature
         get => this._harmony.Value;
     }
 
+    /// <summary>
+    ///     Checks if the player should be overburdened while carrying a chest.
+    /// </summary>
+    /// <param name="excludeCurrent">Whether to exclude the current item.</param>
+    public void CheckForOverburdened(bool excludeCurrent = false)
+    {
+        if (this.Config.CarryChestSlow == 0)
+        {
+            Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
+            return;
+        }
+
+        if (this.ManagedStorages.PlayerStorages.Any(managedStorage => managedStorage.Items.Any() && (!excludeCurrent || !ReferenceEquals(managedStorage.Context, Game1.player.CurrentItem))))
+        {
+            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(this.Config.CarryChestSlow));
+            return;
+        }
+
+        Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
@@ -321,23 +342,6 @@ internal class CarryChest : Feature
                 CarryChest.RecursiveIterate(farmer, chest, action, new List<Chest>());
             }
         }
-    }
-
-    private void CheckForOverburdened(bool excludeCurrent = false)
-    {
-        if (this.Config.CarryChestSlow == 0)
-        {
-            Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
-            return;
-        }
-
-        if (this.ManagedStorages.PlayerStorages.Any(managedStorage => managedStorage.Items.Any() && (!excludeCurrent || !ReferenceEquals(managedStorage.Context, Game1.player.CurrentItem))))
-        {
-            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(this.Config.CarryChestSlow));
-            return;
-        }
-
-        Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
     }
 
     [EventPriority(EventPriority.High)]
