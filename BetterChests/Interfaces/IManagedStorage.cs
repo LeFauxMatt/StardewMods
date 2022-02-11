@@ -18,18 +18,6 @@ internal interface IManagedStorage : IStorageContainer, IStorageData
     public string QualifiedItemId { get; }
 
     /// <summary>
-    ///     Attempts to add an item into the storage.
-    /// </summary>
-    /// <param name="item">The item to stash.</param>
-    /// <returns>Returns the item if it could not be added completely, or null if it could.</returns>
-    public Item AddItem(Item item);
-
-    /// <summary>
-    ///     Removes null items from the storage.
-    /// </summary>
-    public void ClearNulls();
-
-    /// <summary>
     ///     Attempts to stack add an item into the storage based on existing items.
     /// </summary>
     /// <param name="item">The item to stash.</param>

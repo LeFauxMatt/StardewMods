@@ -4,7 +4,7 @@ using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 
 /// <inheritdoc />
-internal abstract class GameObject : IGameObject
+public abstract class GameObject : IGameObject
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="GameObject" /> class.
