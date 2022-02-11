@@ -87,7 +87,7 @@ bypassing your inventory.<sup>1</sup>
 
 ### Craft From Chest
 
-Hit a configurable key (or controller button) to bring up a crafting menu that uses items stored in nearby chests.
+Hit a configurable key to bring up a crafting menu that uses items stored in nearby chests.
 
 | Config                         | Description                                               | Default Value | Other Value(s)                                                                 |
 |:-------------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -193,8 +193,7 @@ being stashed into a chest.
 
 ### Stash To Chest
 
-Hit a configurable key (or controller button) to instantly stash items from your inventory into nearby chests.<sup>
-1</sup>
+Hit a configurable key to instantly stash items from your inventory into nearby chests.<sup>1</sup>
 
 | Config Option                | Description                                               | Default Value | Other Value(s)                                                                 |
 |:-----------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -202,6 +201,7 @@ Hit a configurable key (or controller button) to instantly stash items from your
 | StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
 | StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                            |
 | StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                      |
+| StashToChestPriority         | Prioritize certain chests over others.                    | 0             | Any integer value.                                                             |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
