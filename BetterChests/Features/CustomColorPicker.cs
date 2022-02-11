@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.Extensions;
 using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -157,7 +156,7 @@ internal class CustomColorPicker : Feature
         CustomColorPicker.Instance.ColorPicker?.UnregisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
 
         var item = CustomColorPicker.Instance.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
-        if (item is not Chest chest || !chest.IsPlayerChest())
+        if (item is not Chest chest)
         {
             CustomColorPicker.Instance.ColorPicker = null;
             return new(xPosition, yPosition, startingColor, itemToDrawColored);
@@ -225,16 +224,17 @@ internal class CustomColorPicker : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        IManagedStorage managedStorage = null;
+        this.Menu = e.Context is not null && this.ManagedStorages.TryGetManagedStorage(e.Context, out managedStorage) && managedStorage.CustomColorPicker == FeatureOption.Enabled
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || e.Context is null || !this.ManagedStorages.FindStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
+        if (this.Menu is null || e.Context is null)
         {
             return;
         }
 
         this.Menu.discreteColorPickerCC = null;
-        this.ManagedStorage = managedChest;
+        this.ManagedStorage = managedStorage;
     }
 }

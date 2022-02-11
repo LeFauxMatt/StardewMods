@@ -2,12 +2,13 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Characters;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -29,7 +30,16 @@ internal class ModIntegrations : IModService
     {
         this.Helper = helper;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-        services.Lazy<AssetHandler>(assetHandler => { assetHandler.AddModDataKey($"{ModIntegrations.ExpandedStorageModUniqueId}/Storage"); });
+        services.Lazy<AssetHandler>(assetHandler =>
+        {
+            assetHandler.AddModDataKey($"{BetterChests.ModUniqueId}/StorageName");
+            assetHandler.AddModDataKey($"{ModIntegrations.ExpandedStorageModUniqueId}/Storage");
+        });
+        services.Lazy<IGameObjects>(gameObjects =>
+        {
+            gameObjects.AddInventoryItemsGetter(this.GetInventoryItems);
+            gameObjects.AddLocationObjectsGetter(this.GetLocationObjects);
+        });
     }
 
     private IModHelper Helper { get; }
@@ -42,68 +52,6 @@ internal class ModIntegrations : IModService
     };
 
     /// <summary>
-    ///     Gets mod integrated placed storages.
-    /// </summary>
-    /// <param name="location">The location to get storages for.</param>
-    /// <returns>An enumerable of location storages for integrated mods.</returns>
-    public IEnumerable<LocationChest> GetLocationChests(GameLocation location)
-    {
-        if (location is Farm farm && this.IsLoaded("Horse Overhaul"))
-        {
-            // Attempt to load saddle bags
-            foreach (var stable in farm.buildings.OfType<Stable>())
-            {
-                if (!stable.modData.TryGetValue($"{ModIntegrations.HorseOverhaulModUniqueId}/stableID", out var stableId) || !int.TryParse(stableId, out var x))
-                {
-                    continue;
-                }
-
-                if (!location.Objects.TryGetValue(new(x, 0), out var obj) || obj is not Chest saddleBag || !saddleBag.modData.ContainsKey($"{ModIntegrations.HorseOverhaulModUniqueId}/isSaddleBag"))
-                {
-                    continue;
-                }
-
-                var horse = stable.getStableHorse();
-                if (horse is not null)
-                {
-                    yield return new(horse.currentLocation, horse.Position / 64f, saddleBag, "SaddleBag");
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Gets mod integrated placed storages.
-    /// </summary>
-    /// <param name="player">The player to get storages for.</param>
-    /// <returns>An enumerable of storages for integrated mods.</returns>
-    public IEnumerable<PlayerChest> GetPlayerChests(Farmer player)
-    {
-        if (this.IsLoaded("Horse Overhaul") && player.mount is not null)
-        {
-            // Attempt to load saddle bags
-            var farm = Game1.getFarm();
-            foreach (var stable in farm.buildings.OfType<Stable>())
-            {
-                if (!stable.modData.TryGetValue($"{ModIntegrations.HorseOverhaulModUniqueId}/stableID", out var stableId) || !int.TryParse(stableId, out var x))
-                {
-                    continue;
-                }
-
-                if (!farm.Objects.TryGetValue(new(x, 0), out var obj) || obj is not Chest saddleBag || !saddleBag.modData.ContainsKey($"{ModIntegrations.HorseOverhaulModUniqueId}/isSaddleBag"))
-                {
-                    continue;
-                }
-
-                if (player.mount.HorseId == stable.HorseId)
-                {
-                    yield return new(player, saddleBag, "SaddleBag");
-                }
-            }
-        }
-    }
-
-    /// <summary>
     ///     Checks if an integrated mod is loaded.
     /// </summary>
     /// <param name="name">The name of the mod to check.</param>
@@ -113,6 +61,24 @@ internal class ModIntegrations : IModService
         return this.Mods.ContainsKey(name);
     }
 
+    private IEnumerable<(int Index, object Context)> GetInventoryItems(Farmer player)
+    {
+        if (player.mount is not null && this.TryGetSaddleBag(out _, out var saddleBag))
+        {
+            saddleBag.modData[$"{BetterChests.ModUniqueId}/StorageName"] = "Saddle Bag";
+            yield return new(-1, saddleBag);
+        }
+    }
+
+    private IEnumerable<(Vector2 Index, object Context)> GetLocationObjects(GameLocation location)
+    {
+        if (this.TryGetSaddleBag(out var horse, out var saddleBag) && horse.currentLocation.Equals(location))
+        {
+            saddleBag.modData[$"{BetterChests.ModUniqueId}/StorageName"] = "Saddle Bag";
+            yield return new(horse.Position / 64f, saddleBag);
+        }
+    }
+
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
         var removedMods = this.Mods.Where(mod => !this.Helper.ModRegistry.IsLoaded(mod.Value)).ToList();
@@ -120,5 +86,48 @@ internal class ModIntegrations : IModService
         {
             this.Mods.Remove(key);
         }
+    }
+
+    private bool TryGetSaddleBag(out Horse horse, out Chest saddleBag)
+    {
+        if (!this.IsLoaded("Horse Overhaul"))
+        {
+            horse = null;
+            saddleBag = null;
+            return false;
+        }
+
+        // Attempt to load saddle bags
+        var farm = Game1.getFarm();
+        foreach (var stable in farm.buildings.OfType<Stable>())
+        {
+            if (!stable.modData.TryGetValue($"{ModIntegrations.HorseOverhaulModUniqueId}/stableID", out var stableId) || !int.TryParse(stableId, out var x))
+            {
+                continue;
+            }
+
+            if (!farm.Objects.TryGetValue(new(x, 0), out var obj) || obj is not Chest chest || !chest.modData.ContainsKey($"{ModIntegrations.HorseOverhaulModUniqueId}/isSaddleBag"))
+            {
+                continue;
+            }
+
+            if (Game1.player.mount?.HorseId == stable.HorseId)
+            {
+                horse = Game1.player.mount;
+                saddleBag = chest;
+                return true;
+            }
+
+            horse = stable.getStableHorse();
+            if (horse?.getOwner() != Game1.player)
+            {
+                saddleBag = chest;
+                return true;
+            }
+        }
+
+        horse = null;
+        saddleBag = null;
+        return false;
     }
 }

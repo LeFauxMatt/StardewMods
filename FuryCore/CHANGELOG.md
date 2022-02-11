@@ -3,6 +3,7 @@
 ## 1.3.0 (Unreleased)
 
 * Refactor to handle different types of storages.
+* Added IGameObjects service.
 
 ## 1.2.0 (February 6, 2022)
 

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.Extensions;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -21,6 +20,7 @@ using StardewValley.Menus;
 internal class MenuComponents : IMenuComponents, IModService
 {
     private readonly PerScreen<List<IMenuComponent>> _components = new(() => new());
+    private readonly Lazy<IGameObjects> _gameObjects;
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<bool> _refreshComponents = new();
@@ -34,6 +34,7 @@ internal class MenuComponents : IMenuComponents, IModService
     {
         MenuComponents.Instance = this;
         this.Helper = helper;
+        this._gameObjects = services.Lazy<IGameObjects>();
 
         services.Lazy<CustomEvents>(
             events =>
@@ -74,6 +75,11 @@ internal class MenuComponents : IMenuComponents, IModService
     }
 
     private static MenuComponents Instance { get; set; }
+
+    private IGameObjects GameObjects
+    {
+        get => this._gameObjects.Value;
+    }
 
     private IModHelper Helper { get; }
 
@@ -121,12 +127,12 @@ internal class MenuComponents : IMenuComponents, IModService
     [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        this.Menu = e.Context is not null && this.GameObjects.TryGetGameObject(e.Context, out var gameObject) && gameObject is IStorageContainer
             ? e.ItemGrabMenu
             : null;
 
         this.Components.Clear();
-        if (this.Menu is null)
+        if (this.Menu is null || e.Context is null)
         {
             return;
         }

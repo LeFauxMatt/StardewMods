@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using HarmonyLib;
@@ -338,17 +337,18 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        IManagedStorage managedStorage = null;
+        this.Menu = e.Context is not null && this.ManagedStorages.TryGetManagedStorage(e.Context, out managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled
             ? e.ItemGrabMenu
             : null;
 
-        IManagedStorage managedStorage = null;
-        if (this.Menu is ItemSelectionMenu && this.Config.DefaultChest.SearchItems == FeatureOption.Enabled)
+        if (e.ItemGrabMenu is ItemSelectionMenu && this.Config.DefaultChest.SearchItems == FeatureOption.Enabled)
         {
+            this.Menu = e.ItemGrabMenu;
             this.Context = e.Context;
             this.SearchField.Text = string.Empty;
         }
-        else if (this.Menu is null || e.Context is null || !this.ManagedStorages.FindStorage(e.Context, out managedStorage) || managedStorage.SearchItems == FeatureOption.Disabled)
+        else if (this.Menu is null || e.Context is null)
         {
             return;
         }

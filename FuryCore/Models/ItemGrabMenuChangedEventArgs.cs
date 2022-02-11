@@ -1,8 +1,6 @@
 ﻿namespace StardewMods.FuryCore.Models;
 
 using System;
-using System.Collections.Generic;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -38,11 +36,6 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     ///     Gets the ItemGrabMenu if it is the currently active menu.
     /// </summary>
     public ItemGrabMenu ItemGrabMenu { get; }
-
-    /// <summary>
-    ///     Gets the inventory of the ItemGrabMenu.
-    /// </summary>
-    public IList<Item> Items { get; }
 
     /// <summary>
     ///     Gets the screen id that the menu was opened on.

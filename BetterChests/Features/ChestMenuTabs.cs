@@ -137,7 +137,7 @@ internal class ChestMenuTabs : Feature
         IStorageData storageData = e.ItemGrabMenu switch
         {
             ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => this.Config.DefaultChest,
-            _ when e.Context is not null && this.ManagedStorages.FindStorage(e.Context, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
+            _ when e.Context is not null && this.ManagedStorages.TryGetManagedStorage(e.Context, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
             _ => null,
         };
 

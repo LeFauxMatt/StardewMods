@@ -12,7 +12,6 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models.Storages;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -65,7 +64,8 @@ internal class CraftFromChest : Feature
         get
         {
             IList<IManagedStorage> eligibleStorages =
-                this.ManagedStorages.PlayerStorages
+                this.ManagedStorages.InventoryStorages
+                    .Select(inventoryStorage => inventoryStorage.Value)
                     .Where(playerChest => playerChest.CraftFromChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
                     .ToList();
             foreach (var ((location, (x, y)), locationStorage) in this.ManagedStorages.LocationStorages)
@@ -202,7 +202,7 @@ internal class CraftFromChest : Feature
 
         public MultipleChestCraftingPage(IEnumerable<IManagedStorage> managedChests)
         {
-            this._chests = managedChests.OfType<StorageChest>().Select(managedChest => managedChest.Chest).Where(chest => !chest.mutex.IsLocked()).ToList();
+            this._chests = managedChests.Select(managedChest => managedChest.Context).OfType<Chest>().Where(chest => !chest.mutex.IsLocked()).ToList();
             var mutexes = this._chests.Select(chest => chest.mutex).ToList();
             this._multipleMutexRequest = new(
                 mutexes,

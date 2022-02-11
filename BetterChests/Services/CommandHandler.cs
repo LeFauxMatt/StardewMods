@@ -10,7 +10,6 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces;
-using StardewValley;
 
 /// <inheritdoc />
 internal class CommandHandler : IModService
@@ -183,18 +182,18 @@ internal class CommandHandler : IModService
         var eligibleStashingChests = this.StashToChest.EligibleStorages.ToDictionary(managedChest => managedChest, _ => string.Empty);
 
         // Iterate managed chests and features
-        foreach (var managedChest in this.ManagedStorages.PlayerStorages)
+        foreach (var (inventoryItem, managedChest) in this.ManagedStorages.InventoryStorages)
         {
-            CommandHandler.AppendChestData(sb, managedChest, $"\nChest {managedChest.QualifiedItemId} with farmer {Game1.player.Name}.\n");
+            CommandHandler.AppendChestData(sb, managedChest, $"\nChest {managedChest.QualifiedItemId} with farmer {inventoryItem.Player.Name} at slot {inventoryItem.Index.ToString()}.\n");
 
             if (eligibleCraftingChests.Keys.Contains(managedChest))
             {
-                eligibleCraftingChests[managedChest] = $"Inventory of {Game1.player.Name}.";
+                eligibleCraftingChests[managedChest] = $"Inventory of {inventoryItem.Player.Name}.";
             }
 
             if (eligibleStashingChests.Keys.Contains(managedChest))
             {
-                eligibleStashingChests[managedChest] = $"Inventory of {Game1.player.Name}.";
+                eligibleStashingChests[managedChest] = $"Inventory of {inventoryItem.Player.Name}.";
             }
         }
 

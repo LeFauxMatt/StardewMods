@@ -48,7 +48,7 @@ internal class UnloadChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
-            || !this.ManagedStorages.FindStorage(Game1.player.CurrentItem, out var source)
+            || !this.ManagedStorages.TryGetManagedStorage(Game1.player.CurrentItem, out var source)
             || source.UnloadChest == FeatureOption.Disabled)
         {
             return;
@@ -66,7 +66,7 @@ internal class UnloadChest : Feature
         }
 
         // Object is Chest and supports Unload Chest
-        if (!this.ManagedStorages.FindStorage(obj, out var target))
+        if (!this.ManagedStorages.TryGetManagedStorage(obj, out var target))
         {
             return;
         }

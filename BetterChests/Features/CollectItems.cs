@@ -52,9 +52,9 @@ internal class CollectItems : Feature
     private IList<IManagedStorage> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from managedChest in this.ManagedStorages.PlayerStorages
-            where managedChest.CollectItems == FeatureOption.Enabled
-            select managedChest).ToList();
+            from inventoryStorage in this.ManagedStorages.InventoryStorages
+            where inventoryStorage.Value.CollectItems == FeatureOption.Enabled
+            select inventoryStorage.Value).ToList();
         set => this._eligibleChests.Value = value;
     }
 
@@ -118,19 +118,19 @@ internal class CollectItems : Feature
             return;
         }
 
-        if (e.Added.Any(item => this.ManagedStorages.FindStorage(item, out _)))
+        if (e.Added.Any(item => this.ManagedStorages.TryGetManagedStorage(item, out _)))
         {
             this.EligibleChests = null;
             return;
         }
 
-        if (e.Removed.Any(item => this.ManagedStorages.FindStorage(item, out _)))
+        if (e.Removed.Any(item => this.ManagedStorages.TryGetManagedStorage(item, out _)))
         {
             this.EligibleChests = null;
             return;
         }
 
-        if (e.QuantityChanged.Any(stack => this.ManagedStorages.FindStorage(stack.Item, out _)))
+        if (e.QuantityChanged.Any(stack => this.ManagedStorages.TryGetManagedStorage(stack.Item, out _)))
         {
             this.EligibleChests = null;
         }

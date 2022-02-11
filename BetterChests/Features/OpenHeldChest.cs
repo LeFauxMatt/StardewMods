@@ -105,7 +105,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        if (!this.ManagedStorages.FindStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
+        if (!this.ManagedStorages.TryGetManagedStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }
@@ -115,10 +115,10 @@ internal class OpenHeldChest : Feature
         {
             obj.checkForAction(Game1.player);
         }
-        else
+        else if (managedStorage.Context is Chest chest)
         {
             Game1.player.currentLocation.localSound("openChest");
-            managedStorage.ShowMenu();
+            chest.ShowMenu();
         }
 
         this.Helper.Input.Suppress(e.Button);

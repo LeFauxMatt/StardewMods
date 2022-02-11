@@ -99,7 +99,7 @@ internal class CategorizeChest : Feature
                 return;
 
             // Enter an Eligible ItemGrabMenu
-            case not null when e.Context is not null && this.ManagedStorages.FindStorage(e.Context, out var managedStorage):
+            case not null when e.Context is not null && this.ManagedStorages.TryGetManagedStorage(e.Context, out var managedStorage):
                 this.MenuComponents.Components.Insert(0, this.ConfigureButton);
                 this.ReturnMenu = e.ItemGrabMenu;
                 this.CurrentStorage = managedStorage;

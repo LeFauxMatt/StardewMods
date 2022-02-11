@@ -12,7 +12,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models.Storages;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -102,7 +101,7 @@ internal class CarryChest : Feature
             return;
         }
 
-        if (this.ManagedStorages.PlayerStorages.Any(managedStorage => managedStorage.Items.Any() && (!excludeCurrent || !ReferenceEquals(managedStorage.Context, Game1.player.CurrentItem))))
+        if (this.ManagedStorages.InventoryStorages.Any(inventoryStorage => inventoryStorage.Value.Items.Any() && (!excludeCurrent || !ReferenceEquals(inventoryStorage.Value.Context, Game1.player.CurrentItem))))
         {
             Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(this.Config.CarryChestSlow));
             return;
@@ -277,12 +276,12 @@ internal class CarryChest : Feature
     {
         if (!__result
             || !location.Objects.TryGetValue(new(x / 64, y / 64), out var obj)
-            || !CarryChest.Instance.ManagedStorages.FindStorage(__instance, out var fromStorage))
+            || !CarryChest.Instance.ManagedStorages.TryGetManagedStorage(__instance, out var fromStorage))
         {
             return;
         }
 
-        if (!CarryChest.Instance.ManagedStorages.TryGetStorage(obj, new List<object>(), out var toStorage))
+        if (!CarryChest.Instance.ManagedStorages.TryGetManagedStorage(obj, out var toStorage))
         {
             return;
         }
@@ -303,15 +302,14 @@ internal class CarryChest : Feature
             }
         }
 
-        if (fromStorage is StorageChest fromChest && toStorage is StorageChest toChest)
+        if (fromStorage.Context is Chest fromChest && toStorage.Context is Chest toChest)
         {
-            toChest.Chest.SpecialChestType = fromChest.Chest.SpecialChestType;
-            toChest.Chest.fridge.Value = fromChest.Chest.fridge.Value;
-            toChest.Chest.lidFrameCount.Value = fromChest.Chest.lidFrameCount.Value;
-            toChest.Chest.playerChoiceColor.Value = fromChest.Chest.playerChoiceColor.Value;
+            toChest.SpecialChestType = fromChest.SpecialChestType;
+            toChest.fridge.Value = fromChest.fridge.Value;
+            toChest.lidFrameCount.Value = fromChest.lidFrameCount.Value;
+            toChest.playerChoiceColor.Value = fromChest.playerChoiceColor.Value;
         }
 
-        CarryChest.Instance.ManagedStorages.RemoveStorage(__instance);
         CarryChest.Instance.CheckForOverburdened(true);
     }
 
@@ -366,7 +364,7 @@ internal class CarryChest : Feature
         }
 
         // Object is Chest and supports Carry Chest
-        if (!this.ManagedStorages.FindStorage(obj, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
+        if (!this.ManagedStorages.TryGetManagedStorage(obj, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
         {
             return;
         }

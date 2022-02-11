@@ -41,7 +41,8 @@ internal class StashToChest : Feature
         get
         {
             IList<IManagedStorage> eligibleStorages =
-                this.ManagedStorages.PlayerStorages
+                this.ManagedStorages.InventoryStorages
+                    .Select(inventoryStorage => inventoryStorage.Value)
                     .Where(playerChest => playerChest.StashToChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
                     .ToList();
             foreach (var ((location, (x, y)), locationStorage) in this.ManagedStorages.LocationStorages)
@@ -158,7 +159,7 @@ internal class StashToChest : Feature
             return;
         }
 
-        if (this.ManagedStorages.FindStorage(e.Context, out var managedStorage))
+        if (this.ManagedStorages.TryGetManagedStorage(e.Context, out var managedStorage))
         {
             this.CurrentStorage = managedStorage;
         }

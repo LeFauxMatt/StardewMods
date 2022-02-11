@@ -1,37 +1,16 @@
 ﻿namespace StardewMods.BetterChests.Interfaces;
 
-using System.Collections.Generic;
 using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Interfaces;
 using StardewValley;
-using StardewValley.Menus;
 
-/// <inheritdoc />
-internal interface IManagedStorage : IStorageData
+/// <inheritdoc cref="StardewMods.BetterChests.Interfaces.IStorageData" />
+internal interface IManagedStorage : IStorageContainer, IStorageData
 {
-    /// <summary>
-    ///     Gets the actual capacity of the source object.
-    /// </summary>
-    public int Capacity { get; }
-
-    /// <summary>
-    ///     Gets the source object associated with the storage being managed.
-    /// </summary>
-    public object Context { get; }
-
     /// <summary>
     ///     Gets an <see cref="FuryCore.Helpers.ItemMatcher" /> that is uniquely assigned to each type of chest.
     /// </summary>
     public ItemMatcher ItemMatcher { get; }
-
-    /// <summary>
-    ///     Gets the inventory of the Chest being managed.
-    /// </summary>
-    public IList<Item> Items { get; }
-
-    /// <summary>
-    ///     Gets the ModData associated with the source object.
-    /// </summary>
-    public ModDataDictionary ModData { get; }
 
     /// <summary>
     ///     Gets the Qualified Item Id of the Chest.
@@ -49,11 +28,6 @@ internal interface IManagedStorage : IStorageData
     ///     Removes null items from the storage.
     /// </summary>
     public void ClearNulls();
-
-    /// <summary>
-    ///     Opens an <see cref="ItemGrabMenu" /> for this storage object.
-    /// </summary>
-    public void ShowMenu();
 
     /// <summary>
     ///     Attempts to stack add an item into the storage based on existing items.

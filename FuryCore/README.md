@@ -14,6 +14,7 @@ Provides additional APIs for my other mods.
 * Services
     * [Custom Events](#custom-events)
     * [Custom Tags](#custom-tags)
+    * [Game Objects](#game-objects)
     * [Harmony Helper](#harmony-helper)
     * [Menu Components](#menu-components)
     * [Menu Items](#menu-items)
@@ -85,6 +86,12 @@ See [Custom Events](#custom-events)
 #### Custom Tags
 
 [ [Interface](Interfaces/ICustomTags.cs) | [Source](Services/CustomTags.cs) ]
+
+#### Game Objects
+
+Provides access to most objects in the game including items, buildings, and locations.
+
+[ [Interface](Interfaces/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
 
 #### Harmony Helper
 

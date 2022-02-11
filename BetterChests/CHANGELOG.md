@@ -7,6 +7,7 @@
 * LockedSlots are now attached to the item.
 * Refactor to handle different types of storages.
 * Added support for Junimo Hut.
+* Refactor enumerating game objects into FuryCore service.
 
 ## 1.2.1 (February 6, 2022)
 

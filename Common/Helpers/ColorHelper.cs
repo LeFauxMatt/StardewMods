@@ -2,8 +2,16 @@
 
 using Microsoft.Xna.Framework;
 
+/// <summary>
+///     Helpers for conversions to/from <see cref="Color" />.
+/// </summary>
 internal static class ColorHelper
 {
+    /// <summary>
+    ///     Returns a Color representation of an item's context tag.
+    /// </summary>
+    /// <param name="colorTag">The context tag to return the Color from.</param>
+    /// <returns>The Color of the context tag or Gray.</returns>
     public static Color FromTag(string colorTag)
     {
         return colorTag switch
