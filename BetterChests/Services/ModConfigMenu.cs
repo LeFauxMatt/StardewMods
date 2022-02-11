@@ -14,7 +14,7 @@ using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IModService" />
+/// <inheritdoc cref="IModService" />
 internal class ModConfigMenu : IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;

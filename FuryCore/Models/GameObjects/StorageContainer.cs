@@ -1,11 +1,11 @@
-﻿namespace StardewMods.FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models.GameObjects;
 
 using System;
 using System.Collections.Generic;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 
-/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IStorageContainer" />
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.GameObjects.IStorageContainer" />
 internal class StorageContainer : GameObject, IStorageContainer
 {
     /// <summary>

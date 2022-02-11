@@ -1,4 +1,4 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces.GameObjects;
 
 using System.Collections.Generic;
 using StardewValley;

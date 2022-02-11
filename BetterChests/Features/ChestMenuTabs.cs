@@ -14,7 +14,8 @@ using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 

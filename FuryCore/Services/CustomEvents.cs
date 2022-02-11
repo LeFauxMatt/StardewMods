@@ -6,7 +6,8 @@ using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Models.CustomEvents;
 
 /// <inheritdoc cref="ICustomEvents" />
 [FuryCoreService(true)]

@@ -1,6 +1,6 @@
-﻿namespace StardewMods.FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models.GameObjects;
 
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 
 /// <inheritdoc />

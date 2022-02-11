@@ -1,4 +1,4 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces.MenuComponents;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;

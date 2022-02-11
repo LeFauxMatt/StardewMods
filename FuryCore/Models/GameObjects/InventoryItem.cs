@@ -1,4 +1,4 @@
-﻿namespace StardewMods.FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models.GameObjects;
 
 using StardewValley;
 

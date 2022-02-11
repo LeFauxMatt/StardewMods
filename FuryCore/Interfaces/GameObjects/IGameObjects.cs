@@ -1,8 +1,8 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces.GameObjects;
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 
 /// <summary>

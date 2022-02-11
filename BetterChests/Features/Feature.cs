@@ -6,6 +6,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 
 /// <inheritdoc />
 internal abstract class Feature : IModService

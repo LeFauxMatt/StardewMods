@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Interfaces;
 
 using StardewMods.FuryCore.Helpers;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Interfaces.IStorageData" />

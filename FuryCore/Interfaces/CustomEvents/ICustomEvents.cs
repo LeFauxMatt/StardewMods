@@ -1,8 +1,9 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces.CustomEvents;
 
 using System;
 using StardewModdingAPI.Events;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley.Menus;
 
 /// <summary>

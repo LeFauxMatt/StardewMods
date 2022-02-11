@@ -14,7 +14,7 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
-/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.ICustomTags" />
+/// <inheritdoc cref="ICustomTags" />
 [FuryCoreService(true)]
 internal class CustomTags : ICustomTags, IModService
 {

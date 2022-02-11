@@ -1,7 +1,7 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+﻿namespace StardewMods.FuryCore.Interfaces.MenuComponents;
 
 using System.Collections.Generic;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley.Menus;
 
 /// <summary>

@@ -14,7 +14,7 @@ using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 
-/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IModService" />
+/// <inheritdoc cref="IModService" />
 internal class AssetHandler : IModService, IAssetLoader
 {
     private const string CraftablesData = "Data/BigCraftablesInformation";

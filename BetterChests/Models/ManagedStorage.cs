@@ -7,7 +7,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.FuryCore.Helpers;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 using StardewValley.Objects;
 

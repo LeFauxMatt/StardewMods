@@ -1,4 +1,4 @@
-﻿namespace StardewMods.FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models.CustomEvents;
 
 using System;
 using StardewValley.Menus;

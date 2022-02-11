@@ -1,8 +1,8 @@
-﻿namespace StardewMods.FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models.MenuComponents;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewValley.Menus;
 
 /// <inheritdoc />

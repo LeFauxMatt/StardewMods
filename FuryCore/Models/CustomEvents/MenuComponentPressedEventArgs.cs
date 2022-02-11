@@ -1,7 +1,7 @@
-﻿namespace StardewMods.FuryCore.Models;
+﻿namespace StardewMods.FuryCore.Models.CustomEvents;
 
 using System;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
 
 /// <inheritdoc />
 public class MenuComponentPressedEventArgs : EventArgs
