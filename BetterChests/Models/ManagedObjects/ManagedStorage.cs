@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models.ManagedObjects;
 
 using System;
 using System.Collections.Generic;
@@ -6,21 +6,23 @@ using System.Linq;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces.GameObjects;
-using StardewMods.FuryCore.Models.GameObjects;
+using StardewMods.FuryCore.Models.GameObjects.Storages;
 using StardewValley;
 using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
-/// <inheritdoc cref="StardewMods.BetterChests.Interfaces.IManagedStorage" />
+/// <inheritdoc cref="IManagedStorage" />
 internal class ManagedStorage : StorageContainer, IManagedStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ManagedStorage" /> class.
     /// </summary>
     /// <param name="container">The storage container.</param>
-    /// <param name="data">The <see cref="IStorageData" /> associated with this object.</param>
-    /// <param name="qualifiedItemId">A unique Id associated with this chest type.</param>
+    /// <param name="data">The <see cref="IStorageData" /> for this type of storage.</param>
+    /// <param name="qualifiedItemId">A unique Id associated with this storage type.</param>
     public ManagedStorage(IStorageContainer container, IStorageData data, string qualifiedItemId)
         : base(container)
     {
@@ -34,7 +36,7 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override int Capacity
     {
         get => this.ResizeChest == FeatureOption.Enabled
@@ -326,60 +328,26 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
     private IStorageData Data { get; }
 
     /// <inheritdoc />
-    public Item StackItems(Item item)
-    {
-        item.resetState();
-        this.ClearNulls();
-        for (var index = 0; index < this.Items.Count; index++)
-        {
-            var existingItem = this.Items.ElementAtOrDefault(index);
-            if (existingItem?.canStackWith(item) != true)
-            {
-                continue;
-            }
-
-            existingItem = this.AddItem(existingItem);
-            if (existingItem is null || existingItem.Stack <= 0)
-            {
-                return null;
-            }
-        }
-
-        return item;
-    }
-
-    /// <inheritdoc />
     public Item StashItem(Item item)
     {
         item.resetState();
         this.ClearNulls();
 
+        // Add item if categorization exists and matches item
         if (this.ItemMatcher.Any() && this.ItemMatcher.Matches(item) && !this.FilterItemsList.SetEquals(this.Data.FilterItemsList))
         {
             item = this.AddItem(item);
-            if (item is null)
-            {
-                if (this.Context is Chest chest)
-                {
-                    chest.shakeTimer = 100;
-                }
-
-                return null;
-            }
         }
 
-        if (this.StashToChestStacks != FeatureOption.Disabled)
+        // Add item if stacking is enabled and is stackable with any existing item
+        if (item is not null && this.StashToChestStacks != FeatureOption.Disabled && this.Items.Any(existingItem => existingItem.canStackWith(item)))
         {
-            item = this.StackItems(item);
-            if (item is null)
-            {
-                if (this.Context is Chest chest)
-                {
-                    chest.shakeTimer = 100;
-                }
+            item = this.AddItem(item);
+        }
 
-                return null;
-            }
+        if (item is null && this.Context is SObject obj)
+        {
+            obj.shakeTimer = 100;
         }
 
         return item;

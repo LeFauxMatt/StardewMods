@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Common.Integrations.BetterChests;
 using StardewModdingAPI;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 

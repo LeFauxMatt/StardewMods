@@ -8,7 +8,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.MenuComponents;
@@ -35,18 +36,18 @@ internal class StashToChest : Feature
     }
 
     /// <summary>
-    ///     Gets a value indicating which chests are eligible for stashing into.
+    ///     Gets a value indicating which storages are eligible for stashing into.
     /// </summary>
     public IEnumerable<IManagedStorage> EligibleStorages
     {
         get
         {
             IList<IManagedStorage> eligibleStorages =
-                this.ManagedStorages.InventoryStorages
+                this.ManagedObjects.InventoryStorages
                     .Select(inventoryStorage => inventoryStorage.Value)
                     .Where(playerChest => playerChest.StashToChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
                     .ToList();
-            foreach (var ((location, (x, y)), locationStorage) in this.ManagedStorages.LocationStorages)
+            foreach (var ((location, (x, y)), locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
                 if (locationStorage.StashToChest == FeatureOptionRange.Disabled || locationStorage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name))
@@ -160,7 +161,7 @@ internal class StashToChest : Feature
             return;
         }
 
-        if (this.ManagedStorages.TryGetManagedStorage(e.Context, out var managedStorage))
+        if (this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage))
         {
             this.CurrentStorage = managedStorage;
         }
@@ -199,7 +200,7 @@ internal class StashToChest : Feature
 
     private bool StashItems()
     {
-        Log.Trace("Stashing items into chests");
+        Log.Trace("Stashing items into storages");
         var stashedAny = false;
         foreach (var eligibleChest in this.EligibleStorages)
         {

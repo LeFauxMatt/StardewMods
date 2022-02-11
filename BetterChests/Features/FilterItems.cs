@@ -7,7 +7,7 @@ using Common.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models.CustomEvents;
@@ -91,7 +91,7 @@ internal class FilterItems : Feature
     private static bool Automate_Store_prefix(Chest ___Chest, object stack)
     {
         var item = FilterItems.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !FilterItems.Instance.ManagedStorages.TryGetManagedStorage(___Chest, out var managedChest) || managedChest.ItemMatcher.Matches(item);
+        return !FilterItems.Instance.ManagedObjects.TryGetManagedStorage(___Chest, out var managedChest) || managedChest.ItemMatcher.Matches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -100,7 +100,7 @@ internal class FilterItems : Feature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!FilterItems.Instance.ManagedStorages.TryGetManagedStorage(__instance, out var managedChest) || managedChest.FilterItems == FeatureOption.Disabled || managedChest.ItemMatcher.Matches(item))
+        if (!FilterItems.Instance.ManagedObjects.TryGetManagedStorage(__instance, out var managedChest) || managedChest.FilterItems == FeatureOption.Disabled || managedChest.ItemMatcher.Matches(item))
         {
             return true;
         }
@@ -111,7 +111,7 @@ internal class FilterItems : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.MenuItems.Menu is null || e.Context is null || !this.ManagedStorages.TryGetManagedStorage(e.Context, out var managedStorage) || managedStorage.FilterItems == FeatureOption.Disabled)
+        if (this.MenuItems.Menu is null || e.Context is null || !this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) || managedStorage.FilterItems == FeatureOption.Disabled)
         {
             return;
         }

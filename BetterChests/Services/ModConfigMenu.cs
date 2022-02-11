@@ -10,11 +10,13 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Models.Config;
+using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 
-/// <inheritdoc cref="IModService" />
+/// <inheritdoc />
 internal class ModConfigMenu : IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
@@ -50,7 +52,8 @@ internal class ModConfigMenu : IModService
     private IManifest Manifest { get; }
 
     /// <summary>
-    ///     Add chest options to GMCM based on a dictionary of string keys/values representing Chest Data.
+    ///     Add storage feature options to GMCM based on a dictionary of string keys/values representing
+    ///     <see cref="IStorageData" />.
     /// </summary>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="data">The chest data to base the config on.</param>
@@ -60,12 +63,6 @@ internal class ModConfigMenu : IModService
         this.ChestConfig(manifest, chestData, false);
     }
 
-    /// <summary>
-    ///     Adds GMCM options for chest data.
-    /// </summary>
-    /// <param name="manifest">The mod's manifest.</param>
-    /// <param name="storageData">The chest data to configure.</param>
-    /// <param name="defaultConfig">Set to true if configuring the default chest config options.</param>
     private void ChestConfig(IManifest manifest, IStorageData storageData, bool defaultConfig)
     {
         var optionValues = (defaultConfig
@@ -320,15 +317,15 @@ internal class ModConfigMenu : IModService
             nameof(UnloadChest));
     }
 
-    private void ControlsConfig(IControlScheme config)
+    private void ControlsConfig(IControlScheme controls)
     {
         this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_Controls_Name, I18n.Section_Controls_Description);
 
         // Lock Slot
         this.GMCM.API.AddKeybind(
             this.Manifest,
-            () => config.LockSlot,
-            value => config.LockSlot = value,
+            () => controls.LockSlot,
+            value => controls.LockSlot = value,
             I18n.Config_LockSlot_Name,
             I18n.Config_LockSlot_Tooltip,
             nameof(IControlScheme.LockSlot));
@@ -336,8 +333,8 @@ internal class ModConfigMenu : IModService
         // Open Crafting
         this.GMCM.API.AddKeybindList(
             this.Manifest,
-            () => config.OpenCrafting,
-            value => config.OpenCrafting = value,
+            () => controls.OpenCrafting,
+            value => controls.OpenCrafting = value,
             I18n.Config_OpenCrafting_Name,
             I18n.Config_OpenCrafting_Tooltip,
             nameof(IControlScheme.OpenCrafting));
@@ -345,8 +342,8 @@ internal class ModConfigMenu : IModService
         // Stash Items
         this.GMCM.API.AddKeybindList(
             this.Manifest,
-            () => config.StashItems,
-            value => config.StashItems = value,
+            () => controls.StashItems,
+            value => controls.StashItems = value,
             I18n.Config_StashItems_Name,
             I18n.Config_StashItems_Tooltip,
             nameof(IControlScheme.StashItems));
@@ -354,8 +351,8 @@ internal class ModConfigMenu : IModService
         // Scroll Up
         this.GMCM.API.AddKeybindList(
             this.Manifest,
-            () => config.ScrollUp,
-            value => config.ScrollUp = value,
+            () => controls.ScrollUp,
+            value => controls.ScrollUp = value,
             I18n.Config_ScrollUp_Name,
             I18n.Config_ScrollUp_Tooltip,
             nameof(IControlScheme.ScrollUp));
@@ -363,8 +360,8 @@ internal class ModConfigMenu : IModService
         // Scroll Down
         this.GMCM.API.AddKeybindList(
             this.Manifest,
-            () => config.ScrollDown,
-            value => config.ScrollDown = value,
+            () => controls.ScrollDown,
+            value => controls.ScrollDown = value,
             I18n.Config_ScrollDown_Name,
             I18n.Config_ScrollDown_Tooltip,
             nameof(IControlScheme.ScrollDown));
@@ -372,8 +369,8 @@ internal class ModConfigMenu : IModService
         // Previous Tab
         this.GMCM.API.AddKeybindList(
             this.Manifest,
-            () => config.PreviousTab,
-            value => config.PreviousTab = value,
+            () => controls.PreviousTab,
+            value => controls.PreviousTab = value,
             I18n.Config_PreviousTab_Name,
             I18n.Config_PreviousTab_Tooltip,
             nameof(IControlScheme.PreviousTab));
@@ -381,8 +378,8 @@ internal class ModConfigMenu : IModService
         // Next Tab
         this.GMCM.API.AddKeybindList(
             this.Manifest,
-            () => config.NextTab,
-            value => config.NextTab = value,
+            () => controls.NextTab,
+            value => controls.NextTab = value,
             I18n.Config_NextTab_Name,
             I18n.Config_NextTab_Tooltip,
             nameof(IControlScheme.NextTab));
@@ -467,22 +464,13 @@ internal class ModConfigMenu : IModService
 
     private void GenerateConfig()
     {
-        var knownChests = this.Assets.ChestData
-                              .Select(chest =>
-                              {
-                                  var (key, chestData) = chest;
-                                  var name = (from info in this.Assets.Craftables where info.Value[0] == key select info.Value[8]).FirstOrDefault() ?? key;
-                                  return new KeyValuePair<string, IStorageData>(name, chestData);
-                              })
-                              .OrderBy(chest => chest.Key).ToList();
-
         // Register mod configuration
         this.GMCM.Register(
             this.Manifest,
             () =>
             {
                 this.Config.Reset();
-                foreach (var (_, data) in knownChests)
+                foreach (var (_, data) in this.Assets.ChestData)
                 {
                     ((IStorageData)new StorageData()).CopyTo(data);
                 }
@@ -515,15 +503,12 @@ internal class ModConfigMenu : IModService
         // Chests
         this.GMCM.API.AddPage(this.Manifest, "Chests");
 
-        foreach (var (name, _) in knownChests)
+        foreach (var (name, _) in this.Assets.ChestData)
         {
-            this.GMCM.API.AddPageLink(
-                this.Manifest,
-                name,
-                () => name);
+            this.GMCM.API.AddPageLink(this.Manifest, name, () => name);
         }
 
-        foreach (var (name, data) in knownChests)
+        foreach (var (name, data) in this.Assets.ChestData)
         {
             this.GMCM.API.AddPage(this.Manifest, name);
             this.ChestConfig(this.Manifest, data, false);

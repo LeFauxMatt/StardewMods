@@ -11,7 +11,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -64,11 +65,11 @@ internal class CraftFromChest : Feature
         get
         {
             IList<IManagedStorage> eligibleStorages =
-                this.ManagedStorages.InventoryStorages
+                this.ManagedObjects.InventoryStorages
                     .Select(inventoryStorage => inventoryStorage.Value)
                     .Where(playerChest => playerChest.CraftFromChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
                     .ToList();
-            foreach (var ((location, (x, y)), locationStorage) in this.ManagedStorages.LocationStorages)
+            foreach (var ((location, (x, y)), locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
                 if (locationStorage.CraftFromChest == FeatureOptionRange.Disabled || locationStorage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))

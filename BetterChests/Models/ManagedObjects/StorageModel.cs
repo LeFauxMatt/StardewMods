@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models.ManagedObjects;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +11,8 @@ internal class StorageModel : IStorageData
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageModel" /> class.
     /// </summary>
-    /// <param name="storageData">ChestData representing this chest type.</param>
-    /// <param name="defaultStorage">ChestData representing the default options.</param>
+    /// <param name="storageData"><see cref="IStorageData" /> representing this storage type.</param>
+    /// <param name="defaultStorage"><see cref="IStorageData" /> representing the default storage.</param>
     public StorageModel(IStorageData storageData, IStorageData defaultStorage)
     {
         this.Data = storageData;

@@ -1,14 +1,11 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.EasyAccess.Models.Config;
 
 using StardewModdingAPI;
-using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.FuryCore.Enums;
+using StardewMods.EasyAccess.Features;
+using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 
-/// <summary>
-///     Encapsulates a <see cref="ConfigData" /> wrapper class.
-/// </summary>
+/// <inheritdoc />
 internal class ConfigModel : IConfigModel
 {
     /// <summary>
@@ -25,27 +22,6 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
-    public int CarryChestLimit
-    {
-        get => this.Data.CarryChestLimit;
-        set => this.Data.CarryChestLimit = value;
-    }
-
-    /// <inheritdoc />
-    public int CarryChestSlow
-    {
-        get => this.Data.CarryChestSlow;
-        set => this.Data.CarryChestSlow = value;
-    }
-
-    /// <inheritdoc />
-    public bool CategorizeChest
-    {
-        get => this.Data.CategorizeChest;
-        set => this.Data.CategorizeChest = value;
-    }
-
-    /// <inheritdoc />
     public ControlScheme ControlScheme
     {
         get => this.Data.ControlScheme;
@@ -53,31 +29,10 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
-    public ComponentArea CustomColorPickerArea
+    public ProducerData DefaultProducer
     {
-        get => this.Data.CustomColorPickerArea;
-        set => this.Data.CustomColorPickerArea = value;
-    }
-
-    /// <inheritdoc />
-    public StorageData DefaultChest
-    {
-        get => this.Data.DefaultChest;
-        set => ((IStorageData)value).CopyTo(this.Data.DefaultChest);
-    }
-
-    /// <inheritdoc />
-    public char SearchTagSymbol
-    {
-        get => this.Data.SearchTagSymbol;
-        set => this.Data.SearchTagSymbol = value;
-    }
-
-    /// <inheritdoc />
-    public bool SlotLock
-    {
-        get => this.Data.SlotLock;
-        set => this.Data.SlotLock = value;
+        get => this.Data.DefaultProducer;
+        set => ((IProducerData)value).CopyTo(this.Data.DefaultProducer);
     }
 
     private IConfigData Data { get; }

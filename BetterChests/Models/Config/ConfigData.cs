@@ -1,12 +1,10 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models.Config;
 
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Enums;
 
-/// <summary>
-///     Mod config data related to BetterChests features.
-/// </summary>
+/// <inheritdoc />
 internal class ConfigData : IConfigData
 {
     /// <inheritdoc />

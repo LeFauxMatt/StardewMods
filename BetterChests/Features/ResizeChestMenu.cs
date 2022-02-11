@@ -13,7 +13,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
@@ -121,7 +122,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuCapacity.Value ??= this.Config.DefaultChest.ResizeChestMenuRows * 12;
             }
 
-            if (this.Menu?.context is null || !this.ManagedStorages.TryGetManagedStorage(this.Menu.context, out var managedStorage))
+            if (this.Menu?.context is null || !this.ManagedObjects.TryGetManagedStorage(this.Menu.context, out var managedStorage))
             {
                 return this._menuCapacity.Value ??= -1; // Vanilla
             }
@@ -158,7 +159,7 @@ internal class ResizeChestMenu : Feature
                 return this._menuRows.Value ??= this.Config.DefaultChest.ResizeChestMenuRows;
             }
 
-            if (this.Menu?.context is null || !this.ManagedStorages.TryGetManagedStorage(this.Menu.context, out var managedStorage))
+            if (this.Menu?.context is null || !this.ManagedObjects.TryGetManagedStorage(this.Menu.context, out var managedStorage))
             {
                 return this._menuRows.Value ??= 3; // Vanilla
             }
@@ -406,7 +407,7 @@ internal class ResizeChestMenu : Feature
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         IManagedStorage managedStorage = null;
-        this.Menu = e.Context is not null && this.ManagedStorages.TryGetManagedStorage(e.Context, out managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled
+        this.Menu = e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled
             ? e.ItemGrabMenu
             : null;
 

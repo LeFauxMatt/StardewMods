@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models.ManagedObjects;
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ internal class SerializedStorageData : IStorageData
     /// <summary>
     ///     Initializes a new instance of the <see cref="SerializedStorageData" /> class.
     /// </summary>
-    /// <param name="data">The Dictionary of string keys/values representing the Chest Data.</param>
+    /// <param name="data">The Dictionary of string keys/values representing the <see cref="IStorageData" />.</param>
     public SerializedStorageData(IDictionary<string, string> data)
     {
         this.Data = data;

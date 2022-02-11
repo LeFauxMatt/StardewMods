@@ -1,7 +1,7 @@
-﻿namespace StardewMods.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces.Config;
 
 using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Models.Config;
 using StardewMods.FuryCore.Enums;
 
 /// <summary>
@@ -35,7 +35,7 @@ internal interface IConfigData
     public ComponentArea CustomColorPickerArea { get; set; }
 
     /// <summary>
-    ///     Gets or sets the default chest configuration.
+    ///     Gets or sets the default storage configuration.
     /// </summary>
     StorageData DefaultChest { get; set; }
 

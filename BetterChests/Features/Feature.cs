@@ -3,7 +3,7 @@
 using System;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
@@ -12,7 +12,7 @@ using StardewMods.FuryCore.Interfaces.CustomEvents;
 internal abstract class Feature : IModService
 {
     private readonly Lazy<ICustomEvents> _customEvents;
-    private readonly Lazy<ManagedStorages> _managedStorages;
+    private readonly Lazy<ManagedObjects> _managedObjects;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Feature" /> class.
@@ -23,9 +23,9 @@ internal abstract class Feature : IModService
     protected Feature(IConfigModel config, IModHelper helper, IModServices services)
     {
         this.Id = $"{BetterChests.ModUniqueId}.{this.GetType().Name}";
-        this.Helper = helper;
         this.Config = config;
-        this._managedStorages = services.Lazy<ManagedStorages>();
+        this.Helper = helper;
+        this._managedObjects = services.Lazy<ManagedObjects>();
         this._customEvents = services.Lazy<ICustomEvents>();
     }
 
@@ -53,11 +53,11 @@ internal abstract class Feature : IModService
     protected string Id { get; }
 
     /// <summary>
-    ///     Gets the <see cref="ManagedStorages" /> service to track placed and player chests in the game.
+    ///     Gets the <see cref="ManagedObjects" /> service to track placed and player chests in the game.
     /// </summary>
-    protected ManagedStorages ManagedStorages
+    protected ManagedObjects ManagedObjects
     {
-        get => this._managedStorages.Value;
+        get => this._managedObjects.Value;
     }
 
     /// <summary>

@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
+using StardewMods.BetterChests.Models.Config;
+using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
@@ -14,27 +17,26 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc />
-internal class ManagedStorages : IModService
+internal class ManagedObjects : IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<IDictionary<IGameObject, IManagedStorage>> _cachedObjects = new(() => new Dictionary<IGameObject, IManagedStorage>());
     private readonly Lazy<IGameObjects> _gameObjects;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ManagedStorages" /> class.
+    ///     Initializes a new instance of the <see cref="ManagedObjects" /> class.
     /// </summary>
     /// <param name="config">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ManagedStorages(IConfigModel config, IModServices services)
+    public ManagedObjects(IConfigModel config, IModServices services)
     {
         this.Config = config;
         this._assetHandler = services.Lazy<AssetHandler>();
         this._gameObjects = services.Lazy<IGameObjects>();
-        services.Lazy<ModIntegrations>();
     }
 
     /// <summary>
-    ///     Gets all chests in player inventory.
+    ///     Gets all storages in player inventory.
     /// </summary>
     public IEnumerable<KeyValuePair<InventoryItem, IManagedStorage>> InventoryStorages
     {
@@ -76,7 +78,7 @@ internal class ManagedStorages : IModService
     }
 
     /// <summary>
-    ///     Gets all placed chests in the world.
+    ///     Gets all storages placed in a game location.
     /// </summary>
     public IEnumerable<KeyValuePair<LocationObject, IManagedStorage>> LocationStorages
     {

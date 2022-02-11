@@ -1,0 +1,23 @@
+{
+  "Name": "Easy Access",
+  "Author": "furyx639",
+  "Version": "1.0.0-alpha.1",
+  "Description": "Provides easier access to producers in the game.",
+  "UniqueID": "furyx639.EasyAccess",
+  "EntryDll": "EasyAccess.dll",
+  "MinimumApiVersion": "3.13.0",
+  "UpdateKeys": [
+    "Nexus:11002@Main"
+  ],
+  "Dependencies": [
+    {
+      "UniqueID": "furyx639.FuryCore",
+      "IsRequired": true,
+      "MinimumVersion": "1.3.0-alpha"
+    },
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "IsRequired": false
+    }
+  ]
+}

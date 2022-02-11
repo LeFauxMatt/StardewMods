@@ -10,6 +10,8 @@ using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
+using StardewMods.FuryCore.Models.GameObjects.Producers;
+using StardewMods.FuryCore.Models.GameObjects.Storages;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
@@ -228,27 +230,30 @@ internal class GameObjects : IGameObjects, IModService
             switch (context)
             {
                 case Chest chest:
-                    gameObject = new StorageContainer(context, chest.GetActualCapacity, () => chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID), () => chest.modData);
+                    gameObject = new StorageChest(chest);
                     return true;
                 case SObject { ParentSheetIndex: 165, heldObject.Value: Chest heldChest }:
                     this.ContextMap[heldChest] = context;
-                    gameObject = new StorageContainer(context, heldChest.GetActualCapacity, () => heldChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID), () => heldChest.modData);
+                    gameObject = new StorageChest(heldChest, context);
                     return true;
                 case FarmHouse { fridge.Value: { } fridge } farmHouse:
                     this.ContextMap[fridge] = context;
-                    gameObject = new StorageContainer(context, fridge.GetActualCapacity, () => fridge.GetItemsForPlayer(Game1.player.UniqueMultiplayerID), () => farmHouse.modData);
+                    gameObject = new StorageChest(fridge, context, () => farmHouse.modData);
                     return true;
                 case IslandFarmHouse { fridge.Value: { } islandFridge } islandFarmHouse:
                     this.ContextMap[islandFridge] = context;
-                    gameObject = new StorageContainer(context, islandFridge.GetActualCapacity, () => islandFridge.GetItemsForPlayer(Game1.player.UniqueMultiplayerID), () => islandFarmHouse.modData);
+                    gameObject = new StorageChest(islandFridge, context, () => islandFarmHouse.modData);
                     break;
                 case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
                     this.ContextMap[junimoHutChest] = context;
-                    gameObject = new StorageContainer(context, junimoHutChest.GetActualCapacity, () => junimoHutChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID), () => junimoHut.modData);
+                    gameObject = new StorageChest(junimoHutChest, context, () => junimoHut.modData);
                     return true;
                 case ShippingBin shippingBin:
                     this.ContextMap[Game1.getFarm()] = context;
                     gameObject = new StorageContainer(context, () => int.MaxValue, () => Game1.getFarm().getShippingBin(Game1.player), () => shippingBin.modData);
+                    return true;
+                case CrabPot crabPot:
+                    gameObject = new CrabPotProducer(crabPot, () => crabPot.modData);
                     return true;
                 default:
                     return false;

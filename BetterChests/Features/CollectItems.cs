@@ -9,7 +9,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -52,7 +53,7 @@ internal class CollectItems : Feature
     private IList<IManagedStorage> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from inventoryStorage in this.ManagedStorages.InventoryStorages
+            from inventoryStorage in this.ManagedObjects.InventoryStorages
             where inventoryStorage.Value.CollectItems == FeatureOption.Enabled
             select inventoryStorage.Value).ToList();
         set => this._eligibleChests.Value = value;
@@ -118,19 +119,19 @@ internal class CollectItems : Feature
             return;
         }
 
-        if (e.Added.Any(item => this.ManagedStorages.TryGetManagedStorage(item, out _)))
+        if (e.Added.Any(item => this.ManagedObjects.TryGetManagedStorage(item, out _)))
         {
             this.EligibleChests = null;
             return;
         }
 
-        if (e.Removed.Any(item => this.ManagedStorages.TryGetManagedStorage(item, out _)))
+        if (e.Removed.Any(item => this.ManagedObjects.TryGetManagedStorage(item, out _)))
         {
             this.EligibleChests = null;
             return;
         }
 
-        if (e.QuantityChanged.Any(stack => this.ManagedStorages.TryGetManagedStorage(stack.Item, out _)))
+        if (e.QuantityChanged.Any(stack => this.ManagedObjects.TryGetManagedStorage(stack.Item, out _)))
         {
             this.EligibleChests = null;
         }

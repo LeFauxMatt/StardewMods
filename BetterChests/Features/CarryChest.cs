@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -101,7 +101,7 @@ internal class CarryChest : Feature
             return;
         }
 
-        if (this.ManagedStorages.InventoryStorages.Any(inventoryStorage => inventoryStorage.Value.Items.Any() && (!excludeCurrent || !ReferenceEquals(inventoryStorage.Value.Context, Game1.player.CurrentItem))))
+        if (this.ManagedObjects.InventoryStorages.Any(inventoryStorage => inventoryStorage.Value.Items.Any() && (!excludeCurrent || !ReferenceEquals(inventoryStorage.Value.Context, Game1.player.CurrentItem))))
         {
             Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(this.Config.CarryChestSlow));
             return;
@@ -276,12 +276,12 @@ internal class CarryChest : Feature
     {
         if (!__result
             || !location.Objects.TryGetValue(new(x / 64, y / 64), out var obj)
-            || !CarryChest.Instance.ManagedStorages.TryGetManagedStorage(__instance, out var fromStorage))
+            || !CarryChest.Instance.ManagedObjects.TryGetManagedStorage(__instance, out var fromStorage))
         {
             return;
         }
 
-        if (!CarryChest.Instance.ManagedStorages.TryGetManagedStorage(obj, out var toStorage))
+        if (!CarryChest.Instance.ManagedObjects.TryGetManagedStorage(obj, out var toStorage))
         {
             return;
         }
@@ -364,7 +364,7 @@ internal class CarryChest : Feature
         }
 
         // Object is Chest and supports Carry Chest
-        if (!this.ManagedStorages.TryGetManagedStorage(obj, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
+        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
         {
             return;
         }

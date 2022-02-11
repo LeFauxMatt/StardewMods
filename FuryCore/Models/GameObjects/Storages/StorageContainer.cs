@@ -1,4 +1,4 @@
-﻿namespace StardewMods.FuryCore.Models.GameObjects;
+﻿namespace StardewMods.FuryCore.Models.GameObjects.Storages;
 
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,18 @@ public class StorageContainer : GameObject, IStorageContainer
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="StorageContainer"/> class.
+    ///     Initializes a new instance of the <see cref="StorageContainer" /> class.
+    /// </summary>
+    /// <param name="context">The source object.</param>
+    /// <param name="getModData">A get method for the mod data of the object.</param>
+    protected StorageContainer(object context, Func<ModDataDictionary> getModData)
+        : base(context)
+    {
+        this.GetModData = getModData;
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="StorageContainer" /> class.
     /// </summary>
     /// <param name="container">The other IStorageContainer to base this instance on.</param>
     protected StorageContainer(IStorageContainer container)
@@ -36,7 +47,7 @@ public class StorageContainer : GameObject, IStorageContainer
         this.GetModData = () => container.ModData;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual int Capacity
     {
         get => this.GetCapacity.Invoke();

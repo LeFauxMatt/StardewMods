@@ -5,7 +5,7 @@ using Common.Helpers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 
@@ -48,7 +48,7 @@ internal class UnloadChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
-            || !this.ManagedStorages.TryGetManagedStorage(Game1.player.CurrentItem, out var source)
+            || !this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source)
             || source.UnloadChest == FeatureOption.Disabled)
         {
             return;
@@ -66,7 +66,7 @@ internal class UnloadChest : Feature
         }
 
         // Object is Chest and supports Unload Chest
-        if (!this.ManagedStorages.TryGetManagedStorage(obj, out var target))
+        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var target))
         {
             return;
         }

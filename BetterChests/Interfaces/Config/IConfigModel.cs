@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces.Config;
 
 /// <inheritdoc />
 internal interface IConfigModel : IConfigData

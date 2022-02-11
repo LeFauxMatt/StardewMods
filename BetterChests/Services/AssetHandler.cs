@@ -10,7 +10,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Models.Config;
+using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 
@@ -112,9 +114,9 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     /// <summary>
-    ///     Adds new Chest Data and saves to assets/chests.json.
+    ///     Adds a mod data key to source the qualified item id from.
     /// </summary>
-    /// <param name="key">The qualified item id of the chest.</param>
+    /// <param name="key">The key to source the qualified item id from.</param>
     public void AddModDataKey(string key)
     {
         this.ModDataKeys.Add(key);
@@ -181,7 +183,7 @@ internal class AssetHandler : IModService, IAssetLoader
         }
 
         this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
-        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "ChestData", new[] { BetterChests.ModUniqueId });
+        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "StorageData", new[] { BetterChests.ModUniqueId });
     }
 
     private void InitChestData()
@@ -192,7 +194,7 @@ internal class AssetHandler : IModService, IAssetLoader
         try
         {
             chestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>("assets/chests.json");
-            this.LoadChestData(chestData);
+            this.LoadStorageData(chestData);
         }
         catch (Exception)
         {
@@ -208,7 +210,7 @@ internal class AssetHandler : IModService, IAssetLoader
             {
                 var chestPath = Path.GetRelativePath(this.Helper.DirectoryPath, path);
                 chestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>(chestPath);
-                this.LoadChestData(chestData);
+                this.LoadStorageData(chestData);
             }
             catch (Exception e)
             {
@@ -228,7 +230,7 @@ internal class AssetHandler : IModService, IAssetLoader
             { "Mini-Shipping Bin", SerializedStorageData.GetData(new StorageData()) },
             { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
         };
-        this.LoadChestData(chestData);
+        this.LoadStorageData(chestData);
 
         // Save to chests.json
         this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
@@ -288,7 +290,7 @@ internal class AssetHandler : IModService, IAssetLoader
         }
     }
 
-    private void LoadChestData(IDictionary<string, IDictionary<string, string>> chestData)
+    private void LoadStorageData(IDictionary<string, IDictionary<string, string>> chestData)
     {
         if (chestData is null)
         {
@@ -320,16 +322,16 @@ internal class AssetHandler : IModService, IAssetLoader
 
         switch (e.Type)
         {
-            case "ChestData":
-                Log.Trace("Loading ChestData from Host");
-                var chestData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
+            case "StorageData":
+                Log.Trace("Loading StorageData from Host");
+                var storageData = e.ReadAs<IDictionary<string, IDictionary<string, string>>>();
                 this.LocalChestData.Clear();
-                this.LoadChestData(chestData);
+                this.LoadStorageData(storageData);
                 break;
-            case "DefaultChest":
-                Log.Trace("Loading DefaultChest Config from Host");
-                var storageData = e.ReadAs<StorageData>();
-                ((IStorageData)storageData).CopyTo(this.Config.DefaultChest);
+            case "DefaultStorage":
+                Log.Trace("Loading DefaultStorage Config from Host");
+                var defaultStorage = e.ReadAs<StorageData>();
+                ((IStorageData)defaultStorage).CopyTo(this.Config.DefaultChest);
                 break;
         }
     }
@@ -341,7 +343,7 @@ internal class AssetHandler : IModService, IAssetLoader
             return;
         }
 
-        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "ChestData", new[] { BetterChests.ModUniqueId });
-        this.Helper.Multiplayer.SendMessage(this.Config.DefaultChest, "DefaultChest", new[] { BetterChests.ModUniqueId });
+        this.Helper.Multiplayer.SendMessage(this.LocalChestData, "StorageData", new[] { BetterChests.ModUniqueId });
+        this.Helper.Multiplayer.SendMessage(this.Config.DefaultChest, "DefaultStorage", new[] { BetterChests.ModUniqueId });
     }
 }

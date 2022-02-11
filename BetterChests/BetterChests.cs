@@ -5,8 +5,8 @@ using Common.Helpers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Services;
@@ -47,7 +47,7 @@ public class BetterChests : Mod
         this.Services.Add(
             new AssetHandler(this.Config, this.Helper),
             new CommandHandler(this.Config, this.Helper, this.Services),
-            new ManagedStorages(this.Config, this.Services),
+            new ManagedObjects(this.Config, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
             new ModIntegrations(this.Helper, this.Services),
             new CarryChest(this.Config, this.Helper, this.Services),

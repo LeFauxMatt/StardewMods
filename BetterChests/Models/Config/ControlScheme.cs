@@ -1,8 +1,8 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models.Config;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 
 /// <inheritdoc />
 internal class ControlScheme : IControlScheme

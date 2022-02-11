@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.Models.Config;
 
 using System.Collections.Generic;
 using StardewMods.BetterChests.Enums;
