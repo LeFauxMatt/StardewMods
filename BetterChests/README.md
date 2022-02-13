@@ -343,7 +343,7 @@ Register your chest using the [Better Chests API](../Common/Integrations/BetterC
 #### Data Path
 
 `furyx639.BetterChests\\Chests`  
-Add/replace chest settings by editing entries.
+Add/replace chest settings by editing entries<sup>1</sup>.
 
 Sample `content.json`:
 
@@ -367,6 +367,10 @@ Sample `content.json`:
 }
 ```
 
+1. See
+   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
+   docs for Content Patcher.
+
 ### Customized Tabs
 
 The default tabs are defined by the `tabs.json` and `tabs.png` files which are both found under the `assets` folder.
@@ -385,10 +389,9 @@ If `tabs.json` is not found, a default one is automatically generated:
 | Seeds           | Seeds        | `furyx639.BetterChests\\Tabs\\Texture` | 7          | Fertilizer, Seeds                                                                                            |
 
 You can edit these files directly for personal usage, or they may be targeted externally for edits from other mods at
-the following paths:
+the following paths<sup>3</sup>:
 
-`furyx639.BetterChests\\Tabs`  
-Add/replace tabs by editing entries.
+`furyx639.BetterChests\\Tabs`
 
 Sample `content.json`:
 
@@ -423,6 +426,9 @@ Sample `content.json`:
 
 1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
 2. See [Item Tags](#item-tags)
+3. See
+   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
+   docs for Content Patcher.
 
 ### Other Assets
 
