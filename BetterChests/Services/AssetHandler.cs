@@ -13,6 +13,7 @@ using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 
@@ -188,20 +189,20 @@ internal class AssetHandler : IModService, IAssetLoader
 
     private void InitChestData()
     {
-        IDictionary<string, IDictionary<string, string>> chestData;
+        IDictionary<string, IDictionary<string, string>> storageData;
 
-        // Load existing chest data
+        // Load existing storage data
         try
         {
-            chestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>("assets/chests.json");
-            this.LoadStorageData(chestData);
+            storageData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>("assets/chests.json");
+            this.LoadStorageData(storageData);
         }
         catch (Exception)
         {
             // ignored
         }
 
-        // Load new chest data
+        // Load new storage data
         var chestsDir = Path.Combine(this.Helper.DirectoryPath, "chests");
         Directory.CreateDirectory(chestsDir);
         foreach (var path in Directory.GetFiles(chestsDir, "*.json"))
@@ -209,8 +210,8 @@ internal class AssetHandler : IModService, IAssetLoader
             try
             {
                 var chestPath = Path.GetRelativePath(this.Helper.DirectoryPath, path);
-                chestData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>(chestPath);
-                this.LoadStorageData(chestData);
+                storageData = this.Helper.Data.ReadJsonFile<IDictionary<string, IDictionary<string, string>>>(chestPath);
+                this.LoadStorageData(storageData);
             }
             catch (Exception e)
             {
@@ -218,19 +219,20 @@ internal class AssetHandler : IModService, IAssetLoader
             }
         }
 
-        // Load missing vanilla chest data
-        chestData = new Dictionary<string, IDictionary<string, string>>
+        // Load vanilla special storages
+        var specialStorages = new Dictionary<string, IStorageData>
         {
-            { "Auto-Grabber", SerializedStorageData.GetData(new StorageData()) },
-            { "Chest", SerializedStorageData.GetData(new StorageData()) },
-            { "Fridge", SerializedStorageData.GetData(new StorageData()) },
-            { "Junimo Chest", SerializedStorageData.GetData(new StorageData()) },
-            { "Junimo Hut", SerializedStorageData.GetData(new StorageData()) },
-            { "Mini-Fridge", SerializedStorageData.GetData(new StorageData()) },
-            { "Mini-Shipping Bin", SerializedStorageData.GetData(new StorageData()) },
-            { "Stone Chest", SerializedStorageData.GetData(new StorageData()) },
+            { "Fridge", new StorageData() },
+            { "Shipping Bin", new StorageData() },
         };
-        this.LoadStorageData(chestData);
+        this.LoadStorageData(specialStorages);
+
+        // Load default vanilla storage data
+        IStorageData defaultStorage = new StorageData();
+        var vanillaStorages = this.Craftables
+                                  .Where(craftable => Enum.IsDefined(typeof(VanillaStorageObjects), craftable.Key))
+                                  .ToDictionary(craftable => craftable.Value[0], _ => defaultStorage);
+        this.LoadStorageData(vanillaStorages);
 
         // Save to chests.json
         this.Helper.Data.WriteJsonFile("assets/chests.json", this.LocalChestData);
@@ -288,6 +290,13 @@ internal class AssetHandler : IModService, IAssetLoader
             };
             this.Helper.Data.WriteJsonFile("assets/tabs.json", this.LocalTabData);
         }
+    }
+
+    private void LoadStorageData(IDictionary<string, IStorageData> storageData)
+    {
+        this.LoadStorageData(storageData.ToDictionary(
+            data => data.Key,
+            data => SerializedStorageData.GetData(data.Value)));
     }
 
     private void LoadStorageData(IDictionary<string, IDictionary<string, string>> chestData)

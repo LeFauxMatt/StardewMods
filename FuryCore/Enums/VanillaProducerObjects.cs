@@ -3,7 +3,7 @@
 /// <summary>
 ///     Vanilla Producers with their ParentSheetIndex.
 /// </summary>
-public enum VanillaProducers
+public enum VanillaProducerObjects
 {
     /// <summary>Lightning Rod.</summary>
     LightningRod = 9,

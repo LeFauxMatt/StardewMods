@@ -1,5 +1,15 @@
 ﻿# Better Chests Change Log
 
+## 1.4.0 (Unreleased)
+
+### Additions
+
+* Added Chest Menu for Shipping Bins.
+
+### Changes
+
+* Purge inaccessible cached objects.
+
 ## 1.3.0 (February 12, 2022)
 
 ### Additions

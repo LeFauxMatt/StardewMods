@@ -24,8 +24,9 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
     /// <param name="data">The <see cref="IStorageData" /> for this type of storage.</param>
     /// <param name="qualifiedItemId">A unique Id associated with this storage type.</param>
     public ManagedStorage(IStorageContainer container, IStorageData data, string qualifiedItemId)
-        : base(container)
+        : base(container.Context, () => container.ModData)
     {
+        this.Container = container;
         this.Data = data;
         this.QualifiedItemId = qualifiedItemId;
 
@@ -169,6 +170,12 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
 
     /// <inheritdoc />
     public ItemMatcher ItemMatcher { get; } = new(true);
+
+    /// <inheritdoc />
+    public override IList<Item> Items
+    {
+        get => this.Container.Items;
+    }
 
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
@@ -325,7 +332,39 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
         set => this.ModData[$"{BetterChests.ModUniqueId}/UnloadChest"] = FormatHelper.GetOptionString(value);
     }
 
+    private IStorageContainer Container { get; }
+
     private IStorageData Data { get; }
+
+    /// <inheritdoc />
+    public override Item AddItem(Item item)
+    {
+        return this.Container.AddItem(item);
+    }
+
+    /// <inheritdoc />
+    public override void ClearNulls()
+    {
+        this.Container.ClearNulls();
+    }
+
+    /// <inheritdoc />
+    public override void GrabInventoryItem(Item item, Farmer who)
+    {
+        this.Container.GrabInventoryItem(item, who);
+    }
+
+    /// <inheritdoc />
+    public override void GrabStorageItem(Item item, Farmer who)
+    {
+        this.Container.GrabStorageItem(item, who);
+    }
+
+    /// <inheritdoc />
+    public override void ShowMenu()
+    {
+        this.Container.ShowMenu();
+    }
 
     /// <inheritdoc />
     public Item StashItem(Item item)

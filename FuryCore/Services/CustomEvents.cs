@@ -13,6 +13,7 @@ using StardewMods.FuryCore.Models.CustomEvents;
 [FuryCoreService(true)]
 internal class CustomEvents : ICustomEvents, IModService
 {
+    private readonly GameObjectsRemoved _gameObjectsRemoved;
     private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
     private readonly MenuComponentPressed _menuComponentPressed;
     private readonly RenderedItemGrabMenu _renderedItemGrabMenu;
@@ -25,10 +26,18 @@ internal class CustomEvents : ICustomEvents, IModService
     /// <param name="services">Provides access to internal and external services.</param>
     public CustomEvents(IModHelper helper, IModServices services)
     {
+        this._gameObjectsRemoved = new(helper.Events, services);
         this._itemGrabMenuChanged = new(helper.Events.GameLoop, services);
         this._menuComponentPressed = new(helper, services);
         this._renderedItemGrabMenu = new(helper.Events.Display, services);
         this._renderingItemGrabMenu = new(helper.Events.Display, services);
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<GameObjectsRemovedEventArgs> GameObjectsRemoved
+    {
+        add => this._gameObjectsRemoved.Add(value);
+        remove => this._gameObjectsRemoved.Remove(value);
     }
 
     /// <inheritdoc />

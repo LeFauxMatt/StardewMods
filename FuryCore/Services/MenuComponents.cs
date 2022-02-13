@@ -209,6 +209,11 @@ internal class MenuComponents : IMenuComponents, IModService
         foreach (var componentArea in Enum.GetValues<ComponentArea>().Where(componentType => componentType is not ComponentArea.Custom))
         {
             var components = this.Components.Where(component => component.Area == componentArea && component.Component is not null).ToList();
+            if (!components.Any())
+            {
+                continue;
+            }
+
             if (componentArea is ComponentArea.Left or ComponentArea.Right)
             {
                 components.Reverse();
@@ -241,12 +246,20 @@ internal class MenuComponents : IMenuComponents, IModService
                 {
                     case ComponentArea.Top:
                         component.Y = menu.yPositionOnScreen - Game1.tileSize;
-                        component.Component.downNeighborID = topMenu.inventory[index].myID;
+                        if (topMenu.inventory.Count > index)
+                        {
+                            component.Component.downNeighborID = topMenu.inventory[index].myID;
+                        }
+
                         break;
                     case ComponentArea.Bottom:
                         component.Y = topMenu.yPositionOnScreen + topMenu.height + Game1.pixelZoom;
-                        component.Component.upNeighborID = topMenu.inventory[slot + index].myID;
-                        topMenu.inventory[slot + index].downNeighborID = component.Id;
+                        if (topMenu.inventory.Count > slot + index)
+                        {
+                            component.Component.upNeighborID = topMenu.inventory[slot + index].myID;
+                            topMenu.inventory[slot + index].downNeighborID = component.Id;
+                        }
+
                         if (bottomMenu.inventory.Count > index)
                         {
                             component.Component.downNeighborID = bottomMenu.inventory[index].myID;

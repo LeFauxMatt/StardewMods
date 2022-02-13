@@ -119,7 +119,7 @@ internal class CategorizeChest : Feature
                 return;
 
             default:
-                this.ReturnMenu = e.ItemGrabMenu;
+                this.ReturnMenu = null;
                 return;
         }
     }

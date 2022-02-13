@@ -16,6 +16,7 @@ using StardewValley.Menus;
 internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEventArgs>
 {
     private readonly PerScreen<IClickableMenu> _menu = new();
+    private readonly PerScreen<bool> _shippingBin = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemGrabMenuChanged" /> class.
@@ -41,13 +42,6 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
                     typeof(ItemGrabMenuChanged),
                     nameof(ItemGrabMenuChanged.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix);
-                harmonyHelper.AddPatch(
-                    id,
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.initializeShippingBin)),
-                    typeof(ItemGrabMenuChanged),
-                    nameof(ItemGrabMenuChanged.ItemGrabMenu_initializeShippingBin_postfix),
-                    PatchType.Postfix);
-
                 harmonyHelper.ApplyPatches(id);
             });
 
@@ -63,44 +57,32 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         set => this._menu.Value = value;
     }
 
+    private bool ShippingBin
+    {
+        get => this._shippingBin.Value;
+        set => this._shippingBin.Value = value;
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
         ItemGrabMenuChanged.Instance.Menu = __instance;
+        ItemGrabMenuChanged.Instance.ShippingBin = __instance.shippingBin;
         ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, __instance.context, Context.ScreenId, true));
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void ItemGrabMenu_initializeShippingBin_postfix(ItemGrabMenu __instance)
-    {
-        ItemGrabMenuChanged.Instance.InvokeAll(new(null, null, Context.ScreenId, false));
     }
 
     [SuppressMessage("StyleCop", "SA1101", Justification = "This is a pattern match not a local call")]
     private void InvokeIfMenuChanged()
     {
-        var menu = Game1.activeClickableMenu;
-
-        if (ReferenceEquals(this.Menu, menu))
+        if (ReferenceEquals(this.Menu, Game1.activeClickableMenu) && (this.Menu is not ItemGrabMenu itemGrabMenu || itemGrabMenu.shippingBin == this.ShippingBin))
         {
             return;
         }
 
         this.Menu = Game1.activeClickableMenu;
-        if (this.HandlerCount == 0)
-        {
-            return;
-        }
-
-        if (this.Menu is ItemGrabMenu { shippingBin: false } itemGrabMenu)
-        {
-            this.InvokeAll(new(itemGrabMenu, itemGrabMenu.context, Context.ScreenId, false));
-            return;
-        }
-
-        this.InvokeAll(new(null, null, Context.ScreenId, false));
+        this.ShippingBin = (this.Menu as ItemGrabMenu)?.shippingBin ?? false;
+        this.InvokeAll(new(this.Menu as ItemGrabMenu, (this.Menu as ItemGrabMenu)?.context, Context.ScreenId, false));
     }
 
     [EventPriority(EventPriority.Low - 1000)]

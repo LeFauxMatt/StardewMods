@@ -60,6 +60,11 @@ internal class ModConfigMenu : IModService
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
+        if (!this.GMCM.IsLoaded)
+        {
+            return;
+        }
+
         this.GMCM.Register(
             this.Manifest,
             this.Reset,

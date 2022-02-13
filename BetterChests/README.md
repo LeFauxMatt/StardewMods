@@ -461,7 +461,7 @@ Sample `content.json`:
 
 Replace the default Tabs by editing the texture<sup>1</sup>:
 
-`furyx639.BetterChests\\Tabs\\Textures`  
+`furyx639.BetterChests\\Tabs\\Textures`
 
 Sample `content.json`:
 

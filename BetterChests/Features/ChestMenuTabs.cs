@@ -139,7 +139,7 @@ internal class ChestMenuTabs : Feature
         IStorageData storageData = e.ItemGrabMenu switch
         {
             ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => this.Config.DefaultChest,
-            _ when e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
+            not null when e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => managedStorage,
             _ => null,
         };
 
@@ -148,9 +148,9 @@ internal class ChestMenuTabs : Feature
             return;
         }
 
+        // Add filter to Menu Items
         if (this.MenuItems.Menu is not null)
         {
-            // Add filter to Menu Items
             this.MenuItems.AddFilter(this.ItemMatcher);
         }
 

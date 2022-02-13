@@ -2,6 +2,7 @@
 
 using System;
 using StardewModdingAPI.Events;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley.Menus;
@@ -11,6 +12,11 @@ using StardewValley.Menus;
 /// </summary>
 public interface ICustomEvents
 {
+    /// <summary>
+    ///     Triggers when <see cref="IGameObject" /> that are no longer accessible are purged from the cache.
+    /// </summary>
+    public event EventHandler<GameObjectsRemovedEventArgs> GameObjectsRemoved;
+
     /// <summary>
     ///     Triggers when an <see cref="ItemGrabMenu" /> is constructed or when an the Active Menu switches to/from an
     ///     <see cref="ItemGrabMenu" />.

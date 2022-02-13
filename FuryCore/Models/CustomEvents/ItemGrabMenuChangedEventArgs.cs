@@ -13,7 +13,7 @@ public class ItemGrabMenuChangedEventArgs : EventArgs
     /// <param name="context">The object for the ItemGrabMenu or null.</param>
     /// <param name="screenId">The screen id the menu was opened on.</param>
     /// <param name="isNew">Indicate if the ItemGrabMenu was created.</param>
-    public ItemGrabMenuChangedEventArgs(ItemGrabMenu itemGrabMenu, object context, int screenId, bool isNew)
+    internal ItemGrabMenuChangedEventArgs(ItemGrabMenu itemGrabMenu, object context, int screenId, bool isNew)
     {
         this.ItemGrabMenu = itemGrabMenu;
         this.Context = context;

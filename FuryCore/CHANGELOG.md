@@ -1,5 +1,15 @@
 ﻿# FuryCore Change Log
 
+## 1.4.0 (Unreleased)
+
+### Additions
+
+* Added special handling of Shipping Bin containers.
+
+### Changes
+
+* Purge inaccessible cached objects.
+
 ## 1.3.0 (February 12, 2022)
 
 ### Additions

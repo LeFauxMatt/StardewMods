@@ -1,7 +1,7 @@
 {
   "Name": "Easy Access",
   "Author": "furyx639",
-  "Version": "1.0.0-beta.1",
+  "Version": "1.0.0-beta.2",
   "Description": "Provides easier access to producers in the game.",
   "UniqueID": "furyx639.EasyAccess",
   "EntryDll": "EasyAccess.dll",

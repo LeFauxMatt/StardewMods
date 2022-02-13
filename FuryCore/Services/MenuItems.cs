@@ -380,14 +380,15 @@ internal class MenuItems : IMenuItems, IModService
 
     private bool HighlightMethod(Item item)
     {
-        if (item is null || this.OldHighlightMethod?.Invoke(item) == false)
+        if (item is null)
         {
             return false;
         }
 
         if (!this.ItemHighlightCache.TryGetValue(item.Name, out var highlighted))
         {
-            highlighted = this.ItemHighlighters.All(itemMatcher => itemMatcher.Matches(item));
+            highlighted = this.OldHighlightMethod?.Invoke(item) == true
+                          && this.ItemHighlighters.All(itemMatcher => itemMatcher.Matches(item));
             this.ItemHighlightCache.Add(item.Name, highlighted);
         }
 

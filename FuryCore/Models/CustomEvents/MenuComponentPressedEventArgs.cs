@@ -12,7 +12,7 @@ public class MenuComponentPressedEventArgs : EventArgs
     /// <param name="component">The component which was pressed.</param>
     /// <param name="suppressInput">A method that will suppress the input.</param>
     /// <param name="isSuppressed">Indicates if the input is currently suppressed.</param>
-    public MenuComponentPressedEventArgs(IMenuComponent component, Action suppressInput, Func<bool> isSuppressed)
+    internal MenuComponentPressedEventArgs(IMenuComponent component, Action suppressInput, Func<bool> isSuppressed)
     {
         this.Component = component;
         this.SuppressInput = suppressInput;

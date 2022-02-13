@@ -180,7 +180,7 @@ internal class AssetHandler : IModService, IAssetLoader
             }
         }
 
-        // Load vanilla producers with special configs
+        // Load vanilla special producers
         var specialProducers = new Dictionary<string, IProducerData>
         {
             {
@@ -199,10 +199,10 @@ internal class AssetHandler : IModService, IAssetLoader
         };
         this.LoadProducerData(specialProducers);
 
-        // Load missing vanilla producer data
+        // Load default vanilla producer data
         IProducerData defaultProducer = new ProducerData();
         var vanillaProducers = this.Craftables
-                                   .Where(craftable => Enum.IsDefined(typeof(VanillaProducers), craftable.Key))
+                                   .Where(craftable => Enum.IsDefined(typeof(VanillaProducerObjects), craftable.Key))
                                    .ToDictionary(craftable => craftable.Value[0], _ => defaultProducer);
         this.LoadProducerData(vanillaProducers);
 
