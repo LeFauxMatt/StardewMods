@@ -119,19 +119,19 @@ internal class CollectItems : Feature
             return;
         }
 
-        if (e.Added.Any(item => this.ManagedObjects.TryGetManagedStorage(item, out _)))
+        if (e.Added.Any(item => this.ManagedObjects.FindManagedStorage(item, out _)))
         {
             this.EligibleChests = null;
             return;
         }
 
-        if (e.Removed.Any(item => this.ManagedObjects.TryGetManagedStorage(item, out _)))
+        if (e.Removed.Any(item => this.ManagedObjects.FindManagedStorage(item, out _)))
         {
             this.EligibleChests = null;
             return;
         }
 
-        if (e.QuantityChanged.Any(stack => this.ManagedObjects.TryGetManagedStorage(stack.Item, out _)))
+        if (e.QuantityChanged.Any(stack => this.ManagedObjects.FindManagedStorage(stack.Item, out _)))
         {
             this.EligibleChests = null;
         }

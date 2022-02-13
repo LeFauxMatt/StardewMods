@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
@@ -44,32 +45,7 @@ internal class ManagedObjects : IModService
         {
             foreach (var (inventoryItem, gameObject) in this.GameObjects.InventoryItems)
             {
-                if (gameObject is not IStorageContainer storageContainer)
-                {
-                    continue;
-                }
-
-                if (!this.CachedObjects.TryGetValue(gameObject, out var managedStorage))
-                {
-                    var name = gameObject.Context switch
-                    {
-                        Chest chest => this.Assets.GetStorageName(chest),
-                        SObject obj => this.Assets.GetStorageName(obj),
-                        JunimoHut => "Junimo Hut",
-                        FarmHouse => "Fridge",
-                        IslandFarmHouse => "Fridge",
-                        _ => null,
-                    };
-
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        var storageData = this.GetData(name);
-                        managedStorage = new ManagedStorage(storageContainer, storageData, name);
-                        this.CachedObjects.Add(gameObject, managedStorage);
-                    }
-                }
-
-                if (managedStorage is not null)
+                if (this.TryGetManagedStorage(gameObject, out var managedStorage))
                 {
                     yield return new(inventoryItem, managedStorage);
                 }
@@ -86,32 +62,7 @@ internal class ManagedObjects : IModService
         {
             foreach (var (locationObject, gameObject) in this.GameObjects.LocationObjects)
             {
-                if (gameObject is not IStorageContainer storageContainer)
-                {
-                    continue;
-                }
-
-                if (!this.CachedObjects.TryGetValue(gameObject, out var managedStorage))
-                {
-                    var name = gameObject.Context switch
-                    {
-                        Chest chest => this.Assets.GetStorageName(chest),
-                        SObject obj => this.Assets.GetStorageName(obj),
-                        JunimoHut => "Junimo Hut",
-                        FarmHouse => "Fridge",
-                        IslandFarmHouse => "Fridge",
-                        _ => null,
-                    };
-
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        var storageData = this.GetData(name);
-                        managedStorage = new ManagedStorage(storageContainer, storageData, name);
-                        this.CachedObjects.Add(gameObject, managedStorage);
-                    }
-                }
-
-                if (managedStorage is not null)
+                if (this.TryGetManagedStorage(gameObject, out var managedStorage))
                 {
                     yield return new(locationObject, managedStorage);
                 }
@@ -139,12 +90,12 @@ internal class ManagedObjects : IModService
     }
 
     /// <summary>
-    ///     Attempts to find a ManagedStorage that matches a storage context instance.
+    ///     Attempts to find the ManagedStorage that matches a context.
     /// </summary>
     /// <param name="context">The context object to find.</param>
     /// <param name="managedStorage">The <see cref="IManagedStorage" /> to return if it matches the context object.</param>
     /// <returns>Returns true if a matching <see cref="IManagedStorage" /> could be found.</returns>
-    public bool TryGetManagedStorage(object context, out IManagedStorage managedStorage)
+    public bool FindManagedStorage(object context, out IManagedStorage managedStorage)
     {
         if (context is null)
         {
@@ -152,67 +103,68 @@ internal class ManagedObjects : IModService
             return false;
         }
 
-        if (this.GameObjects.TryGetGameObject(context, out var gameObject) && gameObject is IStorageContainer storageContainer)
+        if (this.GameObjects.TryGetGameObject(context, out var gameObject) && this.TryGetManagedStorage(gameObject, out managedStorage))
         {
-            if (!this.CachedObjects.TryGetValue(gameObject, out managedStorage))
-            {
-                var name = gameObject.Context switch
-                {
-                    Chest chest => this.Assets.GetStorageName(chest),
-                    SObject { ParentSheetIndex: 165 } obj => this.Assets.GetStorageName(obj),
-                    JunimoHut => "Junimo Hut",
-                    FarmHouse => "Fridge",
-                    IslandFarmHouse => "Fridge",
-                    ShippingBin => "Shipping Bin",
-                    _ => null,
-                };
-
-                if (!string.IsNullOrWhiteSpace(name))
-                {
-                    var storageData = this.GetData(name);
-                    managedStorage = new ManagedStorage(storageContainer, storageData, name);
-                    this.CachedObjects.Add(gameObject, managedStorage);
-                }
-            }
-
-            return managedStorage is not null;
+            return true;
         }
 
-        foreach (var (_, playerStorage) in this.InventoryStorages)
+        managedStorage = this.InventoryStorages.FirstOrDefault(playerStorage => ReferenceEquals(playerStorage.Value.Context, context)).Value;
+        if (managedStorage is not null)
         {
-            if (ReferenceEquals(playerStorage.Context, context))
-            {
-                managedStorage = playerStorage;
-                return true;
-            }
+            return true;
         }
 
-        foreach (var (_, placedStorage) in this.LocationStorages)
+        managedStorage = this.LocationStorages.FirstOrDefault(placedStorage => ReferenceEquals(placedStorage.Value.Context, context)).Value;
+        if (managedStorage is not null)
         {
-            if (ReferenceEquals(placedStorage.Context, context))
-            {
-                managedStorage = placedStorage;
-                return true;
-            }
+            return true;
         }
 
         managedStorage = null;
         return false;
     }
 
-    private IStorageData GetData(string name)
+    private bool TryGetManagedStorage(IGameObject gameObject, out IManagedStorage managedStorage)
     {
-        if (!this.ChestConfigs.TryGetValue(name, out var config))
+        if (this.CachedObjects.TryGetValue(gameObject, out managedStorage))
         {
-            if (!this.Assets.ChestData.TryGetValue(name, out var chestData))
-            {
-                chestData = new StorageData();
-                this.Assets.AddChestData(name, chestData);
-            }
-
-            config = this.ChestConfigs[name] = new StorageModel(chestData, this.Config.DefaultChest);
+            return managedStorage is not null;
         }
 
-        return config;
+        if (gameObject is not IStorageContainer storageContainer)
+        {
+            return false;
+        }
+
+        var name = gameObject.Context switch
+        {
+            Chest chest => this.Assets.GetStorageName(chest),
+            SObject { ParentSheetIndex: 165 } obj => this.Assets.GetStorageName(obj),
+            JunimoHut => "Junimo Hut",
+            FarmHouse => "Fridge",
+            IslandFarmHouse => "Fridge",
+            ShippingBin => "Shipping Bin",
+            _ => null,
+        };
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+
+        if (!this.ChestConfigs.TryGetValue(name, out var storageConfig))
+        {
+            if (!this.Assets.ChestData.TryGetValue(name, out var storageData))
+            {
+                storageData = new StorageData();
+                this.Assets.AddChestData(name, storageData);
+            }
+
+            storageConfig = this.ChestConfigs[name] = new StorageModel(storageData, this.Config.DefaultChest);
+        }
+
+        managedStorage = new ManagedStorage(storageContainer, storageConfig, name);
+        this.CachedObjects.Add(gameObject, managedStorage);
+        return true;
     }
 }

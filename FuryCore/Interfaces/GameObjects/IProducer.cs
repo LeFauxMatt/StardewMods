@@ -6,6 +6,11 @@ using StardewValley;
 public interface IProducer : IGameObject
 {
     /// <summary>
+    ///     Gets the current output item for this producer.
+    /// </summary>
+    Item OutputItem { get; }
+
+    /// <summary>
     ///     Attempts to get the output item for this producer.
     /// </summary>
     /// <param name="item">The item to take from the producer.</param>

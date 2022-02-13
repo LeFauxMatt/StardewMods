@@ -29,6 +29,15 @@ internal class SerializedProducerData : IProducerData
     }
 
     /// <inheritdoc />
+    public HashSet<string> CollectOutputItems
+    {
+        get => this.Data.TryGetValue("CollectOutputItems", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(value.Split(','))
+            : new();
+        set => this.Data["CollectOutputItems"] = !value.Any() ? string.Empty : string.Join(",", value);
+    }
+
+    /// <inheritdoc />
     public FeatureOptionRange CollectOutputs
     {
         get => this.Data.TryGetValue("CollectOutputs", out var value) && Enum.TryParse(value, out FeatureOptionRange range)

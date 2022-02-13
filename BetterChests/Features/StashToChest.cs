@@ -161,7 +161,7 @@ internal class StashToChest : Feature
             return;
         }
 
-        if (this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage))
+        if (this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage))
         {
             this.CurrentStorage = managedStorage;
         }

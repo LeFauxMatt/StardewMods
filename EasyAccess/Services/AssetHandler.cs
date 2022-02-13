@@ -11,6 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Models.Config;
 using StardewMods.EasyAccess.Models.ManagedObjects;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 
@@ -44,17 +45,6 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     /// <summary>
-    ///     Gets the game data for Big Craftables.
-    /// </summary>
-    public IReadOnlyDictionary<int, string[]> Craftables
-    {
-        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
-                                              .ToDictionary(
-                                                  info => info.Key,
-                                                  info => info.Value.Split('/'));
-    }
-
-    /// <summary>
     ///     Gets the collection of producer data for all known producer types in the game.
     /// </summary>
     public IReadOnlyDictionary<string, IProducerData> ProducerData
@@ -66,6 +56,14 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     private IConfigModel Config { get; }
+
+    private IReadOnlyDictionary<int, string[]> Craftables
+    {
+        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
+                                              .ToDictionary(
+                                                  info => info.Key,
+                                                  info => info.Value.Split('/'));
+    }
 
     private IModHelper Helper { get; }
 
@@ -182,16 +180,41 @@ internal class AssetHandler : IModService, IAssetLoader
             }
         }
 
-        // Load missing vanilla producer data
-        producerData = new Dictionary<string, IDictionary<string, string>>();
+        // Load vanilla producers with special configs
+        var specialProducers = new Dictionary<string, IProducerData>
+        {
+            {
+                "Cask", new ProducerData
+                {
+                    CollectOutputItems = new(new[] { "quality_iridium" }),
+                    DispenseInputItems = new(new[] { "category_artisan_goods", "!quality_iridium" }),
+                }
+            },
+            {
+                "Crab Pot", new ProducerData
+                {
+                    DispenseInputItems = new(new[] { "item_bait" }),
+                }
+            },
+        };
+        this.LoadProducerData(specialProducers);
 
-        var producerCrabPot = SerializedProducerData.GetData(new ProducerData());
-        producerCrabPot["DispenseInputItems"] = "item_bait";
-        producerData.Add("Crab Pot", producerCrabPot);
-        this.LoadProducerData(producerData);
+        // Load missing vanilla producer data
+        IProducerData defaultProducer = new ProducerData();
+        var vanillaProducers = this.Craftables
+                                   .Where(craftable => Enum.IsDefined(typeof(VanillaProducers), craftable.Key))
+                                   .ToDictionary(craftable => craftable.Value[0], _ => defaultProducer);
+        this.LoadProducerData(vanillaProducers);
 
         // Save to producers.json
         this.Helper.Data.WriteJsonFile("assets/producers.json", this.LocalProducerData);
+    }
+
+    private void LoadProducerData(IDictionary<string, IProducerData> producerData)
+    {
+        this.LoadProducerData(producerData.ToDictionary(
+            data => data.Key,
+            data => SerializedProducerData.GetData(data.Value)));
     }
 
     private void LoadProducerData(IDictionary<string, IDictionary<string, string>> producerData)

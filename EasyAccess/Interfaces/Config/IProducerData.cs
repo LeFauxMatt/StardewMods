@@ -14,6 +14,11 @@ internal interface IProducerData
     public int CollectOutputDistance { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating what categories of items can be collected from the producer.
+    /// </summary>
+    public HashSet<string> CollectOutputItems { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if the producer can be collected from.
     /// </summary>
     public FeatureOptionRange CollectOutputs { get; set; }
@@ -48,8 +53,10 @@ internal interface IProducerData
     {
         other.CollectOutputs = this.CollectOutputs;
         other.CollectOutputDistance = this.CollectOutputDistance;
+        other.CollectOutputItems = this.CollectOutputItems;
         other.DispenseInputs = this.DispenseInputs;
         other.DispenseInputDistance = this.DispenseInputDistance;
+        other.DispenseInputItems = this.DispenseInputItems;
         other.DispenseInputPriority = this.DispenseInputPriority;
     }
 }

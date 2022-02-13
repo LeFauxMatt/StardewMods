@@ -59,17 +59,6 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     /// <summary>
-    ///     Gets the game data for Big Craftables.
-    /// </summary>
-    public IReadOnlyDictionary<int, string[]> Craftables
-    {
-        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
-                                              .ToDictionary(
-                                                  info => info.Key,
-                                                  info => info.Value.Split('/'));
-    }
-
-    /// <summary>
     ///     Gets the collection of tab data.
     /// </summary>
     public IReadOnlyDictionary<string, string[]> TabData
@@ -86,6 +75,14 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     private IConfigModel Config { get; }
+
+    private IReadOnlyDictionary<int, string[]> Craftables
+    {
+        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
+                                              .ToDictionary(
+                                                  info => info.Key,
+                                                  info => info.Value.Split('/'));
+    }
 
     private IModHelper Helper { get; }
 

@@ -37,6 +37,15 @@ internal class ProducerModel : IProducerData
     }
 
     /// <inheritdoc />
+    public HashSet<string> CollectOutputItems
+    {
+        get => this.Data.CollectOutputItems.Any()
+            ? this.Data.CollectOutputItems
+            : this.DefaultProducer.CollectOutputItems;
+        set => this.Data.CollectOutputItems = value;
+    }
+
+    /// <inheritdoc />
     public FeatureOptionRange CollectOutputs
     {
         get

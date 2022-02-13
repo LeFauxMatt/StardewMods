@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
@@ -32,6 +34,10 @@ internal class GameObjects : IGameObjects, IModService
     public GameObjects(IModHelper helper)
     {
         this.Helper = helper;
+        this.Helper.Events.GameLoop.DayEnding += this.OnDayEnding;
+        this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        this.Helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
+        this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
     }
 
     /// <inheritdoc />
@@ -225,41 +231,79 @@ internal class GameObjects : IGameObjects, IModService
             context = actualContext;
         }
 
-        if (!this.CachedObjects.TryGetValue(context, out gameObject))
+        if (this.CachedObjects.TryGetValue(context, out gameObject))
         {
-            switch (context)
-            {
-                case Chest chest:
-                    gameObject = new StorageChest(chest);
-                    return true;
-                case SObject { ParentSheetIndex: 165, heldObject.Value: Chest heldChest }:
-                    this.ContextMap[heldChest] = context;
-                    gameObject = new StorageChest(heldChest, context);
-                    return true;
-                case FarmHouse { fridge.Value: { } fridge } farmHouse:
-                    this.ContextMap[fridge] = context;
-                    gameObject = new StorageChest(fridge, context, () => farmHouse.modData);
-                    return true;
-                case IslandFarmHouse { fridge.Value: { } islandFridge } islandFarmHouse:
-                    this.ContextMap[islandFridge] = context;
-                    gameObject = new StorageChest(islandFridge, context, () => islandFarmHouse.modData);
-                    break;
-                case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
-                    this.ContextMap[junimoHutChest] = context;
-                    gameObject = new StorageChest(junimoHutChest, context, () => junimoHut.modData);
-                    return true;
-                case ShippingBin shippingBin:
-                    this.ContextMap[Game1.getFarm()] = context;
-                    gameObject = new StorageContainer(context, () => int.MaxValue, () => Game1.getFarm().getShippingBin(Game1.player), () => shippingBin.modData);
-                    return true;
-                case CrabPot crabPot:
-                    gameObject = new CrabPotProducer(crabPot, () => crabPot.modData);
-                    return true;
-                default:
-                    return false;
-            }
+            return gameObject is not null;
         }
 
-        return gameObject is not null;
+        switch (context)
+        {
+            case Chest chest:
+                gameObject = new StorageChest(chest);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest heldChest }:
+                this.ContextMap[heldChest] = context;
+                gameObject = new StorageChest(heldChest, context);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            case FarmHouse { fridge.Value: { } fridge } farmHouse:
+                this.ContextMap[fridge] = context;
+                gameObject = new StorageChest(fridge, context, () => farmHouse.modData);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            case IslandFarmHouse { fridge.Value: { } islandFridge } islandFarmHouse:
+                this.ContextMap[islandFridge] = context;
+                gameObject = new StorageChest(islandFridge, context, () => islandFarmHouse.modData);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
+                this.ContextMap[junimoHutChest] = context;
+                gameObject = new StorageChest(junimoHutChest, context, () => junimoHut.modData);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            case ShippingBin shippingBin:
+                this.ContextMap[Game1.getFarm()] = context;
+                gameObject = new StorageContainer(context, () => int.MaxValue, () => Game1.getFarm().getShippingBin(Game1.player), () => shippingBin.modData);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            case SObject { bigCraftable.Value: true } obj when obj is CrabPot || Enum.IsDefined(typeof(VanillaProducers), obj.ParentSheetIndex):
+                gameObject = new GenericProducer(obj);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+            default:
+                this.CachedObjects.Add(context, null);
+                return false;
+        }
+    }
+
+    private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
+    {
+        foreach (var context in e.Removed)
+        {
+            this.CachedObjects.Remove(context);
+        }
+    }
+
+    private void OnDayEnding(object sender, DayEndingEventArgs e)
+    {
+        this.CachedObjects.Clear();
+        this.ContextMap.Clear();
+    }
+
+    private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+    {
+        foreach (var context in e.Removed)
+        {
+            this.CachedObjects.Remove(context);
+        }
+    }
+
+    private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
+    {
+        foreach (var (_, context) in e.Removed)
+        {
+            this.CachedObjects.Remove(context);
+        }
     }
 }

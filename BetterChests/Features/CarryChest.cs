@@ -276,12 +276,12 @@ internal class CarryChest : Feature
     {
         if (!__result
             || !location.Objects.TryGetValue(new(x / 64, y / 64), out var obj)
-            || !CarryChest.Instance.ManagedObjects.TryGetManagedStorage(__instance, out var fromStorage))
+            || !CarryChest.Instance.ManagedObjects.FindManagedStorage(__instance, out var fromStorage))
         {
             return;
         }
 
-        if (!CarryChest.Instance.ManagedObjects.TryGetManagedStorage(obj, out var toStorage))
+        if (!CarryChest.Instance.ManagedObjects.FindManagedStorage(obj, out var toStorage))
         {
             return;
         }
@@ -364,7 +364,7 @@ internal class CarryChest : Feature
         }
 
         // Object is Chest and supports Carry Chest
-        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
+        if (!this.ManagedObjects.FindManagedStorage(obj, out var managedChest) || managedChest.CarryChest == FeatureOption.Disabled)
         {
             return;
         }

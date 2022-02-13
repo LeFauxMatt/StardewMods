@@ -28,9 +28,14 @@ internal class ManagedProducer : GameObject, IManagedProducer
         this.Producer = producer;
         this.QualifiedItemId = qualifiedItemId;
 
-        foreach (var item in this.DispenseInputItems)
+        foreach (var tag in this.CollectOutputItems)
         {
-            this.ItemMatcher.Add(item);
+            this.ItemMatcherOut.Add(tag);
+        }
+
+        foreach (var tag in this.DispenseInputItems)
+        {
+            this.ItemMatcherIn.Add(tag);
         }
     }
 
@@ -45,6 +50,15 @@ internal class ManagedProducer : GameObject, IManagedProducer
             }
             : this.Data.CollectOutputDistance;
         set => this.ModData[$"{EasyAccess.ModUniqueId}/CollectOutputDistance"] = value.ToString();
+    }
+
+    /// <inheritdoc />
+    public HashSet<string> CollectOutputItems
+    {
+        get => this.ModData.TryGetValue($"{EasyAccess.ModUniqueId}/CollectOutputItems", out var value) && !string.IsNullOrWhiteSpace(value)
+            ? new(this.Data.CollectOutputItems.Concat(value.Split(',')))
+            : this.Data.CollectOutputItems;
+        set => this.ModData[$"{EasyAccess.ModUniqueId}/CollectOutputItems"] = string.Join(",", value);
     }
 
     /// <inheritdoc />
@@ -109,12 +123,21 @@ internal class ManagedProducer : GameObject, IManagedProducer
     }
 
     /// <inheritdoc />
-    public ItemMatcher ItemMatcher { get; } = new(true);
+    public ItemMatcher ItemMatcherIn { get; } = new(true);
+
+    /// <inheritdoc />
+    public ItemMatcher ItemMatcherOut { get; } = new(true);
 
     /// <inheritdoc />
     public override ModDataDictionary ModData
     {
         get => this.Producer.ModData;
+    }
+
+    /// <inheritdoc cref="IProducer.OutputItem" />
+    public Item OutputItem
+    {
+        get => this.Producer.OutputItem;
     }
 
     /// <inheritdoc />
@@ -127,12 +150,18 @@ internal class ManagedProducer : GameObject, IManagedProducer
     /// <inheritdoc cref="IProducer.TryGetOutput" />
     public bool TryGetOutput(out Item item)
     {
-        return this.Producer.TryGetOutput(out item);
+        if (this.OutputItem is not null && this.ItemMatcherOut.Matches(this.OutputItem))
+        {
+            return this.Producer.TryGetOutput(out item);
+        }
+
+        item = null;
+        return false;
     }
 
     /// <inheritdoc cref="IProducer.TrySetInput" />
     public bool TrySetInput(Item item)
     {
-        return this.ItemMatcher.Any() && this.ItemMatcher.Matches(item) && this.Producer.TrySetInput(item);
+        return this.ItemMatcherIn.Matches(item) && this.Producer.TrySetInput(item);
     }
 }

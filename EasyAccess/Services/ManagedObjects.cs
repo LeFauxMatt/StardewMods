@@ -40,28 +40,7 @@ internal class ManagedObjects : IModService
         {
             foreach (var (locationObject, gameObject) in this.GameObjects.LocationObjects)
             {
-                if (gameObject is not IProducer producer)
-                {
-                    continue;
-                }
-
-                if (!this.CachedObjects.TryGetValue(gameObject, out var managedProducer))
-                {
-                    var name = gameObject.Context switch
-                    {
-                        SObject obj => obj.Name,
-                        _ => null,
-                    };
-
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        var producerData = this.GetData(name);
-                        managedProducer = new ManagedProducer(producer, producerData, name);
-                        this.CachedObjects.Add(gameObject, managedProducer);
-                    }
-                }
-
-                if (managedProducer is not null)
+                if (this.TryGetProducer(gameObject, out var managedProducer))
                 {
                     yield return new(locationObject, managedProducer);
                 }
@@ -88,9 +67,30 @@ internal class ManagedObjects : IModService
 
     private IDictionary<string, IProducerData> ProducerConfigs { get; } = new Dictionary<string, IProducerData>();
 
-    private IProducerData GetData(string name)
+    private bool TryGetProducer(IGameObject gameObject, out IManagedProducer managedProducer)
     {
-        if (!this.ProducerConfigs.TryGetValue(name, out var config))
+        if (this.CachedObjects.TryGetValue(gameObject, out managedProducer))
+        {
+            return managedProducer is not null;
+        }
+
+        if (gameObject is not IProducer producer)
+        {
+            return false;
+        }
+
+        var name = gameObject.Context switch
+        {
+            SObject obj => obj.name,
+            _ => null,
+        };
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+
+        if (!this.ProducerConfigs.TryGetValue(name, out var producerConfig))
         {
             if (!this.Assets.ProducerData.TryGetValue(name, out var producerData))
             {
@@ -98,9 +98,11 @@ internal class ManagedObjects : IModService
                 this.Assets.AddProducerData(name, producerData);
             }
 
-            config = this.ProducerConfigs[name] = new ProducerModel(producerData, this.Config.DefaultProducer);
+            producerConfig = this.ProducerConfigs[name] = new ProducerModel(producerData, this.Config.DefaultProducer);
         }
 
-        return config;
+        managedProducer = new ManagedProducer(producer, producerConfig, name);
+        this.CachedObjects.Add(gameObject, managedProducer);
+        return true;
     }
 }

@@ -82,7 +82,7 @@ internal class DispenseInputs : Feature
             for (var index = 0; index < Game1.player.MaxItems; index++)
             {
                 var item = Game1.player.Items[index];
-                if (producer.TrySetInput(item))
+                if (item is not null && producer.TrySetInput(item))
                 {
                     Log.Trace($"Dispensed {item.Name} into producer {producer.QualifiedItemId}.");
                     dispensedAny = true;

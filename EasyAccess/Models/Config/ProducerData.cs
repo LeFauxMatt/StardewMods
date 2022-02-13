@@ -11,6 +11,9 @@ internal class ProducerData : IProducerData
     public int CollectOutputDistance { get; set; } = 15;
 
     /// <inheritdoc />
+    public HashSet<string> CollectOutputItems { get; set; } = new();
+
+    /// <inheritdoc />
     public FeatureOptionRange CollectOutputs { get; set; } = FeatureOptionRange.Location;
 
     /// <inheritdoc />

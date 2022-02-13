@@ -340,7 +340,7 @@ internal class SearchItems : Feature
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
         IManagedStorage managedStorage = null;
-        this.Menu = e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled
+        this.Menu = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled
             ? e.ItemGrabMenu
             : null;
 
