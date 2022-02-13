@@ -414,13 +414,22 @@ Sample `content.json`:
       "Action": "Load",
       "Target": "example.ModId/TabTexture",
       "FromFile": "assets/{{TargetWithoutPath}}j.png",
+    },
+    
+    // Replace texture for mining icon
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.BetterChests\\Tabs\\Texture",
+      "FromFile": "assets/mining-icon.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea" {"X": 48, "Y": 0, "Width": 16, "Height": 16}
     }
   ]
 }
 ```
 
 `furyx639.BetterChests\\Tabs\\Textures`  
-Replace tab icons by patching this texture.
+Replace tab icons by patching this texture<sup>1</sup>.
 
 1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
 2. See [Item Tags](#item-tags)
@@ -446,7 +455,7 @@ Sample `content.json`:
 }
 ```
 
-See the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+1. See the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
 docs for Content Patcher.
 
 ## Translations
