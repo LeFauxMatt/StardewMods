@@ -11,6 +11,7 @@ Provides easier access to machines and producers in the game.
 * [Configurations](#configurations)
     * [Item Tags](#item-tags)
         * [Range Values](#range-values)
+* [Translations](#translations)
 
 ## Features
 
@@ -120,3 +121,21 @@ The Range value limits which chests will be selected for a feature relative to t
 * **World** - Any chest accessible to the player in the world.
 
 1. If parent value is unspecified, Location will be the default value.
+
+## Translations
+
+See [here](i18n/default.json) for the base translation file.
+
+| Language                   | Status            | Credits  |
+|:---------------------------|:------------------|:---------|
+| Chinese                    | ❌️ Not Translated |          |
+| French                     | ❌️ Not Translated |          |
+| German                     | ❌️ Not Translated |          |
+| Hungarian                  | ❌️ Not Translated |          |
+| [Italian](i18n/it.json)    | ❔ Incomplete      | zomboide |
+| Japanese                   | ❌️ Not Translated |          |
+| Korean                     | ❌️ Not Translated |          |
+| [Portuguese](i18n/pt.json) | ❔ Incomplete      | Aulberon |
+| Russian                    | ❌️ Not Translated |          |
+| Spanish                    | ❌️ Not Translated |          |
+| Turkish                    | ❌️ Not Translated |          |
