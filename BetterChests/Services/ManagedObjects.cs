@@ -10,7 +10,9 @@ using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley.Buildings;
 using StardewValley.Locations;
@@ -34,6 +36,8 @@ internal class ManagedObjects : IModService
         this.Config = config;
         this._assetHandler = services.Lazy<AssetHandler>();
         this._gameObjects = services.Lazy<IGameObjects>();
+        services.Lazy<ICustomEvents>(
+            customEvents => { customEvents.GameObjectsRemoved += this.OnGameObjectsRemoved; });
     }
 
     /// <summary>
@@ -122,6 +126,14 @@ internal class ManagedObjects : IModService
 
         managedStorage = null;
         return false;
+    }
+
+    private void OnGameObjectsRemoved(object sender, GameObjectsRemovedEventArgs e)
+    {
+        foreach (var gameObject in e.Removed)
+        {
+            this.CachedObjects.Remove(gameObject);
+        }
     }
 
     private bool TryGetManagedStorage(IGameObject gameObject, out IManagedStorage managedStorage)
