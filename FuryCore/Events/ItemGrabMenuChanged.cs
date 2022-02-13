@@ -41,6 +41,12 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
                     typeof(ItemGrabMenuChanged),
                     nameof(ItemGrabMenuChanged.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix);
+                harmonyHelper.AddPatch(
+                    id,
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.initializeShippingBin)),
+                    typeof(ItemGrabMenuChanged),
+                    nameof(ItemGrabMenuChanged.ItemGrabMenu_initializeShippingBin_postfix),
+                    PatchType.Postfix);
 
                 harmonyHelper.ApplyPatches(id);
             });
@@ -65,6 +71,13 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
         ItemGrabMenuChanged.Instance.InvokeAll(new(__instance, __instance.context, Context.ScreenId, true));
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void ItemGrabMenu_initializeShippingBin_postfix(ItemGrabMenu __instance)
+    {
+        ItemGrabMenuChanged.Instance.InvokeAll(new(null, null, Context.ScreenId, false));
+    }
+
     [SuppressMessage("StyleCop", "SA1101", Justification = "This is a pattern match not a local call")]
     private void InvokeIfMenuChanged()
     {
@@ -81,7 +94,7 @@ internal class ItemGrabMenuChanged : SortedEventHandler<ItemGrabMenuChangedEvent
             return;
         }
 
-        if (this.Menu is ItemGrabMenu itemGrabMenu)
+        if (this.Menu is ItemGrabMenu { shippingBin: false } itemGrabMenu)
         {
             this.InvokeAll(new(itemGrabMenu, itemGrabMenu.context, Context.ScreenId, false));
             return;
