@@ -20,16 +20,18 @@ Adds enhanced chest features to the game.
     * [Stash To Chest](#stash-to-chest)
     * [Unload Chest](#unload-chest)
 * [Usage](#usage)
-    * [Custom Chests](#custom-chests)
-    * [Customized Tabs](#customized-tabs)
     * [Item Tags](#item-tags)
 * [Configurations](#configurations)
     * [Config Inheritance](#config-inheritance)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
-* [Integrations](#integrations)
+* [Mod Integrations](#mod-integrations) 
     * [Automate](#automate)
     * [Horse Overhaul](#horse-overhaul)
+* [Customization](#customization)
+    * [Custom Chests](#custom-chests)
+    * [Customized Tabs](#customized-tabs)
+    * [Other Assets](#other-assets)
 * [Translations](#translations)
 
 ## Features
@@ -222,6 +224,109 @@ placed chest.
 
 ## Usage
 
+### Item Tags
+
+The game adds various [Context Tags](https://stardewcommunitywiki.com/Modding:Context_tags)
+to each item which are used throughout this mod.
+
+There are a few ways to see what context tags each item contains:
+
+* Enter the console command `debug listtags` to show all tags for the currently held item.
+* Refer to the [Modding Docs](https://stardewcommunitywiki.com/Modding:Context_tags) for some tags (note may be
+  outdated).
+* Install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541),
+  enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) in its
+  config and hit F1 while hovering over any item.
+
+Here are examples of some useful tags:
+
+| Description | Tags                                                        |
+|-------------|-------------------------------------------------------------|
+| Category    | `category_clothing`, `category_boots`, `category_hats`, ... |
+| Color       | `color_red`, `color_blue`, ...                              |
+| Name        | `item_sap`, `item_wood`, ...                                |
+| Type        | `wood_item`, `trash_item`, ...                              |
+| Quality     | `quality_none`, `quality_gold`, ...                         |
+| Season      | `season_spring`, `season_fall`, ...                         |
+| Index       | `id_o_709`, `id_r_529`, ...                                 |
+
+In addition to the vanilla game tags, this also adds some custom tags to items:
+
+| Tag                  | Description                                                                                  |
+|----------------------|----------------------------------------------------------------------------------------------|
+| `category_artifact`  | Selects any item that is an Artifact.                                                        |
+| `category_furniture` | Includes regular furniture items with this tag even though the game doesn't normally add it. |
+| `donate_bundle`      | Selects any items that are missing from the Community Center Bundle.                         |
+| `donate_museum`      | Selects any items that can be donated to the Museum.                                         |
+
+## Configurations
+
+For ease of use, it is recommended to set config options
+from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098).
+
+### Config Inheritance
+
+For some config options, the same options can be applied to multiple levels. The lowest level config will always take
+precedence.
+
+* **Default Chest** - Every chest inherits from the Default Chest options.
+* **Chest Type** - Applies to a particular type of chest.
+    * Chest
+    * Stone Chest
+    * Junimo Chest
+    * Auto-Grabber
+    * Mini-Fridge
+    * Mini-Shipping Bin
+    * Fridge
+    * Custom chests added by other mods.<sup>1</sup>
+* **Individual Chest** - A single instance of a chest can be configured individually.<sup>2</sup>
+
+1. External mod must "opt-in" by [registering custom chest](#custom-chests) with Better Chests.
+2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual
+   chests.
+
+### Option Values
+
+The option value determines whether a feature will be enabled or disabled for a chest.
+
+* **Default** - The value will be inherited from a parent config.<sup>1</sup>
+* **Disabled** - The feature will be disabled.
+* **Enabled** - The feature will be enabled.
+
+1. If parent value is unspecified, Enabled will be the default value.
+
+### Range Values
+
+The Range value limits which chests will be selected for a feature relative to the player.
+
+* **Default** - The value will be inherited from a parent config.<sup>1</sup>
+* **Disabled** - The feature will be disabled.
+* **Inventory** - Only chests in the player inventory.
+* **Location** - Only chests in the players current location.
+* **World** - Any chest accessible to the player in the world.
+
+1. If parent value is unspecified, Location will be the default value.
+
+## Mod Integrations
+
+### Automate
+
+When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
+[Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
+items into the chest if the Filter list does not allow it.
+
+### Horse Overhaul
+
+Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
+saddlebags. The distance to the player's Horse will be considered for features such
+as [Craft from Chest](#craft-from-chest) and
+[Stash to Chest](#stash-to-chest).
+
+The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
+`BetterChests/assets/chests.json` file.
+
+## Customization
+
 ### Custom Chests
 
 The config for chest types are stored in the `chests.json` in the `assets`
@@ -320,106 +425,29 @@ Replace tab icons by patching this texture.
 1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
 2. See [Item Tags](#item-tags)
 
-### Item Tags
+### Other Assets
 
-The game adds various [Context Tags](https://stardewcommunitywiki.com/Modding:Context_tags)
-to each item which are used throughout this mod.
+Replace the Configure button by editing the texture:
 
-There are a few ways to see what context tags each item contains:
+`furyx639.BetterChests\\ConfigureButton`.
 
-* Enter the console command `debug listtags` to show all tags for the currently held item.
-* Refer to the [Modding Docs](https://stardewcommunitywiki.com/Modding:Context_tags) for some tags (note may be
-  outdated).
-* Install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541),
-  enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) in its
-  config and hit F1 while hovering over any item.
+Sample `content.json`:
 
-Here are examples of some useful tags:
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.BetterChests\\ConfigureButton",
+      "FromFile": "assets/MyConfigureButton.png"
+    },
+  ]
+}
+```
 
-| Description | Tags                                                        |
-|-------------|-------------------------------------------------------------|
-| Category    | `category_clothing`, `category_boots`, `category_hats`, ... |
-| Color       | `color_red`, `color_blue`, ...                              |
-| Name        | `item_sap`, `item_wood`, ...                                |
-| Type        | `wood_item`, `trash_item`, ...                              |
-| Quality     | `quality_none`, `quality_gold`, ...                         |
-| Season      | `season_spring`, `season_fall`, ...                         |
-| Index       | `id_o_709`, `id_r_529`, ...                                 |
-
-In addition to the vanilla game tags, this also adds some custom tags to items:
-
-| Tag                  | Description                                                                                  |
-|----------------------|----------------------------------------------------------------------------------------------|
-| `category_artifact`  | Selects any item that is an Artifact.                                                        |
-| `category_furniture` | Includes regular furniture items with this tag even though the game doesn't normally add it. |
-| `donate_bundle`      | Selects any items that are missing from the Community Center Bundle.                         |
-| `donate_museum`      | Selects any items that can be donated to the Museum.                                         |
-
-## Configurations
-
-For ease of use, it is recommended to set config options
-from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098).
-
-### Config Inheritance
-
-For some config options, the same options can be applied to multiple levels. The lowest level config will always take
-precedence.
-
-* **Default Chest** - Every chest inherits from the Default Chest options.
-* **Chest Type** - Applies to a particular type of chest.
-    * Chest
-    * Stone Chest
-    * Junimo Chest
-    * Auto-Grabber
-    * Mini-Fridge
-    * Mini-Shipping Bin
-    * Fridge
-    * Custom chests added by other mods.<sup>1</sup>
-* **Individual Chest** - A single instance of a chest can be configured individually.<sup>2</sup>
-
-1. External mod must "opt-in" by [registering custom chest](#custom-chests) with Better Chests.
-2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual
-   chests.
-
-### Option Values
-
-The option value determines whether a feature will be enabled or disabled for a chest.
-
-* **Default** - The value will be inherited from a parent config.<sup>1</sup>
-* **Disabled** - The feature will be disabled.
-* **Enabled** - The feature will be enabled.
-
-1. If parent value is unspecified, Enabled will be the default value.
-
-### Range Values
-
-The Range value limits which chests will be selected for a feature relative to the player.
-
-* **Default** - The value will be inherited from a parent config.<sup>1</sup>
-* **Disabled** - The feature will be disabled.
-* **Inventory** - Only chests in the player inventory.
-* **Location** - Only chests in the players current location.
-* **World** - Any chest accessible to the player in the world.
-
-1. If parent value is unspecified, Location will be the default value.
-
-## Integrations
-
-### Automate
-
-When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
-[Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
-items into the chest if the Filter list does not allow it.
-
-### Horse Overhaul
-
-Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
-saddlebags. The distance to the player's Horse will be considered for features such
-as [Craft from Chest](#craft-from-chest) and
-[Stash to Chest](#stash-to-chest).
-
-The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
-`BetterChests/assets/chests.json` file.
+See the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+docs for Content Patcher.
 
 ## Translations
 

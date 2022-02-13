@@ -44,7 +44,7 @@ internal class CategorizeChest : Feature
         get => this._configureButton.Value ??= new CustomMenuComponent(
             new(
                 new(0, 0, Game1.tileSize, Game1.tileSize),
-                this.Helper.Content.Load<Texture2D>("assets/configure.png"),
+                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/ConfigureButton", ContentSource.GameContent),
                 Rectangle.Empty,
                 Game1.pixelZoom)
             {
