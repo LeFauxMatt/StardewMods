@@ -25,7 +25,7 @@ Adds enhanced chest features to the game.
     * [Config Inheritance](#config-inheritance)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
-* [Mod Integrations](#mod-integrations) 
+* [Mod Integrations](#mod-integrations)
     * [Automate](#automate)
     * [Horse Overhaul](#horse-overhaul)
 * [Customization](#customization)
@@ -416,27 +416,19 @@ Sample `content.json`:
       "FromFile": "assets/{{TargetWithoutPath}}j.png",
     },
     
-    // Replace texture for mining icon
-    {
-      "Action": "EditImage",
-      "Target": "furyx639.BetterChests\\Tabs\\Texture",
-      "FromFile": "assets/mining-icon.png",
-      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
-      "ToArea" {"X": 48, "Y": 0, "Width": 16, "Height": 16}
-    }
+
   ]
 }
 ```
-
-`furyx639.BetterChests\\Tabs\\Textures`  
-Replace tab icons by patching this texture<sup>1</sup>.
 
 1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
 2. See [Item Tags](#item-tags)
 
 ### Other Assets
 
-Replace the Configure button by editing the texture:
+#### Configure Button
+
+Replace the Configure button by editing the texture<sup>1</sup>:
 
 `furyx639.BetterChests\\ConfigureButton`.
 
@@ -455,8 +447,37 @@ Sample `content.json`:
 }
 ```
 
-1. See the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
-docs for Content Patcher.
+1. See
+   the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+   docs for Content Patcher.
+
+#### Tab Texture
+
+Replace the default Tabs by editing the texture<sup>1</sup>:
+
+`furyx639.BetterChests\\Tabs\\Textures`  
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    // Replace texture for mining icon
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.BetterChests\\Tabs\\Texture",
+      "FromFile": "assets/mining-icon.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea" {"X": 48, "Y": 0, "Width": 16, "Height": 16}
+    }
+  ]
+}
+```
+
+1. See
+   the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+   docs for Content Patcher.
 
 ## Translations
 
