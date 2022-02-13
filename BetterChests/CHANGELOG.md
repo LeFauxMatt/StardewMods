@@ -7,6 +7,8 @@
 * Added support for Auto-Grabber.
 * Added support for Junimo Hut.
 * Added support for Shipping Bin.
+* Added manual compatibility for XSLite chests.
+    * Custom chest types must be defined from chests folder.
 
 ### Changes
 
