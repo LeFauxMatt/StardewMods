@@ -77,8 +77,8 @@ Hit a configurable key to instantly dispense input items into nearby producers.<
 * Tapper
 * Wood Chipper
 
-
 Default Config:
+
 1. Only items of iridium quality will be extracted out of casks.
 2. Crab pots will only dispense regular bait into them.
 

@@ -1,10 +1,12 @@
 ﻿# Better Chests Change Log
 
-## 1.3.0 (Unreleased)
+## 1.3.0 (February 12, 2022)
 
 ### Additions
 
+* Added support for Auto-Grabber.
 * Added support for Junimo Hut.
+* Added support for Shipping Bin.
 
 ### Changes
 
