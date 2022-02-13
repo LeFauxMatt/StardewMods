@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc cref="FuryCore.Interfaces.IMenuComponent" />
+/// <inheritdoc cref="IMenuComponent" />
 internal class TabComponent : CustomMenuComponent, IMenuComponent
 {
     /// <summary>

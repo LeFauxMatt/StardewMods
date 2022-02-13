@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using StardewMods.FuryCore.Helpers;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Allows displayed items to be handled separately from actual items.
@@ -20,7 +19,7 @@ public interface IMenuItems
     /// <summary>
     ///     Gets the source chest that actual items are associated with.
     /// </summary>
-    public Chest Chest { get; }
+    public object Context { get; }
 
     /// <summary>
     ///     Gets the currently displayed items of the Menu.

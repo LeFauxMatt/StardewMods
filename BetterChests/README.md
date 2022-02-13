@@ -29,7 +29,7 @@ Adds enhanced chest features to the game.
     * [Range Values](#range-values)
 * [Integrations](#integrations)
     * [Automate](#automate)
-    * [Horse Overhaul](#horse-overhaul) 
+    * [Horse Overhaul](#horse-overhaul)
 * [Translations](#translations)
 
 ## Features
@@ -49,8 +49,7 @@ With Carry Chest enabled, you can hit the Use Tool button to pick up chests into
 
 ### Categorize Chest
 
-Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that
-chest.
+Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that chest.
 
 | Config Option   | Description                           | Default Value | Other Value(s)                        |
 |:----------------|:--------------------------------------|:--------------|:--------------------------------------|
@@ -67,7 +66,7 @@ Tabs are added to the Chest Menu to allow you to quickly toggle between categori
 | ChestMenuTabs   | Enables the Chest Menu Tabs feature.           | `"Enabled"`      | `"Disabled"`, `"Default"`<sup>2</sup> |
 | ChestMenuTabSet | Assigns what tabs to show/hide.                | `[]`<sup>3</sup> | The names of tabs to show.            |
 | NextTab         | Assigns a keybind to move to the next tab.     | `"DPadRight"`    | Any valid button code.<sup>4</sup>    |
-| NextTab         | Assigns a keybind to move to the previous tab. | `"DPadLeft"`     | Any valid button code.<sup>4</sup>    |
+| PreviousTab     | Assigns a keybind to move to the previous tab. | `"DPadLeft"`     | Any valid button code.<sup>4</sup>    |
 
 1. See [Customized Tabs](#customized-tabs).
 2. See [Option Values](#option-values).
@@ -88,7 +87,7 @@ bypassing your inventory.<sup>1</sup>
 
 ### Craft From Chest
 
-Hit a configurable key (or controller button) to bring up a crafting menu that uses items stored in nearby chests.
+Hit a configurable key to bring up a crafting menu that uses items stored in nearby chests.
 
 | Config                         | Description                                               | Default Value | Other Value(s)                                                                 |
 |:-------------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -181,9 +180,8 @@ Adds a search bar to the top of the Chest Menu to only display items that meet a
 
 ### Slot Lock
 
-Hover over an item slot in your backpack, and hit a configurable key to lock that slot which prevents any item in that
-slot from being stashed into a chest. Items in locked slots will remain in place when you shift the toolbar by hitting
-Tab.
+Hover over an item slot in your backpack, and hit a configurable key to lock the item in its slot which prevents it from
+being stashed into a chest.
 
 | Config   | Description                             | Default Value | Other Value(s)                        |
 |:---------|:----------------------------------------|:--------------|:--------------------------------------|
@@ -195,8 +193,7 @@ Tab.
 
 ### Stash To Chest
 
-Hit a configurable key (or controller button) to instantly stash items from your inventory into nearby chests.<sup>
-1</sup>
+Hit a configurable key to instantly stash items from your inventory into nearby chests.<sup>1</sup>
 
 | Config Option                | Description                                               | Default Value | Other Value(s)                                                                 |
 |:-----------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -204,6 +201,7 @@ Hit a configurable key (or controller button) to instantly stash items from your
 | StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
 | StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                            |
 | StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                      |
+| StashToChestPriority         | Prioritize certain chests over others.                    | 0             | Any integer value.                                                             |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
@@ -411,18 +409,21 @@ The Range value limits which chests will be selected for a feature relative to t
 
 When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
 [Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
-items into the chest if the Filter list does not allow it. 
+items into the chest if the Filter list does not allow it.
 
 ### Horse Overhaul
 
-Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911) saddlebags.
-The distance to the player's Horse will be considered for features such as [Craft from Chest](#craft-from-chest) and
+Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
+saddlebags. The distance to the player's Horse will be considered for features such
+as [Craft from Chest](#craft-from-chest) and
 [Stash to Chest](#stash-to-chest).
 
 The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
 `BetterChests/assets/chests.json` file.
 
 ## Translations
+
+See [here](i18n/default.json) for the base translation file.
 
 | Language                   | Status            | Credits     |
 |:---------------------------|:------------------|:------------|

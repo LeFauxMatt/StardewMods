@@ -18,17 +18,21 @@ using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <inheritdoc cref="IMenuItems" />
 [FuryCoreService(true)]
 internal class MenuItems : IMenuItems, IModService
 {
-    private readonly PerScreen<Chest> _chest = new();
+    private readonly PerScreen<object> _context = new();
     private readonly PerScreen<IMenuComponent> _downArrow = new();
+    private readonly Lazy<IGameObjects> _gameObjects;
     private readonly PerScreen<InventoryMenu.highlightThisItem> _highlightMethod = new();
     private readonly PerScreen<IDictionary<string, bool>> _itemFilterCache = new(() => new Dictionary<string, bool>());
     private readonly PerScreen<HashSet<ItemMatcher>> _itemFilters = new(() => new());
@@ -57,6 +61,7 @@ internal class MenuItems : IMenuItems, IModService
         MenuItems.Instance = this;
         this.Config = config;
         this._menuComponents = services.Lazy<IMenuComponents>();
+        this._gameObjects = services.Lazy<IGameObjects>();
 
         services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
@@ -95,10 +100,10 @@ internal class MenuItems : IMenuItems, IModService
     }
 
     /// <inheritdoc />
-    public Chest Chest
+    public object Context
     {
-        get => this._chest.Value;
-        private set => this._chest.Value = value;
+        get => this._context.Value;
+        private set => this._context.Value = value;
     }
 
     /// <inheritdoc />
@@ -166,6 +171,11 @@ internal class MenuItems : IMenuItems, IModService
     private IMenuComponent DownArrow
     {
         get => this._downArrow.Value ??= new CustomMenuComponent(new(new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new(421, 472, 11, 12), Game1.pixelZoom));
+    }
+
+    private IGameObjects GameObjects
+    {
+        get => this._gameObjects.Value;
     }
 
     private IDictionary<string, bool> ItemFilterCache
@@ -386,7 +396,7 @@ internal class MenuItems : IMenuItems, IModService
 
     private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
     {
-        if (this.Menu is not null && ReferenceEquals(e.Chest, this.Chest))
+        if (this.Menu is not null && ReferenceEquals(e.Chest, this.Context))
         {
             this.ItemsFiltered = null;
             this.ItemsSorted = null;
@@ -411,7 +421,7 @@ internal class MenuItems : IMenuItems, IModService
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        this.Menu = e.Context is not null && this.GameObjects.TryGetGameObject(e.Context, out var gameObject) && gameObject is IStorageContainer
             ? e.ItemGrabMenu
             : null;
 
@@ -424,12 +434,12 @@ internal class MenuItems : IMenuItems, IModService
         this.ItemHighlighters.Clear();
         this.SortMethod = null;
 
-        if (this.Menu is null)
+        if (this.Menu is null || e.Context is null)
         {
             return;
         }
 
-        this.Chest = e.Chest;
+        this.Context = e.Context;
         this.MenuColumns = this.Menu.GetColumnCount();
 
         if (this.Menu.inventory.highlightMethod.Target is not MenuItems)

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection.Emit;
 using Common.Extensions;
 using Common.Helpers;
@@ -14,11 +13,13 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
@@ -121,17 +122,17 @@ internal class ResizeChestMenu : Feature
                 return this._menuCapacity.Value ??= this.Config.DefaultChest.ResizeChestMenuRows * 12;
             }
 
-            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
+            if (this.Menu?.context is null || !this.ManagedObjects.FindManagedStorage(this.Menu.context, out var managedStorage))
             {
                 return this._menuCapacity.Value ??= -1; // Vanilla
             }
 
-            var capacity = Math.Max(managedChest.Items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
-            return this._menuCapacity.Value ??= capacity switch
+            return this._menuCapacity.Value ??= managedStorage.ResizeChestCapacity switch
             {
-                Chest.capacity => -1, // Vanilla
-                < 72 => Math.Min(managedChest.ResizeChestMenuRows * 12, capacity.RoundUp(12)), // Variable
-                _ => managedChest.ResizeChestMenuRows * 12, // Large
+                0 or Chest.capacity => -1, // Vanilla
+                < 0 => managedStorage.ResizeChestMenuRows * 12, // Large
+                < 72 => Math.Min(managedStorage.ResizeChestMenuRows * 12, managedStorage.ResizeChestCapacity.RoundUp(12)), // Variable
+                _ => managedStorage.ResizeChestMenuRows * 12, // Large
             };
         }
     }
@@ -158,16 +159,17 @@ internal class ResizeChestMenu : Feature
                 return this._menuRows.Value ??= this.Config.DefaultChest.ResizeChestMenuRows;
             }
 
-            if (this.Menu?.IsPlayerChestMenu(out var chest) != true || !this.ManagedChests.FindChest(chest, out var managedChest))
+            if (this.Menu?.context is null || !this.ManagedObjects.FindManagedStorage(this.Menu.context, out var managedStorage))
             {
                 return this._menuRows.Value ??= 3; // Vanilla
             }
 
-            var capacity = Math.Max(managedChest.Items.Count(item => item is not null).RoundUp(12), chest.GetActualCapacity());
-            return this._menuRows.Value ??= capacity switch
+            return this._menuRows.Value ??= managedStorage.ResizeChestCapacity switch
             {
-                < 72 => (int)Math.Min(managedChest.ResizeChestMenuRows, Math.Ceiling(capacity / 12f)), // Variable
-                _ => managedChest.ResizeChestMenuRows, // Large
+                0 or Chest.capacity => 3,
+                < 0 => managedStorage.ResizeChestMenuRows, // Large
+                < 72 => (int)Math.Min(managedStorage.ResizeChestMenuRows, Math.Ceiling(managedStorage.ResizeChestCapacity / 12f)), // Variable
+                _ => managedStorage.ResizeChestMenuRows, // Large
             };
         }
     }
@@ -404,20 +406,25 @@ internal class ResizeChestMenu : Feature
     [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        IManagedStorage managedStorage = null;
+        this.Menu = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null)
+        if (e.ItemGrabMenu is ItemSelectionMenu && this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled)
+        {
+            this.Menu = e.ItemGrabMenu;
+        }
+        else if (this.Menu is null || e.Context is null)
         {
             return;
         }
 
         if (e.IsNew && this.MenuOffset != 0)
         {
-            if (e.Chest is not null)
+            if (managedStorage is not null)
             {
-                Log.Trace($"Resizing Chest Menu for Chest {e.Chest.Name}");
+                Log.Trace($"Resizing Chest Menu for Chest {managedStorage.QualifiedItemId}");
             }
 
             // Shift components down for increased ItemsToGrabMenu size

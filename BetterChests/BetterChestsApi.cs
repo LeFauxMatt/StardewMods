@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Common.Integrations.BetterChests;
 using StardewModdingAPI;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 
@@ -43,6 +43,12 @@ public class BetterChestsApi : IBetterChestsApi
     /// <inheritdoc />
     public bool RegisterChest(string name)
     {
-        return this.Assets.AddChestData(name, new ChestData());
+        return this.Assets.AddChestData(name, new StorageData());
+    }
+
+    /// <inheritdoc />
+    public void RegisterModDataKey(string key)
+    {
+        this.Assets.AddModDataKey(key);
     }
 }

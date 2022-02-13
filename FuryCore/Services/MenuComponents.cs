@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.Extensions;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -12,7 +11,10 @@ using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -21,6 +23,7 @@ using StardewValley.Menus;
 internal class MenuComponents : IMenuComponents, IModService
 {
     private readonly PerScreen<List<IMenuComponent>> _components = new(() => new());
+    private readonly Lazy<IGameObjects> _gameObjects;
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<bool> _refreshComponents = new();
@@ -34,6 +37,7 @@ internal class MenuComponents : IMenuComponents, IModService
     {
         MenuComponents.Instance = this;
         this.Helper = helper;
+        this._gameObjects = services.Lazy<IGameObjects>();
 
         services.Lazy<CustomEvents>(
             events =>
@@ -75,6 +79,11 @@ internal class MenuComponents : IMenuComponents, IModService
 
     private static MenuComponents Instance { get; set; }
 
+    private IGameObjects GameObjects
+    {
+        get => this._gameObjects.Value;
+    }
+
     private IModHelper Helper { get; }
 
     private string HoverText
@@ -100,7 +109,7 @@ internal class MenuComponents : IMenuComponents, IModService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
-        if (!ReferenceEquals(this.Menu, Game1.activeClickableMenu))
+        if (this.Menu is null || !ReferenceEquals(this.Menu, Game1.activeClickableMenu))
         {
             return;
         }
@@ -121,13 +130,12 @@ internal class MenuComponents : IMenuComponents, IModService
     [SortedEventPriority(EventPriority.High + 1000)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        this.Menu = e.Context is not null && this.GameObjects.TryGetGameObject(e.Context, out var gameObject) && gameObject is IStorageContainer
             ? e.ItemGrabMenu
             : null;
 
         this.Components.Clear();
-
-        if (this.Menu is null)
+        if (this.Menu is null || e.Context is null)
         {
             return;
         }
@@ -146,7 +154,12 @@ internal class MenuComponents : IMenuComponents, IModService
 
     private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom && component.Area is not ComponentArea.Bottom))
+        if (this.Menu is null)
+        {
+            return;
+        }
+
+        foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom && component.Area is ComponentArea.Left or ComponentArea.Right))
         {
             component.Draw(e.SpriteBatch);
         }
@@ -159,7 +172,12 @@ internal class MenuComponents : IMenuComponents, IModService
 
     private void OnRenderingItemGrabMenu(object sender, RenderingActiveMenuEventArgs e)
     {
-        if (this.RefreshComponents && this.Menu is not null)
+        if (this.Menu is null)
+        {
+            return;
+        }
+
+        if (this.RefreshComponents)
         {
             foreach (var component in this.Components.Where(component => component.Component is null).ToList())
             {
@@ -175,7 +193,7 @@ internal class MenuComponents : IMenuComponents, IModService
             this.RefreshComponents = false;
         }
 
-        foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom && component.Area is ComponentArea.Bottom))
+        foreach (var component in this.Components.Where(component => component.ComponentType is ComponentType.Custom && component.Area is ComponentArea.Top or ComponentArea.Bottom))
         {
             component.Draw(e.SpriteBatch);
         }

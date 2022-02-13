@@ -10,20 +10,21 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ChestMenuTabs : Feature
 {
     private readonly Lazy<AssetHandler> _assetHandler;
-    private readonly PerScreen<Chest> _chest = new();
+    private readonly PerScreen<object> _context = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
@@ -49,10 +50,10 @@ internal class ChestMenuTabs : Feature
         get => this._assetHandler.Value;
     }
 
-    private Chest Chest
+    private object Context
     {
-        get => this._chest.Value;
-        set => this._chest.Value = value;
+        get => this._context.Value;
+        set => this._context.Value = value;
     }
 
     private int Index
@@ -135,14 +136,14 @@ internal class ChestMenuTabs : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        IChestData chestData = e.ItemGrabMenu switch
+        IStorageData storageData = e.ItemGrabMenu switch
         {
             ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => this.Config.DefaultChest,
-            _ when e.Chest is not null && this.ManagedChests.FindChest(e.Chest, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
+            _ when e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedChest) && managedChest.ChestMenuTabs == FeatureOption.Enabled => managedChest,
             _ => null,
         };
 
-        if (chestData is null)
+        if (storageData is null)
         {
             return;
         }
@@ -156,15 +157,15 @@ internal class ChestMenuTabs : Feature
         if (this.MenuComponents.Menu is not null)
         {
             var tabs = (
-                from tabSet in chestData.ChestMenuTabSet.Select((name, index) => (name, index))
+                from tabSet in storageData.ChestMenuTabSet.Select((name, index) => (name, index))
                 join tabData in this.Tabs on tabSet.name equals tabData.Name
                 orderby tabSet.index
                 select tabData).ToList();
             this.MenuComponents.Components.AddRange(tabs.Any() ? tabs : this.Tabs);
 
-            if (!ReferenceEquals(e.Chest, this.Chest))
+            if (!ReferenceEquals(e.Context, this.Context))
             {
-                this.Chest = e.Chest;
+                this.Context = e.Context;
                 this.SetTab(-1);
             }
         }

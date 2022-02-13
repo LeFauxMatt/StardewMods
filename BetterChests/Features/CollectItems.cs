@@ -9,17 +9,17 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CollectItems : Feature
 {
-    private readonly PerScreen<IList<IManagedChest>> _eligibleChests = new();
+    private readonly PerScreen<IList<IManagedStorage>> _eligibleChests = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
@@ -50,13 +50,12 @@ internal class CollectItems : Feature
 
     private static CollectItems Instance { get; set; }
 
-    private IList<IManagedChest> EligibleChests
+    private IList<IManagedStorage> EligibleChests
     {
         get => this._eligibleChests.Value ??= (
-            from managedChest in this.ManagedChests.PlayerChests
-            where managedChest.CollectItems == FeatureOption.Enabled
-                  && managedChest.Chest.Stack == 1
-            select managedChest).ToList();
+            from inventoryStorage in this.ManagedObjects.InventoryStorages
+            where inventoryStorage.Value.CollectItems == FeatureOption.Enabled
+            select inventoryStorage.Value).ToList();
         set => this._eligibleChests.Value = value;
     }
 
@@ -115,7 +114,24 @@ internal class CollectItems : Feature
 
     private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
     {
-        if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any() || e.QuantityChanged.Any(stack => stack.Item is Chest && stack.NewSize == 1)))
+        if (!e.IsLocalPlayer)
+        {
+            return;
+        }
+
+        if (e.Added.Any(item => this.ManagedObjects.FindManagedStorage(item, out _)))
+        {
+            this.EligibleChests = null;
+            return;
+        }
+
+        if (e.Removed.Any(item => this.ManagedObjects.FindManagedStorage(item, out _)))
+        {
+            this.EligibleChests = null;
+            return;
+        }
+
+        if (e.QuantityChanged.Any(stack => this.ManagedObjects.FindManagedStorage(stack.Item, out _)))
         {
             this.EligibleChests = null;
         }

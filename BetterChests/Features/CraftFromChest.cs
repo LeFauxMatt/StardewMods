@@ -11,7 +11,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -59,40 +60,38 @@ internal class CraftFromChest : Feature
     /// <summary>
     ///     Gets a value indicating which chests are eligible for crafting from.
     /// </summary>
-    public IList<IManagedChest> EligibleChests
+    public IEnumerable<IManagedStorage> EligibleChests
     {
         get
         {
-            var eligibleChests = (
-                from managedChest in this.ManagedChests.PlayerChests
-                where managedChest.CraftFromChest >= FeatureOptionRange.Inventory
-                      && managedChest.OpenHeldChest == FeatureOption.Enabled
-                select managedChest).ToList();
-
-            foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
+            IList<IManagedStorage> eligibleStorages =
+                this.ManagedObjects.InventoryStorages
+                    .Select(inventoryStorage => inventoryStorage.Value)
+                    .Where(playerChest => playerChest.CraftFromChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
+                    .ToList();
+            foreach (var ((location, (x, y)), locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
-                if (managedChest.CraftFromChest == FeatureOptionRange.Disabled || managedChest.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+                if (locationStorage.CraftFromChest == FeatureOptionRange.Disabled || locationStorage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
                 {
                     continue;
                 }
 
                 // Disabled in mines
-                if (managedChest.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+                if (locationStorage.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
                 {
                     continue;
                 }
 
-                var (location, (x, y)) = placedObject;
-                switch (managedChest.CraftFromChest)
+                switch (locationStorage.CraftFromChest)
                 {
                     // Disabled if not current location for location chest
                     case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
                         continue;
                     case FeatureOptionRange.World:
-                    case FeatureOptionRange.Location when managedChest.CraftFromChestDistance == -1:
-                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.CraftFromChestDistance, Game1.player):
-                        eligibleChests.Add(managedChest);
+                    case FeatureOptionRange.Location when locationStorage.CraftFromChestDistance == -1:
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, locationStorage.CraftFromChestDistance, Game1.player):
+                        eligibleStorages.Add(locationStorage);
                         continue;
                     case FeatureOptionRange.Default:
                     case FeatureOptionRange.Disabled:
@@ -102,7 +101,7 @@ internal class CraftFromChest : Feature
                 }
             }
 
-            return eligibleChests;
+            return eligibleStorages;
         }
     }
 
@@ -173,7 +172,7 @@ internal class CraftFromChest : Feature
             return;
         }
 
-        var eligibleChests = this.EligibleChests;
+        var eligibleChests = this.EligibleChests.ToList();
         if (!eligibleChests.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
@@ -202,9 +201,9 @@ internal class CraftFromChest : Feature
         private readonly MultipleMutexRequest _multipleMutexRequest;
         private int _timeOut = MultipleChestCraftingPage.TimeOut;
 
-        public MultipleChestCraftingPage(IEnumerable<IManagedChest> managedChests)
+        public MultipleChestCraftingPage(IEnumerable<IManagedStorage> managedChests)
         {
-            this._chests = managedChests.Select(managedChest => managedChest.Chest).Where(chest => !chest.mutex.IsLocked()).ToList();
+            this._chests = managedChests.Select(managedChest => managedChest.Context).OfType<Chest>().Where(chest => !chest.mutex.IsLocked()).ToList();
             var mutexes = this._chests.Select(chest => chest.mutex).ToList();
             this._multipleMutexRequest = new(
                 mutexes,

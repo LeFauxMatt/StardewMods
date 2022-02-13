@@ -4,17 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.Extensions;
 using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
@@ -25,7 +26,7 @@ internal class CustomColorPicker : Feature
 {
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly PerScreen<IManagedChest> _managedChest = new();
+    private readonly PerScreen<IManagedStorage> _managedChest = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
 
     /// <summary>
@@ -97,7 +98,7 @@ internal class CustomColorPicker : Feature
         get => this._harmony.Value;
     }
 
-    private IManagedChest ManagedChest
+    private IManagedStorage ManagedStorage
     {
         get => this._managedChest.Value;
         set => this._managedChest.Value = value;
@@ -157,7 +158,7 @@ internal class CustomColorPicker : Feature
         CustomColorPicker.Instance.ColorPicker?.UnregisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
 
         var item = CustomColorPicker.Instance.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
-        if (item is not Chest chest || !chest.IsPlayerChest())
+        if (item is not Chest chest)
         {
             CustomColorPicker.Instance.ColorPicker = null;
             return new(xPosition, yPosition, startingColor, itemToDrawColored);
@@ -215,7 +216,7 @@ internal class CustomColorPicker : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance.context is not Chest chest || !ReferenceEquals(chest, CustomColorPicker.Instance.ManagedChest.Chest))
+        if (__instance.context is null || !ReferenceEquals(__instance.context, CustomColorPicker.Instance.ManagedStorage.Context))
         {
             return;
         }
@@ -225,16 +226,17 @@ internal class CustomColorPicker : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu?.IsPlayerChestMenu(out _) == true
+        IManagedStorage managedStorage = null;
+        this.Menu = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out managedStorage) && managedStorage.CustomColorPicker == FeatureOption.Enabled
             ? e.ItemGrabMenu
             : null;
 
-        if (this.Menu is null || !this.ManagedChests.FindChest(e.Chest, out var managedChest) || managedChest.CustomColorPicker == FeatureOption.Disabled)
+        if (this.Menu is null || e.Context is null)
         {
             return;
         }
 
         this.Menu.discreteColorPickerCC = null;
-        this.ManagedChest = managedChest;
+        this.ManagedStorage = managedStorage;
     }
 }

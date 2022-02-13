@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Menus;
 

@@ -6,16 +6,22 @@ using System.Linq;
 using Common.Helpers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Interfaces.ManagedObjects;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewValley;
 using StardewValley.Locations;
 
 /// <inheritdoc />
 internal class StashToChest : Feature
 {
-    private readonly Lazy<SlotLock> _slotLock;
+    private readonly PerScreen<IManagedStorage> _currentStorage = new();
+    private readonly Lazy<IMenuComponents> _menuComponents;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="StashToChest" /> class.
@@ -26,46 +32,44 @@ internal class StashToChest : Feature
     public StashToChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
-        this._slotLock = services.Lazy<SlotLock>();
+        this._menuComponents = services.Lazy<IMenuComponents>();
     }
 
     /// <summary>
-    ///     Gets a value indicating which chests are eligible for stashing into.
+    ///     Gets a value indicating which storages are eligible for stashing into.
     /// </summary>
-    public IList<IManagedChest> EligibleChests
+    public IEnumerable<IManagedStorage> EligibleStorages
     {
         get
         {
-            var eligibleChests = (
-                from managedChest in this.ManagedChests.PlayerChests
-                where managedChest.StashToChest >= FeatureOptionRange.Inventory
-                      && managedChest.OpenHeldChest == FeatureOption.Enabled
-                select managedChest).ToList();
-
-            foreach (var (placedObject, managedChest) in this.ManagedChests.PlacedChests)
+            IList<IManagedStorage> eligibleStorages =
+                this.ManagedObjects.InventoryStorages
+                    .Select(inventoryStorage => inventoryStorage.Value)
+                    .Where(playerChest => playerChest.StashToChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
+                    .ToList();
+            foreach (var ((location, (x, y)), locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
-                if (managedChest.StashToChest == FeatureOptionRange.Disabled || managedChest.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+                if (locationStorage.StashToChest == FeatureOptionRange.Disabled || locationStorage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name))
                 {
                     continue;
                 }
 
                 // Disabled in mines
-                if (managedChest.StashToChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+                if (locationStorage.StashToChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
                 {
                     continue;
                 }
 
-                var (location, (x, y)) = placedObject;
-                switch (managedChest.StashToChest)
+                switch (locationStorage.StashToChest)
                 {
                     // Disabled if not current location for location chest
                     case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
                         continue;
                     case FeatureOptionRange.World:
-                    case FeatureOptionRange.Location when managedChest.StashToChestDistance == -1:
-                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, managedChest.StashToChestDistance, Game1.player):
-                        eligibleChests.Add(managedChest);
+                    case FeatureOptionRange.Location when locationStorage.StashToChestDistance == -1:
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, locationStorage.StashToChestDistance, Game1.player):
+                        eligibleStorages.Add(locationStorage);
                         continue;
                     case FeatureOptionRange.Default:
                     case FeatureOptionRange.Disabled:
@@ -75,61 +79,135 @@ internal class StashToChest : Feature
                 }
             }
 
-            return eligibleChests.OrderByDescending(managedChest => managedChest.StashToChestPriority).ToList();
+            return eligibleStorages;
         }
     }
 
-    private SlotLock SlotLock
+    private IManagedStorage CurrentStorage
     {
-        get => this._slotLock.Value;
+        get => this._currentStorage.Value;
+        set => this._currentStorage.Value = value;
+    }
+
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
+        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
+        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (Context.IsPlayerFree && this.Config.ControlScheme.StashItems.JustPressed() && this.StashItems())
+        if (!this.Config.ControlScheme.StashItems.JustPressed())
+        {
+            return;
+        }
+
+        // Stash to current
+        if (this.CurrentStorage is not null)
+        {
+            var stashedAny = false;
+            for (var index = 0; index < Game1.player.MaxItems; index++)
+            {
+                var item = Game1.player.Items[index];
+                if (item?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") != false)
+                {
+                    continue;
+                }
+
+                item = this.CurrentStorage.StashItem(item);
+                if (item is null)
+                {
+                    stashedAny = true;
+                    Game1.player.Items[index] = null;
+                }
+            }
+
+            if (stashedAny)
+            {
+                Game1.playSound("Ship");
+                this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.StashItems);
+            }
+
+            return;
+        }
+
+        // Stash to all
+        if (Context.IsPlayerFree && this.StashItems())
         {
             this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.StashItems);
         }
     }
 
-    private bool StashItems()
+    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        var eligibleChests = this.EligibleChests;
-        if (!eligibleChests.Any())
+        if (this.MenuComponents.Menu is null || e.Context is null)
         {
-            Game1.showRedMessage(I18n.Alert_StashToChest_NoEligible());
-            return false;
+            this.CurrentStorage = null;
+            return;
         }
 
-        Log.Trace("Stashing items into chests");
-        var lockedSlots = this.Config.SlotLock
-            ? this.SlotLock.LockedSlots
-            : Array.Empty<bool>();
+        if (this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage))
+        {
+            this.CurrentStorage = managedStorage;
+        }
+    }
+
+    private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
+    {
+        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton)
+        {
+            return;
+        }
 
         var stashedAny = false;
-        foreach (var eligibleChest in eligibleChests)
+        for (var index = 0; index < Game1.player.MaxItems; index++)
+        {
+            var item = Game1.player.Items[index];
+            if (item?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") != false)
+            {
+                continue;
+            }
+
+            item = this.CurrentStorage.StashItem(item);
+            if (item is null)
+            {
+                stashedAny = true;
+                Game1.player.Items[index] = null;
+            }
+        }
+
+        if (stashedAny)
+        {
+            Game1.playSound("Ship");
+            e.SuppressInput();
+        }
+    }
+
+    private bool StashItems()
+    {
+        Log.Trace("Stashing items into storages");
+        var stashedAny = false;
+        foreach (var eligibleChest in this.EligibleStorages)
         {
             for (var index = 0; index < Game1.player.MaxItems; index++)
             {
-                if (lockedSlots.ElementAtOrDefault(index))
-                {
-                    continue;
-                }
-
                 var item = Game1.player.Items[index];
-                if (item is null)
+                if (item?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") != false)
                 {
                     continue;
                 }
@@ -138,7 +216,6 @@ internal class StashToChest : Feature
                 if (item is null)
                 {
                     stashedAny = true;
-                    eligibleChest.Chest.shakeTimer = 100;
                     Game1.player.Items[index] = null;
                 }
             }

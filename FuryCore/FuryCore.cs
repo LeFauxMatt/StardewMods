@@ -28,6 +28,7 @@ public class FuryCore : Mod
         this.Services.Add(
             new CustomEvents(this.Helper, this.Services),
             new CustomTags(this.Config, this.Services),
+            new GameObjects(this.Helper),
             new HarmonyHelper(),
             new MenuComponents(this.Helper, this.Services),
             new MenuItems(this.Config, this.Helper, this.Services),

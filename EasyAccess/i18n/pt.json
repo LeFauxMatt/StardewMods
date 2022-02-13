@@ -1,0 +1,19 @@
+﻿{
+  // Feature Option Formatting
+  "config.range-distance.value-unlimited": "Ilimitado",
+  "config.range-distance.value-one": "1 célula",
+  "config.range-distance.value-many": "{0} células",
+  // Config Pages
+  "section.general.name": "Geral",
+  "section.general.description": "Opções de configuração de funções em geral.",
+  "section.features.name": "Funções",
+  "section.features.description": "Opções padrão que são aplicadas a todos os baús.",
+  "section.controls.name": "Controles",
+  "section.controls.description": "Configurações de controle/teclado.",
+  // Config Options
+  "option.default.name": "Padrão",
+  "option.enabled.name": "Ativado",
+  "option.disabled.name": "Desativado",
+  "option.location.name": "Localização",
+  "option.world.name": "Mundo"
+}

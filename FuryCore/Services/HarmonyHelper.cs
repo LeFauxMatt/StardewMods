@@ -9,7 +9,7 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 
-/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IHarmonyHelper" />
+/// <inheritdoc cref="IHarmonyHelper" />
 [FuryCoreService(true)]
 internal class HarmonyHelper : IHarmonyHelper, IModService
 {

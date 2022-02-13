@@ -36,8 +36,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSLite", "archived\XSLite\X
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSPlus", "archived\XSPlus\XSPlus.csproj", "{98F22749-5C13-4CBD-85D3-9F4BB89EB016}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\EasyAccess.csproj", "{774ACD31-6138-4707-A747-8C8E35519FC3}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		Common\Common.projitems*{806a01a3-e018-49b3-958d-f53fc36f3f82}*SharedItemsImports = 5
 		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
@@ -95,6 +98,10 @@ Global
 		{98F22749-5C13-4CBD-85D3-9F4BB89EB016}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98F22749-5C13-4CBD-85D3-9F4BB89EB016}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98F22749-5C13-4CBD-85D3-9F4BB89EB016}.Release|Any CPU.Build.0 = Release|Any CPU
+		{774ACD31-6138-4707-A747-8C8E35519FC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{774ACD31-6138-4707-A747-8C8E35519FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{774ACD31-6138-4707-A747-8C8E35519FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{774ACD31-6138-4707-A747-8C8E35519FC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

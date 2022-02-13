@@ -5,7 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley.Objects;
@@ -70,7 +71,7 @@ internal class ResizeChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (ResizeChest.Instance.ManagedChests.FindChest(__instance, out var managedChest) && managedChest.ResizeChestCapacity != 0)
+        if (ResizeChest.Instance.ManagedObjects.FindManagedStorage(__instance, out var managedChest) && managedChest.ResizeChest == FeatureOption.Enabled && managedChest.ResizeChestCapacity != 0)
         {
             __result = managedChest.ResizeChestCapacity > 0
                 ? managedChest.ResizeChestCapacity

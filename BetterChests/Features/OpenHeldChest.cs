@@ -8,10 +8,11 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 /// <inheritdoc />
 internal class OpenHeldChest : Feature
@@ -89,9 +90,9 @@ internal class OpenHeldChest : Feature
 
         foreach (var player in Game1.getOnlineFarmers())
         {
-            foreach (var chest in player.Items.Take(12).OfType<Chest>())
+            foreach (var item in player.Items.Take(12).OfType<Object>())
             {
-                chest.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
+                item.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
             }
         }
     }
@@ -99,22 +100,22 @@ internal class OpenHeldChest : Feature
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not Chest chest)
+        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not Object obj)
         {
             return;
         }
 
-        if (!this.ManagedChests.FindChest(chest, out var managedChest) || managedChest.OpenHeldChest == FeatureOption.Disabled)
+        if (!this.ManagedObjects.FindManagedStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }
 
-        Log.Trace($"Opening ItemGrabMenu for Held Chest ${chest.Name}.");
+        Log.Trace($"Opening ItemGrabMenu for Held Chest ${managedStorage.QualifiedItemId}.");
         if (Context.IsMainPlayer)
         {
-            chest.checkForAction(Game1.player);
+            obj.checkForAction(Game1.player);
         }
-        else
+        else if (managedStorage.Context is Chest chest)
         {
             Game1.player.currentLocation.localSound("openChest");
             chest.ShowMenu();

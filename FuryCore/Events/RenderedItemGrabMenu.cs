@@ -4,7 +4,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
@@ -12,7 +12,8 @@ using StardewValley.Menus;
 /// <inheritdoc />
 internal class RenderedItemGrabMenu : SortedEventHandler<RenderedActiveMenuEventArgs>
 {
-    private readonly PerScreen<ItemGrabMenuChangedEventArgs> _menu = new();
+    private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<int> _screenId = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RenderedItemGrabMenu" /> class.
@@ -25,26 +26,28 @@ internal class RenderedItemGrabMenu : SortedEventHandler<RenderedActiveMenuEvent
         display.RenderedActiveMenu += this.OnRenderedActiveMenu;
     }
 
+    private ItemGrabMenu Menu
+    {
+        get => this._menu.Value;
+        set => this._menu.Value = value;
+    }
+
+    private int ScreenId
+    {
+        get => this._screenId.Value;
+        set => this._screenId.Value = value;
+    }
+
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.ItemGrabMenu is null)
-        {
-            this._menu.Value = null;
-            return;
-        }
-
-        this._menu.Value = e;
+        this.Menu = e.ItemGrabMenu;
+        this.ScreenId = e.ScreenId;
     }
 
     [EventPriority(EventPriority.Low - 1000)]
     private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        if (this.HandlerCount == 0)
-        {
-            return;
-        }
-
-        if (this._menu.Value is null || this._menu.Value.ScreenId != Context.ScreenId)
+        if (this.HandlerCount == 0 || this.Menu is null || this.ScreenId != Context.ScreenId)
         {
             return;
         }
@@ -53,29 +56,29 @@ internal class RenderedItemGrabMenu : SortedEventHandler<RenderedActiveMenuEvent
         this.InvokeAll(e);
 
         // Draw foreground
-        if (this._menu.Value.ItemGrabMenu.hoverText is not null && (this._menu.Value.ItemGrabMenu.hoveredItem is null or null || this._menu.Value.ItemGrabMenu.ItemsToGrabMenu is null))
+        if (this.Menu.hoverText is not null && (this.Menu.hoveredItem is null or null || this.Menu.ItemsToGrabMenu is null))
         {
-            if (this._menu.Value.ItemGrabMenu.hoverAmount > 0)
+            if (this.Menu.hoverAmount > 0)
             {
-                IClickableMenu.drawToolTip(e.SpriteBatch, this._menu.Value.ItemGrabMenu.hoverText, string.Empty, null, true, -1, 0, -1, -1, null, this._menu.Value.ItemGrabMenu.hoverAmount);
+                IClickableMenu.drawToolTip(e.SpriteBatch, this.Menu.hoverText, string.Empty, null, true, -1, 0, -1, -1, null, this.Menu.hoverAmount);
             }
             else
             {
-                IClickableMenu.drawHoverText(e.SpriteBatch, this._menu.Value.ItemGrabMenu.hoverText, Game1.smallFont);
+                IClickableMenu.drawHoverText(e.SpriteBatch, this.Menu.hoverText, Game1.smallFont);
             }
         }
 
-        if (this._menu.Value.ItemGrabMenu.hoveredItem is not null)
+        if (this.Menu.hoveredItem is not null)
         {
-            IClickableMenu.drawToolTip(e.SpriteBatch, this._menu.Value.ItemGrabMenu.hoveredItem.getDescription(), this._menu.Value.ItemGrabMenu.hoveredItem.DisplayName, this._menu.Value.ItemGrabMenu.hoveredItem, this._menu.Value.ItemGrabMenu.heldItem is not null);
+            IClickableMenu.drawToolTip(e.SpriteBatch, this.Menu.hoveredItem.getDescription(), this.Menu.hoveredItem.DisplayName, this.Menu.hoveredItem, this.Menu.heldItem is not null);
         }
-        else if (this._menu.Value.ItemGrabMenu.hoveredItem is not null && this._menu.Value.ItemGrabMenu.ItemsToGrabMenu is not null)
+        else if (this.Menu.hoveredItem is not null && this.Menu.ItemsToGrabMenu is not null)
         {
-            IClickableMenu.drawToolTip(e.SpriteBatch, this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.descriptionText, this._menu.Value.ItemGrabMenu.ItemsToGrabMenu.descriptionTitle, this._menu.Value.ItemGrabMenu.hoveredItem, this._menu.Value.ItemGrabMenu.heldItem is not null);
+            IClickableMenu.drawToolTip(e.SpriteBatch, this.Menu.ItemsToGrabMenu.descriptionText, this.Menu.ItemsToGrabMenu.descriptionTitle, this.Menu.hoveredItem, this.Menu.heldItem is not null);
         }
 
-        this._menu.Value.ItemGrabMenu.heldItem?.drawInMenu(e.SpriteBatch, new(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
+        this.Menu.heldItem?.drawInMenu(e.SpriteBatch, new(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
 
-        this._menu.Value.ItemGrabMenu.drawMouse(e.SpriteBatch);
+        this.Menu.drawMouse(e.SpriteBatch);
     }
 }

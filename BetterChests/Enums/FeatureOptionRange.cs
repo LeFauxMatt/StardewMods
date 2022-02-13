@@ -11,12 +11,12 @@ public enum FeatureOptionRange
     /// <summary>Feature is disabled.</summary>
     Disabled = -1,
 
-    /// <summary>Feature is enabled for chests in the player's inventory.</summary>
+    /// <summary>Feature is enabled for storages in the player's inventory.</summary>
     Inventory = 1,
 
-    /// <summary>Feature is enabled for chests in the player's current location.</summary>
+    /// <summary>Feature is enabled for storages in the player's current location.</summary>
     Location = 2,
 
-    /// <summary>Feature is enabled for any chest in an accessible location to the player.</summary>
+    /// <summary>Feature is enabled for any storage in an accessible location to the player.</summary>
     World = 3,
 }

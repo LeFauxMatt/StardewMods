@@ -1,10 +1,24 @@
 ﻿# FuryCore Change Log
 
+## 1.3.0 (February 12, 2022)
+
+### Additions
+
+* Added IGameObjects service.
+
+## Changes
+
+* Refactor to handle different types of storages.
+
 ## 1.2.0 (February 6, 2022)
+
+## Changes
 
 * Item Selection Menu now lists most context tags on the bottom menu.
 
 ## 1.1.0 (February 5, 2022)
+
+### Additions
 
 * Added new ICustomTags service.
 * Added GMCM integration for new config options.
@@ -15,7 +29,5 @@
         * `donate_museum` for items that can be donated to the Museum.
 
 ## 1.0.0 (February 3, 2022)
-
-### Added
 
 * Initial Version

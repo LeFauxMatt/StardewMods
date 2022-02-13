@@ -1,17 +1,19 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
+using System;
 using Common.Helpers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class UnloadChest : Feature
 {
+    private readonly Lazy<CarryChest> _carryChest;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="UnloadChest" /> class.
     /// </summary>
@@ -21,6 +23,12 @@ internal class UnloadChest : Feature
     public UnloadChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        this._carryChest = services.Lazy<CarryChest>();
+    }
+
+    private CarryChest CarryChest
+    {
+        get => this._carryChest.Value;
     }
 
     /// <inheritdoc />
@@ -40,7 +48,7 @@ internal class UnloadChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
-            || !this.ManagedChests.FindChest(Game1.player.CurrentItem as Chest, out var source)
+            || !this.ManagedObjects.FindManagedStorage(Game1.player.CurrentItem, out var source)
             || source.UnloadChest == FeatureOption.Disabled)
         {
             return;
@@ -58,7 +66,7 @@ internal class UnloadChest : Feature
         }
 
         // Object is Chest and supports Unload Chest
-        if (!this.ManagedChests.FindChest(obj as Chest, out var target))
+        if (!this.ManagedObjects.FindManagedStorage(obj, out var target))
         {
             return;
         }
@@ -89,16 +97,16 @@ internal class UnloadChest : Feature
                 continue;
             }
 
-            item = target.Chest.addItem(item);
-
+            item = target.AddItem(item);
             if (item is null)
             {
                 source.Items[index] = null;
             }
         }
 
-        Log.Trace($"Unloading items from Chest {source.Chest.Name} into Chest {target.Chest.Name}");
-        source.Chest.clearNulls();
+        Log.Trace($"Unloading items from Chest {source.QualifiedItemId} into Chest {target.QualifiedItemId}");
+        source.ClearNulls();
+        this.CarryChest.CheckForOverburdened();
         this.Helper.Input.Suppress(e.Button);
     }
 }
