@@ -106,7 +106,7 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
-        var (x, y) = Game1.getMousePosition(false);
+        var (x, y) = Game1.getMousePosition(true);
         this.HoverText = string.Empty;
         foreach (var icon in this.Icons)
         {

@@ -1,0 +1,76 @@
+{
+    "Format": "1.24.0",
+    "ConfigSchema": {
+        "EnableChestsAnywhere": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "ChestsAnywhereHotkey": {
+            "AllowBlank": true,
+            "Default": "B"
+        },
+        "EnableCJBCheatsMenu": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "CJBCheatsMenuHotkey": {
+            "AllowBlank": true,
+            "Default": "P"
+        },
+        "EnableCJBItemSpawner": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "CJBItemSpawnerHotkey": {
+            "AllowBlank": true,
+            "Default": "I"
+        }
+    },
+    "Changes": [
+        // Load Texture Icons
+        {
+            "Action": "Load",
+            "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
+            "FromFile": "assets/icons.png"
+        },
+
+        // Add Chests Anywhere
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{ChestsAnywhereHotkey}}": "{{i18n: icon.chests-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/0/Left",
+            },
+            "When": {
+                "EnableChestsAnywhere": true,
+                "HasMod": "Pathoschild.ChestsAnywhere"
+            }
+        },
+
+        // Add CJB Cheats Menu
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{CJBCheatsMenuHotkey}}": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left",
+            },
+            "When": {
+                "EnableCJBCheatsMenu": true,
+                "HasMod": "CJBok.CheatsMenu"
+            }
+        },
+
+        // Add CJB Item Spawner
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{CJBItemSpawnerHotkey}}": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left",
+            },
+            "When": {
+                "EnableCJBItemSpawner": true,
+                "HasMod": "CJBok.ItemSpawner"
+            }
+        },
+    ]
+}

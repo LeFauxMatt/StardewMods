@@ -1,0 +1,20 @@
+{
+    // Config
+    "config.EnableChestsAnywhere.name": "Enable Chests Anywhere",
+    "config.EnableChestsAnywhere.description": "Toggle whether to show or hide the Chests Anywhere icon.",
+    "config.ChestsAnywhereHotkey.name": "Chests Anywhere Hotkey",
+    "config.ChestsAnywhereHotkey.description": "What hotkey to simulate for activating Chests Anywhere.",
+    "config.EnableCJBCheatsMenu.name": "Enable CJB Cheats Menu",
+    "config.EnableCJBCheatsMenu.description": "Toggle whether to show or hide the CJB Cheats Menu icon.",
+    "config.CJBCheatsMenuHotkey.name": "CJB Cheats Menu Hotkey",
+    "config.CJBCheatsMenuHotkey.description": "What hotkey to simulate for activating CJB Cheats Menu.",
+    "config.EnableCJBItemSpawner.name": "Enable CJB Item Spawner",
+    "config.EnableCJBItemSpawner.description": "Toggle whether to show or hide the CJB Item Spawner icon.",
+    "config.CJBItemSpawnerHotkey.name": "CJB Item Spawner Hotkey",
+    "config.CJBItemSpawnerHotkey.description": "What hotkey to simulate for activating CJB Item Spawner.",
+
+    // Icons
+    "icon.chests-anywhere.name": "Chests Anywhere",
+    "icon.cjb-cheats-menu.name": "CJB Cheats Menu",
+    "icon.cjb-item-spawner.name": "CJB Item Spawner",
+}
