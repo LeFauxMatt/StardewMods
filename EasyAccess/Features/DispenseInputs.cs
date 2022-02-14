@@ -76,15 +76,13 @@ internal class DispenseInputs : Feature
     {
         get => this._dispenseButton.Value ??= new CustomMenuComponent(
             new(
-                new(0, 0, Game1.tileSize, Game1.tileSize),
+                new(0, 0, 32, 32),
                 this.Helper.Content.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons", ContentSource.GameContent),
                 new(16, 0, 16, 16),
-                Game1.pixelZoom)
+                2f)
             {
                 name = "Dispense Inputs",
                 hoverText = I18n.Button_DispenseInputs_Name(),
-                baseScale = 2f,
-                scale = 2f,
             },
             ComponentArea.Right);
     }

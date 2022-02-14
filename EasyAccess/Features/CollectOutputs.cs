@@ -76,15 +76,13 @@ internal class CollectOutputs : Feature
     {
         get => this._collectButton.Value ??= new CustomMenuComponent(
             new(
-                new(0, 0, Game1.tileSize, Game1.tileSize),
+                new(0, 0, 32, 32),
                 this.Helper.Content.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons", ContentSource.GameContent),
                 new(0, 0, 16, 16),
-                Game1.pixelZoom)
+                2f)
             {
                 name = "Collect Outputs",
                 hoverText = I18n.Button_CollectOutputs_Name(),
-                baseScale = 2f,
-                scale = 2f,
             },
             ComponentArea.Right);
     }

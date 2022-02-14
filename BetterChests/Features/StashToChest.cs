@@ -103,15 +103,13 @@ internal class StashToChest : Feature
     {
         get => this._stashButton.Value ??= new CustomMenuComponent(
             new(
-                new(0, 0, Game1.tileSize, Game1.tileSize),
+                new(0, 0, 32, 32),
                 this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
                 new(16, 0, 16, 16),
-                Game1.pixelZoom)
+                2f)
             {
                 name = "Stash to Chest",
                 hoverText = I18n.Button_StashToChest_Name(),
-                baseScale = 2f,
-                scale = 2f,
             },
             ComponentArea.Right);
     }

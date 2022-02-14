@@ -116,15 +116,13 @@ internal class CraftFromChest : Feature
     {
         get => this._craftButton.Value ??= new CustomMenuComponent(
             new(
-                new(0, 0, Game1.tileSize, Game1.tileSize),
+                new(0, 0, 32, 32),
                 this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
                 new(32, 0, 16, 16),
-                Game1.pixelZoom)
+                2f)
             {
                 name = "Craft from Chest",
                 hoverText = I18n.Button_CraftFromChest_Name(),
-                baseScale = 2f,
-                scale = 2f,
             },
             ComponentArea.Right);
     }
