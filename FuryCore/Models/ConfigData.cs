@@ -25,12 +25,18 @@ internal class ConfigData
     public bool ScrollMenuOverflow { get; set; } = true;
 
     /// <summary>
+    ///     Gets or sets a value indicating whether to enable icons next to the toolbar.
+    /// </summary>
+    public bool ToolbarIcons { get; set; } = true;
+
+    /// <summary>
     ///     Copies data from one <see cref="ConfigData" /> to another.
     /// </summary>
     /// <param name="other">The <see cref="ConfigData" /> to copy values to.</param>
     public void CopyTo(ConfigData other)
     {
-        other.ScrollMenuOverflow = this.ScrollMenuOverflow;
         other.CustomTags = this.CustomTags;
+        other.ScrollMenuOverflow = this.ScrollMenuOverflow;
+        other.ToolbarIcons = this.ToolbarIcons;
     }
 }

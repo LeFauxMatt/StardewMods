@@ -3,8 +3,8 @@
 using System;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley.Menus;
 
 /// <summary>
@@ -24,7 +24,7 @@ public interface ICustomEvents
     public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged;
 
     /// <summary>
-    ///     Triggers when a vanilla or custom <see cref="VanillaMenuComponent" /> is pressed on an <see cref="ItemGrabMenu" />.
+    ///     Triggers when a vanilla or custom <see cref="IMenuComponent" /> is pressed on an <see cref="ItemGrabMenu" />.
     /// </summary>
     public event EventHandler<MenuComponentPressedEventArgs> MenuComponentPressed;
 
@@ -39,4 +39,9 @@ public interface ICustomEvents
     ///     behind the cursor and hovered text/items.
     /// </summary>
     public event EventHandler<RenderingActiveMenuEventArgs> RenderingItemGrabMenu;
+
+    /// <summary>
+    ///     Triggers when a custom <see cref="IMenuComponent" /> is pressed from the <see cref="Toolbar" />.
+    /// </summary>
+    public event EventHandler<ToolbarIconPressedEventArgs> ToolbarIconPressed;
 }

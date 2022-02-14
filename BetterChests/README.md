@@ -23,8 +23,10 @@ Adds enhanced chest features to the game.
     * [Item Tags](#item-tags)
 * [Configurations](#configurations)
     * [Config Inheritance](#config-inheritance)
+    * [Group By Values](#group-by-values)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
+    * [Sort By Values](#sort-by-values)
 * [Mod Integrations](#mod-integrations)
     * [Automate](#automate)
     * [Horse Overhaul](#horse-overhaul)
@@ -462,11 +464,12 @@ Sample `content.json`:
 
 ### Other Assets
 
-#### Configure Button
+#### Icons
 
-Replace the Configure button by editing the texture<sup>1</sup>:
+Replace any or all of the icons for the Configure, Craft from Chest, and Stash to Chest buttons by editing the
+image<sup>1</sup>:
 
-`furyx639.BetterChests\\ConfigureButton`.
+`furyx639.BetterChests\\Icons`.
 
 Sample `content.json`:
 
@@ -476,8 +479,10 @@ Sample `content.json`:
   "Changes": [
     {
       "Action": "EditImage",
-      "Target": "furyx639.BetterChests\\ConfigureButton",
-      "FromFile": "assets/MyConfigureButton.png"
+      "Target": "furyx639.BetterChests\\Icons",
+      "FromFile": "assets/MyConfigureButton.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16}
     },
   ]
 }
@@ -489,7 +494,7 @@ Sample `content.json`:
 
 #### Tab Texture
 
-Replace the default Tabs by editing the texture<sup>1</sup>:
+Replace any or all of the default tab textures by editing the image<sup>1</sup>:
 
 `furyx639.BetterChests\\Tabs\\Textures`
 

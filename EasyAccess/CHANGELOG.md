@@ -2,6 +2,10 @@
 
 ## 1.0.0-beta.2 (Unreleased)
 
+### Added
+
+* Added toolbar icons for Collect Items and Dispense Items.
+
 ### Changes
 
 * Purge inaccessible cached objects.

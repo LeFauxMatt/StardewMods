@@ -18,6 +18,7 @@ internal class CustomEvents : ICustomEvents, IModService
     private readonly MenuComponentPressed _menuComponentPressed;
     private readonly RenderedItemGrabMenu _renderedItemGrabMenu;
     private readonly RenderingItemGrabMenu _renderingItemGrabMenu;
+    private readonly ToolbarIconPressed _toolbarIconPressed;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CustomEvents" /> class.
@@ -31,6 +32,7 @@ internal class CustomEvents : ICustomEvents, IModService
         this._menuComponentPressed = new(helper, services);
         this._renderedItemGrabMenu = new(helper.Events.Display, services);
         this._renderingItemGrabMenu = new(helper.Events.Display, services);
+        this._toolbarIconPressed = new(helper, services);
     }
 
     /// <inheritdoc />
@@ -66,5 +68,12 @@ internal class CustomEvents : ICustomEvents, IModService
     {
         add => this._renderingItemGrabMenu.Add(value);
         remove => this._renderingItemGrabMenu.Remove(value);
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<ToolbarIconPressedEventArgs> ToolbarIconPressed
+    {
+        add => this._toolbarIconPressed.Add(value);
+        remove => this._toolbarIconPressed.Remove(value);
     }
 }

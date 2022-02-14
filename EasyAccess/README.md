@@ -10,7 +10,10 @@ Provides easier access to machines and producers in the game.
 * [Supported Objects](#supported-objects)
 * [Configurations](#configurations)
     * [Item Tags](#item-tags)
-        * [Range Values](#range-values)
+    * [Range Values](#range-values)
+* [Customization](#customization)
+    * [Custom Producers](#custom-producers)
+    * [Other Assets](#other-assets)
 * [Translations](#translations)
 
 ## Features
@@ -121,6 +124,72 @@ The Range value limits which chests will be selected for a feature relative to t
 * **World** - Any chest accessible to the player in the world.
 
 1. If parent value is unspecified, Location will be the default value.
+
+## Customization
+
+### Custom Chests
+
+The config for producer types are stored in the `producers.json` in the `assets`
+folder.
+
+If `producers.json` is not found, a default one for vanilla producers is automatically generated with all default
+settings.
+
+`furyx639.EasyAccess\\Producers`  
+Add/replace producer settings by editing entries<sup>1</sup>.
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "furyx639.EasyAccess\\Producers",
+      "Entries": {
+        "example.ModId_CustomCask": {
+          "CollectOutputItems": "quality_iridium",
+          "DispenseInputItems": "category_artisan_goods,!quality_iridium",
+        }
+      }
+    }
+  ]
+}
+```
+
+1. See
+   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
+   docs for Content Patcher.
+
+### Other Assets
+
+#### Icons
+
+Replace any or all of the icons for the Collect Output or Dispense Input buttons by editing the image<sup>1</sup>:
+
+`furyx639.EasyAccess\\Icons`.
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.EasyAccess\\Icons",
+      "FromFile": "assets/MyDispenseItemsButton.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea": {"X": 16, "Y": 0, "Width": 16, "Height": 16}
+    },
+  ]
+}
+```
+
+1. See
+   the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+   docs for Content Patcher.
 
 ## Translations
 

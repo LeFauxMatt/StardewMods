@@ -1,18 +1,28 @@
 ﻿namespace StardewMods.EasyAccess.Features;
 
+using System;
 using System.Collections.Generic;
 using Common.Helpers;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewMods.EasyAccess.Enums;
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Interfaces.ManagedObjects;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 
 /// <inheritdoc />
 internal class DispenseInputs : Feature
 {
+    private readonly PerScreen<IMenuComponent> _dispenseButton = new();
+    private readonly Lazy<IToolbarIcons> _toolbarIcons;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="DispenseInputs" /> class.
     /// </summary>
@@ -22,6 +32,7 @@ internal class DispenseInputs : Feature
     public DispenseInputs(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        this._toolbarIcons = services.Lazy<IToolbarIcons>();
     }
 
     /// <summary>
@@ -61,15 +72,39 @@ internal class DispenseInputs : Feature
         }
     }
 
+    private IMenuComponent DispenseButton
+    {
+        get => this._dispenseButton.Value ??= new CustomMenuComponent(
+            new(
+                new(0, 0, Game1.tileSize, Game1.tileSize),
+                this.Helper.Content.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons", ContentSource.GameContent),
+                new(16, 0, 16, 16),
+                Game1.pixelZoom)
+            {
+                name = "Dispense Inputs",
+                hoverText = I18n.Button_DispenseInputs_Name(),
+            },
+            ComponentArea.Right);
+    }
+
+    private IToolbarIcons ToolbarIcons
+    {
+        get => this._toolbarIcons.Value;
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
+        this.ToolbarIcons.Icons.Add(this.DispenseButton);
+        this.CustomEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
+        this.ToolbarIcons.Icons.Remove(this.DispenseButton);
+        this.CustomEvents.ToolbarIconPressed -= this.OnToolbarIconPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
@@ -110,6 +145,15 @@ internal class DispenseInputs : Feature
         if (Context.IsPlayerFree && this.DispenseItems())
         {
             this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.DispenseItems);
+        }
+    }
+
+    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
+    {
+        if (ReferenceEquals(this.DispenseButton, e.Component))
+        {
+            this.DispenseItems();
+            e.SuppressInput();
         }
     }
 }

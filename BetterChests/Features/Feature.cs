@@ -25,8 +25,8 @@ internal abstract class Feature : IModService
         this.Id = $"{BetterChests.ModUniqueId}.{this.GetType().Name}";
         this.Config = config;
         this.Helper = helper;
-        this._managedObjects = services.Lazy<ManagedObjects>();
         this._customEvents = services.Lazy<ICustomEvents>();
+        this._managedObjects = services.Lazy<ManagedObjects>();
     }
 
     /// <summary>

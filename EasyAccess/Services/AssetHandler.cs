@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Common.Helpers;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -101,7 +102,8 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <inheritdoc />
     public bool CanLoad<T>(IAssetInfo asset)
     {
-        return asset.AssetNameEquals($"{EasyAccess.ModUniqueId}/Producers");
+        return asset.AssetNameEquals($"{EasyAccess.ModUniqueId}/Producers")
+               || asset.AssetNameEquals($"{EasyAccess.ModUniqueId}/Icons");
     }
 
     /// <summary>
@@ -130,6 +132,8 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             "Producers" when segment.Length == 2
                 => (T)this.LocalProducerData,
+            "Icons" when segment.Length == 2
+                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/icons.png"),
             _ => default,
         };
     }

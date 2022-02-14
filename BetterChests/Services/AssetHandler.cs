@@ -123,7 +123,7 @@ internal class AssetHandler : IModService, IAssetLoader
     public bool CanLoad<T>(IAssetInfo asset)
     {
         return asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Chests")
-               || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/ConfigureButton")
+               || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Icons")
                || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs")
                || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs/Texture");
     }
@@ -154,8 +154,8 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             "Chests" when segment.Length == 2
                 => (T)this.LocalChestData,
-            "ConfigureButton" when segment.Length == 2
-                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/configure.png"),
+            "Icons" when segment.Length == 2
+                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/icons.png"),
             "Tabs" when segment.Length == 3 && segment[2] == "Texture"
                 => (T)(object)this.Helper.Content.Load<Texture2D>("assets/tabs.png"),
             "Tabs" when segment.Length == 2

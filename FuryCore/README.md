@@ -7,10 +7,12 @@ Provides additional APIs for my other mods.
 * Helpers
     * [Item Matcher](#item-matcher)
 * Events
+    * [GameObjects Removed](#gameobjects-removed)
     * [ItemGrabMenu Changed](#itemgrabmenu-changed)
     * [MenuComponent Pressed](#menucomponent-pressed)
     * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
     * [Rendered ItemGrabMenu](#rendered-itemgrabmenu)
+    * [ToolbarIcon Pressed](#toolbaricon-pressed)
 * Services
     * [Custom Events](#custom-events)
     * [Custom Tags](#custom-tags)
@@ -19,6 +21,7 @@ Provides additional APIs for my other mods.
     * [Menu Components](#menu-components)
     * [Menu Items](#menu-items)
     * [Mod Services](#mod-services)
+    * [Toolbar Icons](#toolbar-icons)
 * UI
     * [DropDown Menu](#dropdown-menu)
     * [Gradient Bar](#gradient-bar)
@@ -41,21 +44,23 @@ furniture, an artifact, can be donated to a bundle, and/or can be donated to the
 
 ### Events
 
+#### GameObjects Removed
+
+Triggers when inaccessible game objects are purged from the cache.
+
+[Source](Events/GameObjectsRemoved.cs)
+
 #### ItemGrabMenu Changed
 
 Triggered whenever an ItemGrabMenu is constructed, and whenever the Active Menu switches to/from an ItemGrabMenu.On
 construction, this event triggers as a postfix to the vanilla ItemGrabMenu constructor so any changes made are before
 the menu is displayed to the screen.
 
-See [Custom Events](#custom-events)
-
 [Source](Events/ItemGrabMenuChanged.cs)
 
 #### MenuComponent Pressed
 
 Triggers when a vanilla or custom component is pressed on an ItemGrabMenu.
-
-See [Custom Events](#custom-events)
 
 [Source](Events/MenuComponentPressed.cs)
 
@@ -64,8 +69,6 @@ See [Custom Events](#custom-events)
 Identical to RenderingActiveMenu except for it only triggers for ItemGrabMenu, and anything drawn to the SpriteBatch
 will be above the background fade but below the actual menu graphics. Great for menu underlays.
 
-See [Custom Events](#custom-events)
-
 [Source](Events/RenderedItemGrabMenu.cs)
 
 #### Rendering ItemGrabMenu
@@ -73,15 +76,19 @@ See [Custom Events](#custom-events)
 Identical to RenderedActiveMenu except for it only triggers for ItemGrabMenu, and anything drawn to the SpriteBatch will
 be above the menu but below the cursor and any hover elements such as text or item.
 
-See [Custom Events](#custom-events)
+[Source](Events/RenderingItemGrabMenu.cs)
 
-[Interface](Events/RenderingItemGrabMenu.cs)
+#### ToolbarIcon Pressed
+
+Triggers when a custom toolbar icon is pressed.
+
+[Source](Events/ToolbarIconPressed.cs)
 
 ### Services
 
 #### Custom Events
 
-[ [Interface](Interfaces/ICustomEvents.cs) | [Source](Services/CustomEvents.cs) ]
+[ [Interface](Interfaces/CustomEvents/ICustomEvents.cs) | [Source](Services/CustomEvents.cs) ]
 
 #### Custom Tags
 
@@ -91,7 +98,7 @@ See [Custom Events](#custom-events)
 
 Provides access to most objects in the game including items, buildings, and locations.
 
-[ [Interface](Interfaces/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
+[ [Interface](Interfaces/GameObjects/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
 
 #### Harmony Helper
 
@@ -104,7 +111,7 @@ Saves a list of Harmony Patches, and allows them to be applied or reversed at an
 Add custom components to the ItemGrabMenu which can optionally automatically align to certain areas of the screen. In
 this case neighboring components are automatically assigned for controller support.
 
-[ [Interface](Interfaces/IMenuComponent.cs) | [Source](Services/MenuComponents.cs) ]
+[ [Interface](Interfaces/MenuComponents/IMenuComponents.cs) | [Source](Services/MenuComponents.cs) ]
 
 #### Menu Items
 
@@ -118,6 +125,12 @@ displayed items or scrolling an overflow of items without affecting the source i
 All of FuryCores APIs are access through this service.
 
 [ [Interface](Interfaces/IModService.cs) | [Source](Services/ModServices.cs) ]
+
+#### Toolbar Icons
+
+Add icons to the left or right of the player items toolbar.
+
+[ [Interface](Interfaces/MenuComponents/IToolbarIcons.cs) | [Source](Services/ToolbarIcons.cs) ]
 
 ### UI
 

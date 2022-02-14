@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Helpers;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -14,6 +15,7 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Locations;
 
@@ -22,6 +24,8 @@ internal class StashToChest : Feature
 {
     private readonly PerScreen<IManagedStorage> _currentStorage = new();
     private readonly Lazy<IMenuComponents> _menuComponents;
+    private readonly PerScreen<IMenuComponent> _stashButton = new();
+    private readonly Lazy<IToolbarIcons> _toolbarIcons;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="StashToChest" /> class.
@@ -33,6 +37,7 @@ internal class StashToChest : Feature
         : base(config, helper, services)
     {
         this._menuComponents = services.Lazy<IMenuComponents>();
+        this._toolbarIcons = services.Lazy<IToolbarIcons>();
     }
 
     /// <summary>
@@ -94,19 +99,43 @@ internal class StashToChest : Feature
         get => this._menuComponents.Value;
     }
 
+    private IMenuComponent StashButton
+    {
+        get => this._stashButton.Value ??= new CustomMenuComponent(
+            new(
+                new(0, 0, Game1.tileSize, Game1.tileSize),
+                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
+                new(16, 0, 16, 16),
+                Game1.pixelZoom)
+            {
+                name = "Stash to Chest",
+                hoverText = I18n.Button_StashToChest_Name(),
+            },
+            ComponentArea.Right);
+    }
+
+    private IToolbarIcons ToolbarIcons
+    {
+        get => this._toolbarIcons.Value;
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
+        this.ToolbarIcons.Icons.Add(this.StashButton);
         this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
         this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.CustomEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
+        this.ToolbarIcons.Icons.Remove(this.StashButton);
         this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
         this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.CustomEvents.ToolbarIconPressed -= this.OnToolbarIconPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
@@ -194,6 +223,15 @@ internal class StashToChest : Feature
         if (stashedAny)
         {
             Game1.playSound("Ship");
+            e.SuppressInput();
+        }
+    }
+
+    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
+    {
+        if (ReferenceEquals(this.StashButton, e.Component))
+        {
+            this.StashItems();
             e.SuppressInput();
         }
     }

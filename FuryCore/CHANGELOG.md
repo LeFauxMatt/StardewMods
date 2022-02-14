@@ -4,6 +4,7 @@
 
 ### Additions
 
+* Added IToolbarIcons service.
 * Added special handling of Shipping Bin containers.
 
 ### Changes

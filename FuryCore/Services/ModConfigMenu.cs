@@ -72,6 +72,19 @@ internal class ModConfigMenu : IModService
 
         this.GMCM.API.AddSectionTitle(
             this.Manifest,
+            I18n.Section_General_Name,
+            I18n.Section_General_Description);
+
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.ToolbarIcons,
+            value => this.Config.ToolbarIcons = value,
+            I18n.Config_ToolbarIcons_Name,
+            I18n.Config_ToolbarIcons_Tooltip,
+            nameof(ConfigData.ToolbarIcons));
+
+        this.GMCM.API.AddSectionTitle(
+            this.Manifest,
             I18n.Section_CustomTags_Name,
             I18n.Section_CustomTags_Tooltip);
 

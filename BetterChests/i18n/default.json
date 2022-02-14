@@ -123,7 +123,9 @@
   "area.left.name": "To the left of the inventory menu.",
   "area.custom.name": "A customized position.",
   // UI - Button
-  "button.Configure.name": "Configure",
+  "button.configure.name": "Configure",
+  "button.stash-to-chest.name": "Stash to Chest",
+  "button.craft-from-chest.name": "Craft from Chest",
   // UI - Tabs
   "tabs.Clothing.name": "Clothing",
   "tabs.Cooking.name": "Cooking",

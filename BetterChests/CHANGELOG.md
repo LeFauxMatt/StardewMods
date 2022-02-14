@@ -5,6 +5,7 @@
 ### Additions
 
 * Added Organize Chest feature.
+* Added Toolbar icons for Stash to Chest and Craft from Chest.
 * Added Chest Menu for Shipping Bins.
 
 ### Changes

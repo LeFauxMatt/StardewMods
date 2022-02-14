@@ -6,10 +6,12 @@ using StardewMods.EasyAccess.Enums;
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Services;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 
 /// <inheritdoc />
 internal abstract class Feature : IModService
 {
+    private readonly Lazy<ICustomEvents> _customEvents;
     private readonly Lazy<ManagedObjects> _managedObjects;
 
     /// <summary>
@@ -23,6 +25,7 @@ internal abstract class Feature : IModService
         this.Id = $"{EasyAccess.ModUniqueId}.{this.GetType().Name}";
         this.Config = config;
         this.Helper = helper;
+        this._customEvents = services.Lazy<ICustomEvents>();
         this._managedObjects = services.Lazy<ManagedObjects>();
     }
 
@@ -30,6 +33,14 @@ internal abstract class Feature : IModService
     ///     Gets the player configured mod options.
     /// </summary>
     protected IConfigModel Config { get; }
+
+    /// <summary>
+    ///     Gets custom events provided by FuryCore.
+    /// </summary>
+    protected ICustomEvents CustomEvents
+    {
+        get => this._customEvents.Value;
+    }
 
     /// <summary>
     ///     Gets SMAPIs Helper API for events, input, and content.

@@ -2,7 +2,6 @@
 
 using System;
 using Common.Helpers;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
@@ -44,8 +43,8 @@ internal class CategorizeChest : Feature
         get => this._configureButton.Value ??= new CustomMenuComponent(
             new(
                 new(0, 0, Game1.tileSize, Game1.tileSize),
-                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/ConfigureButton", ContentSource.GameContent),
-                Rectangle.Empty,
+                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
+                new(0, 0, 16, 16),
                 Game1.pixelZoom)
             {
                 name = "Configure",

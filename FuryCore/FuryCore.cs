@@ -32,7 +32,8 @@ public class FuryCore : Mod
             new HarmonyHelper(),
             new MenuComponents(this.Helper, this.Services),
             new MenuItems(this.Config, this.Helper, this.Services),
-            new ModConfigMenu(this.Config, this.Helper, this.ModManifest));
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest),
+            new ToolbarIcons(this.Helper, this.Services));
     }
 
     /// <inheritdoc />

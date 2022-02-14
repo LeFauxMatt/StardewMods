@@ -110,6 +110,8 @@
   "area.custom.name": "Una posizione personalizzata.",
   // UI - Button
   "button.Configure.name": "Configura",
+  "button.stash-to-chest.name": "Deposita nei Bauli",
+  "button.craft-from-chest.name": "Crea Da Baule",
   // UI - Tabs
   "tabs.Clothing.name": "Vestiti",
   "tabs.Cooking.name": "Cucinare",
