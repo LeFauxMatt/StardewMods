@@ -4,16 +4,19 @@ Provides additional APIs for my other mods.
 
 ## Contents
 
-* Helpers
+* [Mod Integration](#mod-integration)
+    * [Direct Integration](#direct-integration)
+    * [API](#api)
+* [Helpers](#helpers)
     * [Item Matcher](#item-matcher)
-* Events
+* [Events](#events)
     * [GameObjects Removed](#gameobjects-removed)
     * [ItemGrabMenu Changed](#itemgrabmenu-changed)
     * [MenuComponent Pressed](#menucomponent-pressed)
     * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
     * [Rendered ItemGrabMenu](#rendered-itemgrabmenu)
     * [ToolbarIcon Pressed](#toolbaricon-pressed)
-* Services
+* [Services](#services)
     * [Custom Events](#custom-events)
     * [Custom Tags](#custom-tags)
     * [Game Objects](#game-objects)
@@ -22,7 +25,7 @@ Provides additional APIs for my other mods.
     * [Menu Items](#menu-items)
     * [Mod Services](#mod-services)
     * [Toolbar Icons](#toolbar-icons)
-* UI
+* [UI](#ui)
     * [DropDown Menu](#dropdown-menu)
     * [Gradient Bar](#gradient-bar)
     * [HSL Color Picker](#hsl-color-picker)
@@ -31,6 +34,58 @@ Provides additional APIs for my other mods.
     * [Add Custom Tags](#add-custom-tags)
     * [Scroll Menu Overflow](#scroll-menu-overflow)
 * [Translations](#translations)
+
+### Mod Integration
+
+FuryCore Services can be integrated through a direct reference or through an API.
+
+#### Direct Integration
+
+You can directly integrate by adding a reference to your csproj file.
+
+Sample `mod.csproj` file:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>EXAMPLE_MOD_NAME</AssemblyName>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="3.3.0" />
+    <Reference Include="FuryCore">
+      <HintPath>$(GameModsPath)\FuryCore\FuryCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
+```
+
+You'll need to create your own instance of [Mod Services](#mod-services) and then you can add FuryCore Services to your
+own using the [API](#api) from the GameLaunched SMAPI event.
+
+Sample `ModEntry.cs` file:
+
+```cs
+public class ModEntry : Mod
+{
+  private ModServices Services { get; } = new();
+
+  private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+  {
+    if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
+    {
+      var furyCoreApi = this.Helper.ModRegistry.GetApi<IFuryCoreApi>("furyx639.FuryCore");
+      furyCoreApi.AddFuryCoreServices(this.Services);
+    }
+  }
+}
+```
+
+#### API
+
+Get basic access to FuryCore services using the [Fury Core API](../Common/Integrations/FuryCore/IFuryCoreApi.cs).
 
 ### Helpers
 

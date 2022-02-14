@@ -2,13 +2,13 @@
 
 using System;
 using Common.Helpers;
+using Common.Integrations.FuryCore;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Services;
-using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
@@ -21,6 +21,8 @@ public class BetterChests : Mod
 
     private ConfigModel Config { get; set; }
 
+    private FuryCoreIntegration FuryCore { get; set; }
+
     private ModServices Services { get; } = new();
 
     /// <inheritdoc />
@@ -29,6 +31,7 @@ public class BetterChests : Mod
         BetterChests.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
+        this.FuryCore = new(this.Helper.ModRegistry);
 
         // Mod Config
         IConfigData config = null;
@@ -79,8 +82,13 @@ public class BetterChests : Mod
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        var furyCore = this.Helper.ModRegistry.GetApi<IModServices>("furyx639.FuryCore");
-        this.Services.Add((IModService)furyCore);
+        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
+        {
+            var furyCoreApi = this.Helper.ModRegistry.GetApi<IFuryCoreApi>("furyx639.FuryCore");
+            furyCoreApi.AddFuryCoreServices(this.Services);
+        }
+
+        this.FuryCore.API.AddFuryCoreServices(this.Services);
 
         // Activate Features
         foreach (var feature in this.Services.FindServices<Feature>())

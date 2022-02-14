@@ -29,7 +29,7 @@ internal interface ICustomTags
     public const string DonateMuseum = "donate_museum";
 
     /// <summary>
-    ///     Adds a context tag to any item meeting the predicate.
+    ///     Adds a context tag to any item that currently meets the predicate.
     /// </summary>
     /// <param name="tag">The tag to add to the item.</param>
     /// <param name="predicate">The predicate to test items that should have the context tag added.</param>

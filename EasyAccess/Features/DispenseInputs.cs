@@ -84,6 +84,7 @@ internal class DispenseInputs : Feature
                 name = "Dispense Inputs",
                 hoverText = I18n.Button_DispenseInputs_Name(),
                 baseScale = 2f,
+                scale = 2f,
             },
             ComponentArea.Right);
     }

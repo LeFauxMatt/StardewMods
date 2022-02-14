@@ -22,6 +22,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\IEvenBetterRngApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\FuryCoreIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\IFuryCoreApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />

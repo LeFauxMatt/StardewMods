@@ -194,7 +194,16 @@ internal class SearchItems : Feature
 
     private static int GetMenuPadding(MenuWithInventory menu)
     {
-        SearchItems.Instance.Menu = menu as ItemGrabMenu;
+        if (!ReferenceEquals(SearchItems.Instance.Menu, menu))
+        {
+            SearchItems.Instance.Menu = menu switch
+            {
+                ItemSelectionMenu itemSelectionMenu when SearchItems.Instance.Config.DefaultChest.SearchItems == FeatureOption.Enabled => itemSelectionMenu,
+                ItemGrabMenu { context: not null } itemGrabMenu when SearchItems.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => itemGrabMenu,
+                _ => null,
+            };
+        }
+
         return SearchItems.Instance.MenuPadding;
     }
 

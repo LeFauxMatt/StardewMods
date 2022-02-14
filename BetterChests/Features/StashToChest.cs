@@ -111,6 +111,7 @@ internal class StashToChest : Feature
                 name = "Stash to Chest",
                 hoverText = I18n.Button_StashToChest_Name(),
                 baseScale = 2f,
+                scale = 2f,
             },
             ComponentArea.Right);
     }

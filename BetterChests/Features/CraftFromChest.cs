@@ -124,6 +124,7 @@ internal class CraftFromChest : Feature
                 name = "Craft from Chest",
                 hoverText = I18n.Button_CraftFromChest_Name(),
                 baseScale = 2f,
+                scale = 2f,
             },
             ComponentArea.Right);
     }

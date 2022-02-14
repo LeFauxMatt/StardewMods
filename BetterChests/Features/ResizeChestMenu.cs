@@ -199,19 +199,46 @@ internal class ResizeChestMenu : Feature
 
     private static int GetMenuCapacity(MenuWithInventory menu)
     {
-        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
+        if (!ReferenceEquals(ResizeChestMenu.Instance.Menu, menu))
+        {
+            ResizeChestMenu.Instance.Menu = menu switch
+            {
+                ItemSelectionMenu itemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
+                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+                _ => null,
+            };
+        }
+
         return ResizeChestMenu.Instance.MenuCapacity;
     }
 
     private static int GetMenuOffset(MenuWithInventory menu)
     {
-        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
+        if (!ReferenceEquals(ResizeChestMenu.Instance.Menu, menu))
+        {
+            ResizeChestMenu.Instance.Menu = menu switch
+            {
+                ItemSelectionMenu itemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
+                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+                _ => null,
+            };
+        }
+
         return ResizeChestMenu.Instance.MenuOffset;
     }
 
     private static int GetMenuRows(MenuWithInventory menu)
     {
-        ResizeChestMenu.Instance.Menu = menu as ItemGrabMenu;
+        if (!ReferenceEquals(ResizeChestMenu.Instance.Menu, menu))
+        {
+            ResizeChestMenu.Instance.Menu = menu switch
+            {
+                ItemSelectionMenu itemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
+                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+                _ => null,
+            };
+        }
+
         return ResizeChestMenu.Instance.MenuRows;
     }
 

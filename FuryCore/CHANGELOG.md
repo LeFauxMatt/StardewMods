@@ -4,6 +4,7 @@
 
 ### Additions
 
+* Added IFuryCoreApi for SMAPI integration.
 * Added IToolbarIcons service.
 * Added special handling of Shipping Bin containers.
 
