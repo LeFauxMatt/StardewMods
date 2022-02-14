@@ -81,6 +81,7 @@ internal abstract class Feature : IModService
             FilterItems => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled,
             MenuForShippingBin => this.Config.CategorizeChest || this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled || this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled || this.Config.DefaultChest.SearchItems != FeatureOption.Disabled,
             OpenHeldChest => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled,
+            OrganizeChest => this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled,
             ResizeChest => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled,
             ResizeChestMenu => this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled,
             SearchItems => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled,

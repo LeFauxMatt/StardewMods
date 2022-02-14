@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 
 /// <inheritdoc />
 internal class SerializedStorageData : IStorageData
@@ -116,6 +116,33 @@ internal class SerializedStorageData : IStorageData
             ? option
             : FeatureOption.Default;
         set => this.Data["OpenHeldChest"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeChest
+    {
+        get => this.Data.TryGetValue("OrganizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option
+            : FeatureOption.Default;
+        set => this.Data["OrganizeChest"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
+    public GroupBy OrganizeChestGroupBy
+    {
+        get => this.Data.TryGetValue("OrganizeChestGroupBy", out var value) && Enum.TryParse(value, out GroupBy groupBy)
+            ? groupBy
+            : GroupBy.Default;
+        set => this.Data["OrganizeChestGroupBy"] = value == GroupBy.Default ? string.Empty : FormatHelper.GetGroupByString(value);
+    }
+
+    /// <inheritdoc />
+    public SortBy OrganizeChestSortBy
+    {
+        get => this.Data.TryGetValue("OrganizeChestSortBy", out var value) && Enum.TryParse(value, out SortBy sortBy)
+            ? sortBy
+            : SortBy.Default;
+        set => this.Data["OrganizeChestSortBy"] = value == SortBy.Default ? string.Empty : FormatHelper.GetSortByString(value);
     }
 
     /// <inheritdoc />

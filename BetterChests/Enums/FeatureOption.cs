@@ -3,7 +3,7 @@
 /// <summary>
 ///     Indicates if a feature is enabled, disabled, or will inherit from a parent config.
 /// </summary>
-public enum FeatureOption
+internal enum FeatureOption
 {
     /// <summary>Feature is disabled.</summary>
     Disabled = 0,

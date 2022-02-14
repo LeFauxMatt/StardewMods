@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces.GameObjects;
@@ -188,6 +188,52 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
             }
             : this.Data.OpenHeldChest;
         set => this.ModData[$"{BetterChests.ModUniqueId}/OpenHeldChest"] = FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeChest
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.OrganizeChest,
+                _ => option,
+            }
+            : this.Data.OrganizeChest;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChest"] = FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
+    public GroupBy OrganizeChestGroupBy
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChestGroupBy", out var value) && Enum.TryParse(value, out GroupBy groupBy)
+            ? groupBy switch
+            {
+                GroupBy.Default => this.Data.OrganizeChestGroupBy,
+                _ => groupBy,
+            }
+            : this.Data.OrganizeChestGroupBy;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChestGroupBy"] = FormatHelper.GetGroupByString(value);
+    }
+
+    /// <inheritdoc />
+    public bool OrganizeChestOrderByDescending
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChestOrderByDescending", out var value) && bool.TryParse(value, out var orderByDesc) && orderByDesc;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChestOrderByDescending"] = value.ToString();
+    }
+
+    /// <inheritdoc />
+    public SortBy OrganizeChestSortBy
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChestSortBy", out var value) && Enum.TryParse(value, out SortBy sortBy)
+            ? sortBy switch
+            {
+                SortBy.Default => this.Data.OrganizeChestSortBy,
+                _ => sortBy,
+            }
+            : this.Data.OrganizeChestSortBy;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChestSortBy"] = FormatHelper.GetSortByString(value);
     }
 
     /// <inheritdoc />

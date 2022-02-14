@@ -2,10 +2,10 @@
 
 using System.Collections.Generic;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 
 /// <inheritdoc />
-public class StorageData : IStorageData
+internal class StorageData : IStorageData
 {
     /// <inheritdoc />
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
@@ -39,6 +39,15 @@ public class StorageData : IStorageData
 
     /// <inheritdoc />
     public FeatureOption OpenHeldChest { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeChest { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
+    public GroupBy OrganizeChestGroupBy { get; set; } = GroupBy.Default;
+
+    /// <inheritdoc />
+    public SortBy OrganizeChestSortBy { get; set; } = SortBy.Default;
 
     /// <inheritdoc />
     public FeatureOption ResizeChest { get; set; } = FeatureOption.Default;

@@ -9,7 +9,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;

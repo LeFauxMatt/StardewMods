@@ -4,6 +4,7 @@
 
 ### Additions
 
+* Added Organize Chest feature.
 * Added Chest Menu for Shipping Bins.
 
 ### Changes

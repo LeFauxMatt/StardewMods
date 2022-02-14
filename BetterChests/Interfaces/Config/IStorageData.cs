@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Interfaces.Config;
 
 using System.Collections.Generic;
 using StardewMods.BetterChests.Enums;
@@ -6,7 +6,7 @@ using StardewMods.BetterChests.Enums;
 /// <summary>
 ///     Storage data related to BetterChests features.
 /// </summary>
-public interface IStorageData
+internal interface IStorageData
 {
     /// <summary>
     ///     Gets or sets a value indicating if the chest can be carried by the player.
@@ -64,6 +64,21 @@ public interface IStorageData
     ///     Gets or sets a value indicating if the chest can be opened while it's being carried in the players inventory.
     /// </summary>
     public FeatureOption OpenHeldChest { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating if the chest can be organized with custom sorting/grouping.
+    /// </summary>
+    public FeatureOption OrganizeChest { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating how items will be grouped when organized.
+    /// </summary>
+    public GroupBy OrganizeChestGroupBy { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating how items will be sorted when organized.
+    /// </summary>
+    public SortBy OrganizeChestSortBy { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating if the chest can have it's capacity resized.

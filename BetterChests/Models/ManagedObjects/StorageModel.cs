@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 
 /// <inheritdoc />
 internal class StorageModel : IStorageData
@@ -180,6 +180,37 @@ internal class StorageModel : IStorageData
                 : FeatureOption.Disabled;
         }
         set => this.Data.OpenHeldChest = value;
+    }
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeChest
+    {
+        get
+        {
+            if (this.Data.OrganizeChest != FeatureOption.Default)
+            {
+                return this.Data.OrganizeChest;
+            }
+
+            return this.DefaultStorage.OrganizeChest != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.OrganizeChest = value;
+    }
+
+    /// <inheritdoc />
+    public GroupBy OrganizeChestGroupBy
+    {
+        get => this.Data.OrganizeChestGroupBy != GroupBy.Default ? this.Data.OrganizeChestGroupBy : this.DefaultStorage.OrganizeChestGroupBy;
+        set => this.Data.OrganizeChestGroupBy = value;
+    }
+
+    /// <inheritdoc />
+    public SortBy OrganizeChestSortBy
+    {
+        get => this.Data.OrganizeChestSortBy != SortBy.Default ? this.Data.OrganizeChestSortBy : this.DefaultStorage.OrganizeChestSortBy;
+        set => this.Data.OrganizeChestSortBy = value;
     }
 
     /// <inheritdoc />

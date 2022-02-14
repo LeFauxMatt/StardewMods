@@ -13,7 +13,6 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
@@ -385,11 +384,10 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        IManagedStorage managedStorage = null;
         this.Menu = e.ItemGrabMenu switch
         {
             ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
-            { context: not null } when this.ManagedObjects.FindManagedStorage(e.Context, out managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
+            { context: not null } when this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
             _ => null,
         };
 

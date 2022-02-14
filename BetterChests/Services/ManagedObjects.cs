@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.BetterChests.Models.Config;

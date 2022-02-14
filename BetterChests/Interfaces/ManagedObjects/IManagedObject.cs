@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Interfaces.ManagedObjects;
 
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 

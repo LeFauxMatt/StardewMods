@@ -59,6 +59,7 @@ public class BetterChests : Mod
             new FilterItems(this.Config, this.Helper, this.Services),
             new MenuForShippingBin(this.Config, this.Helper, this.Services),
             new OpenHeldChest(this.Config, this.Helper, this.Services),
+            new OrganizeChest(this.Config, this.Helper, this.Services),
             new ResizeChest(this.Config, this.Helper, this.Services),
             new ResizeChestMenu(this.Config, this.Helper, this.Services),
             new SearchItems(this.Config, this.Helper, this.Services),

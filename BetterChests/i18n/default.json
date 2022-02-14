@@ -48,6 +48,12 @@
   "config.filter-items-block.tooltip": "Chests will reject items that do not meet the Filter Items condition.",
   "config.open-held-chest.name": "Open Held Chest",
   "config.open-held-chest.tooltip": "Open a currently held Chest and access its contents.",
+  "config.organize-chest.name": "Organize Chest",
+  "config.organize-chest.tooltip": "Organize chests by configurable grouping and sorting options.",
+  "config.organize-chest-group-by.name": "Organize Chest Group By",
+  "config.organize-chest-group-by.tooltip": "The item property to group by when items are organized.",
+  "config.organize-chest-sort-by.name": "Organize Chest Sort By",
+  "config.organize-chest-sort-by.tooltip": "The item property to sort by when items are organized.",
   "config.resize-chest.name": "Resize Chest",
   "config.resize-chest.tooltip": "Allow chests to have a customized number of item slots.",
   "config.resize-chest-capacity.name": "Resize Chest Capacity",
@@ -102,6 +108,14 @@
   "option.inventory.name": "Inventory",
   "option.location.name": "Location",
   "option.world.name": "World",
+  // Group By Types
+  "group-by.category.name": "Category",
+  "group-by.color.name": "Color",
+  // Sort By Types
+  "sort-by.name.name": "Name",
+  "sort-by.type.name": "Type",
+  "sort-by.quality.name": "Quality",
+  "sort-by.quantity.name": "Quantity",
   // Menu Areas
   "area.top.name": "Above the inventory menu.",
   "area.right.name": "To the right of the inventory menu.",

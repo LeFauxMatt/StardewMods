@@ -9,7 +9,6 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
@@ -177,6 +176,39 @@ internal class ModConfigMenu : IModService
             optionValues,
             FormatHelper.FormatOption,
             nameof(OpenHeldChest));
+
+        // Organize Chest
+        this.GMCM.API.AddTextOption(
+            manifest,
+            () => FormatHelper.GetOptionString(storageData.OrganizeChest),
+            value => storageData.OrganizeChest = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            I18n.Config_OrganizeChest_Name,
+            I18n.Config_OrganizeChest_Tooltip,
+            optionValues,
+            FormatHelper.FormatOption,
+            nameof(OrganizeChest));
+
+        // Organize Chest Group By
+        this.GMCM.API.AddTextOption(
+            manifest,
+            () => FormatHelper.GetGroupByString(storageData.OrganizeChestGroupBy),
+            value => storageData.OrganizeChestGroupBy = Enum.TryParse(value, out GroupBy groupBy) ? groupBy : GroupBy.Default,
+            I18n.Config_OrganizeChestGroupBy_Name,
+            I18n.Config_OrganizeChestGroupBy_Tooltip,
+            Enum.GetValues<GroupBy>().Select(FormatHelper.GetGroupByString).ToArray(),
+            FormatHelper.FormatGroupBy,
+            nameof(IStorageData.OrganizeChestGroupBy));
+
+        // Organize Chest Sort By
+        this.GMCM.API.AddTextOption(
+            manifest,
+            () => FormatHelper.GetSortByString(storageData.OrganizeChestSortBy),
+            value => storageData.OrganizeChestSortBy = Enum.TryParse(value, out SortBy sortBy) ? sortBy : SortBy.Default,
+            I18n.Config_OrganizeChestSortBy_Name,
+            I18n.Config_OrganizeChestSortBy_Tooltip,
+            Enum.GetValues<SortBy>().Select(FormatHelper.GetSortByString).ToArray(),
+            FormatHelper.FormatGroupBy,
+            nameof(IStorageData.OrganizeChestSortBy));
 
         // Resize Chest Capacity
         this.GMCM.API.AddNumberOption(

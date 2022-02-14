@@ -6,7 +6,7 @@ using StardewMods.EasyAccess.Enums;
 /// <summary>
 ///     Helper methods to convert between different text formats.
 /// </summary>
-public static class FormatHelper
+internal static class FormatHelper
 {
     /// <summary>
     ///     Formats a range value using localized text when available.

@@ -7,7 +7,7 @@ using StardewMods.FuryCore.Enums;
 /// <summary>
 ///     Helper methods to convert between different text formats.
 /// </summary>
-public static class FormatHelper
+internal static class FormatHelper
 {
     /// <summary>
     ///     Formats an area value using localized text when available.
@@ -94,6 +94,35 @@ public static class FormatHelper
     }
 
     /// <summary>
+    ///     Formats a group by value using localized text when available.
+    /// </summary>
+    /// <param name="value">The group by value to format.</param>
+    /// <returns>Localized text for the group by value.</returns>
+    public static string FormatGroupBy(string value)
+    {
+        return Enum.TryParse(value, out GroupBy groupBy)
+            ? FormatHelper.FormatGroupBy(groupBy)
+            : value;
+    }
+
+    /// <summary>
+    ///     Formats a group by value using localized text when available.
+    /// </summary>
+    /// <param name="groupBy">The group by value to format.</param>
+    /// <returns>Localized text for the group by value.</returns>
+    public static string FormatGroupBy(GroupBy groupBy)
+    {
+        return groupBy switch
+        {
+            GroupBy.Default => I18n.Option_Default_Name(),
+            GroupBy.Category => I18n.GroupBy_Category_Name(),
+            GroupBy.Color => I18n.GroupBy_Color_Name(),
+            GroupBy.Name => I18n.SortBy_Name_Name(),
+            _ => throw new ArgumentOutOfRangeException(nameof(groupBy), groupBy, null),
+        };
+    }
+
+    /// <summary>
     ///     Formats an option value using localized text when available.
     /// </summary>
     /// <param name="value">The option value to format.</param>
@@ -161,6 +190,35 @@ public static class FormatHelper
     }
 
     /// <summary>
+    ///     Formats a sort by value using localized text when available.
+    /// </summary>
+    /// <param name="value">The sort by value to format.</param>
+    /// <returns>Localized text for the sort by value.</returns>
+    public static string FormatSortBy(string value)
+    {
+        return Enum.TryParse(value, out SortBy sortBy)
+            ? FormatHelper.FormatSortBy(sortBy)
+            : value;
+    }
+
+    /// <summary>
+    ///     Formats a sort by value using localized text when available.
+    /// </summary>
+    /// <param name="sortBy">The sort by value to format.</param>
+    /// <returns>Localized text for the sort by value.</returns>
+    public static string FormatSortBy(SortBy sortBy)
+    {
+        return sortBy switch
+        {
+            SortBy.Default => I18n.Option_Default_Name(),
+            SortBy.Type => I18n.SortBy_Type_Name(),
+            SortBy.Quality => I18n.SortBy_Quality_Name(),
+            SortBy.Quantity => I18n.SortBy_Quantity_Name(),
+            _ => throw new ArgumentOutOfRangeException(nameof(sortBy), sortBy, null),
+        };
+    }
+
+    /// <summary>
     ///     Gets a string representation of an area value.
     /// </summary>
     /// <param name="area">The area value to get the string representation for.</param>
@@ -176,6 +234,24 @@ public static class FormatHelper
             ComponentArea.Left => "Left",
             ComponentArea.Custom => "Custom",
             _ => throw new ArgumentOutOfRangeException(nameof(area), area, null),
+        };
+    }
+
+    /// <summary>
+    ///     Gets a string representation of a group by value.
+    /// </summary>
+    /// <param name="groupBy">The group by value to get the string representation for.</param>
+    /// <returns>The string representation of the group by value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for group by.</exception>
+    public static string GetGroupByString(GroupBy groupBy)
+    {
+        return groupBy switch
+        {
+            GroupBy.Default => "Default",
+            GroupBy.Category => "Category",
+            GroupBy.Color => "Color",
+            GroupBy.Name => "Name",
+            _ => throw new ArgumentOutOfRangeException(nameof(groupBy), groupBy, null),
         };
     }
 
@@ -212,6 +288,24 @@ public static class FormatHelper
             FeatureOptionRange.Location => "Location",
             FeatureOptionRange.World => "World",
             _ => throw new ArgumentOutOfRangeException(nameof(range), range, null),
+        };
+    }
+
+    /// <summary>
+    ///     Gets a string representation of a sort by value.
+    /// </summary>
+    /// <param name="sortBy">The sort by value to get the string representation for.</param>
+    /// <returns>The string representation of the sort by value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for sort by.</exception>
+    public static string GetSortByString(SortBy sortBy)
+    {
+        return sortBy switch
+        {
+            SortBy.Default => "Default",
+            SortBy.Type => "Type",
+            SortBy.Quality => "Quality",
+            SortBy.Quantity => "Quantity",
+            _ => throw new ArgumentOutOfRangeException(nameof(sortBy), sortBy, null),
         };
     }
 }

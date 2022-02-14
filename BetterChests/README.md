@@ -139,6 +139,18 @@ contents.
 
 1. See [Option Values](#option-values).
 
+### Organize Chest
+
+Organize Chest allows you to group and sort items by a configurable property of those items.
+
+| Config Option        | Description                         | Default Value | Other Value(s)                           |
+|:---------------------|:------------------------------------|:--------------|:-----------------------------------------|
+| OrganizeChest        | Enables the Organize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>    |
+| OrganizeChestGroupBy | What will items be grouped by.      | `"Default"`   | See [Group By Values](#group-by-values). |
+| OrganizeChestSortBy  | What will items be sorted by.       | `"Default"`   | See [Sort By Values](#sort-by-values).   |
+
+1. See [Option Values](#option-values).
+
 ### Resize Chest
 
 The default storage for a chest is 36 items. With Resize Chest enabled you can increase storage space up to virtually
@@ -285,6 +297,15 @@ precedence.
 2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual
    chests.
 
+### Group By Values
+
+Group by is a text property of the item that organize will order by first.
+
+* **Default** - Group by the original organize method.
+* **Category** - Group by the item category.
+* **Color** - Group by the item color (only if context tag supports it).
+* **Name** - Group by the item name.
+
 ### Option Values
 
 The option value determines whether a feature will be enabled or disabled for a chest.
@@ -306,6 +327,15 @@ The Range value limits which chests will be selected for a feature relative to t
 * **World** - Any chest accessible to the player in the world.
 
 1. If parent value is unspecified, Location will be the default value.
+
+### Sort By Values
+
+Sort by is a numerical property of the item that organize will order by second.
+
+* **Default** - Sort by the original organize method.
+* **Type** - Sort by the numerical category type of the item.
+* **Quality** - Sort by the quality of the item (if applicable).
+* **Quantity** - Sort by the stack size of the item.
 
 ## Mod Integrations
 
