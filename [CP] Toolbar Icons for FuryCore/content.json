@@ -34,7 +34,7 @@
             "FromFile": "assets/icons.png"
         },
 
-        // Add Chests Anywhere
+        // Add Chests Anywhere Icon
         {
             "Action": "EditData",
             "Target": "furyx639.FuryCore/Toolbar",
@@ -47,7 +47,7 @@
             }
         },
 
-        // Add CJB Cheats Menu
+        // Add CJB Cheats Menu Icon
         {
             "Action": "EditData",
             "Target": "furyx639.FuryCore/Toolbar",
@@ -60,7 +60,7 @@
             }
         },
 
-        // Add CJB Item Spawner
+        // Add CJB Item Spawner Icon
         {
             "Action": "EditData",
             "Target": "furyx639.FuryCore/Toolbar",
