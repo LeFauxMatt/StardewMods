@@ -66,7 +66,7 @@
   "config.search-items-symbol.tooltip": "아이템의 컨텍스트 태그를 기준으로 검색할 검색 구문 앞에 붙이는 기호입니다.",
   "config.slot-lock.name": "슬롯 잠금",
   "config.slot-lock.tooltip": "인벤토리의 아이템 위에 마우스를 놓고 단축키를 클릭하여 아이템 슬롯을 잠가 보관되지 않도록 합니다.",
-  "config.stash-to-chest.name": "상자 보관",
+  "config.stash-to-chest.name": "아이템 보관",
   "config.stash-to-chest.tooltip": "단축키를 클릭하여 근처 상자에 아이템을 즉시 보관합니다.",
   "config.stash-to-chest-distance.name": "상자 보관 범위",
   "config.stash-to-chest-distance.tooltip": "근처 상자에 아이템을 보관할 수 있는 범위",
