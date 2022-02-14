@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -25,12 +26,12 @@ internal class ToolbarIcons : IToolbarIcons, IModService
     ///     Initializes a new instance of the <see cref="ToolbarIcons" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public ToolbarIcons(IModHelper helper, IModServices services)
+    public ToolbarIcons(IModHelper helper)
     {
         this.Helper = helper;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        this.Helper.Events.Display.RenderingHud += this.OnRenderingHud;
     }
 
     /// <inheritdoc />
@@ -61,13 +62,12 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
-        var (x, y) = Game1.getMousePosition(true);
+        var (x, y) = Game1.getMousePosition(false);
         this.HoverText = string.Empty;
         foreach (var icon in this.Icons)
         {
-            icon.TryHover(x, y, 0.25f);
-
-            if (icon.Component?.containsPoint(x, y) == true)
+            var bounds = icon.Component.bounds;
+            if (x >= bounds.X && x <= bounds.X + bounds.Width / 2 && y >= bounds.Y && y <= bounds.Y + bounds.Height / 2)
             {
                 this.HoverText = icon.HoverText;
             }
@@ -82,39 +82,53 @@ internal class ToolbarIcons : IToolbarIcons, IModService
             return;
         }
 
-        var alignTop = toolbar.yPositionOnScreen < Game1.viewport.Height / 2;
+        if (!string.IsNullOrWhiteSpace(this.HoverText))
+        {
+            IClickableMenu.drawHoverText(e.SpriteBatch, this.HoverText, Game1.smallFont);
+        }
+    }
+
+    private void OnRenderingHud(object sender, RenderingHudEventArgs e)
+    {
+        var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
+        if (toolbar is null || !Game1.displayHUD || Game1.activeClickableMenu is not null)
+        {
+            return;
+        }
+
+        var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
+        var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
+        var alignTop = Game1.options.pinToolbarToggle || playerLocalY > Game1.viewport.Height / 2 + Game1.tileSize;
         if (this.AlignTop != alignTop || !this.Init)
         {
             this.Init = true;
             this.AlignTop = alignTop;
 
             var icons = this.Icons.Where(icon => icon.Area is ComponentArea.Left).ToList();
-            var x = Game1.uiViewport.Width / 2 - 384 - 16 - (Game1.tileSize + 8) * icons.Count;
+            var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
+            var y = this.AlignTop
+                ? Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth
+                : Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth;
             foreach (var icon in icons)
             {
                 icon.X = x;
-                icon.Y = toolbar.yPositionOnScreen - 96 + 8;
-                x += icon.Component.bounds.Width + 8;
+                icon.Y = y - (this.AlignTop ? 0 : icon.Component.bounds.Height) / 2;
+                x += icon.Component.bounds.Width / 2 + 8;
             }
 
             icons = this.Icons.Where(icon => icon.Area is ComponentArea.Right).ToList();
-            x = Game1.uiViewport.Width / 2 + 384 + 16 + 8;
+            x = (Game1.uiViewport.Width + Game1.tileSize * 12) / 2 - icons.Sum(icon => icon.Component.bounds.Width / 2 + 8) + 8;
             foreach (var icon in icons)
             {
                 icon.X = x;
-                icon.Y = toolbar.yPositionOnScreen - 96 + 8;
-                x += icon.Component.bounds.Width + 8;
+                icon.Y = y - (this.AlignTop ? 0 : icon.Component.bounds.Height) / 2;
+                x += icon.Component.bounds.Width / 2 + 8;
             }
         }
 
         foreach (var icon in this.Icons)
         {
             icon.Draw(e.SpriteBatch);
-        }
-
-        if (!string.IsNullOrWhiteSpace(this.HoverText))
-        {
-            IClickableMenu.drawHoverText(e.SpriteBatch, this.HoverText, Game1.smallFont);
         }
     }
 }

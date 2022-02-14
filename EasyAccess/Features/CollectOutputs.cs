@@ -83,6 +83,7 @@ internal class CollectOutputs : Feature
             {
                 name = "Collect Outputs",
                 hoverText = I18n.Button_CollectOutputs_Name(),
+                baseScale = 2f,
             },
             ComponentArea.Right);
     }
