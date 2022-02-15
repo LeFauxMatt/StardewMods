@@ -24,7 +24,39 @@
         "CJBItemSpawnerHotkey": {
             "AllowBlank": true,
             "Default": "I"
-        }
+        },
+        "EnableDataLayers": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "DataLayersHotkey": {
+            "AllowBlank": true,
+            "Default": "F2"
+        },
+        "EnableDebugMode": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "DebugModeHotkey": {
+            "AllowBlank": true,
+            "Default": "OemTilde"
+        },
+        "EnableHorseFluteAnywhere": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "HorseFluteAnywhereHotkey": {
+            "AllowBlank": true,
+            "Default": "H"
+        },
+        "EnableInstantBuildingsMenu": {
+            "AllowValues": "true, false",
+            "Default": true
+        },
+        "InstantBuildingsMenuHotkey": {
+            "AllowBlank": true,
+            "Default": "K"
+        },
     },
     "Changes": [
         // Load Texture Icons
@@ -70,6 +102,58 @@
             "When": {
                 "EnableCJBItemSpawner": true,
                 "HasMod": "CJBok.ItemSpawner"
+            }
+        },
+
+        // Add Data Layers Icon
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{DataLayersHotkey}}": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left",
+            },
+            "When": {
+                "EnableDataLayers": true,
+                "HasMod": "Pathoschild.DataLayers"
+            }
+        },
+
+        // Add Debug Mode Icon
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{DebugModeHotkey}}": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left",
+            },
+            "When": {
+                "EnableDebugMode": true,
+                "HasMod": "Pathoschild.DebugMode"
+            }
+        },
+
+        // Add Horse Flute Anywhere Icon
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{HorseFluteAnywhereHotkey}}": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left",
+            },
+            "When": {
+                "EnableHorseFluteAnywhere": true,
+                "HasMod": "Pathoschild.HorseFluteAnywhere"
+            }
+        },
+
+        // Add Instant Buildings Icon
+        {
+            "Action": "EditData",
+            "Target": "furyx639.FuryCore/Toolbar",
+            "Entries": {
+                "{{InstantBuildingsMenuHotkey}}": "{{i18n: icon.instant-buildings-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/Left",
+            },
+            "When": {
+                "EnableInstantBuildingsMenu": true,
+                "HasMod": "BitwiseJonMods.InstantBuildings"
             }
         },
     ]
