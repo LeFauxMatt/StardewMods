@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.FuryCore.Interfaces.GameObjects;
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewMods.FuryCore.Models.GameObjects;
@@ -10,20 +11,6 @@ using StardewValley;
 /// </summary>
 public interface IGameObjects
 {
-    /// <summary>
-    ///     Returns context objects for items in the player's inventory.
-    /// </summary>
-    /// <param name="player">The player to get context items from.</param>
-    /// <returns>Context objects belonging to the player.</returns>
-    public delegate IEnumerable<(int Index, object Context)> GetInventoryItems(Farmer player);
-
-    /// <summary>
-    ///     Returns context objects for coordinates at a game location.
-    /// </summary>
-    /// <param name="location">The location to get context objects from.</param>
-    /// <returns>Context objects and their coordinates.</returns>
-    public delegate IEnumerable<(Vector2 Position, object Context)> GetLocationObjects(GameLocation location);
-
     /// <summary>
     ///     Gets all items in the player's inventory.
     /// </summary>
@@ -38,13 +25,13 @@ public interface IGameObjects
     ///     Adds a custom getter for inventory items.
     /// </summary>
     /// <param name="getInventoryItems">The inventory items getter to add.</param>
-    public void AddInventoryItemsGetter(GetInventoryItems getInventoryItems);
+    public void AddInventoryItemsGetter(Func<Farmer, IEnumerable<(int Index, object Context)>> getInventoryItems);
 
     /// <summary>
     ///     Adds a custom getter for location objects.
     /// </summary>
     /// <param name="getLocationObjects">The location objects getter to add.</param>
-    public void AddLocationObjectsGetter(GetLocationObjects getLocationObjects);
+    public void AddLocationObjectsGetter(Func<GameLocation, IEnumerable<(Vector2 Position, object Context)>> getLocationObjects);
 
     /// <summary>
     ///     Attempts to get a GameObject based on a context object.

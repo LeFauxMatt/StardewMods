@@ -200,20 +200,20 @@ internal class GameObjects : IGameObjects, IModService
         get => this._contextMap.Value;
     }
 
-    private IList<IGameObjects.GetInventoryItems> ExternalInventoryItems { get; } = new List<IGameObjects.GetInventoryItems>();
+    private IList<Func<Farmer, IEnumerable<(int Index, object Context)>>> ExternalInventoryItems { get; } = new List<Func<Farmer, IEnumerable<(int Index, object Context)>>>();
 
-    private IList<IGameObjects.GetLocationObjects> ExternalLocationObjects { get; } = new List<IGameObjects.GetLocationObjects>();
+    private IList<Func<GameLocation, IEnumerable<(Vector2 Position, object Context)>>> ExternalLocationObjects { get; } = new List<Func<GameLocation, IEnumerable<(Vector2 Position, object Context)>>>();
 
     private IModHelper Helper { get; }
 
     /// <inheritdoc />
-    public void AddInventoryItemsGetter(IGameObjects.GetInventoryItems getInventoryItems)
+    public void AddInventoryItemsGetter(Func<Farmer, IEnumerable<(int Index, object Context)>> getInventoryItems)
     {
         this.ExternalInventoryItems.Add(getInventoryItems);
     }
 
     /// <inheritdoc />
-    public void AddLocationObjectsGetter(IGameObjects.GetLocationObjects getLocationObjects)
+    public void AddLocationObjectsGetter(Func<GameLocation, IEnumerable<(Vector2 Position, object Context)>> getLocationObjects)
     {
         this.ExternalLocationObjects.Add(getLocationObjects);
     }

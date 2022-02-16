@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 1.4.2 (February 16, 2022)
+
+### Fixes
+
+* Fixed an error resulting from Chests that had an exact capacity of 72.
+
 ## 1.4.1 (February 15, 2022)
 
 ### Fixes

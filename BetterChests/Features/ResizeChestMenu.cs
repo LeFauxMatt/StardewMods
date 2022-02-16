@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection.Emit;
 using Common.Extensions;
 using Common.Helpers;
@@ -176,7 +177,7 @@ internal class ResizeChestMenu : Feature
                     0 or Chest.capacity => 3,
                     < 0 => managedStorage.ResizeChestMenuRows,
                     < 72 => (int)Math.Min(managedStorage.ResizeChestMenuRows, Math.Ceiling(managedStorage.ResizeChestCapacity / 12f)),
-                    _ => managedStorage.ResizeChestCapacity,
+                    _ => managedStorage.ResizeChestMenuRows,
                 },
                 _ => 3,
             };
@@ -461,10 +462,16 @@ internal class ResizeChestMenu : Feature
         }
 
         // Set upNeighborId for first row of player inventory
-        var slot = this.Menu.ItemsToGrabMenu.capacity - this.Menu.ItemsToGrabMenu.capacity / this.Menu.ItemsToGrabMenu.rows;
+        var topRow = this.Menu.inventory.inventory.Take(12).ToList();
+        var bottomRow = this.Menu.ItemsToGrabMenu.inventory.TakeLast(12).ToList();
         for (var index = 0; index < 12; index++)
         {
-            this.Menu.inventory.inventory[index].upNeighborID = this.Menu.ItemsToGrabMenu.inventory[slot + index].myID;
+            var topSlot = topRow.ElementAtOrDefault(index);
+            var bottomSlot = bottomRow.ElementAtOrDefault(index);
+            if (topSlot is not null && bottomSlot is not null)
+            {
+                topSlot.upNeighborID = bottomSlot.myID;
+            }
         }
     }
 }

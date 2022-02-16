@@ -14,6 +14,7 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
@@ -23,22 +24,22 @@ using StardewValley.Menus;
 [FuryCoreService(true)]
 internal class ToolbarIcons : IToolbarIcons, IModService
 {
-    private readonly PerScreen<bool> _alignTop = new();
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<List<IMenuComponent>> _icons = new(() => new());
-    private readonly PerScreen<bool> _init = new();
     private readonly PerScreen<List<CustomMenuComponent>> _shortcuts = new();
     private MethodInfo _overrideButtonReflected;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ToolbarIcons" /> class.
     /// </summary>
+    /// <param name="config">The data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ToolbarIcons(IModHelper helper, IModServices services)
+    public ToolbarIcons(ConfigData config, IModHelper helper, IModServices services)
     {
         this._assetHandler = services.Lazy<AssetHandler>();
+        this.Config = config;
         this.Helper = helper;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
@@ -54,16 +55,12 @@ internal class ToolbarIcons : IToolbarIcons, IModService
         get => this._icons.Value;
     }
 
-    private bool AlignTop
-    {
-        get => this._alignTop.Value;
-        set => this._alignTop.Value = value;
-    }
-
     private AssetHandler Assets
     {
         get => this._assetHandler.Value;
     }
+
+    private ConfigData Config { get; }
 
     private IModHelper Helper { get; }
 
@@ -71,12 +68,6 @@ internal class ToolbarIcons : IToolbarIcons, IModService
     {
         get => this._hoverText.Value;
         set => this._hoverText.Value = value;
-    }
-
-    private bool Init
-    {
-        get => this._init.Value;
-        set => this._init.Value = value;
     }
 
     private IDictionary<string, SButton[]> Keybinds { get; } = new Dictionary<string, SButton[]>();
@@ -106,6 +97,11 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
+        if (!this.Config.ToolbarIcons)
+        {
+            return;
+        }
+
         var (x, y) = Game1.getMousePosition(true);
         this.HoverText = string.Empty;
         foreach (var icon in this.Icons)
@@ -120,6 +116,11 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
     private void OnRenderedHud(object sender, RenderedHudEventArgs e)
     {
+        if (!this.Config.ToolbarIcons)
+        {
+            return;
+        }
+
         var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
         if (toolbar is null || !Game1.displayHUD || Game1.activeClickableMenu is not null)
         {
@@ -134,6 +135,11 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
     private void OnRenderingHud(object sender, RenderingHudEventArgs e)
     {
+        if (!this.Config.ToolbarIcons)
+        {
+            return;
+        }
+
         var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
         if (toolbar is null || !Game1.displayHUD || Game1.activeClickableMenu is not null)
         {
@@ -142,10 +148,12 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
         var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
         var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var alignTop = Game1.options.pinToolbarToggle || playerLocalY > Game1.viewport.Height / 2 + Game1.tileSize;
-        if (this.AlignTop != alignTop || !this.Init)
+        var y = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize
+            ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
+            : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
+        if (this.Icons.Any(icon => icon.Y != y))
         {
-            this.ReinitializeIcons(alignTop);
+            this.ReinitializeIcons(y);
         }
 
         foreach (var icon in this.Icons)
@@ -165,6 +173,11 @@ internal class ToolbarIcons : IToolbarIcons, IModService
 
     private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
     {
+        if (!this.Config.ToolbarIcons)
+        {
+            return;
+        }
+
         if (this.Shortcuts.Contains(e.Component))
         {
             if (e.Component.Name.StartsWith("command:"))
@@ -204,20 +217,24 @@ internal class ToolbarIcons : IToolbarIcons, IModService
         this.OverrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
     }
 
-    private void ReinitializeIcons(bool alignTop = false)
+    private void ReinitializeIcons(int y = -1)
     {
-        this.AlignTop = alignTop;
-        this.Init = true;
-
         var icons = this.Icons.Where(icon => icon.Area is ComponentArea.Left).ToList();
+        var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
+        var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
+        var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
         var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
-        var y = this.AlignTop
-            ? Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth
-            : Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth;
+        if (y == -1)
+        {
+            y = alignBottom
+                ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
+                : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
+        }
+
         foreach (var icon in icons)
         {
             icon.X = x;
-            icon.Y = y - (this.AlignTop ? 0 : icon.Component.bounds.Height);
+            icon.Y = y - (alignBottom ? icon.Component.bounds.Height : 0);
             x += icon.Component.bounds.Width + 4;
         }
 
@@ -226,7 +243,7 @@ internal class ToolbarIcons : IToolbarIcons, IModService
         foreach (var icon in icons)
         {
             icon.X = x;
-            icon.Y = y - (this.AlignTop ? 0 : icon.Component.bounds.Height);
+            icon.Y = y - (alignBottom ? icon.Component.bounds.Height : 0);
             x += icon.Component.bounds.Width + 4;
         }
     }

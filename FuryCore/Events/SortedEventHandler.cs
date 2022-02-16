@@ -73,7 +73,7 @@ internal abstract class SortedEventHandler<TEventArgs>
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed in {nameof(SortedEventHandler<TEventArgs>)}. {ex.Message}");
+                Log.Error($"Failed in {handler.Method.Name} of {handler.Method.DeclaringType?.Name ?? "Unknown"}: {ex.Message}");
             }
 
             if (depth != this.InvocationDepth)
