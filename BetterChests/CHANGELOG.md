@@ -11,6 +11,7 @@
 ### Changes
 
 * Purge inaccessible cached objects.
+* Optimized CollectItems code.
 
 ## 1.3.0 (February 12, 2022)
 

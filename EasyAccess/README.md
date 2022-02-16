@@ -55,6 +55,7 @@ Hit a configurable key to instantly dispense input items into nearby producers.<
 
 ## Supported Objects
 
+* Auto-Grabber
 * Bee House
 * Bone Mill
 * Cask<sup>1</sup>
@@ -66,6 +67,7 @@ Hit a configurable key to instantly dispense input items into nearby producers.<
 * Furnace
 * Geode Crusher
 * Heavy Tapper
+* Incubator
 * Keg
 * Lightning Rod
 * Loom
@@ -78,8 +80,14 @@ Hit a configurable key to instantly dispense input items into nearby producers.<
 * Seed Maker
 * Slime Egg Press
 * Slime Incubator
+* Soda Machine
+* Solar Panel
+* Statue of Endless Fortune
+* Statue of Perfection
+* Statue of True Perfection
 * Tapper
 * Wood Chipper
+* Worm Bin
 
 Default Config:
 

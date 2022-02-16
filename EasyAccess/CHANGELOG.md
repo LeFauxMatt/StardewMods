@@ -5,6 +5,11 @@
 ### Added
 
 * Added toolbar icons for Collect Items and Dispense Items.
+* Added support for more producers.
+
+### Fixed
+
+* Fixed some mishandled producers.
 
 ### Changes
 
