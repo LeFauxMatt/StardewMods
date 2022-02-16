@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 1.4.1 (February 15, 2022)
+
+### Fixes
+
+* Fixed CollectItems error.
+
 ## 1.4.0 (February 15, 2022)
 
 ### Additions

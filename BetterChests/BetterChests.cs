@@ -82,12 +82,6 @@ public class BetterChests : Mod
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
-        {
-            var furyCoreApi = this.Helper.ModRegistry.GetApi<IFuryCoreApi>("furyx639.FuryCore");
-            furyCoreApi.AddFuryCoreServices(this.Services);
-        }
-
         this.FuryCore.API.AddFuryCoreServices(this.Services);
 
         // Activate Features
