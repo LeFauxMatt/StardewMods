@@ -7,15 +7,26 @@ All of my mods are available for download on [Nexus Mods](https://www.nexusmods.
 
 ( [source](BetterChests)
 | [docs](BetterChests/README.md)
-| [changelog](BetterChests/CHANGELOG.md) )
+| [changelog](BetterChests/CHANGELOG.md)
+| [api](Common/Integrations/BetterChests/IBetterChestsApi.cs) )
 
 Adds enhanced chest features to the game.
+
+## [Easy Access](https://www.nexusmods.com/stardewvalley/mods/11002)
+
+( [source](EasyAccess)
+| [docs](EasyAccess/README.md)
+| [changelog](EasyAccess/CHANGELOG.md)
+| [api](Common/Integrations/EasyAccess/IEasyAccessApi.cs) )
+
+Provides easier access to machines and producers in the game.
 
 ## [FuryCore](https://www.nexusmods.com/stardewvalley/mods/10696)
 
 ( [source](FuryCore)
 | [docs](FuryCore/README.md)
-| [changelog](FuryCore/CHANGELOG.md) )
+| [changelog](FuryCore/CHANGELOG.md)
+| [api](Common/Integrations/FuryCore/IFuryCoreApi.cs) )
 
 Provides additional APIs for my other mods.
 
@@ -41,6 +52,14 @@ Pay a daily rate to have chores automatically done for you every day.
 | [changelog](MoreChests/CHANGELOG.md) )
 
 Allows custom items to be created as chests.
+
+## [Too Many Animals](https://www.nexusmods.com/stardewvalley/mods/11033)
+
+( [source](TooManyAnimals)
+| [docs](TooManyAnimals/README.md)
+| [changelog](TooManyAnimals/CHANGELOG.md) )
+
+Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.
 
 ## Utility Belt
 
