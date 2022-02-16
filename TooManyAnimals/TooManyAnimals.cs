@@ -1,18 +1,17 @@
-﻿namespace StardewMods.EasyAccess;
+﻿namespace StardewMods.TooManyAnimals;
 
 using System;
 using Common.Helpers;
 using Common.Integrations.FuryCore;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.EasyAccess.Features;
-using StardewMods.EasyAccess.Interfaces.Config;
-using StardewMods.EasyAccess.Models.Config;
-using StardewMods.EasyAccess.Services;
 using StardewMods.FuryCore.Services;
+using StardewMods.TooManyAnimals.Interfaces;
+using StardewMods.TooManyAnimals.Models;
+using StardewMods.TooManyAnimals.Services;
 
 /// <inheritdoc />
-public class EasyAccess : Mod
+public class TooManyAnimals : Mod
 {
     /// <summary>
     ///     Gets the unique Mod Id.
@@ -28,9 +27,9 @@ public class EasyAccess : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        EasyAccess.ModUniqueId = this.ModManifest.UniqueID;
-        I18n.Init(helper.Translation);
+        TooManyAnimals.ModUniqueId = this.ModManifest.UniqueID;
         Log.Monitor = this.Monitor;
+        I18n.Init(this.Helper.Translation);
         this.FuryCore = new(this.Helper.ModRegistry);
 
         // Mod Config
@@ -46,33 +45,16 @@ public class EasyAccess : Mod
 
         this.Config = new(config ?? new ConfigData(), this.Helper, this.Services);
 
-        // Services
         this.Services.Add(
-            new AssetHandler(this.Config, this.Helper),
-            new CommandHandler(this.Config, this.Helper, this.Services),
-            new ManagedObjects(this.Config, this.Services),
-            new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
-            new CollectOutputs(this.Config, this.Helper, this.Services),
-            new DispenseInputs(this.Config, this.Helper, this.Services));
+            new AnimalMenuHandler(this.Config, this.Helper, this.Services),
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest));
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
-    /// <inheritdoc />
-    public override object GetApi()
-    {
-        return new EasyAccessApi(this.Services);
-    }
-
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
         this.FuryCore.API.AddFuryCoreServices(this.Services);
-
-        // Activate Features
-        foreach (var feature in this.Services.FindServices<Feature>())
-        {
-            feature.Toggle();
-        }
     }
 }

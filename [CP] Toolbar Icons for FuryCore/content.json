@@ -1,160 +1,231 @@
 {
-    "Format": "1.24.0",
-    "ConfigSchema": {
-        "EnableChestsAnywhere": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "ChestsAnywhereHotkey": {
-            "AllowBlank": true,
-            "Default": "B"
-        },
-        "EnableCJBCheatsMenu": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "CJBCheatsMenuHotkey": {
-            "AllowBlank": true,
-            "Default": "P"
-        },
-        "EnableCJBItemSpawner": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "CJBItemSpawnerHotkey": {
-            "AllowBlank": true,
-            "Default": "I"
-        },
-        "EnableDataLayers": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "DataLayersHotkey": {
-            "AllowBlank": true,
-            "Default": "F2"
-        },
-        "EnableDebugMode": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "DebugModeHotkey": {
-            "AllowBlank": true,
-            "Default": "OemTilde"
-        },
-        "EnableHorseFluteAnywhere": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "HorseFluteAnywhereHotkey": {
-            "AllowBlank": true,
-            "Default": "H"
-        },
-        "EnableInstantBuildingsMenu": {
-            "AllowValues": "true, false",
-            "Default": true
-        },
-        "InstantBuildingsMenuHotkey": {
-            "AllowBlank": true,
-            "Default": "K"
-        },
+  "Format": "1.24.0",
+  "ConfigSchema": {
+    "EnableAlwaysScrollMap": {
+      "AllowValues": "true, false",
+      "Default": true
     },
-    "Changes": [
-        // Load Texture Icons
-        {
-            "Action": "Load",
-            "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
-            "FromFile": "assets/icons.png"
-        },
+    "AlwaysScrollMapHotkey": {
+      "AllowBlank": true,
+      "Default": "OemSemicolon"
+    },
+    "EnableChestsAnywhere": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "ChestsAnywhereHotkey": {
+      "AllowBlank": true,
+      "Default": "B"
+    },
+    "EnableCJBCheatsMenu": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "CJBCheatsMenuHotkey": {
+      "AllowBlank": true,
+      "Default": "P"
+    },
+    "EnableCJBItemSpawner": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "CJBItemSpawnerHotkey": {
+      "AllowBlank": true,
+      "Default": "I"
+    },
+    "EnableDataLayers": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "DataLayersHotkey": {
+      "AllowBlank": true,
+      "Default": "F2"
+    },
+    "EnableDebugMode": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "DebugModeHotkey": {
+      "AllowBlank": true,
+      "Default": "OemTilde"
+    },
+    "EnableDynamicGameAssets": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "EnableHorseFluteAnywhere": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "HorseFluteAnywhereHotkey": {
+      "AllowBlank": true,
+      "Default": "H"
+    },
+    "EnableInstantBuildingsMenu": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "InstantBuildingsMenuHotkey": {
+      "AllowBlank": true,
+      "Default": "K"
+    },
+    "EnableInstantBuildingsUpgrade": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "InstantBuildingsUpgradeHotkey": {
+      "AllowBlank": true,
+      "Default": "U"
+    },
+    "EnableLookupAnything": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "LookupAnythingHotkey": {
+      "AllowBlank": true,
+      "Default": "LeftShift + F1"
+    }
+  },
+  "Changes": [
+    // Load Texture Icons
+    {
+      "Action": "Load",
+      "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
+      "FromFile": "assets/icons.png"
+    },
+    // Add Always Scroll Map Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{AlwaysScrollMapHotkey}}": "{{i18n: icon.always-scroll-map.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/8/Left"
+      },
+      "When": {
+        "EnableAlwaysScrollMap": true,
+        "HasMod": "bcmpinc.AlwaysScrollMap"
+      }
+    },
+    // Add Chests Anywhere Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{ChestsAnywhereHotkey}}": "{{i18n: icon.chests-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/0/Left"
+      },
+      "When": {
+        "EnableChestsAnywhere": true,
+        "HasMod": "Pathoschild.ChestsAnywhere"
+      }
+    },
+    // Add CJB Cheats Menu Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{CJBCheatsMenuHotkey}}": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left"
+      },
+      "When": {
+        "EnableCJBCheatsMenu": true,
+        "HasMod": "CJBok.CheatsMenu"
+      }
+    },
+    // Add CJB Item Spawner Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{CJBItemSpawnerHotkey}}": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left"
+      },
+      "When": {
+        "EnableCJBItemSpawner": true,
+        "HasMod": "CJBok.ItemSpawner"
+      }
+    },
+    // Add Data Layers Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{DataLayersHotkey}}": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left"
+      },
+      "When": {
+        "EnableDataLayers": true,
+        "HasMod": "Pathoschild.DataLayers"
+      }
+    },
+    // Add Debug Mode Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{DebugModeHotkey}}": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left"
+      },
+      "When": {
+        "EnableDebugMode": true,
+        "HasMod": "Pathoschild.DebugMode"
+      }
+    },
+    // Add Dynamic Game Assets Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "command: dga_store": "{{i18n: icon.dynamic-game-assets.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/10/Left"
+      },
+      "When": {
+        "EnableDynamicGameAssets": true,
+        "HasMod": "spacechase0.DynamicGameAssets"
+      }
+    },
+    // Add Horse Flute Anywhere Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{HorseFluteAnywhereHotkey}}": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left"
+      },
+      "When": {
+        "EnableHorseFluteAnywhere": true,
+        "HasMod": "Pathoschild.HorseFluteAnywhere"
+      }
+    },
+    // Add Instant Buildings Menu Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{InstantBuildingsMenuHotkey}}": "{{i18n: icon.instant-buildings-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/Left"
+      },
+      "When": {
+        "EnableInstantBuildingsMenu": true,
+        "HasMod": "BitwiseJonMods.InstantBuildings"
+      }
+    },
+    // Add Instant Buildings Upgrade Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{InstantBuildingsUpgradeHotkey}}": "{{i18n: icon.instant-buildings-upgrade.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/9/Left"
+      },
+      "When": {
+        "EnableInstantBuildingsUpgrade": true,
+        "HasMod": "BitwiseJonMods.InstantBuildings"
+      }
+    },
+    // Add Lookup Anything Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "keybind: {{LookupAnythingHotkey}}": "{{i18n: icon.lookup-anything.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/7/Left"
+      },
+      "When": {
+        "EnableLookupAnything": true,
+        "HasMod": "Pathoschild.LookupAnything"
+      }
+    }
 
-        // Add Chests Anywhere Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{ChestsAnywhereHotkey}}": "{{i18n: icon.chests-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/0/Left",
-            },
-            "When": {
-                "EnableChestsAnywhere": true,
-                "HasMod": "Pathoschild.ChestsAnywhere"
-            }
-        },
-
-        // Add CJB Cheats Menu Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{CJBCheatsMenuHotkey}}": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left",
-            },
-            "When": {
-                "EnableCJBCheatsMenu": true,
-                "HasMod": "CJBok.CheatsMenu"
-            }
-        },
-
-        // Add CJB Item Spawner Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{CJBItemSpawnerHotkey}}": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left",
-            },
-            "When": {
-                "EnableCJBItemSpawner": true,
-                "HasMod": "CJBok.ItemSpawner"
-            }
-        },
-
-        // Add Data Layers Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{DataLayersHotkey}}": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left",
-            },
-            "When": {
-                "EnableDataLayers": true,
-                "HasMod": "Pathoschild.DataLayers"
-            }
-        },
-
-        // Add Debug Mode Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{DebugModeHotkey}}": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left",
-            },
-            "When": {
-                "EnableDebugMode": true,
-                "HasMod": "Pathoschild.DebugMode"
-            }
-        },
-
-        // Add Horse Flute Anywhere Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{HorseFluteAnywhereHotkey}}": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left",
-            },
-            "When": {
-                "EnableHorseFluteAnywhere": true,
-                "HasMod": "Pathoschild.HorseFluteAnywhere"
-            }
-        },
-
-        // Add Instant Buildings Icon
-        {
-            "Action": "EditData",
-            "Target": "furyx639.FuryCore/Toolbar",
-            "Entries": {
-                "{{InstantBuildingsMenuHotkey}}": "{{i18n: icon.instant-buildings-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/Left",
-            },
-            "When": {
-                "EnableInstantBuildingsMenu": true,
-                "HasMod": "BitwiseJonMods.InstantBuildings"
-            }
-        },
-    ]
+    // Dynamic Game Assets - dga_store
+  ]
 }

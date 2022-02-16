@@ -20,6 +20,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\EasyAccessIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\IEasyAccessApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\IEvenBetterRngApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\FuryCoreIntegration.cs" />

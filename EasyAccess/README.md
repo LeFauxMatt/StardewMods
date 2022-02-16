@@ -127,7 +127,7 @@ The Range value limits which chests will be selected for a feature relative to t
 
 ## Customization
 
-### Custom Chests
+### Custom Producers
 
 The config for producer types are stored in the `producers.json` in the `assets`
 folder.

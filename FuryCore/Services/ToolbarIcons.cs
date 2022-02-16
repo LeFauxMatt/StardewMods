@@ -167,24 +167,32 @@ internal class ToolbarIcons : IToolbarIcons, IModService
     {
         if (this.Shortcuts.Contains(e.Component))
         {
-            if (!this.Keybinds.TryGetValue(e.Component.Name, out var keybind))
+            if (e.Component.Name.StartsWith("command:"))
             {
-                IList<SButton> buttons = new List<SButton>();
-                foreach (var key in e.Component.Name.Split(' '))
+                var command = e.Component.Name[8..].Trim().Split(' ');
+                this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
+            }
+            else if (e.Component.Name.StartsWith("keybind:"))
+            {
+                if (!this.Keybinds.TryGetValue(e.Component.Name, out var keybind))
                 {
-                    if (Enum.TryParse(key, out SButton button))
+                    IList<SButton> buttons = new List<SButton>();
+                    foreach (var key in e.Component.Name[8..].Trim().Split('+'))
                     {
-                        buttons.Add(button);
+                        if (Enum.TryParse(key, out SButton button))
+                        {
+                            buttons.Add(button);
+                        }
                     }
+
+                    keybind = buttons.ToArray();
+                    this.Keybinds.Add(e.Component.Name, keybind);
                 }
 
-                keybind = buttons.ToArray();
-                this.Keybinds.Add(e.Component.Name, keybind);
-            }
-
-            foreach (var button in keybind)
-            {
-                this.OverrideButton(button, true);
+                foreach (var button in keybind)
+                {
+                    this.OverrideButton(button, true);
+                }
             }
 
             e.SuppressInput();

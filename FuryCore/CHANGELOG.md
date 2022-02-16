@@ -1,6 +1,6 @@
 ﻿# FuryCore Change Log
 
-## 1.4.0 (Unreleased)
+## 1.4.0 (February 15, 2022)
 
 ### Additions
 

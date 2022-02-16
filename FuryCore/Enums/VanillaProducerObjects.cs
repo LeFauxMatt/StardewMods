@@ -44,14 +44,26 @@ public enum VanillaProducerObjects
     /// <summary>Bone Mill.</summary>
     BoneMill = 90,
 
+    /// <summary>Incubator.</summary>
+    Incubator = 101,
+
     /// <summary>Tapper.</summary>
     Tapper = 105,
 
     /// <summary>Charcoal Kiln.</summary>
     CharcoalKiln = 114,
 
+    /// <summary>Soda Machine.</summary>
+    SodaMachine = 117,
+
+    /// <summary>Statue of Endless Fortune.</summary>
+    StatueOfEndlessFortune = 127,
+
     /// <summary>Mushroom Box.</summary>
     MushroomBox = 128,
+
+    /// <summary>Worm Bin.</summary>
+    WormBin = 154,
 
     /// <summary>Slime Incubator.</summary>
     SlimeIncubator = 156,
@@ -59,14 +71,23 @@ public enum VanillaProducerObjects
     /// <summary>Slime Egg Press.</summary>
     SlimeEggPress = 158,
 
+    /// <summary>Statue of Perfection.</summary>
+    StatueOfPerfection = 160,
+
     /// <summary>Cask.</summary>
     Cask = 163,
+
+    /// <summary>Auto-Grabber.</summary>
+    AutoGrabber = 165,
 
     /// <summary>Geode Crusher.</summary>
     GeodeCrusher = 182,
 
     /// <summary>Wood Chipper.</summary>
     WoodChipper = 211,
+
+    /// <summary>Solar Panel.</summary>
+    SolarPanel = 231,
 
     /// <summary>Coffee Maker.</summary>
     CoffeeMaker = 246,
@@ -76,4 +97,7 @@ public enum VanillaProducerObjects
 
     /// <summary>Heavy Tapper.</summary>
     HeavyTapper = 264,
+
+    /// <summary>Statue of True Perfection.</summary>
+    StatueOfTruePerfection = 280,
 }

@@ -1,6 +1,6 @@
 # Easy Access Change Log
 
-## 1.0.0-beta.2 (Unreleased)
+## 1.0.0 (February 15, 2022)
 
 ### Added
 

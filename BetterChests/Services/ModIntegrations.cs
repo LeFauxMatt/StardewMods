@@ -120,7 +120,7 @@ internal class ModIntegrations : IModService
             }
 
             horse = stable.getStableHorse();
-            if (horse?.getOwner() != Game1.player)
+            if (horse?.getOwner() == Game1.player)
             {
                 saddleBag = chest;
                 return true;
