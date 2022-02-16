@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
@@ -34,10 +33,6 @@ internal class GameObjects : IGameObjects, IModService
     public GameObjects(IModHelper helper)
     {
         this.Helper = helper;
-        this.Helper.Events.GameLoop.DayEnding += this.OnDayEnding;
-        this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-        this.Helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
-        this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
     }
 
     /// <inheritdoc />
@@ -238,6 +233,10 @@ internal class GameObjects : IGameObjects, IModService
 
         switch (context)
         {
+            case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } chest:
+                gameObject = new StorageShippingBin(chest);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
             case Chest chest:
                 gameObject = new StorageChest(chest);
                 this.CachedObjects.Add(context, gameObject);
@@ -264,10 +263,10 @@ internal class GameObjects : IGameObjects, IModService
                 return true;
             case ShippingBin shippingBin:
                 this.ContextMap[Game1.getFarm()] = context;
-                gameObject = new StorageContainer(context, () => int.MaxValue, () => Game1.getFarm().getShippingBin(Game1.player), () => shippingBin.modData);
+                gameObject = new StorageShippingBin(shippingBin);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
-            case SObject { bigCraftable.Value: true } obj when obj is CrabPot || Enum.IsDefined(typeof(VanillaProducers), obj.ParentSheetIndex):
+            case SObject { bigCraftable.Value: true } obj when obj is CrabPot || Enum.IsDefined(typeof(VanillaProducerObjects), obj.ParentSheetIndex):
                 gameObject = new GenericProducer(obj);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
@@ -277,33 +276,41 @@ internal class GameObjects : IGameObjects, IModService
         }
     }
 
-    private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
+    /// <summary>
+    ///     Clears all cached objects.
+    /// </summary>
+    /// <returns>A list of <see cref="IGameObject" /> which were purged.</returns>
+    internal IEnumerable<IGameObject> PurgeCache()
     {
-        foreach (var context in e.Removed)
+        var gameObjects = this.CachedObjects.Values.Where(gameObject => gameObject is not null).ToList();
+        foreach (var gameObject in this.InventoryItems.Select(inventoryItem => inventoryItem.Value))
+        {
+            gameObjects.Remove(gameObject);
+        }
+
+        foreach (var gameObject in this.LocationObjects.Select(locationObject => locationObject.Value))
+        {
+            gameObjects.Remove(gameObject);
+        }
+
+        var contexts = (
+            from cachedObject in this.CachedObjects
+            join gameObject in gameObjects on cachedObject.Value equals gameObject
+            select cachedObject.Key).ToList();
+        foreach (var context in contexts)
         {
             this.CachedObjects.Remove(context);
-        }
-    }
 
-    private void OnDayEnding(object sender, DayEndingEventArgs e)
-    {
-        this.CachedObjects.Clear();
-        this.ContextMap.Clear();
-    }
-
-    private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
-    {
-        foreach (var context in e.Removed)
-        {
-            this.CachedObjects.Remove(context);
+            var contextMaps = (
+                from contextMap in this.ContextMap
+                where contextMap.Value.Equals(context)
+                select contextMap.Key).ToList();
+            foreach (var contextMap in contextMaps)
+            {
+                this.ContextMap.Remove(contextMap);
+            }
         }
-    }
 
-    private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
-    {
-        foreach (var (_, context) in e.Removed)
-        {
-            this.CachedObjects.Remove(context);
-        }
+        return gameObjects.Any() ? gameObjects : null;
     }
 }

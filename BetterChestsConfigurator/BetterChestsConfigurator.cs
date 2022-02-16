@@ -28,6 +28,7 @@ public class BetterChestsConfigurator : Mod
     {
         // Init
         Log.Monitor = this.Monitor;
+        I18n.Init(this.Helper.Translation);
         this.BetterChests = new(this.Helper.ModRegistry);
         this.GMCM = new(this.Helper.ModRegistry);
         this.Config = this.Helper.ReadConfig<ModConfig>();
@@ -35,10 +36,10 @@ public class BetterChestsConfigurator : Mod
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
-    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
         if (!this.BetterChests.IsLoaded
             || !this.GMCM.IsLoaded
@@ -67,8 +68,6 @@ public class BetterChestsConfigurator : Mod
         {
             return;
         }
-
-        I18n.Init(this.Helper.Translation);
 
         this.GMCM.Register(
             this.ModManifest,

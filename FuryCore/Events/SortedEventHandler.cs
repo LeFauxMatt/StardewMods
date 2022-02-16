@@ -24,6 +24,8 @@ internal abstract class SortedEventHandler<TEventArgs>
 
     private SortedList<EventOrderKey, EventHandler<TEventArgs>> Handlers { get; } = new();
 
+    private int InvocationDepth { get; set; }
+
     /// <summary>
     ///     Adds a new handler for this event.
     /// </summary>
@@ -62,6 +64,7 @@ internal abstract class SortedEventHandler<TEventArgs>
     /// <param name="eventArgs">The event arguments to send to handlers.</param>
     protected void InvokeAll(TEventArgs eventArgs)
     {
+        var depth = ++this.InvocationDepth;
         foreach (var handler in this.Handlers.Values)
         {
             try
@@ -71,6 +74,11 @@ internal abstract class SortedEventHandler<TEventArgs>
             catch (Exception ex)
             {
                 Log.Error($"Failed in {nameof(SortedEventHandler<TEventArgs>)}. {ex.Message}");
+            }
+
+            if (depth != this.InvocationDepth)
+            {
+                break;
             }
         }
     }

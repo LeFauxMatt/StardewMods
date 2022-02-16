@@ -15,6 +15,7 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewValley;
+using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class CollectItems : Feature
@@ -52,10 +53,7 @@ internal class CollectItems : Feature
 
     private IList<IManagedStorage> EligibleChests
     {
-        get => this._eligibleChests.Value ??= (
-            from inventoryStorage in this.ManagedObjects.InventoryStorages
-            where inventoryStorage.Value.CollectItems == FeatureOption.Enabled
-            select inventoryStorage.Value).ToList();
+        get => this._eligibleChests.Value;
         set => this._eligibleChests.Value = value;
     }
 
@@ -114,26 +112,12 @@ internal class CollectItems : Feature
 
     private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
     {
-        if (!e.IsLocalPlayer)
+        if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any()))
         {
-            return;
-        }
-
-        if (e.Added.Any(item => this.ManagedObjects.FindManagedStorage(item, out _)))
-        {
-            this.EligibleChests = null;
-            return;
-        }
-
-        if (e.Removed.Any(item => this.ManagedObjects.FindManagedStorage(item, out _)))
-        {
-            this.EligibleChests = null;
-            return;
-        }
-
-        if (e.QuantityChanged.Any(stack => this.ManagedObjects.FindManagedStorage(stack.Item, out _)))
-        {
-            this.EligibleChests = null;
+            this.EligibleChests = (
+                from inventoryStorage in this.ManagedObjects.InventoryStorages
+                where inventoryStorage.Value.CollectItems == FeatureOption.Enabled
+                select inventoryStorage.Value).ToList();
         }
     }
 }

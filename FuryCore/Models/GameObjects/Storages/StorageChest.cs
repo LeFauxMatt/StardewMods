@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -33,4 +34,26 @@ internal class StorageChest : StorageContainer
     }
 
     private Chest Chest { get; }
+
+    /// <inheritdoc />
+    public override void ShowMenu()
+    {
+        Game1.activeClickableMenu = new ItemGrabMenu(
+            this.Items,
+            false,
+            true,
+            InventoryMenu.highlightAllItems,
+            this.Chest.grabItemFromInventory,
+            null,
+            this.Chest.grabItemFromChest,
+            false,
+            true,
+            true,
+            true,
+            true,
+            1,
+            this.Chest,
+            -1,
+            this.Context);
+    }
 }

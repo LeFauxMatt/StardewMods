@@ -1,0 +1,22 @@
+﻿{
+  "Name": "Easy Access Configurator",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Adds menus and tools to configure Easy Access Producers.",
+  "UniqueID": "furyx639.EasyAccessConfigurator",
+  "EntryDll": "EasyAccessConfigurator.dll",
+  "MinimumApiVersion": "3.13.0",
+  "UpdateKeys": [
+    "Nexus:11002@Configure"
+  ],
+  "Dependencies": [
+    {
+      "UniqueID": "furyx639.EasyAccess",
+      "IsRequired": true
+    },
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "IsRequired": true
+    }
+  ]
+}

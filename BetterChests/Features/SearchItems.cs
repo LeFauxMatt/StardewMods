@@ -13,7 +13,6 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
@@ -30,10 +29,12 @@ internal class SearchItems : Feature
     private const int SearchBarHeight = 24;
 
     private readonly PerScreen<object> _context = new();
+    private readonly PerScreen<int> _currentPadding = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly Lazy<IMenuItems> _menuItems;
+    private readonly PerScreen<int?> _menuPadding = new();
     private readonly PerScreen<ClickableComponent> _searchArea = new();
     private readonly PerScreen<TextBox> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
@@ -80,7 +81,40 @@ internal class SearchItems : Feature
     private object Context
     {
         get => this._context.Value;
-        set => this._context.Value = value;
+        set
+        {
+            if (!ReferenceEquals(this._context.Value, value))
+            {
+                this.SearchField.Text = string.Empty;
+                this._context.Value = value;
+            }
+        }
+    }
+
+    private int CurrentPadding
+    {
+        set
+        {
+            if (this._currentPadding.Value == value)
+            {
+                return;
+            }
+
+            var relativePadding = value - this._currentPadding.Value;
+            this._currentPadding.Value = value;
+            if (this.Menu is null)
+            {
+                return;
+            }
+
+            this.Menu.yPositionOnScreen -= relativePadding;
+            this.Menu.height += relativePadding;
+
+            if (this.Menu.chestColorPicker is not null and not HslColorPicker)
+            {
+                this.Menu.chestColorPicker.yPositionOnScreen -= relativePadding;
+            }
+        }
     }
 
     private IHarmonyHelper HarmonyHelper
@@ -96,12 +130,29 @@ internal class SearchItems : Feature
     private ItemGrabMenu Menu
     {
         get => this._menu.Value;
-        set => this._menu.Value = value;
+        set
+        {
+            this._menu.Value = value;
+            this._menuPadding.Value = null;
+        }
     }
 
     private IMenuItems MenuItems
     {
         get => this._menuItems.Value;
+    }
+
+    private int MenuPadding
+    {
+        get
+        {
+            return this._menuPadding.Value ??= this.Menu switch
+            {
+                ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => SearchItems.SearchBarHeight,
+                { context: not null } when this.ManagedObjects.FindManagedStorage(this.Menu.context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => SearchItems.SearchBarHeight,
+                _ => 0,
+            };
+        }
     }
 
     private ClickableComponent SearchArea
@@ -143,7 +194,17 @@ internal class SearchItems : Feature
 
     private static int GetMenuPadding(MenuWithInventory menu)
     {
-        return SearchItems.Instance.MenuPadding(menu);
+        if (!ReferenceEquals(SearchItems.Instance.Menu, menu))
+        {
+            SearchItems.Instance.Menu = menu switch
+            {
+                ItemSelectionMenu itemSelectionMenu when SearchItems.Instance.Config.DefaultChest.SearchItems == FeatureOption.Enabled => itemSelectionMenu,
+                ItemGrabMenu { context: not null } itemGrabMenu when SearchItems.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => itemGrabMenu,
+                _ => null,
+            };
+        }
+
+        return SearchItems.Instance.MenuPadding;
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -293,13 +354,6 @@ internal class SearchItems : Feature
         }
     }
 
-    private int MenuPadding(MenuWithInventory menu)
-    {
-        return ReferenceEquals(menu, this.Menu) && this.Context is not null
-            ? SearchItems.SearchBarHeight
-            : 0;
-    }
-
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
         if (this.Menu is null || !ReferenceEquals(this.Menu, Game1.activeClickableMenu))
@@ -339,49 +393,27 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        IManagedStorage managedStorage = null;
-        this.Menu = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled
-            ? e.ItemGrabMenu
-            : null;
-
-        if (e.ItemGrabMenu is ItemSelectionMenu && this.Config.DefaultChest.SearchItems == FeatureOption.Enabled)
+        this.Menu = e.ItemGrabMenu switch
         {
-            this.Menu = e.ItemGrabMenu;
-            this.Context = e.Context;
-            this.SearchField.Text = string.Empty;
+            ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
+            { context: not null } when this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
+            _ => null,
+        };
+
+        this.Context = e.Context ?? this.Context;
+        if (e.IsNew || this.Menu is null)
+        {
+            this._currentPadding.Value = 0;
+            this.CurrentPadding = this.MenuPadding;
         }
-        else if (this.Menu is null || e.Context is null)
+
+        if (this.Menu is null)
         {
             return;
         }
-        else if (!ReferenceEquals(e.Context, this.Context))
-        {
-            this.Context = e.Context;
-            this.SearchField.Text = string.Empty;
-        }
 
-        // Add filter to Menu Items
         this.MenuItems.AddFilter(this.ItemMatcher);
         this.ItemMatcher.StringValue = this.SearchText = this.SearchField.Text;
-
-        // Expand ItemsToGrabMenu by Search Bar Height
-        if (e.IsNew)
-        {
-            if (managedStorage is not null)
-            {
-                Log.Trace($"Adding Search Bar to ItemGrabMenu for Chest {managedStorage.QualifiedItemId}");
-            }
-
-            var padding = this.MenuPadding(this.Menu);
-            this.Menu.yPositionOnScreen -= padding;
-            this.Menu.height += padding;
-            if (this.Menu.chestColorPicker is not null and not HslColorPicker)
-            {
-                this.Menu.chestColorPicker.yPositionOnScreen -= padding;
-            }
-        }
-
-        // Reposition Search Bar to top of ItemsToGrabMenu
         this.SearchField.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
         this.SearchField.Selected = false;

@@ -7,7 +7,6 @@ using Common.Helpers;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;

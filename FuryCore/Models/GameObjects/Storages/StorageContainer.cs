@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
+using StardewValley.Menus;
 
 /// <inheritdoc cref="StardewMods.FuryCore.Interfaces.GameObjects.IStorageContainer" />
-public class StorageContainer : GameObject, IStorageContainer
+public abstract class StorageContainer : GameObject, IStorageContainer
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageContainer" /> class.
@@ -16,7 +17,7 @@ public class StorageContainer : GameObject, IStorageContainer
     /// <param name="getCapacity">A get method for the actual capacity of the storage.</param>
     /// <param name="getItems">A get method for the item in storage.</param>
     /// <param name="getModData">A get method for the mod data of the object.</param>
-    public StorageContainer(object context, Func<int> getCapacity, Func<IList<Item>> getItems, Func<ModDataDictionary> getModData)
+    protected StorageContainer(object context, Func<int> getCapacity, Func<IList<Item>> getItems, Func<ModDataDictionary> getModData)
         : base(context)
     {
         this.GetCapacity = getCapacity;
@@ -33,18 +34,6 @@ public class StorageContainer : GameObject, IStorageContainer
         : base(context)
     {
         this.GetModData = getModData;
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="StorageContainer" /> class.
-    /// </summary>
-    /// <param name="container">The other IStorageContainer to base this instance on.</param>
-    protected StorageContainer(IStorageContainer container)
-        : base(container.Context)
-    {
-        this.GetCapacity = () => container.Capacity;
-        this.GetItems = () => container.Items;
-        this.GetModData = () => container.ModData;
     }
 
     /// <inheritdoc />
@@ -104,5 +93,67 @@ public class StorageContainer : GameObject, IStorageContainer
                 this.Items.RemoveAt(index);
             }
         }
+    }
+
+    /// <inheritdoc />
+    public virtual void GrabInventoryItem(Item item, Farmer who)
+    {
+        if (item.Stack == 0)
+        {
+            item.Stack = 1;
+        }
+
+        var tmp = this.AddItem(item);
+        if (tmp == null)
+        {
+            who.removeItemFromInventory(item);
+        }
+        else
+        {
+            tmp = who.addItemToInventory(tmp);
+        }
+
+        this.ClearNulls();
+        var oldId = Game1.activeClickableMenu.currentlySnappedComponent != null ? Game1.activeClickableMenu.currentlySnappedComponent.myID : -1;
+        this.ShowMenu();
+        ((ItemGrabMenu)Game1.activeClickableMenu).heldItem = tmp;
+        if (oldId != -1)
+        {
+            Game1.activeClickableMenu.currentlySnappedComponent = Game1.activeClickableMenu.getComponentWithID(oldId);
+            Game1.activeClickableMenu.snapCursorToCurrentSnappedComponent();
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual void GrabStorageItem(Item item, Farmer who)
+    {
+        if (who.couldInventoryAcceptThisItem(item))
+        {
+            this.Items.Remove(item);
+            this.ClearNulls();
+            this.ShowMenu();
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual void ShowMenu()
+    {
+        Game1.activeClickableMenu = new ItemGrabMenu(
+            this.Items,
+            false,
+            true,
+            InventoryMenu.highlightAllItems,
+            this.GrabInventoryItem,
+            null,
+            this.GrabStorageItem,
+            false,
+            true,
+            true,
+            true,
+            true,
+            1,
+            null,
+            -1,
+            this.Context);
     }
 }

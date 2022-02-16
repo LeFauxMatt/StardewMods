@@ -20,16 +20,20 @@ Adds enhanced chest features to the game.
     * [Stash To Chest](#stash-to-chest)
     * [Unload Chest](#unload-chest)
 * [Usage](#usage)
-    * [Custom Chests](#custom-chests)
-    * [Customized Tabs](#customized-tabs)
     * [Item Tags](#item-tags)
 * [Configurations](#configurations)
     * [Config Inheritance](#config-inheritance)
+    * [Group By Values](#group-by-values)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
-* [Integrations](#integrations)
+    * [Sort By Values](#sort-by-values)
+* [Mod Integrations](#mod-integrations)
     * [Automate](#automate)
     * [Horse Overhaul](#horse-overhaul)
+* [Customization](#customization)
+    * [Custom Chests](#custom-chests)
+    * [Customized Tabs](#customized-tabs)
+    * [Other Assets](#other-assets)
 * [Translations](#translations)
 
 ## Features
@@ -137,6 +141,18 @@ contents.
 
 1. See [Option Values](#option-values).
 
+### Organize Chest
+
+Organize Chest allows you to group and sort items by a configurable property of those items.
+
+| Config Option        | Description                         | Default Value | Other Value(s)                           |
+|:---------------------|:------------------------------------|:--------------|:-----------------------------------------|
+| OrganizeChest        | Enables the Organize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>    |
+| OrganizeChestGroupBy | What will items be grouped by.      | `"Default"`   | See [Group By Values](#group-by-values). |
+| OrganizeChestSortBy  | What will items be sorted by.       | `"Default"`   | See [Sort By Values](#sort-by-values).   |
+
+1. See [Option Values](#option-values).
+
 ### Resize Chest
 
 The default storage for a chest is 36 items. With Resize Chest enabled you can increase storage space up to virtually
@@ -222,104 +238,6 @@ placed chest.
 
 ## Usage
 
-### Custom Chests
-
-The config for chest types are stored in the `chests.json` in the `assets`
-folder.
-
-If `chests.json` is not found, a default one for vanilla chests is automatically generated with all default settings.
-
-For mods adding custom chests, there are two ways to register them with Better Chests:
-
-#### API
-
-Register your chest using the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
-
-#### Data Path
-
-`furyx639.BetterChests\\Chests`  
-Add/replace chest settings by editing entries.
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    {
-      "Action": "EditData",
-      "Target": "furyx639.BetterChests\\Chests",
-      "Entries": {
-        "example.ModId_Chest": {
-          "CarryChest": "Enabled",
-          "FilterItems": "Enabled",
-          "ResizeChest": "Enabled",
-          "ResizeChestCapacity": "48"
-        }
-      }
-    }
-  ]
-}
-```
-
-### Customized Tabs
-
-The default tabs are defined by the `tabs.json` and `tabs.png` files which are both found under the `assets` folder.
-
-If `tabs.json` is not found, a default one is automatically generated:
-
-| Key<sup>1</sup> | Display Name | Texture                                | Icon Index | Item Tags<sup>2</sup>                                                                                        |
-|:----------------|:-------------|:---------------------------------------|:-----------|:-------------------------------------------------------------------------------------------------------------|
-| Clothing        | Clothing     | `furyx639.BetterChests\\Tabs\\Texture` | 0          | Boots, Clothing, Hat                                                                                         |
-| Cooking         | Cooking      | `furyx639.BetterChests\\Tabs\\Texture` | 1          | Artisan Goods, Cooking, Egg, Ingredients, Meat, Milk, Sell at Pierre's and Marnie's, Sell at Pierre's, Syrup |
-| Crops           | Crops        | `furyx639.BetterChests\\Tabs\\Texture` | 2          | Flowers, Fruits, Greens, Vegetables                                                                          |
-| Equipment       | Equipment    | `furyx639.BetterChests\\Tabs\\Texture` | 3          | Equipment, Ring, Tool, Weapon                                                                                |
-| Fishing         | Fishing      | `furyx639.BetterChests\\Tabs\\Texture` | 4          | Bait, Fishing, Sell at Fish Shop, Tackle                                                                     | 
-| Materials       | Materials    | `furyx639.BetterChests\\Tabs\\Texture` | 5          | Building Resources, Crafting, Gem, Metal Resources, Minerals, Monster Loot                                   |
-| Misc            | Misc         | `furyx639.BetterChests\\Tabs\\Texture` | 6          | Big Craftable, Furniture, Junk                                                                               | 
-| Seeds           | Seeds        | `furyx639.BetterChests\\Tabs\\Texture` | 7          | Fertilizer, Seeds                                                                                            |
-
-You can edit these files directly for personal usage, or they may be targeted externally for edits from other mods at
-the following paths:
-
-`furyx639.BetterChests\\Tabs`  
-Add/replace tabs by editing entries.
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    // Customize Tabs
-    {
-      "Action": "EditData",
-      "Target": "furyx639.BetterChests\\Tabs",
-      "Entries": {
-        // Edit an existing tab
-        "Misc": "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk forage_item"
-        
-        // Add a new tab
-        "Community Center": "{{i18n: tab.community-center.name}}/example.ModId\\TabTexture/0/category_donate"
-      }
-    },
-    
-    // Load texture for new tab
-    {
-      "Action": "Load",
-      "Target": "example.ModId/TabTexture",
-      "FromFile": "assets/{{TargetWithoutPath}}j.png",
-    }
-  ]
-}
-```
-
-`furyx639.BetterChests\\Tabs\\Textures`  
-Replace tab icons by patching this texture.
-
-1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
-2. See [Item Tags](#item-tags)
-
 ### Item Tags
 
 The game adds various [Context Tags](https://stardewcommunitywiki.com/Modding:Context_tags)
@@ -381,6 +299,15 @@ precedence.
 2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual
    chests.
 
+### Group By Values
+
+Group by is a text property of the item that organize will order by first.
+
+* **Default** - Group by the original organize method.
+* **Category** - Group by the item category.
+* **Color** - Group by the item color (only if context tag supports it).
+* **Name** - Group by the item name.
+
 ### Option Values
 
 The option value determines whether a feature will be enabled or disabled for a chest.
@@ -403,7 +330,16 @@ The Range value limits which chests will be selected for a feature relative to t
 
 1. If parent value is unspecified, Location will be the default value.
 
-## Integrations
+### Sort By Values
+
+Sort by is a numerical property of the item that organize will order by second.
+
+* **Default** - Sort by the original organize method.
+* **Type** - Sort by the numerical category type of the item.
+* **Quality** - Sort by the quality of the item (if applicable).
+* **Quantity** - Sort by the stack size of the item.
+
+## Mod Integrations
 
 ### Automate
 
@@ -420,6 +356,169 @@ as [Craft from Chest](#craft-from-chest) and
 
 The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
 `BetterChests/assets/chests.json` file.
+
+## Customization
+
+### Custom Chests
+
+The config for chest types are stored in the `chests.json` in the `assets`
+folder.
+
+If `chests.json` is not found, a default one for vanilla chests is automatically generated with all default settings.
+
+For mods adding custom chests, there are two ways to register them with Better Chests:
+
+#### API
+
+Register your chest using the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
+
+#### Data Path
+
+`furyx639.BetterChests\\Chests`  
+Add/replace chest settings by editing entries<sup>1</sup>.
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "furyx639.BetterChests\\Chests",
+      "Entries": {
+        "example.ModId_Chest": {
+          "CarryChest": "Enabled",
+          "FilterItems": "Enabled",
+          "ResizeChest": "Enabled",
+          "ResizeChestCapacity": "48"
+        }
+      }
+    }
+  ]
+}
+```
+
+1. See
+   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
+   docs for Content Patcher.
+
+### Customized Tabs
+
+The default tabs are defined by the `tabs.json` and `tabs.png` files which are both found under the `assets` folder.
+
+If `tabs.json` is not found, a default one is automatically generated:
+
+| Key<sup>1</sup> | Display Name | Texture                                | Icon Index | Item Tags<sup>2</sup>                                                                                        |
+|:----------------|:-------------|:---------------------------------------|:-----------|:-------------------------------------------------------------------------------------------------------------|
+| Clothing        | Clothing     | `furyx639.BetterChests\\Tabs\\Texture` | 0          | Boots, Clothing, Hat                                                                                         |
+| Cooking         | Cooking      | `furyx639.BetterChests\\Tabs\\Texture` | 1          | Artisan Goods, Cooking, Egg, Ingredients, Meat, Milk, Sell at Pierre's and Marnie's, Sell at Pierre's, Syrup |
+| Crops           | Crops        | `furyx639.BetterChests\\Tabs\\Texture` | 2          | Flowers, Fruits, Greens, Vegetables                                                                          |
+| Equipment       | Equipment    | `furyx639.BetterChests\\Tabs\\Texture` | 3          | Equipment, Ring, Tool, Weapon                                                                                |
+| Fishing         | Fishing      | `furyx639.BetterChests\\Tabs\\Texture` | 4          | Bait, Fishing, Sell at Fish Shop, Tackle                                                                     | 
+| Materials       | Materials    | `furyx639.BetterChests\\Tabs\\Texture` | 5          | Building Resources, Crafting, Gem, Metal Resources, Minerals, Monster Loot                                   |
+| Misc            | Misc         | `furyx639.BetterChests\\Tabs\\Texture` | 6          | Big Craftable, Furniture, Junk                                                                               | 
+| Seeds           | Seeds        | `furyx639.BetterChests\\Tabs\\Texture` | 7          | Fertilizer, Seeds                                                                                            |
+
+You can edit these files directly for personal usage, or they may be targeted externally for edits from other mods at
+the following paths<sup>3</sup>:
+
+`furyx639.BetterChests\\Tabs`
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    // Customize Tabs
+    {
+      "Action": "EditData",
+      "Target": "furyx639.BetterChests\\Tabs",
+      "Entries": {
+        // Edit an existing tab
+        "Misc": "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk forage_item"
+        
+        // Add a new tab
+        "Community Center": "{{i18n: tab.community-center.name}}/example.ModId\\TabTexture/0/category_donate"
+      }
+    },
+    
+    // Load texture for new tab
+    {
+      "Action": "Load",
+      "Target": "example.ModId/TabTexture",
+      "FromFile": "assets/{{TargetWithoutPath}}j.png",
+    },
+    
+
+  ]
+}
+```
+
+1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
+2. See [Item Tags](#item-tags)
+3. See
+   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
+   docs for Content Patcher.
+
+### Other Assets
+
+#### Icons
+
+Replace any or all of the icons for the Configure, Craft from Chest, and Stash to Chest buttons by editing the
+image<sup>1</sup>:
+
+`furyx639.BetterChests\\Icons`.
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.BetterChests\\Icons",
+      "FromFile": "assets/MyConfigureButton.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16}
+    },
+  ]
+}
+```
+
+1. See
+   the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+   docs for Content Patcher.
+
+#### Tab Texture
+
+Replace any or all of the default tab textures by editing the image<sup>1</sup>:
+
+`furyx639.BetterChests\\Tabs\\Textures`
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    // Replace texture for mining icon
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.BetterChests\\Tabs\\Texture",
+      "FromFile": "assets/mining-icon.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea" {"X": 48, "Y": 0, "Width": 16, "Height": 16}
+    }
+  ]
+}
+```
+
+1. See
+   the [Edit Image](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editimage.md)
+   docs for Content Patcher.
 
 ## Translations
 

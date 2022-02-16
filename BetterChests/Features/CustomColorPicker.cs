@@ -11,7 +11,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
@@ -25,9 +24,8 @@ using StardewValley.Objects;
 internal class CustomColorPicker : Feature
 {
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
+    private readonly PerScreen<object> _context = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly PerScreen<IManagedStorage> _managedChest = new();
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CustomColorPicker" /> class.
@@ -93,21 +91,15 @@ internal class CustomColorPicker : Feature
         set => this._colorPicker.Value = value;
     }
 
+    private object Context
+    {
+        get => this._context.Value;
+        set => this._context.Value = value;
+    }
+
     private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
-    }
-
-    private IManagedStorage ManagedStorage
-    {
-        get => this._managedChest.Value;
-        set => this._managedChest.Value = value;
-    }
-
-    private ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
     }
 
     /// <inheritdoc />
@@ -216,7 +208,7 @@ internal class CustomColorPicker : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance.context is null || !ReferenceEquals(__instance.context, CustomColorPicker.Instance.ManagedStorage.Context))
+        if (__instance.context is null || !ReferenceEquals(__instance.context, CustomColorPicker.Instance.Context))
         {
             return;
         }
@@ -226,17 +218,12 @@ internal class CustomColorPicker : Feature
 
     private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
     {
-        IManagedStorage managedStorage = null;
-        this.Menu = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out managedStorage) && managedStorage.CustomColorPicker == FeatureOption.Enabled
-            ? e.ItemGrabMenu
+        this.Context = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedChest) && managedChest.CustomColorPicker == FeatureOption.Enabled
+            ? e.Context
             : null;
-
-        if (this.Menu is null || e.Context is null)
+        if (this.Context is not null)
         {
-            return;
+            e.ItemGrabMenu.discreteColorPickerCC = null;
         }
-
-        this.Menu.discreteColorPickerCC = null;
-        this.ManagedStorage = managedStorage;
     }
 }

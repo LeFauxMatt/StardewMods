@@ -2,13 +2,13 @@
 
 using System;
 using Common.Helpers;
+using Common.Integrations.FuryCore;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.EasyAccess.Features;
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Models.Config;
 using StardewMods.EasyAccess.Services;
-using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
@@ -21,6 +21,8 @@ public class EasyAccess : Mod
 
     private ConfigModel Config { get; set; }
 
+    private FuryCoreIntegration FuryCore { get; set; }
+
     private ModServices Services { get; } = new();
 
     /// <inheritdoc />
@@ -29,6 +31,7 @@ public class EasyAccess : Mod
         EasyAccess.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
+        this.FuryCore = new(this.Helper.ModRegistry);
 
         // Mod Config
         IConfigData config = null;
@@ -56,10 +59,15 @@ public class EasyAccess : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
+    /// <inheritdoc />
+    public override object GetApi()
+    {
+        return new EasyAccessApi(this.Services);
+    }
+
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        var furyCore = this.Helper.ModRegistry.GetApi<IModServices>("furyx639.FuryCore");
-        this.Services.Add((IModService)furyCore);
+        this.FuryCore.API.AddFuryCoreServices(this.Services);
 
         // Activate Features
         foreach (var feature in this.Services.FindServices<Feature>())

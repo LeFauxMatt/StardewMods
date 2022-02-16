@@ -60,10 +60,28 @@ internal class ModConfigMenu : IModService
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
+        if (!this.GMCM.IsLoaded)
+        {
+            return;
+        }
+
         this.GMCM.Register(
             this.Manifest,
             this.Reset,
             this.Save);
+
+        this.GMCM.API.AddSectionTitle(
+            this.Manifest,
+            I18n.Section_General_Name,
+            I18n.Section_General_Description);
+
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.ToolbarIcons,
+            value => this.Config.ToolbarIcons = value,
+            I18n.Config_ToolbarIcons_Name,
+            I18n.Config_ToolbarIcons_Tooltip,
+            nameof(ConfigData.ToolbarIcons));
 
         this.GMCM.API.AddSectionTitle(
             this.Manifest,

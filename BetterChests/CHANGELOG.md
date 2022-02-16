@@ -1,5 +1,17 @@
 ﻿# Better Chests Change Log
 
+## 1.4.0 (February 15, 2022)
+
+### Additions
+
+* Added Organize Chest feature.
+* Added Toolbar icons for Stash to Chest and Craft from Chest.
+* Added Chest Menu for Shipping Bins.
+
+### Changes
+
+* Purge inaccessible cached objects.
+
 ## 1.3.0 (February 12, 2022)
 
 ### Additions

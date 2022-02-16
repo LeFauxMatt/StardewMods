@@ -2,7 +2,6 @@
 
 using StardewModdingAPI;
 using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;

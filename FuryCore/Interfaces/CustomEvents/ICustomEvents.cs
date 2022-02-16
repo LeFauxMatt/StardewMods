@@ -2,8 +2,9 @@
 
 using System;
 using StardewModdingAPI.Events;
+using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley.Menus;
 
 /// <summary>
@@ -12,13 +13,18 @@ using StardewValley.Menus;
 public interface ICustomEvents
 {
     /// <summary>
+    ///     Triggers when <see cref="IGameObject" /> that are no longer accessible are purged from the cache.
+    /// </summary>
+    public event EventHandler<GameObjectsRemovedEventArgs> GameObjectsRemoved;
+
+    /// <summary>
     ///     Triggers when an <see cref="ItemGrabMenu" /> is constructed or when an the Active Menu switches to/from an
     ///     <see cref="ItemGrabMenu" />.
     /// </summary>
     public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged;
 
     /// <summary>
-    ///     Triggers when a vanilla or custom <see cref="VanillaMenuComponent" /> is pressed on an <see cref="ItemGrabMenu" />.
+    ///     Triggers when a vanilla or custom <see cref="IMenuComponent" /> is pressed on an <see cref="ItemGrabMenu" />.
     /// </summary>
     public event EventHandler<MenuComponentPressedEventArgs> MenuComponentPressed;
 
@@ -33,4 +39,9 @@ public interface ICustomEvents
     ///     behind the cursor and hovered text/items.
     /// </summary>
     public event EventHandler<RenderingActiveMenuEventArgs> RenderingItemGrabMenu;
+
+    /// <summary>
+    ///     Triggers when a custom <see cref="IMenuComponent" /> is pressed from the <see cref="Toolbar" />.
+    /// </summary>
+    public event EventHandler<ToolbarIconPressedEventArgs> ToolbarIconPressed;
 }

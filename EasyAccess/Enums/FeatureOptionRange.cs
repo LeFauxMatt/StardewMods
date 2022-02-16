@@ -3,7 +3,7 @@
 /// <summary>
 ///     Indicates at what range a feature will be enabled.
 /// </summary>
-public enum FeatureOptionRange
+internal enum FeatureOptionRange
 {
     /// <summary>Feature inherits from a parent config.</summary>
     Default = 0,

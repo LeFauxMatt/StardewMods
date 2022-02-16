@@ -32,13 +32,13 @@ public class CustomMenuComponent : IMenuComponent
     }
 
     /// <inheritdoc />
-    public ComponentArea Area { get; protected init; }
+    public ComponentArea Area { get; }
 
     /// <inheritdoc />
     public ClickableTextureComponent Component { get; protected init; }
 
     /// <inheritdoc />
-    public ComponentType ComponentType { get; protected init; }
+    public ComponentType ComponentType { get; }
 
     /// <inheritdoc />
     public int Id

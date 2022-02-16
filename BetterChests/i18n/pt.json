@@ -109,7 +109,9 @@
   "area.left.name": "À esquerda do menu de inventário.",
   "area.custom.name": "Uma posição personalizada.",
   // UI - Button
-  "button.Configure.name": "Configurar",
+  "button.configure.name": "Configurar",
+  "button.stash-to-chest.name": "Estocar em Baús",
+  "button.craft-from-chest.name": "Criar a partir de Baús",
   // UI - Tabs
   "tabs.Clothing.name": "Vestuário",
   "tabs.Cooking.name": "Culinária",

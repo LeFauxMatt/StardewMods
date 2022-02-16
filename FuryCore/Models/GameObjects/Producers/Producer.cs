@@ -25,7 +25,7 @@ internal abstract class Producer : GameObject, IProducer
     }
 
     /// <inheritdoc />
-    public abstract Item OutputItem { get; }
+    public abstract Item OutputItem { get; protected set; }
 
     private Func<ModDataDictionary> GetModData { get; }
 

@@ -8,7 +8,9 @@ using StardewMods.EasyAccess.Interfaces.ManagedObjects;
 using StardewMods.EasyAccess.Models.Config;
 using StardewMods.EasyAccess.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.GameObjects;
 using SObject = StardewValley.Object;
 
@@ -29,6 +31,8 @@ internal class ManagedObjects : IModService
         this.Config = config;
         this._assetHandler = services.Lazy<AssetHandler>();
         this._gameObjects = services.Lazy<IGameObjects>();
+        services.Lazy<ICustomEvents>(
+            customEvents => { customEvents.GameObjectsRemoved += this.OnGameObjectsRemoved; });
     }
 
     /// <summary>
@@ -66,6 +70,14 @@ internal class ManagedObjects : IModService
     }
 
     private IDictionary<string, IProducerData> ProducerConfigs { get; } = new Dictionary<string, IProducerData>();
+
+    private void OnGameObjectsRemoved(object sender, GameObjectsRemovedEventArgs e)
+    {
+        foreach (var gameObject in e.Removed)
+        {
+            this.CachedObjects.Remove(gameObject);
+        }
+    }
 
     private bool TryGetProducer(IGameObject gameObject, out IManagedProducer managedProducer)
     {

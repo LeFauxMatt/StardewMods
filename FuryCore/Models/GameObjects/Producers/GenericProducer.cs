@@ -20,6 +20,7 @@ internal class GenericProducer : Producer
     public override Item OutputItem
     {
         get => this.SourceObject.heldObject.Value;
+        protected set => this.SourceObject.heldObject.Value = value as SObject;
     }
 
     /// <summary>
@@ -43,12 +44,23 @@ internal class GenericProducer : Producer
     /// <inheritdoc />
     public override bool TrySetInput(Item item)
     {
-        if (this.OutputItem is null && this.SourceObject.performObjectDropInAction(item, false, Game1.player))
+        if (this.OutputItem is not null)
         {
-            Game1.player.removeItemsFromInventory(item.ParentSheetIndex, 1);
-            return true;
+            return false;
         }
 
-        return false;
+        var probeTest = this.SourceObject.performObjectDropInAction(item, true, Game1.player);
+        this.OutputItem = null;
+        if (!probeTest || !this.SourceObject.performObjectDropInAction(item, false, Game1.player))
+        {
+            return false;
+        }
+
+        if (--item.Stack <= 0)
+        {
+            Game1.player.removeItemFromInventory(item);
+        }
+
+        return true;
     }
 }

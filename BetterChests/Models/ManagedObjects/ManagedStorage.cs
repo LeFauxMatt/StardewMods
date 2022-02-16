@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces.GameObjects;
@@ -24,8 +24,9 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
     /// <param name="data">The <see cref="IStorageData" /> for this type of storage.</param>
     /// <param name="qualifiedItemId">A unique Id associated with this storage type.</param>
     public ManagedStorage(IStorageContainer container, IStorageData data, string qualifiedItemId)
-        : base(container)
+        : base(container.Context, () => container.ModData)
     {
+        this.Container = container;
         this.Data = data;
         this.QualifiedItemId = qualifiedItemId;
 
@@ -171,6 +172,12 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
     public ItemMatcher ItemMatcher { get; } = new(true);
 
     /// <inheritdoc />
+    public override IList<Item> Items
+    {
+        get => this.Container.Items;
+    }
+
+    /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
         get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OpenHeldChest", out var value) && Enum.TryParse(value, out FeatureOption option)
@@ -181,6 +188,52 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
             }
             : this.Data.OpenHeldChest;
         set => this.ModData[$"{BetterChests.ModUniqueId}/OpenHeldChest"] = FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeChest
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.OrganizeChest,
+                _ => option,
+            }
+            : this.Data.OrganizeChest;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChest"] = FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
+    public GroupBy OrganizeChestGroupBy
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChestGroupBy", out var value) && Enum.TryParse(value, out GroupBy groupBy)
+            ? groupBy switch
+            {
+                GroupBy.Default => this.Data.OrganizeChestGroupBy,
+                _ => groupBy,
+            }
+            : this.Data.OrganizeChestGroupBy;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChestGroupBy"] = FormatHelper.GetGroupByString(value);
+    }
+
+    /// <inheritdoc />
+    public bool OrganizeChestOrderByDescending
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChestOrderByDescending", out var value) && bool.TryParse(value, out var orderByDesc) && orderByDesc;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChestOrderByDescending"] = value.ToString();
+    }
+
+    /// <inheritdoc />
+    public SortBy OrganizeChestSortBy
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChestSortBy", out var value) && Enum.TryParse(value, out SortBy sortBy)
+            ? sortBy switch
+            {
+                SortBy.Default => this.Data.OrganizeChestSortBy,
+                _ => sortBy,
+            }
+            : this.Data.OrganizeChestSortBy;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChestSortBy"] = FormatHelper.GetSortByString(value);
     }
 
     /// <inheritdoc />
@@ -325,7 +378,39 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
         set => this.ModData[$"{BetterChests.ModUniqueId}/UnloadChest"] = FormatHelper.GetOptionString(value);
     }
 
+    private IStorageContainer Container { get; }
+
     private IStorageData Data { get; }
+
+    /// <inheritdoc />
+    public override Item AddItem(Item item)
+    {
+        return this.Container.AddItem(item);
+    }
+
+    /// <inheritdoc />
+    public override void ClearNulls()
+    {
+        this.Container.ClearNulls();
+    }
+
+    /// <inheritdoc />
+    public override void GrabInventoryItem(Item item, Farmer who)
+    {
+        this.Container.GrabInventoryItem(item, who);
+    }
+
+    /// <inheritdoc />
+    public override void GrabStorageItem(Item item, Farmer who)
+    {
+        this.Container.GrabStorageItem(item, who);
+    }
+
+    /// <inheritdoc />
+    public override void ShowMenu()
+    {
+        this.Container.ShowMenu();
+    }
 
     /// <inheritdoc />
     public Item StashItem(Item item)

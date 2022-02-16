@@ -36,5 +36,8 @@
   "option.enabled.name": "Enabled",
   "option.disabled.name": "Disabled",
   "option.location.name": "Location",
-  "option.world.name": "World"
+  "option.world.name": "World",
+  // UI - Button
+  "button.collect-outputs.name": "Collect Outputs",
+  "button.dispense-inputs.name": "Dispense Inputs"
 }

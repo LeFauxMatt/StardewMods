@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Common.Helpers;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -101,7 +102,8 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <inheritdoc />
     public bool CanLoad<T>(IAssetInfo asset)
     {
-        return asset.AssetNameEquals($"{EasyAccess.ModUniqueId}/Producers");
+        return asset.AssetNameEquals($"{EasyAccess.ModUniqueId}/Producers")
+               || asset.AssetNameEquals($"{EasyAccess.ModUniqueId}/Icons");
     }
 
     /// <summary>
@@ -130,6 +132,8 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             "Producers" when segment.Length == 2
                 => (T)this.LocalProducerData,
+            "Icons" when segment.Length == 2
+                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/icons.png"),
             _ => default,
         };
     }
@@ -180,7 +184,7 @@ internal class AssetHandler : IModService, IAssetLoader
             }
         }
 
-        // Load vanilla producers with special configs
+        // Load vanilla special producers
         var specialProducers = new Dictionary<string, IProducerData>
         {
             {
@@ -199,10 +203,10 @@ internal class AssetHandler : IModService, IAssetLoader
         };
         this.LoadProducerData(specialProducers);
 
-        // Load missing vanilla producer data
+        // Load default vanilla producer data
         IProducerData defaultProducer = new ProducerData();
         var vanillaProducers = this.Craftables
-                                   .Where(craftable => Enum.IsDefined(typeof(VanillaProducers), craftable.Key))
+                                   .Where(craftable => Enum.IsDefined(typeof(VanillaProducerObjects), craftable.Key))
                                    .ToDictionary(craftable => craftable.Value[0], _ => defaultProducer);
         this.LoadProducerData(vanillaProducers);
 

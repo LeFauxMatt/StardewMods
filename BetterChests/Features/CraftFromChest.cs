@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
 using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -15,7 +16,10 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -24,8 +28,10 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class CraftFromChest : Feature
 {
+    private readonly PerScreen<IMenuComponent> _craftButton = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
+    private readonly Lazy<IToolbarIcons> _toolbarIcons;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CraftFromChest" /> class.
@@ -55,6 +61,7 @@ internal class CraftFromChest : Feature
                             PatchType.Postfix),
                     });
             });
+        this._toolbarIcons = services.Lazy<IToolbarIcons>();
     }
 
     /// <summary>
@@ -105,15 +112,37 @@ internal class CraftFromChest : Feature
         }
     }
 
+    private IMenuComponent CraftButton
+    {
+        get => this._craftButton.Value ??= new CustomMenuComponent(
+            new(
+                new(0, 0, 32, 32),
+                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
+                new(32, 0, 16, 16),
+                2f)
+            {
+                name = "Craft from Chest",
+                hoverText = I18n.Button_CraftFromChest_Name(),
+            },
+            ComponentArea.Right);
+    }
+
     private IHarmonyHelper Harmony
     {
         get => this._harmony.Value;
     }
 
+    private IToolbarIcons ToolbarIcons
+    {
+        get => this._toolbarIcons.Value;
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
+        this.ToolbarIcons.Icons.Add(this.CraftButton);
         this.Harmony.ApplyPatches(this.Id);
+        this.CustomEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -121,7 +150,9 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
+        this.ToolbarIcons.Icons.Remove(this.CraftButton);
         this.Harmony.UnapplyPatches(this.Id);
+        this.CustomEvents.ToolbarIconPressed -= this.OnToolbarIconPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
@@ -172,16 +203,17 @@ internal class CraftFromChest : Feature
             return;
         }
 
-        var eligibleChests = this.EligibleChests.ToList();
-        if (!eligibleChests.Any())
-        {
-            Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
-            return;
-        }
-
-        Log.Trace("Launching CraftFromChest Menu.");
-        this._multipleChestCraftingPage.Value = new(eligibleChests);
+        this.OpenCrafting();
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+    }
+
+    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
+    {
+        if (ReferenceEquals(this.CraftButton, e.Component))
+        {
+            this.OpenCrafting();
+            e.SuppressInput();
+        }
     }
 
     private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
@@ -192,6 +224,20 @@ internal class CraftFromChest : Feature
         }
 
         this._multipleChestCraftingPage.Value.UpdateChests();
+    }
+
+    private void OpenCrafting()
+    {
+        var eligibleChests = this.EligibleChests.ToList();
+        if (!eligibleChests.Any())
+        {
+            Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
+            return;
+        }
+
+        Log.Trace("Launching CraftFromChest Menu.");
+        this._multipleChestCraftingPage.Value = new(eligibleChests);
+        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
     }
 
     private class MultipleChestCraftingPage
