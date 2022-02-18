@@ -77,9 +77,6 @@ public enum VanillaProducerObjects
     /// <summary>Cask.</summary>
     Cask = 163,
 
-    /// <summary>Auto-Grabber.</summary>
-    AutoGrabber = 165,
-
     /// <summary>Geode Crusher.</summary>
     GeodeCrusher = 182,
 

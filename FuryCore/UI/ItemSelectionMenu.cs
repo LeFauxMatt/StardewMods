@@ -265,7 +265,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void RegisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed += this.OnButtonPressed;
-        this.CustomEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
+        this.CustomEvents.RenderedClickableMenu += this.OnRenderedClickableMenu;
         this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
@@ -276,7 +276,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void UnregisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed -= this.OnButtonPressed;
-        this.CustomEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
+        this.CustomEvents.RenderedClickableMenu -= this.OnRenderedClickableMenu;
         this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
     }
 
@@ -352,7 +352,7 @@ public class ItemSelectionMenu : ItemGrabMenu
         this.MenuItems.ForceRefresh();
     }
 
-    private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedClickableMenu(object sender, RenderedActiveMenuEventArgs e)
     {
         this.TagMenu?.Draw(e.SpriteBatch);
     }

@@ -1,4 +1,4 @@
-﻿namespace StardewMods.FuryCore.Interfaces.MenuComponents;
+﻿namespace StardewMods.FuryCore.Interfaces.ClickableComponents;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
@@ -7,10 +7,10 @@ using StardewValley.Menus;
 /// <summary>
 ///     Represents a <see cref="ClickableTextureComponent" /> that is drawn to the active menu.
 /// </summary>
-public interface IMenuComponent
+public interface IClickableComponent
 {
     /// <summary>
-    ///     gets the area of the screen that the component is oriented to.
+    ///     Gets a value indicate which area of the screen will the component be oriented to.
     /// </summary>
     public ComponentArea Area { get; }
 
@@ -27,15 +27,17 @@ public interface IMenuComponent
     /// <summary>
     ///     Gets the text to display while hovering over this component.
     /// </summary>
-    public virtual string HoverText
-    {
-        get => this.Component?.hoverText;
-    }
+    public string HoverText { get; }
 
     /// <summary>
     ///     Gets the Id of the component used for game controllers.
     /// </summary>
     public int Id { get; }
+
+    /// <summary>
+    ///     Gets a value indicating if the component should be drawn below or above the menu.
+    /// </summary>
+    public ComponentLayer Layer { get; }
 
     /// <summary>
     ///     Gets the name of the component.
@@ -45,20 +47,12 @@ public interface IMenuComponent
     /// <summary>
     ///     Gets or sets the x-coordinate of the component.
     /// </summary>
-    public virtual int X
-    {
-        get => this.Component.bounds.X;
-        set => this.Component.bounds.X = value;
-    }
+    public int X { get; set; }
 
     /// <summary>
     ///     Gets or sets the y-coordinate of the component.
     /// </summary>
-    public virtual int Y
-    {
-        get => this.Component.bounds.Y;
-        set => this.Component.bounds.Y = value;
-    }
+    public int Y { get; set; }
 
     /// <summary>
     ///     Draw the component to the screen.

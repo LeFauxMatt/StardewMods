@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces.Config;
@@ -13,8 +14,8 @@ using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.GameObjects;
+using StardewValley;
 using StardewValley.Buildings;
-using StardewValley.Locations;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
@@ -135,6 +136,7 @@ internal class ManagedObjects : IModService
         }
     }
 
+    [SuppressMessage("StyleCop", "SA1012", Justification = "Conflicts with SA1008")]
     private bool TryGetManagedStorage(IGameObject gameObject, out IManagedStorage managedStorage)
     {
         if (this.CachedObjects.TryGetValue(gameObject, out managedStorage))
@@ -149,12 +151,9 @@ internal class ManagedObjects : IModService
 
         var name = gameObject.Context switch
         {
-            Chest chest => this.Assets.GetStorageName(chest),
-            SObject { ParentSheetIndex: 165 } obj => this.Assets.GetStorageName(obj),
-            JunimoHut => "Junimo Hut",
-            FarmHouse => "Fridge",
-            IslandFarmHouse => "Fridge",
-            ShippingBin => "Shipping Bin",
+            SObject obj and ({ ParentSheetIndex: 165 } or Chest) => this.Assets.GetStorageName(obj),
+            Building building => this.Assets.GetStorageName(building),
+            GameLocation location => this.Assets.GetStorageName(location),
             _ => null,
         };
 

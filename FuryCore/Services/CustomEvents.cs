@@ -13,12 +13,14 @@ using StardewMods.FuryCore.Models.CustomEvents;
 [FuryCoreService(true)]
 internal class CustomEvents : ICustomEvents, IModService
 {
+    private readonly ClickableMenuChanged _clickableMenuChanged;
     private readonly GameObjectsRemoved _gameObjectsRemoved;
-    private readonly ItemGrabMenuChanged _itemGrabMenuChanged;
+    private readonly HudComponentPressed _hudComponentPressed;
     private readonly MenuComponentPressed _menuComponentPressed;
-    private readonly RenderedItemGrabMenu _renderedItemGrabMenu;
-    private readonly RenderingItemGrabMenu _renderingItemGrabMenu;
-    private readonly ToolbarIconPressed _toolbarIconPressed;
+    private readonly MenuComponentsLoading _menuComponentsLoading;
+    private readonly MenuItemsChanged _menuItemsChanged;
+    private readonly RenderedClickableMenu _renderedClickableMenu;
+    private readonly RenderingClickableMenu _renderingClickableMenu;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CustomEvents" /> class.
@@ -27,12 +29,21 @@ internal class CustomEvents : ICustomEvents, IModService
     /// <param name="services">Provides access to internal and external services.</param>
     public CustomEvents(IModHelper helper, IModServices services)
     {
+        this._clickableMenuChanged = new(helper.Events.GameLoop, services);
         this._gameObjectsRemoved = new(helper.Events, services);
-        this._itemGrabMenuChanged = new(helper.Events.GameLoop, services);
+        this._menuComponentsLoading = new(services);
         this._menuComponentPressed = new(helper, services);
-        this._renderedItemGrabMenu = new(helper.Events.Display, services);
-        this._renderingItemGrabMenu = new(helper.Events.Display, services);
-        this._toolbarIconPressed = new(helper, services);
+        this._menuItemsChanged = new(services);
+        this._renderedClickableMenu = new(helper.Events.Display, services);
+        this._renderingClickableMenu = new(helper.Events.Display, services);
+        this._hudComponentPressed = new(helper, services);
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<ClickableMenuChangedEventArgs> ClickableMenuChanged
+    {
+        add => this._clickableMenuChanged.Add(value);
+        remove => this._clickableMenuChanged.Remove(value);
     }
 
     /// <inheritdoc />
@@ -43,37 +54,44 @@ internal class CustomEvents : ICustomEvents, IModService
     }
 
     /// <inheritdoc />
-    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
+    public event EventHandler<ClickableComponentPressedEventArgs> HudComponentPressed
     {
-        add => this._itemGrabMenuChanged.Add(value);
-        remove => this._itemGrabMenuChanged.Remove(value);
+        add => this._hudComponentPressed.Add(value);
+        remove => this._hudComponentPressed.Remove(value);
     }
 
     /// <inheritdoc />
-    public event EventHandler<MenuComponentPressedEventArgs> MenuComponentPressed
+    public event EventHandler<ClickableComponentPressedEventArgs> MenuComponentPressed
     {
         add => this._menuComponentPressed.Add(value);
         remove => this._menuComponentPressed.Remove(value);
     }
 
     /// <inheritdoc />
-    public event EventHandler<RenderedActiveMenuEventArgs> RenderedItemGrabMenu
+    public event EventHandler<MenuComponentsLoadingEventArgs> MenuComponentsLoading
     {
-        add => this._renderedItemGrabMenu.Add(value);
-        remove => this._renderedItemGrabMenu.Remove(value);
+        add => this._menuComponentsLoading.Add(value);
+        remove => this._menuComponentsLoading.Remove(value);
     }
 
     /// <inheritdoc />
-    public event EventHandler<RenderingActiveMenuEventArgs> RenderingItemGrabMenu
+    public event EventHandler<MenuItemsChangedEventArgs> MenuItemsChanged
     {
-        add => this._renderingItemGrabMenu.Add(value);
-        remove => this._renderingItemGrabMenu.Remove(value);
+        add => this._menuItemsChanged.Add(value);
+        remove => this._menuItemsChanged.Remove(value);
     }
 
     /// <inheritdoc />
-    public event EventHandler<ToolbarIconPressedEventArgs> ToolbarIconPressed
+    public event EventHandler<RenderedActiveMenuEventArgs> RenderedClickableMenu
     {
-        add => this._toolbarIconPressed.Add(value);
-        remove => this._toolbarIconPressed.Remove(value);
+        add => this._renderedClickableMenu.Add(value);
+        remove => this._renderedClickableMenu.Remove(value);
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<RenderingActiveMenuEventArgs> RenderingClickableMenu
+    {
+        add => this._renderingClickableMenu.Add(value);
+        remove => this._renderingClickableMenu.Remove(value);
     }
 }

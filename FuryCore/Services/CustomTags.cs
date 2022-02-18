@@ -26,18 +26,17 @@ internal class CustomTags : ICustomTags, IModService
     public CustomTags(ConfigData config, IModServices services)
     {
         CustomTags.Instance = this;
+
         services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
             {
                 var id = $"{FuryCore.ModUniqueId}.{nameof(CustomTags)}";
-
                 harmonyHelper.AddPatch(
                     id,
                     AccessTools.Method(typeof(Item), nameof(Item.GetContextTags)),
                     typeof(CustomTags),
                     nameof(CustomTags.Item_GetContextTags_Postfix),
                     PatchType.Postfix);
-
                 harmonyHelper.ApplyPatches(id);
             });
 

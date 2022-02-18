@@ -1,5 +1,7 @@
 ﻿namespace StardewMods.FuryCore.Models.GameObjects.Storages;
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using StardewValley;
 using StardewValley.Buildings;
@@ -7,14 +9,14 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class StorageShippingBin : StorageContainer
+internal class StorageShippingBin : BaseStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageShippingBin" /> class.
     /// </summary>
     /// <param name="shippingBin">The shipping bin.</param>
     public StorageShippingBin(ShippingBin shippingBin)
-        : base(shippingBin, () => int.MaxValue, () => Game1.getFarm().getShippingBin(Game1.player), () => shippingBin.modData)
+        : base(shippingBin)
     {
     }
 
@@ -23,8 +25,41 @@ internal class StorageShippingBin : StorageContainer
     /// </summary>
     /// <param name="chest">The mini-shipping bin.</param>
     public StorageShippingBin(Chest chest)
-        : base(chest, () => chest.modData)
+        : base(chest)
     {
+    }
+
+    /// <inheritdoc />
+    public override int Capacity
+    {
+        get => this.Context switch
+        {
+            ShippingBin => int.MaxValue,
+            Chest chest => chest.GetActualCapacity(),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+    }
+
+    /// <inheritdoc />
+    public override IList<Item> Items
+    {
+        get => this.Context switch
+        {
+            ShippingBin => Game1.getFarm().getShippingBin(Game1.player),
+            Chest chest => chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+    }
+
+    /// <inheritdoc />
+    public override ModDataDictionary ModData
+    {
+        get => this.Context switch
+        {
+            ShippingBin shippingBin => shippingBin.modData,
+            Chest chest => chest.modData,
+            _ => throw new ArgumentOutOfRangeException(),
+        };
     }
 
     /// <inheritdoc />

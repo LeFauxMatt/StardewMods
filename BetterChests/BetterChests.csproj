@@ -2,7 +2,7 @@
     <Import Project="..\build\common.targets"/>
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
-        <Version>1.4.2</Version>
+        <Version>1.4.3</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.BetterChests</RootNamespace>
     </PropertyGroup>

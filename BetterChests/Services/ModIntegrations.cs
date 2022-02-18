@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Services;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -22,6 +23,8 @@ internal class ModIntegrations : IModService
     private const string ExpandedStorageModUniqueId = "furyx639.ExpandedStorage";
     private const string HorseOverhaulModUniqueId = "Goldenrevolver.HorseOverhaul";
 
+    private readonly Lazy<AssetHandler> _assetHandler;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="ModIntegrations" /> class.
     /// </summary>
@@ -31,7 +34,7 @@ internal class ModIntegrations : IModService
     {
         this.Helper = helper;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-        services.Lazy<AssetHandler>(assetHandler =>
+        this._assetHandler = services.Lazy<AssetHandler>(assetHandler =>
         {
             assetHandler.AddModDataKey($"{BetterChests.ModUniqueId}/StorageName");
             assetHandler.AddModDataKey($"{ModIntegrations.ExpandedStorageModUniqueId}/Storage");
@@ -41,6 +44,11 @@ internal class ModIntegrations : IModService
             gameObjects.AddInventoryItemsGetter(this.GetInventoryItems);
             gameObjects.AddLocationObjectsGetter(this.GetLocationObjects);
         });
+    }
+
+    private AssetHandler Assets
+    {
+        get => this._assetHandler.Value;
     }
 
     private IModHelper Helper { get; }
@@ -86,6 +94,11 @@ internal class ModIntegrations : IModService
         foreach (var (key, _) in removedMods)
         {
             this.Mods.Remove(key);
+        }
+
+        if (this.IsLoaded("Horse Overhaul"))
+        {
+            this.Assets.AddChestData("Saddle Bag");
         }
     }
 

@@ -2,7 +2,6 @@
 
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Interfaces;
@@ -12,8 +11,6 @@ using StardewValley.Menus;
 /// <inheritdoc />
 internal class MenuForShippingBin : Feature
 {
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuForShippingBin" /> class.
     /// </summary>
@@ -25,31 +22,24 @@ internal class MenuForShippingBin : Feature
     {
     }
 
-    private ItemGrabMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
-    }
-
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
     }
 
-    [SortedEventPriority(EventPriority.High + 1001)]
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    [SortedEventPriority(EventPriority.High)]
+    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu;
-        if (this.Menu is { context: not null, shippingBin: true } && this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage))
+        // Relaunch as regular ItemGrabMenu
+        if (e.Menu is ItemGrabMenu { context: { } context, shippingBin: true } && this.ManagedObjects.FindManagedStorage(context, out var managedStorage))
         {
-            // Relaunch as ItemGrabMenu
             managedStorage.ShowMenu();
         }
     }

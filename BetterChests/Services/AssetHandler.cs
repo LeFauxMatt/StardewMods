@@ -15,6 +15,8 @@ using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
+using StardewValley.Buildings;
+using StardewValley.Locations;
 
 /// <inheritdoc cref="IModService" />
 internal class AssetHandler : IModService, IAssetLoader
@@ -129,6 +131,51 @@ internal class AssetHandler : IModService, IAssetLoader
     }
 
     /// <summary>
+    ///     Gets the storage name from a Building.
+    /// </summary>
+    /// <param name="building">The building to get the storage name for.</param>
+    /// <returns>The name of the storage.</returns>
+    public string GetStorageName(Building building)
+    {
+        foreach (var key in this.ModDataKeys)
+        {
+            if (building.modData.TryGetValue(key, out var name))
+            {
+                return name;
+            }
+        }
+
+        return building switch
+        {
+            JunimoHut => "Junimo Hut",
+            ShippingBin => "Shipping Bin",
+            _ => null,
+        };
+    }
+
+    /// <summary>
+    ///     Gets the storage name from a Game Location.
+    /// </summary>
+    /// <param name="location">The location to get the storage name for.</param>
+    /// <returns>The name of the storage.</returns>
+    public string GetStorageName(GameLocation location)
+    {
+        foreach (var key in this.ModDataKeys)
+        {
+            if (location.modData.TryGetValue(key, out var name))
+            {
+                return name;
+            }
+        }
+
+        return location switch
+        {
+            FarmHouse or IslandFarmHouse => "Fridge",
+            _ => null,
+        };
+    }
+
+    /// <summary>
     ///     Gets the storage name from an Item.
     /// </summary>
     /// <param name="item">The item to get the storage name for.</param>
@@ -219,15 +266,16 @@ internal class AssetHandler : IModService, IAssetLoader
         }
 
         // Load vanilla special storages
+        IStorageData defaultStorage = new StorageData();
         var specialStorages = new Dictionary<string, IStorageData>
         {
-            { "Fridge", new StorageData() },
-            { "Shipping Bin", new StorageData() },
+            { "Fridge", defaultStorage },
+            { "Shipping Bin", defaultStorage },
+            { "Junimo Hut", defaultStorage },
         };
         this.LoadStorageData(specialStorages);
 
         // Load default vanilla storage data
-        IStorageData defaultStorage = new StorageData();
         var vanillaStorages = this.Craftables
                                   .Where(craftable => Enum.IsDefined(typeof(VanillaStorageObjects), craftable.Key))
                                   .ToDictionary(craftable => craftable.Value[0], _ => defaultStorage);

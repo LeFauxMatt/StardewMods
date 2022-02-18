@@ -12,20 +12,20 @@ Provides additional APIs for my other mods.
     * [Item Matcher](#item-matcher)
 * [Events](#events)
     * [GameObjects Removed](#gameobjects-removed)
+    * [HudComponent Pressed](#hudcomponent-pressed)
     * [ItemGrabMenu Changed](#itemgrabmenu-changed)
     * [MenuComponent Pressed](#menucomponent-pressed)
     * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
     * [Rendered ItemGrabMenu](#rendered-itemgrabmenu)
-    * [ToolbarIcon Pressed](#toolbaricon-pressed)
 * [Services](#services)
     * [Custom Events](#custom-events)
     * [Custom Tags](#custom-tags)
     * [Game Objects](#game-objects)
     * [Harmony Helper](#harmony-helper)
+    * [HUD Components](#hud-components)
     * [Menu Components](#menu-components)
     * [Menu Items](#menu-items)
     * [Mod Services](#mod-services)
-    * [Toolbar Icons](#toolbar-icons)
 * [UI](#ui)
     * [DropDown Menu](#dropdown-menu)
     * [Gradient Bar](#gradient-bar)
@@ -142,6 +142,12 @@ Triggers when inaccessible game objects are purged from the cache.
 
 [Source](Events/GameObjectsRemoved.cs)
 
+#### HudComponent Pressed
+
+Triggers when a custom toolbar icon is pressed.
+
+[Source](Events/HudComponentPressed.cs)
+
 #### ItemGrabMenu Changed
 
 Triggered whenever an ItemGrabMenu is constructed, and whenever the Active Menu switches to/from an ItemGrabMenu.On
@@ -170,12 +176,6 @@ be above the menu but below the cursor and any hover elements such as text or it
 
 [Source](Events/RenderingItemGrabMenu.cs)
 
-#### ToolbarIcon Pressed
-
-Triggers when a custom toolbar icon is pressed.
-
-[Source](Events/ToolbarIconPressed.cs)
-
 ### Services
 
 #### Custom Events
@@ -198,12 +198,18 @@ Saves a list of Harmony Patches, and allows them to be applied or reversed at an
 
 [ [Interface](Interfaces/IHarmonyHelper.cs) | [Source](Services/HarmonyHelper.cs) ]
 
+#### Hud Components
+
+Add icons to the left or right of the player items toolbar.
+
+[ [Interface](Interfaces/ClickableComponents/IHudComponents.cs) | [Source](Services/HudComponents.cs) ]
+
 #### Menu Components
 
 Add custom components to the ItemGrabMenu which can optionally automatically align to certain areas of the screen. In
 this case neighboring components are automatically assigned for controller support.
 
-[ [Interface](Interfaces/MenuComponents/IMenuComponents.cs) | [Source](Services/MenuComponents.cs) ]
+[ [Interface](Interfaces/ClickableComponents/IMenuComponents.cs) | [Source](Services/MenuComponents.cs) ]
 
 #### Menu Items
 
@@ -217,12 +223,6 @@ displayed items or scrolling an overflow of items without affecting the source i
 All of FuryCores APIs are access through this service.
 
 [ [Interface](Interfaces/IModService.cs) | [Source](Services/ModServices.cs) ]
-
-#### Toolbar Icons
-
-Add icons to the left or right of the player items toolbar.
-
-[ [Interface](Interfaces/MenuComponents/IToolbarIcons.cs) | [Source](Services/ToolbarIcons.cs) ]
 
 ### UI
 
@@ -281,7 +281,7 @@ Enabling this option will capture the MouseWheelScrolled event and add up/down a
 | Italian    | ❌️ Not Translated |         |
 | Japanese   | ❌️ Not Translated |         |
 | Korean     | ❌️ Not Translated |         |
-| Portuguese | ❌️ Not Translated |         |
+| Portuguese | ✔️ Complete       |         |
 | Russian    | ❌️ Not Translated |         |
 | Spanish    | ❌️ Not Translated |         |
 | Turkish    | ❌️ Not Translated |         |

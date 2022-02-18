@@ -1,6 +1,8 @@
 ﻿namespace Common.Integrations.FuryCore;
 
 using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -12,12 +14,12 @@ public interface IFuryCoreApi
     /// <summary>
     ///     Event triggered when a menu component is pressed.
     /// </summary>
-    public event EventHandler<string> MenuComponentPressed;
+    public event EventHandler<(string ComponentName, bool IsSuppressed)> MenuComponentPressed;
 
     /// <summary>
     ///     Event triggered when a toolbar icon is pressed.
     /// </summary>
-    public event EventHandler<string> ToolbarIconPressed;
+    public event EventHandler<(string ComponentName, bool IsSuppressed)> ToolbarIconPressed;
 
     /// <summary>
     ///     Adds a context tag to any item that currently meets the predicate.
@@ -31,6 +33,18 @@ public interface IFuryCoreApi
     /// </summary>
     /// <param name="services">The mod services to add to.</param>
     public void AddFuryCoreServices(object services);
+
+    /// <summary>
+    ///     Adds a custom getter for inventory items.
+    /// </summary>
+    /// <param name="getInventoryItems">The inventory items getter to add.</param>
+    public void AddInventoryItemsGetter(Func<Farmer, IEnumerable<(int Index, object Context)>> getInventoryItems);
+
+    /// <summary>
+    ///     Adds a custom getter for location objects.
+    /// </summary>
+    /// <param name="getLocationObjects">The location objects getter to add.</param>
+    public void AddLocationObjectsGetter(Func<GameLocation, IEnumerable<(Vector2 Position, object Context)>> getLocationObjects);
 
     /// <summary>
     ///     Adds a menu component to the <see cref="ItemGrabMenu" />.

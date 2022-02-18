@@ -93,7 +93,7 @@ internal class ManagedObjects : IModService
 
         var name = gameObject.Context switch
         {
-            SObject obj => obj.name,
+            SObject obj => this.Assets.GetProducerName(obj),
             _ => null,
         };
 

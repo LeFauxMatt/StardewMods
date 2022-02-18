@@ -18,7 +18,6 @@ using StardewValley.Objects;
 internal class FilterItems : Feature
 {
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="FilterItems" /> class.
@@ -56,7 +55,7 @@ internal class FilterItems : Feature
                         nameof(FilterItems.Automate_Store_prefix));
                 }
             });
-        this._menuItems = services.Lazy<IMenuItems>();
+        services.Lazy<IMenuItems>();
     }
 
     private static FilterItems Instance { get; set; }
@@ -66,23 +65,18 @@ internal class FilterItems : Feature
         get => this._harmony.Value;
     }
 
-    private IMenuItems MenuItems
-    {
-        get => this._menuItems.Value;
-    }
-
     /// <inheritdoc />
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -109,14 +103,13 @@ internal class FilterItems : Feature
         return false;
     }
 
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
     {
-        if (this.MenuItems.Menu is null || e.Context is null || !this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) || managedStorage.FilterItems == FeatureOption.Disabled)
+        if (e.Context is null || !this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) || managedStorage.FilterItems != FeatureOption.Enabled)
         {
             return;
         }
 
-        // Add highlighter to Menu Items
-        this.MenuItems.AddHighlighter(managedStorage.ItemMatcher);
+        e.AddHighlighter(managedStorage.ItemMatcher);
     }
 }

@@ -6,12 +6,12 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Models.MenuComponents;
+using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-public class DropDownMenu : CustomMenuComponent
+public class DropDownMenu : CustomClickableComponent
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="DropDownMenu" /> class.

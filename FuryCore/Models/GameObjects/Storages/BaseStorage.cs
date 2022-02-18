@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.FuryCore.Models.GameObjects.Storages;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewMods.FuryCore.Interfaces.GameObjects;
@@ -8,57 +7,25 @@ using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc cref="StardewMods.FuryCore.Interfaces.GameObjects.IStorageContainer" />
-public abstract class StorageContainer : GameObject, IStorageContainer
+public abstract class BaseStorage : GameObject, IStorageContainer
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="StorageContainer" /> class.
+    ///     Initializes a new instance of the <see cref="BaseStorage" /> class.
     /// </summary>
     /// <param name="context">The source object.</param>
-    /// <param name="getCapacity">A get method for the actual capacity of the storage.</param>
-    /// <param name="getItems">A get method for the item in storage.</param>
-    /// <param name="getModData">A get method for the mod data of the object.</param>
-    protected StorageContainer(object context, Func<int> getCapacity, Func<IList<Item>> getItems, Func<ModDataDictionary> getModData)
+    protected BaseStorage(object context)
         : base(context)
     {
-        this.GetCapacity = getCapacity;
-        this.GetItems = getItems;
-        this.GetModData = getModData;
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="StorageContainer" /> class.
-    /// </summary>
-    /// <param name="context">The source object.</param>
-    /// <param name="getModData">A get method for the mod data of the object.</param>
-    protected StorageContainer(object context, Func<ModDataDictionary> getModData)
-        : base(context)
-    {
-        this.GetModData = getModData;
     }
 
     /// <inheritdoc />
-    public virtual int Capacity
-    {
-        get => this.GetCapacity.Invoke();
-    }
+    public abstract int Capacity { get; }
 
     /// <inheritdoc />
-    public virtual IList<Item> Items
-    {
-        get => this.GetItems.Invoke();
-    }
+    public abstract IList<Item> Items { get; }
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.GetModData.Invoke();
-    }
-
-    private Func<int> GetCapacity { get; }
-
-    private Func<IList<Item>> GetItems { get; }
-
-    private Func<ModDataDictionary> GetModData { get; }
+    public abstract override ModDataDictionary ModData { get; }
 
     /// <inheritdoc />
     public virtual Item AddItem(Item item)

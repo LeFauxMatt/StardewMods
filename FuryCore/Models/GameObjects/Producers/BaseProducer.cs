@@ -1,33 +1,25 @@
 ﻿namespace StardewMods.FuryCore.Models.GameObjects.Producers;
 
-using System;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 
 /// <inheritdoc cref="StardewMods.FuryCore.Interfaces.GameObjects.IProducer" />
-internal abstract class Producer : GameObject, IProducer
+internal abstract class BaseProducer : GameObject, IProducer
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Producer" /> class.
+    ///     Initializes a new instance of the <see cref="BaseProducer" /> class.
     /// </summary>
     /// <param name="context">The source object.</param>
-    /// <param name="getModData">A get method for the mod data of the object.</param>
-    protected Producer(object context, Func<ModDataDictionary> getModData)
+    protected BaseProducer(object context)
         : base(context)
     {
-        this.GetModData = getModData;
     }
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.GetModData.Invoke();
-    }
+    public abstract override ModDataDictionary ModData { get; }
 
     /// <inheritdoc />
     public abstract Item OutputItem { get; protected set; }
-
-    private Func<ModDataDictionary> GetModData { get; }
 
     /// <inheritdoc />
     public abstract bool TryGetOutput(out Item item);

@@ -34,7 +34,7 @@ public class FuryCore : Mod
             new MenuComponents(this.Helper, this.Services),
             new MenuItems(this.Config, this.Helper, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest),
-            new ToolbarIcons(this.Config, this.Helper, this.Services));
+            new HudComponents(this.Config, this.Helper, this.Services));
     }
 
     /// <inheritdoc />

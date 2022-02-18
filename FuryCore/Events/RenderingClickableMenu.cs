@@ -11,23 +11,23 @@ using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEventArgs>
+internal class RenderingClickableMenu : SortedEventHandler<RenderingActiveMenuEventArgs>
 {
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<IClickableMenu> _menu = new();
     private readonly PerScreen<int> _screenId = new();
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="RenderingItemGrabMenu" /> class.
+    ///     Initializes a new instance of the <see cref="RenderingClickableMenu" /> class.
     /// </summary>
     /// <param name="display">SMAPI events related to UI and drawing to the screen.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public RenderingItemGrabMenu(IDisplayEvents display, IModServices services)
+    public RenderingClickableMenu(IDisplayEvents display, IModServices services)
     {
-        services.Lazy<CustomEvents>(events => events.ItemGrabMenuChanged += this.OnItemGrabMenuChanged);
+        services.Lazy<CustomEvents>(events => events.ClickableMenuChanged += this.OnClickableMenuChanged);
         display.RenderingActiveMenu += this.OnRenderingActiveMenu;
     }
 
-    private ItemGrabMenu Menu
+    private IClickableMenu Menu
     {
         get => this._menu.Value;
         set => this._menu.Value = value;
@@ -39,11 +39,17 @@ internal class RenderingItemGrabMenu : SortedEventHandler<RenderingActiveMenuEve
         set => this._screenId.Value = value;
     }
 
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu;
+        this.Menu = e.Menu;
         this.ScreenId = e.ScreenId;
-        this.Menu?.setBackgroundTransparency(false);
+
+        switch (this.Menu)
+        {
+            case ItemGrabMenu itemGrabMenu:
+                itemGrabMenu.setBackgroundTransparency(false);
+                break;
+        }
     }
 
     [EventPriority(EventPriority.High + 1000)]

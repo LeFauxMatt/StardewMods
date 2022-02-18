@@ -1,5 +1,26 @@
 ﻿# FuryCore Change Log
 
+## 1.5.0 (Unreleased)
+
+### Additions
+
+* Added MenuComponentsLoading Event
+* Added MenuItemsChanged Event
+* Added StorageFridge
+* Added StorageJunimoHut
+* Added StorageObject
+* Added ComponentLayer Enum for IClickableComponent
+
+### Changes
+
+* Renamed ItemGrabMenuChanged to ClickableMenuChanged
+* Renamed RenderedItemGrabMenu to RenderedClickableMenu
+* Renamed RenderingItemGrabMenu to RenderedClickableMenu
+* Renamed ToolbarIconPressed to HudComponentPressed
+* Renamed ToolbarIcons to HudComponents
+* Renamed IMenuComponent to IClickableComponent
+* Renamed IToolbarIcon to IHudComponent
+
 ## 1.4.1 (February 16, 2022)
 
 ### Fixes

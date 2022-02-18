@@ -313,21 +313,20 @@ internal class CarryChest : Feature
         CarryChest.Instance.CheckForOverburdened(true);
     }
 
-    private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ICollection<Chest> exclude)
+    private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ICollection<object> exclude = default)
     {
-        exclude.Add(chest);
-        if (chest.SpecialChestType is Chest.SpecialChestTypes.None)
+        exclude ??= new List<object>();
+        var items = chest.GetItemsForPlayer(player.UniqueMultiplayerID);
+        if (!exclude.Contains(items))
         {
-            foreach (var item in chest.GetItemsForPlayer(player.UniqueMultiplayerID).OfType<Chest>())
+            exclude.Add(items);
+            foreach (var item in items.OfType<Chest>())
             {
-                if (!exclude.Contains(item))
-                {
-                    CarryChest.RecursiveIterate(player, item, action, exclude);
-                }
+                CarryChest.RecursiveIterate(player, item, action, exclude);
             }
-        }
 
-        action(chest);
+            action(chest);
+        }
     }
 
     private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
@@ -337,7 +336,7 @@ internal class CarryChest : Feature
         {
             foreach (var chest in farmer.Items.OfType<Chest>())
             {
-                CarryChest.RecursiveIterate(farmer, chest, action, new List<Chest>());
+                CarryChest.RecursiveIterate(farmer, chest, action, new List<object>());
             }
         }
     }

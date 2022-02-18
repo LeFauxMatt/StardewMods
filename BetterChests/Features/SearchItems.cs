@@ -33,7 +33,6 @@ internal class SearchItems : Feature
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
-    private readonly Lazy<IMenuItems> _menuItems;
     private readonly PerScreen<int?> _menuPadding = new();
     private readonly PerScreen<ClickableComponent> _searchArea = new();
     private readonly PerScreen<TextBox> _searchField = new();
@@ -73,14 +72,13 @@ internal class SearchItems : Feature
                             PatchType.Transpiler),
                     });
             });
-        this._menuItems = services.Lazy<IMenuItems>();
+        services.Lazy<IMenuItems>();
     }
 
     private static SearchItems Instance { get; set; }
 
     private object Context
     {
-        get => this._context.Value;
         set
         {
             if (!ReferenceEquals(this._context.Value, value))
@@ -137,11 +135,6 @@ internal class SearchItems : Feature
         }
     }
 
-    private IMenuItems MenuItems
-    {
-        get => this._menuItems.Value;
-    }
-
     private int MenuPadding
     {
         get
@@ -176,8 +169,9 @@ internal class SearchItems : Feature
     protected override void Activate()
     {
         this.HarmonyHelper.ApplyPatches(this.Id);
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.CustomEvents.RenderedItemGrabMenu += this.OnRenderedItemGrabMenu;
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
+        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
+        this.CustomEvents.RenderedClickableMenu += this.OnRenderedClickableMenu;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
@@ -186,8 +180,9 @@ internal class SearchItems : Feature
     protected override void Deactivate()
     {
         this.HarmonyHelper.UnapplyPatches(this.Id);
-        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.CustomEvents.RenderedItemGrabMenu -= this.OnRenderedItemGrabMenu;
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
+        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
+        this.CustomEvents.RenderedClickableMenu -= this.OnRenderedClickableMenu;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
@@ -391,29 +386,33 @@ internal class SearchItems : Feature
     }
 
     [SortedEventPriority(EventPriority.High)]
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.Menu = e.ItemGrabMenu switch
+        switch (e.Menu)
         {
-            ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
-            { context: not null } when this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => e.ItemGrabMenu,
-            _ => null,
-        };
+            case ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled:
+                this.Menu = itemSelectionMenu;
+                break;
+            case ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled:
+                this.Menu = itemGrabMenu;
+                this.Context = context;
+                break;
+            default:
+                this.Menu = null;
+                break;
+        }
 
-        this.Context = e.Context ?? this.Context;
         if (e.IsNew || this.Menu is null)
         {
             this._currentPadding.Value = 0;
-            this.CurrentPadding = this.MenuPadding;
         }
 
+        this.CurrentPadding = this.MenuPadding;
         if (this.Menu is null)
         {
             return;
         }
 
-        this.MenuItems.AddFilter(this.ItemMatcher);
-        this.ItemMatcher.StringValue = this.SearchText = this.SearchField.Text;
         this.SearchField.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
         this.SearchField.Selected = false;
@@ -422,7 +421,19 @@ internal class SearchItems : Feature
         this.SearchIcon.bounds = new(this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width - 38, this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
     }
 
-    private void OnRenderedItemGrabMenu(object sender, RenderedActiveMenuEventArgs e)
+    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    {
+        switch (e.Menu)
+        {
+            case ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled:
+            case { context: { } context } when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled:
+                e.AddFilter(this.ItemMatcher);
+                this.ItemMatcher.StringValue = this.SearchText = this.SearchField.Text;
+                break;
+        }
+    }
+
+    private void OnRenderedClickableMenu(object sender, RenderedActiveMenuEventArgs e)
     {
         if (this.Menu is not null)
         {

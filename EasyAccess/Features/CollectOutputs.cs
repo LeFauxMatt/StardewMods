@@ -12,16 +12,16 @@ using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 
 /// <inheritdoc />
 internal class CollectOutputs : Feature
 {
-    private readonly PerScreen<IMenuComponent> _collectButton = new();
-    private readonly Lazy<IToolbarIcons> _toolbarIcons;
+    private readonly PerScreen<IClickableComponent> _collectButton = new();
+    private readonly Lazy<IHudComponents> _toolbarIcons;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CollectOutputs" /> class.
@@ -32,7 +32,7 @@ internal class CollectOutputs : Feature
     public CollectOutputs(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
-        this._toolbarIcons = services.Lazy<IToolbarIcons>();
+        this._toolbarIcons = services.Lazy<IHudComponents>();
     }
 
     /// <summary>
@@ -72,9 +72,9 @@ internal class CollectOutputs : Feature
         }
     }
 
-    private IMenuComponent CollectButton
+    private IClickableComponent CollectButton
     {
-        get => this._collectButton.Value ??= new CustomMenuComponent(
+        get => this._collectButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, 32, 32),
                 this.Helper.Content.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons", ContentSource.GameContent),
@@ -87,7 +87,7 @@ internal class CollectOutputs : Feature
             ComponentArea.Right);
     }
 
-    private IToolbarIcons ToolbarIcons
+    private IHudComponents HudComponents
     {
         get => this._toolbarIcons.Value;
     }
@@ -95,16 +95,16 @@ internal class CollectOutputs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.ToolbarIcons.Icons.Add(this.CollectButton);
-        this.CustomEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.HudComponents.Icons.Add(this.CollectButton);
+        this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.ToolbarIcons.Icons.Remove(this.CollectButton);
-        this.CustomEvents.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        this.HudComponents.Icons.Remove(this.CollectButton);
+        this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
@@ -142,7 +142,7 @@ internal class CollectOutputs : Feature
         }
     }
 
-    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
+    private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
         if (ReferenceEquals(this.CollectButton, e.Component))
         {

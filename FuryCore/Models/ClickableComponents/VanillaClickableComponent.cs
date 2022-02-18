@@ -1,20 +1,19 @@
-﻿namespace StardewMods.FuryCore.Models.MenuComponents;
+﻿namespace StardewMods.FuryCore.Models.ClickableComponents;
 
-using System;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal class VanillaMenuComponent : IMenuComponent
+internal class VanillaClickableComponent : IClickableComponent
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="VanillaMenuComponent" /> class.
+    ///     Initializes a new instance of the <see cref="VanillaClickableComponent" /> class.
     /// </summary>
     /// <param name="menu">The ItemGrabMenu.</param>
     /// <param name="componentType">A component on the ItemGrabMenu.</param>
-    public VanillaMenuComponent(ItemGrabMenu menu, ComponentType componentType)
+    public VanillaClickableComponent(IClickableMenu menu, ComponentType componentType)
     {
         this.Menu = menu;
         this.ComponentType = componentType;
@@ -27,6 +26,7 @@ internal class VanillaMenuComponent : IMenuComponent
             ComponentType.JunimoNoteIcon => ComponentArea.Right,
             _ => ComponentArea.Custom,
         };
+        this.Layer = ComponentLayer.Above;
     }
 
     /// <inheritdoc />
@@ -35,19 +35,29 @@ internal class VanillaMenuComponent : IMenuComponent
     /// <inheritdoc />
     public ClickableTextureComponent Component
     {
-        get => this.ComponentType switch
+        get => this.Menu switch
         {
-            ComponentType.OrganizeButton => this.Menu?.organizeButton,
-            ComponentType.FillStacksButton => this.Menu?.fillStacksButton,
-            ComponentType.ColorPickerToggleButton => this.Menu?.colorPickerToggleButton,
-            ComponentType.SpecialButton => this.Menu?.specialButton,
-            ComponentType.JunimoNoteIcon => this.Menu?.junimoNoteIcon,
-            ComponentType.Custom or _ => throw new ArgumentOutOfRangeException($"Invalid ComponentType {this.ComponentType}."),
+            ItemGrabMenu itemGrabMenu => this.ComponentType switch
+            {
+                ComponentType.OrganizeButton => itemGrabMenu.organizeButton,
+                ComponentType.FillStacksButton => itemGrabMenu.fillStacksButton,
+                ComponentType.ColorPickerToggleButton => itemGrabMenu.colorPickerToggleButton,
+                ComponentType.SpecialButton => itemGrabMenu.specialButton,
+                ComponentType.JunimoNoteIcon => itemGrabMenu.junimoNoteIcon,
+                ComponentType.Custom or _ => null,
+            },
+            _ => null,
         };
     }
 
     /// <inheritdoc />
     public ComponentType ComponentType { get; }
+
+    /// <inheritdoc />
+    public string HoverText
+    {
+        get => this.Component.hoverText;
+    }
 
     /// <inheritdoc />
     public int Id
@@ -56,12 +66,29 @@ internal class VanillaMenuComponent : IMenuComponent
     }
 
     /// <inheritdoc />
+    public ComponentLayer Layer { get; }
+
+    /// <inheritdoc />
     public string Name
     {
         get => this.Component.name;
     }
 
-    private ItemGrabMenu Menu { get; }
+    /// <inheritdoc />
+    public int X
+    {
+        get => this.Component.bounds.X;
+        set => this.Component.bounds.X = value;
+    }
+
+    /// <inheritdoc />
+    public int Y
+    {
+        get => this.Component.bounds.Y;
+        set => this.Component.bounds.Y = value;
+    }
+
+    private IClickableMenu Menu { get; }
 
     /// <inheritdoc />
     public void Draw(SpriteBatch spriteBatch)

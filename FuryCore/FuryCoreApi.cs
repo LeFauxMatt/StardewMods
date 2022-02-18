@@ -3,24 +3,30 @@
 using System;
 using System.Collections.Generic;
 using Common.Integrations.FuryCore;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.Models.MenuComponents;
 using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <inheritdoc />
 public class FuryCoreApi : IFuryCoreApi
 {
+    private readonly Lazy<ICustomEvents> _customEvents;
+    private readonly Lazy<ICustomTags> _customTags;
+    private readonly Lazy<IGameObjects> _gameObjects;
     private readonly PerScreen<ItemMatcher> _itemFilter = new(() => new(true));
     private readonly PerScreen<ItemMatcher> _itemHighlighter = new(() => new(true));
+    private EventHandler<(string ComponentName, bool IsSuppressed)> _menuComponentPressed;
+    private EventHandler<(string ComponentName, bool IsSuppressed)> _toolbarIconPressed;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="FuryCoreApi" /> class.
@@ -30,30 +36,78 @@ public class FuryCoreApi : IFuryCoreApi
     {
         // Services
         this.Services = services;
-        this.CustomEvents = this.Services.FindService<ICustomEvents>();
-        this.CustomTags = this.Services.FindService<ICustomTags>();
-        this.MenuComponents = this.Services.FindService<IMenuComponents>();
-        this.MenuItems = this.Services.FindService<IMenuItems>();
+        this._customTags = services.Lazy<ICustomTags>();
+        this._customEvents = services.Lazy<ICustomEvents>();
+        this._gameObjects = services.Lazy<IGameObjects>();
+        services.Lazy<IMenuItems>();
 
         // Events
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
-        this.CustomEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.CustomEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
     }
 
     /// <inheritdoc />
-    public event EventHandler<string> MenuComponentPressed;
+    public event EventHandler<(string ComponentName, bool IsSuppressed)> MenuComponentPressed
+    {
+        add
+        {
+            this._menuComponentPressed += value;
+            if (this._menuComponentPressed.GetInvocationList().Length == 1)
+            {
+                this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+            }
+        }
+
+        remove
+        {
+            this._menuComponentPressed -= value;
+            if (this._menuComponentPressed.GetInvocationList().Length == 0)
+            {
+                this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+            }
+        }
+    }
 
     /// <inheritdoc />
-    public event EventHandler<string> ToolbarIconPressed;
+    public event EventHandler<(string ComponentName, bool IsSuppressed)> ToolbarIconPressed
+    {
+        add
+        {
+            this._toolbarIconPressed += value;
+            if (this._toolbarIconPressed.GetInvocationList().Length == 1)
+            {
+                this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
+            }
+        }
 
-    private IList<IMenuComponent> Components { get; } = new List<IMenuComponent>();
+        remove
+        {
+            this._toolbarIconPressed -= value;
+            if (this._toolbarIconPressed.GetInvocationList().Length == 0)
+            {
+                this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
+            }
+        }
+    }
 
-    private ICustomEvents CustomEvents { get; }
+    private IList<IClickableComponent> Components { get; } = new List<IClickableComponent>();
 
-    private ICustomTags CustomTags { get; }
+    private ICustomEvents CustomEvents
+    {
+        get => this._customEvents.Value;
+    }
 
-    private IList<IMenuComponent> Icons { get; } = new List<IMenuComponent>();
+    private ICustomTags CustomTags
+    {
+        get => this._customTags.Value;
+    }
+
+    private IGameObjects GameObjects
+    {
+        get => this._gameObjects.Value;
+    }
+
+    private IList<IClickableComponent> Icons { get; } = new List<IClickableComponent>();
 
     private ItemMatcher ItemFilter
     {
@@ -64,10 +118,6 @@ public class FuryCoreApi : IFuryCoreApi
     {
         get => this._itemHighlighter.Value;
     }
-
-    private IMenuComponents MenuComponents { get; }
-
-    private IMenuItems MenuItems { get; }
 
     private IModServices Services { get; }
 
@@ -87,6 +137,18 @@ public class FuryCoreApi : IFuryCoreApi
     }
 
     /// <inheritdoc />
+    public void AddInventoryItemsGetter(Func<Farmer, IEnumerable<(int Index, object Context)>> getInventoryItems)
+    {
+        this.GameObjects.AddInventoryItemsGetter(getInventoryItems);
+    }
+
+    /// <inheritdoc />
+    public void AddLocationObjectsGetter(Func<GameLocation, IEnumerable<(Vector2 Position, object Context)>> getLocationObjects)
+    {
+        this.GameObjects.AddLocationObjectsGetter(getLocationObjects);
+    }
+
+    /// <inheritdoc />
     public void AddMenuComponent(ClickableTextureComponent clickableTextureComponent, string area = "")
     {
         if (string.IsNullOrWhiteSpace(area) || !Enum.TryParse(area, out ComponentArea componentArea))
@@ -94,7 +156,7 @@ public class FuryCoreApi : IFuryCoreApi
             componentArea = ComponentArea.Custom;
         }
 
-        IMenuComponent component = new CustomMenuComponent(clickableTextureComponent, componentArea);
+        IClickableComponent component = new CustomClickableComponent(clickableTextureComponent, componentArea);
         this.Components.Add(component);
     }
 
@@ -108,7 +170,7 @@ public class FuryCoreApi : IFuryCoreApi
 
         clickableTextureComponent.baseScale = 2f;
         clickableTextureComponent.scale = 2f;
-        IMenuComponent component = new CustomMenuComponent(clickableTextureComponent, componentArea);
+        IClickableComponent component = new CustomClickableComponent(clickableTextureComponent, componentArea);
         this.Icons.Add(component);
     }
 
@@ -124,29 +186,53 @@ public class FuryCoreApi : IFuryCoreApi
         this.ItemHighlighter.StringValue = stringValue;
     }
 
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
-    {
-        if (e.ItemGrabMenu is not null && e.Context is Chest)
-        {
-            this.MenuComponents.Components.AddRange(this.Components);
-            this.MenuItems.AddFilter(this.ItemFilter);
-            this.MenuItems.AddHighlighter(this.ItemHighlighter);
-        }
-    }
-
-    private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
-    {
-        if (this.Components.Contains(e.Component))
-        {
-            this.MenuComponentPressed?.Invoke(this, e.Component.Name);
-        }
-    }
-
-    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
+    private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
         if (this.Icons.Contains(e.Component))
         {
-            this.ToolbarIconPressed?.Invoke(this, e.Component.Name);
+            foreach (var handler in this._toolbarIconPressed.GetInvocationList())
+            {
+                try
+                {
+                    handler.DynamicInvoke(this, e.Component.Name);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
         }
+    }
+
+    private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
+    {
+        if (this.Components.Contains(e.Component))
+        {
+            foreach (var handler in this._menuComponentPressed.GetInvocationList())
+            {
+                try
+                {
+                    handler.DynamicInvoke(this, e.Component.Name);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+        }
+    }
+
+    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    {
+        foreach (var component in this.Components)
+        {
+            e.AddComponent(component);
+        }
+    }
+
+    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    {
+        e.AddFilter(this.ItemFilter);
+        e.AddHighlighter(this.ItemHighlighter);
     }
 }

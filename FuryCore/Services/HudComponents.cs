@@ -12,31 +12,31 @@ using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc cref="IToolbarIcons" />
+/// <inheritdoc cref="IHudComponents" />
 [FuryCoreService(true)]
-internal class ToolbarIcons : IToolbarIcons, IModService
+internal class HudComponents : IHudComponents, IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<string> _hoverText = new();
-    private readonly PerScreen<List<IMenuComponent>> _icons = new(() => new());
-    private readonly PerScreen<List<CustomMenuComponent>> _shortcuts = new();
+    private readonly PerScreen<List<IClickableComponent>> _icons = new(() => new());
+    private readonly PerScreen<List<CustomClickableComponent>> _shortcuts = new();
     private MethodInfo _overrideButtonReflected;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ToolbarIcons" /> class.
+    ///     Initializes a new instance of the <see cref="HudComponents" /> class.
     /// </summary>
     /// <param name="config">The data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ToolbarIcons(ConfigData config, IModHelper helper, IModServices services)
+    public HudComponents(ConfigData config, IModHelper helper, IModServices services)
     {
         this._assetHandler = services.Lazy<AssetHandler>();
         this.Config = config;
@@ -45,12 +45,16 @@ internal class ToolbarIcons : IToolbarIcons, IModService
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
         this.Helper.Events.Display.RenderingHud += this.OnRenderingHud;
         this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+
         services.Lazy<ICustomEvents>(
-            customEvents => { customEvents.ToolbarIconPressed += this.OnToolbarIconPressed; });
+            customEvents =>
+            {
+                customEvents.HudComponentPressed += this.OnHudComponentPressed;
+            });
     }
 
     /// <inheritdoc />
-    public List<IMenuComponent> Icons
+    public List<IClickableComponent> Icons
     {
         get => this._icons.Value;
     }
@@ -77,11 +81,11 @@ internal class ToolbarIcons : IToolbarIcons, IModService
         get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton");
     }
 
-    private IEnumerable<CustomMenuComponent> Shortcuts
+    private IEnumerable<CustomClickableComponent> Shortcuts
     {
         get => this._shortcuts.Value ??= (
                 from icon in this.Assets.ToolbarData
-                select new CustomMenuComponent(
+                select new CustomClickableComponent(
                     new(
                         new(0, 0, 32, 32),
                         this.Helper.Content.Load<Texture2D>(icon.Value[1], ContentSource.GameContent),
@@ -111,6 +115,47 @@ internal class ToolbarIcons : IToolbarIcons, IModService
             {
                 this.HoverText = icon.HoverText;
             }
+        }
+    }
+
+    private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
+    {
+        if (!this.Config.ToolbarIcons)
+        {
+            return;
+        }
+
+        if (this.Shortcuts.Contains(e.Component))
+        {
+            if (e.Component.Name.StartsWith("command:"))
+            {
+                var command = e.Component.Name[8..].Trim().Split(' ');
+                this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
+            }
+            else if (e.Component.Name.StartsWith("keybind:"))
+            {
+                if (!this.Keybinds.TryGetValue(e.Component.Name, out var keybind))
+                {
+                    IList<SButton> buttons = new List<SButton>();
+                    foreach (var key in e.Component.Name[8..].Trim().Split('+'))
+                    {
+                        if (Enum.TryParse(key, out SButton button))
+                        {
+                            buttons.Add(button);
+                        }
+                    }
+
+                    keybind = buttons.ToArray();
+                    this.Keybinds.Add(e.Component.Name, keybind);
+                }
+
+                foreach (var button in keybind)
+                {
+                    this.OverrideButton(button, true);
+                }
+            }
+
+            e.SuppressInput();
         }
     }
 
@@ -168,47 +213,6 @@ internal class ToolbarIcons : IToolbarIcons, IModService
         {
             this.Icons.AddRange(this.Shortcuts);
             this.ReinitializeIcons();
-        }
-    }
-
-    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
-    {
-        if (!this.Config.ToolbarIcons)
-        {
-            return;
-        }
-
-        if (this.Shortcuts.Contains(e.Component))
-        {
-            if (e.Component.Name.StartsWith("command:"))
-            {
-                var command = e.Component.Name[8..].Trim().Split(' ');
-                this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
-            }
-            else if (e.Component.Name.StartsWith("keybind:"))
-            {
-                if (!this.Keybinds.TryGetValue(e.Component.Name, out var keybind))
-                {
-                    IList<SButton> buttons = new List<SButton>();
-                    foreach (var key in e.Component.Name[8..].Trim().Split('+'))
-                    {
-                        if (Enum.TryParse(key, out SButton button))
-                        {
-                            buttons.Add(button);
-                        }
-                    }
-
-                    keybind = buttons.ToArray();
-                    this.Keybinds.Add(e.Component.Name, keybind);
-                }
-
-                foreach (var button in keybind)
-                {
-                    this.OverrideButton(button, true);
-                }
-            }
-
-            e.SuppressInput();
         }
     }
 

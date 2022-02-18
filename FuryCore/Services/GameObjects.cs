@@ -128,9 +128,9 @@ internal class GameObjects : IGameObjects, IModService
                 {
                     // Storages from BuildableGameLocation.buildings
                     case BuildableGameLocation buildableGameLocation:
-                        foreach (var building in buildableGameLocation.buildings)
+                        foreach (var building in buildableGameLocation.buildings.Where(building => !exclude.Contains(building)))
                         {
-                            if (exclude.Contains(building) || !this.TryGetGameObject(building, out var buildingObject))
+                            if (!this.TryGetGameObject(building, out var buildingObject))
                             {
                                 continue;
                             }
@@ -142,24 +142,24 @@ internal class GameObjects : IGameObjects, IModService
                         break;
 
                     // Storage from FarmHouse.fridge.Value
-                    case FarmHouse farmHouse when farmHouse.fridge.Value is not null && !farmHouse.fridgePosition.Equals(Point.Zero):
-                        if (exclude.Contains(farmHouse) || !this.TryGetGameObject(farmHouse, out var farmHouseObject))
+                    case FarmHouse farmHouse when farmHouse.fridge.Value is not null && !exclude.Contains(farmHouse.fridge.Value) && !farmHouse.fridgePosition.Equals(Point.Zero):
+                        if (!this.TryGetGameObject(farmHouse, out var farmHouseObject))
                         {
                             break;
                         }
 
-                        exclude.Add(farmHouse);
+                        exclude.Add(farmHouse.fridge.Value);
                         yield return new(new(location, farmHouse.fridgePosition.ToVector2()), farmHouseObject);
                         break;
 
                     // Storage from IslandFarmHouse.fridge.Value
-                    case IslandFarmHouse islandFarmHouse when islandFarmHouse.fridge.Value is not null && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                        if (exclude.Contains(islandFarmHouse) || !this.TryGetGameObject(islandFarmHouse, out var islandFarmHouseObject))
+                    case IslandFarmHouse islandFarmHouse when islandFarmHouse.fridge.Value is not null && !exclude.Contains(islandFarmHouse.fridge.Value) && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                        if (!this.TryGetGameObject(islandFarmHouse, out var islandFarmHouseObject))
                         {
                             break;
                         }
 
-                        exclude.Add(islandFarmHouse);
+                        exclude.Add(islandFarmHouse.fridge.Value);
                         yield return new(new(location, islandFarmHouse.fridgePosition.ToVector2()), islandFarmHouseObject);
                         break;
                 }
@@ -233,43 +233,51 @@ internal class GameObjects : IGameObjects, IModService
 
         switch (context)
         {
-            case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } chest:
-                gameObject = new StorageShippingBin(chest);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-            case Chest chest:
-                gameObject = new StorageChest(chest);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest heldChest }:
-                this.ContextMap[heldChest] = context;
-                gameObject = new StorageChest(heldChest, context);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-            case FarmHouse { fridge.Value: { } fridge } farmHouse:
-                this.ContextMap[fridge] = context;
-                gameObject = new StorageChest(fridge, context, () => farmHouse.modData);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-            case IslandFarmHouse { fridge.Value: { } islandFridge } islandFarmHouse:
-                this.ContextMap[islandFridge] = context;
-                gameObject = new StorageChest(islandFridge, context, () => islandFarmHouse.modData);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
             case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
                 this.ContextMap[junimoHutChest] = context;
-                gameObject = new StorageChest(junimoHutChest, context, () => junimoHut.modData);
+                gameObject = new StorageJunimoHut(junimoHut);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
+
             case ShippingBin shippingBin:
                 this.ContextMap[Game1.getFarm()] = context;
                 gameObject = new StorageShippingBin(shippingBin);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
+
+            case FarmHouse { fridge.Value: { } fridge } farmHouse:
+                this.ContextMap[fridge] = context;
+                gameObject = new StorageFridge(farmHouse);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case IslandFarmHouse { fridge.Value: { } islandFridge } islandFarmHouse:
+                this.ContextMap[islandFridge] = context;
+                gameObject = new StorageFridge(islandFarmHouse);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } chest:
+                gameObject = new StorageShippingBin(chest);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case Chest chest:
+                gameObject = new StorageChest(chest);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest heldChest } obj:
+                this.ContextMap[heldChest] = context;
+                gameObject = new StorageObject(obj);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
             case SObject { bigCraftable.Value: true } obj when obj is CrabPot || Enum.IsDefined(typeof(VanillaProducerObjects), obj.ParentSheetIndex):
                 gameObject = new GenericProducer(obj);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
+
             default:
                 this.CachedObjects.Add(context, null);
                 return false;

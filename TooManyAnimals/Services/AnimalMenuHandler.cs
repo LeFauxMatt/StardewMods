@@ -7,8 +7,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
-using StardewMods.FuryCore.Models.MenuComponents;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.TooManyAnimals.Interfaces;
 using StardewValley;
 using StardewValley.Menus;
@@ -18,8 +18,8 @@ using SObject = StardewValley.Object;
 internal class AnimalMenuHandler : IModService
 {
     private readonly PerScreen<int> _currentPage = new();
-    private readonly PerScreen<IMenuComponent> _nextPage = new();
-    private readonly PerScreen<IMenuComponent> _previousPage = new();
+    private readonly PerScreen<IClickableComponent> _nextPage = new();
+    private readonly PerScreen<IClickableComponent> _previousPage = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="AnimalMenuHandler" /> class.
@@ -73,14 +73,14 @@ internal class AnimalMenuHandler : IModService
 
     private IModHelper Helper { get; }
 
-    private IMenuComponent NextPage
+    private IClickableComponent NextPage
     {
-        get => this._nextPage.Value ??= new CustomMenuComponent(new(new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new(365, 495, 12, 11), Game1.pixelZoom));
+        get => this._nextPage.Value ??= new CustomClickableComponent(new(new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new(365, 495, 12, 11), Game1.pixelZoom));
     }
 
-    private IMenuComponent PreviousPage
+    private IClickableComponent PreviousPage
     {
-        get => this._previousPage.Value ??= new CustomMenuComponent(new(new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new(352, 495, 12, 11), Game1.pixelZoom));
+        get => this._previousPage.Value ??= new CustomClickableComponent(new(new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new(352, 495, 12, 11), Game1.pixelZoom));
     }
 
     private List<SObject> Stock { get; set; }

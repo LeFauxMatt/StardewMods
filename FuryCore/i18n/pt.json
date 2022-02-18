@@ -1,0 +1,18 @@
+{
+  "config.scroll-menu-overflow.name": "Rolagem de Menu",
+  "config.scroll-menu-overflow.tooltip": "Permitir rolagem quando os itens ultrapassarem a capacidade do menu.",
+  "config.toolbar-icons.name": "Ícones da Barra de Ferramentas",
+  "config.toolbar-icons.tooltip": "Permitir que ícones apareçam perto da barra de ferramentas.",
+  "section.custom-tags.name": "Etiquetas de Contexto Personalizadas",
+  "section.custom-tags.tooltip": "Permite que essas etiquetas de contexto personalizadas sejam adicionadas aos itens do jogo.",
+  "section.general.name": "Geral",
+  "section.general.description": "Opções gerais de personalização para recursos.",
+  "tag.category-artifact.name": "Categoria Artefato",
+  "tag.category-artifact.tooltip": "Etiqueta de contexto customizada para itens que são Artefatos.",
+  "tag.category-furniture.name": "Categoria Mobília",
+  "tag.category-furniture.tooltip": "Etiqueta de contexto customizada para itens que são Mobílias.",
+  "tag.donate-bundle.name": "Doar para Conjunto",
+  "tag.donate-bundle.tooltip": "Etiqueta de contexto customizada para itens que podem ser doados para o Centro Comunitário.",
+  "tag.donate-museum.name": "Doar para o Museu",
+  "tag.donate-museum.tooltip": "Etiqueta de contexto customizada para itens que podem ser doados para o Museu."
+}

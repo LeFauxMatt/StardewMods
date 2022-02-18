@@ -310,7 +310,7 @@ internal class StorageModel : IStorageData
 
             return this.DefaultStorage.StashToChest == FeatureOptionRange.Default
                 ? FeatureOptionRange.Location
-                : this.DefaultStorage.CraftFromChest;
+                : this.DefaultStorage.StashToChest;
         }
         set => this.Data.StashToChest = value;
     }

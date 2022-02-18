@@ -14,10 +14,10 @@ using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
+using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class ChestMenuTabs : Feature
@@ -25,7 +25,7 @@ internal class ChestMenuTabs : Feature
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<object> _context = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
-    private readonly Lazy<IMenuComponents> _menuComponents;
+    private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly Lazy<IMenuItems> _menuItems;
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly PerScreen<IList<TabComponent>> _tabs = new();
@@ -40,7 +40,6 @@ internal class ChestMenuTabs : Feature
         : base(config, helper, services)
     {
         this._assetHandler = services.Lazy<AssetHandler>();
-        this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
@@ -66,9 +65,10 @@ internal class ChestMenuTabs : Feature
         get => this._itemMatcher.Value;
     }
 
-    private IMenuComponents MenuComponents
+    private ItemGrabMenu Menu
     {
-        get => this._menuComponents.Value;
+        get => this._menu.Value;
+        set => this._menu.Value = value;
     }
 
     private IMenuItems MenuItems
@@ -97,8 +97,9 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
         this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
@@ -106,15 +107,16 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
         this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (this.MenuComponents.Menu is null)
+        if (this.Menu is null)
         {
             return;
         }
@@ -133,44 +135,7 @@ internal class ChestMenuTabs : Feature
         }
     }
 
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
-    {
-        IStorageData storageData = e.ItemGrabMenu switch
-        {
-            ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => this.Config.DefaultChest,
-            not null when e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => managedStorage,
-            _ => null,
-        };
-
-        if (storageData is null)
-        {
-            return;
-        }
-
-        // Add filter to Menu Items
-        if (this.MenuItems.Menu is not null)
-        {
-            this.MenuItems.AddFilter(this.ItemMatcher);
-        }
-
-        if (this.MenuComponents.Menu is not null)
-        {
-            var tabs = (
-                from tabSet in storageData.ChestMenuTabSet.Select((name, index) => (name, index))
-                join tabData in this.Tabs on tabSet.name equals tabData.Name
-                orderby tabSet.index
-                select tabData).ToList();
-            this.MenuComponents.Components.AddRange(tabs.Any() ? tabs : this.Tabs);
-
-            if (!ReferenceEquals(e.Context, this.Context))
-            {
-                this.Context = e.Context;
-                this.SetTab(-1);
-            }
-        }
-    }
-
-    private void OnMenuComponentPressed(object sender, MenuComponentPressedEventArgs e)
+    private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
         if (e.Component is not TabComponent tab)
         {
@@ -186,9 +151,63 @@ internal class ChestMenuTabs : Feature
         this.SetTab(this.Index == index ? -1 : index);
     }
 
+    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    {
+        IStorageData storageData;
+        var resetTab = false;
+        switch (e.Menu)
+        {
+            case ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled:
+                this.Menu = itemSelectionMenu;
+                storageData = this.Config.DefaultChest;
+                break;
+
+            case ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
+                this.Menu = itemGrabMenu;
+                storageData = managedStorage;
+                if (!ReferenceEquals(context, this.Context))
+                {
+                    this.Context = context;
+                    resetTab = true;
+                }
+
+                break;
+
+            default:
+                this.Menu = null;
+                return;
+        }
+
+        var tabs = (
+            from tabSet in storageData.ChestMenuTabSet.Select((name, index) => (name, index))
+            join tabData in this.Tabs on tabSet.name equals tabData.Name
+            orderby tabSet.index
+            select tabData).ToList();
+        foreach (var tab in tabs.Any() ? tabs : this.Tabs)
+        {
+            e.AddComponent(tab);
+        }
+
+        if (resetTab)
+        {
+            this.SetTab(-1);
+        }
+    }
+
+    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    {
+        switch (e.Menu)
+        {
+            case ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled:
+            case { context: { } context } when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
+                e.AddFilter(this.ItemMatcher);
+                break;
+        }
+    }
+
     private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
     {
-        if (this.MenuComponents.Menu is null)
+        if (this.MenuItems.Menu is null)
         {
             return;
         }
@@ -224,11 +243,6 @@ internal class ChestMenuTabs : Feature
         {
             Log.Trace($"Switching to Tab {this.Tabs[this.Index].Name}.");
             this.Tabs[this.Index].Selected = true;
-            if (this.MenuComponents.Menu.currentlySnappedComponent is not null && Game1.options.SnappyMenus)
-            {
-                this.MenuComponents.Menu.setCurrentlySnappedComponentTo(this.Tabs[this.Index].Id);
-                this.MenuComponents.Menu.snapCursorToCurrentSnappedComponent();
-            }
         }
 
         this.ItemMatcher.Clear();

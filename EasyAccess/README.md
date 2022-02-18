@@ -212,7 +212,7 @@ See [here](i18n/default.json) for the base translation file.
 | [Italian](i18n/it.json)    | ❔ Incomplete      | zomboide |
 | Japanese                   | ❌️ Not Translated |          |
 | Korean                     | ❌️ Not Translated |          |
-| [Portuguese](i18n/pt.json) | ❔ Incomplete      | Aulberon |
+| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon |
 | Russian                    | ❌️ Not Translated |          |
 | Spanish                    | ❌️ Not Translated |          |
 | Turkish                    | ❌️ Not Translated |          |

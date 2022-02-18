@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -17,9 +17,9 @@ public interface IMenuItems
     public IList<Item> ActualInventory { get; }
 
     /// <summary>
-    ///     Gets the source chest that actual items are associated with.
+    ///     Gets the source storage caontiner that actual items are associated with.
     /// </summary>
-    public object Context { get; }
+    public IStorageContainer Context { get; }
 
     /// <summary>
     ///     Gets the currently displayed items of the Menu.
@@ -40,18 +40,6 @@ public interface IMenuItems
     ///     Gets the total number of rows in the menu.
     /// </summary>
     public int Rows { get; }
-
-    /// <summary>
-    ///     Add an item matcher which will filter what items are displayed.
-    /// </summary>
-    /// <param name="itemMatcher">Items where <see cref="ItemMatcher.Matches" /> returns true will be displayed.</param>
-    public void AddFilter(ItemMatcher itemMatcher);
-
-    /// <summary>
-    ///     Adds an item matcher which will determine what items are highlighted.
-    /// </summary>
-    /// <param name="itemMatcher">Items where <see cref="ItemMatcher.Matches" /> returns true will be highlighted.</param>
-    public void AddHighlighter(ItemMatcher itemMatcher);
 
     /// <summary>
     ///     Adds a sort method which displayed items will be sorted by.

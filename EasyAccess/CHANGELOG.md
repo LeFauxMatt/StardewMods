@@ -1,5 +1,13 @@
 # Easy Access Change Log
 
+## 1.0.2 (Unreleased)
+
+* Updated to FuryCore 1.4.2
+
+### Changed
+
+* Allow producer name override from mod data.
+
 ## 1.0.1 (February 16, 2022)
 
 * Updated to FuryCore 1.4.1
@@ -15,7 +23,7 @@
 
 * Fixed some mishandled producers.
 
-### Changes
+### Changed
 
 * Purge inaccessible cached objects.
 

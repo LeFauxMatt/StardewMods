@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using Common.Helpers;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Attributes;
@@ -73,7 +75,23 @@ internal abstract class SortedEventHandler<TEventArgs>
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed in {handler.Method.Name} of {handler.Method.DeclaringType?.Name ?? "Unknown"}: {ex.Message}");
+                var sb = new StringBuilder();
+                sb.Append($"This mod failed in {handler.Method.Name}");
+                if (handler.Method.DeclaringType?.Name is not null)
+                {
+                    sb.Append($" of {handler.Method.DeclaringType.Name}. Technical details:\n");
+                }
+
+                sb.Append(ex.Message);
+                var st = new StackTrace(ex, true);
+                var frame = st.GetFrame(0);
+                if (frame?.GetFileName() is { } fileName)
+                {
+                    var line = frame.GetFileLineNumber().ToString();
+                    sb.Append($" at {fileName}:line {line}");
+                }
+
+                Log.Error(sb.ToString());
             }
 
             if (depth != this.InvocationDepth)

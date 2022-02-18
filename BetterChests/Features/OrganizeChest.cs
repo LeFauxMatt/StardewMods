@@ -60,14 +60,14 @@ internal class OrganizeChest : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.Harmony.ApplyPatches(this.Id);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.Harmony.UnapplyPatches(this.Id);
     }
 
@@ -79,9 +79,9 @@ internal class OrganizeChest : Feature
         OrganizeChest.Instance.OrganizeItems();
     }
 
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.CurrentStorage = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
+        this.CurrentStorage = e.Menu is ItemGrabMenu { context: { } context } && this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
             ? managedStorage
             : null;
     }

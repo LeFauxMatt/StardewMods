@@ -1,22 +1,19 @@
 ﻿namespace StardewMods.FuryCore.Models.GameObjects.Storages;
 
-using System;
 using System.Collections.Generic;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class StorageChest : StorageContainer
+internal class StorageChest : BaseStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageChest" /> class.
     /// </summary>
     /// <param name="chest">The source chest.</param>
-    /// <param name="context">The source object.</param>
-    /// <param name="getModData">A get method for the mod data of the object.</param>
-    public StorageChest(Chest chest, object context = null, Func<ModDataDictionary> getModData = null)
-        : base(context ?? chest, getModData ?? (() => chest.modData))
+    public StorageChest(Chest chest)
+        : base(chest)
     {
         this.Chest = chest;
     }
@@ -27,13 +24,22 @@ internal class StorageChest : StorageContainer
         get => this.Chest.GetActualCapacity();
     }
 
+    /// <summary>
+    ///     Gets the source chest object.
+    /// </summary>
+    public Chest Chest { get; }
+
     /// <inheritdoc />
     public override IList<Item> Items
     {
         get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
     }
 
-    private Chest Chest { get; }
+    /// <inheritdoc />
+    public override ModDataDictionary ModData
+    {
+        get => this.Chest.modData;
+    }
 
     /// <inheritdoc />
     public override void ShowMenu()

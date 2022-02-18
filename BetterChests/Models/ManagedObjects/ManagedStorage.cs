@@ -15,7 +15,7 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc cref="IManagedStorage" />
-internal class ManagedStorage : StorageContainer, IManagedStorage
+internal class ManagedStorage : BaseStorage, IManagedStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ManagedStorage" /> class.
@@ -24,7 +24,7 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
     /// <param name="data">The <see cref="IStorageData" /> for this type of storage.</param>
     /// <param name="qualifiedItemId">A unique Id associated with this storage type.</param>
     public ManagedStorage(IStorageContainer container, IStorageData data, string qualifiedItemId)
-        : base(container.Context, () => container.ModData)
+        : base(container.Context)
     {
         this.Container = container;
         this.Data = data;
@@ -175,6 +175,12 @@ internal class ManagedStorage : StorageContainer, IManagedStorage
     public override IList<Item> Items
     {
         get => this.Container.Items;
+    }
+
+    /// <inheritdoc />
+    public override ModDataDictionary ModData
+    {
+        get => this.Container.ModData;
     }
 
     /// <inheritdoc />

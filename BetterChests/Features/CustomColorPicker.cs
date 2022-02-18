@@ -106,14 +106,14 @@ internal class CustomColorPicker : Feature
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.CustomEvents.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.CustomEvents.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -216,14 +216,14 @@ internal class CustomColorPicker : Feature
         __instance.discreteColorPickerCC = null;
     }
 
-    private void OnItemGrabMenuChanged(object sender, ItemGrabMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.Context = e.Context is not null && this.ManagedObjects.FindManagedStorage(e.Context, out var managedChest) && managedChest.CustomColorPicker == FeatureOption.Enabled
-            ? e.Context
-            : null;
-        if (this.Context is not null)
+        if (e.Menu is not ItemGrabMenu { context: { } context } itemGrabMenu || !this.ManagedObjects.FindManagedStorage(context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
         {
-            e.ItemGrabMenu.discreteColorPickerCC = null;
+            return;
         }
+
+        this.Context = context;
+        itemGrabMenu.discreteColorPickerCC = null;
     }
 }

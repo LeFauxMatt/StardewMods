@@ -10,25 +10,25 @@ using StardewMods.FuryCore.Services;
 using StardewValley;
 
 /// <inheritdoc />
-internal class ToolbarIconPressed : SortedEventHandler<ToolbarIconPressedEventArgs>
+internal class HudComponentPressed : SortedEventHandler<ClickableComponentPressedEventArgs>
 {
-    private readonly Lazy<ToolbarIcons> _toolbarIcons;
+    private readonly Lazy<HudComponents> _toolbarIcons;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ToolbarIconPressed" /> class.
+    ///     Initializes a new instance of the <see cref="HudComponentPressed" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ToolbarIconPressed(IModHelper helper, IModServices services)
+    public HudComponentPressed(IModHelper helper, IModServices services)
     {
         this.Helper = helper;
-        this._toolbarIcons = services.Lazy<ToolbarIcons>();
+        this._toolbarIcons = services.Lazy<HudComponents>();
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     private IModHelper Helper { get; }
 
-    private ToolbarIcons ToolbarIcons
+    private HudComponents HudComponents
     {
         get => this._toolbarIcons.Value;
     }
@@ -41,13 +41,13 @@ internal class ToolbarIconPressed : SortedEventHandler<ToolbarIconPressedEventAr
             return;
         }
 
-        if (e.Button != SButton.MouseLeft && !e.Button.IsActionButton() || !this.ToolbarIcons.Icons.Any())
+        if (e.Button != SButton.MouseLeft && !e.Button.IsActionButton() || !this.HudComponents.Icons.Any())
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var icon = this.ToolbarIcons.Icons.FirstOrDefault(icon => icon.Component?.containsPoint(x, y) == true);
+        var icon = this.HudComponents.Icons.FirstOrDefault(icon => icon.Component?.containsPoint(x, y) == true);
         if (icon is not null)
         {
             Game1.playSound("drumkit6");

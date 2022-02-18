@@ -4,16 +4,22 @@ using StardewValley;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc />
-internal class GenericProducer : Producer
+internal class GenericProducer : BaseProducer
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="GenericProducer" /> class.
     /// </summary>
     /// <param name="obj">The source object.</param>
     public GenericProducer(SObject obj)
-        : base(obj, () => obj.modData)
+        : base(obj)
     {
         this.SourceObject = obj;
+    }
+
+    /// <inheritdoc />
+    public override ModDataDictionary ModData
+    {
+        get => this.SourceObject.modData;
     }
 
     /// <inheritdoc />

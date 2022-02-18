@@ -16,10 +16,10 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.MenuComponents;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.Models.MenuComponents;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -28,10 +28,10 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class CraftFromChest : Feature
 {
-    private readonly PerScreen<IMenuComponent> _craftButton = new();
+    private readonly PerScreen<IClickableComponent> _craftButton = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
-    private readonly Lazy<IToolbarIcons> _toolbarIcons;
+    private readonly Lazy<IHudComponents> _toolbarIcons;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CraftFromChest" /> class.
@@ -61,7 +61,7 @@ internal class CraftFromChest : Feature
                             PatchType.Postfix),
                     });
             });
-        this._toolbarIcons = services.Lazy<IToolbarIcons>();
+        this._toolbarIcons = services.Lazy<IHudComponents>();
     }
 
     /// <summary>
@@ -112,9 +112,9 @@ internal class CraftFromChest : Feature
         }
     }
 
-    private IMenuComponent CraftButton
+    private IClickableComponent CraftButton
     {
-        get => this._craftButton.Value ??= new CustomMenuComponent(
+        get => this._craftButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, 32, 32),
                 this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
@@ -132,7 +132,7 @@ internal class CraftFromChest : Feature
         get => this._harmony.Value;
     }
 
-    private IToolbarIcons ToolbarIcons
+    private IHudComponents HudComponents
     {
         get => this._toolbarIcons.Value;
     }
@@ -140,9 +140,9 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.ToolbarIcons.Icons.Add(this.CraftButton);
+        this.HudComponents.Icons.Add(this.CraftButton);
         this.Harmony.ApplyPatches(this.Id);
-        this.CustomEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -150,9 +150,9 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.ToolbarIcons.Icons.Remove(this.CraftButton);
+        this.HudComponents.Icons.Remove(this.CraftButton);
         this.Harmony.UnapplyPatches(this.Id);
-        this.CustomEvents.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
@@ -207,7 +207,7 @@ internal class CraftFromChest : Feature
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
     }
 
-    private void OnToolbarIconPressed(object sender, ToolbarIconPressedEventArgs e)
+    private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
         if (ReferenceEquals(this.CraftButton, e.Component))
         {
