@@ -46,14 +46,12 @@ public class EasyAccess : Mod
 
         this.Config = new(config ?? new ConfigData(), this.Helper, this.Services);
 
-        // Services
+        // Core Services
         this.Services.Add(
             new AssetHandler(this.Config, this.Helper),
             new CommandHandler(this.Config, this.Helper, this.Services),
             new ManagedObjects(this.Config, this.Services),
-            new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
-            new CollectOutputs(this.Config, this.Helper, this.Services),
-            new DispenseInputs(this.Config, this.Helper, this.Services));
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services));
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -68,6 +66,11 @@ public class EasyAccess : Mod
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
         this.FuryCore.API.AddFuryCoreServices(this.Services);
+
+        // Features
+        this.Services.Add(
+            new CollectOutputs(this.Config, this.Helper, this.Services),
+            new DispenseInputs(this.Config, this.Helper, this.Services));
 
         // Activate Features
         foreach (var feature in this.Services.FindServices<Feature>())

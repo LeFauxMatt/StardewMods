@@ -46,13 +46,30 @@ public class BetterChests : Mod
 
         this.Config = new(config ?? new ConfigData(), this.Helper, this.Services);
 
-        // Services
+        // Core Services
         this.Services.Add(
             new AssetHandler(this.Config, this.Helper),
             new CommandHandler(this.Config, this.Helper, this.Services),
             new ManagedObjects(this.Config, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
-            new ModIntegrations(this.Helper, this.Services),
+            new ModIntegrations(this.Helper, this.Services));
+
+        // Events
+        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+    }
+
+    /// <inheritdoc />
+    public override object GetApi()
+    {
+        return new BetterChestsApi(this.Services);
+    }
+
+    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    {
+        this.FuryCore.API.AddFuryCoreServices(this.Services);
+
+        // Features
+        this.Services.Add(
             new CarryChest(this.Config, this.Helper, this.Services),
             new CategorizeChest(this.Config, this.Helper, this.Services),
             new ChestMenuTabs(this.Config, this.Helper, this.Services),
@@ -69,20 +86,6 @@ public class BetterChests : Mod
             new SlotLock(this.Config, this.Helper, this.Services),
             new StashToChest(this.Config, this.Helper, this.Services),
             new UnloadChest(this.Config, this.Helper, this.Services));
-
-        // Events
-        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-    }
-
-    /// <inheritdoc />
-    public override object GetApi()
-    {
-        return new BetterChestsApi(this.Services);
-    }
-
-    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
-    {
-        this.FuryCore.API.AddFuryCoreServices(this.Services);
 
         // Activate Features
         foreach (var feature in this.Services.FindServices<Feature>())
