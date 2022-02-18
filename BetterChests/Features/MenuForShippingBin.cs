@@ -38,7 +38,7 @@ internal class MenuForShippingBin : Feature
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
-        if (e.Menu is ItemGrabMenu { context: { } context, shippingBin: true } && this.ManagedObjects.FindManagedStorage(context, out var managedStorage))
+        if (e.Menu is ItemGrabMenu { context: { } context, shippingBin: true } && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage))
         {
             managedStorage.ShowMenu();
         }

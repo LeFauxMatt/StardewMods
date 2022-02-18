@@ -33,25 +33,26 @@ internal class HudComponentPressed : SortedEventHandler<ClickableComponentPresse
         get => this._toolbarIcons.Value;
     }
 
-    [EventPriority(EventPriority.High + 1000)]
+    [EventPriority(EventPriority.High)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (this.HandlerCount == 0)
+        if (this.HandlerCount == 0 || !this.HudComponents.Components.Any())
         {
             return;
         }
 
-        if (e.Button != SButton.MouseLeft && !e.Button.IsActionButton() || !this.HudComponents.Icons.Any())
+        if (e.Button is not SButton.MouseLeft or SButton.MouseRight && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var icon = this.HudComponents.Icons.FirstOrDefault(icon => icon.Component?.containsPoint(x, y) == true);
+        var icon = this.HudComponents.Components.FirstOrDefault(icon => icon.Component?.containsPoint(x, y) == true);
         if (icon is not null)
         {
             Game1.playSound("drumkit6");
             this.InvokeAll(new(
+                e.Button,
                 icon,
                 () => this.Helper.Input.Suppress(SButton.MouseLeft),
                 () => this.Helper.Input.IsSuppressed(SButton.MouseLeft)));

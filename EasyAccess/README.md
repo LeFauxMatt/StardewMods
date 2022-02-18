@@ -211,7 +211,7 @@ See [here](i18n/default.json) for the base translation file.
 | Hungarian                  | ❌️ Not Translated |          |
 | [Italian](i18n/it.json)    | ❔ Incomplete      | zomboide |
 | Japanese                   | ❌️ Not Translated |          |
-| Korean                     | ❌️ Not Translated |          |
+| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232 |
 | [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon |
 | Russian                    | ❌️ Not Translated |          |
 | Spanish                    | ❌️ Not Translated |          |

@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.FuryCore.Events;
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
@@ -10,12 +11,14 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class ClickableMenuChanged : SortedEventHandler<ClickableMenuChangedEventArgs>
 {
+    private readonly Lazy<GameObjects> _gameObjects;
     private readonly PerScreen<IClickableMenu> _menu = new();
 
     /// <summary>
@@ -26,7 +29,9 @@ internal class ClickableMenuChanged : SortedEventHandler<ClickableMenuChangedEve
     public ClickableMenuChanged(IGameLoopEvents gameLoop, IModServices services)
     {
         ClickableMenuChanged.Instance ??= this;
-
+        this._gameObjects = services.Lazy<GameObjects>();
+        gameLoop.UpdateTicked += this.OnUpdateTicked;
+        gameLoop.UpdateTicking += this.OnUpdateTicking;
         services.Lazy<IHarmonyHelper>(
             harmonyHelper =>
             {
@@ -43,11 +48,14 @@ internal class ClickableMenuChanged : SortedEventHandler<ClickableMenuChangedEve
                     });
                 harmonyHelper.ApplyPatches(id);
             });
-        gameLoop.UpdateTicked += this.OnUpdateTicked;
-        gameLoop.UpdateTicking += this.OnUpdateTicking;
     }
 
     private static ClickableMenuChanged Instance { get; set; }
+
+    private GameObjects GameObjects
+    {
+        get => this._gameObjects.Value;
+    }
 
     private IClickableMenu Menu
     {
@@ -61,8 +69,8 @@ internal class ClickableMenuChanged : SortedEventHandler<ClickableMenuChangedEve
     {
         switch (__instance)
         {
-            case ItemGrabMenu:
-                ClickableMenuChanged.Instance.InvokeAll(new(__instance, Context.ScreenId, true));
+            case ItemGrabMenu { context: { } context } when ClickableMenuChanged.Instance.GameObjects.TryGetGameObject(context, out var gameObject):
+                ClickableMenuChanged.Instance.InvokeAll(new(__instance, Context.ScreenId, true, gameObject));
                 break;
         }
     }
@@ -70,10 +78,20 @@ internal class ClickableMenuChanged : SortedEventHandler<ClickableMenuChangedEve
     [SuppressMessage("StyleCop", "SA1101", Justification = "This is a pattern match not a local call")]
     private void InvokeIfMenuChanged()
     {
-        if (!ReferenceEquals(this.Menu, Game1.activeClickableMenu))
+        if (ReferenceEquals(this.Menu, Game1.activeClickableMenu))
         {
-            this.Menu = Game1.activeClickableMenu;
-            this.InvokeAll(new(this.Menu, Context.ScreenId, false));
+            return;
+        }
+
+        this.Menu = Game1.activeClickableMenu;
+        switch (this.Menu)
+        {
+            case ItemGrabMenu { context: { } context } when ClickableMenuChanged.Instance.GameObjects.TryGetGameObject(context, out var gameObject):
+                this.InvokeAll(new(this.Menu, Context.ScreenId, false, gameObject));
+                break;
+            default:
+                this.InvokeAll(new(this.Menu, Context.ScreenId, false, null));
+                break;
         }
     }
 

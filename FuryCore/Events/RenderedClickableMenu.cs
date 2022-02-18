@@ -1,9 +1,11 @@
 ﻿namespace StardewMods.FuryCore.Events;
 
+using System;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
 using StardewValley;
@@ -12,6 +14,7 @@ using StardewValley.Menus;
 /// <inheritdoc />
 internal class RenderedClickableMenu : SortedEventHandler<RenderedActiveMenuEventArgs>
 {
+    private readonly Lazy<GameObjects> _gameObjects;
     private readonly PerScreen<IClickableMenu> _menu = new();
     private readonly PerScreen<int> _screenId = new();
 
@@ -22,8 +25,14 @@ internal class RenderedClickableMenu : SortedEventHandler<RenderedActiveMenuEven
     /// <param name="services">Provides access to internal and external services.</param>
     public RenderedClickableMenu(IDisplayEvents display, IModServices services)
     {
+        this._gameObjects = services.Lazy<GameObjects>();
         services.Lazy<CustomEvents>(events => events.ClickableMenuChanged += this.OnClickableMenuChanged);
         display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+    }
+
+    private GameObjects GameObjects
+    {
+        get => this._gameObjects.Value;
     }
 
     private IClickableMenu Menu
@@ -40,8 +49,18 @@ internal class RenderedClickableMenu : SortedEventHandler<RenderedActiveMenuEven
 
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.Menu = e.Menu;
-        this.ScreenId = e.ScreenId;
+        switch (e.Menu)
+        {
+            case ItemGrabMenu { context: { } context } itemGrabMenu when this.GameObjects.TryGetGameObject(context, out var gameObject) && gameObject is IStorageContainer:
+                this.Menu = e.Menu;
+                this.ScreenId = e.ScreenId;
+                itemGrabMenu.setBackgroundTransparency(false);
+                break;
+            default:
+                this.Menu = null;
+                this.ScreenId = -1;
+                break;
+        }
     }
 
     [EventPriority(EventPriority.Low - 1000)]

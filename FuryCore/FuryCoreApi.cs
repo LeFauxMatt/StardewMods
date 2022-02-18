@@ -230,7 +230,7 @@ public class FuryCoreApi : IFuryCoreApi
         }
     }
 
-    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    private void OnMenuItemsChanged(object sender, IMenuItemsChangedEventArgs e)
     {
         e.AddFilter(this.ItemFilter);
         e.AddHighlighter(this.ItemHighlighter);

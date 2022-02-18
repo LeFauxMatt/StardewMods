@@ -94,12 +94,12 @@ internal class ManagedObjects : IModService
     }
 
     /// <summary>
-    ///     Attempts to find the ManagedStorage that matches a context.
+    ///     Attempts to find the managed storage that matches a context.
     /// </summary>
     /// <param name="context">The context object to find.</param>
     /// <param name="managedStorage">The <see cref="IManagedStorage" /> to return if it matches the context object.</param>
     /// <returns>Returns true if a matching <see cref="IManagedStorage" /> could be found.</returns>
-    public bool FindManagedStorage(object context, out IManagedStorage managedStorage)
+    public bool TryGetManagedStorage(object context, out IManagedStorage managedStorage)
     {
         if (context is null)
         {
@@ -128,16 +128,14 @@ internal class ManagedObjects : IModService
         return false;
     }
 
-    private void OnGameObjectsRemoved(object sender, GameObjectsRemovedEventArgs e)
-    {
-        foreach (var gameObject in e.Removed)
-        {
-            this.CachedObjects.Remove(gameObject);
-        }
-    }
-
+    /// <summary>
+    ///     Attempts to find the managed storage that matches a game object.
+    /// </summary>
+    /// <param name="gameObject">The game object to find a managed storage for.</param>
+    /// <param name="managedStorage">The <see cref="IManagedStorage" /> to return if it matches the game object.</param>
+    /// <returns>Returns true if a matching <see cref="IManagedStorage" /> could be found.</returns>
     [SuppressMessage("StyleCop", "SA1012", Justification = "Conflicts with SA1008")]
-    private bool TryGetManagedStorage(IGameObject gameObject, out IManagedStorage managedStorage)
+    public bool TryGetManagedStorage(IGameObject gameObject, out IManagedStorage managedStorage)
     {
         if (this.CachedObjects.TryGetValue(gameObject, out managedStorage))
         {
@@ -176,5 +174,13 @@ internal class ManagedObjects : IModService
         managedStorage = new ManagedStorage(storageContainer, storageConfig, name);
         this.CachedObjects.Add(gameObject, managedStorage);
         return true;
+    }
+
+    private void OnGameObjectsRemoved(object sender, GameObjectsRemovedEventArgs e)
+    {
+        foreach (var gameObject in e.Removed)
+        {
+            this.CachedObjects.Remove(gameObject);
+        }
     }
 }

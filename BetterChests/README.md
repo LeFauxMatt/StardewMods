@@ -532,7 +532,7 @@ See [here](i18n/default.json) for the base translation file.
 | [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |
 | [Italian](i18n/it.json)    | ✔️ Complete       | zomboide    |
 | Japanese                   | ❌️ Not Translated |             |
-| Korean                     | ❌️ Not Translated |             |
+| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232    |
 | [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon    |
 | [Russian](i18n/ru.json)    | ❔ Incomplete      | Newrotd     |
 | [Spanish](i18n/es.json)    | ❔ Incomplete      | Soraien     |

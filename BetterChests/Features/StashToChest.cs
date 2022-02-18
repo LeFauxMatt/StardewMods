@@ -18,7 +18,6 @@ using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewValley;
 using StardewValley.Locations;
-using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class StashToChest : Feature
@@ -116,7 +115,7 @@ internal class StashToChest : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HudComponents.Icons.Add(this.StashButton);
+        this.HudComponents.Components.Add(this.StashButton);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
@@ -126,7 +125,7 @@ internal class StashToChest : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HudComponents.Icons.Remove(this.StashButton);
+        this.HudComponents.Components.Remove(this.StashButton);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
@@ -178,11 +177,10 @@ internal class StashToChest : Feature
 
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.CurrentStorage = e.Menu switch
+        if (e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.StashToChest != FeatureOptionRange.Disabled)
         {
-            ItemGrabMenu { context: { } context } when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.StashToChest != FeatureOptionRange.Disabled => managedStorage,
-            _ => null,
-        };
+            this.CurrentStorage = managedStorage;
+        }
     }
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
@@ -196,7 +194,7 @@ internal class StashToChest : Feature
 
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton)
+        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton || e.Button != SButton.MouseLeft && !e.Button.IsActionButton())
         {
             return;
         }

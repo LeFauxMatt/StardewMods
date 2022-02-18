@@ -12,8 +12,10 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
+using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
@@ -100,6 +102,7 @@ internal class ChestMenuTabs : Feature
         this.CustomEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
         this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
@@ -110,8 +113,27 @@ internal class ChestMenuTabs : Feature
         this.CustomEvents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
         this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+    }
+
+    [EventPriority(EventPriority.High + 10)]
+    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+    {
+        if (this.Menu is not ItemSelectionMenu itemSelectionMenu || e.Button != SButton.MouseRight)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        var tab = this.Tabs.SingleOrDefault(tab => tab.Component.containsPoint(x, y));
+        if (tab is null || !itemSelectionMenu.AddTagMenu(tab.Tags, x, y))
+        {
+            return;
+        }
+
+        this.Helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
@@ -135,9 +157,10 @@ internal class ChestMenuTabs : Feature
         }
     }
 
+    [SortedEventPriority(EventPriority.Low)]
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (e.Component is not TabComponent tab)
+        if (e.Component is not TabComponent tab || e.IsSuppressed())
         {
             return;
         }
@@ -148,7 +171,12 @@ internal class ChestMenuTabs : Feature
             return;
         }
 
-        this.SetTab(this.Index == index ? -1 : index);
+        if (e.Button is SButton.Left || e.Button.IsActionButton())
+        {
+            this.SetTab(this.Index == index ? -1 : index);
+        }
+
+        e.SuppressInput();
     }
 
     private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
@@ -162,7 +190,7 @@ internal class ChestMenuTabs : Feature
                 storageData = this.Config.DefaultChest;
                 break;
 
-            case ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
+            case ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
                 this.Menu = itemGrabMenu;
                 storageData = managedStorage;
                 if (!ReferenceEquals(context, this.Context))
@@ -194,12 +222,12 @@ internal class ChestMenuTabs : Feature
         }
     }
 
-    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    private void OnMenuItemsChanged(object sender, IMenuItemsChangedEventArgs e)
     {
         switch (e.Menu)
         {
             case ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled:
-            case { context: { } context } when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
+            case not null when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
                 e.AddFilter(this.ItemMatcher);
                 break;
         }

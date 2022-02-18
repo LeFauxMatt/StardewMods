@@ -75,7 +75,7 @@ internal class CustomEvents : ICustomEvents, IModService
     }
 
     /// <inheritdoc />
-    public event EventHandler<MenuItemsChangedEventArgs> MenuItemsChanged
+    public event EventHandler<IMenuItemsChangedEventArgs> MenuItemsChanged
     {
         add => this._menuItemsChanged.Add(value);
         remove => this._menuItemsChanged.Remove(value);

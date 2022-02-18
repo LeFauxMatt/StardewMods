@@ -42,7 +42,7 @@ public interface ICustomEvents
     /// <summary>
     ///     Triggers when the active menu is changed and items are being displayed on the menu.
     /// </summary>
-    public event EventHandler<MenuItemsChangedEventArgs> MenuItemsChanged;
+    public event EventHandler<IMenuItemsChangedEventArgs> MenuItemsChanged;
 
     /// <summary>
     ///     Similar to SMAPI's own RenderedActiveMenu event, except it ensures that anything drawn to SpriteBatch will be above

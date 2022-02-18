@@ -47,14 +47,11 @@ internal class HudComponents : IHudComponents, IModService
         this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
 
         services.Lazy<ICustomEvents>(
-            customEvents =>
-            {
-                customEvents.HudComponentPressed += this.OnHudComponentPressed;
-            });
+            customEvents => { customEvents.HudComponentPressed += this.OnHudComponentPressed; });
     }
 
     /// <inheritdoc />
-    public List<IClickableComponent> Icons
+    public List<IClickableComponent> Components
     {
         get => this._icons.Value;
     }
@@ -108,7 +105,7 @@ internal class HudComponents : IHudComponents, IModService
 
         var (x, y) = Game1.getMousePosition(true);
         this.HoverText = string.Empty;
-        foreach (var icon in this.Icons)
+        foreach (var icon in this.Components)
         {
             icon.TryHover(x, y);
             if (icon.Component.bounds.Contains(x, y))
@@ -196,12 +193,12 @@ internal class HudComponents : IHudComponents, IModService
         var y = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize
             ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
             : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
-        if (this.Icons.Any(icon => icon.Y != y))
+        if (this.Components.Any(icon => icon.Y != y))
         {
             this.ReinitializeIcons(y);
         }
 
-        foreach (var icon in this.Icons)
+        foreach (var icon in this.Components)
         {
             icon.Draw(e.SpriteBatch);
         }
@@ -211,7 +208,7 @@ internal class HudComponents : IHudComponents, IModService
     {
         if (this.Shortcuts.Any())
         {
-            this.Icons.AddRange(this.Shortcuts);
+            this.Components.AddRange(this.Shortcuts);
             this.ReinitializeIcons();
         }
     }
@@ -223,7 +220,7 @@ internal class HudComponents : IHudComponents, IModService
 
     private void ReinitializeIcons(int y = -1)
     {
-        var icons = this.Icons.Where(icon => icon.Area is ComponentArea.Left).ToList();
+        var icons = this.Components.Where(icon => icon.Area is ComponentArea.Left).ToList();
         var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
         var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
         var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
@@ -242,7 +239,7 @@ internal class HudComponents : IHudComponents, IModService
             x += icon.Component.bounds.Width + 4;
         }
 
-        icons = this.Icons.Where(icon => icon.Area is ComponentArea.Right).ToList();
+        icons = this.Components.Where(icon => icon.Area is ComponentArea.Right).ToList();
         x = (Game1.uiViewport.Width + Game1.tileSize * 12) / 2 - icons.Sum(icon => icon.Component.bounds.Width + 4) + 4;
         foreach (var icon in icons)
         {

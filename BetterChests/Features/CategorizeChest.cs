@@ -104,6 +104,9 @@ internal class CategorizeChest : Feature
                 Game1.activeClickableMenu = this.ReturnMenu;
                 return;
 
+            case not null when this.ReturnMenu is not null:
+                break;
+
             default:
                 this.ReturnMenu = null;
                 return;
@@ -112,7 +115,7 @@ internal class CategorizeChest : Feature
 
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (this.CurrentStorage is null || !ReferenceEquals(this.ConfigureButton, e.Component))
+        if (this.CurrentStorage is null || !ReferenceEquals(this.ConfigureButton, e.Component) || e.Button != SButton.MouseLeft && !e.Button.IsActionButton())
         {
             return;
         }
@@ -120,14 +123,13 @@ internal class CategorizeChest : Feature
         this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
         this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.Services, this.CurrentStorage.ItemMatcher);
         this.CurrentItemSelectionMenu.RegisterEvents(this.Helper.Events.Input);
-
         Game1.activeClickableMenu = this.CurrentItemSelectionMenu;
         e.SuppressInput();
     }
 
     private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
     {
-        if (e.Menu is ItemGrabMenu { context: { } context } itemGrabMenu and not ItemSelectionMenu && this.ManagedObjects.FindManagedStorage(context, out var managedStorage))
+        if (e.Menu is ItemGrabMenu { context: { } context } itemGrabMenu and not ItemSelectionMenu && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage))
         {
             e.AddComponent(this.ConfigureButton, 0);
             this.ReturnMenu = itemGrabMenu;

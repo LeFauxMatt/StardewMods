@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
@@ -11,6 +13,7 @@ using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
+using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -41,16 +44,16 @@ internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingE
         get => this._menuComponents.Value;
     }
 
+    [SortedEventPriority(EventPriority.High)]
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        if (ReferenceEquals(this.Menu, e.Menu))
+        if (!ReferenceEquals(this.Menu, e.Menu))
         {
-            return;
+            this.Menu = e.Menu;
+            this.MenuComponents.Components.Clear();
         }
 
-        this.Menu = e.Menu;
-        this.MenuComponents.Components.Clear();
-        if (this.Menu is null || this.HandlerCount == 0)
+        if (this.Menu is null || this.HandlerCount == 0 || !ReferenceEquals(this.Menu, Game1.activeClickableMenu))
         {
             return;
         }

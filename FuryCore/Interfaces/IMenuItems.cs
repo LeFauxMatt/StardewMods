@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.FuryCore.Interfaces;
 
-using System;
 using System.Collections.Generic;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
@@ -40,12 +39,6 @@ public interface IMenuItems
     ///     Gets the total number of rows in the menu.
     /// </summary>
     public int Rows { get; }
-
-    /// <summary>
-    ///     Adds a sort method which displayed items will be sorted by.
-    /// </summary>
-    /// <param name="sortMethod">The sort method to add.</param>
-    public void AddSortMethod(Func<Item, int> sortMethod);
 
     /// <summary>
     ///     Clears internal cache of filtered/highlighted items.

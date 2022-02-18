@@ -272,16 +272,16 @@ Enabling this option will capture the MouseWheelScrolled event and add up/down a
 
 ## Translations
 
-| Language   | Status            | Credits |
-|:-----------|:------------------|:--------|
-| Chinese    | ❌️ Not Translated |         |
-| French     | ❌️ Not Translated |         |
-| German     | ❌️ Not Translated |         |
-| Hungarian  | ❌️ Not Translated |         |
-| Italian    | ❌️ Not Translated |         |
-| Japanese   | ❌️ Not Translated |         |
-| Korean     | ❌️ Not Translated |         |
-| Portuguese | ✔️ Complete       |         |
-| Russian    | ❌️ Not Translated |         |
-| Spanish    | ❌️ Not Translated |         |
-| Turkish    | ❌️ Not Translated |         |
+| Language                   | Status            | Credits  |
+|:---------------------------|:------------------|:---------|
+| Chinese                    | ❌️ Not Translated |          |
+| French                     | ❌️ Not Translated |          |
+| German                     | ❌️ Not Translated |          |
+| Hungarian                  | ❌️ Not Translated |          |
+| Italian                    | ❌️ Not Translated |          |
+| Japanese                   | ❌️ Not Translated |          |
+| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232 |
+| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon |
+| Russian                    | ❌️ Not Translated |          |
+| Spanish                    | ❌️ Not Translated |          |
+| Turkish                    | ❌️ Not Translated |          |

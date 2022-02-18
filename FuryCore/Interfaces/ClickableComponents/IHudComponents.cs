@@ -11,5 +11,5 @@ public interface IHudComponents
     /// <summary>
     ///     Gets <see cref="ClickableTextureComponent" /> that are added to the Toolbar.
     /// </summary>
-    public List<IClickableComponent> Icons { get; }
+    public List<IClickableComponent> Components { get; }
 }

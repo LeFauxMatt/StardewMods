@@ -140,7 +140,7 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HudComponents.Icons.Add(this.CraftButton);
+        this.HudComponents.Components.Add(this.CraftButton);
         this.Harmony.ApplyPatches(this.Id);
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
@@ -150,7 +150,7 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HudComponents.Icons.Remove(this.CraftButton);
+        this.HudComponents.Components.Remove(this.CraftButton);
         this.Harmony.UnapplyPatches(this.Id);
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;

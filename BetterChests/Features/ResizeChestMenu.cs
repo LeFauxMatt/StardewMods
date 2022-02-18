@@ -30,10 +30,11 @@ internal class ResizeChestMenu : Feature
 {
     private readonly PerScreen<int> _currentOffset = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<MenuWithInventory> _menu = new();
     private readonly PerScreen<int?> _menuCapacity = new();
     private readonly PerScreen<int?> _menuOffset = new();
     private readonly PerScreen<int?> _menuRows = new();
+    private readonly PerScreen<IStorageData> _storageData = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ResizeChestMenu" /> class.
@@ -100,7 +101,7 @@ internal class ResizeChestMenu : Feature
 
             var relativeOffset = value - this._currentOffset.Value;
             this._currentOffset.Value = value;
-            if (this.Menu is null)
+            if (this.Menu is null || relativeOffset == 0)
             {
                 return;
             }
@@ -129,7 +130,7 @@ internal class ResizeChestMenu : Feature
         get => this._harmony.Value;
     }
 
-    private ItemGrabMenu Menu
+    private MenuWithInventory Menu
     {
         get => this._menu.Value;
         set
@@ -145,18 +146,15 @@ internal class ResizeChestMenu : Feature
     {
         get
         {
-            return this._menuCapacity.Value ??= this.Menu switch
-            {
-                ItemSelectionMenu when this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => this.Config.DefaultChest.ResizeChestMenuRows * 12,
-                { context: not null } when this.ManagedObjects.FindManagedStorage(this.Menu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => managedStorage.ResizeChestCapacity switch
+            return this._menuCapacity.Value ??= this.StorageData is not null
+                ? this.StorageData.ResizeChestCapacity switch
                 {
                     0 or Chest.capacity => -1,
-                    < 0 => managedStorage.ResizeChestMenuRows * 12,
-                    < 72 => Math.Min(managedStorage.ResizeChestMenuRows * 12, managedStorage.ResizeChestCapacity.RoundUp(12)),
-                    _ => managedStorage.ResizeChestMenuRows * 12,
-                },
-                _ => -1,
-            };
+                    < 0 => this.StorageData.ResizeChestMenuRows * 12,
+                    < 72 => Math.Min(this.StorageData.ResizeChestMenuRows * 12, this.StorageData.ResizeChestCapacity.RoundUp(12)),
+                    _ => this.StorageData.ResizeChestMenuRows * 12,
+                }
+                : -1;
         }
     }
 
@@ -169,19 +167,22 @@ internal class ResizeChestMenu : Feature
     {
         get
         {
-            return this._menuRows.Value ??= this.Menu switch
-            {
-                ItemSelectionMenu when this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => this.Config.DefaultChest.ResizeChestMenuRows,
-                { context: { } context } when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => managedStorage.ResizeChestCapacity switch
+            return this._menuRows.Value ??= this.StorageData is not null
+                ? this.StorageData.ResizeChestCapacity switch
                 {
                     0 => 3,
-                    < 0 => managedStorage.ResizeChestMenuRows,
-                    < 72 => (int)Math.Min(managedStorage.ResizeChestMenuRows, Math.Ceiling(managedStorage.ResizeChestCapacity / 12f)),
-                    _ => managedStorage.ResizeChestMenuRows,
-                },
-                _ => 3,
-            };
+                    < 0 => this.StorageData.ResizeChestMenuRows,
+                    < 72 => (int)Math.Min(this.StorageData.ResizeChestMenuRows, Math.Ceiling(this.StorageData.ResizeChestCapacity / 12f)),
+                    _ => this.StorageData.ResizeChestMenuRows,
+                }
+                : 3;
         }
+    }
+
+    private IStorageData StorageData
+    {
+        get => this._storageData.Value;
+        set => this._storageData.Value = value;
     }
 
     /// <inheritdoc />
@@ -202,10 +203,11 @@ internal class ResizeChestMenu : Feature
     {
         if (!ReferenceEquals(ResizeChestMenu.Instance.Menu, menu))
         {
-            ResizeChestMenu.Instance.Menu = menu switch
+            ResizeChestMenu.Instance.Menu = menu;
+            ResizeChestMenu.Instance.StorageData = menu switch
             {
-                ItemSelectionMenu itemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
-                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+                ItemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => ResizeChestMenu.Instance.Config.DefaultChest,
+                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.TryGetManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => managedStorage,
                 _ => null,
             };
         }
@@ -217,10 +219,11 @@ internal class ResizeChestMenu : Feature
     {
         if (!ReferenceEquals(ResizeChestMenu.Instance.Menu, menu))
         {
-            ResizeChestMenu.Instance.Menu = menu switch
+            ResizeChestMenu.Instance.Menu = menu;
+            ResizeChestMenu.Instance.StorageData = menu switch
             {
-                ItemSelectionMenu itemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
-                ItemGrabMenu { context: { } context } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+                ItemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => ResizeChestMenu.Instance.Config.DefaultChest,
+                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.TryGetManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => managedStorage,
                 _ => null,
             };
         }
@@ -232,10 +235,11 @@ internal class ResizeChestMenu : Feature
     {
         if (!ReferenceEquals(ResizeChestMenu.Instance.Menu, menu))
         {
-            ResizeChestMenu.Instance.Menu = menu switch
+            ResizeChestMenu.Instance.Menu = menu;
+            ResizeChestMenu.Instance.StorageData = menu switch
             {
-                ItemSelectionMenu itemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
-                ItemGrabMenu { context: { } context } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+                ItemSelectionMenu when ResizeChestMenu.Instance.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => ResizeChestMenu.Instance.Config.DefaultChest,
+                ItemGrabMenu { context: not null } itemGrabMenu when ResizeChestMenu.Instance.ManagedObjects.TryGetManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => managedStorage,
                 _ => null,
             };
         }
@@ -443,27 +447,28 @@ internal class ResizeChestMenu : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        this.Menu = e.Menu switch
+        this.Menu = e.Menu as MenuWithInventory;
+        this.StorageData = e.Menu switch
         {
-            ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => itemSelectionMenu,
-            ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => itemGrabMenu,
+            ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => this.Config.DefaultChest,
+            ItemGrabMenu { context: { } context } when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => managedStorage,
             _ => null,
         };
 
         if (e.IsNew || this.Menu is null)
         {
             this._currentOffset.Value = 0;
+            this.CurrentOffset = this.MenuOffset;
         }
 
-        this.CurrentOffset = this.MenuOffset;
-        if (this.Menu is null)
+        if (this.StorageData is null || this.Menu is not ItemGrabMenu { ItemsToGrabMenu: { inventory: { } topRow } itemsToGrabMenu, inventory: { inventory: { } bottomRow } inventory })
         {
             return;
         }
 
         // Set upNeighborId for first row of player inventory
-        var topRow = this.Menu.inventory.inventory.Take(12).ToList();
-        var bottomRow = this.Menu.ItemsToGrabMenu.inventory.TakeLast(12).ToList();
+        topRow = topRow.Take(12).ToList();
+        bottomRow = bottomRow.TakeLast(12).ToList();
         for (var index = 0; index < 12; index++)
         {
             var topSlot = topRow.ElementAtOrDefault(index);

@@ -33,7 +33,7 @@ internal class MenuComponentPressed : SortedEventHandler<ClickableComponentPress
 
     private IModHelper Helper { get; }
 
-    [EventPriority(EventPriority.High + 1000)]
+    [EventPriority(EventPriority.High)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
         if (this.HandlerCount == 0 || !this.Components.Components.Any())
@@ -41,7 +41,7 @@ internal class MenuComponentPressed : SortedEventHandler<ClickableComponentPress
             return;
         }
 
-        if (e.Button != SButton.MouseLeft && !e.Button.IsActionButton())
+        if (e.Button is not SButton.MouseLeft or SButton.MouseRight && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }
@@ -55,9 +55,10 @@ internal class MenuComponentPressed : SortedEventHandler<ClickableComponentPress
 
         Game1.playSound("drumkit6");
         this.InvokeAll(new(
+            e.Button,
             component,
-            () => this.Helper.Input.Suppress(SButton.MouseLeft),
-            () => this.Helper.Input.IsSuppressed(SButton.MouseLeft)));
+            () => this.Helper.Input.Suppress(e.Button),
+            () => this.Helper.Input.IsSuppressed(e.Button)));
 
         if (Game1.activeClickableMenu.currentlySnappedComponent is not null && Game1.options.SnappyMenus)
         {

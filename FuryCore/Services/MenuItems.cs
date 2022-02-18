@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Extensions;
@@ -215,6 +216,15 @@ internal class MenuItems : IMenuItems, IModService
         get => this._itemFilterCache.Value;
     }
 
+    private IList<int> ItemIndexes
+    {
+        get
+        {
+            return this._itemIndexes.Value ??= this.ItemsFiltered.Select(item => this.ActualInventory.IndexOf(item)).ToList();
+        }
+        set => this._itemIndexes.Value = value;
+    }
+
     private IList<Item> ItemsFiltered
     {
         get
@@ -230,15 +240,6 @@ internal class MenuItems : IMenuItems, IModService
         }
 
         set => this._itemsFiltered.Value = value;
-    }
-
-    private IList<int> ItemIndexes
-    {
-        get
-        {
-            return this._itemIndexes.Value ??= this.ItemsFiltered.Select(item => this.ActualInventory.IndexOf(item)).ToList();
-        }
-        set => this._itemIndexes.Value = value;
     }
 
     private IEnumerable<Item> ItemsSorted
@@ -288,19 +289,32 @@ internal class MenuItems : IMenuItems, IModService
     }
 
     /// <inheritdoc />
-    public void AddSortMethod(Func<Item, int> sortMethod)
-    {
-        this.SortMethod = sortMethod;
-        this.ItemsSorted = null;
-    }
-
-    /// <inheritdoc />
     public void ForceRefresh()
     {
         this.ItemFilterCache.Clear();
         this.ItemHighlightCache.Clear();
         this.ItemsFiltered = null;
         this.ItemsSorted = null;
+    }
+
+    /// <summary>
+    ///     Refresh cache when item filters are changed.
+    /// </summary>
+    /// <param name="sender">The event sender.</param>
+    /// <param name="e">The event arguments.</param>
+    public void OnItemFilterChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.ForceRefresh();
+    }
+
+    /// <summary>
+    ///     Refresh highlight cache when highlighters are changed.
+    /// </summary>
+    /// <param name="sender">The event sender.</param>
+    /// <param name="e">The event arguments.</param>
+    public void OnItemHighlighterChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.ItemHighlightCache.Clear();
     }
 
     private static IList<Item> DisplayedItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
@@ -461,7 +475,7 @@ internal class MenuItems : IMenuItems, IModService
         this.DownArrow.Component.upNeighborID = this.UpArrow.Id;
     }
 
-    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    private void OnMenuItemsChanged(object sender, IMenuItemsChangedEventArgs e)
     {
         this.Menu = e.Menu;
         this.Context = e.Context;

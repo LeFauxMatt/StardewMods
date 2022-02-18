@@ -69,7 +69,6 @@ public class ItemSelectionMenu : ItemGrabMenu
 
         this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.AllItems.ToList();
         this.ItemsToGrabMenu.highlightMethod = this.ItemMatcher.Matches;
-        this.MenuItems.AddSortMethod(this.SortItems);
         this.RefreshTags();
     }
 
@@ -96,6 +95,24 @@ public class ItemSelectionMenu : ItemGrabMenu
     private Range<int> Range { get; } = new();
 
     private DropDownMenu TagMenu { get; set; }
+
+    /// <summary>
+    ///     Adds a dropdown menu of context tags.
+    /// </summary>
+    /// <param name="tags">The context tags to show.</param>
+    /// <param name="x">The x-coordinate of the dropdown menu.</param>
+    /// <param name="y">The y-coordinate of the dropdown menu.</param>
+    /// <returns>True if the new tag menu was added.</returns>
+    public bool AddTagMenu(IList<string> tags, int x, int y)
+    {
+        if (this.TagMenu is not null)
+        {
+            return false;
+        }
+
+        this.TagMenu = new(tags, x, y, this.AddTag);
+        return true;
+    }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
@@ -152,7 +169,7 @@ public class ItemSelectionMenu : ItemGrabMenu
 
         if (this.TagMenu is not null)
         {
-            this.TagMenu?.TryHover(x, y);
+            this.TagMenu.TryHover(x, y);
             this.hoveredItem = null;
             this.hoverText = string.Empty;
             return;
@@ -231,7 +248,7 @@ public class ItemSelectionMenu : ItemGrabMenu
                 tags.Add("quality_iridium");
             }
 
-            this.TagMenu = new(tags.ToList(), x, y, this.AddTag);
+            this.AddTagMenu(tags.ToList(), x, y);
         }
     }
 
@@ -265,6 +282,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void RegisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed += this.OnButtonPressed;
+        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
         this.CustomEvents.RenderedClickableMenu += this.OnRenderedClickableMenu;
         this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
     }
@@ -276,6 +294,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void UnregisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed -= this.OnButtonPressed;
+        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
         this.CustomEvents.RenderedClickableMenu -= this.OnRenderedClickableMenu;
         this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
     }
@@ -316,8 +335,14 @@ public class ItemSelectionMenu : ItemGrabMenu
         this.ItemMatcher.Add(tag);
     }
 
+    [EventPriority(EventPriority.High + 1)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
+        if (e.IsSuppressed())
+        {
+            return;
+        }
+
         var (x, y) = Game1.getMousePosition(true);
 
         switch (e.Button)
@@ -350,6 +375,11 @@ public class ItemSelectionMenu : ItemGrabMenu
     {
         this.RefreshTags();
         this.MenuItems.ForceRefresh();
+    }
+
+    private void OnMenuItemsChanged(object sender, IMenuItemsChangedEventArgs e)
+    {
+        e.SetSortMethod(this.SortItems);
     }
 
     private void OnRenderedClickableMenu(object sender, RenderedActiveMenuEventArgs e)

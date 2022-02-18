@@ -105,7 +105,7 @@ internal class OpenHeldChest : Feature
             return;
         }
 
-        if (!this.ManagedObjects.FindManagedStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
+        if (!this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }

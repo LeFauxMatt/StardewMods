@@ -218,7 +218,7 @@ internal class CustomColorPicker : Feature
 
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        if (e.Menu is not ItemGrabMenu { context: { } context } itemGrabMenu || !this.ManagedObjects.FindManagedStorage(context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
+        if (e.Menu is not ItemGrabMenu { context: { } context } itemGrabMenu || !this.ManagedObjects.TryGetManagedStorage(context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
         {
             return;
         }

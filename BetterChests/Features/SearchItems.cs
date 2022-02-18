@@ -17,6 +17,8 @@ using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
@@ -28,15 +30,16 @@ internal class SearchItems : Feature
 {
     private const int SearchBarHeight = 24;
 
-    private readonly PerScreen<object> _context = new();
+    private readonly PerScreen<IGameObject> _context = new();
     private readonly PerScreen<int> _currentPadding = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<MenuWithInventory> _menu = new();
     private readonly PerScreen<int?> _menuPadding = new();
     private readonly PerScreen<ClickableComponent> _searchArea = new();
     private readonly PerScreen<TextBox> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
+    private readonly PerScreen<IStorageData> _storageData = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchItems" /> class.
@@ -77,7 +80,7 @@ internal class SearchItems : Feature
 
     private static SearchItems Instance { get; set; }
 
-    private object Context
+    private IGameObject Context
     {
         set
         {
@@ -100,7 +103,7 @@ internal class SearchItems : Feature
 
             var relativePadding = value - this._currentPadding.Value;
             this._currentPadding.Value = value;
-            if (this.Menu is null)
+            if (this.Menu is not ItemGrabMenu itemGrabMenu || relativePadding == 0)
             {
                 return;
             }
@@ -108,9 +111,9 @@ internal class SearchItems : Feature
             this.Menu.yPositionOnScreen -= relativePadding;
             this.Menu.height += relativePadding;
 
-            if (this.Menu.chestColorPicker is not null and not HslColorPicker)
+            if (itemGrabMenu.chestColorPicker is not null and not HslColorPicker)
             {
-                this.Menu.chestColorPicker.yPositionOnScreen -= relativePadding;
+                itemGrabMenu.chestColorPicker.yPositionOnScreen -= relativePadding;
             }
         }
     }
@@ -125,7 +128,7 @@ internal class SearchItems : Feature
         get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
     }
 
-    private ItemGrabMenu Menu
+    private MenuWithInventory Menu
     {
         get => this._menu.Value;
         set
@@ -139,12 +142,9 @@ internal class SearchItems : Feature
     {
         get
         {
-            return this._menuPadding.Value ??= this.Menu switch
-            {
-                ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => SearchItems.SearchBarHeight,
-                { context: not null } when this.ManagedObjects.FindManagedStorage(this.Menu.context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => SearchItems.SearchBarHeight,
-                _ => 0,
-            };
+            return this._menuPadding.Value ??= this.StorageData is not null
+                ? SearchItems.SearchBarHeight
+                : 0;
         }
     }
 
@@ -164,6 +164,12 @@ internal class SearchItems : Feature
     }
 
     private string SearchText { get; set; }
+
+    private IStorageData StorageData
+    {
+        get => this._storageData.Value;
+        set => this._storageData.Value = value;
+    }
 
     /// <inheritdoc />
     protected override void Activate()
@@ -191,10 +197,11 @@ internal class SearchItems : Feature
     {
         if (!ReferenceEquals(SearchItems.Instance.Menu, menu))
         {
-            SearchItems.Instance.Menu = menu switch
+            SearchItems.Instance.Menu = menu;
+            SearchItems.Instance.StorageData = menu switch
             {
-                ItemSelectionMenu itemSelectionMenu when SearchItems.Instance.Config.DefaultChest.SearchItems == FeatureOption.Enabled => itemSelectionMenu,
-                ItemGrabMenu { context: not null } itemGrabMenu when SearchItems.Instance.ManagedObjects.FindManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => itemGrabMenu,
+                ItemSelectionMenu when SearchItems.Instance.Config.DefaultChest.SearchItems == FeatureOption.Enabled => SearchItems.Instance.Config.DefaultChest,
+                ItemGrabMenu { context: not null } itemGrabMenu when SearchItems.Instance.ManagedObjects.TryGetManagedStorage(itemGrabMenu.context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => managedStorage,
                 _ => null,
             };
         }
@@ -351,7 +358,7 @@ internal class SearchItems : Feature
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (this.Menu is null || !ReferenceEquals(this.Menu, Game1.activeClickableMenu))
+        if (this.StorageData is null || !ReferenceEquals(this.Menu, Game1.activeClickableMenu))
         {
             return;
         }
@@ -388,45 +395,40 @@ internal class SearchItems : Feature
     [SortedEventPriority(EventPriority.High)]
     private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
     {
-        switch (e.Menu)
+        this.Menu = e.Menu as MenuWithInventory;
+        this.Context = e.Context;
+        this.StorageData = e.Menu switch
         {
-            case ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled:
-                this.Menu = itemSelectionMenu;
-                break;
-            case ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled:
-                this.Menu = itemGrabMenu;
-                this.Context = context;
-                break;
-            default:
-                this.Menu = null;
-                break;
-        }
+            ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => this.Config.DefaultChest,
+            ItemGrabMenu { context: { } context } when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => managedStorage,
+            _ => null,
+        };
 
         if (e.IsNew || this.Menu is null)
         {
             this._currentPadding.Value = 0;
+            this.CurrentPadding = this.MenuPadding;
         }
 
-        this.CurrentPadding = this.MenuPadding;
-        if (this.Menu is null)
+        if (this.StorageData is null || this.Menu is not ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu })
         {
             return;
         }
 
-        this.SearchField.X = this.Menu.ItemsToGrabMenu.xPositionOnScreen;
-        this.SearchField.Y = this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
+        this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
+        this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
         this.SearchField.Selected = false;
         this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
-        this.SearchField.Width = this.Menu.ItemsToGrabMenu.width;
-        this.SearchIcon.bounds = new(this.Menu.ItemsToGrabMenu.xPositionOnScreen + this.Menu.ItemsToGrabMenu.width - 38, this.Menu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
+        this.SearchField.Width = itemsToGrabMenu.width;
+        this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
     }
 
-    private void OnMenuItemsChanged(object sender, MenuItemsChangedEventArgs e)
+    private void OnMenuItemsChanged(object sender, IMenuItemsChangedEventArgs e)
     {
         switch (e.Menu)
         {
             case ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled:
-            case { context: { } context } when this.ManagedObjects.FindManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled:
+            case not null when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled:
                 e.AddFilter(this.ItemMatcher);
                 this.ItemMatcher.StringValue = this.SearchText = this.SearchField.Text;
                 break;
@@ -435,7 +437,7 @@ internal class SearchItems : Feature
 
     private void OnRenderedClickableMenu(object sender, RenderedActiveMenuEventArgs e)
     {
-        if (this.Menu is not null)
+        if (this.StorageData is not null)
         {
             this.SearchField.Draw(e.SpriteBatch, false);
             this.SearchIcon.draw(e.SpriteBatch);
@@ -444,7 +446,7 @@ internal class SearchItems : Feature
 
     private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
     {
-        if (this.Menu is not null && this.SearchField.Text != this.SearchText)
+        if (this.StorageData is not null && this.SearchField.Text != this.SearchText)
         {
             this.SearchText = this.SearchField.Text;
             this.ItemMatcher.StringValue = this.SearchText;
