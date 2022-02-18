@@ -98,7 +98,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{AlwaysScrollMapHotkey}}": "{{i18n: icon.always-scroll-map.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/8/Left"
+        "Always Scroll Map": "{{i18n: icon.always-scroll-map.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/8/Left/keybind: {{AlwaysScrollMapHotkey}}"
       },
       "When": {
         "EnableAlwaysScrollMap": true,
@@ -110,11 +110,23 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{ChestsAnywhereHotkey}}": "{{i18n: icon.chests-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/0/Left"
+        "Chests Anywhere": "{{i18n: icon.chests-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/0/Left/keybind: {{ChestsAnywhereHotkey}}"
       },
       "When": {
         "EnableChestsAnywhere": true,
         "HasMod": "Pathoschild.ChestsAnywhere"
+      }
+    },
+    // Add CJB Group Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "cjb: .CJB Toggle": "{{i18n: icon.cjb-group.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/11/Left/toggle: cjb"
+      },
+      "When": {
+        "EnableCJBCheatsMenu": true,
+        "HasMod": "CJBok.CheatsMenu"
       }
     },
     // Add CJB Cheats Menu Icon
@@ -122,7 +134,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{CJBCheatsMenuHotkey}}": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left"
+        "cjb: CJB Cheats Menu": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left/keybind: {{CJBCheatsMenuHotkey}}/false"
       },
       "When": {
         "EnableCJBCheatsMenu": true,
@@ -134,7 +146,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{CJBItemSpawnerHotkey}}": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left"
+        "cjb: CJB Item Spawner": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left/keybind: {{CJBItemSpawnerHotkey}}/false"
       },
       "When": {
         "EnableCJBItemSpawner": true,
@@ -146,7 +158,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{DataLayersHotkey}}": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left"
+        "Data Layers": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left/keybind: {{DataLayersHotkey}}"
       },
       "When": {
         "EnableDataLayers": true,
@@ -158,7 +170,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{DebugModeHotkey}}": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left"
+        "Debug Mode": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left/keybind: {{DebugModeHotkey}}"
       },
       "When": {
         "EnableDebugMode": true,
@@ -170,7 +182,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "command: dga_store": "{{i18n: icon.dynamic-game-assets.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/10/Left"
+        "Dynamic Game Assets": "{{i18n: icon.dynamic-game-assets.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/10/Left/command: dga_store"
       },
       "When": {
         "EnableDynamicGameAssets": true,
@@ -182,7 +194,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{HorseFluteAnywhereHotkey}}": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left"
+        "Horse Flute Anywhere": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left/keybind: {{HorseFluteAnywhereHotkey}}"
       },
       "When": {
         "EnableHorseFluteAnywhere": true,
@@ -194,7 +206,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{InstantBuildingsMenuHotkey}}": "{{i18n: icon.instant-buildings-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/Left"
+        "Instant Build Menu": "{{i18n: icon.instant-buildings-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/Left/keybind: {{InstantBuildingsMenuHotkey}}"
       },
       "When": {
         "EnableInstantBuildingsMenu": true,
@@ -206,7 +218,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{InstantBuildingsUpgradeHotkey}}": "{{i18n: icon.instant-buildings-upgrade.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/9/Left"
+        "Instant Build Upgrade": "{{i18n: icon.instant-buildings-upgrade.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/9/Left/keybind: {{InstantBuildingsUpgradeHotkey}}"
       },
       "When": {
         "EnableInstantBuildingsUpgrade": true,
@@ -218,14 +230,12 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "keybind: {{LookupAnythingHotkey}}": "{{i18n: icon.lookup-anything.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/7/Left"
+        "Lookup Anything": "{{i18n: icon.lookup-anything.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/7/Left/keybind: {{LookupAnythingHotkey}}"
       },
       "When": {
         "EnableLookupAnything": true,
         "HasMod": "Pathoschild.LookupAnything"
       }
     }
-
-    // Dynamic Game Assets - dga_store
   ]
 }

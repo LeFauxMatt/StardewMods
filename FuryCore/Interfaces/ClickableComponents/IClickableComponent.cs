@@ -35,6 +35,11 @@ public interface IClickableComponent
     public int Id { get; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether or not the component is visible.
+    /// </summary>
+    public bool IsVisible { get; set; }
+
+    /// <summary>
     ///     Gets a value indicating if the component should be drawn below or above the menu.
     /// </summary>
     public ComponentLayer Layer { get; }

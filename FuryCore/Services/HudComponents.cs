@@ -27,7 +27,7 @@ internal class HudComponents : IHudComponents, IModService
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<List<IClickableComponent>> _icons = new(() => new());
-    private readonly PerScreen<List<CustomClickableComponent>> _shortcuts = new();
+    private readonly PerScreen<List<CustomClickableComponent>> _toolbarIcons = new();
     private MethodInfo _overrideButtonReflected;
 
     /// <summary>
@@ -50,7 +50,9 @@ internal class HudComponents : IHudComponents, IModService
             customEvents => { customEvents.HudComponentPressed += this.OnHudComponentPressed; });
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Gets <see cref="ClickableTextureComponent" /> that are added to the Toolbar.
+    /// </summary>
     public List<IClickableComponent> Components
     {
         get => this._icons.Value;
@@ -78,9 +80,9 @@ internal class HudComponents : IHudComponents, IModService
         get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton");
     }
 
-    private IEnumerable<CustomClickableComponent> Shortcuts
+    private IEnumerable<CustomClickableComponent> ToolbarIcons
     {
-        get => this._shortcuts.Value ??= (
+        get => this._toolbarIcons.Value ??= (
                 from icon in this.Assets.ToolbarData
                 select new CustomClickableComponent(
                     new(
@@ -90,10 +92,29 @@ internal class HudComponents : IHudComponents, IModService
                         2f)
                     {
                         hoverText = icon.Value[0],
-                        name = icon.Key,
+                        name = icon.Value[4],
+                        visible = icon.Value.Length < 6 || !bool.TryParse(icon.Value[5], out var visible) || visible,
                     },
                     Enum.TryParse(icon.Value[3], out ComponentArea area) ? area : ComponentArea.Left))
             .ToList();
+    }
+
+    /// <inheritdoc />
+    public void AddToolbarIcon(IClickableComponent component, int index = -1)
+    {
+        if (index == -1)
+        {
+            this.Components.Add(component);
+            return;
+        }
+
+        this.Components.Insert(index, component);
+    }
+
+    /// <inheritdoc />
+    public void RemoveToolbarIcon(IClickableComponent component)
+    {
+        this.Components.Remove(component);
     }
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
@@ -117,43 +138,54 @@ internal class HudComponents : IHudComponents, IModService
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (!this.Config.ToolbarIcons)
+        if (!this.Config.ToolbarIcons || !this.ToolbarIcons.Contains(e.Component))
         {
             return;
         }
 
-        if (this.Shortcuts.Contains(e.Component))
+        if (e.Component.Name.StartsWith("toggle:"))
         {
-            if (e.Component.Name.StartsWith("command:"))
+            var command = e.Component.Name[7..].Trim();
+            var components =
+                from icon in this.Assets.ToolbarData
+                join component in this.ToolbarIcons on icon.Value[4] equals component.Name
+                where icon.Key.StartsWith(command) && component != e.Component
+                select component;
+            foreach (var component in components)
             {
-                var command = e.Component.Name[8..].Trim().Split(' ');
-                this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
+                component.IsVisible = !component.IsVisible;
             }
-            else if (e.Component.Name.StartsWith("keybind:"))
-            {
-                if (!this.Keybinds.TryGetValue(e.Component.Name, out var keybind))
-                {
-                    IList<SButton> buttons = new List<SButton>();
-                    foreach (var key in e.Component.Name[8..].Trim().Split('+'))
-                    {
-                        if (Enum.TryParse(key, out SButton button))
-                        {
-                            buttons.Add(button);
-                        }
-                    }
-
-                    keybind = buttons.ToArray();
-                    this.Keybinds.Add(e.Component.Name, keybind);
-                }
-
-                foreach (var button in keybind)
-                {
-                    this.OverrideButton(button, true);
-                }
-            }
-
-            e.SuppressInput();
         }
+        else if (e.Component.Name.StartsWith("command:"))
+        {
+            var command = e.Component.Name[8..].Trim().Split(' ');
+            this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
+        }
+        else if (e.Component.Name.StartsWith("keybind:"))
+        {
+            if (!this.Keybinds.TryGetValue(e.Component.Name, out var keybind))
+            {
+                var keys = e.Component.Name[8..].Trim().Split(' ');
+                IList<SButton> buttons = new List<SButton>();
+                foreach (var key in keys)
+                {
+                    if (Enum.TryParse(key, out SButton button))
+                    {
+                        buttons.Add(button);
+                    }
+                }
+
+                keybind = buttons.ToArray();
+                this.Keybinds.Add(e.Component.Name, keybind);
+            }
+
+            foreach (var button in keybind)
+            {
+                this.OverrideButton(button, true);
+            }
+        }
+
+        e.SuppressInput();
     }
 
     private void OnRenderedHud(object sender, RenderedHudEventArgs e)
@@ -190,12 +222,14 @@ internal class HudComponents : IHudComponents, IModService
 
         var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
         var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var y = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize
+        var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
+        var y = alignBottom
             ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
             : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
-        if (this.Components.Any(icon => icon.Y != y))
+        if (this.Components.Any(icon => icon.Y != y)
+            || this.Components.Where(icon => icon.IsVisible).Select(icon => icon.X).Distinct().Count() != this.Components.Count(component => component.IsVisible))
         {
-            this.ReinitializeIcons(y);
+            this.ReorientComponents(y, alignBottom);
         }
 
         foreach (var icon in this.Components)
@@ -206,10 +240,10 @@ internal class HudComponents : IHudComponents, IModService
 
     private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
     {
-        if (this.Shortcuts.Any())
+        if (this.ToolbarIcons.Any())
         {
-            this.Components.AddRange(this.Shortcuts);
-            this.ReinitializeIcons();
+            this.Components.AddRange(this.ToolbarIcons);
+            this.ReorientComponents();
         }
     }
 
@@ -218,15 +252,15 @@ internal class HudComponents : IHudComponents, IModService
         this.OverrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
     }
 
-    private void ReinitializeIcons(int y = -1)
+    private void ReorientComponents(int y = -1, bool alignBottom = false)
     {
         var icons = this.Components.Where(icon => icon.Area is ComponentArea.Left).ToList();
         var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
         var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
         var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
         if (y == -1)
         {
+            alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
             y = alignBottom
                 ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
                 : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
@@ -236,7 +270,10 @@ internal class HudComponents : IHudComponents, IModService
         {
             icon.X = x;
             icon.Y = y - (alignBottom ? icon.Component.bounds.Height : 0);
-            x += icon.Component.bounds.Width + 4;
+            if (icon.IsVisible)
+            {
+                x += icon.Component.bounds.Width + 4;
+            }
         }
 
         icons = this.Components.Where(icon => icon.Area is ComponentArea.Right).ToList();
@@ -245,7 +282,10 @@ internal class HudComponents : IHudComponents, IModService
         {
             icon.X = x;
             icon.Y = y - (alignBottom ? icon.Component.bounds.Height : 0);
-            x += icon.Component.bounds.Width + 4;
+            if (icon.IsVisible)
+            {
+                x += icon.Component.bounds.Width + 4;
+            }
         }
     }
 }

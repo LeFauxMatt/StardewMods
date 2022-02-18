@@ -44,6 +44,7 @@
   "config.LookupAnythingHotkey.description": "What hotkey to simulate for activating Lookup Anything Search.",
   // Icons
   "icon.chests-anywhere.name": "Toggle Chests Anywhere",
+  "icon.cjb-group.name": "Toggle CJB Group",
   "icon.cjb-cheats-menu.name": "Open CJB Cheats Menu",
   "icon.cjb-item-spawner.name": "Show CJB Item Spawner",
   "icon.data-layers.name": "Toggle Data Layers",

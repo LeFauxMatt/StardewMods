@@ -115,7 +115,7 @@ internal class StashToChest : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HudComponents.Components.Add(this.StashButton);
+        this.HudComponents.AddToolbarIcon(this.StashButton);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
@@ -125,7 +125,7 @@ internal class StashToChest : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HudComponents.Components.Remove(this.StashButton);
+        this.HudComponents.RemoveToolbarIcon(this.StashButton);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;

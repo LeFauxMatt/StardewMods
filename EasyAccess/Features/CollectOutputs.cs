@@ -95,7 +95,7 @@ internal class CollectOutputs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HudComponents.Components.Add(this.CollectButton);
+        this.HudComponents.AddToolbarIcon(this.CollectButton);
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -103,7 +103,7 @@ internal class CollectOutputs : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HudComponents.Components.Remove(this.CollectButton);
+        this.HudComponents.RemoveToolbarIcon(this.CollectButton);
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }

@@ -95,7 +95,7 @@ internal class DispenseInputs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HudComponents.Components.Add(this.DispenseButton);
+        this.HudComponents.AddToolbarIcon(this.DispenseButton);
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -103,7 +103,7 @@ internal class DispenseInputs : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HudComponents.Components.Remove(this.DispenseButton);
+        this.HudComponents.RemoveToolbarIcon(this.DispenseButton);
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }

@@ -55,6 +55,13 @@ public class CustomClickableComponent : IClickableComponent
     }
 
     /// <inheritdoc />
+    public bool IsVisible
+    {
+        get => this.Component.visible;
+        set => this.Component.visible = value;
+    }
+
+    /// <inheritdoc />
     public ComponentLayer Layer { get; }
 
     /// <inheritdoc />
@@ -82,12 +89,18 @@ public class CustomClickableComponent : IClickableComponent
     /// <inheritdoc />
     public virtual void Draw(SpriteBatch spriteBatch)
     {
-        this.Component?.draw(spriteBatch);
+        if (this.IsVisible)
+        {
+            this.Component?.draw(spriteBatch);
+        }
     }
 
     /// <inheritdoc />
     public virtual void TryHover(int x, int y, float maxScaleIncrease = 0.1f)
     {
-        this.Component?.tryHover(x, y, maxScaleIncrease);
+        if (this.IsVisible)
+        {
+            this.Component?.tryHover(x, y, maxScaleIncrease);
+        }
     }
 }

@@ -9,7 +9,7 @@ using StardewMods.FuryCore.Interfaces;
 /// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IModService" />
 internal class AssetHandler : IModService, IAssetLoader
 {
-    private IReadOnlyDictionary<string, string[]> _toolbarData;
+    private readonly PerScreen<IReadOnlyDictionary<string, string[]>> _toolbarData = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="AssetHandler" /> class.
@@ -28,16 +28,15 @@ internal class AssetHandler : IModService, IAssetLoader
     {
         get
         {
-            this._toolbarData ??= (
+            return this._toolbarData.Value ??= (
                     from icon in
                         from data in this.Helper.Content.Load<IDictionary<string, string>>($"{FuryCore.ModUniqueId}/Toolbar", ContentSource.GameContent)
                         select (data.Key, info: data.Value.Split('/'))
-                    orderby int.Parse(icon.info[2]), icon.info[0]
+                    orderby icon.Key
                     select (icon.Key, icon.info))
                 .ToDictionary(
                     data => data.Key,
                     data => data.info);
-            return this._toolbarData;
         }
     }
 
