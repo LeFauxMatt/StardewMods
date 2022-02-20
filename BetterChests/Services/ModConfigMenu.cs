@@ -473,6 +473,15 @@ internal class ModConfigMenu : IModService
             I18n.Config_SlotLock_Tooltip,
             nameof(SlotLock));
 
+        // Slot Lock Hold
+        this.GMCM.API.AddBoolOption(
+            this.Manifest,
+            () => this.Config.SlotLockHold,
+            value => this.Config.SlotLockHold = value,
+            I18n.Config_SlotLockHold_Name,
+            I18n.Config_SlotLockHold_Tooltip,
+            nameof(IConfigData.SlotLockHold));
+
         // Custom Color Picker Area
         this.GMCM.API.AddTextOption(
             this.Manifest,
