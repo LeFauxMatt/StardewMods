@@ -14,6 +14,7 @@ using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewValley;
@@ -82,7 +83,7 @@ internal class StashToChest : Feature
                 }
             }
 
-            return eligibleStorages;
+            return eligibleStorages.OrderBy(eligibleStorage => eligibleStorage.StashToChestPriority);
         }
     }
 
@@ -175,12 +176,11 @@ internal class StashToChest : Feature
         }
     }
 
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
-        if (e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.StashToChest != FeatureOptionRange.Disabled)
-        {
-            this.CurrentStorage = managedStorage;
-        }
+        this.CurrentStorage = e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.StashToChest != FeatureOptionRange.Disabled
+            ? managedStorage
+            : null;
     }
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)

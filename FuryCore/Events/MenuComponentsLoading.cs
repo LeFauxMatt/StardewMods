@@ -29,8 +29,7 @@ internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingE
     public MenuComponentsLoading(IModServices services)
     {
         this._menuComponents = services.Lazy<MenuComponents>();
-        services.Lazy<ICustomEvents>(
-            customEvents => { customEvents.ClickableMenuChanged += this.OnClickableMenuChanged; });
+        services.Lazy<ICustomEvents>(customEvents => customEvents.ClickableMenuChanged += this.OnClickableMenuChanged);
     }
 
     private IClickableMenu Menu
@@ -45,7 +44,7 @@ internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingE
     }
 
     [SortedEventPriority(EventPriority.High)]
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         if (!ReferenceEquals(this.Menu, e.Menu))
         {
@@ -70,13 +69,10 @@ internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingE
         components.AddRange(vanillaComponents);
         this.InvokeAll(new(e.Menu, components));
         this.MenuComponents.Components.AddRange(components);
-
-        foreach (var component in components)
+        this.Menu.populateClickableComponentList();
+        foreach (var component in components.Where(component => !this.Menu.allClickableComponents.Contains(component.Component)))
         {
-            if (!this.Menu.allClickableComponents.Contains(component.Component))
-            {
-                this.Menu.allClickableComponents.Add(component.Component);
-            }
+            this.Menu.allClickableComponents.Add(component.Component);
         }
     }
 }

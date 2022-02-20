@@ -2,7 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
+using System.Text;
+using Common.Helpers;
 using HarmonyLib;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
@@ -55,19 +58,42 @@ internal class HarmonyHelper : IHarmonyHelper, IModService
 
         foreach (var patch in patches)
         {
-            switch (patch.PatchType)
+            try
             {
-                case PatchType.Prefix:
-                    harmony.Patch(patch.Original, patch.Patch);
-                    break;
-                case PatchType.Postfix:
-                    harmony.Patch(patch.Original, postfix: patch.Patch);
-                    break;
-                case PatchType.Transpiler:
-                    harmony.Patch(patch.Original, transpiler: patch.Patch);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException($"Failed to patch {nameof(patch.Type)}.{patch.Name}");
+                switch (patch.PatchType)
+                {
+                    case PatchType.Prefix:
+                        harmony.Patch(patch.Original, patch.Patch);
+                        break;
+                    case PatchType.Postfix:
+                        harmony.Patch(patch.Original, postfix: patch.Patch);
+                        break;
+                    case PatchType.Transpiler:
+                        harmony.Patch(patch.Original, transpiler: patch.Patch);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException($"Failed to patch {nameof(patch.Type)}.{patch.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"This mod failed in {patch.Method.Name}");
+                if (patch.Method.DeclaringType?.Name is not null)
+                {
+                    sb.Append($" of {patch.Method.DeclaringType.Name}. Technical details:\n");
+                }
+
+                sb.Append(ex.Message);
+                var st = new StackTrace(ex, true);
+                var frame = st.GetFrame(0);
+                if (frame?.GetFileName() is { } fileName)
+                {
+                    var line = frame.GetFileLineNumber().ToString();
+                    sb.Append($" at {fileName}:line {line}");
+                }
+
+                Log.Error(sb.ToString());
             }
         }
     }

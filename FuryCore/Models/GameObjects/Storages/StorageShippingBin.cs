@@ -14,6 +14,15 @@ internal class StorageShippingBin : BaseStorage
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageShippingBin" /> class.
     /// </summary>
+    /// <param name="location">The location of the shipping bin.</param>
+    public StorageShippingBin(GameLocation location)
+        : base(location)
+    {
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="StorageShippingBin" /> class.
+    /// </summary>
     /// <param name="shippingBin">The shipping bin.</param>
     public StorageShippingBin(ShippingBin shippingBin)
         : base(shippingBin)
@@ -34,9 +43,8 @@ internal class StorageShippingBin : BaseStorage
     {
         get => this.Context switch
         {
-            ShippingBin => int.MaxValue,
             Chest chest => chest.GetActualCapacity(),
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => int.MaxValue,
         };
     }
 
@@ -45,9 +53,8 @@ internal class StorageShippingBin : BaseStorage
     {
         get => this.Context switch
         {
-            ShippingBin => Game1.getFarm().getShippingBin(Game1.player),
             Chest chest => chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID),
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => Game1.getFarm().getShippingBin(Game1.player),
         };
     }
 
@@ -56,7 +63,8 @@ internal class StorageShippingBin : BaseStorage
     {
         get => this.Context switch
         {
-            ShippingBin shippingBin => shippingBin.modData,
+            Building building => building.modData,
+            GameLocation location => location.modData,
             Chest chest => chest.modData,
             _ => throw new ArgumentOutOfRangeException(),
         };

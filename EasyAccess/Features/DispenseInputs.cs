@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -68,7 +69,7 @@ internal class DispenseInputs : Feature
                 }
             }
 
-            return eligibleProducers;
+            return eligibleProducers.OrderBy(eligibleProducer => eligibleProducer.DispenseInputPriority);
         }
     }
 

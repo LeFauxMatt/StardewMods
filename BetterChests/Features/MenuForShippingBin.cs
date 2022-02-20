@@ -5,7 +5,7 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -35,7 +35,7 @@ internal class MenuForShippingBin : Feature
     }
 
     [SortedEventPriority(EventPriority.High)]
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
         if (e.Menu is ItemGrabMenu { context: { } context, shippingBin: true } && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage))

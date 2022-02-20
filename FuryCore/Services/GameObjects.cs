@@ -162,6 +162,17 @@ internal class GameObjects : IGameObjects, IModService
                         exclude.Add(islandFarmHouse.fridge.Value);
                         yield return new(new(location, islandFarmHouse.fridgePosition.ToVector2()), islandFarmHouseObject);
                         break;
+
+                    // Island Farm
+                    case IslandWest islandWest when !exclude.Contains(islandWest):
+                        if (!this.TryGetGameObject(islandWest, out var islandWestObject))
+                        {
+                            break;
+                        }
+
+                        exclude.Add(islandWest);
+                        yield return new(new(location, islandWest.shippingBinPosition.ToVector2()), islandWestObject);
+                        break;
                 }
 
                 // Storages from GameLocation.Objects
@@ -233,18 +244,6 @@ internal class GameObjects : IGameObjects, IModService
 
         switch (context)
         {
-            case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
-                this.ContextMap[junimoHutChest] = context;
-                gameObject = new StorageJunimoHut(junimoHut);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-
-            case ShippingBin shippingBin:
-                this.ContextMap[Game1.getFarm()] = context;
-                gameObject = new StorageShippingBin(shippingBin);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-
             case FarmHouse { fridge.Value: { } fridge } farmHouse:
                 this.ContextMap[fridge] = context;
                 gameObject = new StorageFridge(farmHouse);
@@ -254,6 +253,23 @@ internal class GameObjects : IGameObjects, IModService
             case IslandFarmHouse { fridge.Value: { } islandFridge } islandFarmHouse:
                 this.ContextMap[islandFridge] = context;
                 gameObject = new StorageFridge(islandFarmHouse);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case IslandWest islandWest:
+                gameObject = new StorageShippingBin(islandWest);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
+                this.ContextMap[junimoHutChest] = context;
+                gameObject = new StorageJunimoHut(junimoHut);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case ShippingBin shippingBin:
+                this.ContextMap[Game1.getFarm()] = context;
+                gameObject = new StorageShippingBin(shippingBin);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
 

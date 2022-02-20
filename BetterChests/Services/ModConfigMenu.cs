@@ -535,7 +535,7 @@ internal class ModConfigMenu : IModService
         // Chests
         this.GMCM.API.AddPage(this.Manifest, "Chests");
 
-        foreach (var (name, _) in this.Assets.ChestData)
+        foreach (var (name, _) in this.Assets.ChestData.OrderBy(chestData => chestData.Key))
         {
             this.GMCM.API.AddPageLink(this.Manifest, name, () => name);
         }

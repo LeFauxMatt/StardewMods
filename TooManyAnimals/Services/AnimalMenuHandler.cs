@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.TooManyAnimals.Services;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -8,7 +9,9 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models.ClickableComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.TooManyAnimals.Interfaces;
 using StardewValley;
 using StardewValley.Menus;
@@ -18,6 +21,7 @@ using SObject = StardewValley.Object;
 internal class AnimalMenuHandler : IModService
 {
     private readonly PerScreen<int> _currentPage = new();
+    private readonly PerScreen<PurchaseAnimalsMenu> _menu = new();
     private readonly PerScreen<IClickableComponent> _nextPage = new();
     private readonly PerScreen<IClickableComponent> _previousPage = new();
 
@@ -44,12 +48,15 @@ internal class AnimalMenuHandler : IModService
                     nameof(AnimalMenuHandler.PurchaseAnimalsMenu_constructor_prefix));
                 harmonyHelper.ApplyPatches(id);
             });
+        services.Lazy<ICustomEvents>(
+            customEvents =>
+            {
+                customEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
+                customEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+                customEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+            });
 
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
     }
 
     private static AnimalMenuHandler Instance { get; set; }
@@ -73,14 +80,30 @@ internal class AnimalMenuHandler : IModService
 
     private IModHelper Helper { get; }
 
+    private PurchaseAnimalsMenu Menu
+    {
+        get => this._menu.Value;
+        set => this._menu.Value = value;
+    }
+
     private IClickableComponent NextPage
     {
-        get => this._nextPage.Value ??= new CustomClickableComponent(new(new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new(365, 495, 12, 11), Game1.pixelZoom));
+        get => this._nextPage.Value ??= new CustomClickableComponent(
+            new(
+                new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
+                Game1.mouseCursors,
+                new(365, 495, 12, 11),
+                Game1.pixelZoom));
     }
 
     private IClickableComponent PreviousPage
     {
-        get => this._previousPage.Value ??= new CustomClickableComponent(new(new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new(352, 495, 12, 11), Game1.pixelZoom));
+        get => this._previousPage.Value ??= new CustomClickableComponent(
+            new(
+                new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
+                Game1.mouseCursors,
+                new(352, 495, 12, 11),
+                Game1.pixelZoom));
     }
 
     private List<SObject> Stock { get; set; }
@@ -97,26 +120,6 @@ internal class AnimalMenuHandler : IModService
                                  .ToList();
     }
 
-    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-    {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit || e.Button != SButton.MouseLeft)
-        {
-            return;
-        }
-
-        var (x, y) = Game1.getMousePosition(true);
-        if (this.CurrentPage * this.Config.AnimalShopLimit < this.Stock.Count - 1 && this.NextPage.Component.containsPoint(x, y))
-        {
-            this.CurrentPage++;
-            return;
-        }
-
-        if (this.CurrentPage > 0 && this.PreviousPage.Component.containsPoint(x, y))
-        {
-            this.CurrentPage--;
-        }
-    }
-
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
         if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
@@ -124,91 +127,87 @@ internal class AnimalMenuHandler : IModService
             return;
         }
 
-        if (this.CurrentPage * this.Config.AnimalShopLimit < this.Stock.Count - 1 && this.Config.ControlScheme.NextPage.JustPressed())
+        if (this.Config.ControlScheme.NextPage.JustPressed() && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
         {
             this.CurrentPage++;
             return;
         }
 
-        if (this.CurrentPage > 0 && this.Config.ControlScheme.PreviousPage.JustPressed())
+        if (this.Config.ControlScheme.PreviousPage.JustPressed() && this.CurrentPage > 0)
         {
             this.CurrentPage--;
         }
     }
 
-    private void OnCursorMoved(object sender, CursorMovedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
+        // Reset Stock/CurrentPage
+        if (e.Menu is not PurchaseAnimalsMenu menu)
         {
+            this.Menu = null;
+            this.Stock = null;
+            this._currentPage.Value = 0;
             return;
         }
 
-        var (x, y) = Game1.getMousePosition(true);
-        this.NextPage.TryHover(x, y);
-        this.PreviousPage.TryHover(x, y);
-    }
-
-    private void OnMenuChanged(object sender, MenuChangedEventArgs e)
-    {
-        // Reset Stock/CurrentPage
-        if (e.OldMenu is PurchaseAnimalsMenu && e.NewMenu is not PurchaseAnimalsMenu)
-        {
-            this.Stock = null;
-            this._currentPage.Value = 0;
-        }
-
         // Reposition Next/Previous Page Buttons
-        if (e.NewMenu is PurchaseAnimalsMenu menu)
+        this.Menu = menu;
+        this.NextPage.X = this.Menu.xPositionOnScreen + this.Menu.width - this.NextPage.Component.bounds.Width;
+        this.NextPage.Y = this.Menu.yPositionOnScreen + this.Menu.height;
+        this.NextPage.IsVisible = (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count;
+        this.NextPage.Component.leftNeighborID = this.PreviousPage.Id;
+        this.PreviousPage.X = this.Menu.xPositionOnScreen;
+        this.PreviousPage.Y = this.Menu.yPositionOnScreen + this.Menu.height;
+        this.PreviousPage.IsVisible = this.CurrentPage > 0;
+        this.PreviousPage.Component.rightNeighborID = this.NextPage.Id;
+
+        for (var index = 0; index < this.Menu.animalsToPurchase.Count; index++)
         {
-            this.NextPage.X = menu.xPositionOnScreen + menu.width - this.NextPage.Component.bounds.Width;
-            this.NextPage.Y = menu.yPositionOnScreen + menu.height;
-            this.PreviousPage.X = menu.xPositionOnScreen;
-            this.PreviousPage.Y = menu.yPositionOnScreen + menu.height;
-
-            for (var index = 0; index < menu.animalsToPurchase.Count; index++)
+            var i = index + this.CurrentPage * this.Config.AnimalShopLimit;
+            if (ReferenceEquals(this.Menu.animalsToPurchase[index].texture, Game1.mouseCursors))
             {
-                var i = index + this.CurrentPage * this.Config.AnimalShopLimit;
-                if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors))
-                {
-                    menu.animalsToPurchase[index].sourceRect.X = i % 3 * 16 * 2;
-                    menu.animalsToPurchase[index].sourceRect.Y = 448 + i / 3 * 16;
-                }
+                this.Menu.animalsToPurchase[index].sourceRect.X = i % 3 * 16 * 2;
+                this.Menu.animalsToPurchase[index].sourceRect.Y = 448 + i / 3 * 16;
+            }
 
-                if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
-                {
-                    menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
-                    menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
-                }
+            if (ReferenceEquals(this.Menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
+            {
+                this.Menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
+                this.Menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
             }
         }
     }
 
-    private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
+    private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu menu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (ReferenceEquals(e.Component, this.PreviousPage) && this.CurrentPage > 0)
+        {
+            this.CurrentPage--;
+        }
+        else if (ReferenceEquals(e.Component, this.NextPage) && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
+        {
+            this.CurrentPage++;
+        }
+    }
+
+    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    {
+        if (e.Menu is not PurchaseAnimalsMenu menu)
         {
             return;
         }
 
-        // Conditionally draw next page button
-        if (this.CurrentPage * this.Config.AnimalShopLimit < this.Stock.Count - 1)
-        {
-            this.NextPage.Draw(e.SpriteBatch);
-        }
+        e.AddComponent(this.NextPage);
+        e.AddComponent(this.PreviousPage);
 
-        // Conditionally draw previous page button
-        if (this.CurrentPage > 0)
+        // Assign neighborId for controller
+        var maxY = menu.animalsToPurchase.Max(component => component.bounds.Y);
+        var bottomComponents = menu.animalsToPurchase.Where(component => component.bounds.Y == maxY).ToList();
+        this.PreviousPage.Component.upNeighborID = bottomComponents.OrderBy(component => Math.Abs(component.bounds.Center.X - this.PreviousPage.X)).First().myID;
+        this.NextPage.Component.upNeighborID = bottomComponents.OrderBy(component => Math.Abs(component.bounds.Center.X - this.NextPage.X)).First().myID;
+        foreach (var component in bottomComponents)
         {
-            this.PreviousPage.Draw(e.SpriteBatch);
+            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + menu.width / 2 ? this.PreviousPage.Id : this.NextPage.Id;
         }
-
-        // Redraw foreground components
-        if (menu.hovered?.item is SObject obj)
-        {
-            IClickableMenu.drawHoverText(e.SpriteBatch, Game1.parseText(obj.Type, Game1.dialogueFont, 320), Game1.dialogueFont);
-        }
-
-        Game1.mouseCursorTransparency = 1f;
-        menu.drawMouse(e.SpriteBatch);
     }
 }

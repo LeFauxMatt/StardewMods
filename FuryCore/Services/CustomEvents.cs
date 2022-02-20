@@ -40,7 +40,7 @@ internal class CustomEvents : ICustomEvents, IModService
     }
 
     /// <inheritdoc />
-    public event EventHandler<ClickableMenuChangedEventArgs> ClickableMenuChanged
+    public event EventHandler<IClickableMenuChangedEventArgs> ClickableMenuChanged
     {
         add => this._clickableMenuChanged.Add(value);
         remove => this._clickableMenuChanged.Remove(value);

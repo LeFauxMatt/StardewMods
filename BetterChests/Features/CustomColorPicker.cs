@@ -13,8 +13,8 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
@@ -216,7 +216,7 @@ internal class CustomColorPicker : Feature
         __instance.discreteColorPickerCC = null;
     }
 
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         if (e.Menu is not ItemGrabMenu { context: { } context } itemGrabMenu || !this.ManagedObjects.TryGetManagedStorage(context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
         {

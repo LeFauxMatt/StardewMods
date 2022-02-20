@@ -10,8 +10,8 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Services;
+using StardewMods.BetterChests.UI;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
@@ -171,7 +171,7 @@ internal class ChestMenuTabs : Feature
             return;
         }
 
-        if (e.Button is SButton.Left || e.Button.IsActionButton())
+        if (e.Button is SButton.MouseLeft || e.Button.IsActionButton())
         {
             this.SetTab(this.Index == index ? -1 : index);
         }

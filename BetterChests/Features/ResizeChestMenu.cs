@@ -18,8 +18,8 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
-using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
@@ -445,7 +445,7 @@ internal class ResizeChestMenu : Feature
     }
 
     [SortedEventPriority(EventPriority.High)]
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         this.Menu = e.Menu as MenuWithInventory;
         this.StorageData = e.Menu switch
@@ -461,7 +461,7 @@ internal class ResizeChestMenu : Feature
             this.CurrentOffset = this.MenuOffset;
         }
 
-        if (this.StorageData is null || this.Menu is not ItemGrabMenu { ItemsToGrabMenu: { inventory: { } topRow } itemsToGrabMenu, inventory: { inventory: { } bottomRow } inventory })
+        if (this.StorageData is null || this.Menu is not ItemGrabMenu { ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow })
         {
             return;
         }

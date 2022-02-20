@@ -1,15 +1,14 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.UI;
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc cref="IClickableComponent" />
+/// <inheritdoc />
 internal class TabComponent : CustomClickableComponent
 {
     /// <summary>

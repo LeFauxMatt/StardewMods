@@ -6,8 +6,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
-using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
 using StardewValley;
 using StardewValley.Menus;
@@ -48,7 +48,7 @@ internal class RenderingClickableMenu : SortedEventHandler<RenderingActiveMenuEv
         set => this._screenId.Value = value;
     }
 
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         switch (e.Menu)
         {

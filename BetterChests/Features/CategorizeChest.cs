@@ -9,6 +9,7 @@ using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
@@ -86,7 +87,7 @@ internal class CategorizeChest : Feature
         this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
     }
 
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         switch (e.Menu)
         {

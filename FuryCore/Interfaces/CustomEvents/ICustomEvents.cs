@@ -16,7 +16,7 @@ public interface ICustomEvents
     ///     Similar to SMAPI's own MenuChanged event, except it is invoked for not-yet-active menus in their constructor, and
     ///     has tick monitoring for specific fields that substantially change the menu's functionality.
     /// </summary>
-    public event EventHandler<ClickableMenuChangedEventArgs> ClickableMenuChanged;
+    public event EventHandler<IClickableMenuChangedEventArgs> ClickableMenuChanged;
 
     /// <summary>
     ///     Triggers when <see cref="IGameObject" /> that are no longer accessible are purged from the cache.

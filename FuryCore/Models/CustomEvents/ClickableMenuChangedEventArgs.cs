@@ -1,11 +1,12 @@
 ﻿namespace StardewMods.FuryCore.Models.CustomEvents;
 
 using System;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley.Menus;
 
 /// <inheritdoc cref="IClickableMenuChangedEventArgs" />
-public class ClickableMenuChangedEventArgs : EventArgs
+internal class ClickableMenuChangedEventArgs : EventArgs, IClickableMenuChangedEventArgs
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ClickableMenuChangedEventArgs" /> class.
@@ -22,21 +23,15 @@ public class ClickableMenuChangedEventArgs : EventArgs
         this.ScreenId = screenId;
     }
 
+    /// <inheritdoc />
     public IGameObject Context { get; }
 
-    /// <summary>
-    ///     Gets a value indicating whether the menu was just constructed.
-    ///     Returns false when the active menu is changed to an already created menu.
-    /// </summary>
+    /// <inheritdoc />
     public bool IsNew { get; }
 
-    /// <summary>
-    ///     Gets the IClickableMenu if it is the currently active menu.
-    /// </summary>
+    /// <inheritdoc />
     public IClickableMenu Menu { get; }
 
-    /// <summary>
-    ///     Gets the screen id that the menu was opened on.
-    /// </summary>
+    /// <inheritdoc />
     public int ScreenId { get; }
 }

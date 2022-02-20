@@ -11,7 +11,7 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewValley;
 using StardewValley.Menus;
 using SObject = StardewValley.Object;
@@ -79,7 +79,7 @@ internal class OrganizeChest : Feature
         OrganizeChest.Instance.OrganizeItems();
     }
 
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         this.CurrentStorage = e.Menu is ItemGrabMenu { context: { } context } && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
             ? managedStorage

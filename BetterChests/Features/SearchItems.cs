@@ -393,7 +393,7 @@ internal class SearchItems : Feature
     }
 
     [SortedEventPriority(EventPriority.High)]
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         this.Menu = e.Menu as MenuWithInventory;
         this.Context = e.Context;

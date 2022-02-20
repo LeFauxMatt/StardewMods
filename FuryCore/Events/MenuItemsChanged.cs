@@ -48,7 +48,7 @@ internal class MenuItemsChanged : SortedEventHandler<IMenuItemsChangedEventArgs>
     }
 
     [SortedEventPriority(EventPriority.High)]
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         if (e.Menu is not ItemGrabMenu { context: { } context } itemGrabMenu || !this.GameObjects.TryGetGameObject(context, out var gameObject) || gameObject is not IStorageContainer storageContainer)
         {

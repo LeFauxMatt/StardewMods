@@ -115,7 +115,7 @@ internal class ModConfigMenu : IModService
         // Producers
         this.GMCM.API.AddPage(this.Manifest, "Producers");
 
-        foreach (var (name, _) in this.Assets.ProducerData)
+        foreach (var (name, _) in this.Assets.ProducerData.OrderBy(producerData => producerData.Key))
         {
             this.GMCM.API.AddPageLink(this.Manifest, name, () => name);
         }

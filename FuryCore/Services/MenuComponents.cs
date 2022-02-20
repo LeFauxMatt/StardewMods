@@ -12,7 +12,8 @@ using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
-using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -44,11 +45,16 @@ internal class MenuComponents : IModService
             harmonyHelper =>
             {
                 var id = $"{FuryCore.ModUniqueId}.{nameof(MenuComponents)}";
-                harmonyHelper.AddPatch(
+                harmonyHelper.AddPatches(
                     id,
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-                    typeof(MenuComponents),
-                    nameof(MenuComponents.ItemGrabMenu_RepositionSideButtons_prefix));
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
+                            typeof(MenuComponents),
+                            nameof(MenuComponents.ItemGrabMenu_RepositionSideButtons_prefix),
+                            PatchType.Prefix),
+                    });
                 harmonyHelper.ApplyPatches(id);
             });
     }
@@ -87,7 +93,7 @@ internal class MenuComponents : IModService
     }
 
     [SortedEventPriority(EventPriority.Low - 1000)]
-    private void OnClickableMenuChanged(object sender, ClickableMenuChangedEventArgs e)
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         this.ReorientComponents(e.Menu);
     }
@@ -178,10 +184,11 @@ internal class MenuComponents : IModService
                 var height = menu switch
                 {
                     ItemGrabMenu { ItemsToGrabMenu: { } topMenu } => Game1.tileSize * topMenu.rows,
-                    _ => menu.height,
+                    not null => menu.height,
+                    _ => 0,
                 };
 
-                if (area is ComponentArea.Right)
+                if (area is ComponentArea.Right && menu is not null)
                 {
                     x += menu.width;
                 }

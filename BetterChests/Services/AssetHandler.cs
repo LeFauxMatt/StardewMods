@@ -171,6 +171,7 @@ internal class AssetHandler : IModService, IAssetLoader
         return location switch
         {
             FarmHouse or IslandFarmHouse => "Fridge",
+            IslandWest => "Shipping Bin",
             _ => null,
         };
     }
