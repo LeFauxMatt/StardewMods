@@ -49,4 +49,7 @@ internal class ConfigData : IConfigData
 
     /// <inheritdoc />
     public bool SlotLock { get; set; } = true;
+
+    /// <inheritdoc />
+    public bool SlotLockHold { get; set; } = true;
 }

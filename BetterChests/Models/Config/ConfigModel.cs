@@ -78,6 +78,13 @@ internal class ConfigModel : IConfigModel
         set => this.Data.SlotLock = value;
     }
 
+    /// <inheritdoc />
+    public bool SlotLockHold
+    {
+        get => this.Data.SlotLockHold;
+        set => this.Data.SlotLockHold = value;
+    }
+
     private IConfigData Data { get; }
 
     private IModHelper Helper { get; }

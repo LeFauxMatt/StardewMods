@@ -129,7 +129,8 @@ internal class SlotLock : Feature
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (e.Button != SButton.MouseLeft || !e.IsDown(this.Config.ControlScheme.LockSlot))
+        if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
+            && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
         {
             return;
         }

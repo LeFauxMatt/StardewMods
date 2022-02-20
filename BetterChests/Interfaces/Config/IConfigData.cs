@@ -50,6 +50,11 @@ internal interface IConfigData
     public bool SlotLock { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
+    /// </summary>
+    public bool SlotLockHold { get; set; }
+
+    /// <summary>
     ///     Copies data from one <see cref="IConfigData" /> to another.
     /// </summary>
     /// <param name="other">The <see cref="IConfigData" /> to copy values to.</param>
@@ -65,5 +70,6 @@ internal interface IConfigData
         ((IStorageData)other.DefaultChest).CopyTo(this.DefaultChest);
         other.SearchTagSymbol = this.SearchTagSymbol;
         other.SlotLock = this.SlotLock;
+        other.SlotLockHold = this.SlotLockHold;
     }
 }

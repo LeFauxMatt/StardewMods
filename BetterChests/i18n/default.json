@@ -72,6 +72,8 @@
   "config.search-items-symbol.tooltip": "Symbol to prefix a search phrase to search by an item's context tags.",
   "config.slot-lock.name": "Slot Lock",
   "config.slot-lock.tooltip": "Lock item slots in the player inventory so they do not get stashed.",
+  "config.slot-lock-hold.name": "Slot Lock Hold",
+  "config.slot-lock-hold.tooltip": "Lock slot key must be held down to lock an item slot.",
   "config.stash-to-chest.name": "Stash to Chest",
   "config.stash-to-chest.tooltip": "The default range that chests can be remotely stashed into.",
   "config.stash-to-chest-distance.name": "Stash to Chest Distance",
