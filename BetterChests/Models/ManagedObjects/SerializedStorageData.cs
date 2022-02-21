@@ -20,6 +20,15 @@ internal class SerializedStorageData : IStorageData
     }
 
     /// <inheritdoc />
+    public FeatureOption AutoOrganize
+    {
+        get => this.Data.TryGetValue("AutoOrganize", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option
+            : FeatureOption.Default;
+        set => this.Data["AutoOrganize"] = value == FeatureOption.Default ? string.Empty : FormatHelper.GetOptionString(value);
+    }
+
+    /// <inheritdoc />
     public FeatureOption CarryChest
     {
         get => this.Data.TryGetValue("CarryChest", out var value) && Enum.TryParse(value, out FeatureOption option)

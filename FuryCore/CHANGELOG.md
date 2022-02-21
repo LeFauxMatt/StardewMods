@@ -4,22 +4,23 @@
 
 ### Additions
 
-* Added MenuComponentsLoading Event
-* Added MenuItemsChanged Event
-* Added StorageFridge
-* Added StorageJunimoHut
-* Added StorageObject
-* Added ComponentLayer Enum for IClickableComponent
+* Added MenuComponentsLoading Event.
+* Added MenuItemsChanged Event.
+* Added StorageFridge as an IStorageContainer.
+* Added StorageJunimoHut as an IStorageContainer.
+* Added StorageObject as an IStorageContainer.
+* Added ComponentLayer Enum for IClickableComponent.
+* Added support for the PurchaseAnimalsMenu.
 
 ### Changes
 
-* Renamed ItemGrabMenuChanged to ClickableMenuChanged
-* Renamed RenderedItemGrabMenu to RenderedClickableMenu
-* Renamed RenderingItemGrabMenu to RenderedClickableMenu
-* Renamed ToolbarIconPressed to HudComponentPressed
-* Renamed ToolbarIcons to HudComponents
-* Renamed IMenuComponent to IClickableComponent
-* Renamed IToolbarIcon to IHudComponent
+* Renamed ItemGrabMenuChanged to ClickableMenuChanged.
+* Renamed RenderedItemGrabMenu to RenderedClickableMenu.
+* Renamed RenderingItemGrabMenu to RenderedClickableMenu.
+* Renamed ToolbarIconPressed to HudComponentPressed.
+* Renamed ToolbarIcons to HudComponents.
+* Renamed IMenuComponent to IClickableComponent.
+* Renamed IToolbarIcon to IHudComponent.
 
 ## 1.4.1 (February 16, 2022)
 

@@ -83,7 +83,7 @@ internal class StashToChest : Feature
                 }
             }
 
-            return eligibleStorages.OrderBy(eligibleStorage => eligibleStorage.StashToChestPriority);
+            return eligibleStorages.OrderByDescending(eligibleStorage => eligibleStorage.StashToChestPriority);
         }
     }
 
@@ -227,7 +227,7 @@ internal class StashToChest : Feature
     {
         Log.Trace("Stashing items into storages");
         var stashedAny = false;
-        foreach (var eligibleChest in this.EligibleStorages)
+        foreach (var eligibleStorage in this.EligibleStorages)
         {
             for (var index = 0; index < Game1.player.MaxItems; index++)
             {
@@ -237,7 +237,7 @@ internal class StashToChest : Feature
                     continue;
                 }
 
-                item = eligibleChest.StashItem(item);
+                item = eligibleStorage.StashItem(item);
                 if (item is null)
                 {
                     stashedAny = true;

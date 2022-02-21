@@ -6,6 +6,7 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -38,9 +39,22 @@ internal class MenuForShippingBin : Feature
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
-        if (e.Menu is ItemGrabMenu { context: { } context, shippingBin: true } && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage))
+        if (e.Menu is ItemGrabMenu { context: { } context, shippingBin: true } itemGrabMenu && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage))
         {
+            var lastSnappedComponent = itemGrabMenu.currentlySnappedComponent;
+            var heldItem = itemGrabMenu.heldItem;
+            itemGrabMenu.heldItem = null;
             managedStorage.ShowMenu();
+            if (lastSnappedComponent is not null)
+            {
+                Game1.activeClickableMenu.setCurrentlySnappedComponentTo(lastSnappedComponent.myID);
+                if (Game1.options.SnappyMenus)
+                {
+                    itemGrabMenu.snapCursorToCurrentSnappedComponent();
+                }
+            }
+
+            ((ItemGrabMenu)Game1.activeClickableMenu).heldItem = heldItem;
         }
     }
 }

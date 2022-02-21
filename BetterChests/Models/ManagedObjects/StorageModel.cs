@@ -20,6 +20,23 @@ internal class StorageModel : IStorageData
     }
 
     /// <inheritdoc />
+    public FeatureOption AutoOrganize
+    {
+        get
+        {
+            if (this.Data.AutoOrganize != FeatureOption.Default)
+            {
+                return this.Data.AutoOrganize;
+            }
+
+            return this.DefaultStorage.AutoOrganize != FeatureOption.Disabled
+                ? FeatureOption.Enabled
+                : FeatureOption.Disabled;
+        }
+        set => this.Data.AutoOrganize = value;
+    }
+
+    /// <inheritdoc />
     public FeatureOption CarryChest
     {
         get

@@ -72,6 +72,7 @@ internal abstract class Feature : IModService
     {
         var enabled = this switch
         {
+            AutoOrganize => this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled,
             CarryChest => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled,
             CategorizeChest => this.Config.CategorizeChest,
             ChestMenuTabs => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled,

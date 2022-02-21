@@ -9,6 +9,11 @@ using StardewMods.BetterChests.Enums;
 internal interface IStorageData
 {
     /// <summary>
+    ///     Gets or sets a value indicating if the chest can be automatically organized overnight.
+    /// </summary>
+    public FeatureOption AutoOrganize { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if the chest can be carried by the player.
     /// </summary>
     public FeatureOption CarryChest { get; set; }
@@ -141,19 +146,20 @@ internal interface IStorageData
     /// </summary>
     /// <param name="other">The <see cref="IStorageData" /> to copy values to.</param>
     /// <typeparam name="TOther">The class/type of the other <see cref="IStorageData" />.</typeparam>
-    public void CopyTo<TOther>(TOther other)
+    public virtual void CopyTo<TOther>(TOther other)
         where TOther : IStorageData
     {
+        other.AutoOrganize = this.AutoOrganize;
         other.CarryChest = this.CarryChest;
         other.ChestMenuTabs = this.ChestMenuTabs;
-        other.ChestMenuTabSet = this.ChestMenuTabSet;
+        other.ChestMenuTabSet = new(this.ChestMenuTabSet);
         other.CollectItems = this.CollectItems;
         other.CraftFromChest = this.CraftFromChest;
-        other.CraftFromChestDisableLocations = this.CraftFromChestDisableLocations;
+        other.CraftFromChestDisableLocations = new(this.CraftFromChestDisableLocations);
         other.CraftFromChestDistance = this.CraftFromChestDistance;
         other.CustomColorPicker = this.CustomColorPicker;
         other.FilterItems = this.FilterItems;
-        other.FilterItemsList = this.FilterItemsList;
+        other.FilterItemsList = new(this.FilterItemsList);
         other.OpenHeldChest = this.OpenHeldChest;
         other.ResizeChest = this.ResizeChest;
         other.ResizeChestCapacity = this.ResizeChestCapacity;
@@ -161,7 +167,7 @@ internal interface IStorageData
         other.ResizeChestMenuRows = this.ResizeChestMenuRows;
         other.SearchItems = this.SearchItems;
         other.StashToChest = this.StashToChest;
-        other.StashToChestDisableLocations = this.StashToChestDisableLocations;
+        other.StashToChestDisableLocations = new(this.StashToChestDisableLocations);
         other.StashToChestDistance = this.StashToChestDistance;
         other.StashToChestPriority = this.StashToChestPriority;
         other.StashToChestStacks = this.StashToChestStacks;

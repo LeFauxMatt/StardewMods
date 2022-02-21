@@ -445,7 +445,7 @@ internal class MenuItems : IMenuItems, IModService
 
     private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
     {
-        if (!this.Config.ScrollMenuOverflow || e.Menu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu || this.GameObjects.TryGetGameObject(context, out var gameObject) || gameObject is not IStorageContainer)
+        if (!this.Config.ScrollMenuOverflow || e.Menu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu || !this.GameObjects.TryGetGameObject(context, out var gameObject) || gameObject is not IStorageContainer)
         {
             return;
         }

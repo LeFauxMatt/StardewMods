@@ -57,6 +57,56 @@ internal class OrganizeChest : Feature
         get => this._harmony.Value;
     }
 
+    /// <summary>
+    ///     Organizes items in a storage.
+    /// </summary>
+    /// <param name="storage">The storage to organize.</param>
+    /// <param name="forceAscending">Forces ascending order.</param>
+    public void OrganizeItems(IManagedStorage storage, bool forceAscending = false)
+    {
+        string OrderBy(Item item)
+        {
+            return storage.OrganizeChestGroupBy switch
+            {
+                GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")),
+                GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")),
+                GroupBy.Name => item.DisplayName,
+                GroupBy.Default or _ => string.Empty,
+            };
+        }
+
+        int ThenBy(Item item)
+        {
+            return storage.OrganizeChestSortBy switch
+            {
+                SortBy.Quality when item is SObject obj => obj.Quality,
+                SortBy.Quantity => item.Stack,
+                SortBy.Type => item.Category,
+                SortBy.Default or _ => 0,
+            };
+        }
+
+        var items = storage.OrganizeChestOrderByDescending && !forceAscending
+            ? storage.Items
+                     .OrderByDescending(OrderBy)
+                     .ThenByDescending(ThenBy)
+                     .ToList()
+            : storage.Items
+                     .OrderBy(OrderBy)
+                     .ThenBy(ThenBy)
+                     .ToList();
+        if (!forceAscending)
+        {
+            storage.OrganizeChestOrderByDescending = !storage.OrganizeChestOrderByDescending;
+        }
+
+        storage.Items.Clear();
+        foreach (var item in items)
+        {
+            storage.Items.Add(item);
+        }
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
@@ -76,7 +126,10 @@ internal class OrganizeChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_organizeItemsInList_postfix()
     {
-        OrganizeChest.Instance.OrganizeItems();
+        if (OrganizeChest.Instance.CurrentStorage is not null)
+        {
+            OrganizeChest.Instance.OrganizeItems(OrganizeChest.Instance.CurrentStorage);
+        }
     }
 
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
@@ -84,51 +137,5 @@ internal class OrganizeChest : Feature
         this.CurrentStorage = e.Menu is ItemGrabMenu { context: { } context } && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
             ? managedStorage
             : null;
-    }
-
-    private string OrderBy(Item item)
-    {
-        return this.CurrentStorage.OrganizeChestGroupBy switch
-        {
-            GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")),
-            GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")),
-            GroupBy.Name => item.DisplayName,
-            GroupBy.Default or _ => string.Empty,
-        };
-    }
-
-    private void OrganizeItems()
-    {
-        if (this.CurrentStorage is null)
-        {
-            return;
-        }
-
-        var items = this.CurrentStorage.OrganizeChestOrderByDescending
-            ? this.CurrentStorage.Items
-                  .OrderByDescending(this.OrderBy)
-                  .ThenByDescending(this.ThenBy)
-                  .ToList()
-            : this.CurrentStorage.Items
-                  .OrderBy(this.OrderBy)
-                  .ThenBy(this.ThenBy)
-                  .ToList();
-        this.CurrentStorage.OrganizeChestOrderByDescending = !this.CurrentStorage.OrganizeChestOrderByDescending;
-        this.CurrentStorage.Items.Clear();
-        foreach (var item in items)
-        {
-            this.CurrentStorage.Items.Add(item);
-        }
-    }
-
-    private int ThenBy(Item item)
-    {
-        return this.CurrentStorage.OrganizeChestSortBy switch
-        {
-            SortBy.Quality when item is SObject obj => obj.Quality,
-            SortBy.Quantity => item.Stack,
-            SortBy.Type => item.Category,
-            SortBy.Default or _ => 0,
-        };
     }
 }

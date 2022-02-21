@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
@@ -35,6 +36,19 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
         {
             this.ItemMatcher.Add(item);
         }
+    }
+
+    /// <inheritdoc />
+    public FeatureOption AutoOrganize
+    {
+        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/AutoOrganize", out var value) && Enum.TryParse(value, out FeatureOption option)
+            ? option switch
+            {
+                FeatureOption.Default => this.Data.AutoOrganize,
+                _ => option,
+            }
+            : this.Data.AutoOrganize;
+        set => this.ModData[$"{BetterChests.ModUniqueId}/AutoOrganize"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
@@ -163,9 +177,17 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     public HashSet<string> FilterItemsList
     {
         get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/FilterItemsList", out var value) && !string.IsNullOrWhiteSpace(value)
-            ? new(this.Data.FilterItemsList.Concat(value.Split(',')))
+            ? new(value.Split(','))
             : this.Data.FilterItemsList;
-        set => this.ModData[$"{BetterChests.ModUniqueId}/FilterItemsList"] = string.Join(",", value);
+        set
+        {
+            this.ModData[$"{BetterChests.ModUniqueId}/FilterItemsList"] = string.Join(",", value);
+            this.ItemMatcher.Clear();
+            foreach (var item in this.FilterItemsList)
+            {
+                this.ItemMatcher.Add(item);
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -442,5 +464,10 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
         }
 
         return item;
+    }
+
+    private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        this.FilterItemsList = new(this.ItemMatcher);
     }
 }

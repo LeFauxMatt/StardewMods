@@ -4,9 +4,14 @@
 
 * Updated to FuryCore 1.4.2
 
+### Fixed
+
+* DispenseInputs uses DispenseInputsPriority.
+
 ### Changed
 
 * Allow producer name override from mod data.
+* Producers are now sorted in GMCM.
 
 ## 1.0.1 (February 16, 2022)
 

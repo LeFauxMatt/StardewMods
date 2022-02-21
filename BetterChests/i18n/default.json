@@ -15,6 +15,8 @@
   "section.chests.name": "Chests",
   "section.chests.description": "Configure each chest type individually.",
   // Feature Config
+  "config.auto-organize.name": "Auto Organize",
+  "config.auto-organize.tooltip": "Automatically stash items into higher priority chests each night.",
   "config.carry-chest.name": "Carry Chest",
   "config.carry-chest.tooltip": "Allows chests placed in the world to be picked up with their items.",
   "config.carry-chest-limit.name": "Carry Chest Limit",
@@ -128,6 +130,8 @@
   "button.configure.name": "Configure",
   "button.stash-to-chest.name": "Stash to Chest",
   "button.craft-from-chest.name": "Craft from Chest",
+  "button.minus-priority.name": "Decrease Priority",
+  "button.plus-priority.name": "Increase Priority",
   // UI - Tabs
   "tabs.Clothing.name": "Clothing",
   "tabs.Cooking.name": "Cooking",

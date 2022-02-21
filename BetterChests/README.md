@@ -5,6 +5,7 @@ Adds enhanced chest features to the game.
 ## Contents
 
 * [Features](#features)
+    * [Auto Organize](#auto-organize)
     * [Carry Chest](#carry-chest)
     * [Categorize Chest](#categorize-chest)
     * [Chest Menu Tabs](#chest-menu-tabs)
@@ -13,6 +14,7 @@ Adds enhanced chest features to the game.
     * [Custom Color Picker](#custom-color-picker)
     * [Filter Items](#filter-items)
     * [Open Held Chest](#open-held-chest)
+    * [Organize Chest](#organize-chest)
     * [Resize Chest](#resize-chest)
     * [Resize Chest Menu](#resize-chest-menu)
     * [Search Items](#search-items)
@@ -37,6 +39,18 @@ Adds enhanced chest features to the game.
 * [Translations](#translations)
 
 ## Features
+
+### Auto Organize
+
+Every night, after going to bed, your chests will automatically organize items based on the same rules
+as [Stash to Chest](#stash-to-chest). Items will only move from/to chests with the feature enabled, and only if the
+other chest has a higher priority.
+
+It also applies your [Organize Chest](#organize-chest) rules at the end.
+
+| Config          | Description                         | Default Value | Other Value(s)                                                       |
+|:----------------|:------------------------------------|:--------------|:---------------------------------------------------------------------|
+| AutoOrganize    | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
 
 ### Carry Chest
 

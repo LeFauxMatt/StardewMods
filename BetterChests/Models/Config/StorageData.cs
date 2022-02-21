@@ -8,6 +8,9 @@ using StardewMods.BetterChests.Interfaces.Config;
 internal class StorageData : IStorageData
 {
     /// <inheritdoc />
+    public FeatureOption AutoOrganize { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />

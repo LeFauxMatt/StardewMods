@@ -79,6 +79,17 @@ internal class ModConfigMenu : IModService
 
         this.GMCM.API.AddSectionTitle(manifest, I18n.Section_Features_Name, I18n.Section_Features_Description);
 
+        // Auto Organize
+        this.GMCM.API.AddTextOption(
+            manifest,
+            () => FormatHelper.GetOptionString(storageData.AutoOrganize),
+            value => storageData.AutoOrganize = Enum.TryParse(value, out FeatureOption option) ? option : defaultOption,
+            I18n.Config_AutoOrganize_Name,
+            I18n.Config_AutoOrganize_Tooltip,
+            optionValues,
+            FormatHelper.FormatOption,
+            nameof(AutoOrganize));
+
         // Carry Chest
         this.GMCM.API.AddTextOption(
             manifest,
