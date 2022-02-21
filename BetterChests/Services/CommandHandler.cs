@@ -10,6 +10,7 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models.GameObjects;
 
 /// <inheritdoc />
 internal class CommandHandler : IModService
@@ -178,50 +179,43 @@ internal class CommandHandler : IModService
             CommandHandler.AddStorageData(sb, storageData, $"\"{name}\" Config");
         }
 
-        var eligibleCraftingChests = this.CraftFromChest.EligibleChests.ToDictionary(managedChest => managedChest, _ => string.Empty);
-        var eligibleStashingChests = this.StashToChest.EligibleStorages.ToDictionary(managedChest => managedChest, _ => string.Empty);
-
         // Iterate managed chests and features
         foreach (var ((player, index), managedStorage) in this.ManagedObjects.InventoryStorages)
         {
             CommandHandler.AddStorageData(sb, managedStorage, $"Storage {managedStorage.QualifiedItemId} with farmer {player.Name} at slot {index.ToString()}.\n");
-
-            if (eligibleCraftingChests.Keys.Contains(managedStorage))
-            {
-                eligibleCraftingChests[managedStorage] = $"Inventory of {player.Name}.";
-            }
-
-            if (eligibleStashingChests.Keys.Contains(managedStorage))
-            {
-                eligibleStashingChests[managedStorage] = $"Inventory of {player.Name}.";
-            }
         }
 
         foreach (var ((location, (x, y)), managedStorage) in this.ManagedObjects.LocationStorages)
         {
             CommandHandler.AddStorageData(sb, managedStorage, $"Storage \"{managedStorage.QualifiedItemId}\" at location {location.NameOrUniqueName} at coordinates ({((int)x).ToString()},{((int)y).ToString()}).");
-
-            if (eligibleCraftingChests.Keys.Contains(managedStorage))
-            {
-                eligibleCraftingChests[managedStorage] = $"Location {location.NameOrUniqueName} at ({((int)x).ToString()},{((int)y).ToString()}).";
-            }
-
-            if (eligibleStashingChests.Keys.Contains(managedStorage))
-            {
-                eligibleStashingChests[managedStorage] = $"Location {location.NameOrUniqueName} at ({((int)x).ToString()},{((int)y).ToString()}).";
-            }
         }
 
         CommandHandler.AppendHeader(sb, "Craft from Chests Eligible Chests");
-        foreach (var (managedChest, description) in eligibleCraftingChests)
+        foreach (var (gameObjectType, managedChest) in this.CraftFromChest.EligibleStorages)
         {
-            sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, description);
+            switch (gameObjectType)
+            {
+                case InventoryItem(var farmer, var i):
+                    sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, $" inventory of {farmer.Name} at slot {i.ToString()}.");
+                    break;
+                case LocationObject(var gameLocation, var (x, y)):
+                    sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, $" location {gameLocation.NameOrUniqueName} at ({((int)x).ToString()},{((int)y).ToString()}).");
+                    break;
+            }
         }
 
         CommandHandler.AppendHeader(sb, "Stash to Chest Eligible Chests");
-        foreach (var (managedChest, description) in eligibleStashingChests)
+        foreach (var (gameObjectType, managedChest) in this.StashToChest.EligibleStorages)
         {
-            sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, description);
+            switch (gameObjectType)
+            {
+                case InventoryItem(var farmer, var i):
+                    sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, $" inventory of {farmer.Name} at slot {i.ToString()}.");
+                    break;
+                case LocationObject(var gameLocation, var (x, y)):
+                    sb.AppendFormat("{0,25}: {1}\n", managedChest.QualifiedItemId, $" location {gameLocation.NameOrUniqueName} at ({((int)x).ToString()},{((int)y).ToString()}).");
+                    break;
+            }
         }
 
         Log.Info(sb.ToString());
