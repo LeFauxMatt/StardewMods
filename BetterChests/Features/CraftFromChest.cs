@@ -18,6 +18,7 @@ using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
@@ -73,12 +74,7 @@ internal class CraftFromChest : Feature
         get
         {
             var storages = new List<KeyValuePair<IGameObjectType, IManagedStorage>>();
-            storages.AddRange(
-                from inventoryStorage in this.ManagedObjects.InventoryStorages
-                where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
-                      && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
-                select new KeyValuePair<IGameObjectType, IManagedStorage>(inventoryStorage.Key, inventoryStorage.Value));
-
+            var junimoChest = false;
             foreach (var (locationObject, locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
@@ -91,6 +87,17 @@ internal class CraftFromChest : Feature
                 if (locationStorage.CraftFromChestDisableLocations.Contains("UndergroundMine") && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
                 {
                     continue;
+                }
+
+                // Limit one Junimo chest
+                if (locationStorage.Context is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+                {
+                    if (junimoChest)
+                    {
+                        continue;
+                    }
+
+                    junimoChest = true;
                 }
 
                 switch (locationStorage.CraftFromChest)
@@ -151,6 +158,7 @@ internal class CraftFromChest : Feature
     {
         this.HudComponents.AddToolbarIcon(this.CraftButton);
         this.Harmony.ApplyPatches(this.Id);
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
@@ -161,6 +169,7 @@ internal class CraftFromChest : Feature
     {
         this.HudComponents.RemoveToolbarIcon(this.CraftButton);
         this.Harmony.UnapplyPatches(this.Id);
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
@@ -204,7 +213,6 @@ internal class CraftFromChest : Feature
         }
     }
 
-    /// <summary>Open crafting menu for all chests in inventory.</summary>
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
         if (!Context.IsPlayerFree || !this.Config.ControlScheme.OpenCrafting.JustPressed())
@@ -214,6 +222,33 @@ internal class CraftFromChest : Feature
 
         this.OpenCrafting();
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+    }
+
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
+    {
+        CraftingPage craftingPage;
+        switch (e.Menu)
+        {
+            case GameMenu { currentTab: var currentTab } gameMenu when gameMenu.pages[currentTab] is CraftingPage tab:
+                craftingPage = tab;
+                break;
+            case CraftingPage menu:
+                craftingPage = menu;
+                break;
+            default:
+                return;
+        }
+
+        var storages = new List<Chest>(
+            from inventoryStorage in this.ManagedObjects.InventoryStorages
+            where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
+                  && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
+                  && inventoryStorage.Value.Context is Chest
+            select (Chest)inventoryStorage.Value.Context);
+        craftingPage._materialContainers ??= new();
+        storages.AddRange(craftingPage._materialContainers);
+        craftingPage._materialContainers.Clear();
+        craftingPage._materialContainers.AddRange(storages.Distinct());
     }
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
@@ -227,8 +262,14 @@ internal class CraftFromChest : Feature
 
     private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
     {
-        if (this.MultipleChestCraftingPage is null || this.MultipleChestCraftingPage.TimedOut)
+        if (this.MultipleChestCraftingPage is null)
         {
+            return;
+        }
+
+        if (this.MultipleChestCraftingPage.TimedOut())
+        {
+            this.MultipleChestCraftingPage = null;
             return;
         }
 

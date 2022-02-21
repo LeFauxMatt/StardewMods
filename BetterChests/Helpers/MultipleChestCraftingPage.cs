@@ -2,12 +2,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Common.Helpers;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <summary>
@@ -23,32 +23,55 @@ internal class MultipleChestCraftingPage
     {
         this.TimeOut = 60;
         this.Storages = storages;
-        this.Mutexes = (
+        this.Chests = new List<Chest>(
             from storage in this.Storages
             where storage.Key is LocationObject
                   && storage.Value.Context is Chest
-            select ((Chest)storage.Value.Context).mutex).ToList();
+            select (Chest)storage.Value.Context);
         this.MultipleMutexRequest = new(
-            this.Mutexes,
+            this.Chests.Select(chest => chest.mutex).ToList(),
             this.SuccessCallback,
             this.FailureCallback);
     }
 
-    /// <summary>
-    ///     Gets a value indicating whether the request has timed out.
-    /// </summary>
-    public bool TimedOut
-    {
-        get => this.TimeOut <= 0;
-    }
+    private IList<Chest> Chests { get; }
 
     private MultipleMutexRequest MultipleMutexRequest { get; }
-
-    private List<NetMutex> Mutexes { get; }
 
     private List<KeyValuePair<IGameObjectType, IManagedStorage>> Storages { get; }
 
     private int TimeOut { get; set; }
+
+    /// <summary>
+    ///     Check if the request has timed out.
+    /// </summary>
+    /// <returns>Returns a value indicating whether the request has timed out.</returns>
+    public bool TimedOut()
+    {
+        if (this.TimeOut <= 0)
+        {
+            foreach (var (gameObjectType, managedStorage) in this.Storages)
+            {
+                if (managedStorage.Context is Chest chest && !chest.mutex.IsLockHeld())
+                {
+                    switch (gameObjectType)
+                    {
+                        case InventoryItem(var farmer, var i):
+                            Log.Info($"Could not acquire lock for storage  {managedStorage.QualifiedItemId} with farmer {farmer.Name} at slot {i.ToString()}.\n");
+                            break;
+                        case LocationObject(var gameLocation, var (x, y)):
+                            Log.Info($"Could not acquire lock for storage  \"{managedStorage.QualifiedItemId}\" at location {gameLocation.NameOrUniqueName} at coordinates ({((int)x).ToString()},{((int)y).ToString()}).");
+                            break;
+                    }
+                }
+            }
+
+            this.ExitFunction();
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     ///     Updates the mutexes for chests related to this request.
@@ -60,21 +83,22 @@ internal class MultipleChestCraftingPage
             return;
         }
 
-        foreach (var mutex in this.Mutexes)
+        foreach (var chest in this.Chests)
         {
-            mutex.Update(Game1.getOnlineFarmers());
+            chest.mutex.Update(Game1.getOnlineFarmers());
         }
     }
 
     private void ExitFunction()
     {
+        this.TimeOut = 0;
         this.MultipleMutexRequest.ReleaseLocks();
     }
 
     private void FailureCallback()
     {
         Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
-        this.TimeOut = 0;
+        this.ExitFunction();
     }
 
     private void SuccessCallback()

@@ -43,6 +43,11 @@ internal class ClickableMenuChanged : SortedEventHandler<IClickableMenuChangedEv
                     new SavedPatch[]
                     {
                         new(
+                            AccessTools.Method(typeof(GameMenu), nameof(GameMenu.changeTab)),
+                            typeof(ClickableMenuChanged),
+                            nameof(ClickableMenuChanged.GameMenu_changeTab_postfix),
+                            PatchType.Postfix),
+                        new(
                             AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
                             typeof(ClickableMenuChanged),
                             nameof(ClickableMenuChanged.ItemGrabMenu_constructor_postfix),
@@ -68,6 +73,14 @@ internal class ClickableMenuChanged : SortedEventHandler<IClickableMenuChangedEv
     {
         get => this._menu.Value;
         set => this._menu.Value = value;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void GameMenu_changeTab_postfix(GameMenu __instance)
+    {
+        ClickableMenuChanged.Instance.InvokeAll(new ClickableMenuChangedEventArgs(__instance, Context.ScreenId, false, null));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
