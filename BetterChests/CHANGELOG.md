@@ -11,6 +11,7 @@
 
 * Allow ModData override for storage names in locations and buildings
 * Chests are now sorted in GMCM.
+* More detailed logging when items are being stashed.
 
 ### Fixed
 

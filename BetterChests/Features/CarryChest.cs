@@ -319,7 +319,7 @@ internal class CarryChest : Feature
     private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, IList<Chest> exclude)
     {
         var items = chest.GetItemsForPlayer(player.UniqueMultiplayerID);
-        if (!exclude.Contains(chest) || (chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest && exclude.Any(otherChest => otherChest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest)))
+        if (!exclude.Contains(chest) || chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest && exclude.Any(otherChest => otherChest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest))
         {
             exclude.Add(chest);
             foreach (var item in items)

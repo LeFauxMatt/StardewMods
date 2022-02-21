@@ -12,11 +12,13 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
@@ -67,16 +69,13 @@ internal class CraftFromChest : Feature
     /// <summary>
     ///     Gets a value indicating which chests are eligible for crafting from.
     /// </summary>
-    public IEnumerable<IManagedStorage> EligibleChests
+    public List<KeyValuePair<IGameObjectType, IManagedStorage>> EligibleStorages
     {
         get
         {
-            IList<IManagedStorage> eligibleStorages =
-                this.ManagedObjects.InventoryStorages
-                    .Select(inventoryStorage => inventoryStorage.Value)
-                    .Where(playerChest => playerChest.CraftFromChest >= FeatureOptionRange.Inventory && playerChest.OpenHeldChest == FeatureOption.Enabled)
-                    .ToList();
-            foreach (var ((location, (x, y)), locationStorage) in this.ManagedObjects.LocationStorages)
+            var storages = new List<KeyValuePair<IGameObjectType, IManagedStorage>>();
+            var junimoChest = false;
+            foreach (var (locationObject, locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
                 if (locationStorage.CraftFromChest == FeatureOptionRange.Disabled || locationStorage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
@@ -90,15 +89,26 @@ internal class CraftFromChest : Feature
                     continue;
                 }
 
+                // Limit one Junimo chest
+                if (locationStorage.Context is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+                {
+                    if (junimoChest)
+                    {
+                        continue;
+                    }
+
+                    junimoChest = true;
+                }
+
                 switch (locationStorage.CraftFromChest)
                 {
                     // Disabled if not current location for location chest
-                    case FeatureOptionRange.Location when !location.Equals(Game1.currentLocation):
+                    case FeatureOptionRange.Location when !locationObject.Location.Equals(Game1.currentLocation):
                         continue;
                     case FeatureOptionRange.World:
                     case FeatureOptionRange.Location when locationStorage.CraftFromChestDistance == -1:
-                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)x * 64, (int)y * 64, locationStorage.CraftFromChestDistance, Game1.player):
-                        eligibleStorages.Add(locationStorage);
+                    case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)locationObject.Position.X * 64, (int)locationObject.Position.Y * 64, locationStorage.CraftFromChestDistance, Game1.player):
+                        storages.Add(new(locationObject, locationStorage));
                         continue;
                     case FeatureOptionRange.Default:
                     case FeatureOptionRange.Disabled:
@@ -108,7 +118,7 @@ internal class CraftFromChest : Feature
                 }
             }
 
-            return eligibleStorages;
+            return storages.OrderByDescending(storage => storage.Value.StashToChestPriority).ToList();
         }
     }
 
@@ -137,11 +147,18 @@ internal class CraftFromChest : Feature
         get => this._toolbarIcons.Value;
     }
 
+    private MultipleChestCraftingPage MultipleChestCraftingPage
+    {
+        get => this._multipleChestCraftingPage.Value;
+        set => this._multipleChestCraftingPage.Value = value;
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
         this.HudComponents.AddToolbarIcon(this.CraftButton);
         this.Harmony.ApplyPatches(this.Id);
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
@@ -152,6 +169,7 @@ internal class CraftFromChest : Feature
     {
         this.HudComponents.RemoveToolbarIcon(this.CraftButton);
         this.Harmony.UnapplyPatches(this.Id);
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
@@ -195,7 +213,6 @@ internal class CraftFromChest : Feature
         }
     }
 
-    /// <summary>Open crafting menu for all chests in inventory.</summary>
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
         if (!Context.IsPlayerFree || !this.Config.ControlScheme.OpenCrafting.JustPressed())
@@ -205,6 +222,33 @@ internal class CraftFromChest : Feature
 
         this.OpenCrafting();
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+    }
+
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
+    {
+        CraftingPage craftingPage;
+        switch (e.Menu)
+        {
+            case GameMenu { currentTab: var currentTab } gameMenu when gameMenu.pages[currentTab] is CraftingPage tab:
+                craftingPage = tab;
+                break;
+            case CraftingPage menu:
+                craftingPage = menu;
+                break;
+            default:
+                return;
+        }
+
+        var storages = new List<Chest>(
+            from inventoryStorage in this.ManagedObjects.InventoryStorages
+            where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
+                  && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
+                  && inventoryStorage.Value.Context is Chest
+            select (Chest)inventoryStorage.Value.Context);
+        craftingPage._materialContainers ??= new();
+        storages.AddRange(craftingPage._materialContainers);
+        craftingPage._materialContainers.Clear();
+        craftingPage._materialContainers.AddRange(storages.Distinct());
     }
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
@@ -218,85 +262,31 @@ internal class CraftFromChest : Feature
 
     private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
     {
-        if (this._multipleChestCraftingPage.Value is null || this._multipleChestCraftingPage.Value.Timeout)
+        if (this.MultipleChestCraftingPage is null)
         {
             return;
         }
 
-        this._multipleChestCraftingPage.Value.UpdateChests();
+        if (this.MultipleChestCraftingPage.TimedOut())
+        {
+            this.MultipleChestCraftingPage = null;
+            return;
+        }
+
+        this.MultipleChestCraftingPage.UpdateChests();
     }
 
     private void OpenCrafting()
     {
-        var eligibleChests = this.EligibleChests.ToList();
-        if (!eligibleChests.Any())
+        var eligibleStorages = this.EligibleStorages;
+        if (!eligibleStorages.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
             return;
         }
 
         Log.Trace("Launching CraftFromChest Menu.");
-        this._multipleChestCraftingPage.Value = new(eligibleChests);
+        this.MultipleChestCraftingPage = new(eligibleStorages);
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
-    }
-
-    private class MultipleChestCraftingPage
-    {
-        private const int TimeOut = 60;
-        private readonly List<Chest> _chests;
-        private readonly MultipleMutexRequest _multipleMutexRequest;
-        private int _timeOut = MultipleChestCraftingPage.TimeOut;
-
-        public MultipleChestCraftingPage(IEnumerable<IManagedStorage> managedChests)
-        {
-            this._chests = managedChests.Select(managedChest => managedChest.Context).OfType<Chest>().Where(chest => !chest.mutex.IsLocked()).ToList();
-            var mutexes = this._chests.Select(chest => chest.mutex).ToList();
-            this._multipleMutexRequest = new(
-                mutexes,
-                this.SuccessCallback,
-                this.FailureCallback);
-        }
-
-        public bool Timeout
-        {
-            get => this._timeOut <= 0;
-        }
-
-        public void UpdateChests()
-        {
-            if (--this._timeOut <= 0)
-            {
-                return;
-            }
-
-            foreach (var chest in this._chests)
-            {
-                chest.mutex.Update(Game1.getOnlineFarmers());
-            }
-        }
-
-        private void ExitFunction()
-        {
-            this._multipleMutexRequest.ReleaseLocks();
-            this._timeOut = MultipleChestCraftingPage.TimeOut;
-        }
-
-        private void FailureCallback()
-        {
-            Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
-            this._timeOut = 0;
-        }
-
-        private void SuccessCallback()
-        {
-            this._timeOut = 0;
-            var width = 800 + IClickableMenu.borderWidth * 2;
-            var height = 600 + IClickableMenu.borderWidth * 2;
-            var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
-            Game1.activeClickableMenu = new CraftingPage((int)x, (int)y, width, height, false, true, this._chests)
-            {
-                exitFunction = this.ExitFunction,
-            };
-        }
     }
 }

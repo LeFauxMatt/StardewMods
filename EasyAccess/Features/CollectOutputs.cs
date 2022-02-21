@@ -115,7 +115,7 @@ internal class CollectOutputs : Feature
         {
             if (producer.TryGetOutput(out var item))
             {
-                Log.Trace($"Collected {item.Name} from producer {producer.QualifiedItemId}.");
+                Log.Info($"Collected {item.Name} from producer {producer.QualifiedItemId}.");
                 collectedAny = true;
             }
         }

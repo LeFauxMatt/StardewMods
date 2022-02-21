@@ -169,7 +169,7 @@ internal class CustomColorPicker : Feature
             chestToDraw.modData.Add(key, value);
         }
 
-        Log.Trace("Adding CustomColorPicker to ItemGrabMenu");
+        Log.Debug("Adding CustomColorPicker to ItemGrabMenu");
         CustomColorPicker.Instance.ColorPicker = new(
             CustomColorPicker.Instance.Helper.Content,
             CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,

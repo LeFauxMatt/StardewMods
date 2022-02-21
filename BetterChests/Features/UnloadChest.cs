@@ -104,7 +104,7 @@ internal class UnloadChest : Feature
             }
         }
 
-        Log.Trace($"Unloading items from Chest {source.QualifiedItemId} into Chest {target.QualifiedItemId}");
+        Log.Info($"Unloading items from Chest {source.QualifiedItemId} into Chest {target.QualifiedItemId}");
         source.ClearNulls();
         this.CarryChest.CheckForOverburdened();
         this.Helper.Input.Suppress(e.Button);
