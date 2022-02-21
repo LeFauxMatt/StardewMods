@@ -71,6 +71,8 @@ internal class MenuComponents : IModService
 
     private IModHelper Helper { get; }
 
+    private string HoverText { get; set; }
+
     /// <summary>
     ///     Reorients components to the current menu.
     /// </summary>
@@ -100,6 +102,7 @@ internal class MenuComponents : IModService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
+        this.HoverText = string.Empty;
         if (!this.Components.Any())
         {
             return;
@@ -113,8 +116,8 @@ internal class MenuComponents : IModService
             {
                 case not null when component.Component?.containsPoint(x, y) != true:
                     break;
-                case ItemGrabMenu itemGrabMenu:
-                    itemGrabMenu.hoverText = component.HoverText;
+                default:
+                    this.HoverText = component.HoverText;
                     break;
             }
         }
@@ -125,6 +128,13 @@ internal class MenuComponents : IModService
         foreach (var component in this.Components.Where(component => component is { ComponentType: ComponentType.Custom, Layer: ComponentLayer.Above }))
         {
             component.Draw(e.SpriteBatch);
+        }
+
+        switch (Game1.activeClickableMenu)
+        {
+            case ItemGrabMenu itemGrabMenu when string.IsNullOrWhiteSpace(itemGrabMenu.hoverText) && !string.IsNullOrWhiteSpace(this.HoverText):
+                itemGrabMenu.hoverText = this.HoverText;
+                break;
         }
     }
 

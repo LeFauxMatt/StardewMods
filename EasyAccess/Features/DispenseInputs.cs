@@ -69,7 +69,7 @@ internal class DispenseInputs : Feature
                 }
             }
 
-            return eligibleProducers.OrderBy(eligibleProducer => eligibleProducer.DispenseInputPriority);
+            return eligibleProducers.OrderByDescending(eligibleProducer => eligibleProducer.DispenseInputPriority);
         }
     }
 

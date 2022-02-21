@@ -36,8 +36,7 @@ internal class ManagedObjects : IModService
         this.Config = config;
         this._assetHandler = services.Lazy<AssetHandler>();
         this._gameObjects = services.Lazy<IGameObjects>();
-        services.Lazy<ICustomEvents>(
-            customEvents => { customEvents.GameObjectsRemoved += this.OnGameObjectsRemoved; });
+        services.Lazy<ICustomEvents>(customEvents => { customEvents.GameObjectsRemoved += this.OnGameObjectsRemoved; });
     }
 
     /// <summary>

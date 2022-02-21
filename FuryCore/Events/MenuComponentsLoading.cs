@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
@@ -43,7 +41,6 @@ internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingE
         get => this._menuComponents.Value;
     }
 
-    [SortedEventPriority(EventPriority.High)]
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
         if (!ReferenceEquals(this.Menu, e.Menu))

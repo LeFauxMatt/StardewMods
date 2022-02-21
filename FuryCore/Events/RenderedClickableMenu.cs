@@ -88,7 +88,7 @@ internal class RenderedClickableMenu : SortedEventHandler<RenderedActiveMenuEven
                 {
                     IClickableMenu.drawToolTip(e.SpriteBatch, itemGrabMenu.hoveredItem.getDescription(), itemGrabMenu.hoveredItem.DisplayName, itemGrabMenu.hoveredItem, itemGrabMenu.heldItem != null);
                 }
-                else if (itemGrabMenu.hoverText != null)
+                else if (!string.IsNullOrWhiteSpace(itemGrabMenu.hoverText))
                 {
                     if (itemGrabMenu.hoverAmount > 0)
                     {

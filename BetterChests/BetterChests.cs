@@ -70,6 +70,7 @@ public class BetterChests : Mod
 
         // Features
         this.Services.Add(
+            new AutoOrganize(this.Config, this.Helper, this.Services),
             new CarryChest(this.Config, this.Helper, this.Services),
             new CategorizeChest(this.Config, this.Helper, this.Services),
             new ChestMenuTabs(this.Config, this.Helper, this.Services),

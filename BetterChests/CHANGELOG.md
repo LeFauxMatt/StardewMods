@@ -2,14 +2,21 @@
 
 ## 1.4.3 (Unreleased)
 
+### Added
+
+* Added AutoOrganize feature.
+* Shipping Bin on Island is now recognized by Better Chests and uses Shipping Bin as it's chest type.
+
 ### Changed
 
 * Allow ModData override for storage names in locations and buildings
+* Chests are now sorted in GMCM.
 
 ### Fixed
 
 * Fixed StashToChest using CraftFromChest config for Default Chest.
 * Fixed Fridge sometimes using default chest config.
+* StashToChest will once again use StashToChestPriority.
 
 ## 1.4.2 (February 16, 2022)
 

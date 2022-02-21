@@ -288,18 +288,21 @@ internal class CarryChest : Feature
 
         Log.Trace($"Placed storage {fromStorage.QualifiedItemId} from inventory to {location.NameOrUniqueName} at ({(x / 64).ToString()}, {(y / 64).ToString()}).");
         obj.Name = __instance.Name;
+
+        foreach (var item in fromStorage.Items)
+        {
+            toStorage.AddItem(item);
+        }
+
         foreach (var (key, value) in fromStorage.ModData.Pairs)
         {
             toStorage.ModData[key] = value;
         }
 
-        if (fromStorage.Items.Any())
+        // Initialize ItemMatcher
+        foreach (var item in toStorage.FilterItemsList)
         {
-            toStorage.Items.Clear();
-            foreach (var item in fromStorage.Items)
-            {
-                toStorage.AddItem(item);
-            }
+            toStorage.ItemMatcher.Add(item);
         }
 
         if (fromStorage.Context is Chest fromChest && toStorage.Context is Chest toChest)
