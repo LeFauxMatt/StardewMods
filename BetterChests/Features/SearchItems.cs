@@ -34,6 +34,7 @@ internal class SearchItems : Feature
     private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
     private readonly PerScreen<MenuWithInventory> _menu = new();
+    private readonly Lazy<IMenuItems> _menuItems;
     private readonly PerScreen<int?> _menuPadding = new();
     private readonly PerScreen<ClickableComponent> _searchArea = new();
     private readonly PerScreen<TextBox> _searchField = new();
@@ -74,7 +75,7 @@ internal class SearchItems : Feature
                             PatchType.Transpiler),
                     });
             });
-        services.Lazy<IMenuItems>();
+        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static SearchItems Instance { get; set; }
@@ -137,6 +138,11 @@ internal class SearchItems : Feature
         }
     }
 
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
+    }
+
     private int MenuPadding
     {
         get
@@ -175,8 +181,8 @@ internal class SearchItems : Feature
     {
         this.HarmonyHelper.ApplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
         this.CustomEvents.RenderedClickableMenu += this.OnRenderedClickableMenu;
+        this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
@@ -186,8 +192,8 @@ internal class SearchItems : Feature
     {
         this.HarmonyHelper.UnapplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
         this.CustomEvents.RenderedClickableMenu -= this.OnRenderedClickableMenu;
+        this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }

@@ -15,7 +15,7 @@ using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingEventArgs>
+internal class MenuComponentsLoading : SortedEventHandler<IMenuComponentsLoadingEventArgs>
 {
     private readonly PerScreen<IClickableMenu> _menu = new();
     private readonly Lazy<MenuComponents> _menuComponents;
@@ -64,7 +64,7 @@ internal class MenuComponentsLoading : SortedEventHandler<MenuComponentsLoadingE
             select component).ToList();
         var components = new List<IClickableComponent>();
         components.AddRange(vanillaComponents);
-        this.InvokeAll(new(e.Menu, components));
+        this.InvokeAll(new MenuComponentsLoadingEventArgs(e.Menu, components));
         this.MenuComponents.Components.AddRange(components);
         this.Menu.populateClickableComponentList();
         foreach (var component in components.Where(component => !this.Menu.allClickableComponents.Contains(component.Component)))

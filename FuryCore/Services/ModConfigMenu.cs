@@ -23,7 +23,11 @@ internal class ModConfigMenu : IModService
         this.Helper = helper;
         this.Manifest = manifest;
         this.GMCM = new(this.Helper.ModRegistry);
-        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+
+        if (this.GMCM.IsLoaded)
+        {
+            this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        }
     }
 
     private ConfigData Config { get; }
@@ -33,6 +37,48 @@ internal class ModConfigMenu : IModService
     private IModHelper Helper { get; }
 
     private IManifest Manifest { get; }
+
+    /// <summary>
+    ///     Registers a new mod config menu.
+    /// </summary>
+    /// <param name="reset">Method to reset config.</param>
+    /// <param name="save">Method to save config.</param>
+    /// <returns>True if GMCM is loaded.</returns>
+    public bool Register(Action reset, Action save)
+    {
+        if (!this.GMCM.IsLoaded)
+        {
+            return false;
+        }
+
+        this.GMCM.Register(this.Manifest, reset, save);
+        return true;
+    }
+
+    /// <summary>
+    ///     Shows the mod config menu.
+    /// </summary>
+    public void Show()
+    {
+        if (!this.GMCM.IsLoaded)
+        {
+            return;
+        }
+
+        this.GMCM.API.OpenModMenu(this.Manifest);
+    }
+
+    /// <summary>
+    ///     Unregisters the current mod config menu.
+    /// </summary>
+    public void Unregister()
+    {
+        if (this.GMCM.IsLoaded && this.GMCM.IsRegistered(this.Manifest))
+        {
+            this.GMCM.Unregister(this.Manifest);
+            this.RegisterMainConfigOptions();
+        }
+    }
 
     private static Func<string> GetTagName(CustomTag customTag)
     {
@@ -59,6 +105,11 @@ internal class ModConfigMenu : IModService
     }
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    {
+        this.RegisterMainConfigOptions();
+    }
+
+    private void RegisterMainConfigOptions()
     {
         if (!this.GMCM.IsLoaded)
         {

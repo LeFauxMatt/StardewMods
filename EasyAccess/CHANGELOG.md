@@ -4,6 +4,10 @@
 
 * Updated to FuryCore 1.4.2
 
+### Added
+
+* Integrate Configurator using new FuryCore service.
+
 ### Fixed
 
 * DispenseInputs uses DispenseInputsPriority.

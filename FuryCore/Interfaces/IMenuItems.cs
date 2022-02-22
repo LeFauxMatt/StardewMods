@@ -1,6 +1,8 @@
 ﻿namespace StardewMods.FuryCore.Interfaces;
 
+using System;
 using System.Collections.Generic;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 using StardewValley.Menus;
@@ -11,12 +13,17 @@ using StardewValley.Menus;
 public interface IMenuItems
 {
     /// <summary>
+    ///     Triggers when the active menu is changed and items are being displayed on the menu.
+    /// </summary>
+    public event EventHandler<IMenuItemsChangedEventArgs> MenuItemsChanged;
+
+    /// <summary>
     ///     Gets the actual inventory of the Chest/Menu.
     /// </summary>
     public IList<Item> ActualInventory { get; }
 
     /// <summary>
-    ///     Gets the source storage caontiner that actual items are associated with.
+    ///     Gets the source storage container that actual items are associated with.
     /// </summary>
     public IStorageContainer Context { get; }
 

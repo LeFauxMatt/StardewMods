@@ -6,7 +6,6 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.CustomEvents;
 
 /// <inheritdoc />
 internal abstract class Feature : IModService
@@ -77,6 +76,7 @@ internal abstract class Feature : IModService
             CategorizeChest => this.Config.CategorizeChest,
             ChestMenuTabs => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled,
             CollectItems => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled,
+            Configurator => this.Config.Configurator,
             CraftFromChest => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled,
             CustomColorPicker => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled,
             FilterItems => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled,

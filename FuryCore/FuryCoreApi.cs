@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using Common.Integrations.FuryCore;
 using Microsoft.Xna.Framework;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
@@ -20,9 +21,6 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public class FuryCoreApi : IFuryCoreApi
 {
-    private readonly Lazy<ICustomEvents> _customEvents;
-    private readonly Lazy<ICustomTags> _customTags;
-    private readonly Lazy<IGameObjects> _gameObjects;
     private readonly PerScreen<ItemMatcher> _itemFilter = new(() => new(true));
     private readonly PerScreen<ItemMatcher> _itemHighlighter = new(() => new(true));
     private EventHandler<(string ComponentName, bool IsSuppressed)> _menuComponentPressed;
@@ -36,14 +34,15 @@ public class FuryCoreApi : IFuryCoreApi
     {
         // Services
         this.Services = services;
-        this._customTags = services.Lazy<ICustomTags>();
-        this._customEvents = services.Lazy<ICustomEvents>();
-        this._gameObjects = services.Lazy<IGameObjects>();
-        services.Lazy<IMenuItems>();
+        this.CustomTags = services.FindService<ICustomTags>();
+        this.GameObjects = services.FindService<IGameObjects>();
+        this.HudComponents = services.FindService<IHudComponents>();
+        this.MenuComponents = services.FindService<IMenuComponents>();
+        this.MenuItems = services.FindService<IMenuItems>();
 
         // Events
-        this.CustomEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
-        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
+        this.MenuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+        this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
     }
 
     /// <inheritdoc />
@@ -54,7 +53,7 @@ public class FuryCoreApi : IFuryCoreApi
             this._menuComponentPressed += value;
             if (this._menuComponentPressed.GetInvocationList().Length == 1)
             {
-                this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+                this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
             }
         }
 
@@ -63,7 +62,7 @@ public class FuryCoreApi : IFuryCoreApi
             this._menuComponentPressed -= value;
             if (this._menuComponentPressed.GetInvocationList().Length == 0)
             {
-                this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+                this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
             }
         }
     }
@@ -76,7 +75,7 @@ public class FuryCoreApi : IFuryCoreApi
             this._toolbarIconPressed += value;
             if (this._toolbarIconPressed.GetInvocationList().Length == 1)
             {
-                this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
+                this.HudComponents.HudComponentPressed += this.OnHudComponentPressed;
             }
         }
 
@@ -85,27 +84,18 @@ public class FuryCoreApi : IFuryCoreApi
             this._toolbarIconPressed -= value;
             if (this._toolbarIconPressed.GetInvocationList().Length == 0)
             {
-                this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
+                this.HudComponents.HudComponentPressed -= this.OnHudComponentPressed;
             }
         }
     }
 
     private IList<IClickableComponent> Components { get; } = new List<IClickableComponent>();
 
-    private ICustomEvents CustomEvents
-    {
-        get => this._customEvents.Value;
-    }
+    private ICustomTags CustomTags { get; }
 
-    private ICustomTags CustomTags
-    {
-        get => this._customTags.Value;
-    }
+    private IGameObjects GameObjects { get; }
 
-    private IGameObjects GameObjects
-    {
-        get => this._gameObjects.Value;
-    }
+    private IHudComponents HudComponents { get; }
 
     private IList<IClickableComponent> Icons { get; } = new List<IClickableComponent>();
 
@@ -118,6 +108,10 @@ public class FuryCoreApi : IFuryCoreApi
     {
         get => this._itemHighlighter.Value;
     }
+
+    private IMenuComponents MenuComponents { get; }
+
+    private IMenuItems MenuItems { get; }
 
     private IModServices Services { get; }
 
@@ -186,6 +180,7 @@ public class FuryCoreApi : IFuryCoreApi
         this.ItemHighlighter.StringValue = stringValue;
     }
 
+    [SortedEventPriority(EventPriority.Low)]
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
         if (this.Icons.Contains(e.Component))
@@ -204,6 +199,7 @@ public class FuryCoreApi : IFuryCoreApi
         }
     }
 
+    [SortedEventPriority(EventPriority.Low)]
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
         if (this.Components.Contains(e.Component))
@@ -222,7 +218,8 @@ public class FuryCoreApi : IFuryCoreApi
         }
     }
 
-    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    [SortedEventPriority(EventPriority.Low)]
+    private void OnMenuComponentsLoading(object sender, IMenuComponentsLoadingEventArgs e)
     {
         foreach (var component in this.Components)
         {
@@ -230,6 +227,7 @@ public class FuryCoreApi : IFuryCoreApi
         }
     }
 
+    [SortedEventPriority(EventPriority.Low)]
     private void OnMenuItemsChanged(object sender, IMenuItemsChangedEventArgs e)
     {
         e.AddFilter(this.ItemFilter);

@@ -3,10 +3,11 @@
 using System;
 using System.Collections.Generic;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewValley.Menus;
 
-/// <inheritdoc />
-public class MenuComponentsLoadingEventArgs : EventArgs
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.CustomEvents.IMenuComponentsLoadingEventArgs" />
+internal class MenuComponentsLoadingEventArgs : EventArgs, IMenuComponentsLoadingEventArgs
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuComponentsLoadingEventArgs" /> class.
@@ -19,18 +20,12 @@ public class MenuComponentsLoadingEventArgs : EventArgs
         this.Components = components;
     }
 
-    /// <summary>
-    ///     Gets the Menu to add components to.
-    /// </summary>
+    /// <inheritdoc />
     public IClickableMenu Menu { get; }
 
     private List<IClickableComponent> Components { get; }
 
-    /// <summary>
-    ///     Adds a component to the menu.
-    /// </summary>
-    /// <param name="component">The component to add.</param>
-    /// <param name="index">Where to insert the component.</param>
+    /// <inheritdoc />
     public void AddComponent(IClickableComponent component, int index = -1)
     {
         if (index == -1)

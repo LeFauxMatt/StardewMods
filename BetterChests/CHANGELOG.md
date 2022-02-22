@@ -6,6 +6,7 @@
 
 * Added AutoOrganize feature.
 * Shipping Bin on Island is now recognized by Better Chests and uses Shipping Bin as it's chest type.
+* Integrate Configurator using new FuryCore service.
 
 ### Changed
 

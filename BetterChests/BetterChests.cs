@@ -75,6 +75,7 @@ public class BetterChests : Mod
             new CategorizeChest(this.Config, this.Helper, this.Services),
             new ChestMenuTabs(this.Config, this.Helper, this.Services),
             new CollectItems(this.Config, this.Helper, this.Services),
+            new Configurator(this.Config, this.Helper, this.Services),
             new CraftFromChest(this.Config, this.Helper, this.Services),
             new CustomColorPicker(this.Config, this.Helper, this.Services),
             new FilterItems(this.Config, this.Helper, this.Services),

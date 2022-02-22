@@ -3,9 +3,10 @@
 using System;
 using StardewModdingAPI;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 
-/// <inheritdoc />
-public class ClickableComponentPressedEventArgs : EventArgs
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.CustomEvents.IClickableComponentPressedEventArgs" />
+public class ClickableComponentPressedEventArgs : EventArgs, IClickableComponentPressedEventArgs
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ClickableComponentPressedEventArgs" /> class.
@@ -22,20 +23,15 @@ public class ClickableComponentPressedEventArgs : EventArgs
         this.IsSuppressed = isSuppressed;
     }
 
+    /// <inheritdoc />
     public SButton Button { get; }
 
-    /// <summary>
-    ///     Gets the component which was pressed.
-    /// </summary>
+    /// <inheritdoc />
     public IClickableComponent Component { get; }
 
-    /// <summary>
-    ///     Gets a value indicating if the input is currently suppressed.
-    /// </summary>
+    /// <inheritdoc />
     public Func<bool> IsSuppressed { get; }
 
-    /// <summary>
-    ///     Gets an method that will suppress the input.
-    /// </summary>
+    /// <inheritdoc />
     public Action SuppressInput { get; }
 }

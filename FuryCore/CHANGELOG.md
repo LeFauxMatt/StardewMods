@@ -4,6 +4,7 @@
 
 ### Additions
 
+* Added IConfigureGameObject service.
 * Added MenuComponentsLoading Event.
 * Added MenuItemsChanged Event.
 * Added StorageFridge as an IStorageContainer.

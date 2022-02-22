@@ -57,16 +57,19 @@ public class EasyAccessConfigurator : Mod
             return;
         }
 
-        this.Helper.Input.Suppress(e.Button);
         this.CurrentObject = obj;
         this.ProducerData = this.CurrentObject.modData.Pairs
                                 .Where(modData => modData.Key.StartsWith($"{this.EasyAccess.UniqueId}"))
                                 .ToDictionary(
                                     modData => modData.Key[(this.EasyAccess.UniqueId.Length + 1)..],
                                     modData => modData.Value);
-        this.GMCM.Register(this.ModManifest, this.Reset, this.Save);
-        this.EasyAccess.API.AddProducerOptions(this.ModManifest, this.ProducerData);
-        this.GMCM.API.OpenModMenu(this.ModManifest);
+        if (this.ProducerData.Any())
+        {
+            this.Helper.Input.Suppress(e.Button);
+            this.GMCM.Register(this.ModManifest, this.Reset, this.Save);
+            this.EasyAccess.API.AddProducerOptions(this.ModManifest, this.ProducerData);
+            this.GMCM.API.OpenModMenu(this.ModManifest);
+        }
     }
 
     private void OnMenuChanged(object sender, MenuChangedEventArgs e)

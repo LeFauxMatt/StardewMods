@@ -11,13 +11,19 @@ Provides additional APIs for my other mods.
 * [Helpers](#helpers)
     * [Item Matcher](#item-matcher)
 * [Events](#events)
+    * [ClickableMenu Changed](#clickablemenu-changed)
+    * [Configuring GameObject](#configuring-gameobject)
     * [GameObjects Removed](#gameobjects-removed)
     * [HudComponent Pressed](#hudcomponent-pressed)
-    * [ItemGrabMenu Changed](#itemgrabmenu-changed)
     * [MenuComponent Pressed](#menucomponent-pressed)
-    * [Rendering ItemGrabMenu](#rendering-itemgrabmenu)
-    * [Rendered ItemGrabMenu](#rendered-itemgrabmenu)
+    * [MenuComponents Loading](#menucomponents-loading)
+    * [MenuItems Changed](#menuitems-changed)
+    * [Rendered ClickableMenu](#rendered-clickablemenu)
+    * [Rendering ClickableMenu](#rendering-clickablemenu)
+    * [Resetting Config](#resetting-config)
+    * [Saving Config](#saving-config)
 * [Services](#services)
+    * [Configure Game Object](#configure-game-object)
     * [Custom Events](#custom-events)
     * [Custom Tags](#custom-tags)
     * [Game Objects](#game-objects)
@@ -136,53 +142,93 @@ furniture, an artifact, can be donated to a bundle, and/or can be donated to the
 
 ### Events
 
+#### ClickableMenu Changed
+
+Raised after a supported menu is constructed or whenever the Active Menu switches to/from an supported menu. On
+construction, this event triggers as a postfix to the vanilla constructor so any changes made are before the menu is
+displayed to the screen.
+
+[ [Source](Events/ClickableMenuChanged.cs) | [EventArgs](Interfaces/CustomEvents/IClickableMenuChangedEventArgs.cs) ]
+
+#### Configuring GameObject
+
+Raised before a Mod Config Menu will be shown for the current game object.
+
+[ [Source](Events/ConfiguringGameObject.cs) | [EventArgs](Interfaces/CustomEvents/IConfiguringGameObjectEventArgs.cs) ]
+
 #### GameObjects Removed
 
-Triggers when inaccessible game objects are purged from the cache.
+Raised after inaccessible game objects are purged from the cache.
 
-[Source](Events/GameObjectsRemoved.cs)
+[ [Source](Events/GameObjectsRemoved.cs) | [EventArgs](Interfaces/CustomEvents/IGameObjectsRemovedEventArgs.cs) ]
 
 #### HudComponent Pressed
 
-Triggers when a custom toolbar icon is pressed.
+Raised after a custom toolbar icon is pressed.
 
-[Source](Events/HudComponentPressed.cs)
-
-#### ItemGrabMenu Changed
-
-Triggered whenever an ItemGrabMenu is constructed, and whenever the Active Menu switches to/from an ItemGrabMenu.On
-construction, this event triggers as a postfix to the vanilla ItemGrabMenu constructor so any changes made are before
-the menu is displayed to the screen.
-
-[Source](Events/ItemGrabMenuChanged.cs)
+[ [Source](Events/HudComponentPressed.cs) | [EventArgs](Interfaces/CustomEvents/IClickableComponentPressedEventArgs.cs) ]
 
 #### MenuComponent Pressed
 
-Triggers when a vanilla or custom component is pressed on an ItemGrabMenu.
+Raised after a vanilla or custom component is pressed on a supported menu.
 
-[Source](Events/MenuComponentPressed.cs)
+[ [Source](Events/MenuComponentPressed.cs) | [EventArgs](Interfaces/CustomEvents/IClickableComponentPressedEventArgs.cs) ]
 
-#### Rendered ItemGrabMenu
+#### MenuComponents Loading
 
-Identical to RenderingActiveMenu except for it only triggers for ItemGrabMenu, and anything drawn to the SpriteBatch
-will be above the background fade but below the actual menu graphics. Great for menu underlays.
+Raised before components are added to the current menu.
 
-[Source](Events/RenderedItemGrabMenu.cs)
+[ [Source](Events/MenuComponentsLoading.cs) | [EventArgs](Interfaces/CustomEvents/IMenuComponentsLoadingEventArgs.cs) ]
 
-#### Rendering ItemGrabMenu
+#### MenuItems Changed
 
-Identical to RenderedActiveMenu except for it only triggers for ItemGrabMenu, and anything drawn to the SpriteBatch will
-be above the menu but below the cursor and any hover elements such as text or item.
+Raised before items are displayed on the current menu.
 
-[Source](Events/RenderingItemGrabMenu.cs)
+[ [Source](Events/MenuItemsChanged.cs) | [EventArgs](Interfaces/CustomEvents/IMenuItemsChangedEventArgs.cs) ]
+
+#### Rendered ClickableMenu
+
+Identical to RenderingActiveMenu except for anything drawn to the SpriteBatch will be above the background fade but
+below the actual menu graphics.
+
+[ [Source](Events/RenderedClickableMenu.cs) ]
+
+#### Rendering ClickableMenu
+
+Identical to RenderedActiveMenu except for anything drawn to the SpriteBatch will be above the menu but below the cursor
+and any hover elements such as text or item.
+
+[ [Source](Events/RenderingClickableMenu.cs) ]
+
+#### Resetting Config
+
+Raised after the Reset button is hit on the current mod config menu.
+
+[ [Source](Events/ResettingConfig.cs) | [EventArgs](Interfaces/CustomEvents/IResettingConfigEventArgs.cs) ]
+
+#### Saving Config
+
+Raised after the Save button is hit on the current mod config menu.
+
+[ [Source](Events/SavingConfig.cs) | [EventArgs](Interfaces/CustomEvents/ISavingConfigEventArgs.cs) ]
 
 ### Services
 
+#### Configure Game Object
+
+Allows an anonymous mod config menu to be opened for the current game object which other mods can add config options to.
+
+[ [Interface](Interfaces/IConfigureGameObject.cs) | [Source](Services/ConfigureGameObject.cs) ]
+
 #### Custom Events
 
-[ [Interface](Interfaces/CustomEvents/ICustomEvents.cs) | [Source](Services/CustomEvents.cs) ]
+Provides access to custom events.
+
+[ [Interface](Interfaces/ICustomEvents.cs) | [Source](Services/CustomEvents.cs) ]
 
 #### Custom Tags
+
+Allows adding dynamic custom context tags to items that can use realtime conditions.
 
 [ [Interface](Interfaces/ICustomTags.cs) | [Source](Services/CustomTags.cs) ]
 
@@ -190,7 +236,7 @@ be above the menu but below the cursor and any hover elements such as text or it
 
 Provides access to most objects in the game including items, buildings, and locations.
 
-[ [Interface](Interfaces/GameObjects/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
+[ [Interface](Interfaces/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
 
 #### Harmony Helper
 
@@ -202,14 +248,14 @@ Saves a list of Harmony Patches, and allows them to be applied or reversed at an
 
 Add icons to the left or right of the player items toolbar.
 
-[ [Interface](Interfaces/ClickableComponents/IHudComponents.cs) | [Source](Services/HudComponents.cs) ]
+[ [Interface](Interfaces/IHudComponents.cs) | [Source](Services/HudComponents.cs) ]
 
 #### Menu Components
 
 Add custom components to the ItemGrabMenu which can optionally automatically align to certain areas of the screen. In
 this case neighboring components are automatically assigned for controller support.
 
-[ [Interface](Interfaces/ClickableComponents/IMenuComponents.cs) | [Source](Services/MenuComponents.cs) ]
+[ [Interface](Interfaces/IMenuComponents.cs) | [Source](Services/MenuComponents.cs) ]
 
 #### Menu Items
 

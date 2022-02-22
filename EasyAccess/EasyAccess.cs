@@ -70,6 +70,7 @@ public class EasyAccess : Mod
         // Features
         this.Services.Add(
             new CollectOutputs(this.Config, this.Helper, this.Services),
+            new Configurator(this.Config, this.Helper, this.Services),
             new DispenseInputs(this.Config, this.Helper, this.Services));
 
         // Activate Features

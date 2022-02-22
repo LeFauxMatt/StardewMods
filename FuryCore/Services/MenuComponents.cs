@@ -10,17 +10,21 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
+using StardewMods.FuryCore.Models.CustomEvents;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc />
-internal class MenuComponents : IModService
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IMenuComponents" />
+internal class MenuComponents : IMenuComponents, IModService
 {
     private readonly PerScreen<List<IClickableComponent>> _components = new(() => new());
+    private readonly MenuComponentPressed _menuComponentPressed;
+    private readonly MenuComponentsLoading _menuComponentsLoading;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="MenuComponents" /> class.
@@ -32,6 +36,8 @@ internal class MenuComponents : IModService
         MenuComponents.Instance = this;
         this.Helper = helper;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
+        this._menuComponentsLoading = new(services);
+        this._menuComponentPressed = new(helper, services);
 
         services.Lazy<CustomEvents>(
             events =>
@@ -57,6 +63,20 @@ internal class MenuComponents : IModService
                     });
                 harmonyHelper.ApplyPatches(id);
             });
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<ClickableComponentPressedEventArgs> MenuComponentPressed
+    {
+        add => this._menuComponentPressed.Add(value);
+        remove => this._menuComponentPressed.Remove(value);
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<IMenuComponentsLoadingEventArgs> MenuComponentsLoading
+    {
+        add => this._menuComponentsLoading.Add(value);
+        remove => this._menuComponentsLoading.Remove(value);
     }
 
     /// <summary>

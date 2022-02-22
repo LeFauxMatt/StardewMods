@@ -28,6 +28,7 @@ internal class ChestMenuTabs : Feature
     private readonly PerScreen<object> _context = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly PerScreen<IList<TabComponent>> _tabs = new();
@@ -42,6 +43,7 @@ internal class ChestMenuTabs : Feature
         : base(config, helper, services)
     {
         this._assetHandler = services.Lazy<AssetHandler>();
+        this._menuComponents = services.Lazy<IMenuComponents>();
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
@@ -73,6 +75,11 @@ internal class ChestMenuTabs : Feature
         set => this._menu.Value = value;
     }
 
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
+    }
+
     private IMenuItems MenuItems
     {
         get => this._menuItems.Value;
@@ -99,23 +106,23 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.CustomEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
-        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
-        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this.MenuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+        this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.CustomEvents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
-        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
-        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this.MenuComponents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
+        this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;
     }
 
     [EventPriority(EventPriority.High + 10)]
@@ -179,7 +186,7 @@ internal class ChestMenuTabs : Feature
         e.SuppressInput();
     }
 
-    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    private void OnMenuComponentsLoading(object sender, IMenuComponentsLoadingEventArgs e)
     {
         IStorageData storageData;
         var resetTab = false;

@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 
-/// <inheritdoc />
-public class GameObjectsRemovedEventArgs : EventArgs
+/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.CustomEvents.IGameObjectsRemovedEventArgs" />
+internal class GameObjectsRemovedEventArgs : EventArgs, IGameObjectsRemovedEventArgs
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="GameObjectsRemovedEventArgs" /> class.
@@ -16,8 +17,6 @@ public class GameObjectsRemovedEventArgs : EventArgs
         this.Removed = removed;
     }
 
-    /// <summary>
-    ///     Gets <see cref="IGameObject" /> removed.
-    /// </summary>
+    /// <inheritdoc />
     public IEnumerable<IGameObject> Removed { get; }
 }

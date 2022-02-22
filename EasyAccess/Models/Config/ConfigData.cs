@@ -7,6 +7,9 @@ using StardewMods.EasyAccess.Interfaces.Config;
 internal class ConfigData : IConfigData
 {
     /// <inheritdoc />
+    public bool Configurator { get; set; } = true;
+
+    /// <inheritdoc />
     public ControlScheme ControlScheme { get; set; } = new();
 
     /// <inheritdoc />

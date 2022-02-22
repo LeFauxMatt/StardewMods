@@ -6,7 +6,6 @@ using StardewMods.EasyAccess.Enums;
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Services;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.CustomEvents;
 
 /// <inheritdoc />
 internal abstract class Feature : IModService
@@ -73,6 +72,7 @@ internal abstract class Feature : IModService
         var enabled = this switch
         {
             CollectOutputs => this.Config.DefaultProducer.CollectOutputs != FeatureOptionRange.Disabled,
+            Configurator => this.Config.Configurator,
             DispenseInputs => this.Config.DefaultProducer.DispenseInputs != FeatureOptionRange.Disabled,
             _ => throw new InvalidOperationException($"Invalid feature toggle {this.GetType().Name}."),
         };
