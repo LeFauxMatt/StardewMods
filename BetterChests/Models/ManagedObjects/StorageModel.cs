@@ -24,12 +24,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.AutoOrganize != FeatureOption.Default)
+            if (this.Data.AutoOrganize is not FeatureOption.Default)
             {
                 return this.Data.AutoOrganize;
             }
 
-            return this.DefaultStorage.AutoOrganize != FeatureOption.Disabled
+            return this.DefaultStorage.AutoOrganize is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -41,12 +41,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.CarryChest != FeatureOption.Default)
+            if (this.Data.CarryChest is not FeatureOption.Default)
             {
                 return this.Data.CarryChest;
             }
 
-            return this.DefaultStorage.CarryChest != FeatureOption.Disabled
+            return this.DefaultStorage.CarryChest is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -58,12 +58,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.ChestMenuTabs != FeatureOption.Default)
+            if (this.Data.ChestMenuTabs is not FeatureOption.Default)
             {
                 return this.Data.ChestMenuTabs;
             }
 
-            return this.DefaultStorage.ChestMenuTabs != FeatureOption.Disabled
+            return this.DefaultStorage.ChestMenuTabs is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -84,12 +84,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.CollectItems != FeatureOption.Default)
+            if (this.Data.CollectItems is not FeatureOption.Default)
             {
                 return this.Data.CollectItems;
             }
 
-            return this.DefaultStorage.CollectItems != FeatureOption.Disabled
+            return this.DefaultStorage.CollectItems is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -101,12 +101,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.CraftFromChest != FeatureOptionRange.Default)
+            if (this.Data.CraftFromChest is not FeatureOptionRange.Default)
             {
                 return this.Data.CraftFromChest;
             }
 
-            return this.DefaultStorage.CraftFromChest == FeatureOptionRange.Default
+            return this.DefaultStorage.CraftFromChest is FeatureOptionRange.Default
                 ? FeatureOptionRange.Location
                 : this.DefaultStorage.CraftFromChest;
         }
@@ -144,12 +144,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.CustomColorPicker != FeatureOption.Default)
+            if (this.Data.CustomColorPicker is not FeatureOption.Default)
             {
                 return this.Data.CustomColorPicker;
             }
 
-            return this.DefaultStorage.CustomColorPicker != FeatureOption.Disabled
+            return this.DefaultStorage.CustomColorPicker is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -161,12 +161,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.FilterItems != FeatureOption.Default)
+            if (this.Data.FilterItems is not FeatureOption.Default)
             {
                 return this.Data.FilterItems;
             }
 
-            return this.DefaultStorage.FilterItems != FeatureOption.Disabled
+            return this.DefaultStorage.FilterItems is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -187,12 +187,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.OpenHeldChest != FeatureOption.Default)
+            if (this.Data.OpenHeldChest is not FeatureOption.Default)
             {
                 return this.Data.OpenHeldChest;
             }
 
-            return this.DefaultStorage.OpenHeldChest != FeatureOption.Disabled
+            return this.DefaultStorage.OpenHeldChest is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -204,12 +204,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.OrganizeChest != FeatureOption.Default)
+            if (this.Data.OrganizeChest is not FeatureOption.Default)
             {
                 return this.Data.OrganizeChest;
             }
 
-            return this.DefaultStorage.OrganizeChest != FeatureOption.Disabled
+            return this.DefaultStorage.OrganizeChest is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -235,12 +235,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.ResizeChest != FeatureOption.Default)
+            if (this.Data.ResizeChest is not FeatureOption.Default)
             {
                 return this.Data.ResizeChest;
             }
 
-            return this.DefaultStorage.ResizeChest != FeatureOption.Disabled
+            return this.DefaultStorage.ResizeChest is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -269,12 +269,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.ResizeChestMenu != FeatureOption.Default)
+            if (this.Data.ResizeChestMenu is not FeatureOption.Default)
             {
                 return this.Data.ResizeChestMenu;
             }
 
-            return this.DefaultStorage.ResizeChestMenu != FeatureOption.Disabled
+            return this.DefaultStorage.ResizeChestMenu is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -303,12 +303,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.SearchItems != FeatureOption.Default)
+            if (this.Data.SearchItems is not FeatureOption.Default)
             {
                 return this.Data.SearchItems;
             }
 
-            return this.DefaultStorage.SearchItems != FeatureOption.Disabled
+            return this.DefaultStorage.SearchItems is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -320,12 +320,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.StashToChest != FeatureOptionRange.Default)
+            if (this.Data.StashToChest is not FeatureOptionRange.Default)
             {
                 return this.Data.StashToChest;
             }
 
-            return this.DefaultStorage.StashToChest == FeatureOptionRange.Default
+            return this.DefaultStorage.StashToChest is FeatureOptionRange.Default
                 ? FeatureOptionRange.Location
                 : this.DefaultStorage.StashToChest;
         }
@@ -370,12 +370,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.StashToChestStacks != FeatureOption.Default)
+            if (this.Data.StashToChestStacks is not FeatureOption.Default)
             {
                 return this.Data.StashToChestStacks;
             }
 
-            return this.DefaultStorage.StashToChestStacks != FeatureOption.Disabled
+            return this.DefaultStorage.StashToChestStacks is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }
@@ -387,12 +387,12 @@ internal class StorageModel : IStorageData
     {
         get
         {
-            if (this.Data.UnloadChest != FeatureOption.Default)
+            if (this.Data.UnloadChest is not FeatureOption.Default)
             {
                 return this.Data.UnloadChest;
             }
 
-            return this.DefaultStorage.UnloadChest != FeatureOption.Disabled
+            return this.DefaultStorage.UnloadChest is FeatureOption.Enabled
                 ? FeatureOption.Enabled
                 : FeatureOption.Disabled;
         }

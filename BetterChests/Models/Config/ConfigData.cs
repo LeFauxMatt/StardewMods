@@ -25,6 +25,7 @@ internal class ConfigData : IConfigData
     /// <inheritdoc />
     public StorageData DefaultChest { get; set; } = new()
     {
+        AutoOrganize = FeatureOption.Disabled,
         CarryChest = FeatureOption.Enabled,
         ChestMenuTabs = FeatureOption.Enabled,
         CollectItems = FeatureOption.Enabled,
@@ -33,6 +34,7 @@ internal class ConfigData : IConfigData
         CustomColorPicker = FeatureOption.Enabled,
         FilterItems = FeatureOption.Enabled,
         OpenHeldChest = FeatureOption.Enabled,
+        OrganizeChest = FeatureOption.Disabled,
         ResizeChest = FeatureOption.Enabled,
         ResizeChestCapacity = 60,
         ResizeChestMenu = FeatureOption.Enabled,

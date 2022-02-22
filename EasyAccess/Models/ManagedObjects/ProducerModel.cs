@@ -50,12 +50,12 @@ internal class ProducerModel : IProducerData
     {
         get
         {
-            if (this.Data.CollectOutputs != FeatureOptionRange.Default)
+            if (this.Data.CollectOutputs is not FeatureOptionRange.Default)
             {
                 return this.Data.CollectOutputs;
             }
 
-            return this.DefaultProducer.CollectOutputs == FeatureOptionRange.Default
+            return this.DefaultProducer.CollectOutputs is FeatureOptionRange.Default
                 ? FeatureOptionRange.Location
                 : this.DefaultProducer.CollectOutputs;
         }
@@ -100,12 +100,12 @@ internal class ProducerModel : IProducerData
     {
         get
         {
-            if (this.Data.DispenseInputs != FeatureOptionRange.Default)
+            if (this.Data.DispenseInputs is not FeatureOptionRange.Default)
             {
                 return this.Data.DispenseInputs;
             }
 
-            return this.DefaultProducer.DispenseInputs == FeatureOptionRange.Default
+            return this.DefaultProducer.DispenseInputs is FeatureOptionRange.Default
                 ? FeatureOptionRange.Location
                 : this.DefaultProducer.DispenseInputs;
         }
