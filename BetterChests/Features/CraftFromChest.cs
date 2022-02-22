@@ -239,16 +239,25 @@ internal class CraftFromChest : Feature
                 return;
         }
 
-        var storages = new List<Chest>(
+        var chests = new List<Chest>(
             from inventoryStorage in this.ManagedObjects.InventoryStorages
             where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
                   && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
                   && inventoryStorage.Value.Context is Chest
             select (Chest)inventoryStorage.Value.Context);
         craftingPage._materialContainers ??= new();
-        storages.AddRange(craftingPage._materialContainers);
+        chests.AddRange(craftingPage._materialContainers);
+
+        // Ensure only one Junimo Chest
+        var junimoChest = chests.FirstOrDefault(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
+        if (junimoChest is not null)
+        {
+            chests.RemoveAll(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
+            chests.Add(junimoChest);
+        }
+
         craftingPage._materialContainers.Clear();
-        craftingPage._materialContainers.AddRange(storages.Distinct());
+        craftingPage._materialContainers.AddRange(chests.Distinct());
     }
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)

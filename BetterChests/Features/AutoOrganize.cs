@@ -13,6 +13,7 @@ using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
+using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class AutoOrganize : Feature
@@ -39,10 +40,12 @@ internal class AutoOrganize : Feature
             storages.AddRange(
                 from inventoryStorage in this.ManagedObjects.InventoryStorages
                 where inventoryStorage.Value.AutoOrganize == FeatureOption.Enabled
+                    && (inventoryStorage.Value.Context as Chest)?.SpecialChestType is null or Chest.SpecialChestTypes.JunimoChest
                 select new KeyValuePair<IGameObjectType, IManagedStorage>(inventoryStorage.Key, inventoryStorage.Value));
             storages.AddRange(
                 from locationStorage in this.ManagedObjects.LocationStorages
                 where locationStorage.Value.AutoOrganize == FeatureOption.Enabled
+                      && (locationStorage.Value.Context as Chest)?.SpecialChestType is null or Chest.SpecialChestTypes.JunimoChest
                 select new KeyValuePair<IGameObjectType, IManagedStorage>(locationStorage.Key, locationStorage.Value));
             return storages;
         }

@@ -8,6 +8,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
+using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class UnloadChest : Feature
@@ -48,6 +49,7 @@ internal class UnloadChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
+            || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
             || !this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source)
             || source.UnloadChest == FeatureOption.Disabled)
         {
@@ -65,8 +67,10 @@ internal class UnloadChest : Feature
             return;
         }
 
-        // Object is Chest and supports Unload Chest
-        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var target))
+        // Object is a JunimoChest or does not support UnloadChest
+        if (obj is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+            || !this.ManagedObjects.TryGetManagedStorage(obj, out var target)
+            || target.UnloadChest == FeatureOption.Disabled)
         {
             return;
         }

@@ -206,24 +206,23 @@ internal class CarryChest : Feature
             return;
         }
 
-        var chest = __instance as Chest;
-        var otherChest = other as Chest;
-
-        // Block if either chest has any items
-        if (chest is not null && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()
-            || otherChest is not null && otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
-        {
-            __result = false;
-            return;
-        }
-
-        if (chest is null || otherChest is null)
+        if (__instance is not Chest chest || other is not Chest otherChest)
         {
             return;
         }
 
         // Block if mismatched data
-        if (chest.playerChoiceColor.Value.PackedValue != otherChest.playerChoiceColor.Value.PackedValue)
+        if (chest.SpecialChestType != otherChest.SpecialChestType
+            || chest.fridge.Value != otherChest.fridge.Value
+            || chest.playerChoiceColor.Value.PackedValue != otherChest.playerChoiceColor.Value.PackedValue)
+        {
+            __result = false;
+            return;
+        }
+
+        // Block if either chest has any items
+        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+            && (chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any() || otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
         {
             __result = false;
             return;
@@ -289,9 +288,13 @@ internal class CarryChest : Feature
         Log.Trace($"Placed storage {fromStorage.QualifiedItemId} from inventory to {location.NameOrUniqueName} at ({(x / 64).ToString()}, {(y / 64).ToString()}).");
         obj.Name = __instance.Name;
 
-        foreach (var item in fromStorage.Items)
+        // Only copy items from regular chest types
+        if (__instance is not Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
         {
-            toStorage.AddItem(item);
+            foreach (var item in fromStorage.Items)
+            {
+                toStorage.AddItem(item);
+            }
         }
 
         foreach (var (key, value) in fromStorage.ModData.Pairs)
@@ -316,10 +319,10 @@ internal class CarryChest : Feature
         CarryChest.Instance.CheckForOverburdened(true);
     }
 
-    private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, IList<Chest> exclude)
+    private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ICollection<Chest> exclude)
     {
         var items = chest.GetItemsForPlayer(player.UniqueMultiplayerID);
-        if (!exclude.Contains(chest) || chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest && exclude.Any(otherChest => otherChest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest))
+        if (!exclude.Contains(chest) && chest.SpecialChestType is not Chest.SpecialChestTypes.JunimoChest)
         {
             exclude.Add(chest);
             foreach (var item in items)
