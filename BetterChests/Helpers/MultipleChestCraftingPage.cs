@@ -23,7 +23,7 @@ internal class MultipleChestCraftingPage
     {
         this.TimeOut = 60;
         this.Storages = storages;
-        this.Chests = new List<Chest>(
+        this.Chests.AddRange(
             from storage in this.Storages
             where storage.Key is LocationObject
                   && storage.Value.Context is Chest
@@ -34,13 +34,22 @@ internal class MultipleChestCraftingPage
             this.FailureCallback);
     }
 
-    private IList<Chest> Chests { get; }
+    private List<Chest> Chests { get; } = new();
 
     private MultipleMutexRequest MultipleMutexRequest { get; }
 
     private List<KeyValuePair<IGameObjectType, IManagedStorage>> Storages { get; }
 
     private int TimeOut { get; set; }
+
+    /// <summary>
+    /// Cancels current mutex requests and closes the menu.
+    /// </summary>
+    public void ExitFunction()
+    {
+        this.TimeOut = 0;
+        this.MultipleMutexRequest?.ReleaseLocks();
+    }
 
     /// <summary>
     ///     Check if the request has timed out.
@@ -57,10 +66,10 @@ internal class MultipleChestCraftingPage
                     switch (gameObjectType)
                     {
                         case InventoryItem(var farmer, var i):
-                            Log.Info($"Could not acquire lock for storage  {managedStorage.QualifiedItemId} with farmer {farmer.Name} at slot {i.ToString()}.\n");
+                            Log.Info($"Could not acquire lock for storage \"{managedStorage.QualifiedItemId}\" with farmer {farmer.Name} at slot {i.ToString()}.");
                             break;
                         case LocationObject(var gameLocation, var (x, y)):
-                            Log.Info($"Could not acquire lock for storage  \"{managedStorage.QualifiedItemId}\" at location {gameLocation.NameOrUniqueName} at coordinates ({((int)x).ToString()},{((int)y).ToString()}).");
+                            Log.Info($"Could not acquire lock for storage \"{managedStorage.QualifiedItemId}\" at location {gameLocation.NameOrUniqueName} at coordinates ({((int)x).ToString()},{((int)y).ToString()}).");
                             break;
                     }
                 }
@@ -87,12 +96,6 @@ internal class MultipleChestCraftingPage
         {
             chest.mutex.Update(Game1.getOnlineFarmers());
         }
-    }
-
-    private void ExitFunction()
-    {
-        this.TimeOut = 0;
-        this.MultipleMutexRequest.ReleaseLocks();
     }
 
     private void FailureCallback()
