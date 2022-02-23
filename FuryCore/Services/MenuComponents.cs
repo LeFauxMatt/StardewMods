@@ -19,7 +19,8 @@ using StardewMods.FuryCore.Models.CustomEvents;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IMenuComponents" />
+/// <inheritdoc cref="IMenuComponents" />
+[FuryCoreService(true)]
 internal class MenuComponents : IMenuComponents, IModService
 {
     private readonly PerScreen<List<IClickableComponent>> _components = new(() => new());

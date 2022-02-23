@@ -126,6 +126,14 @@ internal class ModConfigMenu : IModService
             I18n.Section_General_Name,
             I18n.Section_General_Description);
 
+        this.GMCM.API.AddKeybindList(
+            this.Manifest,
+            () => this.Config.Configure,
+            value => this.Config.Configure = value,
+            I18n.Config_Configure_Name,
+            I18n.Config_Configure_Tooltip,
+            nameof(ConfigData.Configure));
+
         this.GMCM.API.AddBoolOption(
             this.Manifest,
             () => this.Config.ToolbarIcons,

@@ -1,12 +1,12 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.BetterChests.Models.Config;
-using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
@@ -15,7 +15,7 @@ using StardewMods.FuryCore.Interfaces.CustomEvents;
 internal class Configurator : Feature
 {
     private readonly Lazy<IConfigureGameObject> _configureGameObject;
-    private readonly PerScreen<IStorageData> _currentData = new();
+    private readonly PerScreen<IDictionary<string, string>> _currentData = new();
     private readonly PerScreen<IManagedObject> _currentObject = new();
     private readonly Lazy<ModConfigMenu> _modConfigMenu;
 
@@ -37,7 +37,7 @@ internal class Configurator : Feature
         get => this._configureGameObject.Value;
     }
 
-    private IStorageData CurrentData
+    private IDictionary<string, string> CurrentData
     {
         get => this._currentData.Value;
         set => this._currentData.Value = value;
@@ -79,10 +79,13 @@ internal class Configurator : Feature
             return;
         }
 
-        var data = SerializedStorageData.GetData(managedStorage);
         this.CurrentObject = managedStorage;
-        this.CurrentData = new SerializedStorageData(data);
-        this.ModConfigMenu.ChestConfig(e.ModManifest, data);
+        this.CurrentData = this.CurrentObject.ModData.Pairs
+                               .Where(modData => modData.Key.StartsWith($"{BetterChests.ModUniqueId}"))
+                               .ToDictionary(
+                                   modData => modData.Key[(BetterChests.ModUniqueId.Length + 1)..],
+                                   modData => modData.Value);
+        this.ModConfigMenu.ChestConfig(e.ModManifest, this.CurrentData, this.CurrentObject.QualifiedItemId);
     }
 
     private void OnResettingConfig(object sender, IResettingConfigEventArgs e)
@@ -92,7 +95,10 @@ internal class Configurator : Feature
             return;
         }
 
-        ((IStorageData)new StorageData()).CopyTo(this.CurrentData);
+        foreach (var (key, _) in this.CurrentData)
+        {
+            this.CurrentData[key] = string.Empty;
+        }
     }
 
     private void OnSavingConfig(object sender, ISavingConfigEventArgs e)
@@ -102,6 +108,15 @@ internal class Configurator : Feature
             return;
         }
 
-        this.CurrentData.CopyTo(this.CurrentObject);
+        foreach (var (key, value) in this.CurrentData)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                this.CurrentObject.ModData.Remove($"{BetterChests.ModUniqueId}/{key}");
+                continue;
+            }
+
+            this.CurrentObject.ModData[$"{BetterChests.ModUniqueId}/{key}"] = value;
+        }
     }
 }

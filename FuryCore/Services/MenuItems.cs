@@ -396,7 +396,7 @@ internal class MenuItems : IMenuItems, IModService
 
     private bool HighlightMethod(Item item)
     {
-        if (item is null)
+        if (string.IsNullOrWhiteSpace(item?.Name))
         {
             return false;
         }

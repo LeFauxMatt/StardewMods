@@ -1,8 +1,8 @@
 # Easy Access Change Log
 
-## 1.0.2 (Unreleased)
+## 1.1.0 (Unreleased)
 
-* Updated to FuryCore 1.4.2
+Updated to FuryCore 1.5.0
 
 ### Added
 

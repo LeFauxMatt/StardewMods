@@ -2,6 +2,8 @@
 
 ## 1.1.0 (Unreleased)
 
+Updated to FuryCore 1.5.0
+
 ### Added
 
 * Added better Controller support.

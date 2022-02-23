@@ -1,4 +1,7 @@
 {
+  "command.config-tool.documentation": "Adds a configuration tool that can be used to configure game objects.",
+  "config.configure.name": "Configure Object",
+  "config.configure.tooltip": "Configure the currently facing or held object.",
   "config.scroll-menu-overflow.name": "Scroll Menu Overflow",
   "config.scroll-menu-overflow.tooltip": "Allow scrolling when items overflow the menu capacity.",
   "config.toolbar-icons.name": "Toolbar Icons",
@@ -14,5 +17,7 @@
   "tag.donate-bundle.name": "Donate to Bundle",
   "tag.donate-bundle.tooltip": "Custom context tag for items that can be donated to the Community Center.",
   "tag.donate-museum.name": "Donate to Museum",
-  "tag.donate-museum.tooltip": "Custom context tag for items that can be donated to the Museum."
+  "tag.donate-museum.tooltip": "Custom context tag for items that can be donated to the Museum.",
+  "tool.config-tool.name": "Config Tool",
+  "tool.config-tool.description": "This tool can be used to configure game objects."
 }

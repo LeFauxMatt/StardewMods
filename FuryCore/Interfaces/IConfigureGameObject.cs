@@ -3,6 +3,7 @@
 using System;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewValley.Tools;
 
 /// <summary>
 ///     Opens a ModConfigMenu for a particular game object.
@@ -28,4 +29,10 @@ public interface IConfigureGameObject
     ///     Gets the current object being configured.
     /// </summary>
     public IGameObject CurrentObject { get; }
+
+    /// <summary>
+    ///     Gets a <see cref="GenericTool" /> that can be used to configure objects.
+    /// </summary>
+    /// <returns>The tool that can be used to configure objects.</returns>
+    public GenericTool GetConfigTool();
 }

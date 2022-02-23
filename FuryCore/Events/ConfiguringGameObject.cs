@@ -56,11 +56,15 @@ internal class ConfiguringGameObject : SortedEventHandler<IConfiguringGameObject
         if (!Context.IsPlayerFree
             || this.HandlerCount == 0
             || !e.Button.IsUseToolButton()
+            || this.Helper.Input.IsSuppressed(e.Button)
             || Game1.player.CurrentItem is not GenericTool genericTool
-            || this.Helper.Input.IsSuppressed(e.Button))
+            || !genericTool.modData.TryGetValue($"{FuryCore.ModUniqueId}/Tool", out var toolName)
+            || toolName != "ConfigTool")
         {
             return;
         }
+
+        this.Helper.Input.Suppress(e.Button);
 
         // Check for currently facing object
         var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
@@ -77,7 +81,6 @@ internal class ConfiguringGameObject : SortedEventHandler<IConfiguringGameObject
             return;
         }
 
-        this.Helper.Input.Suppress(e.Button);
         this.ConfigureGameObject.Register(gameObject);
         this.InvokeAll(new ConfiguringGameObjectEventArgs(gameObject, this.Manifest));
         this.ConfigureGameObject.Show();

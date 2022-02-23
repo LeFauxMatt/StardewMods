@@ -1,12 +1,12 @@
 ﻿namespace StardewMods.EasyAccess.Features;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.EasyAccess.Interfaces.ManagedObjects;
-using StardewMods.EasyAccess.Models.Config;
-using StardewMods.EasyAccess.Models.ManagedObjects;
 using StardewMods.EasyAccess.Services;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
@@ -15,7 +15,7 @@ using StardewMods.FuryCore.Interfaces.CustomEvents;
 internal class Configurator : Feature
 {
     private readonly Lazy<IConfigureGameObject> _configureGameObject;
-    private readonly PerScreen<IProducerData> _currentData = new();
+    private readonly PerScreen<IDictionary<string, string>> _currentData = new();
     private readonly PerScreen<IManagedObject> _currentObject = new();
     private readonly Lazy<ModConfigMenu> _modConfigMenu;
 
@@ -37,7 +37,7 @@ internal class Configurator : Feature
         get => this._configureGameObject.Value;
     }
 
-    private IProducerData CurrentData
+    private IDictionary<string, string> CurrentData
     {
         get => this._currentData.Value;
         set => this._currentData.Value = value;
@@ -79,10 +79,13 @@ internal class Configurator : Feature
             return;
         }
 
-        var data = SerializedProducerData.GetData(managedStorage);
         this.CurrentObject = managedStorage;
-        this.CurrentData = new SerializedProducerData(data);
-        this.ModConfigMenu.ProducerConfig(e.ModManifest, data);
+        this.CurrentData = this.CurrentObject.ModData.Pairs
+                               .Where(modData => modData.Key.StartsWith($"{EasyAccess.ModUniqueId}"))
+                               .ToDictionary(
+                                   modData => modData.Key[(EasyAccess.ModUniqueId.Length + 1)..],
+                                   modData => modData.Value);
+        this.ModConfigMenu.ProducerConfig(e.ModManifest, this.CurrentData, this.CurrentObject.QualifiedItemId);
     }
 
     private void OnResettingConfig(object sender, IResettingConfigEventArgs e)
@@ -92,7 +95,10 @@ internal class Configurator : Feature
             return;
         }
 
-        ((IProducerData)new ProducerData()).CopyTo(this.CurrentData);
+        foreach (var (key, _) in this.CurrentData)
+        {
+            this.CurrentData[key] = string.Empty;
+        }
     }
 
     private void OnSavingConfig(object sender, ISavingConfigEventArgs e)
@@ -102,6 +108,15 @@ internal class Configurator : Feature
             return;
         }
 
-        this.CurrentData.CopyTo(this.CurrentObject);
+        foreach (var (key, value) in this.CurrentData)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                this.CurrentObject.ModData.Remove($"{EasyAccess.ModUniqueId}/{key}");
+                continue;
+            }
+
+            this.CurrentObject.ModData[$"{EasyAccess.ModUniqueId}/{key}"] = value;
+        }
     }
 }

@@ -40,17 +40,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TooManyAnimals", "TooManyAn
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Common\Common.projitems*{257e17a8-89e5-4e1e-9a21-df8197127899}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
-		Common\Common.projitems*{806a01a3-e018-49b3-958d-f53fc36f3f82}*SharedItemsImports = 5
 		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{a13ea40a-a388-44c0-8241-283ce90e1dc4}*SharedItemsImports = 5
 		Common\Common.projitems*{ddb9f8ca-7899-40e5-bcd9-c869fa6b5f2d}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
 		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13
-		Common\Common.projitems*{facc7b1f-4a8d-4e42-9f40-f3335dc5c525}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

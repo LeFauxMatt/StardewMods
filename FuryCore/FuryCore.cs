@@ -27,6 +27,7 @@ public class FuryCore : Mod
 
         this.Services.Add(
             new AssetHandler(this.Helper),
+            new CommandHandler(this.Helper, this.Services),
             new ConfigureGameObject(this.Config, this.Helper, this.ModManifest, this.Services),
             new CustomEvents(this.Helper, this.Services),
             new CustomTags(this.Config, this.Services),

@@ -34,7 +34,7 @@ internal class CommandHandler : IModService
         this._managedObjects = services.Lazy<ManagedObjects>();
         this.Helper.ConsoleCommands.Add(
             "easy_access_info",
-            "Prints information to the logs about all producers managed by easy access.",
+            I18n.Command_Info_Documentation(),
             this.DumpInfo);
     }
 

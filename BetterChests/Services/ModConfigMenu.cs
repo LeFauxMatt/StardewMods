@@ -56,8 +56,14 @@ internal class ModConfigMenu : IModService
     /// </summary>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="data">The chest data to base the config on.</param>
-    public void ChestConfig(IManifest manifest, IDictionary<string, string> data)
+    /// <param name="sectionTitle">Section title for config or null to exclude.</param>
+    public void ChestConfig(IManifest manifest, IDictionary<string, string> data, string sectionTitle = null)
     {
+        if (!string.IsNullOrWhiteSpace(sectionTitle))
+        {
+            this.GMCM.API.AddSectionTitle(manifest, () => sectionTitle);
+        }
+
         var chestData = new SerializedStorageData(data);
         this.ChestConfig(manifest, chestData, false);
     }
@@ -76,8 +82,6 @@ internal class ModConfigMenu : IModService
                           .ToArray();
         var defaultOption = defaultConfig ? FeatureOption.Enabled : FeatureOption.Default;
         var defaultRange = defaultConfig ? FeatureOptionRange.Location : FeatureOptionRange.Default;
-
-        this.GMCM.API.AddSectionTitle(manifest, I18n.Section_Features_Name, I18n.Section_Features_Description);
 
         // Auto Organize
         this.GMCM.API.AddTextOption(
@@ -563,6 +567,7 @@ internal class ModConfigMenu : IModService
         foreach (var (name, data) in this.Assets.ChestData)
         {
             this.GMCM.API.AddPage(this.Manifest, name);
+            this.GMCM.API.AddSectionTitle(this.Manifest, () => name);
             this.ChestConfig(this.Manifest, data, false);
         }
     }
