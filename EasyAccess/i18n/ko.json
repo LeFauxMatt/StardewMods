@@ -2,6 +2,8 @@
   // Alerts
   "alert.collect-outputs.no-eligible": "아이템을 수집할 적합한 기계를 찾을 수 없습니다.",
   "alert.dispense-inputs.no-eligible": "아이템을 넣을 적합한 기계를 찾을 수 없습니다.",
+  // Commands
+  "command.info.documentation": "Easy Access 모드로 관리되는 모든 생산자에 대한 정보를 로그에 인쇄합니다.",
   // Feature Config
   "config.collect-outputs.name": "생산품 수집",
   "config.collect-outputs.tooltip": "완성된 아이템을 수집할 수 있는 기본 범위",
@@ -36,5 +38,8 @@
   "option.enabled.name": "활성화",
   "option.disabled.name": "비활성화",
   "option.location.name": "현재 위치",
-  "option.world.name": "어디서나"
+  "option.world.name": "어디서나",
+  // UI - Button
+  "button.collect-outputs.name": "생산품 수집",
+  "button.dispense-inputs.name": "아이템 입력"
 }
