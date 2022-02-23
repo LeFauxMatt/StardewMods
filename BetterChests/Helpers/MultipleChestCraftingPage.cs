@@ -19,36 +19,47 @@ internal class MultipleChestCraftingPage
     ///     Initializes a new instance of the <see cref="MultipleChestCraftingPage" /> class.
     /// </summary>
     /// <param name="storages">To storages to open a crafting page for.</param>
-    public MultipleChestCraftingPage(List<KeyValuePair<IGameObjectType, IManagedStorage>> storages)
+    public MultipleChestCraftingPage(IEnumerable<KeyValuePair<IGameObjectType, IManagedStorage>> storages)
     {
         this.TimeOut = 60;
-        this.Storages = storages;
-        this.Chests.AddRange(
-            from storage in this.Storages
-            where storage.Key is LocationObject
-                  && storage.Value.Context is Chest
-            select (Chest)storage.Value.Context);
-        this.MultipleMutexRequest = new(
-            this.Chests.Select(chest => chest.mutex).ToList(),
-            this.SuccessCallback,
-            this.FailureCallback);
+        this.Storages = (
+                from storage in storages
+                where storage.Key is LocationObject
+                      && storage.Value.Context is Chest
+                select storage)
+            .ToDictionary(
+                storage => storage.Key,
+                storage => storage.Value);
+        this.Chests.AddRange(from storage in this.Storages.Values select (Chest)storage.Context);
+        foreach (var chest in this.Chests)
+        {
+            chest.mutex.RequestLock();
+        }
+
+        this.Update();
     }
 
     private List<Chest> Chests { get; } = new();
 
-    private MultipleMutexRequest MultipleMutexRequest { get; }
+    private List<Chest> LockedChests { get; } = new();
 
-    private List<KeyValuePair<IGameObjectType, IManagedStorage>> Storages { get; }
+    private Dictionary<IGameObjectType, IManagedStorage> Storages { get; }
 
     private int TimeOut { get; set; }
 
     /// <summary>
-    /// Cancels current mutex requests and closes the menu.
+    ///     Cancels current mutex requests and closes the menu.
     /// </summary>
     public void ExitFunction()
     {
         this.TimeOut = 0;
-        this.MultipleMutexRequest?.ReleaseLocks();
+        foreach (var chest in this.Chests.Where(chest => chest.mutex.IsLockHeld()))
+        {
+            chest.mutex.ReleaseLock();
+        }
+
+        this.Chests.Clear();
+        this.LockedChests.Clear();
     }
 
     /// <summary>
@@ -75,7 +86,7 @@ internal class MultipleChestCraftingPage
                 }
             }
 
-            this.ExitFunction();
+            this.OpenCraftingPage();
             return true;
         }
 
@@ -85,33 +96,37 @@ internal class MultipleChestCraftingPage
     /// <summary>
     ///     Updates the mutexes for chests related to this request.
     /// </summary>
-    public void UpdateChests()
+    public void Update()
     {
         if (--this.TimeOut <= 0)
         {
             return;
         }
 
-        foreach (var chest in this.Chests)
+        foreach (var chest in this.Chests.Where(chest => !this.LockedChests.Contains(chest)))
         {
+            if (chest.mutex.IsLockHeld())
+            {
+                this.LockedChests.Add(chest);
+                continue;
+            }
+
             chest.mutex.Update(Game1.getOnlineFarmers());
+        }
+
+        if (this.Chests.Count == this.LockedChests.Count)
+        {
+            this.OpenCraftingPage();
         }
     }
 
-    private void FailureCallback()
-    {
-        Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Workbench_Chest_Warning"));
-        this.ExitFunction();
-    }
-
-    private void SuccessCallback()
+    private void OpenCraftingPage()
     {
         this.TimeOut = 0;
         var width = 800 + IClickableMenu.borderWidth * 2;
         var height = 600 + IClickableMenu.borderWidth * 2;
         var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
-        var chests = this.Storages.Select(storage => storage.Value.Context).OfType<Chest>().ToList();
-        Game1.activeClickableMenu = new CraftingPage((int)x, (int)y, width, height, false, true, chests)
+        Game1.activeClickableMenu = new CraftingPage((int)x, (int)y, width, height, false, true, this.LockedChests)
         {
             exitFunction = this.ExitFunction,
         };

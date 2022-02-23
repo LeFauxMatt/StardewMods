@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 1.5.2 (February 23, 2022)
+
+### Fixed
+
+* Fixed Chests locking after activating Craft from Chest.
+
 ## 1.5.1 (February 22, 2022)
 
 ### Fixed

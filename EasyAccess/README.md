@@ -40,7 +40,6 @@ Hit a configurable key to instantly collect output items from nearby producers.<
 
 Use a Config Tool<sup>1</sup> on a producer to bring up a menu to configure that producer.
 
-
 | Config Option | Description                       | Default Value | Other Value(s)  |
 |:--------------|:----------------------------------|:--------------|:----------------|
 | Configurator  | Enables the Configurator feature. | `true`        | `true`, `false` |

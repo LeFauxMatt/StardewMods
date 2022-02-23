@@ -282,7 +282,7 @@ internal class CraftFromChest : Feature
             return;
         }
 
-        this.MultipleChestCraftingPage.UpdateChests();
+        this.MultipleChestCraftingPage.Update();
     }
 
     private void OpenCrafting()
