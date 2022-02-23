@@ -40,12 +40,12 @@ internal class AutoOrganize : Feature
             storages.AddRange(
                 from inventoryStorage in this.ManagedObjects.InventoryStorages
                 where inventoryStorage.Value.AutoOrganize == FeatureOption.Enabled
-                      && (inventoryStorage.Value.Context as Chest)?.SpecialChestType is null or Chest.SpecialChestTypes.JunimoChest
+                      && (inventoryStorage.Value.Context as Chest)?.SpecialChestType is not null or Chest.SpecialChestTypes.JunimoChest
                 select new KeyValuePair<IGameObjectType, IManagedStorage>(inventoryStorage.Key, inventoryStorage.Value));
             storages.AddRange(
                 from locationStorage in this.ManagedObjects.LocationStorages
                 where locationStorage.Value.AutoOrganize == FeatureOption.Enabled
-                      && (locationStorage.Value.Context as Chest)?.SpecialChestType is null or Chest.SpecialChestTypes.JunimoChest
+                      && (locationStorage.Value.Context as Chest)?.SpecialChestType is not null or Chest.SpecialChestTypes.JunimoChest
                 select new KeyValuePair<IGameObjectType, IManagedStorage>(locationStorage.Key, locationStorage.Value));
             return storages;
         }

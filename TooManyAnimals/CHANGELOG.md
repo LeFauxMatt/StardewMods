@@ -1,6 +1,8 @@
 # Too Many Animals Change Log
 
-## 1.1.0 (Unreleased)
+## 1.1.0 (February 22, 2022)
+
+Updated to FuryCore 1.5.0
 
 Updated to FuryCore 1.5.0
 

@@ -120,7 +120,7 @@ Sample `content.json`:
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "B": "{{i18n: icon.chests-anywhere.name}}/example.ModId\\Icons/0/Left",
+        "Chests Anywhere": "{{i18n: icon.chests-anywhere.name}}/example.ModId\\Icons/0/Left/keybind: B",
       },
       "When": {
         "HasMod": "Pathoschild.ChestsAnywhere"
@@ -301,6 +301,10 @@ an ItemMatcher.
 
 ## Configure
 
+### Configure Key
+
+Keybind that brings up a config menu for the item that you're carrying.
+
 ### Add Custom Tags
 
 Choose whether to allow adding custom tags to items.
@@ -315,6 +319,10 @@ Choose whether to allow adding custom tags to items.
 Choose whether to handle scrolling items that overflow an ItemGrabMenu.
 
 Enabling this option will capture the MouseWheelScrolled event and add up/down arrow buttons to scroll items.
+
+### Toolbar Icons
+
+Allow other mods to add clickable icons above/below the toolbar.
 
 ## Translations
 

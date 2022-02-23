@@ -117,24 +117,12 @@
         "HasMod": "Pathoschild.ChestsAnywhere"
       }
     },
-    // Add CJB Group Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "cjb: .CJB Toggle": "{{i18n: icon.cjb-group.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/11/Left/toggle: cjb"
-      },
-      "When": {
-        "EnableCJBCheatsMenu": true,
-        "HasMod": "CJBok.CheatsMenu"
-      }
-    },
     // Add CJB Cheats Menu Icon
     {
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "cjb: CJB Cheats Menu": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left/keybind: {{CJBCheatsMenuHotkey}}/false"
+        "CJB Cheats Menu": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left/keybind: {{CJBCheatsMenuHotkey}}"
       },
       "When": {
         "EnableCJBCheatsMenu": true,
@@ -146,7 +134,7 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "cjb: CJB Item Spawner": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left/keybind: {{CJBItemSpawnerHotkey}}/false"
+        "CJB Item Spawner": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left/keybind: {{CJBItemSpawnerHotkey}}"
       },
       "When": {
         "EnableCJBItemSpawner": true,

@@ -6,6 +6,7 @@ Provides easier access to machines and producers in the game.
 
 * [Features](#features)
     * [Collect Outputs](#collect-outputs)
+    * [Configurator](#configurator)
     * [Dispense Inputs](#dispense-inputs)
 * [Supported Objects](#supported-objects)
 * [Configurations](#configurations)
@@ -34,6 +35,17 @@ Hit a configurable key to instantly collect output items from nearby producers.<
 3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 5. See [Item Tags](#item-tags).
+
+### Configurator
+
+Use a Config Tool<sup>1</sup> on a producer to bring up a menu to configure that producer.
+
+
+| Config Option | Description                       | Default Value | Other Value(s)  |
+|:--------------|:----------------------------------|:--------------|:----------------|
+| Configurator  | Enables the Configurator feature. | `true`        | `true`, `false` |
+
+1. Use the command `furycore_config_tool` to get the Config Tool.
 
 ### Dispense Inputs
 

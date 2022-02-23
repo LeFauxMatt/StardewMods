@@ -11,7 +11,7 @@ using StardewMods.FuryCore.Enums;
 internal class ConfigData
 {
     /// <summary>
-    ///     Gets or sets controls to configure an item you're facing or carrying.
+    ///     Gets or sets controls to configure an item you're carrying.
     /// </summary>
     public KeybindList Configure { get; set; } = new(SButton.End);
 
