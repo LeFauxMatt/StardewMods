@@ -109,6 +109,7 @@ internal class ChestMenuTabs : Feature
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.MenuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
         this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
@@ -120,6 +121,7 @@ internal class ChestMenuTabs : Feature
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.MenuComponents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
         this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;
@@ -164,6 +166,16 @@ internal class ChestMenuTabs : Feature
         }
     }
 
+    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
+    {
+        this.Menu = e.Menu switch
+        {
+            ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => itemSelectionMenu,
+            ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => itemGrabMenu,
+            _ => null,
+        };
+    }
+
     [SortedEventPriority(EventPriority.Low)]
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
@@ -192,13 +204,11 @@ internal class ChestMenuTabs : Feature
         var resetTab = false;
         switch (e.Menu)
         {
-            case ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled:
-                this.Menu = itemSelectionMenu;
+            case ItemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled:
                 storageData = this.Config.DefaultChest;
                 break;
 
-            case ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
-                this.Menu = itemGrabMenu;
+            case ItemGrabMenu { context: { } context } when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
                 storageData = managedStorage;
                 if (!ReferenceEquals(context, this.Context))
                 {
@@ -209,7 +219,6 @@ internal class ChestMenuTabs : Feature
                 break;
 
             default:
-                this.Menu = null;
                 return;
         }
 
