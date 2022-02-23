@@ -1,0 +1,12 @@
+{
+  "section.general.name": "일반",
+  "section.general.description": "일반 구성 옵션.",
+  "section.controls.name": "단축키 설정",
+  "section.controls.description": "컨트롤러/키보드 구성.",
+  "config.animal-shop-limit.name": "최대 동물 표시",
+  "config.animal-shop-limit.tooltip": "한 페이지에 표시할 수 있는 동물의 수.",
+  "config.next-page.name": "다음 페이지 버튼",
+  "config.next-page.tooltip": "다음 페이지의 동물을 보여주는 단축키.",
+  "config.previous-page.name": "이전 페이지 버튼",
+  "config.previous-page.tooltip": "이전 페이지의 동물을 보여주는 단축키."
+}
