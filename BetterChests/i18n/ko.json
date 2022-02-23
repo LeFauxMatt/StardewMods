@@ -14,7 +14,11 @@
   "section.controls.description": "단축키를 설정할 수 있습니다.",
   "section.chests.name": "상자별 설정",
   "section.chests.description": "각 상자 유형을 개별적으로 구성합니다.",
+  // Commands
+  "command.info.documentation": "Better Chests 모드에서 관리되는 모든 저장소에 대한 정보를 로그에 인쇄합니다.",
   // Feature Config
+  "config.auto-organize.name": "자동 정리",
+  "config.auto-organize.tooltip": "매일 밤 우선 순위가 높은 상자에 아이템을 자동으로 보관합니다.",
   "config.carry-chest.name": "상자 이동",
   "config.carry-chest.tooltip": "아이템이 들어 있는 상자를 집어 올릴 수 있습니다.",
   "config.carry-chest-limit.name": "상자 이동 한계",
@@ -48,6 +52,12 @@
   "config.filter-items-block.tooltip": "필터링 조건을 충족하지 않는 아이템을 차단합니다.",
   "config.open-held-chest.name": "보유 상자 열기",
   "config.open-held-chest.tooltip": "현재 보유하고 있는 상자를 열고 내용물에 액세스합니다.",
+  "config.organize-chest.name": "상자 정리",
+  "config.organize-chest.tooltip": "구성 가능한 그룹화 및 정렬 옵션으로 상자를 구성하십시오.",
+  "config.organize-chest-group-by.name": "상자 그룹화 기준",
+  "config.organize-chest-group-by.tooltip": "항목을 구성할 때 그룹화할 항목 속성.",
+  "config.organize-chest-sort-by.name": "상자 정렬 기준",
+  "config.organize-chest-sort-by.tooltip": "항목을 구성할 때 정렬 기준으로 사용할 항목 속성.",
   "config.resize-chest.name": "상자 크기 조정",
   "config.resize-chest.tooltip": "상자에 사용자 정의된 수의 아이템 슬롯이 추가 되도록 허용합니다.",
   "config.resize-chest-capacity.name": "상자 용량 크기 조정",
@@ -66,7 +76,9 @@
   "config.search-items-symbol.tooltip": "아이템의 컨텍스트 태그를 기준으로 검색할 검색 구문 앞에 붙이는 기호입니다.",
   "config.slot-lock.name": "슬롯 잠금",
   "config.slot-lock.tooltip": "인벤토리의 아이템 위에 마우스를 놓고 단축키를 클릭하여 아이템 슬롯을 잠가 보관되지 않도록 합니다.",
-  "config.stash-to-chest.name": "아이템 보관",
+  "config.slot-lock-hold.name": "슬롯 잠금 보류",
+  "config.slot-lock-hold.tooltip": "아이템 슬롯을 잠그려면 잠금 슬롯 키를 누르고 있어야 합니다.",
+  "config.stash-to-chest.name": "상자 보관",
   "config.stash-to-chest.tooltip": "단축키를 클릭하여 근처 상자에 아이템을 즉시 보관합니다.",
   "config.stash-to-chest-distance.name": "상자 보관 범위",
   "config.stash-to-chest-distance.tooltip": "근처 상자에 아이템을 보관할 수 있는 범위",
@@ -102,6 +114,14 @@
   "option.inventory.name": "인벤토리",
   "option.location.name": "현재 위치",
   "option.world.name": "어디서나",
+  // Group By Types
+  "group-by.category.name": "카테고리",
+  "group-by.color.name": "색상",
+  // Sort By Types
+  "sort-by.name.name": "이름",
+  "sort-by.type.name": "유형",
+  "sort-by.quality.name": "품질",
+  "sort-by.quantity.name": "수량",
   // Menu Areas
   "area.top.name": "상자 위쪽",
   "area.right.name": "상자 오른쪽",
@@ -110,6 +130,10 @@
   "area.custom.name": "사용자 지정 위치",
   // UI - Button
   "button.Configure.name": "카테고리 설정",
+  "button.stash-to-chest.name": "상자에 보관",
+  "button.craft-from-chest.name": "상자에서 제작",
+  "button.minus-priority.name": "우선순위 감소",
+  "button.plus-priority.name": "우선순위 증가",
   // UI - Tabs
   "tabs.Clothing.name": "의류",
   "tabs.Cooking.name": "요리",
@@ -118,5 +142,5 @@
   "tabs.Fishing.name": "생선",
   "tabs.Materials.name": "자원",
   "tabs.Misc.name": "기타",
-  "tabs.Seeds.name": "씨앗"
+  "tabs.Seeds.name": "씨앗",
 }
