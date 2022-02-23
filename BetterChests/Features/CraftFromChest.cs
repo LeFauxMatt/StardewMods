@@ -294,7 +294,8 @@ internal class CraftFromChest : Feature
             return;
         }
 
-        Log.Trace("Launching CraftFromChest Menu.");
+        Log.Verbose("Launching CraftFromChest Menu.");
+        this.MultipleChestCraftingPage?.ExitFunction();
         this.MultipleChestCraftingPage = new(eligibleStorages);
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
     }
