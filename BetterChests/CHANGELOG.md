@@ -1,6 +1,12 @@
 ﻿# Better Chests Change Log
 
-## 1.4.3 (Unreleased)
+## 1.5.1 (February 22, 2022)
+
+### Fixed
+
+* Fixed AutoOrganize not working for any chest.
+
+## 1.5.0 (February 22, 2022)
 
 ### Added
 

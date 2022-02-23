@@ -290,7 +290,7 @@ internal class CarryChest : Feature
         obj.Name = __instance.Name;
 
         // Only copy items from regular chest types
-        if (__instance is not Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+        if (!toStorage.Items.Any() && __instance is not Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
         {
             foreach (var item in fromStorage.Items)
             {

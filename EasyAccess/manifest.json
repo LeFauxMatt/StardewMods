@@ -7,7 +7,7 @@
   "EntryDll": "EasyAccess.dll",
   "MinimumApiVersion": "3.13.0",
   "UpdateKeys": [
-    "Nexus:11002@Main"
+    "Nexus:11002"
   ],
   "Dependencies": [
     {

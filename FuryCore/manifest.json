@@ -7,6 +7,6 @@
   "EntryDll": "FuryCore.dll",
   "MinimumApiVersion": "3.13.0",
   "UpdateKeys": [
-    "Nexus:10696@FuryCore"
+    "Nexus:10696"
   ]
 }
