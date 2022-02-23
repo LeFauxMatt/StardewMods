@@ -55,16 +55,20 @@ internal class ModConfigMenu : IModService
     /// </summary>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="data">The chest data to base the config on.</param>
-    public void ProducerConfig(IManifest manifest, IDictionary<string, string> data)
+    /// <param name="sectionTitle">Section title for config or null to exclude.</param>
+    public void ProducerConfig(IManifest manifest, IDictionary<string, string> data, string sectionTitle = null)
     {
+        if (!string.IsNullOrWhiteSpace(sectionTitle))
+        {
+            this.GMCM.API.AddSectionTitle(manifest, () => sectionTitle);
+        }
+
         var producerData = new SerializedProducerData(data);
         this.ProducerConfig(manifest, producerData, false);
     }
 
     private void ControlsConfig(IControlScheme controls)
     {
-        this.GMCM.API.AddSectionTitle(this.Manifest, I18n.Section_Controls_Name, I18n.Section_Controls_Description);
-
         // Collect Items
         this.GMCM.API.AddKeybindList(
             this.Manifest,
@@ -123,6 +127,7 @@ internal class ModConfigMenu : IModService
         foreach (var (name, data) in this.Assets.ProducerData)
         {
             this.GMCM.API.AddPage(this.Manifest, name);
+            this.GMCM.API.AddSectionTitle(this.Manifest, () => name);
             this.ProducerConfig(this.Manifest, data, false);
         }
     }
@@ -137,12 +142,6 @@ internal class ModConfigMenu : IModService
         this.GenerateConfig();
     }
 
-    /// <summary>
-    ///     Adds GMCM options for producer data.
-    /// </summary>
-    /// <param name="manifest">The mod's manifest.</param>
-    /// <param name="producerData">The producer data to configure.</param>
-    /// <param name="defaultConfig">Set to true if configuring the default producer config options.</param>
     private void ProducerConfig(IManifest manifest, IProducerData producerData, bool defaultConfig)
     {
         var rangeValues = (defaultConfig

@@ -14,7 +14,7 @@ using StardewMods.FuryCore.Models;
 ///     An event whose handlers support sorted priority.
 /// </summary>
 /// <typeparam name="TEventArgs">The type/class of event arguments.</typeparam>
-internal abstract class SortedEventHandler<TEventArgs>
+public abstract class SortedEventHandler<TEventArgs>
 {
     /// <summary>
     ///     Gets the total number of registered handlers.

@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
+using System;
 using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -23,6 +24,7 @@ internal class CategorizeChest : Feature
     private readonly PerScreen<IClickableComponent> _configureButton = new();
     private readonly PerScreen<IManagedStorage> _currentStorage = new();
     private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
+    private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly PerScreen<IClickableComponent> _minusButton = new();
     private readonly PerScreen<NumberComponent> _numberComponent = new();
     private readonly PerScreen<IClickableComponent> _plusButton = new();
@@ -38,6 +40,7 @@ internal class CategorizeChest : Feature
         : base(config, helper, services)
     {
         this.Services = services;
+        this._menuComponents = services.Lazy<IMenuComponents>();
     }
 
     private IClickableComponent ConfigureButton
@@ -65,6 +68,11 @@ internal class CategorizeChest : Feature
     {
         get => this._currentStorage.Value;
         set => this._currentStorage.Value = value;
+    }
+
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
     }
 
     private IClickableComponent MinusButton
@@ -104,16 +112,16 @@ internal class CategorizeChest : Feature
     protected override void Activate()
     {
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.CustomEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
-        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
+        this.MenuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+        this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.CustomEvents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
-        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.MenuComponents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
+        this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
     }
 
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
@@ -182,7 +190,7 @@ internal class CategorizeChest : Feature
         e.SuppressInput();
     }
 
-    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    private void OnMenuComponentsLoading(object sender, IMenuComponentsLoadingEventArgs e)
     {
         switch (e.Menu)
         {

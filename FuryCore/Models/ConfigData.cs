@@ -1,6 +1,8 @@
 ﻿namespace StardewMods.FuryCore.Models;
 
 using System.Collections.Generic;
+using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Enums;
 
 /// <summary>
@@ -8,6 +10,11 @@ using StardewMods.FuryCore.Enums;
 /// </summary>
 internal class ConfigData
 {
+    /// <summary>
+    ///     Gets or sets controls to configure an item you're facing or carrying.
+    /// </summary>
+    public KeybindList Configure { get; set; } = new(SButton.End);
+
     /// <summary>
     ///     Gets or sets which custom tags can be added to items.
     /// </summary>
@@ -35,6 +42,7 @@ internal class ConfigData
     /// <param name="other">The <see cref="ConfigData" /> to copy values to.</param>
     public void CopyTo(ConfigData other)
     {
+        other.Configure = this.Configure;
         other.CustomTags = this.CustomTags;
         other.ScrollMenuOverflow = this.ScrollMenuOverflow;
         other.ToolbarIcons = this.ToolbarIcons;

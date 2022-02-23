@@ -2,6 +2,8 @@
   // Alerts
   "alert.collect-outputs.no-eligible": "No eligible producers found to collect items from",
   "alert.dispense-inputs.no-eligible": "No eligible producers found to dispense items into",
+  // Commands
+  "command.info.documentation": "Prints information to the logs about all producers managed by easy access.",
   // Feature Config
   "config.collect-outputs.name": "Collect Outputs",
   "config.collect-outputs.tooltip": "The default range that producers can be collected from.",

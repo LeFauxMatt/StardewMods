@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
@@ -45,7 +46,8 @@ internal class AssetHandler : IModService, IAssetLoader
     /// <inheritdoc />
     public bool CanLoad<T>(IAssetInfo asset)
     {
-        return asset.AssetNameEquals($"{FuryCore.ModUniqueId}/Toolbar");
+        return asset.AssetNameEquals($"{FuryCore.ModUniqueId}/ConfigTool")
+               || asset.AssetNameEquals($"{FuryCore.ModUniqueId}/Toolbar");
     }
 
     /// <inheritdoc />
@@ -54,6 +56,8 @@ internal class AssetHandler : IModService, IAssetLoader
         var segment = PathUtilities.GetSegments(asset.AssetName);
         return segment[1] switch
         {
+            "ConfigTool" when segment.Length == 2
+                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/ConfigTool.png"),
             "Toolbar" when segment.Length == 2
                 => (T)(object)new Dictionary<string, string>(),
             _ => default,

@@ -307,11 +307,9 @@ precedence.
     * Mini-Shipping Bin
     * Fridge
     * Custom chests added by other mods.<sup>1</sup>
-* **Individual Chest** - A single instance of a chest can be configured individually.<sup>2</sup>
+* **Individual Chest** - A single instance of a chest can be configured individually.
 
 1. External mod must "opt-in" by [registering custom chest](#custom-chests) with Better Chests.
-2. Add-on mod [Better Chests Configurator](../BetterChestsConfigurator/README.md) is required to configure individual
-   chests.
 
 ### Group By Values
 

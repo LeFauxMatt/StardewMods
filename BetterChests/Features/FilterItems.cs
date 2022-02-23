@@ -18,6 +18,7 @@ using StardewValley.Objects;
 internal class FilterItems : Feature
 {
     private readonly Lazy<IHarmonyHelper> _harmony;
+    private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="FilterItems" /> class.
@@ -55,7 +56,7 @@ internal class FilterItems : Feature
                         nameof(FilterItems.Automate_Store_prefix));
                 }
             });
-        services.Lazy<IMenuItems>();
+        this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static FilterItems Instance { get; set; }
@@ -65,18 +66,23 @@ internal class FilterItems : Feature
         get => this._harmony.Value;
     }
 
+    private IMenuItems MenuItems
+    {
+        get => this._menuItems.Value;
+    }
+
     /// <inheritdoc />
     protected override void Activate()
     {
         this.Harmony.ApplyPatches(this.Id);
-        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
+        this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         this.Harmony.UnapplyPatches(this.Id);
-        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
+        this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

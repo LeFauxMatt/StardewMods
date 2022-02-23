@@ -1,8 +1,10 @@
-﻿namespace StardewMods.FuryCore.Interfaces.GameObjects;
+﻿namespace StardewMods.FuryCore.Interfaces;
 
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 
@@ -11,6 +13,11 @@ using StardewValley;
 /// </summary>
 public interface IGameObjects
 {
+    /// <summary>
+    ///     Triggers when <see cref="IGameObject" /> that are no longer accessible are purged from the cache.
+    /// </summary>
+    public event EventHandler<IGameObjectsRemovedEventArgs> GameObjectsRemoved;
+
     /// <summary>
     ///     Gets all items in the player's inventory.
     /// </summary>

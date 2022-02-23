@@ -48,15 +48,15 @@ internal class AnimalMenuHandler : IModService
                     nameof(AnimalMenuHandler.PurchaseAnimalsMenu_constructor_prefix));
                 harmonyHelper.ApplyPatches(id);
             });
-        services.Lazy<ICustomEvents>(
-            customEvents =>
-            {
-                customEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-                customEvents.MenuComponentsLoading += this.OnMenuComponentsLoading;
-                customEvents.MenuComponentPressed += this.OnMenuComponentPressed;
-            });
 
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        services.Lazy<ICustomEvents>(customEvents => customEvents.ClickableMenuChanged += this.OnClickableMenuChanged);
+        services.Lazy<IMenuComponents>(
+            menuComponents =>
+            {
+                menuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+                menuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
+            });
     }
 
     private static AnimalMenuHandler Instance { get; set; }
@@ -190,7 +190,7 @@ internal class AnimalMenuHandler : IModService
         }
     }
 
-    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    private void OnMenuComponentsLoading(object sender, IMenuComponentsLoadingEventArgs e)
     {
         if (e.Menu is not PurchaseAnimalsMenu menu)
         {

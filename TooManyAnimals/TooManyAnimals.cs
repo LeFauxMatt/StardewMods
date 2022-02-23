@@ -45,6 +45,7 @@ public class TooManyAnimals : Mod
 
         this.Config = new(config ?? new ConfigData(), this.Helper, this.Services);
 
+        // Services
         this.Services.Add(
             new AnimalMenuHandler(this.Config, this.Helper, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest));

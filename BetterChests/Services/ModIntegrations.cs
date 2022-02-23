@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;

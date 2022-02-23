@@ -44,6 +44,13 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
+    public bool Configurator
+    {
+        get => this.Data.Configurator;
+        set => this.Data.Configurator = value;
+    }
+
+    /// <inheritdoc />
     public ControlScheme ControlScheme
     {
         get => this.Data.ControlScheme;

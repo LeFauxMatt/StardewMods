@@ -3,11 +3,12 @@
 using System;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
-internal class GameObjectsRemoved : SortedEventHandler<GameObjectsRemovedEventArgs>
+internal class GameObjectsRemoved : SortedEventHandler<IGameObjectsRemovedEventArgs>
 {
     private readonly Lazy<GameObjects> _gameObjects;
 
@@ -32,7 +33,7 @@ internal class GameObjectsRemoved : SortedEventHandler<GameObjectsRemovedEventAr
         var removed = this.GameObjects.PurgeCache();
         if (removed is not null)
         {
-            this.InvokeAll(new(removed));
+            this.InvokeAll(new GameObjectsRemovedEventArgs(removed));
         }
     }
 }

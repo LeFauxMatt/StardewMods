@@ -36,7 +36,7 @@ internal class CommandHandler : IModService
         this._stashToChest = services.Lazy<StashToChest>();
         this.Helper.ConsoleCommands.Add(
             "better_chests_info",
-            "Prints information to the logs about all storages managed by better chests.",
+            I18n.Command_Info_Documentation(),
             this.DumpInfo);
     }
 

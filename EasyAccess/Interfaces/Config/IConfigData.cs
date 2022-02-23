@@ -8,6 +8,11 @@ using StardewMods.EasyAccess.Models.Config;
 internal interface IConfigData
 {
     /// <summary>
+    ///     Gets or sets a value indicating whether Configurator will be enabled.
+    /// </summary>
+    bool Configurator { get; set; }
+
+    /// <summary>
     ///     Gets or sets the control scheme.
     /// </summary>
     ControlScheme ControlScheme { get; set; }
@@ -25,6 +30,7 @@ internal interface IConfigData
     public void CopyTo<TOther>(TOther other)
         where TOther : IConfigData
     {
+        other.Configurator = this.Configurator;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         ((IProducerData)other.DefaultProducer).CopyTo(this.DefaultProducer);
     }

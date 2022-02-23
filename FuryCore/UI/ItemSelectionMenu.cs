@@ -282,7 +282,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void RegisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed += this.OnButtonPressed;
-        this.CustomEvents.MenuItemsChanged += this.OnMenuItemsChanged;
+        this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
         this.CustomEvents.RenderedClickableMenu += this.OnRenderedClickableMenu;
         this.ItemMatcher.CollectionChanged += this.OnCollectionChanged;
     }
@@ -294,7 +294,7 @@ public class ItemSelectionMenu : ItemGrabMenu
     public void UnregisterEvents(IInputEvents inputEvents)
     {
         inputEvents.ButtonPressed -= this.OnButtonPressed;
-        this.CustomEvents.MenuItemsChanged -= this.OnMenuItemsChanged;
+        this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;
         this.CustomEvents.RenderedClickableMenu -= this.OnRenderedClickableMenu;
         this.ItemMatcher.CollectionChanged -= this.OnCollectionChanged;
     }

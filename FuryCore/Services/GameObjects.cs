@@ -8,7 +8,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects.Producers;
@@ -25,14 +27,24 @@ internal class GameObjects : IGameObjects, IModService
 {
     private readonly PerScreen<IDictionary<object, IGameObject>> _cachedObjects = new(() => new Dictionary<object, IGameObject>());
     private readonly PerScreen<IDictionary<object, object>> _contextMap = new(() => new Dictionary<object, object>());
+    private readonly GameObjectsRemoved _gameObjectsRemoved;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="GameObjects" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
-    public GameObjects(IModHelper helper)
+    /// <param name="services">Provides access to internal and external services.</param>
+    public GameObjects(IModHelper helper, IModServices services)
     {
         this.Helper = helper;
+        this._gameObjectsRemoved = new(helper.Events, services);
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<IGameObjectsRemovedEventArgs> GameObjectsRemoved
+    {
+        add => this._gameObjectsRemoved.Add(value);
+        remove => this._gameObjectsRemoved.Remove(value);
     }
 
     /// <inheritdoc />

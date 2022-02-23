@@ -11,9 +11,9 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
-using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
@@ -26,6 +26,7 @@ internal class HudComponents : IHudComponents, IModService
 {
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<string> _hoverText = new();
+    private readonly HudComponentPressed _hudComponentPressed;
     private readonly PerScreen<List<IClickableComponent>> _icons = new(() => new());
     private readonly PerScreen<List<CustomClickableComponent>> _toolbarIcons = new();
     private MethodInfo _overrideButtonReflected;
@@ -41,13 +42,19 @@ internal class HudComponents : IHudComponents, IModService
         this._assetHandler = services.Lazy<AssetHandler>();
         this.Config = config;
         this.Helper = helper;
+        this._hudComponentPressed = new(helper, services);
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
         this.Helper.Events.Display.RenderingHud += this.OnRenderingHud;
         this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        this.HudComponentPressed += this.OnHudComponentPressed;
+    }
 
-        services.Lazy<ICustomEvents>(
-            customEvents => { customEvents.HudComponentPressed += this.OnHudComponentPressed; });
+    /// <inheritdoc />
+    public event EventHandler<ClickableComponentPressedEventArgs> HudComponentPressed
+    {
+        add => this._hudComponentPressed.Add(value);
+        remove => this._hudComponentPressed.Remove(value);
     }
 
     /// <summary>

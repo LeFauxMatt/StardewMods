@@ -14,6 +14,8 @@
   "section.controls.description": "Controller/keyboard configurations.",
   "section.chests.name": "Chests",
   "section.chests.description": "Configure each chest type individually.",
+  // Commands
+  "command.info.documentation": "Prints information to the logs about all storages managed by better chests.",
   // Feature Config
   "config.auto-organize.name": "Auto Organize",
   "config.auto-organize.tooltip": "Automatically stash items into higher priority chests each night.",

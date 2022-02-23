@@ -25,6 +25,11 @@ internal interface IConfigData
     public bool CategorizeChest { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether Configurator will be enabled.
+    /// </summary>
+    public bool Configurator { get; set; }
+
+    /// <summary>
     ///     Gets or sets the control scheme.
     /// </summary>
     ControlScheme ControlScheme { get; set; }
@@ -65,6 +70,7 @@ internal interface IConfigData
         other.CarryChestLimit = this.CarryChestLimit;
         other.CarryChestSlow = this.CarryChestSlow;
         other.CategorizeChest = this.CategorizeChest;
+        other.Configurator = this.Configurator;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
         other.CustomColorPickerArea = this.CustomColorPickerArea;
         ((IStorageData)other.DefaultChest).CopyTo(this.DefaultChest);

@@ -21,6 +21,16 @@ internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfi
     private HashSet<string> Registered { get; } = new();
 
     /// <summary>
+    ///     Checks if the mod is already registered with GMCM.
+    /// </summary>
+    /// <param name="mod">The mod to check.</param>
+    /// <returns>True if the mod is registered.</returns>
+    public bool IsRegistered(IManifest mod)
+    {
+        return this.Registered.Contains(mod.UniqueID);
+    }
+
+    /// <summary>
     ///     <inheritdoc cref="IGenericModConfigMenuApi.Register" />
     /// </summary>
     /// <param name="mod">The mod's manifest.</param>

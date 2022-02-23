@@ -25,6 +25,7 @@ using StardewValley.Locations;
 internal class StashToChest : Feature
 {
     private readonly PerScreen<IManagedStorage> _currentStorage = new();
+    private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly PerScreen<IClickableComponent> _stashButton = new();
     private readonly Lazy<IHudComponents> _toolbarIcons;
 
@@ -37,6 +38,7 @@ internal class StashToChest : Feature
     public StashToChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        this._menuComponents = services.Lazy<IMenuComponents>();
         this._toolbarIcons = services.Lazy<IHudComponents>();
     }
 
@@ -101,6 +103,11 @@ internal class StashToChest : Feature
         get => this._toolbarIcons.Value;
     }
 
+    private IMenuComponents MenuComponents
+    {
+        get => this._menuComponents.Value;
+    }
+
     private IClickableComponent StashButton
     {
         get => this._stashButton.Value ??= new CustomClickableComponent(
@@ -121,8 +128,8 @@ internal class StashToChest : Feature
     {
         this.HudComponents.AddToolbarIcon(this.StashButton);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.CustomEvents.MenuComponentPressed += this.OnMenuComponentPressed;
-        this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
+        this.HudComponents.HudComponentPressed += this.OnHudComponentPressed;
+        this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
@@ -131,8 +138,8 @@ internal class StashToChest : Feature
     {
         this.HudComponents.RemoveToolbarIcon(this.StashButton);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.CustomEvents.MenuComponentPressed -= this.OnMenuComponentPressed;
-        this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
+        this.HudComponents.HudComponentPressed -= this.OnHudComponentPressed;
+        this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 

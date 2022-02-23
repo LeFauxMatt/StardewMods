@@ -159,7 +159,7 @@ internal class CraftFromChest : Feature
         this.HudComponents.AddToolbarIcon(this.CraftButton);
         this.Harmony.ApplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.CustomEvents.HudComponentPressed += this.OnHudComponentPressed;
+        this.HudComponents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -170,7 +170,7 @@ internal class CraftFromChest : Feature
         this.HudComponents.RemoveToolbarIcon(this.CraftButton);
         this.Harmony.UnapplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.CustomEvents.HudComponentPressed -= this.OnHudComponentPressed;
+        this.HudComponents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }

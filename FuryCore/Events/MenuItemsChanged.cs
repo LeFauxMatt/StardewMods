@@ -27,8 +27,7 @@ internal class MenuItemsChanged : SortedEventHandler<IMenuItemsChangedEventArgs>
     {
         this._gameObjects = services.Lazy<IGameObjects>();
         this._menuItems = services.Lazy<MenuItems>();
-        services.Lazy<ICustomEvents>(
-            customEvents => { customEvents.ClickableMenuChanged += this.OnClickableMenuChanged; });
+        services.Lazy<ICustomEvents>(customEvents => customEvents.ClickableMenuChanged += this.OnClickableMenuChanged);
     }
 
     private IGameObjects GameObjects

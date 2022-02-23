@@ -17,6 +17,9 @@ internal class ConfigData : IConfigData
     public bool CategorizeChest { get; set; } = true;
 
     /// <inheritdoc />
+    public bool Configurator { get; set; } = true;
+
+    /// <inheritdoc />
     public ControlScheme ControlScheme { get; set; } = new();
 
     /// <inheritdoc />

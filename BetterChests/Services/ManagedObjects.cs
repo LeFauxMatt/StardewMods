@@ -12,7 +12,6 @@ using StardewMods.BetterChests.Models.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
-using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 using StardewValley.Buildings;
@@ -35,8 +34,7 @@ internal class ManagedObjects : IModService
     {
         this.Config = config;
         this._assetHandler = services.Lazy<AssetHandler>();
-        this._gameObjects = services.Lazy<IGameObjects>();
-        services.Lazy<ICustomEvents>(customEvents => { customEvents.GameObjectsRemoved += this.OnGameObjectsRemoved; });
+        this._gameObjects = services.Lazy<IGameObjects>(gameObjects => gameObjects.GameObjectsRemoved += this.OnGameObjectsRemoved);
     }
 
     /// <summary>
@@ -175,7 +173,7 @@ internal class ManagedObjects : IModService
         return true;
     }
 
-    private void OnGameObjectsRemoved(object sender, GameObjectsRemovedEventArgs e)
+    private void OnGameObjectsRemoved(object sender, IGameObjectsRemovedEventArgs e)
     {
         foreach (var gameObject in e.Removed)
         {

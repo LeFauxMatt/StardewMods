@@ -16,6 +16,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
@@ -45,6 +46,7 @@ internal class MenuItems : IMenuItems, IModService
     private readonly PerScreen<IEnumerable<Item>> _itemsSorted = new();
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly PerScreen<int> _menuColumns = new();
+    private readonly MenuItemsChanged _menuItemsChanged;
     private readonly PerScreen<int> _offset = new(() => 0);
     private readonly PerScreen<Range<int>> _range = new(() => new());
     private readonly PerScreen<bool> _refreshInventory = new();
@@ -62,15 +64,16 @@ internal class MenuItems : IMenuItems, IModService
         MenuItems.Instance = this;
         this.Config = config;
         this._gameObjects = services.Lazy<IGameObjects>();
+        this._menuItemsChanged = new(services);
+        this.MenuItemsChanged += this.OnMenuItemsChanged;
         helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
         helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
-        services.Lazy<ICustomEvents>(events =>
+        services.Lazy<IMenuComponents>(menuComponents =>
         {
-            events.MenuItemsChanged += this.OnMenuItemsChanged;
-            events.MenuComponentsLoading += this.OnMenuComponentsLoading;
-            events.MenuComponentPressed += this.OnMenuComponentPressed;
+            menuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
+            menuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
         });
 
         services.Lazy<IHarmonyHelper>(
@@ -91,6 +94,13 @@ internal class MenuItems : IMenuItems, IModService
                     PatchType.Transpiler);
                 harmonyHelper.ApplyPatches(id);
             });
+    }
+
+    /// <inheritdoc />
+    public event EventHandler<IMenuItemsChangedEventArgs> MenuItemsChanged
+    {
+        add => this._menuItemsChanged.Add(value);
+        remove => this._menuItemsChanged.Remove(value);
     }
 
     /// <inheritdoc />
@@ -386,7 +396,7 @@ internal class MenuItems : IMenuItems, IModService
 
     private bool HighlightMethod(Item item)
     {
-        if (item is null)
+        if (string.IsNullOrWhiteSpace(item?.Name))
         {
             return false;
         }
@@ -443,7 +453,7 @@ internal class MenuItems : IMenuItems, IModService
         this.DownArrow.Component.visible = this.Offset < this.Rows;
     }
 
-    private void OnMenuComponentsLoading(object sender, MenuComponentsLoadingEventArgs e)
+    private void OnMenuComponentsLoading(object sender, IMenuComponentsLoadingEventArgs e)
     {
         if (!this.Config.ScrollMenuOverflow || e.Menu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu || !this.GameObjects.TryGetGameObject(context, out var gameObject) || gameObject is not IStorageContainer)
         {

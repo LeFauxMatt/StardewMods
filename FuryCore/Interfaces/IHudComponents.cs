@@ -1,10 +1,20 @@
-﻿namespace StardewMods.FuryCore.Interfaces.ClickableComponents;
+﻿namespace StardewMods.FuryCore.Interfaces;
+
+using System;
+using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Models.CustomEvents;
+using StardewValley.Menus;
 
 /// <summary>
 ///     Adds icons above/below the items toolbar.
 /// </summary>
 public interface IHudComponents
 {
+    /// <summary>
+    ///     Triggers when a custom <see cref="IClickableComponent" /> is pressed from the <see cref="Toolbar" />.
+    /// </summary>
+    public event EventHandler<ClickableComponentPressedEventArgs> HudComponentPressed;
+
     /// <summary>
     ///     Add a component to the toolbar.
     /// </summary>
