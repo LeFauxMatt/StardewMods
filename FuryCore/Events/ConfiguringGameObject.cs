@@ -64,8 +64,6 @@ internal class ConfiguringGameObject : SortedEventHandler<IConfiguringGameObject
             return;
         }
 
-        this.Helper.Input.Suppress(e.Button);
-
         // Check for currently facing object
         var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
         var x = (int)pos.X;
@@ -74,13 +72,27 @@ internal class ConfiguringGameObject : SortedEventHandler<IConfiguringGameObject
         pos.Y = y;
 
         // Object exists at pos and is within reach of player
-        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player)
-            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-            || !this.GameObjects.TryGetGameObject(obj, out var gameObject))
+        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player))
         {
             return;
         }
 
+        if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj) && this.GameObjects.TryGetGameObject(obj, out var gameObject))
+        {
+        }
+        else if (Game1.currentLocation.terrainFeatures.TryGetValue(pos, out var terrainFeature) && this.GameObjects.TryGetGameObject(terrainFeature, out gameObject))
+        {
+        }
+        else
+        {
+            terrainFeature = Game1.currentLocation.getLargeTerrainFeatureAt((int)pos.X, (int)pos.Y);
+            if (terrainFeature is null || !this.GameObjects.TryGetGameObject(terrainFeature, out gameObject))
+            {
+                return;
+            }
+        }
+
+        this.Helper.Input.Suppress(e.Button);
         this.ConfigureGameObject.Register(gameObject);
         this.InvokeAll(new ConfiguringGameObjectEventArgs(gameObject, this.Manifest));
         this.ConfigureGameObject.Show();
