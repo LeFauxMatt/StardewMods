@@ -359,6 +359,10 @@ When [Filter Items](#filter-items) is enabled, then any categorizations that a c
 [Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
 items into the chest if the Filter list does not allow it.
 
+### Better Crafting
+
+Craft from Chest will launch a Better Crafting Page and it will correctly include all chests with the feature enabled.
+
 ### Horse Overhaul
 
 Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
