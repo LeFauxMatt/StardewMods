@@ -315,7 +315,17 @@ internal class GameObjects : IGameObjects, IModService
 
             // TerrainFeatures
             case Bush bush:
-                gameObject = new GenericTerrain(bush);
+                gameObject = new TerrainBush(bush);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case FruitTree fruitTree:
+                gameObject = new TerrainFruitTree(fruitTree);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            case HoeDirt hoeDirt:
+                gameObject = new TerrainHoeDirt(hoeDirt);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
 

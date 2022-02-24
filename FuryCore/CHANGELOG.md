@@ -1,8 +1,14 @@
 ﻿# FuryCore Change Log
 
+## 1.6.0 (Unreleased)
+
+### Added
+
+* Added support for TerrainFeatures.
+
 ## 1.5.0 (February 22, 2022)
 
-### Additions
+### Added
 
 * Added IConfigureGameObject service.
 * Added MenuComponentsLoading Event.
@@ -13,7 +19,7 @@
 * Added ComponentLayer Enum for IClickableComponent.
 * Added support for the PurchaseAnimalsMenu.
 
-### Changes
+### Changed
 
 * Renamed ItemGrabMenuChanged to ClickableMenuChanged.
 * Renamed RenderedItemGrabMenu to RenderedClickableMenu.
@@ -25,42 +31,42 @@
 
 ## 1.4.1 (February 16, 2022)
 
-### Fixes
+### Fixed
 
 * Fixed ToolbarIcons config not working.
 * Fixed icons being pinned to top when toolbar is in a locked position.
 
 ## 1.4.0 (February 15, 2022)
 
-### Additions
+### Added
 
 * Added IFuryCoreApi for SMAPI integration.
 * Added IToolbarIcons service.
 * Added special handling of Shipping Bin containers.
 
-### Changes
+### Changed
 
 * Purge inaccessible cached objects.
 
 ## 1.3.0 (February 12, 2022)
 
-### Additions
+### Added
 
 * Added IGameObjects service.
 
-## Changes
+## Changed
 
 * Refactor to handle different types of storages.
 
 ## 1.2.0 (February 6, 2022)
 
-## Changes
+## Changed
 
 * Item Selection Menu now lists most context tags on the bottom menu.
 
 ## 1.1.0 (February 5, 2022)
 
-### Additions
+### Added
 
 * Added new ICustomTags service.
 * Added GMCM integration for new config options.

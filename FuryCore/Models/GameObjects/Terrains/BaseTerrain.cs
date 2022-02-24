@@ -19,5 +19,8 @@ public abstract class BaseTerrain : GameObject, ITerrainFeature
     public abstract override ModDataDictionary ModData { get; }
 
     /// <inheritdoc />
-    public abstract bool TryDropItem();
+    public abstract bool CanHarvest();
+
+    /// <inheritdoc />
+    public abstract bool TryHarvest();
 }

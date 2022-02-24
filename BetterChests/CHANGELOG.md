@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 1.7.0 (Unreleased)
+
+* Updated to FuryCore 1.6.0
+
 ## 1.6.0 (February 23, 2022)
 
 ### Added

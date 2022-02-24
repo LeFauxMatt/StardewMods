@@ -234,7 +234,7 @@ Allows adding dynamic custom context tags to items that can use realtime conditi
 
 #### Game Objects
 
-Provides access to most objects in the game including items, buildings, and locations.
+Provides a common interface to most objects in the game including items, buildings, and locations.
 
 [ [Interface](Interfaces/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
 
