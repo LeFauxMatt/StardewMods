@@ -15,6 +15,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
+using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
@@ -44,6 +45,7 @@ internal class CraftFromChest : Feature
     public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
+        CraftFromChest.Instance = this;
         this._harmony = services.Lazy<IHarmonyHelper>(
             harmony =>
             {
@@ -62,6 +64,26 @@ internal class CraftFromChest : Feature
                             nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
                             PatchType.Postfix),
                     });
+
+                if (services.FindService<ModIntegrations>()?.IsLoaded("Better Crafting") != true)
+                {
+                    return;
+                }
+
+                var constructors = ReflectionHelper.GetAssemblyByName("BetterCrafting")?
+                    .GetType(ModIntegrations.BetterCraftingPageType)?
+                    .GetConstructors();
+                if (constructors is not null)
+                {
+                    foreach (var constructor in constructors)
+                    {
+                        harmony.AddPatch(
+                            this.Id,
+                            constructor,
+                            typeof(CraftFromChest),
+                            nameof(CraftFromChest.BetterCraftingPage_constructor_prefix));
+                    }
+                }
             });
         this._toolbarIcons = services.Lazy<IHudComponents>();
     }
@@ -122,6 +144,8 @@ internal class CraftFromChest : Feature
         }
     }
 
+    private static CraftFromChest Instance { get; set; }
+
     private IClickableComponent CraftButton
     {
         get => this._craftButton.Value ??= new CustomClickableComponent(
@@ -173,6 +197,32 @@ internal class CraftFromChest : Feature
         this.HudComponents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+    }
+
+    private static void BetterCraftingPage_constructor_prefix(ref IList<Chest> material_containers)
+    {
+        var chests = new List<Chest>(
+            from inventoryStorage in CraftFromChest.Instance.ManagedObjects.InventoryStorages
+            where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
+                  && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
+                  && inventoryStorage.Value.Context is Chest
+            select (Chest)inventoryStorage.Value.Context);
+        material_containers ??= new List<Chest>();
+        chests.AddRange(material_containers);
+
+        // Ensure only one Junimo Chest
+        var junimoChest = chests.FirstOrDefault(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
+        if (junimoChest is not null)
+        {
+            chests.RemoveAll(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
+            chests.Add(junimoChest);
+        }
+
+        material_containers.Clear();
+        foreach (var chest in chests)
+        {
+            material_containers.Add(chest);
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

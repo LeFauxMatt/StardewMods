@@ -1,5 +1,15 @@
 ﻿# Better Chests Change Log
 
+## 1.6.0 (February 23, 2022)
+
+### Added
+
+* Added integration with [Better Crafting](https://www.nexusmods.com/stardewvalley/mods/11115).
+
+### Fixed
+
+* Fixed controller getting stuck when switching tabs.
+
 ## 1.5.2 (February 23, 2022)
 
 ### Fixed

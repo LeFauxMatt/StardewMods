@@ -18,7 +18,11 @@ internal class ModIntegrations : IModService
     /// <summary>Fully qualified name for Automate Container Type.</summary>
     public const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
 
+    /// <summary>Fully qualified name for Better Crafting Page Type.</summary>
+    public const string BetterCraftingPageType = "Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage";
+
     private const string AutomateModUniqueId = "Pathochild.Automate";
+    private const string BetterCraftingModUniqueId = "leclair.bettercrafting";
     private const string ExpandedStorageModUniqueId = "furyx639.ExpandedStorage";
     private const string HorseOverhaulModUniqueId = "Goldenrevolver.HorseOverhaul";
 
@@ -55,6 +59,7 @@ internal class ModIntegrations : IModService
     private IDictionary<string, string> Mods { get; } = new Dictionary<string, string>
     {
         { "Automate", ModIntegrations.AutomateModUniqueId },
+        { "Better Crafting", ModIntegrations.BetterCraftingModUniqueId },
         { "Expanded Storage", ModIntegrations.ExpandedStorageModUniqueId },
         { "Horse Overhaul", ModIntegrations.HorseOverhaulModUniqueId },
     };
