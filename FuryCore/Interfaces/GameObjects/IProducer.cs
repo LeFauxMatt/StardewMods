@@ -2,7 +2,9 @@
 
 using StardewValley;
 
-/// <inheritdoc />
+/// <summary>
+///     Represents a game object that can output items.
+/// </summary>
 public interface IProducer : IGameObject
 {
     /// <summary>

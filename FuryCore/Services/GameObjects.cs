@@ -15,10 +15,12 @@ using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects.Producers;
 using StardewMods.FuryCore.Models.GameObjects.Storages;
+using StardewMods.FuryCore.Models.GameObjects.Terrains;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
+using StardewValley.TerrainFeatures;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc cref="IGameObjects" />
@@ -187,6 +189,30 @@ internal class GameObjects : IGameObjects, IModService
                         break;
                 }
 
+                // Large terrain features
+                foreach (var largeTerrainFeature in location.largeTerrainFeatures)
+                {
+                    if (exclude.Contains(largeTerrainFeature) || !this.TryGetGameObject(largeTerrainFeature, out var gameObject))
+                    {
+                        continue;
+                    }
+
+                    exclude.Add(largeTerrainFeature);
+                    yield return new(new(location, largeTerrainFeature.tilePosition.Value), gameObject);
+                }
+
+                // Terrain features
+                foreach (var (position, terrainFeature) in location.terrainFeatures.Pairs)
+                {
+                    if (exclude.Contains(terrainFeature) || !this.TryGetGameObject(terrainFeature, out var gameObject))
+                    {
+                        continue;
+                    }
+
+                    exclude.Add(terrainFeature);
+                    yield return new(new(location, position), gameObject);
+                }
+
                 // Storages from GameLocation.Objects
                 foreach (var (position, obj) in location.Objects.Pairs)
                 {
@@ -256,6 +282,7 @@ internal class GameObjects : IGameObjects, IModService
 
         switch (context)
         {
+            // GameLocation
             case FarmHouse { fridge.Value: { } fridge } farmHouse:
                 this.ContextMap[fridge] = context;
                 gameObject = new StorageFridge(farmHouse);
@@ -273,6 +300,7 @@ internal class GameObjects : IGameObjects, IModService
                 this.CachedObjects.Add(context, gameObject);
                 return true;
 
+            // Building
             case JunimoHut { output.Value: { } junimoHutChest } junimoHut:
                 this.ContextMap[junimoHutChest] = context;
                 gameObject = new StorageJunimoHut(junimoHut);
@@ -285,6 +313,13 @@ internal class GameObjects : IGameObjects, IModService
                 this.CachedObjects.Add(context, gameObject);
                 return true;
 
+            // TerrainFeatures
+            case Bush bush:
+                gameObject = new GenericTerrain(bush);
+                this.CachedObjects.Add(context, gameObject);
+                return true;
+
+            // Objects
             case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } chest:
                 gameObject = new StorageShippingBin(chest);
                 this.CachedObjects.Add(context, gameObject);

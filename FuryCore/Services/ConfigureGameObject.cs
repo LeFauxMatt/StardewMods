@@ -53,6 +53,11 @@ internal class ConfigureGameObject : IConfigureGameObject, IModService
                     new SavedPatch[]
                     {
                         new(
+                            AccessTools.Method(typeof(Tool), nameof(Tool.beginUsing)),
+                            typeof(ConfigureGameObject),
+                            nameof(ConfigureGameObject.Tool_beginUsing_prefix),
+                            PatchType.Prefix),
+                        new(
                             AccessTools.Method(typeof(Tool), nameof(Tool.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
                             typeof(ConfigureGameObject),
                             nameof(ConfigureGameObject.Tool_drawInMenu_prefix),
@@ -144,6 +149,29 @@ internal class ConfigureGameObject : IConfigureGameObject, IModService
         {
             this.ModConfigMenu.Show();
         }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static bool Tool_beginUsing_prefix(Tool __instance, Farmer who, ref bool __result)
+    {
+        if (!__instance.modData.TryGetValue($"{FuryCore.ModUniqueId}/Tool", out var toolName))
+        {
+            return true;
+        }
+
+        switch (toolName)
+        {
+            case "ConfigTool":
+                Game1.toolAnimationDone(who);
+                who.CanMove = true;
+                who.UsingTool = false;
+                __result = true;
+                return false;
+        }
+
+        return true;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

@@ -199,6 +199,8 @@ internal class CraftFromChest : Feature
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void BetterCraftingPage_constructor_prefix(ref IList<Chest> material_containers)
     {
         var chests = new List<Chest>(
