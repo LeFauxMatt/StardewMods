@@ -30,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\MoreChests\IMoreChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\IProducerFrameworkModApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\ProducerFrameworkModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
   </ItemGroup>
