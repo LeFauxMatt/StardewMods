@@ -21,7 +21,7 @@ using StardewValley;
 internal class CollectOutputs : Feature
 {
     private readonly PerScreen<IClickableComponent> _collectButton = new();
-    private readonly Lazy<IHudComponents> _toolbarIcons;
+    private readonly Lazy<IHudComponents> _hudComponents;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CollectOutputs" /> class.
@@ -32,7 +32,7 @@ internal class CollectOutputs : Feature
     public CollectOutputs(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
-        this._toolbarIcons = services.Lazy<IHudComponents>();
+        this._hudComponents = services.Lazy<IHudComponents>();
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ internal class CollectOutputs : Feature
 
     private IHudComponents HudComponents
     {
-        get => this._toolbarIcons.Value;
+        get => this._hudComponents.Value;
     }
 
     /// <inheritdoc />

@@ -4,11 +4,6 @@
 
 * Updated to FuryCore 1.6.0
 
-### Added
-
-* Added support for Berry bushes.
-* Added support for foraging.
-
 ## 1.1.0 (February 22, 2022)
 
 Updated to FuryCore 1.5.0

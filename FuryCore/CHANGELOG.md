@@ -6,6 +6,11 @@
 
 * Added support for TerrainFeatures.
 
+### Fixed
+
+* Fixed Toolbar Icons being clickable even when not displayed.
+* Fixed objects being initiated with their unmapped context.
+
 ## 1.5.0 (February 22, 2022)
 
 ### Added

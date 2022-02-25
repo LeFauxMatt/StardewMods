@@ -64,13 +64,13 @@ internal class ManagedProducer : GameObject, IManagedProducer
     /// <inheritdoc />
     public FeatureOptionRange CollectOutputs
     {
-        get => this.ModData.TryGetValue($"{EasyAccess.ModUniqueId}/CollectOutputs", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
-            ? range switch
-            {
-                FeatureOptionRange.Default => this.Data.CollectOutputs,
-                _ => range,
-            }
-            : this.Data.CollectOutputs;
+        get => this.Data.CollectOutputs switch
+        {
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.ModData.TryGetValue($"{EasyAccess.ModUniqueId}/CollectOutputs", out var value) && Enum.TryParse(value, out FeatureOptionRange range) && range is not FeatureOptionRange.Default => range,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.Data.CollectOutputs,
+        };
         set => this.ModData[$"{EasyAccess.ModUniqueId}/CollectOutputs"] = FormatHelper.GetRangeString(value);
     }
 
@@ -112,13 +112,13 @@ internal class ManagedProducer : GameObject, IManagedProducer
     /// <inheritdoc />
     public FeatureOptionRange DispenseInputs
     {
-        get => this.ModData.TryGetValue($"{EasyAccess.ModUniqueId}/DispenseInputs", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
-            ? range switch
-            {
-                FeatureOptionRange.Default => this.Data.DispenseInputs,
-                _ => range,
-            }
-            : this.Data.DispenseInputs;
+        get => this.Data.DispenseInputs switch
+        {
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.ModData.TryGetValue($"{EasyAccess.ModUniqueId}/DispenseInputs", out var value) && Enum.TryParse(value, out FeatureOptionRange range) && range is not FeatureOptionRange.Default => range,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.Data.DispenseInputs,
+        };
         set => this.ModData[$"{EasyAccess.ModUniqueId}/DispenseInputs"] = FormatHelper.GetRangeString(value);
     }
 

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
@@ -41,13 +40,13 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption AutoOrganize
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/AutoOrganize", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.AutoOrganize,
-                _ => option,
-            }
-            : this.Data.AutoOrganize;
+        get => this.Data.AutoOrganize switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/AutoOrganize", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.AutoOrganize,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/AutoOrganize"] = FormatHelper.GetOptionString(value);
     }
 
@@ -67,26 +66,26 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption CarryChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CarryChest", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.CarryChest,
-                _ => option,
-            }
-            : this.Data.CarryChest;
+        get => this.Data.CarryChest switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CarryChest", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.CarryChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/CarryChest"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/ChestMenuTabs", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.ChestMenuTabs,
-                _ => option,
-            }
-            : this.Data.ChestMenuTabs;
+        get => this.Data.ChestMenuTabs switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/ChestMenuTabs", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.ChestMenuTabs,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/ChestMenuTabs"] = FormatHelper.GetOptionString(value);
     }
 
@@ -102,26 +101,26 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption CollectItems
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CollectItems", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.CollectItems,
-                _ => option,
-            }
-            : this.Data.CollectItems;
+        get => this.Data.CollectItems switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CollectItems", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.CollectItems,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/CollectItems"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
-            ? range switch
-            {
-                FeatureOptionRange.Default => this.Data.CraftFromChest,
-                _ => range,
-            }
-            : this.Data.CraftFromChest;
+        get => this.Data.CraftFromChest switch
+        {
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CraftFromChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range) && range is not FeatureOptionRange.Default => range,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.Data.CraftFromChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/CraftFromChest"] = FormatHelper.GetRangeString(value);
     }
 
@@ -150,26 +149,26 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption CustomColorPicker
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CustomColorPicker", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.CustomColorPicker,
-                _ => option,
-            }
-            : this.Data.CustomColorPicker;
+        get => this.Data.CustomColorPicker switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/CustomColorPicker", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.CustomColorPicker,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/CustomColorPicker"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
     public FeatureOption FilterItems
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/FilterItems", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.FilterItems,
-                _ => option,
-            }
-            : this.Data.FilterItems;
+        get => this.Data.FilterItems switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/FilterItems", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.FilterItems,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/FilterItems"] = FormatHelper.GetOptionString(value);
     }
 
@@ -208,26 +207,26 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OpenHeldChest", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.OpenHeldChest,
-                _ => option,
-            }
-            : this.Data.OpenHeldChest;
+        get => this.Data.OpenHeldChest switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OpenHeldChest", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.OpenHeldChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/OpenHeldChest"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
     public FeatureOption OrganizeChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.OrganizeChest,
-                _ => option,
-            }
-            : this.Data.OrganizeChest;
+        get => this.Data.OrganizeChest switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/OrganizeChest", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.OrganizeChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/OrganizeChest"] = FormatHelper.GetOptionString(value);
     }
 
@@ -270,13 +269,13 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption ResizeChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChest", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.ResizeChest,
-                _ => option,
-            }
-            : this.Data.ResizeChest;
+        get => this.Data.ResizeChest switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChest", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.ResizeChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/ResizeChest"] = FormatHelper.GetOptionString(value);
     }
 
@@ -296,13 +295,13 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption ResizeChestMenu
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChestMenu", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.ResizeChestMenu,
-                _ => option,
-            }
-            : this.Data.ResizeChestMenu;
+        get => this.Data.ResizeChestMenu switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/ResizeChestMenu", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.ResizeChestMenu,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/ResizeChestMenu"] = FormatHelper.GetOptionString(value);
     }
 
@@ -322,26 +321,26 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption SearchItems
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/SearchItems", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.SearchItems,
-                _ => option,
-            }
-            : this.Data.SearchItems;
+        get => this.Data.SearchItems switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/SearchItems", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.SearchItems,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/SearchItems"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
     public FeatureOptionRange StashToChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range)
-            ? range switch
-            {
-                FeatureOptionRange.Default => this.Data.StashToChest,
-                _ => range,
-            }
-            : this.Data.StashToChest;
+        get => this.Data.StashToChest switch
+        {
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChest", out var value) && Enum.TryParse(value, out FeatureOptionRange range) && range is not FeatureOptionRange.Default => range,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.Data.StashToChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/StashToChest"] = FormatHelper.GetRangeString(value);
     }
 
@@ -383,26 +382,26 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
     /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestStacks", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.StashToChestStacks,
-                _ => option,
-            }
-            : this.Data.StashToChestStacks;
+        get => this.Data.StashToChestStacks switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/StashToChestStacks", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.StashToChestStacks,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/StashToChestStacks"] = FormatHelper.GetOptionString(value);
     }
 
     /// <inheritdoc />
     public FeatureOption UnloadChest
     {
-        get => this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/UnloadChest", out var value) && Enum.TryParse(value, out FeatureOption option)
-            ? option switch
-            {
-                FeatureOption.Default => this.Data.UnloadChest,
-                _ => option,
-            }
-            : this.Data.UnloadChest;
+        get => this.Data.UnloadChest switch
+        {
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.ModData.TryGetValue($"{BetterChests.ModUniqueId}/UnloadChest", out var value) && Enum.TryParse(value, out FeatureOption option) && option is not FeatureOption.Default => option,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.Data.UnloadChest,
+        };
         set => this.ModData[$"{BetterChests.ModUniqueId}/UnloadChest"] = FormatHelper.GetOptionString(value);
     }
 
@@ -464,10 +463,5 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
         }
 
         return item;
-    }
-
-    private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-        this.FilterItemsList = new(this.ItemMatcher);
     }
 }

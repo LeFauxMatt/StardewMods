@@ -48,17 +48,13 @@ internal class ProducerModel : IProducerData
     /// <inheritdoc />
     public FeatureOptionRange CollectOutputs
     {
-        get
+        get => this.DefaultProducer.CollectOutputs switch
         {
-            if (this.Data.CollectOutputs is not FeatureOptionRange.Default)
-            {
-                return this.Data.CollectOutputs;
-            }
-
-            return this.DefaultProducer.CollectOutputs is FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultProducer.CollectOutputs;
-        }
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.Data.CollectOutputs is not FeatureOptionRange.Default => this.Data.CollectOutputs,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.DefaultProducer.CollectOutputs,
+        };
         set => this.Data.CollectOutputs = value;
     }
 
@@ -98,17 +94,13 @@ internal class ProducerModel : IProducerData
     /// <inheritdoc />
     public FeatureOptionRange DispenseInputs
     {
-        get
+        get => this.DefaultProducer.DispenseInputs switch
         {
-            if (this.Data.DispenseInputs is not FeatureOptionRange.Default)
-            {
-                return this.Data.DispenseInputs;
-            }
-
-            return this.DefaultProducer.DispenseInputs is FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultProducer.DispenseInputs;
-        }
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.Data.DispenseInputs is not FeatureOptionRange.Default => this.Data.DispenseInputs,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.DefaultProducer.DispenseInputs,
+        };
         set => this.Data.DispenseInputs = value;
     }
 

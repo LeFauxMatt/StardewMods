@@ -74,7 +74,7 @@ internal class GameObjects : IGameObjects, IModService
 
                 foreach (var (index, context) in inventoryItems)
                 {
-                    if (exclude.Contains(context) || !this.TryGetGameObject(context, out var gameObject))
+                    if (exclude.Contains(context) || !this.TryGetGameObject(context, true, out var gameObject))
                     {
                         continue;
                     }
@@ -87,7 +87,7 @@ internal class GameObjects : IGameObjects, IModService
             for (var index = 0; index < Game1.player.MaxItems; index++)
             {
                 var item = Game1.player.Items[index];
-                if (item is null || exclude.Contains(item) || !this.TryGetGameObject(item, out var gameObject))
+                if (item is null || exclude.Contains(item) || !this.TryGetGameObject(item, true, out var gameObject))
                 {
                     continue;
                 }
@@ -125,7 +125,7 @@ internal class GameObjects : IGameObjects, IModService
 
                     foreach (var (position, context) in locationObjects)
                     {
-                        if (exclude.Contains(context) || !this.TryGetGameObject(context, out var gameObject))
+                        if (exclude.Contains(context) || !this.TryGetGameObject(context, true, out var gameObject))
                         {
                             continue;
                         }
@@ -144,7 +144,7 @@ internal class GameObjects : IGameObjects, IModService
                     case BuildableGameLocation buildableGameLocation:
                         foreach (var building in buildableGameLocation.buildings.Where(building => !exclude.Contains(building)))
                         {
-                            if (!this.TryGetGameObject(building, out var buildingObject))
+                            if (!this.TryGetGameObject(building, true, out var buildingObject))
                             {
                                 continue;
                             }
@@ -156,30 +156,38 @@ internal class GameObjects : IGameObjects, IModService
                         break;
 
                     // Storage from FarmHouse.fridge.Value
-                    case FarmHouse farmHouse when farmHouse.fridge.Value is not null && !exclude.Contains(farmHouse.fridge.Value) && !farmHouse.fridgePosition.Equals(Point.Zero):
-                        if (!this.TryGetGameObject(farmHouse, out var farmHouseObject))
+                    case FarmHouse farmHouse:
+                        if (farmHouse.fridge.Value is not null && !exclude.Contains(farmHouse.fridge.Value))
                         {
-                            break;
+                            if (farmHouse.fridgePosition.Equals(Point.Zero) || !this.TryGetGameObject(farmHouse, true, out var farmHouseObject))
+                            {
+                                break;
+                            }
+
+                            exclude.Add(farmHouse.fridge.Value);
+                            yield return new(new(location, farmHouse.fridgePosition.ToVector2()), farmHouseObject);
                         }
 
-                        exclude.Add(farmHouse.fridge.Value);
-                        yield return new(new(location, farmHouse.fridgePosition.ToVector2()), farmHouseObject);
                         break;
 
                     // Storage from IslandFarmHouse.fridge.Value
-                    case IslandFarmHouse islandFarmHouse when islandFarmHouse.fridge.Value is not null && !exclude.Contains(islandFarmHouse.fridge.Value) && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                        if (!this.TryGetGameObject(islandFarmHouse, out var islandFarmHouseObject))
+                    case IslandFarmHouse islandFarmHouse:
+                        if (islandFarmHouse.fridge.Value is not null && !exclude.Contains(islandFarmHouse.fridge.Value))
                         {
-                            break;
+                            if (islandFarmHouse.fridgePosition.Equals(Point.Zero) || !this.TryGetGameObject(islandFarmHouse, true, out var islandFarmHouseObject))
+                            {
+                                break;
+                            }
+
+                            exclude.Add(islandFarmHouse.fridge.Value);
+                            yield return new(new(location, islandFarmHouse.fridgePosition.ToVector2()), islandFarmHouseObject);
                         }
 
-                        exclude.Add(islandFarmHouse.fridge.Value);
-                        yield return new(new(location, islandFarmHouse.fridgePosition.ToVector2()), islandFarmHouseObject);
                         break;
 
                     // Island Farm
                     case IslandWest islandWest when !exclude.Contains(islandWest):
-                        if (!this.TryGetGameObject(islandWest, out var islandWestObject))
+                        if (!this.TryGetGameObject(islandWest, true, out var islandWestObject))
                         {
                             break;
                         }
@@ -192,7 +200,7 @@ internal class GameObjects : IGameObjects, IModService
                 // Large terrain features
                 foreach (var largeTerrainFeature in location.largeTerrainFeatures)
                 {
-                    if (exclude.Contains(largeTerrainFeature) || !this.TryGetGameObject(largeTerrainFeature, out var gameObject))
+                    if (exclude.Contains(largeTerrainFeature) || !this.TryGetGameObject(largeTerrainFeature, true, out var gameObject))
                     {
                         continue;
                     }
@@ -204,7 +212,7 @@ internal class GameObjects : IGameObjects, IModService
                 // Terrain features
                 foreach (var (position, terrainFeature) in location.terrainFeatures.Pairs)
                 {
-                    if (exclude.Contains(terrainFeature) || !this.TryGetGameObject(terrainFeature, out var gameObject))
+                    if (exclude.Contains(terrainFeature) || !this.TryGetGameObject(terrainFeature, true, out var gameObject))
                     {
                         continue;
                     }
@@ -216,7 +224,7 @@ internal class GameObjects : IGameObjects, IModService
                 // Storages from GameLocation.Objects
                 foreach (var (position, obj) in location.Objects.Pairs)
                 {
-                    if (exclude.Contains(obj) || !this.TryGetGameObject(obj, out var gameObject))
+                    if (exclude.Contains(obj) || !this.TryGetGameObject(obj, true, out var gameObject))
                     {
                         continue;
                     }
@@ -270,6 +278,56 @@ internal class GameObjects : IGameObjects, IModService
     /// <inheritdoc />
     public bool TryGetGameObject(object context, out IGameObject gameObject)
     {
+        if (this.TryGetGameObject(context, false, out gameObject))
+        {
+            return true;
+        }
+
+        gameObject ??= this.InventoryItems.FirstOrDefault(inventoryItem => ReferenceEquals(inventoryItem.Value.Context, context)).Value;
+        gameObject ??= this.LocationObjects.FirstOrDefault(locationObject => ReferenceEquals(locationObject.Value.Context, context)).Value;
+        return gameObject is not null || this.TryGetGameObject(context, false, out gameObject);
+    }
+
+    /// <summary>
+    ///     Clears all cached objects.
+    /// </summary>
+    /// <returns>A list of <see cref="IGameObject" /> which were purged.</returns>
+    internal IEnumerable<IGameObject> PurgeCache()
+    {
+        var gameObjects = this.CachedObjects.Values.Where(gameObject => gameObject is not null).ToList();
+        foreach (var gameObject in this.InventoryItems.Select(inventoryItem => inventoryItem.Value))
+        {
+            gameObjects.Remove(gameObject);
+        }
+
+        foreach (var gameObject in this.LocationObjects.Select(locationObject => locationObject.Value))
+        {
+            gameObjects.Remove(gameObject);
+        }
+
+        var contexts = (
+            from cachedObject in this.CachedObjects
+            join gameObject in gameObjects on cachedObject.Value equals gameObject
+            select cachedObject.Key).ToList();
+        foreach (var context in contexts)
+        {
+            this.CachedObjects.Remove(context);
+
+            var contextMaps = (
+                from contextMap in this.ContextMap
+                where contextMap.Value.Equals(context)
+                select contextMap.Key).ToList();
+            foreach (var contextMap in contextMaps)
+            {
+                this.ContextMap.Remove(contextMap);
+            }
+        }
+
+        return gameObjects.Any() ? gameObjects : null;
+    }
+
+    private bool TryGetGameObject(object context, bool init, out IGameObject gameObject)
+    {
         if (this.ContextMap.TryGetValue(context, out var actualContext))
         {
             context = actualContext;
@@ -278,6 +336,11 @@ internal class GameObjects : IGameObjects, IModService
         if (this.CachedObjects.TryGetValue(context, out gameObject))
         {
             return gameObject is not null;
+        }
+
+        if (!init)
+        {
+            return false;
         }
 
         switch (context)
@@ -355,43 +418,5 @@ internal class GameObjects : IGameObjects, IModService
                 this.CachedObjects.Add(context, null);
                 return false;
         }
-    }
-
-    /// <summary>
-    ///     Clears all cached objects.
-    /// </summary>
-    /// <returns>A list of <see cref="IGameObject" /> which were purged.</returns>
-    internal IEnumerable<IGameObject> PurgeCache()
-    {
-        var gameObjects = this.CachedObjects.Values.Where(gameObject => gameObject is not null).ToList();
-        foreach (var gameObject in this.InventoryItems.Select(inventoryItem => inventoryItem.Value))
-        {
-            gameObjects.Remove(gameObject);
-        }
-
-        foreach (var gameObject in this.LocationObjects.Select(locationObject => locationObject.Value))
-        {
-            gameObjects.Remove(gameObject);
-        }
-
-        var contexts = (
-            from cachedObject in this.CachedObjects
-            join gameObject in gameObjects on cachedObject.Value equals gameObject
-            select cachedObject.Key).ToList();
-        foreach (var context in contexts)
-        {
-            this.CachedObjects.Remove(context);
-
-            var contextMaps = (
-                from contextMap in this.ContextMap
-                where contextMap.Value.Equals(context)
-                select contextMap.Key).ToList();
-            foreach (var contextMap in contextMaps)
-            {
-                this.ContextMap.Remove(contextMap);
-            }
-        }
-
-        return gameObjects.Any() ? gameObjects : null;
     }
 }

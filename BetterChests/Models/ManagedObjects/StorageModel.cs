@@ -22,51 +22,39 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption AutoOrganize
     {
-        get
+        get => this.DefaultStorage.AutoOrganize switch
         {
-            if (this.Data.AutoOrganize is not FeatureOption.Default)
-            {
-                return this.Data.AutoOrganize;
-            }
-
-            return this.DefaultStorage.AutoOrganize is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.AutoOrganize is not FeatureOption.Default => this.Data.AutoOrganize,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.AutoOrganize,
+        };
         set => this.Data.AutoOrganize = value;
     }
 
     /// <inheritdoc />
     public FeatureOption CarryChest
     {
-        get
+        get => this.DefaultStorage.CarryChest switch
         {
-            if (this.Data.CarryChest is not FeatureOption.Default)
-            {
-                return this.Data.CarryChest;
-            }
-
-            return this.DefaultStorage.CarryChest is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.CarryChest is not FeatureOption.Default => this.Data.CarryChest,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.CarryChest,
+        };
         set => this.Data.CarryChest = value;
     }
 
     /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
-        get
+        get => this.DefaultStorage.ChestMenuTabs switch
         {
-            if (this.Data.ChestMenuTabs is not FeatureOption.Default)
-            {
-                return this.Data.ChestMenuTabs;
-            }
-
-            return this.DefaultStorage.ChestMenuTabs is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.ChestMenuTabs is not FeatureOption.Default => this.Data.ChestMenuTabs,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.ChestMenuTabs,
+        };
         set => this.Data.ChestMenuTabs = value;
     }
 
@@ -82,34 +70,26 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption CollectItems
     {
-        get
+        get => this.DefaultStorage.CollectItems switch
         {
-            if (this.Data.CollectItems is not FeatureOption.Default)
-            {
-                return this.Data.CollectItems;
-            }
-
-            return this.DefaultStorage.CollectItems is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.CollectItems is not FeatureOption.Default => this.Data.CollectItems,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.CollectItems,
+        };
         set => this.Data.CollectItems = value;
     }
 
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
-        get
+        get => this.DefaultStorage.CraftFromChest switch
         {
-            if (this.Data.CraftFromChest is not FeatureOptionRange.Default)
-            {
-                return this.Data.CraftFromChest;
-            }
-
-            return this.DefaultStorage.CraftFromChest is FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultStorage.CraftFromChest;
-        }
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.Data.CraftFromChest is not FeatureOptionRange.Default => this.Data.CraftFromChest,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.DefaultStorage.CraftFromChest,
+        };
         set => this.Data.CraftFromChest = value;
     }
 
@@ -142,34 +122,26 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption CustomColorPicker
     {
-        get
+        get => this.DefaultStorage.CustomColorPicker switch
         {
-            if (this.Data.CustomColorPicker is not FeatureOption.Default)
-            {
-                return this.Data.CustomColorPicker;
-            }
-
-            return this.DefaultStorage.CustomColorPicker is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.CustomColorPicker is not FeatureOption.Default => this.Data.CustomColorPicker,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.CustomColorPicker,
+        };
         set => this.Data.CustomColorPicker = value;
     }
 
     /// <inheritdoc />
     public FeatureOption FilterItems
     {
-        get
+        get => this.DefaultStorage.FilterItems switch
         {
-            if (this.Data.FilterItems is not FeatureOption.Default)
-            {
-                return this.Data.FilterItems;
-            }
-
-            return this.DefaultStorage.FilterItems is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.FilterItems is not FeatureOption.Default => this.Data.FilterItems,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.FilterItems,
+        };
         set => this.Data.FilterItems = value;
     }
 
@@ -185,34 +157,26 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
-        get
+        get => this.DefaultStorage.OpenHeldChest switch
         {
-            if (this.Data.OpenHeldChest is not FeatureOption.Default)
-            {
-                return this.Data.OpenHeldChest;
-            }
-
-            return this.DefaultStorage.OpenHeldChest is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.OpenHeldChest is not FeatureOption.Default => this.Data.OpenHeldChest,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.OpenHeldChest,
+        };
         set => this.Data.OpenHeldChest = value;
     }
 
     /// <inheritdoc />
     public FeatureOption OrganizeChest
     {
-        get
+        get => this.DefaultStorage.OrganizeChest switch
         {
-            if (this.Data.OrganizeChest is not FeatureOption.Default)
-            {
-                return this.Data.OrganizeChest;
-            }
-
-            return this.DefaultStorage.OrganizeChest is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.OrganizeChest is not FeatureOption.Default => this.Data.OrganizeChest,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.OrganizeChest,
+        };
         set => this.Data.OrganizeChest = value;
     }
 
@@ -233,17 +197,13 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption ResizeChest
     {
-        get
+        get => this.DefaultStorage.ResizeChest switch
         {
-            if (this.Data.ResizeChest is not FeatureOption.Default)
-            {
-                return this.Data.ResizeChest;
-            }
-
-            return this.DefaultStorage.ResizeChest is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.ResizeChest is not FeatureOption.Default => this.Data.ResizeChest,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.ResizeChest,
+        };
         set => this.Data.ResizeChest = value;
     }
 
@@ -267,17 +227,13 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption ResizeChestMenu
     {
-        get
+        get => this.DefaultStorage.ResizeChestMenu switch
         {
-            if (this.Data.ResizeChestMenu is not FeatureOption.Default)
-            {
-                return this.Data.ResizeChestMenu;
-            }
-
-            return this.DefaultStorage.ResizeChestMenu is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.ResizeChestMenu is not FeatureOption.Default => this.Data.ResizeChestMenu,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.ResizeChestMenu,
+        };
         set => this.Data.ResizeChestMenu = value;
     }
 
@@ -301,34 +257,26 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption SearchItems
     {
-        get
+        get => this.DefaultStorage.SearchItems switch
         {
-            if (this.Data.SearchItems is not FeatureOption.Default)
-            {
-                return this.Data.SearchItems;
-            }
-
-            return this.DefaultStorage.SearchItems is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.SearchItems is not FeatureOption.Default => this.Data.SearchItems,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.SearchItems,
+        };
         set => this.Data.SearchItems = value;
     }
 
     /// <inheritdoc />
     public FeatureOptionRange StashToChest
     {
-        get
+        get => this.DefaultStorage.StashToChest switch
         {
-            if (this.Data.StashToChest is not FeatureOptionRange.Default)
-            {
-                return this.Data.StashToChest;
-            }
-
-            return this.DefaultStorage.StashToChest is FeatureOptionRange.Default
-                ? FeatureOptionRange.Location
-                : this.DefaultStorage.StashToChest;
-        }
+            FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            _ when this.Data.StashToChest is not FeatureOptionRange.Default => this.Data.StashToChest,
+            FeatureOptionRange.Default => FeatureOptionRange.Disabled,
+            _ => this.DefaultStorage.StashToChest,
+        };
         set => this.Data.StashToChest = value;
     }
 
@@ -368,34 +316,26 @@ internal class StorageModel : IStorageData
     /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
-        get
+        get => this.DefaultStorage.StashToChestStacks switch
         {
-            if (this.Data.StashToChestStacks is not FeatureOption.Default)
-            {
-                return this.Data.StashToChestStacks;
-            }
-
-            return this.DefaultStorage.StashToChestStacks is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.StashToChestStacks is not FeatureOption.Default => this.Data.StashToChestStacks,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.StashToChestStacks,
+        };
         set => this.Data.StashToChestStacks = value;
     }
 
     /// <inheritdoc />
     public FeatureOption UnloadChest
     {
-        get
+        get => this.DefaultStorage.UnloadChest switch
         {
-            if (this.Data.UnloadChest is not FeatureOption.Default)
-            {
-                return this.Data.UnloadChest;
-            }
-
-            return this.DefaultStorage.UnloadChest is FeatureOption.Enabled
-                ? FeatureOption.Enabled
-                : FeatureOption.Disabled;
-        }
+            FeatureOption.Disabled => FeatureOption.Disabled,
+            _ when this.Data.UnloadChest is not FeatureOption.Default => this.Data.UnloadChest,
+            FeatureOption.Default => FeatureOption.Disabled,
+            _ => this.DefaultStorage.UnloadChest,
+        };
         set => this.Data.UnloadChest = value;
     }
 

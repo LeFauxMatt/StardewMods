@@ -126,7 +126,13 @@ internal class HudComponents : IHudComponents, IModService
 
     private void OnCursorMoved(object sender, CursorMovedEventArgs e)
     {
-        if (!this.Config.ToolbarIcons)
+        if (!this.Config.ToolbarIcons || !Game1.displayHUD || Game1.activeClickableMenu is not null)
+        {
+            return;
+        }
+
+        var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
+        if (toolbar is null)
         {
             return;
         }
@@ -145,7 +151,13 @@ internal class HudComponents : IHudComponents, IModService
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (!this.Config.ToolbarIcons || !this.ToolbarIcons.Contains(e.Component))
+        if (!this.Config.ToolbarIcons || !Game1.displayHUD || Game1.activeClickableMenu is not null || !this.ToolbarIcons.Contains(e.Component))
+        {
+            return;
+        }
+
+        var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
+        if (toolbar is null)
         {
             return;
         }
@@ -197,13 +209,13 @@ internal class HudComponents : IHudComponents, IModService
 
     private void OnRenderedHud(object sender, RenderedHudEventArgs e)
     {
-        if (!this.Config.ToolbarIcons)
+        if (!this.Config.ToolbarIcons || !Game1.displayHUD || Game1.activeClickableMenu is not null)
         {
             return;
         }
 
         var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
-        if (toolbar is null || !Game1.displayHUD || Game1.activeClickableMenu is not null)
+        if (toolbar is null)
         {
             return;
         }
@@ -216,13 +228,13 @@ internal class HudComponents : IHudComponents, IModService
 
     private void OnRenderingHud(object sender, RenderingHudEventArgs e)
     {
-        if (!this.Config.ToolbarIcons)
+        if (!this.Config.ToolbarIcons || !Game1.displayHUD || Game1.activeClickableMenu is not null)
         {
             return;
         }
 
         var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
-        if (toolbar is null || !Game1.displayHUD || Game1.activeClickableMenu is not null)
+        if (toolbar is null)
         {
             return;
         }

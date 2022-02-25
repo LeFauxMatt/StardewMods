@@ -24,6 +24,7 @@ internal class ManagedObjects : IModService
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<IDictionary<IGameObject, IManagedStorage>> _cachedObjects = new(() => new Dictionary<IGameObject, IManagedStorage>());
     private readonly Lazy<IGameObjects> _gameObjects;
+    private readonly Lazy<ModIntegrations> _modIntegrations;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ManagedObjects" /> class.
@@ -35,6 +36,7 @@ internal class ManagedObjects : IModService
         this.Config = config;
         this._assetHandler = services.Lazy<AssetHandler>();
         this._gameObjects = services.Lazy<IGameObjects>(gameObjects => gameObjects.GameObjectsRemoved += this.OnGameObjectsRemoved);
+        this._modIntegrations = services.Lazy<ModIntegrations>();
     }
 
     /// <summary>
@@ -63,7 +65,7 @@ internal class ManagedObjects : IModService
         {
             foreach (var (locationObject, gameObject) in this.GameObjects.LocationObjects)
             {
-                if (this.TryGetManagedStorage(gameObject, out var managedStorage))
+                if (!this.Integrations.OverrideObject(locationObject, gameObject) && this.TryGetManagedStorage(gameObject, out var managedStorage))
                 {
                     yield return new(locationObject, managedStorage);
                 }
@@ -88,6 +90,11 @@ internal class ManagedObjects : IModService
     private IGameObjects GameObjects
     {
         get => this._gameObjects.Value;
+    }
+
+    private ModIntegrations Integrations
+    {
+        get => this._modIntegrations.Value;
     }
 
     /// <summary>
