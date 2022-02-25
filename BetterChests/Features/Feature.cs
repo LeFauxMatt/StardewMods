@@ -12,6 +12,7 @@ internal abstract class Feature : IModService
 {
     private readonly Lazy<ICustomEvents> _customEvents;
     private readonly Lazy<ManagedObjects> _managedObjects;
+    private readonly Lazy<ModIntegrations> _modIntegrations;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Feature" /> class.
@@ -26,6 +27,7 @@ internal abstract class Feature : IModService
         this.Helper = helper;
         this._customEvents = services.Lazy<ICustomEvents>();
         this._managedObjects = services.Lazy<ManagedObjects>();
+        this._modIntegrations = services.Lazy<ModIntegrations>();
     }
 
     /// <summary>
@@ -50,6 +52,14 @@ internal abstract class Feature : IModService
     ///     Gets an Id that uniquely describes the mod and feature.
     /// </summary>
     protected string Id { get; }
+
+    /// <summary>
+    ///     Gets the <see cref="ModIntegrations" /> service.
+    /// </summary>
+    protected ModIntegrations Integrations
+    {
+        get => this._modIntegrations.Value;
+    }
 
     /// <summary>
     ///     Gets the <see cref="ManagedObjects" /> service to track placed and player chests in the game.

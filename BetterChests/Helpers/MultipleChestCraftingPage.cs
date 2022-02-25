@@ -21,29 +21,20 @@ internal class MultipleChestCraftingPage
     /// <param name="storages">To storages to open a crafting page for.</param>
     public MultipleChestCraftingPage(IEnumerable<KeyValuePair<IGameObjectType, IManagedStorage>> storages)
     {
+        this.Storages = storages.ToList();
         this.TimeOut = 60;
-        this.Storages = (
-                from storage in storages
-                where storage.Key is LocationObject
-                      && storage.Value.Context is Chest
-                select storage)
-            .ToDictionary(
-                storage => storage.Key,
-                storage => storage.Value);
-        this.Chests.AddRange(from storage in this.Storages.Values select (Chest)storage.Context);
+        this.Chests = new(this.Storages.Select(storage => (Chest)storage.Value.Context));
         foreach (var chest in this.Chests)
         {
             chest.mutex.RequestLock();
         }
-
-        this.Update();
     }
 
-    private List<Chest> Chests { get; } = new();
+    private List<Chest> Chests { get; }
 
     private List<Chest> LockedChests { get; } = new();
 
-    private Dictionary<IGameObjectType, IManagedStorage> Storages { get; }
+    private List<KeyValuePair<IGameObjectType, IManagedStorage>> Storages { get; }
 
     private int TimeOut { get; set; }
 
@@ -52,23 +43,27 @@ internal class MultipleChestCraftingPage
     /// </summary>
     public void ExitFunction()
     {
-        this.TimeOut = 0;
-        foreach (var chest in this.Chests.Where(chest => chest.mutex.IsLockHeld()))
+        this.TimeOut = -1;
+        foreach (var chest in this.LockedChests.Where(chest => chest.mutex.IsLockHeld()))
         {
             chest.mutex.ReleaseLock();
         }
 
-        this.Chests.Clear();
         this.LockedChests.Clear();
     }
 
     /// <summary>
-    ///     Check if the request has timed out.
+    ///     Updates the mutexes for chests related to this request.
     /// </summary>
-    /// <returns>Returns a value indicating whether the request has timed out.</returns>
-    public bool TimedOut()
+    /// <returns>Returns false if there are no chests.</returns>
+    public bool Update()
     {
-        if (this.TimeOut <= 0)
+        if (!this.Chests.Any())
+        {
+            return false;
+        }
+
+        if (--this.TimeOut <= 0)
         {
             foreach (var (gameObjectType, managedStorage) in this.Storages)
             {
@@ -86,21 +81,9 @@ internal class MultipleChestCraftingPage
                 }
             }
 
-            this.OpenCraftingPage();
+            this.Chests.Clear();
+            this.ShowCraftingPage();
             return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Updates the mutexes for chests related to this request.
-    /// </summary>
-    public void Update()
-    {
-        if (--this.TimeOut <= 0)
-        {
-            return;
         }
 
         foreach (var chest in this.Chests.Where(chest => !this.LockedChests.Contains(chest)))
@@ -116,11 +99,13 @@ internal class MultipleChestCraftingPage
 
         if (this.Chests.Count == this.LockedChests.Count)
         {
-            this.OpenCraftingPage();
+            this.ShowCraftingPage();
         }
+
+        return true;
     }
 
-    private void OpenCraftingPage()
+    private void ShowCraftingPage()
     {
         this.TimeOut = 0;
         var width = 800 + IClickableMenu.borderWidth * 2;

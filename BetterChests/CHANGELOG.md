@@ -4,6 +4,15 @@
 
 * Updated to FuryCore 1.6.0
 
+### Changed
+
+* If BetterCrafting is loaded, use BetterCrafting API to open crafting page.
+
+### Fixed
+
+* Fixed disabled features being enabled by individual settings.
+    * Disabled is intended to take precedence from default and/or chest types.
+
 ## 1.6.0 (February 23, 2022)
 
 ### Added

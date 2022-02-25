@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Interfaces.GameObjects;
+using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
@@ -18,13 +20,10 @@ internal class ModIntegrations : IModService
     /// <summary>Fully qualified name for Automate Container Type.</summary>
     public const string AutomateChestContainerType = "Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer";
 
-    /// <summary>Fully qualified name for Better Crafting Page Type.</summary>
-    public const string BetterCraftingPageType = "Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage";
-
     private const string AutomateModUniqueId = "Pathochild.Automate";
-    private const string BetterCraftingModUniqueId = "leclair.bettercrafting";
     private const string ExpandedStorageModUniqueId = "furyx639.ExpandedStorage";
     private const string HorseOverhaulModUniqueId = "Goldenrevolver.HorseOverhaul";
+    private const string WearMoreRingsModUniqueId = "bcmpinc.WearMoreRings";
 
     private readonly Lazy<AssetHandler> _assetHandler;
 
@@ -59,9 +58,9 @@ internal class ModIntegrations : IModService
     private IDictionary<string, string> Mods { get; } = new Dictionary<string, string>
     {
         { "Automate", ModIntegrations.AutomateModUniqueId },
-        { "Better Crafting", ModIntegrations.BetterCraftingModUniqueId },
         { "Expanded Storage", ModIntegrations.ExpandedStorageModUniqueId },
         { "Horse Overhaul", ModIntegrations.HorseOverhaulModUniqueId },
+        { "Wear More Rings", ModIntegrations.WearMoreRingsModUniqueId },
     };
 
     /// <summary>
@@ -72,6 +71,17 @@ internal class ModIntegrations : IModService
     public bool IsLoaded(string name)
     {
         return this.Mods.ContainsKey(name);
+    }
+
+    /// <summary>
+    ///     Override a managed object so that it will not be included in any feature.
+    /// </summary>
+    /// <param name="locationObject">Identifies the location and position of the object.</param>
+    /// <param name="gameObject">The game object to check.</param>
+    /// <returns>True if the object should be excluded.</returns>
+    public bool OverrideObject(LocationObject locationObject, IGameObject gameObject)
+    {
+        return this.IsLoaded("Wear More Rings") && locationObject is { Location: Farm, Position: { X: 0, Y: -50 } };
     }
 
     private IEnumerable<(int Index, object Context)> GetInventoryItems(Farmer player)

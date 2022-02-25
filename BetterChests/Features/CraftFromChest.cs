@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
-using Common.Helpers;
+using Common.Integrations.BetterCrafting;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -15,7 +15,6 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.BetterChests.Services;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
@@ -46,6 +45,7 @@ internal class CraftFromChest : Feature
         : base(config, helper, services)
     {
         CraftFromChest.Instance = this;
+        this.BetterCrafting = new(this.Helper.ModRegistry);
         this._harmony = services.Lazy<IHarmonyHelper>(
             harmony =>
             {
@@ -65,24 +65,18 @@ internal class CraftFromChest : Feature
                             PatchType.Postfix),
                     });
 
-                if (services.FindService<ModIntegrations>()?.IsLoaded("Better Crafting") != true)
+                if (!this.BetterCrafting.IsLoaded)
                 {
                     return;
                 }
 
-                var constructors = ReflectionHelper.GetAssemblyByName("BetterCrafting")?
-                    .GetType(ModIntegrations.BetterCraftingPageType)?
-                    .GetConstructors();
-                if (constructors is not null)
+                foreach (var constructor in this.BetterCrafting.API.GetMenuType().GetConstructors())
                 {
-                    foreach (var constructor in constructors)
-                    {
-                        harmony.AddPatch(
-                            this.Id,
-                            constructor,
-                            typeof(CraftFromChest),
-                            nameof(CraftFromChest.BetterCraftingPage_constructor_prefix));
-                    }
+                    harmony.AddPatch(
+                        this.Id,
+                        constructor,
+                        typeof(CraftFromChest),
+                        nameof(CraftFromChest.BetterCraftingPage_constructor_prefix));
                 }
             });
         this._toolbarIcons = services.Lazy<IHudComponents>();
@@ -100,7 +94,7 @@ internal class CraftFromChest : Feature
             foreach (var (locationObject, locationStorage) in this.ManagedObjects.LocationStorages)
             {
                 // Disabled in config or by location name
-                if (locationStorage.CraftFromChest == FeatureOptionRange.Disabled || locationStorage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
+                if (locationStorage.CraftFromChest == FeatureOptionRange.Disabled || locationStorage.Context is not Chest || locationStorage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name))
                 {
                     continue;
                 }
@@ -111,17 +105,6 @@ internal class CraftFromChest : Feature
                     continue;
                 }
 
-                // Limit one Junimo chest
-                if (locationStorage.Context is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
-                {
-                    if (junimoChest)
-                    {
-                        continue;
-                    }
-
-                    junimoChest = true;
-                }
-
                 switch (locationStorage.CraftFromChest)
                 {
                     // Disabled if not current location for location chest
@@ -130,6 +113,17 @@ internal class CraftFromChest : Feature
                     case FeatureOptionRange.World:
                     case FeatureOptionRange.Location when locationStorage.CraftFromChestDistance == -1:
                     case FeatureOptionRange.Location when Utility.withinRadiusOfPlayer((int)locationObject.Position.X * 64, (int)locationObject.Position.Y * 64, locationStorage.CraftFromChestDistance, Game1.player):
+                        // Limit one Junimo chest
+                        if (locationStorage.Context is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+                        {
+                            if (junimoChest)
+                            {
+                                continue;
+                            }
+
+                            junimoChest = true;
+                        }
+
                         storages.Add(new(locationObject, locationStorage));
                         continue;
                     case FeatureOptionRange.Default:
@@ -145,6 +139,8 @@ internal class CraftFromChest : Feature
     }
 
     private static CraftFromChest Instance { get; set; }
+
+    private BetterCraftingIntegration BetterCrafting { get; }
 
     private IClickableComponent CraftButton
     {
@@ -209,6 +205,11 @@ internal class CraftFromChest : Feature
                   && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
                   && inventoryStorage.Value.Context is Chest
             select (Chest)inventoryStorage.Value.Context);
+        if (!chests.Any())
+        {
+            return;
+        }
+
         material_containers ??= new List<Chest>();
         chests.AddRange(material_containers);
 
@@ -272,8 +273,8 @@ internal class CraftFromChest : Feature
             return;
         }
 
-        this.OpenCrafting();
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+        this.OpenCrafting();
     }
 
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
@@ -287,29 +288,36 @@ internal class CraftFromChest : Feature
             case CraftingPage menu:
                 craftingPage = menu;
                 break;
+            case { } when this.MultipleChestCraftingPage is not null:
+                this.MultipleChestCraftingPage?.ExitFunction();
+                this.MultipleChestCraftingPage = null;
+                return;
             default:
                 return;
         }
 
-        var chests = new List<Chest>(
+        // Add player inventory chests to crafting page
+        craftingPage._materialContainers ??= new();
+        craftingPage._materialContainers.AddRange(
             from inventoryStorage in this.ManagedObjects.InventoryStorages
             where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
                   && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
                   && inventoryStorage.Value.Context is Chest
             select (Chest)inventoryStorage.Value.Context);
-        craftingPage._materialContainers ??= new();
-        chests.AddRange(craftingPage._materialContainers);
-
-        // Ensure only one Junimo Chest
-        var junimoChest = chests.FirstOrDefault(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
-        if (junimoChest is not null)
+        if (!craftingPage._materialContainers.Any())
         {
-            chests.RemoveAll(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
-            chests.Add(junimoChest);
+            return;
         }
 
-        craftingPage._materialContainers.Clear();
-        craftingPage._materialContainers.AddRange(chests.Distinct());
+        // Ensure only one Junimo Chest
+        var junimoChest = craftingPage._materialContainers.FirstOrDefault(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
+        if (junimoChest is not null)
+        {
+            craftingPage._materialContainers.RemoveAll(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
+            craftingPage._materialContainers.Add(junimoChest);
+        }
+
+        craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
     }
 
     private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
@@ -323,32 +331,28 @@ internal class CraftFromChest : Feature
 
     private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
     {
-        if (this.MultipleChestCraftingPage is null)
-        {
-            return;
-        }
-
-        if (this.MultipleChestCraftingPage.TimedOut())
+        if (this.MultipleChestCraftingPage?.Update() == false)
         {
             this.MultipleChestCraftingPage = null;
-            return;
         }
-
-        this.MultipleChestCraftingPage.Update();
     }
 
     private void OpenCrafting()
     {
-        var eligibleStorages = this.EligibleStorages;
-        if (!eligibleStorages.Any())
+        var storages = this.EligibleStorages.ToList();
+        if (!storages.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
             return;
         }
 
-        Log.Verbose("Launching CraftFromChest Menu.");
+        if (this.BetterCrafting.IsLoaded)
+        {
+            this.BetterCrafting.API.OpenCraftingMenu(false, storages.Select(storage => (Chest)storage.Value.Context).ToList());
+            return;
+        }
+
         this.MultipleChestCraftingPage?.ExitFunction();
-        this.MultipleChestCraftingPage = new(eligibleStorages);
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+        this.MultipleChestCraftingPage = new(storages);
     }
 }

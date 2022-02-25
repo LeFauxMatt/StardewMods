@@ -39,21 +39,19 @@ internal class FilterItems : Feature
                     typeof(FilterItems),
                     nameof(FilterItems.Chest_addItem_prefix));
 
-                if (services.FindService<ModIntegrations>()?.IsLoaded("Automate") != true)
+                if (this.Integrations.IsLoaded("Automate"))
                 {
-                    return;
-                }
-
-                var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
-                    .GetType(ModIntegrations.AutomateChestContainerType)?
-                    .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-                if (storeMethod is not null)
-                {
-                    harmony.AddPatch(
-                        this.Id,
-                        storeMethod,
-                        typeof(FilterItems),
-                        nameof(FilterItems.Automate_Store_prefix));
+                    var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
+                        .GetType(ModIntegrations.AutomateChestContainerType)?
+                        .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+                    if (storeMethod is not null)
+                    {
+                        harmony.AddPatch(
+                            this.Id,
+                            storeMethod,
+                            typeof(FilterItems),
+                            nameof(FilterItems.Automate_Store_prefix));
+                    }
                 }
             });
         this._menuItems = services.Lazy<IMenuItems>();
