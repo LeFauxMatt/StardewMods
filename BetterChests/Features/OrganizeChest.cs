@@ -134,7 +134,7 @@ internal class OrganizeChest : Feature
 
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
-        this.CurrentStorage = e.Menu is ItemGrabMenu { context: { } context } && this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
+        this.CurrentStorage = e.Menu is ItemGrabMenu && e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
             ? managedStorage
             : null;
     }

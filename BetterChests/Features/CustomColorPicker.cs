@@ -14,6 +14,7 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
@@ -24,7 +25,7 @@ using StardewValley.Objects;
 internal class CustomColorPicker : Feature
 {
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
-    private readonly PerScreen<object> _context = new();
+    private readonly PerScreen<IGameObject> _context = new();
     private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
@@ -91,7 +92,7 @@ internal class CustomColorPicker : Feature
         set => this._colorPicker.Value = value;
     }
 
-    private object Context
+    private IGameObject Context
     {
         get => this._context.Value;
         set => this._context.Value = value;
@@ -218,12 +219,12 @@ internal class CustomColorPicker : Feature
 
     private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
     {
-        if (e.Menu is not ItemGrabMenu { context: { } context } itemGrabMenu || !this.ManagedObjects.TryGetManagedStorage(context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
+        if (e.Menu is not ItemGrabMenu itemGrabMenu || e.Context is null || !this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
         {
             return;
         }
 
-        this.Context = context;
+        this.Context = e.Context;
         itemGrabMenu.discreteColorPickerCC = null;
     }
 }

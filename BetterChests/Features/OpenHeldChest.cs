@@ -9,7 +9,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Objects;
 using Object = StardewValley.Object;
@@ -31,11 +33,16 @@ internal class OpenHeldChest : Feature
         this._harmony = services.Lazy<IHarmonyHelper>(
             harmony =>
             {
-                harmony.AddPatch(
+                harmony.AddPatches(
                     this.Id,
-                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                    typeof(OpenHeldChest),
-                    nameof(OpenHeldChest.Chest_addItem_prefix));
+                    new SavedPatch[]
+                    {
+                        new(
+                            AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+                            typeof(OpenHeldChest),
+                            nameof(OpenHeldChest.Chest_addItem_prefix),
+                            PatchType.Prefix),
+                    });
             });
     }
 

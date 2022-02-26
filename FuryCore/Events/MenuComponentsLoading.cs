@@ -8,6 +8,7 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
@@ -64,7 +65,7 @@ internal class MenuComponentsLoading : SortedEventHandler<IMenuComponentsLoading
             select component).ToList();
         var components = new List<IClickableComponent>();
         components.AddRange(vanillaComponents);
-        this.InvokeAll(new MenuComponentsLoadingEventArgs(e.Menu, components));
+        this.InvokeAll(new MenuComponentsLoadingEventArgs(e.Menu, e.Context as IStorageContainer, components));
         this.MenuComponents.Components.AddRange(components);
         this.Menu.populateClickableComponentList();
         foreach (var component in components.Where(component => !this.Menu.allClickableComponents.Contains(component.Component)))

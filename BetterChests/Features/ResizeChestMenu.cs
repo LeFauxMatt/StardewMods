@@ -165,18 +165,15 @@ internal class ResizeChestMenu : Feature
 
     private int MenuRows
     {
-        get
-        {
-            return this._menuRows.Value ??= this.StorageData is not null
-                ? this.StorageData.ResizeChestCapacity switch
-                {
-                    0 => 3,
-                    < 0 => this.StorageData.ResizeChestMenuRows,
-                    < 72 => (int)Math.Min(this.StorageData.ResizeChestMenuRows, Math.Ceiling(this.StorageData.ResizeChestCapacity / 12f)),
-                    _ => this.StorageData.ResizeChestMenuRows,
-                }
-                : 3;
-        }
+        get => this._menuRows.Value ??=
+            this.StorageData?.ResizeChestCapacity switch
+            {
+                null => 3,
+                0 => 3,
+                < 0 => this.StorageData.ResizeChestMenuRows,
+                < 72 => (int)Math.Min(this.StorageData.ResizeChestMenuRows, Math.Ceiling(this.StorageData.ResizeChestCapacity / 12f)),
+                _ => this.StorageData.ResizeChestMenuRows,
+            };
     }
 
     private IStorageData StorageData
@@ -450,8 +447,8 @@ internal class ResizeChestMenu : Feature
         this.Menu = e.Menu as MenuWithInventory;
         this.StorageData = e.Menu switch
         {
-            ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => this.Config.DefaultChest,
-            ItemGrabMenu { context: { } context } when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => managedStorage,
+            ItemSelectionMenu when this.Config.DefaultChest.ResizeChestMenu == FeatureOption.Enabled => this.Config.DefaultChest,
+            ItemGrabMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.ResizeChestMenu == FeatureOption.Enabled => managedStorage,
             _ => null,
         };
 

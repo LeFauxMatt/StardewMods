@@ -199,7 +199,7 @@ internal class CategorizeChest : Feature
                 e.AddComponent(this.PlusButton);
                 e.AddComponent(this.MinusButton);
                 break;
-            case ItemGrabMenu { context: { } context } itemGrabMenu and not ItemSelectionMenu when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage):
+            case ItemGrabMenu itemGrabMenu and not ItemSelectionMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage):
                 e.AddComponent(this.ConfigureButton, 0);
                 this.ReturnMenu = itemGrabMenu;
                 this.CurrentStorage = managedStorage;

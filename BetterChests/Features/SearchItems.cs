@@ -405,7 +405,7 @@ internal class SearchItems : Feature
         this.StorageData = e.Menu switch
         {
             ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled => this.Config.DefaultChest,
-            ItemGrabMenu { context: { } context } when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => managedStorage,
+            ItemGrabMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled => managedStorage,
             _ => null,
         };
 

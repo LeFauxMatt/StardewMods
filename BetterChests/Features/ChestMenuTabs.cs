@@ -16,6 +16,7 @@ using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.UI;
 using StardewValley;
@@ -25,7 +26,7 @@ using StardewValley.Menus;
 internal class ChestMenuTabs : Feature
 {
     private readonly Lazy<AssetHandler> _assetHandler;
-    private readonly PerScreen<object> _context = new();
+    private readonly PerScreen<IStorageContainer> _context = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<ItemGrabMenu> _menu = new();
     private readonly Lazy<IMenuComponents> _menuComponents;
@@ -52,7 +53,7 @@ internal class ChestMenuTabs : Feature
         get => this._assetHandler.Value;
     }
 
-    private object Context
+    private IStorageContainer Context
     {
         get => this._context.Value;
         set => this._context.Value = value;
@@ -171,7 +172,7 @@ internal class ChestMenuTabs : Feature
         this.Menu = e.Menu switch
         {
             ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => itemSelectionMenu,
-            ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => itemGrabMenu,
+            ItemGrabMenu itemGrabMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => itemGrabMenu,
             _ => null,
         };
     }
@@ -208,11 +209,11 @@ internal class ChestMenuTabs : Feature
                 storageData = this.Config.DefaultChest;
                 break;
 
-            case ItemGrabMenu { context: { } context } when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
+            case ItemGrabMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled:
                 storageData = managedStorage;
-                if (!ReferenceEquals(context, this.Context))
+                if (!ReferenceEquals(e.Context, this.Context))
                 {
-                    this.Context = context;
+                    this.Context = e.Context;
                     resetTab = true;
                 }
 

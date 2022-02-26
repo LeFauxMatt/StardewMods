@@ -3,6 +3,7 @@
 using System;
 using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
+using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley.Menus;
 
 /// <summary>
@@ -10,6 +11,11 @@ using StardewValley.Menus;
 /// </summary>
 public interface IMenuComponentsLoadingEventArgs
 {
+    /// <summary>
+    ///     Gets the storage object for the menu being displayed.
+    /// </summary>
+    public IStorageContainer Context { get; }
+
     /// <summary>
     ///     Gets the Menu to add components to.
     /// </summary>
