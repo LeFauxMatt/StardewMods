@@ -86,10 +86,10 @@ internal class FilterItems : Feature
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static bool Automate_Store_prefix(Chest ___Chest, object stack)
+    private static bool Automate_Store_prefix(Chest __instance, object stack)
     {
         var item = FilterItems.Instance.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !FilterItems.Instance.ManagedObjects.TryGetManagedStorage(___Chest, out var managedChest) || managedChest.ItemMatcher.Matches(item);
+        return !FilterItems.Instance.ManagedObjects.TryGetManagedStorage(__instance, out var managedChest) || managedChest.ItemMatcher.Matches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

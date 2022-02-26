@@ -285,7 +285,7 @@ internal class GameObjects : IGameObjects, IModService
 
         gameObject ??= this.InventoryItems.FirstOrDefault(inventoryItem => ReferenceEquals(inventoryItem.Value.Context, context)).Value;
         gameObject ??= this.LocationObjects.FirstOrDefault(locationObject => ReferenceEquals(locationObject.Value.Context, context)).Value;
-        return gameObject is not null || this.TryGetGameObject(context, false, out gameObject);
+        return gameObject is not null || this.TryGetGameObject(context, true, out gameObject);
     }
 
     /// <summary>

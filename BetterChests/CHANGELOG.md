@@ -1,6 +1,15 @@
 ﻿# Better Chests Change Log
 
-## 1.7.0 (Unreleased)
+## 1.7.1 (February 26, 2022)
+
+* Updated to FuryCore 1.6.1
+
+### Fixed
+
+* Fixed lag associated with UnloadChests feature.
+* Fixed FilterItems not patching Automate correctly.
+
+## 1.7.0 (February 25, 2022)
 
 * Updated to FuryCore 1.6.0
 

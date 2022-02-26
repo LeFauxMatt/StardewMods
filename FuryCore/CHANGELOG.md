@@ -1,6 +1,12 @@
 ﻿# FuryCore Change Log
 
-## 1.6.0 (Unreleased)
+## 1.6.1 (February 26, 2022)
+
+### Fixed
+
+* Fixed some lag issues from the last update.
+
+## 1.6.0 (February 25, 2022)
 
 ### Added
 

@@ -117,19 +117,8 @@ internal class ManagedObjects : IModService
         }
 
         managedStorage = this.InventoryStorages.FirstOrDefault(playerStorage => ReferenceEquals(playerStorage.Value.Context, context)).Value;
-        if (managedStorage is not null)
-        {
-            return true;
-        }
-
-        managedStorage = this.LocationStorages.FirstOrDefault(placedStorage => ReferenceEquals(placedStorage.Value.Context, context)).Value;
-        if (managedStorage is not null)
-        {
-            return true;
-        }
-
-        managedStorage = null;
-        return false;
+        managedStorage ??= this.LocationStorages.FirstOrDefault(placedStorage => ReferenceEquals(placedStorage.Value.Context, context)).Value;
+        return managedStorage is not null;
     }
 
     /// <summary>

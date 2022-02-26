@@ -9,6 +9,7 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
+using StardewValley.Tools;
 
 /// <inheritdoc />
 internal class UnloadChest : Feature
@@ -47,30 +48,31 @@ internal class UnloadChest : Feature
     [EventPriority(EventPriority.High + 1)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree
-            || !e.Button.IsUseToolButton()
-            || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            || !this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source)
-            || source.UnloadChest == FeatureOption.Disabled)
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is GenericTool or Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or null)
         {
             return;
         }
 
-        var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64f : e.Cursor.Tile;
-        var x = (int)pos.X * Game1.tileSize;
-        var y = (int)pos.Y * Game1.tileSize;
+        var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
+        var x = (int)pos.X;
+        var y = (int)pos.Y;
+        pos.X = x;
+        pos.Y = y;
 
         // Object exists at pos and is within reach of player
-        if (!Utility.withinRadiusOfPlayer(x, y, 1, Game1.player)
-            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
+        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player) || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
         {
             return;
         }
 
-        // Object is a JunimoChest or does not support UnloadChest
-        if (obj is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            || !this.ManagedObjects.TryGetManagedStorage(obj, out var target)
-            || target.UnloadChest == FeatureOption.Disabled)
+        // Object supports Unload Chest
+        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var target) || target.UnloadChest != FeatureOption.Enabled)
+        {
+            return;
+        }
+
+        // CurrentItem supports Unload Chest
+        if (!this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source) || source.UnloadChest != FeatureOption.Enabled)
         {
             return;
         }

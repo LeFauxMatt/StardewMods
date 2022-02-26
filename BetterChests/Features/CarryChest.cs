@@ -368,8 +368,7 @@ internal class CarryChest : Feature
         pos.Y = y;
 
         // Object exists at pos and is within reach of player
-        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player)
-            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
+        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player) || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
         {
             return;
         }
