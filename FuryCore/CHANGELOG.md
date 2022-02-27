@@ -1,5 +1,11 @@
 ﻿# FuryCore Change Log
 
+## 1.6.2 (February 26, 2022)
+
+### Fixed
+
+* Further optimized code to prevent looping over all items on each click.
+
 ## 1.6.1 (February 26, 2022)
 
 ### Fixed

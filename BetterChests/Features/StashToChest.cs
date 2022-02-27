@@ -229,7 +229,7 @@ internal class StashToChest : Feature
 
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton || e.Button != SButton.MouseLeft && !e.Button.IsActionButton())
+        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton || e.Button is not SButton.MouseLeft && !e.Button.IsActionButton())
         {
             return;
         }

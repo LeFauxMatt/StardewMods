@@ -157,37 +157,29 @@ internal class GameObjects : IGameObjects, IModService
 
                     // Storage from FarmHouse.fridge.Value
                     case FarmHouse farmHouse:
-                        if (farmHouse.fridge.Value is not null && !exclude.Contains(farmHouse.fridge.Value))
+                        if (farmHouse.fridge.Value is null || exclude.Contains(farmHouse.fridge.Value) || farmHouse.fridgePosition.Equals(Point.Zero) || !this.TryGetGameObject(farmHouse, true, out var farmHouseObject))
                         {
-                            if (farmHouse.fridgePosition.Equals(Point.Zero) || !this.TryGetGameObject(farmHouse, true, out var farmHouseObject))
-                            {
-                                break;
-                            }
-
-                            exclude.Add(farmHouse.fridge.Value);
-                            yield return new(new(location, farmHouse.fridgePosition.ToVector2()), farmHouseObject);
+                            break;
                         }
 
+                        exclude.Add(farmHouse.fridge.Value);
+                        yield return new(new(location, farmHouse.fridgePosition.ToVector2()), farmHouseObject);
                         break;
 
                     // Storage from IslandFarmHouse.fridge.Value
                     case IslandFarmHouse islandFarmHouse:
-                        if (islandFarmHouse.fridge.Value is not null && !exclude.Contains(islandFarmHouse.fridge.Value))
+                        if (islandFarmHouse.fridge.Value is null || exclude.Contains(islandFarmHouse.fridge.Value) || islandFarmHouse.fridgePosition.Equals(Point.Zero) || !this.TryGetGameObject(islandFarmHouse, true, out var islandFarmHouseObject))
                         {
-                            if (islandFarmHouse.fridgePosition.Equals(Point.Zero) || !this.TryGetGameObject(islandFarmHouse, true, out var islandFarmHouseObject))
-                            {
-                                break;
-                            }
-
-                            exclude.Add(islandFarmHouse.fridge.Value);
-                            yield return new(new(location, islandFarmHouse.fridgePosition.ToVector2()), islandFarmHouseObject);
+                            break;
                         }
 
+                        exclude.Add(islandFarmHouse.fridge.Value);
+                        yield return new(new(location, islandFarmHouse.fridgePosition.ToVector2()), islandFarmHouseObject);
                         break;
 
                     // Island Farm
-                    case IslandWest islandWest when !exclude.Contains(islandWest):
-                        if (!this.TryGetGameObject(islandWest, true, out var islandWestObject))
+                    case IslandWest islandWest:
+                        if (exclude.Contains(islandWest) || !this.TryGetGameObject(islandWest, true, out var islandWestObject))
                         {
                             break;
                         }
@@ -197,8 +189,20 @@ internal class GameObjects : IGameObjects, IModService
                         break;
                 }
 
+                // Storages from GameLocation.Objects
+                foreach (var (position, obj) in location.Objects.Pairs)
+                {
+                    if (exclude.Contains(obj) || !this.TryGetGameObject(obj, true, out var gameObject))
+                    {
+                        continue;
+                    }
+
+                    exclude.Add(obj);
+                    yield return new(new(location, position), gameObject);
+                }
+
                 // Large terrain features
-                foreach (var largeTerrainFeature in location.largeTerrainFeatures)
+                foreach (var largeTerrainFeature in location.largeTerrainFeatures.OfType<Bush>())
                 {
                     if (exclude.Contains(largeTerrainFeature) || !this.TryGetGameObject(largeTerrainFeature, true, out var gameObject))
                     {
@@ -212,24 +216,12 @@ internal class GameObjects : IGameObjects, IModService
                 // Terrain features
                 foreach (var (position, terrainFeature) in location.terrainFeatures.Pairs)
                 {
-                    if (exclude.Contains(terrainFeature) || !this.TryGetGameObject(terrainFeature, true, out var gameObject))
+                    if (terrainFeature is not HoeDirt or FruitTree || exclude.Contains(terrainFeature) || !this.TryGetGameObject(terrainFeature, true, out var gameObject))
                     {
                         continue;
                     }
 
                     exclude.Add(terrainFeature);
-                    yield return new(new(location, position), gameObject);
-                }
-
-                // Storages from GameLocation.Objects
-                foreach (var (position, obj) in location.Objects.Pairs)
-                {
-                    if (exclude.Contains(obj) || !this.TryGetGameObject(obj, true, out var gameObject))
-                    {
-                        continue;
-                    }
-
-                    exclude.Add(obj);
                     yield return new(new(location, position), gameObject);
                 }
             }
@@ -280,7 +272,7 @@ internal class GameObjects : IGameObjects, IModService
     {
         if (this.TryGetGameObject(context, false, out gameObject))
         {
-            return true;
+            return gameObject is not null;
         }
 
         gameObject ??= this.InventoryItems.FirstOrDefault(inventoryItem => ReferenceEquals(inventoryItem.Value.Context, context)).Value;
@@ -335,7 +327,7 @@ internal class GameObjects : IGameObjects, IModService
 
         if (this.CachedObjects.TryGetValue(context, out gameObject))
         {
-            return gameObject is not null;
+            return !init || gameObject is not null;
         }
 
         if (!init)

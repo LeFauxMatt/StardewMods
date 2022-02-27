@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 1.7.2 (February 26, 2022)
+
+### Fixed
+
+* Further optimized code to prevent looping over all items on each click.
+
 ## 1.7.1 (February 26, 2022)
 
 * Updated to FuryCore 1.6.1

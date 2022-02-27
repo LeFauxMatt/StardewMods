@@ -53,25 +53,17 @@ internal class ConfiguringGameObject : SortedEventHandler<IConfiguringGameObject
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree
-            || this.HandlerCount == 0
-            || !e.Button.IsUseToolButton()
-            || this.Helper.Input.IsSuppressed(e.Button)
-            || Game1.player.CurrentItem is not GenericTool genericTool
-            || !genericTool.modData.TryGetValue($"{FuryCore.ModUniqueId}/Tool", out var toolName)
-            || toolName != "ConfigTool")
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is not GenericTool genericTool || !genericTool.modData.TryGetValue($"{FuryCore.ModUniqueId}/Tool", out var toolName) || toolName != "ConfigTool")
         {
             return;
         }
 
-        // Check for currently facing object
         var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
         var x = (int)pos.X;
         var y = (int)pos.Y;
         pos.X = x;
         pos.Y = y;
 
-        // Object exists at pos and is within reach of player
         if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player))
         {
             return;

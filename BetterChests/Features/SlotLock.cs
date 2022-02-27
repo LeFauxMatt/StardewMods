@@ -129,12 +129,6 @@ internal class SlotLock : Feature
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
-            && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
-        {
-            return;
-        }
-
         var menu = Game1.activeClickableMenu switch
         {
             ItemGrabMenu { inventory: { } itemGrabMenu } => itemGrabMenu,
@@ -143,6 +137,12 @@ internal class SlotLock : Feature
         };
 
         if (menu is null)
+        {
+            return;
+        }
+
+        if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
+            && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
         {
             return;
         }
@@ -169,6 +169,6 @@ internal class SlotLock : Feature
             item.modData[$"{BetterChests.ModUniqueId}/LockedSlot"] = true.ToString();
         }
 
-        this.Helper.Input.Suppress(SButton.MouseLeft);
+        this.Helper.Input.Suppress(e.Button);
     }
 }

@@ -36,12 +36,12 @@ internal class HudComponentPressed : SortedEventHandler<ClickableComponentPresse
     [EventPriority(EventPriority.High)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (this.HandlerCount == 0 || !this.HudComponents.Components.Any())
+        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || this.HandlerCount == 0 || !this.HudComponents.Components.Any())
         {
             return;
         }
 
-        if (e.Button is not SButton.MouseLeft or SButton.MouseRight && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
+        if (e.Button is not SButton.MouseLeft or SButton.MouseRight)
         {
             return;
         }
@@ -54,8 +54,8 @@ internal class HudComponentPressed : SortedEventHandler<ClickableComponentPresse
             this.InvokeAll(new(
                 e.Button,
                 icon,
-                () => this.Helper.Input.Suppress(SButton.MouseLeft),
-                () => this.Helper.Input.IsSuppressed(SButton.MouseLeft)));
+                () => this.Helper.Input.Suppress(e.Button),
+                () => this.Helper.Input.IsSuppressed(e.Button)));
         }
     }
 }

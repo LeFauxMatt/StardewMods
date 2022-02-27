@@ -252,7 +252,7 @@ internal class ChestMenuTabs : Feature
 
     private void OnMouseWheelScrolled(object sender, MouseWheelScrolledEventArgs e)
     {
-        if (this.MenuItems.Menu is null)
+        if (this.Menu is null)
         {
             return;
         }

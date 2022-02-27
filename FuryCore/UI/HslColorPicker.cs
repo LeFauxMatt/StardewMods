@@ -328,7 +328,7 @@ public class HslColorPicker : DiscreteColorPicker
 
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (e.Button != SButton.MouseLeft || this.HeldThumb is not TrackThumb.None)
+        if (e.Button is not SButton.MouseLeft || this.HeldThumb is not TrackThumb.None)
         {
             return;
         }
@@ -369,7 +369,7 @@ public class HslColorPicker : DiscreteColorPicker
 
     private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
     {
-        if (e.Button == SButton.MouseLeft && !e.IsDown(SButton.Left))
+        if (e.Button is SButton.MouseLeft && !e.IsDown(SButton.Left))
         {
             this.HeldThumb = TrackThumb.None;
         }

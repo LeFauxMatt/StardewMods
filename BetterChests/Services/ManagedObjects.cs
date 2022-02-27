@@ -105,15 +105,20 @@ internal class ManagedObjects : IModService
     /// <returns>Returns true if a matching <see cref="IManagedStorage" /> could be found.</returns>
     public bool TryGetManagedStorage(object context, out IManagedStorage managedStorage)
     {
-        if (context is null)
+        if (context is null || !this.GameObjects.TryGetGameObject(context, out var gameObject))
         {
             managedStorage = null;
             return false;
         }
 
-        if (this.GameObjects.TryGetGameObject(context, out var gameObject) && this.TryGetManagedStorage(gameObject, out managedStorage))
+        if (this.CachedObjects.TryGetValue(gameObject, out managedStorage))
         {
-            return true;
+            return managedStorage is not null;
+        }
+
+        if (this.TryGetManagedStorage(gameObject, out managedStorage))
+        {
+            return managedStorage is not null;
         }
 
         managedStorage = this.InventoryStorages.FirstOrDefault(playerStorage => ReferenceEquals(playerStorage.Value.Context, context)).Value;

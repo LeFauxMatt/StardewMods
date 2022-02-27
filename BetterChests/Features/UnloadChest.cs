@@ -8,6 +8,7 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Objects;
 using StardewValley.Tools;
 
@@ -48,7 +49,7 @@ internal class UnloadChest : Feature
     [EventPriority(EventPriority.High + 1)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is GenericTool or Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or null)
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is GenericTool or Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or null || Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
         {
             return;
         }
@@ -65,14 +66,14 @@ internal class UnloadChest : Feature
             return;
         }
 
-        // Object supports Unload Chest
-        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var target) || target.UnloadChest != FeatureOption.Enabled)
+        // CurrentItem supports Unload Chest
+        if (!this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source) || source.UnloadChest != FeatureOption.Enabled)
         {
             return;
         }
 
-        // CurrentItem supports Unload Chest
-        if (!this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source) || source.UnloadChest != FeatureOption.Enabled)
+        // Object supports Unload Chest
+        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var target) || target.UnloadChest != FeatureOption.Enabled)
         {
             return;
         }
