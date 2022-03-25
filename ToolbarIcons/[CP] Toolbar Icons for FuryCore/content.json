@@ -53,6 +53,14 @@
       "AllowValues": "true, false",
       "Default": true
     },
+    "EnableEventLookup": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "EventLookupHotkey": {
+      "AllowBlank": true,
+      "Default": "N"
+    },
     "EnableHorseFluteAnywhere": {
       "AllowValues": "true, false",
       "Default": true
@@ -84,6 +92,14 @@
     "LookupAnythingHotkey": {
       "AllowBlank": true,
       "Default": "LeftShift + F1"
+    },
+    "EnableResetTerrainFeatures": {
+      "AllowValues": "true, false",
+      "Default": true
+    },
+    "ResetTerrainFeaturesHotkey": {
+      "AllowBlank": true,
+      "Default": "L"
     }
   },
   "Changes": [
@@ -177,6 +193,18 @@
         "HasMod": "spacechase0.DynamicGameAssets"
       }
     },
+    // Add Event Lookup Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "Event Lookup": "{{i18n: icon.event-lookup.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/13/Left/keybind: {{EventLookupHotkey}}"
+      },
+      "When": {
+        "EnableEventLookup": true,
+        "HasMod": "shekurika.EventLookup"
+      }
+    },
     // Add Horse Flute Anywhere Icon
     {
       "Action": "EditData",
@@ -224,6 +252,18 @@
         "EnableLookupAnything": true,
         "HasMod": "Pathoschild.LookupAnything"
       }
-    }
+    },
+    // Add Reset Terrain Features Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "Reset Terrain Features": "{{i18n: icon.reset-terrain-features.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/12/Left/keybind: {{ResetTerrainFeaturesHotkey}}"
+      },
+      "When": {
+        "EnableResetTerrainFeatures": true,
+        "HasMod": "MabelSyrup.ResetTerrainFeatures"
+      }
+    },
   ]
 }

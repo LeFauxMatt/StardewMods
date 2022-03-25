@@ -15,12 +15,10 @@ using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewMods.FuryCore.Models.GameObjects.Producers;
 using StardewMods.FuryCore.Models.GameObjects.Storages;
-using StardewMods.FuryCore.Models.GameObjects.Terrains;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
-using StardewValley.TerrainFeatures;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc cref="IGameObjects" />
@@ -200,30 +198,6 @@ internal class GameObjects : IGameObjects, IModService
                     exclude.Add(obj);
                     yield return new(new(location, position), gameObject);
                 }
-
-                // Large terrain features
-                foreach (var largeTerrainFeature in location.largeTerrainFeatures.OfType<Bush>())
-                {
-                    if (exclude.Contains(largeTerrainFeature) || !this.TryGetGameObject(largeTerrainFeature, true, out var gameObject))
-                    {
-                        continue;
-                    }
-
-                    exclude.Add(largeTerrainFeature);
-                    yield return new(new(location, largeTerrainFeature.tilePosition.Value), gameObject);
-                }
-
-                // Terrain features
-                foreach (var (position, terrainFeature) in location.terrainFeatures.Pairs)
-                {
-                    if (terrainFeature is not HoeDirt or FruitTree || exclude.Contains(terrainFeature) || !this.TryGetGameObject(terrainFeature, true, out var gameObject))
-                    {
-                        continue;
-                    }
-
-                    exclude.Add(terrainFeature);
-                    yield return new(new(location, position), gameObject);
-                }
             }
         }
     }
@@ -365,22 +339,6 @@ internal class GameObjects : IGameObjects, IModService
             case ShippingBin shippingBin:
                 this.ContextMap[Game1.getFarm()] = context;
                 gameObject = new StorageShippingBin(shippingBin);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-
-            // TerrainFeatures
-            case Bush bush:
-                gameObject = new TerrainBush(bush);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-
-            case FruitTree fruitTree:
-                gameObject = new TerrainFruitTree(fruitTree);
-                this.CachedObjects.Add(context, gameObject);
-                return true;
-
-            case HoeDirt hoeDirt:
-                gameObject = new TerrainHoeDirt(hoeDirt);
                 this.CachedObjects.Add(context, gameObject);
                 return true;
 

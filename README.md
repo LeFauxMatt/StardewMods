@@ -61,6 +61,14 @@ Allows custom items to be created as chests.
 
 Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.
 
+## [Toolbar Icons for FuryCore](https://www.nexusmods.com/stardewvalley/mods/11026)
+
+( [source](ToolbarIcons)
+| [docs](ToolbarIcons/README.md)
+| [changelog](ToolbarIcons/CHANGELOG.md) )
+
+Adds shortcut icons to activate hotkeys/commands from other mods.
+
 ## Utility Belt
 
 ( [source](UtilityBelt)

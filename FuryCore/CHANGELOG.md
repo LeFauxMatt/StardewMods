@@ -1,5 +1,11 @@
 ﻿# FuryCore Change Log
 
+## 1.6.3 (March 20, 2022)
+
+### Changed
+
+* Removed support for TerrainFeatures.
+
 ## 1.6.2 (February 26, 2022)
 
 ### Fixed
