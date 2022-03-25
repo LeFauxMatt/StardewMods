@@ -1,5 +1,14 @@
 ﻿# Better Chests Change Log
 
+## 1.7.3 (Unreleased)
+
+### Changed
+
+* CarryChest will only work when no item is currently being held.
+* FilterItems now handles negative only filters slightly differently.
+    * Stashing requires at least one non-negative item to work.
+    * Negative-only filters will continue to block disallowed items.
+
 ## 1.7.2 (February 26, 2022)
 
 ### Fixed
