@@ -1,16 +1,20 @@
 # Easy Access Change Log
 
+## 1.2.2 (Unreleased)
+
+* Updated to FuryCore 1.6.3.
+
 ## 1.2.1 (February 26, 2022)
 
-* Updated to FuryCore 1.6.1
+* Updated to FuryCore 1.6.1.
 
 ## 1.2.0 (February 25, 2022)
 
-* Updated to FuryCore 1.6.0
+* Updated to FuryCore 1.6.0.
 
 ## 1.1.0 (February 22, 2022)
 
-Updated to FuryCore 1.5.0
+* Updated to FuryCore 1.5.0.
 
 ### Added
 
