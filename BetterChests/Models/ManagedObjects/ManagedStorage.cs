@@ -446,7 +446,7 @@ internal class ManagedStorage : BaseStorage, IManagedStorage
         this.ClearNulls();
 
         // Add item if categorization exists and matches item
-        if (this.ItemMatcher.Any() && this.ItemMatcher.Matches(item) && !this.FilterItemsList.SetEquals(this.Data.FilterItemsList))
+        if (!this.FilterItemsList.All(filterItem => filterItem.StartsWith("!")) && this.ItemMatcher.Any() && this.ItemMatcher.Matches(item))
         {
             item = this.AddItem(item);
         }
