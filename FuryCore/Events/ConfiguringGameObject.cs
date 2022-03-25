@@ -69,19 +69,9 @@ internal class ConfiguringGameObject : SortedEventHandler<IConfiguringGameObject
             return;
         }
 
-        if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj) && this.GameObjects.TryGetGameObject(obj, out var gameObject))
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !this.GameObjects.TryGetGameObject(obj, out var gameObject))
         {
-        }
-        else if (Game1.currentLocation.terrainFeatures.TryGetValue(pos, out var terrainFeature) && this.GameObjects.TryGetGameObject(terrainFeature, out gameObject))
-        {
-        }
-        else
-        {
-            terrainFeature = Game1.currentLocation.getLargeTerrainFeatureAt((int)pos.X, (int)pos.Y);
-            if (terrainFeature is null || !this.GameObjects.TryGetGameObject(terrainFeature, out gameObject))
-            {
-                return;
-            }
+            return;
         }
 
         this.Helper.Input.Suppress(e.Button);
