@@ -10,7 +10,6 @@ using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
-using StardewValley.Tools;
 
 /// <inheritdoc />
 internal class UnloadChest : Feature
@@ -49,7 +48,7 @@ internal class UnloadChest : Feature
     [EventPriority(EventPriority.High + 1)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is GenericTool or Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or null || Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or null || Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
         {
             return;
         }
