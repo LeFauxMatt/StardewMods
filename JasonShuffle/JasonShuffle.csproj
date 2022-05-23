@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <PropertyGroup>
+        <Name>JasonShuffle</Name>
+        <Author>furyx639</Author>
+        <Description>Framework used by my other mods.</Description>
+        <Version>1.0.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+        <RootNamespace>StardewMods.JasonShuffle</RootNamespace>
+        <UniqueId>furyx639.JasonShuffle</UniqueId>
+        <MinimumApiVersion>3.14.0-alpha</MinimumApiVersion>
+        <UpdateKeys>Nexus:10696</UpdateKeys>
+        <Version_AppendConfiguration>false</Version_AppendConfiguration>
+    </PropertyGroup>
+</Project>

@@ -38,6 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\Ea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TooManyAnimals", "TooManyAnimals\TooManyAnimals.csproj", "{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdinaryCapsule", "OrdinaryCapsule\OrdinaryCapsule.csproj", "{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JasonShuffle", "JasonShuffle\JasonShuffle.csproj", "{155F13A9-E725-4634-B72C-615FA0E0A8B0}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
@@ -102,6 +106,14 @@ Global
 		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
