@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Models.Config;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Models.Config;
 
 using StardewMods.EasyAccess.Enums;
 using StardewMods.EasyAccess.Interfaces.Config;

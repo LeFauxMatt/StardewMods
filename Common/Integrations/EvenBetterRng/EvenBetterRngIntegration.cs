@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations.EvenBetterRng;
+#nullable disable
+
+namespace Common.Integrations.EvenBetterRng;
 
 using StardewModdingAPI;
 

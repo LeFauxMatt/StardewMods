@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Models.GameObjects.Producers;
+#nullable disable
+
+namespace StardewMods.FuryCore.Models.GameObjects.Producers;
 
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewValley;

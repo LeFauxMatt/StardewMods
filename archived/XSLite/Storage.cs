@@ -1,4 +1,6 @@
-﻿namespace XSLite;
+#nullable disable
+
+namespace XSLite;
 
 using System;
 using System.Collections.Generic;

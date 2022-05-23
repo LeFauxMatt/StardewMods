@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations;
+#nullable disable
+
+namespace Common.Integrations;
 
 using System;
 using StardewModdingAPI;

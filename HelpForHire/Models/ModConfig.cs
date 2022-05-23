@@ -1,4 +1,6 @@
-﻿namespace HelpForHire.Models;
+#nullable disable
+
+namespace HelpForHire.Models;
 
 internal class ModConfig
 {

@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Models.Config;
+#nullable disable
+
+namespace StardewMods.BetterChests.Models.Config;
 
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;

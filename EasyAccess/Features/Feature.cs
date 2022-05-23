@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Features;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Features;
 
 using System;
 using StardewModdingAPI;

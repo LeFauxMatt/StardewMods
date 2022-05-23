@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Models.ManagedObjects;
+#nullable disable
+
+namespace StardewMods.BetterChests.Models.ManagedObjects;
 
 using System;
 using System.Collections.Generic;

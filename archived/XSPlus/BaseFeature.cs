@@ -1,4 +1,6 @@
-﻿namespace XSPlus;
+#nullable disable
+
+namespace XSPlus;
 
 using System.Collections.Generic;
 using Services;

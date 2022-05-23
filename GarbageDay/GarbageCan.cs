@@ -1,4 +1,6 @@
-﻿namespace GarbageDay;
+#nullable disable
+
+namespace GarbageDay;
 
 using System;
 using System.Collections.Generic;

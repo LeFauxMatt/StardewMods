@@ -1,4 +1,6 @@
-﻿// ReSharper disable All
+#nullable disable
+
+// ReSharper disable All
 
 #pragma warning disable
 

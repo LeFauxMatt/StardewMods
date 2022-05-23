@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Interfaces.ClickableComponents;
+#nullable disable
+
+namespace StardewMods.FuryCore.Interfaces.ClickableComponents;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;

@@ -1,4 +1,6 @@
-﻿namespace StardewMods.MoreChests.Services;
+#nullable disable
+
+namespace StardewMods.MoreChests.Services;
 
 using System.Collections.Generic;
 using StardewModdingAPI;

@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Models.Config;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Models.Config;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;

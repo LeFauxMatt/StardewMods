@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Helpers;
+#nullable disable
+
+namespace StardewMods.BetterChests.Helpers;
 
 using System;
 using StardewMods.BetterChests.Enums;

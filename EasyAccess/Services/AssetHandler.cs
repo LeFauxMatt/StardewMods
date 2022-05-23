@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Services;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Services;
 
 using System;
 using System.Collections.Generic;

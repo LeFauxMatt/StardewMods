@@ -1,4 +1,6 @@
-﻿namespace XSAlternativeTextures;
+#nullable disable
+
+namespace XSAlternativeTextures;
 
 using System.Collections.Generic;
 using System.Linq;

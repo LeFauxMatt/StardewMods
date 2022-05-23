@@ -1,4 +1,6 @@
-﻿namespace Common.Helpers.PatternPatcher;
+#nullable disable
+
+namespace Common.Helpers.PatternPatcher;
 
 using System;
 using System.Collections.Generic;

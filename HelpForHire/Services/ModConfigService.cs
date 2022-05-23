@@ -1,4 +1,6 @@
-﻿namespace HelpForHire.Services;
+#nullable disable
+
+namespace HelpForHire.Services;
 
 internal class ModConfigService
 {

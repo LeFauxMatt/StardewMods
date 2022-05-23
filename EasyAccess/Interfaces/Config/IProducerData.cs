@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Interfaces.Config;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Interfaces.Config;
 
 using System.Collections.Generic;
 using StardewMods.EasyAccess.Enums;

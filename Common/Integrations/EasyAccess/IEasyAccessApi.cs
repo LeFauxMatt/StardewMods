@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations.EasyAccess;
+#nullable disable
+
+namespace Common.Integrations.EasyAccess;
 
 using System.Collections.Generic;
 using StardewModdingAPI;

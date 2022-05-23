@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Interfaces.ManagedObjects;
+#nullable disable
+
+namespace StardewMods.BetterChests.Interfaces.ManagedObjects;
 
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Helpers;

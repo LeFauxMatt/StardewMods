@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Services;
+#nullable disable
+
+namespace StardewMods.BetterChests.Services;
 
 using System;
 using System.Linq;

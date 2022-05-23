@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Interfaces.CustomEvents;
+#nullable disable
+
+namespace StardewMods.FuryCore.Interfaces.CustomEvents;
 
 using System;
 using StardewMods.FuryCore.Events;

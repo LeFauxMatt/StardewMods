@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\build\common.targets"/>
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Version>1.7.2</Version>
         <EnableHarmony>true</EnableHarmony>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Newtonsoft.Json">

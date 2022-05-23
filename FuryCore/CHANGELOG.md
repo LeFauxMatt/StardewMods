@@ -1,5 +1,15 @@
 ﻿# FuryCore Change Log
 
+## 1.6.4 (Unreleased)
+
+* Updated to SMAPI 3.14.0
+
+### Changed
+
+* Added support for matching localized names.
+* Added Hungarian Translation.
+* Added support for ModManifestBuilder.
+
 ## 1.6.3 (March 20, 2022)
 
 ### Changed

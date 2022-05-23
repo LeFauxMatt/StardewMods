@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Services;
+#nullable disable
+
+namespace StardewMods.FuryCore.Services;
 
 using System;
 using StardewModdingAPI;

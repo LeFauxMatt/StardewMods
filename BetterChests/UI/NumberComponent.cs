@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.UI;
+#nullable disable
+
+namespace StardewMods.BetterChests.UI;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Features;
+#nullable disable
+
+namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Diagnostics.CodeAnalysis;

@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations.GenericModConfigMenu;
+#nullable disable
+
+namespace Common.Integrations.GenericModConfigMenu;
 
 using System;
 using System.Collections.Generic;

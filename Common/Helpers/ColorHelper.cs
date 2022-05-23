@@ -1,4 +1,6 @@
-﻿namespace Common.Helpers;
+#nullable disable
+
+namespace Common.Helpers;
 
 using Microsoft.Xna.Framework;
 

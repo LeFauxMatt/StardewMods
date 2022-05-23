@@ -1,6 +1,15 @@
 # Easy Access Change Log
 
-## 1.2.2 (Unreleased)
+## 1.2.3 (Unreleased)
+
+* Updated to SMAPI 3.14.0.
+* Updated to FuryCore 1.6.4.
+
+### Changed
+
+* Added support for ModManifestBuilder.
+
+## 1.2.2 (March 25, 2022)
 
 * Updated to FuryCore 1.6.3.
 

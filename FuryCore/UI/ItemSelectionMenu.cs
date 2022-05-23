@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.UI;
+#nullable disable
+
+namespace StardewMods.FuryCore.UI;
 
 using System;
 using System.Collections.Generic;

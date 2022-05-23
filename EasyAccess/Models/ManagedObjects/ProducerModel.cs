@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Models.ManagedObjects;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Models.ManagedObjects;
 
 using System.Collections.Generic;
 using System.Linq;

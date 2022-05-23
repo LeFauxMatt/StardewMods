@@ -1,4 +1,6 @@
-﻿namespace MoreChests.Services;
+#nullable disable
+
+namespace MoreChests.Services;
 
 using StardewModdingAPI.Events;
 using StardewValley;

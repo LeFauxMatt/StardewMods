@@ -1,4 +1,6 @@
-﻿namespace XSPlus.Features;
+#nullable disable
+
+namespace XSPlus.Features;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;

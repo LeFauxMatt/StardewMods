@@ -1,4 +1,6 @@
-﻿namespace StardewMods.TooManyAnimals.Interfaces;
+#nullable disable
+
+namespace StardewMods.TooManyAnimals.Interfaces;
 
 using StardewMods.TooManyAnimals.Models;
 

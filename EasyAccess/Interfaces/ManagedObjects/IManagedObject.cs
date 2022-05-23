@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Interfaces.ManagedObjects;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Interfaces.ManagedObjects;
 
 using StardewMods.EasyAccess.Interfaces.Config;
 using StardewMods.FuryCore.Helpers;

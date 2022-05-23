@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations.FuryCore;
+#nullable disable
+
+namespace Common.Integrations.FuryCore;
 
 using System;
 using System.Collections.Generic;

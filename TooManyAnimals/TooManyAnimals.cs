@@ -1,4 +1,6 @@
-﻿namespace StardewMods.TooManyAnimals;
+#nullable disable
+
+namespace StardewMods.TooManyAnimals;
 
 using System;
 using Common.Helpers;

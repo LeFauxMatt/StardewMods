@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Features;
+#nullable disable
+
+namespace StardewMods.BetterChests.Features;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

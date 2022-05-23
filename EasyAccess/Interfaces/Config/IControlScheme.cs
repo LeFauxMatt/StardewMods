@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Interfaces.Config;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Interfaces.Config;
 
 using StardewModdingAPI.Utilities;
 

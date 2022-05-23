@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests.Models.Config;
+#nullable disable
+
+namespace StardewMods.BetterChests.Models.Config;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;

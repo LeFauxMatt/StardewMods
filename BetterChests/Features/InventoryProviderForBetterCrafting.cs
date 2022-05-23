@@ -1,6 +1,5 @@
-﻿namespace StardewMods.BetterChests.Features;
+namespace StardewMods.BetterChests.Features;
 
-#nullable enable
 using System.Collections.Generic;
 using Common.Integrations.BetterCrafting;
 using Microsoft.Xna.Framework;

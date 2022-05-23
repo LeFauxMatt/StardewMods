@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess.Helpers;
+#nullable disable
+
+namespace StardewMods.EasyAccess.Helpers;
 
 using System;
 using StardewMods.EasyAccess.Enums;

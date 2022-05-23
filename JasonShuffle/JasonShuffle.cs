@@ -1,4 +1,6 @@
-﻿namespace StardewMods.JasonShuffle;
+#nullable disable
+
+namespace StardewMods.JasonShuffle;
 
 public class JasonShuffle
 {

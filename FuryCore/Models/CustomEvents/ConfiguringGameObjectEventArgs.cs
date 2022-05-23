@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Models.CustomEvents;
+#nullable disable
+
+namespace StardewMods.FuryCore.Models.CustomEvents;
 
 using StardewModdingAPI;
 using StardewMods.FuryCore.Interfaces.CustomEvents;

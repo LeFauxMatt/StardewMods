@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Helpers;
+#nullable disable
+
+namespace StardewMods.FuryCore.Helpers;
 
 using System;
 using System.Collections.Generic;

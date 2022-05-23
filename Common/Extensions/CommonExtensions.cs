@@ -1,4 +1,6 @@
-﻿namespace Common.Extensions;
+#nullable disable
+
+namespace Common.Extensions;
 
 using System;
 using System.Collections.Generic;

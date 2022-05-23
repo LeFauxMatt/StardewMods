@@ -1,6 +1,20 @@
 ﻿# Better Chests Change Log
 
-## 1.7.3 (Unreleased)
+## 1.7.4 (Unreleased)
+
+* Updated to SMAPI 3.14.0.
+* Updated to FuryCore 1.6.4.
+
+### Changed
+
+* Added Chinese Translation
+* Added support for ModManifestBuilder.
+
+### Fixed
+
+* Updated Better Crafting integration for v1.1.0+.
+
+## 1.7.3 (March 25, 2022)
 
 ### Changed
 

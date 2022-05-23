@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Attributes;
+#nullable disable
+
+namespace StardewMods.FuryCore.Attributes;
 
 using System;
 using StardewModdingAPI.Events;

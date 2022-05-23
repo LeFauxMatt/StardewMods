@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Models.GameObjects;
+#nullable disable
+
+namespace StardewMods.FuryCore.Models.GameObjects;
 
 using Microsoft.Xna.Framework;
 using StardewMods.FuryCore.Interfaces;

@@ -542,7 +542,7 @@ See [here](i18n/default.json) for the base translation file.
 
 | Language                   | Status            | Credits     |
 |:---------------------------|:------------------|:------------|
-| [Chinese](i18n/zh.json)    | ✔️ Complete       | JingGongGi  |
+| [Chinese](i18n/zh.json)    | ✔️ Complete       | Andyc66     |
 | [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus      |
 | [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever   |
 | [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |

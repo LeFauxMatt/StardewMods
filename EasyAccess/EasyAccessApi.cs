@@ -1,4 +1,6 @@
-﻿namespace StardewMods.EasyAccess;
+#nullable disable
+
+namespace StardewMods.EasyAccess;
 
 using System;
 using System.Collections.Generic;

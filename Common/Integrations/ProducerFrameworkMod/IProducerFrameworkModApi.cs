@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations.ProducerFrameworkMod;
+#nullable disable
+
+namespace Common.Integrations.ProducerFrameworkMod;
 
 using System.Collections.Generic;
 using SObject = StardewValley.Object;

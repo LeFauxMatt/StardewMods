@@ -1,4 +1,6 @@
-﻿namespace StardewMods.TooManyAnimals.Services;
+#nullable disable
+
+namespace StardewMods.TooManyAnimals.Services;
 
 using System;
 using System.Collections.Generic;

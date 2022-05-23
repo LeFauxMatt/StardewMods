@@ -1,4 +1,6 @@
-﻿namespace Common.Integrations.BetterCrafting;
+#nullable disable
+
+namespace Common.Integrations.BetterCrafting;
 
 using StardewModdingAPI;
 

@@ -1,4 +1,6 @@
-﻿namespace StardewMods.BetterChests;
+#nullable disable
+
+namespace StardewMods.BetterChests;
 
 using System;
 using Common.Helpers;

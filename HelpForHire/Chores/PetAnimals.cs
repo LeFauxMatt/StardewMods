@@ -1,4 +1,6 @@
-﻿namespace HelpForHire.Chores;
+#nullable disable
+
+namespace HelpForHire.Chores;
 
 using System.Collections.Generic;
 using System.Linq;

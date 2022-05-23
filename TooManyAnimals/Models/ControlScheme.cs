@@ -1,4 +1,6 @@
-﻿namespace StardewMods.TooManyAnimals.Models;
+#nullable disable
+
+namespace StardewMods.TooManyAnimals.Models;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;

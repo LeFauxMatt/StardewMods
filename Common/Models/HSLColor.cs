@@ -1,4 +1,6 @@
-﻿namespace Common.Models;
+#nullable disable
+
+namespace Common.Models;
 
 using System;
 using Microsoft.Xna.Framework;
