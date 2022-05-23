@@ -169,14 +169,14 @@ public class ItemMatcher : ObservableCollection<string>
         /// <returns>Returns true if item matches the search phrase.</returns>
         public bool Matches(Item item)
         {
-            return (this.TagMatch ? item.GetContextTags().Any(this.Matches) : this.Matches(item.Name)) != this.NotMatch;
+            return (this.TagMatch ? item.GetContextTags().Any(this.Matches) : this.Matches(item.DisplayName) || this.Matches(item.Name)) != this.NotMatch;
         }
 
         private bool Matches(string match)
         {
             return this.ExactMatch
                 ? this.Value.Equals(match, StringComparison.OrdinalIgnoreCase)
-                : match.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) > -1;
+                : match.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1;
         }
     }
 }
