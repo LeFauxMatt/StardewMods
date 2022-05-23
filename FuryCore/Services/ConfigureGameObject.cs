@@ -110,7 +110,7 @@ internal class ConfigureGameObject : IConfigureGameObject, IModService
 
     private Texture2D ConfigTool
     {
-        get => this._configTool ??= this.Helper.Content.Load<Texture2D>($"{FuryCore.ModUniqueId}/ConfigTool", ContentSource.GameContent);
+        get => this._configTool ??= this.Helper.GameContent.Load<Texture2D>($"{FuryCore.ModUniqueId}/ConfigTool");
     }
 
     private IModHelper Helper { get; }

@@ -113,7 +113,7 @@ internal class StashToChest : Feature
         get => this._stashButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, 32, 32),
-                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
+                this.Helper.GameContent.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons"),
                 new(16, 0, 16, 16),
                 2f)
             {
@@ -229,7 +229,7 @@ internal class StashToChest : Feature
 
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton || e.Button is not SButton.MouseLeft && !e.Button.IsActionButton())
+        if (this.CurrentStorage is null || e.Component.ComponentType is not ComponentType.FillStacksButton || (e.Button is not SButton.MouseLeft && !e.Button.IsActionButton()))
         {
             return;
         }

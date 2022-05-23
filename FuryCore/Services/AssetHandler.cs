@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc cref="StardewMods.FuryCore.Interfaces.IModService" />
-internal class AssetHandler : IModService, IAssetLoader
+internal class AssetHandler : IModService
 {
     private readonly PerScreen<IReadOnlyDictionary<string, string[]>> _toolbarData = new();
 
@@ -19,7 +20,7 @@ internal class AssetHandler : IModService, IAssetLoader
     public AssetHandler(IModHelper helper)
     {
         this.Helper = helper;
-        this.Helper.Content.AssetLoaders.Add(this);
+        this.Helper.Events.Content.AssetRequested += AssetHandler.OnAssetRequested;
     }
 
     /// <summary>
@@ -31,7 +32,7 @@ internal class AssetHandler : IModService, IAssetLoader
         {
             return this._toolbarData.Value ??= (
                     from icon in
-                        from data in this.Helper.Content.Load<IDictionary<string, string>>($"{FuryCore.ModUniqueId}/Toolbar", ContentSource.GameContent)
+                        from data in this.Helper.GameContent.Load<IDictionary<string, string>>($"{FuryCore.ModUniqueId}/Toolbar")
                         select (data.Key, info: data.Value.Split('/'))
                     orderby icon.Key
                     select (icon.Key, icon.info))
@@ -43,24 +44,15 @@ internal class AssetHandler : IModService, IAssetLoader
 
     private IModHelper Helper { get; }
 
-    /// <inheritdoc />
-    public bool CanLoad<T>(IAssetInfo asset)
+    private static void OnAssetRequested(object sender, AssetRequestedEventArgs e)
     {
-        return asset.AssetNameEquals($"{FuryCore.ModUniqueId}/ConfigTool")
-               || asset.AssetNameEquals($"{FuryCore.ModUniqueId}/Toolbar");
-    }
-
-    /// <inheritdoc />
-    public T Load<T>(IAssetInfo asset)
-    {
-        var segment = PathUtilities.GetSegments(asset.AssetName);
-        return segment[1] switch
+        if (e.Name.IsEquivalentTo($"{FuryCore.ModUniqueId}/ConfigTool"))
         {
-            "ConfigTool" when segment.Length == 2
-                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/ConfigTool.png"),
-            "Toolbar" when segment.Length == 2
-                => (T)(object)new Dictionary<string, string>(),
-            _ => default,
-        };
+            e.LoadFromModFile<Texture2D>("assets/ConfigTool.png", AssetLoadPriority.Exclusive);
+        }
+        else if (e.Name.IsEquivalentTo($"{FuryCore.ModUniqueId}/Toolbar"))
+        {
+            e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
+        }
     }
 }

@@ -93,7 +93,7 @@ internal class ChestMenuTabs : Feature
                 select new TabComponent(
                     new(
                         new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                        this.Helper.Content.Load<Texture2D>(tab.Value[1], ContentSource.GameContent),
+                        this.Helper.GameContent.Load<Texture2D>(tab.Value[1]),
                         new(16 * int.Parse(tab.Value[2]), 0, 16, 16),
                         Game1.pixelZoom)
                     {
@@ -148,7 +148,7 @@ internal class ChestMenuTabs : Feature
 
     private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
     {
-        if (this.Menu is null)
+        if (this.Menu is null || Game1.activeClickableMenu != this.Menu)
         {
             return;
         }

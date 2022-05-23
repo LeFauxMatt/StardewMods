@@ -48,7 +48,7 @@ internal class CategorizeChest : Feature
         get => this._configureButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, Game1.tileSize, Game1.tileSize),
-                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
+                this.Helper.GameContent.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons"),
                 new(0, 0, 16, 16),
                 Game1.pixelZoom)
             {
@@ -160,7 +160,7 @@ internal class CategorizeChest : Feature
 
     private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
     {
-        if (this.CurrentStorage is null || e.Button is not SButton.MouseLeft && !e.Button.IsActionButton())
+        if (this.CurrentStorage is null || (e.Button is not SButton.MouseLeft && !e.Button.IsActionButton()))
         {
             return;
         }
