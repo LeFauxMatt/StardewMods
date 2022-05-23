@@ -2,9 +2,16 @@
     <Import Project="..\build\common.targets"/>
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
-        <Version>1.7.0</Version>
+        <Name>Better Chests</Name>
+        <Author>furyx639</Author>
+        <Description>Framework that adds new features to chests.</Description>
+        <Version>1.7.3</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.BetterChests</RootNamespace>
+        <UniqueId>furyx639.BetterChests</UniqueId>
+        <MinimumApiVersion>3.13.0</MinimumApiVersion>
+        <UpdateKeys>Nexus:9791</UpdateKeys>
+        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.0"/>

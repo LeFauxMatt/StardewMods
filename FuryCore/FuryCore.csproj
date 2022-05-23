@@ -1,12 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
     <PropertyGroup>
-        <Version>1.6.0</Version>
+        <Name>FuryCore</Name>
+        <Author>furyx639</Author>
+        <Description>Framework used by my other mods.</Description>
+        <Version>1.6.3</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.FuryCore</RootNamespace>
+        <UniqueId>furyx639.FuryCore</UniqueId>
+        <MinimumApiVersion>3.13.0</MinimumApiVersion>
+        <UpdateKeys>Nexus:10696</UpdateKeys>
+        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.0"/>
+        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.0" />
     </ItemGroup>
 </Project>

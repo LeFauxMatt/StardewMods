@@ -11,7 +11,8 @@
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.0"/>
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1"/>
+        <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="1.0.3"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376">
