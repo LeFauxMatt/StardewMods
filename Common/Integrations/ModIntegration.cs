@@ -13,10 +13,14 @@ internal abstract class ModIntegration<T>
     /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     /// <param name="modUniqueId">The unique id of the external mod.</param>
-    internal ModIntegration(IModRegistry modRegistry, string modUniqueId)
+    /// <param name="modVersion">The minimum supported version.</param>
+    internal ModIntegration(IModRegistry modRegistry, string modUniqueId, string modVersion = "")
     {
         this.ModRegistry = modRegistry;
         this.UniqueId = modUniqueId;
+        this.Version = string.IsNullOrWhiteSpace(modVersion)
+            ? null
+            : modVersion;
         this._modAPI = new(() => this.ModRegistry.GetApi<T>(this.UniqueId));
     }
 
@@ -29,13 +33,18 @@ internal abstract class ModIntegration<T>
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
     protected internal bool IsLoaded
     {
-        get => this.ModRegistry.IsLoaded(this.UniqueId);
+        get => this.ModRegistry.IsLoaded(this.UniqueId) && (this.Version is null || this.ModRegistry.Get(this.UniqueId)?.Manifest.Version.IsOlderThan(this.Version) == true);
     }
 
     /// <summary>
     ///     Gets the Unique Id for this mod.
     /// </summary>
     protected internal string UniqueId { get; }
+
+    /// <summary>
+    ///     Gets the minimum supported version for this mod.
+    /// </summary>
+    protected internal string Version { get; }
 
     private IModRegistry ModRegistry { get; }
 }

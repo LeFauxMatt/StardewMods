@@ -90,6 +90,7 @@ internal abstract class Feature : IModService
             CraftFromChest => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled,
             CustomColorPicker => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled,
             FilterItems => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled,
+            InventoryProviderForBetterCrafting => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled && this.Integrations.IsLoaded("Better Crafting"),
             MenuForShippingBin => this.Config.CategorizeChest || this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled || this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled || this.Config.DefaultChest.SearchItems != FeatureOption.Disabled,
             OpenHeldChest => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled,
             OrganizeChest => this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled,
