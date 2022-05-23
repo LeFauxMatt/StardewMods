@@ -1,0 +1,23 @@
+﻿{
+  "command.config-tool.documentation": "Konfigurációs eszközt, mely a játékobjektumok konfigurálására használható.",
+  "config.configure.name": "Objektum konfigurálás",
+  "config.configure.tooltip": "A szemben lévő vagy a kézben tartott aktuális objektum konfigurálása.",
+  "config.scroll-menu-overflow.name": "Görgetés menü túlfutás",
+  "config.scroll-menu-overflow.tooltip": "Lehetővé teszi a görgetést, ha az elemek túllépik a menü kapacitását.",
+  "config.toolbar-icons.name": "Eszköztár ikonok",
+  "config.toolbar-icons.tooltip": "Lehetővé teszi az ikonok elhelyezését az eszköztár mellé.",
+  "section.custom-tags.name": "Egyedi szövegkörnyezet címkék",
+  "section.custom-tags.tooltip": "Engedélyezi az egyedi szövegkörnyezet címkéket, hogy hozzá lehessen adni a játékban lévő tárgyakhoz.",
+  "section.general.name": "Általános",
+  "section.general.description": "Általános testreszabási lehetőségek a funkciókhoz.",
+  "tag.category-artifact.name": "Ereklye kategória",
+  "tag.category-artifact.tooltip": "Egyedi szövegkörnyezet címke az ereklye kategóriához.",
+  "tag.category-furniture.name": "Bútor kategória",
+  "tag.category-furniture.tooltip": "Egyedi szövegkörnyezet címke a bútor kategóriához.",
+  "tag.donate-bundle.name": "Adomány csomag",
+  "tag.donate-bundle.tooltip": "Egyedi szövegkörnyezet címke a közösségi központnak adományozható tárgyakhoz.",
+  "tag.donate-museum.name": "Múzeum adomány",
+  "tag.donate-museum.tooltip": "Egyedi szövegkörnyezet címke a múzeumnak adományozható tárgyakhoz.",
+  "tool.config-tool.name": "Konfigurációs eszköz",
+  "tool.config-tool.description": "Ez az eszköz a játékobjektumok konfigurálására használható."
+}
