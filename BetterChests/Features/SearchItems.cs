@@ -39,6 +39,7 @@ internal class SearchItems : Feature
     private readonly PerScreen<ClickableComponent> _searchArea = new();
     private readonly PerScreen<TextBox> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent> _searchIcon = new();
+    private readonly PerScreen<string> _searchText = new(() => string.Empty);
     private readonly PerScreen<IStorageData> _storageData = new();
 
     /// <summary>
@@ -160,7 +161,7 @@ internal class SearchItems : Feature
 
     private TextBox SearchField
     {
-        get => this._searchField.Value ??= new(this.Helper.Content.Load<Texture2D>("LooseSprites\\textBox", ContentSource.GameContent), null, Game1.smallFont, Game1.textColor);
+        get => this._searchField.Value ??= new(this.Helper.GameContent.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor);
     }
 
     private ClickableTextureComponent SearchIcon
@@ -168,7 +169,19 @@ internal class SearchItems : Feature
         get => this._searchIcon.Value ??= new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f);
     }
 
-    private string SearchText { get; set; }
+    private string SearchText
+    {
+        set
+        {
+            if (this._searchText.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            this.ItemMatcher.StringValue = value;
+            this._searchText.Value = value;
+        }
+    }
 
     private IStorageData StorageData
     {
@@ -435,7 +448,7 @@ internal class SearchItems : Feature
             case ItemSelectionMenu when this.Config.DefaultChest.SearchItems == FeatureOption.Enabled:
             case not null when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.SearchItems == FeatureOption.Enabled:
                 e.AddFilter(this.ItemMatcher);
-                this.ItemMatcher.StringValue = this.SearchText = this.SearchField.Text;
+                this.SearchText = this.SearchField.Text;
                 break;
         }
     }
@@ -451,10 +464,9 @@ internal class SearchItems : Feature
 
     private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
     {
-        if (this.StorageData is not null && this.SearchField.Text != this.SearchText)
+        if (this.StorageData is not null)
         {
             this.SearchText = this.SearchField.Text;
-            this.ItemMatcher.StringValue = this.SearchText;
         }
     }
 }

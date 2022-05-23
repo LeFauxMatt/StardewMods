@@ -23,7 +23,7 @@ internal class MultipleChestCraftingPage
     {
         this.Storages = storages.ToList();
         this.TimeOut = 60;
-        this.Chests = new(this.Storages.Select(storage => (Chest)storage.Value.Context));
+        this.Chests = new(this.Storages.Where(storage => storage.Key is LocationObject).Select(storage => (Chest)storage.Value.Context));
         foreach (var chest in this.Chests)
         {
             chest.mutex.RequestLock();

@@ -1,15 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\build\common.targets"/>
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
-    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared"/>
     <PropertyGroup>
         <Version>1.7.2</Version>
         <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="..\.editorconfig" Link=".editorconfig"/>
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
+        </Reference>
     </ItemGroup>
 </Project>

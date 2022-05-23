@@ -22,6 +22,7 @@ using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
+using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -44,7 +45,6 @@ internal class CraftFromChest : Feature
     public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services)
         : base(config, helper, services)
     {
-        CraftFromChest.Instance = this;
         this.BetterCrafting = new(this.Helper.ModRegistry);
         this._harmony = services.Lazy<IHarmonyHelper>(
             harmony =>
@@ -64,20 +64,6 @@ internal class CraftFromChest : Feature
                             nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
                             PatchType.Postfix),
                     });
-
-                if (!this.BetterCrafting.IsLoaded)
-                {
-                    return;
-                }
-
-                foreach (var constructor in this.BetterCrafting.API.GetMenuType().GetConstructors())
-                {
-                    harmony.AddPatch(
-                        this.Id,
-                        constructor,
-                        typeof(CraftFromChest),
-                        nameof(CraftFromChest.BetterCraftingPage_constructor_prefix));
-                }
             });
         this._toolbarIcons = services.Lazy<IHudComponents>();
     }
@@ -134,11 +120,30 @@ internal class CraftFromChest : Feature
                 }
             }
 
+            foreach (var (inventoryItem, inventoryStorage) in this.ManagedObjects.InventoryStorages)
+            {
+                // Disabled in config
+                if (inventoryStorage.CraftFromChest == FeatureOptionRange.Disabled || inventoryStorage.OpenHeldChest == FeatureOption.Disabled || inventoryStorage.Context is not Chest)
+                {
+                    continue;
+                }
+
+                if (inventoryStorage.Context is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+                {
+                    if (junimoChest)
+                    {
+                        continue;
+                    }
+
+                    junimoChest = true;
+                }
+
+                storages.Add(new(inventoryItem, inventoryStorage));
+            }
+
             return storages.OrderByDescending(storage => storage.Value.StashToChestPriority).ToList();
         }
     }
-
-    private static CraftFromChest Instance { get; set; }
 
     private BetterCraftingIntegration BetterCrafting { get; }
 
@@ -147,7 +152,7 @@ internal class CraftFromChest : Feature
         get => this._craftButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, 32, 32),
-                this.Helper.Content.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons", ContentSource.GameContent),
+                this.Helper.GameContent.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons"),
                 new(32, 0, 16, 16),
                 2f)
             {
@@ -193,39 +198,6 @@ internal class CraftFromChest : Feature
         this.HudComponents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void BetterCraftingPage_constructor_prefix(ref IList<Chest> material_containers)
-    {
-        var chests = new List<Chest>(
-            from inventoryStorage in CraftFromChest.Instance.ManagedObjects.InventoryStorages
-            where inventoryStorage.Value.CraftFromChest >= FeatureOptionRange.Inventory
-                  && inventoryStorage.Value.OpenHeldChest == FeatureOption.Enabled
-                  && inventoryStorage.Value.Context is Chest
-            select (Chest)inventoryStorage.Value.Context);
-        if (!chests.Any())
-        {
-            return;
-        }
-
-        material_containers ??= new List<Chest>();
-        chests.AddRange(material_containers);
-
-        // Ensure only one Junimo Chest
-        var junimoChest = chests.FirstOrDefault(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
-        if (junimoChest is not null)
-        {
-            chests.RemoveAll(chest => chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest);
-            chests.Add(junimoChest);
-        }
-
-        material_containers.Clear();
-        foreach (var chest in chests)
-        {
-            material_containers.Add(chest);
-        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -348,7 +320,14 @@ internal class CraftFromChest : Feature
 
         if (this.BetterCrafting.IsLoaded)
         {
-            this.BetterCrafting.API.OpenCraftingMenu(false, storages.Select(storage => (Chest)storage.Value.Context).ToList());
+            this.BetterCrafting.API.OpenCraftingMenu(
+                false,
+                false,
+                null,
+                null,
+                null,
+                false,
+                storages.Select(storage => new Tuple<object, GameLocation>(storage, storage.Key is LocationObject locationObject ? locationObject.Location : Game1.currentLocation)).ToList());
             return;
         }
 

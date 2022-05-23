@@ -21,6 +21,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
+// TODO: Prevent losing chests if passed out
 /// <inheritdoc />
 internal class CarryChest : Feature
 {
@@ -356,7 +357,7 @@ internal class CarryChest : Feature
     [EventPriority(EventPriority.High)]
     private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is not null || Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is not null || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }

@@ -77,7 +77,7 @@ internal class CollectOutputs : Feature
         get => this._collectButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, 32, 32),
-                this.Helper.Content.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons", ContentSource.GameContent),
+                this.Helper.GameContent.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons"),
                 new(0, 0, 16, 16),
                 2f)
             {

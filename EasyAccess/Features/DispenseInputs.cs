@@ -78,7 +78,7 @@ internal class DispenseInputs : Feature
         get => this._dispenseButton.Value ??= new CustomClickableComponent(
             new(
                 new(0, 0, 32, 32),
-                this.Helper.Content.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons", ContentSource.GameContent),
+                this.Helper.GameContent.Load<Texture2D>($"{EasyAccess.ModUniqueId}/Icons"),
                 new(16, 0, 16, 16),
                 2f)
             {

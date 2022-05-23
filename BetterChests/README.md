@@ -254,13 +254,13 @@ placed chest.
 
 ### Item Tags
 
-The game adds various [Context Tags](https://stardewcommunitywiki.com/Modding:Context_tags)
+The game adds various [Context Tags](https://stardewvalleywiki.com/Modding:Items#Context_tags)
 to each item which are used throughout this mod.
 
 There are a few ways to see what context tags each item contains:
 
 * Enter the console command `debug listtags` to show all tags for the currently held item.
-* Refer to the [Modding Docs](https://stardewcommunitywiki.com/Modding:Context_tags) for some tags (note may be
+* Refer to the [Modding Docs](https://stardewvalleywiki.com/Modding:Items#Context_tags) for some tags (note may be
   outdated).
 * Install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541),
   enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) in its
@@ -542,7 +542,7 @@ See [here](i18n/default.json) for the base translation file.
 
 | Language                   | Status            | Credits     |
 |:---------------------------|:------------------|:------------|
-| Chinese                    | ❌️ Not Translated |             |
+| [Chinese](i18n/zh.json)    | ✔️ Complete       | JingGongGi  |
 | [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus      |
 | [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever   |
 | [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |

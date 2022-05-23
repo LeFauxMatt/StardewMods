@@ -8,7 +8,6 @@ using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
@@ -19,7 +18,7 @@ using StardewValley.Buildings;
 using StardewValley.Locations;
 
 /// <inheritdoc cref="IModService" />
-internal class AssetHandler : IModService, IAssetLoader
+internal class AssetHandler : IModService
 {
     private const string CraftablesData = "Data/BigCraftablesInformation";
 
@@ -36,11 +35,11 @@ internal class AssetHandler : IModService, IAssetLoader
     {
         this.Config = config;
         this.Helper = helper;
-        this.Helper.Content.AssetLoaders.Add(this);
 
         this.InitChestData();
         this.InitTabData();
 
+        this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this.Helper.Events.GameLoop.DayEnding += this.OnDayEnding;
         this.Helper.Events.Multiplayer.ModMessageReceived += this.OnModMessageReceived;
         if (Context.IsMainPlayer)
@@ -55,7 +54,7 @@ internal class AssetHandler : IModService, IAssetLoader
     public IReadOnlyDictionary<string, IStorageData> ChestData
     {
         get => this._cachedChestData ??= (
-                from data in this.Helper.Content.Load<IDictionary<string, IDictionary<string, string>>>($"{BetterChests.ModUniqueId}/Chests", ContentSource.GameContent)
+                from data in this.Helper.GameContent.Load<IDictionary<string, IDictionary<string, string>>>($"{BetterChests.ModUniqueId}/Chests")
                 select (data.Key, Value: new SerializedStorageData(data.Value)))
             .ToDictionary(data => data.Key, data => (IStorageData)data.Value);
     }
@@ -67,7 +66,7 @@ internal class AssetHandler : IModService, IAssetLoader
     {
         get => this._cachedTabData ??= (
                 from tab in
-                    from data in this.Helper.Content.Load<IDictionary<string, string>>($"{BetterChests.ModUniqueId}/Tabs", ContentSource.GameContent)
+                    from data in this.Helper.GameContent.Load<IDictionary<string, string>>($"{BetterChests.ModUniqueId}/Tabs")
                     select (data.Key, info: data.Value.Split('/'))
                 orderby int.Parse(tab.info[2]), tab.info[0]
                 select (tab.Key, tab.info))
@@ -80,7 +79,7 @@ internal class AssetHandler : IModService, IAssetLoader
 
     private IReadOnlyDictionary<int, string[]> Craftables
     {
-        get => this._cachedCraftables ??= this.Helper.Content.Load<IDictionary<int, string>>(AssetHandler.CraftablesData, ContentSource.GameContent)
+        get => this._cachedCraftables ??= this.Helper.GameContent.Load<IDictionary<int, string>>(AssetHandler.CraftablesData)
                                               .ToDictionary(
                                                   info => info.Key,
                                                   info => info.Value.Split('/'));
@@ -119,15 +118,6 @@ internal class AssetHandler : IModService, IAssetLoader
     public void AddModDataKey(string key)
     {
         this.ModDataKeys.Add(key);
-    }
-
-    /// <inheritdoc />
-    public bool CanLoad<T>(IAssetInfo asset)
-    {
-        return asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Chests")
-               || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Icons")
-               || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs")
-               || asset.AssetNameEquals($"{BetterChests.ModUniqueId}/Tabs/Texture");
     }
 
     /// <summary>
@@ -192,32 +182,6 @@ internal class AssetHandler : IModService, IAssetLoader
         }
 
         return this.Craftables.SingleOrDefault(info => info.Key == item.ParentSheetIndex).Value?[0];
-    }
-
-    /// <inheritdoc />
-    public T Load<T>(IAssetInfo asset)
-    {
-        var segment = PathUtilities.GetSegments(asset.AssetName);
-        return segment[1] switch
-        {
-            "Chests" when segment.Length == 2
-                => (T)this.LocalChestData,
-            "Icons" when segment.Length == 2
-                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/icons.png"),
-            "Tabs" when segment.Length == 3 && segment[2] == "Texture"
-                => (T)(object)this.Helper.Content.Load<Texture2D>("assets/tabs.png"),
-            "Tabs" when segment.Length == 2
-                => (T)(object)this.LocalTabData.ToDictionary(
-                    data => data.Key,
-                    data =>
-                    {
-                        var (key, value) = data;
-                        var info = value.Split('/');
-                        info[0] = this.Helper.Translation.Get($"tabs.{key}.name");
-                        return string.Join('/', info);
-                    }),
-            _ => default,
-        };
     }
 
     /// <summary>
@@ -291,7 +255,7 @@ internal class AssetHandler : IModService, IAssetLoader
         // Load Tab Data
         try
         {
-            this.LocalTabData = this.Helper.Content.Load<Dictionary<string, string>>("assets/tabs.json");
+            this.LocalTabData = this.Helper.ModContent.Load<Dictionary<string, string>>("assets/tabs.json");
         }
         catch (Exception)
         {
@@ -360,6 +324,36 @@ internal class AssetHandler : IModService, IAssetLoader
             {
                 this.LocalChestData.Add(key, value);
             }
+        }
+    }
+
+    private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
+    {
+        if (e.Name.IsEquivalentTo($"{BetterChests.ModUniqueId}/Chests"))
+        {
+            e.LoadFrom(() => this.LocalChestData, AssetLoadPriority.Exclusive);
+        }
+        else if (e.Name.IsEquivalentTo($"{BetterChests.ModUniqueId}/Icons"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+        }
+        else if (e.Name.IsEquivalentTo($"{BetterChests.ModUniqueId}/Tabs"))
+        {
+            e.LoadFrom(
+                () => this.LocalTabData.ToDictionary(
+                    data => data.Key,
+                    data =>
+                    {
+                        var (key, value) = data;
+                        var info = value.Split('/');
+                        info[0] = this.Helper.Translation.Get($"tabs.{key}.name");
+                        return string.Join('/', info);
+                    }),
+                AssetLoadPriority.Exclusive);
+        }
+        else if (e.Name.IsEquivalentTo($"{BetterChests.ModUniqueId}/Tabs/Texture"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
         }
     }
 

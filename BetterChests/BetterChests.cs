@@ -79,6 +79,7 @@ public class BetterChests : Mod
             new CraftFromChest(this.Config, this.Helper, this.Services),
             new CustomColorPicker(this.Config, this.Helper, this.Services),
             new FilterItems(this.Config, this.Helper, this.Services),
+            new InventoryProviderForBetterCrafting(this.Config, this.Helper, this.Services),
             new MenuForShippingBin(this.Config, this.Helper, this.Services),
             new OpenHeldChest(this.Config, this.Helper, this.Services),
             new OrganizeChest(this.Config, this.Helper, this.Services),

@@ -94,7 +94,7 @@ internal class HudComponents : IHudComponents, IModService
                 select new CustomClickableComponent(
                     new(
                         new(0, 0, 32, 32),
-                        this.Helper.Content.Load<Texture2D>(icon.Value[1], ContentSource.GameContent),
+                        this.Helper.GameContent.Load<Texture2D>(icon.Value[1]),
                         new(16 * int.Parse(icon.Value[2]), 0, 16, 16),
                         2f)
                     {
