@@ -1,4 +1,5 @@
 namespace Common.Integrations.BetterCrafting;
+
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;

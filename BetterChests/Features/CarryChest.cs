@@ -63,6 +63,11 @@ internal class CarryChest : Feature
                             nameof(CarryChest.InventoryMenu_rightClick_postfix),
                             PatchType.Postfix),
                         new(
+                            AccessTools.Method(typeof(Item), nameof(Item.canBeDropped)),
+                            typeof(CarryChest),
+                            nameof(CarryChest.Item_canBeDropped_postfix),
+                            PatchType.Postfix),
+                        new(
                             AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
                             typeof(CarryChest),
                             nameof(CarryChest.Item_canStackWith_postfix),
@@ -198,6 +203,22 @@ internal class CarryChest : Feature
         if (item is not null)
         {
             __state = new(item, slotNumber);
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void Item_canBeDropped_postfix(Item __instance, ref bool __result)
+    {
+        if (!__result || __instance is not Chest chest)
+        {
+            return;
+        }
+
+        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+            && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+        {
+            __result = false;
         }
     }
 

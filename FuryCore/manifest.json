@@ -1,11 +1,11 @@
 {
   "Name": "FuryCore",
   "Author": "furyx639",
-  "Version": "1.6.3",
+  "Version": "1.6.4-beta.1",
   "Description": "Framework used by my other mods.",
   "UniqueID": "furyx639.FuryCore",
   "EntryDll": "FuryCore.dll",
-  "MinimumApiVersion": "3.13.0",
+  "MinimumApiVersion": "3.14.0",
   "UpdateKeys": [
     "Nexus:10696"
   ]

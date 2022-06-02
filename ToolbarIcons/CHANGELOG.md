@@ -7,7 +7,6 @@
 * Added Event Lookup
 * Added Reset Terrain Features
 
-
 ## 1.0.0 (February 15, 2022)
 
 * Initial Version

@@ -221,7 +221,7 @@ internal class AssetHandler : IModService
     {
         if (e.Name.IsEquivalentTo($"{EasyAccess.ModUniqueId}/Producers"))
         {
-            e.LoadFrom(() => this.LocalProducerData,  AssetLoadPriority.Exclusive);
+            e.LoadFrom(() => this.LocalProducerData, AssetLoadPriority.Exclusive);
         }
         else if (e.Name.IsEquivalentTo($"{EasyAccess.ModUniqueId}/Icons"))
         {

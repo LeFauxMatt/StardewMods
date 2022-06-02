@@ -38,12 +38,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\Ea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TooManyAnimals", "TooManyAnimals\TooManyAnimals.csproj", "{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdinaryCapsule", "OrdinaryCapsule\OrdinaryCapsule.csproj", "{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdinaryCapsule", "OrdinaryCapsule\OrdinaryCapsule.csproj", "{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JasonShuffle", "JasonShuffle\JasonShuffle.csproj", "{155F13A9-E725-4634-B72C-615FA0E0A8B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JasonShuffle", "JasonShuffle\JasonShuffle.csproj", "{155F13A9-E725-4634-B72C-615FA0E0A8B0}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Common\Common.projitems*{155f13a9-e725-4634-b72c-615fa0e0a8b0}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5

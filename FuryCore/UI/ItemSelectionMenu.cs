@@ -19,7 +19,6 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 // TODO: Add clear all button
-
 /// <summary>
 ///     A menu for selecting items.
 /// </summary>

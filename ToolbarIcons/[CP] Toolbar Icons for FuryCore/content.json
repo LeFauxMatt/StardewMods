@@ -264,6 +264,6 @@
         "EnableResetTerrainFeatures": true,
         "HasMod": "MabelSyrup.ResetTerrainFeatures"
       }
-    },
+    }
   ]
 }
