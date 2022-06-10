@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Integrations.BetterCrafting;
+using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -21,7 +22,6 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.GameObjects;
@@ -29,12 +29,13 @@ using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using PatchType = CommonHarmony.Enums.PatchType;
+using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class CraftFromChest : Feature
 {
     private readonly PerScreen<IClickableComponent> _craftButton = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
     private readonly Lazy<IHudComponents> _toolbarIcons;
 
@@ -44,28 +45,26 @@ internal class CraftFromChest : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         this.BetterCrafting = new(this.Helper.ModRegistry);
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
+        this.Harmony = harmony;
+        this.Harmony.AddPatches(
+            this.Id,
+            new SavedPatch[]
             {
-                harmony.AddPatches(
-                    this.Id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
-                            typeof(CraftFromChest),
-                            nameof(CraftFromChest.CraftingRecipe_consumeIngredients_transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
-                            typeof(CraftFromChest),
-                            nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
-                            PatchType.Postfix),
-                    });
+                new(
+                    AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.consumeIngredients)),
+                    typeof(CraftFromChest),
+                    nameof(CraftFromChest.CraftingRecipe_consumeIngredients_transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(CraftingPage), "getContainerContents"),
+                    typeof(CraftFromChest),
+                    nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
+                    PatchType.Postfix),
             });
         this._toolbarIcons = services.Lazy<IHudComponents>();
     }
@@ -164,10 +163,7 @@ internal class CraftFromChest : Feature
             ComponentArea.Right);
     }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     private IHudComponents HudComponents
     {

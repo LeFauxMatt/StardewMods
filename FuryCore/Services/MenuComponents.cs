@@ -6,6 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CommonHarmony.Enums;
+using CommonHarmony.Models;
+using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -34,7 +37,8 @@ internal class MenuComponents : IMenuComponents, IModService
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public MenuComponents(IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public MenuComponents(IModHelper helper, IModServices services, HarmonyHelper harmony)
     {
         MenuComponents.Instance = this;
         this.Helper = helper;
@@ -50,22 +54,18 @@ internal class MenuComponents : IMenuComponents, IModService
                 events.RenderingClickableMenu += this.OnRenderingClickableMenu;
             });
 
-        services.Lazy<IHarmonyHelper>(
-            harmonyHelper =>
+        var id = $"{FuryCore.ModUniqueId}.{nameof(MenuComponents)}";
+        harmony.AddPatches(
+            id,
+            new SavedPatch[]
             {
-                var id = $"{FuryCore.ModUniqueId}.{nameof(MenuComponents)}";
-                harmonyHelper.AddPatches(
-                    id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-                            typeof(MenuComponents),
-                            nameof(MenuComponents.ItemGrabMenu_RepositionSideButtons_prefix),
-                            PatchType.Prefix),
-                    });
-                harmonyHelper.ApplyPatches(id);
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
+                    typeof(MenuComponents),
+                    nameof(MenuComponents.ItemGrabMenu_RepositionSideButtons_prefix),
+                    PatchType.Prefix),
             });
+        harmony.ApplyPatches(id);
     }
 
     /// <inheritdoc />

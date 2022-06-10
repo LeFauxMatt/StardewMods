@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CommonHarmony.Enums;
+using CommonHarmony.Services;
 using HarmonyLib;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
@@ -24,23 +26,19 @@ internal class CustomTags : ICustomTags, IModService
     ///     Initializes a new instance of the <see cref="CustomTags" /> class.
     /// </summary>
     /// <param name="config">The data for player configured mod options.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public CustomTags(ConfigData config, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public CustomTags(ConfigData config, HarmonyHelper harmony)
     {
         CustomTags.Instance = this;
 
-        services.Lazy<IHarmonyHelper>(
-            harmonyHelper =>
-            {
-                var id = $"{FuryCore.ModUniqueId}.{nameof(CustomTags)}";
-                harmonyHelper.AddPatch(
-                    id,
-                    AccessTools.Method(typeof(Item), nameof(Item.GetContextTags)),
-                    typeof(CustomTags),
-                    nameof(CustomTags.Item_GetContextTags_Postfix),
-                    PatchType.Postfix);
-                harmonyHelper.ApplyPatches(id);
-            });
+        var id = $"{FuryCore.ModUniqueId}.{nameof(CustomTags)}";
+        harmony.AddPatch(
+            id,
+            AccessTools.Method(typeof(Item), nameof(Item.GetContextTags)),
+            typeof(CustomTags),
+            nameof(CustomTags.Item_GetContextTags_Postfix),
+            PatchType.Postfix);
+        harmony.ApplyPatches(id);
 
         foreach (var customTag in config.CustomTags)
         {

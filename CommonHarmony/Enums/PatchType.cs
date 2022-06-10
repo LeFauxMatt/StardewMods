@@ -1,9 +1,6 @@
-﻿namespace StardewMods.FuryCore.Enums;
+﻿namespace CommonHarmony.Enums;
 
-/// <summary>
-///     Type type of patch to apply.
-/// </summary>
-public enum PatchType
+internal enum PatchType
 {
     /// <summary>Patches before the existing method.</summary>
     Prefix,

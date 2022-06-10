@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
+using CommonHarmony.Enums;
+using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,15 +18,14 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Attributes;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
-using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
+using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class SearchItems : Feature
@@ -33,7 +34,6 @@ internal class SearchItems : Feature
 
     private readonly PerScreen<IGameObject> _context = new();
     private readonly PerScreen<int> _currentPadding = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<ItemMatcher> _itemMatcher = new();
     private readonly PerScreen<MenuWithInventory> _menu = new();
     private readonly Lazy<IMenuItems> _menuItems;
@@ -50,33 +50,31 @@ internal class SearchItems : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public SearchItems(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public SearchItems(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         SearchItems.Instance = this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
-            {
-                var drawMenuWithInventory = new[]
-                {
-                    typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
-                };
+        this.Harmony = harmony;
+        var drawMenuWithInventory = new[]
+        {
+            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+        };
 
-                harmony.AddPatches(
-                    this.Id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                            typeof(SearchItems),
-                            nameof(SearchItems.ItemGrabMenu_draw_transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
-                            typeof(SearchItems),
-                            nameof(SearchItems.MenuWithInventory_draw_transpiler),
-                            PatchType.Transpiler),
-                    });
+        this.Harmony.AddPatches(
+            this.Id,
+            new SavedPatch[]
+            {
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                    typeof(SearchItems),
+                    nameof(SearchItems.ItemGrabMenu_draw_transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
+                    typeof(SearchItems),
+                    nameof(SearchItems.MenuWithInventory_draw_transpiler),
+                    PatchType.Transpiler),
             });
         this._menuItems = services.Lazy<IMenuItems>();
     }
@@ -121,10 +119,7 @@ internal class SearchItems : Feature
         }
     }
 
-    private IHarmonyHelper HarmonyHelper
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     private ItemMatcher ItemMatcher
     {
@@ -194,7 +189,7 @@ internal class SearchItems : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HarmonyHelper.ApplyPatches(this.Id);
+        this.Harmony.ApplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.CustomEvents.RenderedClickableMenu += this.OnRenderedClickableMenu;
         this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
@@ -205,7 +200,7 @@ internal class SearchItems : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HarmonyHelper.UnapplyPatches(this.Id);
+        this.Harmony.UnapplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.CustomEvents.RenderedClickableMenu -= this.OnRenderedClickableMenu;
         this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;

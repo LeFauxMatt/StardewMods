@@ -2,11 +2,11 @@
 
 namespace StardewMods.BetterChests.Features;
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.Helpers;
+using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -17,18 +17,18 @@ using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
-using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using PatchType = CommonHarmony.Enums.PatchType;
+using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class CustomColorPicker : Feature
 {
     private readonly PerScreen<HslColorPicker> _colorPicker = new();
     private readonly PerScreen<IGameObject> _context = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CustomColorPicker" /> class.
@@ -36,53 +36,51 @@ internal class CustomColorPicker : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public CustomColorPicker(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public CustomColorPicker(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         CustomColorPicker.Instance = this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
+        this.Harmony = harmony;
+        this.Harmony.AddPatches(
+            this.Id,
+            new SavedPatch[]
             {
-                harmony.AddPatches(
-                    this.Id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getCurrentColor)),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.DiscreteColorPicker_GetCurrentColor_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.DiscreteColorPicker_GetColorFromSelection_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.DiscreteColorPicker_GetSelectionFromColor_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                            typeof(CustomColorPicker),
-                            nameof(CustomColorPicker.ItemGrabMenu_setSourceItem_postfix),
-                            PatchType.Postfix),
-                    });
+                new(
+                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getCurrentColor)),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.DiscreteColorPicker_GetCurrentColor_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.DiscreteColorPicker_GetColorFromSelection_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.DiscreteColorPicker_GetSelectionFromColor_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                    typeof(CustomColorPicker),
+                    nameof(CustomColorPicker.ItemGrabMenu_setSourceItem_postfix),
+                    PatchType.Postfix),
             });
     }
 
@@ -100,10 +98,7 @@ internal class CustomColorPicker : Feature
         set => this._context.Value = value;
     }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     /// <inheritdoc />
     protected override void Activate()

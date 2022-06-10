@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.FuryCore.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Vanilla Storages with their ParentSheetIndex.
 /// </summary>
+[EnumExtensions]
 public enum VanillaStorageObjects
 {
     /// <summary>Chest.</summary>

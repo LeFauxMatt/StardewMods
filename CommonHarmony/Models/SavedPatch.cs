@@ -1,16 +1,14 @@
-#nullable disable
-
-namespace StardewMods.FuryCore.Models;
+﻿namespace CommonHarmony.Models;
 
 using System;
 using System.Reflection;
+using CommonHarmony.Enums;
 using HarmonyLib;
-using StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Stores info about Harmony patches.
 /// </summary>
-public class SavedPatch
+internal class SavedPatch
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="SavedPatch" /> class.

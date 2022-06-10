@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Common.Helpers;
+using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Enums;
@@ -19,7 +20,6 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal class FilterItems : Feature
 {
-    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
@@ -28,43 +28,39 @@ internal class FilterItems : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public FilterItems(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public FilterItems(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         FilterItems.Instance = this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
-            {
-                harmony.AddPatch(
-                    this.Id,
-                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                    typeof(FilterItems),
-                    nameof(FilterItems.Chest_addItem_prefix));
+        this.Harmony = harmony;
+        this.Harmony.AddPatch(
+            this.Id,
+            AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
+            typeof(FilterItems),
+            nameof(FilterItems.Chest_addItem_prefix));
 
-                if (this.Integrations.IsLoaded("Automate"))
-                {
-                    var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
-                        .GetType(ModIntegrations.AutomateChestContainerType)?
-                        .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-                    if (storeMethod is not null)
-                    {
-                        harmony.AddPatch(
-                            this.Id,
-                            storeMethod,
-                            typeof(FilterItems),
-                            nameof(FilterItems.Automate_Store_prefix));
-                    }
-                }
-            });
+        if (this.Integrations.IsLoaded("Automate"))
+        {
+            var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
+                .GetType(ModIntegrations.AutomateChestContainerType)?
+                .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+            if (storeMethod is not null)
+            {
+                this.Harmony.AddPatch(
+                    this.Id,
+                    storeMethod,
+                    typeof(FilterItems),
+                    nameof(FilterItems.Automate_Store_prefix));
+            }
+        }
+
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static FilterItems Instance { get; set; }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     private IMenuItems MenuItems
     {

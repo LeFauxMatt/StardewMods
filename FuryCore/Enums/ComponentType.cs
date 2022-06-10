@@ -1,10 +1,12 @@
 ﻿namespace StardewMods.FuryCore.Enums;
 
+using NetEscapades.EnumGenerators;
 using StardewValley.Menus;
 
 /// <summary>
 ///     <see cref="ClickableTextureComponent" /> that are added to the <see cref="ItemGrabMenu" />.
 /// </summary>
+[EnumExtensions]
 public enum ComponentType
 {
     /// <summary>A custom component.</summary>

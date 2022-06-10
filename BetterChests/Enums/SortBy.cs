@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.BetterChests.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Sorting type for items.
 /// </summary>
+[EnumExtensions]
 internal enum SortBy
 {
     /// <summary>Default sorting.</summary>

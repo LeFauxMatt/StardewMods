@@ -2,16 +2,16 @@
 
 namespace StardewMods.BetterChests.Features;
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CommonHarmony.Enums;
+using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewValley;
@@ -22,7 +22,6 @@ using SObject = StardewValley.Object;
 internal class OrganizeChest : Feature
 {
     private readonly PerScreen<IManagedStorage> _currentStorage = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="OrganizeChest" /> class.
@@ -30,20 +29,18 @@ internal class OrganizeChest : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public OrganizeChest(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public OrganizeChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         OrganizeChest.Instance = this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
-            {
-                harmony.AddPatch(
-                    this.Id,
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
-                    typeof(OrganizeChest),
-                    nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_postfix),
-                    PatchType.Postfix);
-            });
+        this.Harmony = harmony;
+        this.Harmony.AddPatch(
+            this.Id,
+            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
+            typeof(OrganizeChest),
+            nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_postfix),
+            PatchType.Postfix);
     }
 
     private static OrganizeChest Instance { get; set; }
@@ -54,10 +51,7 @@ internal class OrganizeChest : Feature
         set => this._currentStorage.Value = value;
     }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     /// <summary>
     ///     Organizes items in a storage.

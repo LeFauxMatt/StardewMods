@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
+using CommonHarmony.Enums;
+using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,9 +16,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -24,11 +24,11 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 // TODO: Prevent losing chests if passed out
+
 /// <inheritdoc />
 internal class CarryChest : Feature
 {
     private const int WhichBuff = 69420;
-    private readonly Lazy<IHarmonyHelper> _harmony;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CarryChest" /> class.
@@ -36,67 +36,62 @@ internal class CarryChest : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public CarryChest(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public CarryChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         CarryChest.Instance ??= this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
+        this.Harmony = harmony;
+        this.Harmony.AddPatches(
+            this.Id,
+            new CommonHarmony.Models.SavedPatch[]
             {
-                harmony.AddPatches(
-                    this.Id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
-                            typeof(CarryChest),
-                            nameof(CarryChest.Chest_drawInMenu_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.InventoryMenu_rightClick_prefix),
-                            PatchType.Prefix),
-                        new(
-                            AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.InventoryMenu_rightClick_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(Item), nameof(Item.canBeDropped)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.Item_canBeDropped_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.Item_canStackWith_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.Object_drawWhenHeld_prefix),
-                            PatchType.Prefix),
-                        new(
-                            AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.Object_placementAction_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
-                            typeof(CarryChest),
-                            nameof(CarryChest.Utility_iterateChestsAndStorage_postfix),
-                            PatchType.Postfix),
-                    });
+                new(
+                    AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Chest_drawInMenu_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.InventoryMenu_rightClick_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.InventoryMenu_rightClick_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(Item), nameof(Item.canBeDropped)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Item_canBeDropped_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Item_canStackWith_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Object_drawWhenHeld_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Object_placementAction_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Utility_iterateChestsAndStorage_postfix),
+                    PatchType.Postfix),
             });
     }
 
     private static CarryChest Instance { get; set; }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     /// <summary>
     ///     Checks if the player should be overburdened while carrying a chest.

@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.BetterChests.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Indicates if a feature is enabled, disabled, or will inherit from a parent config.
 /// </summary>
+[EnumExtensions]
 internal enum FeatureOption
 {
     /// <summary>Feature is disabled.</summary>

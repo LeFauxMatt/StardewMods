@@ -3,7 +3,6 @@
 namespace StardewMods.TooManyAnimals.Models;
 
 using StardewModdingAPI;
-using StardewMods.FuryCore.Interfaces;
 using StardewMods.TooManyAnimals.Interfaces;
 
 /// <inheritdoc />
@@ -14,12 +13,10 @@ internal class ConfigModel : IConfigModel
     /// </summary>
     /// <param name="configData">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public ConfigModel(IConfigData configData, IModHelper helper, IModServices services)
+    public ConfigModel(IConfigData configData, IModHelper helper)
     {
         this.Data = configData;
         this.Helper = helper;
-        this.Services = services;
     }
 
     /// <inheritdoc />
@@ -39,8 +36,6 @@ internal class ConfigModel : IConfigModel
     private IConfigData Data { get; }
 
     private IModHelper Helper { get; }
-
-    private IModServices Services { get; }
 
     /// <inheritdoc />
     public void Reset()

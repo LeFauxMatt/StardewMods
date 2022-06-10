@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace StardewMods.FuryCore.Services;
+﻿namespace CommonHarmony.Services;
 
 using System;
 using System.Collections.Generic;
@@ -8,20 +6,30 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Common.Helpers;
+using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using HarmonyLib;
-using StardewMods.FuryCore.Attributes;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Models;
+using StardewModdingAPI;
 
-/// <inheritdoc cref="IHarmonyHelper" />
-[FuryCoreService(true)]
-internal class HarmonyHelper : IHarmonyHelper, IModService
+/// <summary>
+///     Saves a list of <see cref="SavedPatch" /> which can be applied or reversed at any time.
+/// </summary>
+internal class HarmonyHelper
 {
     private readonly IDictionary<string, Harmony> _harmony = new Dictionary<string, Harmony>();
     private readonly IDictionary<string, List<SavedPatch>> _savedPatches = new Dictionary<string, List<SavedPatch>>();
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Adds a <see cref="SavedPatch" /> to an id.
+    /// </summary>
+    /// <param name="id">
+    ///     The id should concatenate your Mod Unique ID from the <see cref="IManifest" /> and a group id for the
+    ///     patches.
+    /// </param>
+    /// <param name="original">The original method/constructor.</param>
+    /// <param name="type">The patch class/type.</param>
+    /// <param name="name">The patch method name.</param>
+    /// <param name="patchType">One of postfix, prefix, or transpiler.</param>
     public void AddPatch(string id, MethodBase original, Type type, string name, PatchType patchType = PatchType.Prefix)
     {
         this.AddPatches(
@@ -32,7 +40,14 @@ internal class HarmonyHelper : IHarmonyHelper, IModService
             });
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Adds multiple <see cref="SavedPatch" /> to an id.
+    /// </summary>
+    /// <param name="id">
+    ///     The id should concatenate your Mod Unique ID from the <see cref="IManifest" /> and a group id for the
+    ///     patches.
+    /// </param>
+    /// <param name="patches">A list of <see cref="SavedPatch" /> to add to this group of patches.</param>
     public void AddPatches(string id, IEnumerable<SavedPatch> patches)
     {
         if (!this._savedPatches.TryGetValue(id, out var savedPatches))
@@ -44,7 +59,10 @@ internal class HarmonyHelper : IHarmonyHelper, IModService
         savedPatches.AddRange(patches);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Applies all <see cref="SavedPatch" /> added to an id.
+    /// </summary>
+    /// <param name="id">The id that the patches were added to.</param>
     public void ApplyPatches(string id)
     {
         if (!this._savedPatches.TryGetValue(id, out var patches))
@@ -100,7 +118,10 @@ internal class HarmonyHelper : IHarmonyHelper, IModService
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Reverses all <see cref="SavedPatch" /> added to an id.
+    /// </summary>
+    /// <param name="id">The id that the patches were added to.</param>
     public void UnapplyPatches(string id)
     {
         if (!this._savedPatches.TryGetValue(id, out var patches))

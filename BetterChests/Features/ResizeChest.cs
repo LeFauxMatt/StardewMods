@@ -4,19 +4,19 @@ namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using CommonHarmony.Enums;
+using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley.Objects;
 
 /// <inheritdoc />
 internal class ResizeChest : Feature
 {
-    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly Lazy<IMenuItems> _menuItems;
 
     /// <summary>
@@ -25,29 +25,24 @@ internal class ResizeChest : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ResizeChest(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public ResizeChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         ResizeChest.Instance = this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
-            {
-                harmony.AddPatch(
-                    this.Id,
-                    AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                    typeof(ResizeChest),
-                    nameof(ResizeChest.Chest_GetActualCapacity_postfix),
-                    PatchType.Postfix);
-            });
+        this.Harmony = harmony;
+        this.Harmony.AddPatch(
+            this.Id,
+            AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+            typeof(ResizeChest),
+            nameof(ResizeChest.Chest_GetActualCapacity_postfix),
+            PatchType.Postfix);
         this._menuItems = services.Lazy<IMenuItems>();
     }
 
     private static ResizeChest Instance { get; set; }
 
-    private IHarmonyHelper Harmony
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     private IMenuItems MenuItems
     {

@@ -10,6 +10,8 @@ using System.Reflection.Emit;
 using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
+using CommonHarmony.Enums;
+using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -18,20 +20,18 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Attributes;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class ResizeChestMenu : Feature
 {
     private readonly PerScreen<int> _currentOffset = new();
-    private readonly Lazy<IHarmonyHelper> _harmony;
     private readonly PerScreen<MenuWithInventory> _menu = new();
     private readonly PerScreen<int?> _menuCapacity = new();
     private readonly PerScreen<int?> _menuOffset = new();
@@ -44,49 +44,47 @@ internal class ResizeChestMenu : Feature
     /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ResizeChestMenu(IConfigModel config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public ResizeChestMenu(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
         : base(config, helper, services)
     {
         ResizeChestMenu.Instance = this;
-        this._harmony = services.Lazy<IHarmonyHelper>(
-            harmony =>
+        this.Harmony = harmony;
+        var ctorItemGrabMenu = new[]
+        {
+            typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
+        };
+
+        var drawMenuWithInventory = new[]
+        {
+            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
+        };
+
+        this.Harmony.AddPatches(
+            this.Id,
+            new SavedPatch[]
             {
-                var ctorItemGrabMenu = new[]
-                {
-                    typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object),
-                };
-
-                var drawMenuWithInventory = new[]
-                {
-                    typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
-                };
-
-                harmony.AddPatches(
-                    this.Id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Constructor(typeof(ItemGrabMenu), ctorItemGrabMenu),
-                            typeof(ResizeChestMenu),
-                            nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(
-                                typeof(ItemGrabMenu),
-                                nameof(ItemGrabMenu.draw),
-                                new[]
-                                {
-                                    typeof(SpriteBatch),
-                                }),
-                            typeof(ResizeChestMenu),
-                            nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
-                            PatchType.Transpiler),
-                        new(
-                            AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
-                            typeof(ResizeChestMenu),
-                            nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler),
-                            PatchType.Transpiler),
-                    });
+                new(
+                    AccessTools.Constructor(typeof(ItemGrabMenu), ctorItemGrabMenu),
+                    typeof(ResizeChestMenu),
+                    nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(
+                        typeof(ItemGrabMenu),
+                        nameof(ItemGrabMenu.draw),
+                        new[]
+                        {
+                            typeof(SpriteBatch),
+                        }),
+                    typeof(ResizeChestMenu),
+                    nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
+                    PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
+                    typeof(ResizeChestMenu),
+                    nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler),
+                    PatchType.Transpiler),
             });
     }
 
@@ -127,10 +125,7 @@ internal class ResizeChestMenu : Feature
         }
     }
 
-    private IHarmonyHelper HarmonyHelper
-    {
-        get => this._harmony.Value;
-    }
+    private HarmonyHelper Harmony { get; }
 
     private MenuWithInventory Menu
     {
@@ -187,14 +182,14 @@ internal class ResizeChestMenu : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HarmonyHelper.ApplyPatches(this.Id);
+        this.Harmony.ApplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HarmonyHelper.UnapplyPatches(this.Id);
+        this.Harmony.UnapplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
     }
 

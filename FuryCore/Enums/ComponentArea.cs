@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.FuryCore.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Designates certain components to automatically align to an area around the menu.
 /// </summary>
+[EnumExtensions]
 public enum ComponentArea
 {
     /// <summary>Above the ItemsToGrabMenu.</summary>

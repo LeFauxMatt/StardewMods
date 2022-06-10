@@ -5,6 +5,7 @@ namespace StardewMods.BetterChests;
 using System;
 using Common.Helpers;
 using Common.Integrations.FuryCore;
+using CommonHarmony.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
@@ -68,27 +69,28 @@ public class BetterChests : Mod
 
     private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
     {
+        var harmony = new HarmonyHelper();
         this.FuryCore.API.AddFuryCoreServices(this.Services);
 
         // Features
         this.Services.Add(
             new AutoOrganize(this.Config, this.Helper, this.Services),
-            new CarryChest(this.Config, this.Helper, this.Services),
+            new CarryChest(this.Config, this.Helper, this.Services, harmony),
             new CategorizeChest(this.Config, this.Helper, this.Services),
             new ChestMenuTabs(this.Config, this.Helper, this.Services),
-            new CollectItems(this.Config, this.Helper, this.Services),
+            new CollectItems(this.Config, this.Helper, this.Services, harmony),
             new Configurator(this.Config, this.Helper, this.Services),
-            new CraftFromChest(this.Config, this.Helper, this.Services),
-            new CustomColorPicker(this.Config, this.Helper, this.Services),
-            new FilterItems(this.Config, this.Helper, this.Services),
+            new CraftFromChest(this.Config, this.Helper, this.Services, harmony),
+            new CustomColorPicker(this.Config, this.Helper, this.Services, harmony),
+            new FilterItems(this.Config, this.Helper, this.Services, harmony),
             new InventoryProviderForBetterCrafting(this.Config, this.Helper, this.Services),
             new MenuForShippingBin(this.Config, this.Helper, this.Services),
-            new OpenHeldChest(this.Config, this.Helper, this.Services),
-            new OrganizeChest(this.Config, this.Helper, this.Services),
-            new ResizeChest(this.Config, this.Helper, this.Services),
-            new ResizeChestMenu(this.Config, this.Helper, this.Services),
-            new SearchItems(this.Config, this.Helper, this.Services),
-            new SlotLock(this.Config, this.Helper, this.Services),
+            new OpenHeldChest(this.Config, this.Helper, this.Services, harmony),
+            new OrganizeChest(this.Config, this.Helper, this.Services, harmony),
+            new ResizeChest(this.Config, this.Helper, this.Services, harmony),
+            new ResizeChestMenu(this.Config, this.Helper, this.Services, harmony),
+            new SearchItems(this.Config, this.Helper, this.Services, harmony),
+            new SlotLock(this.Config, this.Helper, this.Services, harmony),
             new StashToChest(this.Config, this.Helper, this.Services),
             new UnloadChest(this.Config, this.Helper, this.Services));
 

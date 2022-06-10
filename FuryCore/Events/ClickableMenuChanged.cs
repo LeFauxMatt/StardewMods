@@ -5,14 +5,15 @@ namespace StardewMods.FuryCore.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using CommonHarmony.Enums;
+using CommonHarmony.Models;
+using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Services;
 using StardewValley;
@@ -30,38 +31,36 @@ internal class ClickableMenuChanged : SortedEventHandler<IClickableMenuChangedEv
     /// </summary>
     /// <param name="gameLoop">SMAPI events linked to the the game's update loop.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ClickableMenuChanged(IGameLoopEvents gameLoop, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public ClickableMenuChanged(IGameLoopEvents gameLoop, IModServices services, HarmonyHelper harmony)
     {
         ClickableMenuChanged.Instance ??= this;
         this._gameObjects = services.Lazy<GameObjects>();
         gameLoop.UpdateTicked += this.OnUpdateTicked;
         gameLoop.UpdateTicking += this.OnUpdateTicking;
-        services.Lazy<IHarmonyHelper>(
-            harmonyHelper =>
+
+        var id = $"{FuryCore.ModUniqueId}.{nameof(ClickableMenuChanged)}";
+        harmony.AddPatches(
+            id,
+            new SavedPatch[]
             {
-                var id = $"{FuryCore.ModUniqueId}.{nameof(ClickableMenuChanged)}";
-                harmonyHelper.AddPatches(
-                    id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(GameMenu), nameof(GameMenu.changeTab)),
-                            typeof(ClickableMenuChanged),
-                            nameof(ClickableMenuChanged.GameMenu_changeTab_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
-                            typeof(ClickableMenuChanged),
-                            nameof(ClickableMenuChanged.ItemGrabMenu_constructor_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.Constructor(typeof(PurchaseAnimalsMenu)),
-                            typeof(ClickableMenuChanged),
-                            nameof(ClickableMenuChanged.PurchaseAnimalsMenu_constructor_postfix),
-                            PatchType.Postfix),
-                    });
-                harmonyHelper.ApplyPatches(id);
+                new(
+                    AccessTools.Method(typeof(GameMenu), nameof(GameMenu.changeTab)),
+                    typeof(ClickableMenuChanged),
+                    nameof(ClickableMenuChanged.GameMenu_changeTab_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    typeof(ClickableMenuChanged),
+                    nameof(ClickableMenuChanged.ItemGrabMenu_constructor_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Constructor(typeof(PurchaseAnimalsMenu)),
+                    typeof(ClickableMenuChanged),
+                    nameof(ClickableMenuChanged.PurchaseAnimalsMenu_constructor_postfix),
+                    PatchType.Postfix),
             });
+        harmony.ApplyPatches(id);
     }
 
     private static ClickableMenuChanged Instance { get; set; }
