@@ -1,7 +1,7 @@
 {
   "Name": "FuryCore",
   "Author": "furyx639",
-  "Version": "1.6.4-beta.1",
+  "Version": "1.6.4-beta.2",
   "Description": "Framework used by my other mods.",
   "UniqueID": "furyx639.FuryCore",
   "EntryDll": "FuryCore.dll",
