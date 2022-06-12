@@ -1,8 +1,8 @@
 # Too Many Animals Change Log
 
-## 1.2.3 (Unreleased)
+## 1.2.4 (Unreleased)
 
-* Updated to FuryCore 1.6.4.
+* Removed dependency on FuryCore.
 
 ### Changed
 
