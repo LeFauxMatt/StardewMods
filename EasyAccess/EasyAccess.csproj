@@ -5,7 +5,7 @@
         <Name>Easy Access</Name>
         <Author>furyx639</Author>
         <Description>Provides easier access to producers in the game.</Description>
-        <Version>1.2.3-beta.1</Version>
+        <Version>1.2.4-beta.1</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.EasyAccess</RootNamespace>
         <UniqueId>furyx639.EasyAccess</UniqueId>
@@ -14,11 +14,6 @@
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04" />
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1" />
-        <Reference Include="FuryCore">
-            <HintPath>$(GameModsPath)\FuryCore\FuryCore.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
     </ItemGroup>
 </Project>

@@ -3,9 +3,7 @@
 namespace StardewMods.EasyAccess.Models.Config;
 
 using StardewModdingAPI;
-using StardewMods.EasyAccess.Features;
 using StardewMods.EasyAccess.Interfaces.Config;
-using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc />
 internal class ConfigModel : IConfigModel
@@ -15,19 +13,10 @@ internal class ConfigModel : IConfigModel
     /// </summary>
     /// <param name="configData">The <see cref="IConfigData" /> for options set by the player.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public ConfigModel(IConfigData configData, IModHelper helper, IModServices services)
+    public ConfigModel(IConfigData configData, IModHelper helper)
     {
         this.Data = configData;
         this.Helper = helper;
-        this.Services = services;
-    }
-
-    /// <inheritdoc />
-    public bool Configurator
-    {
-        get => this.Data.Configurator;
-        set => this.Data.Configurator = value;
     }
 
     /// <inheritdoc />
@@ -38,17 +27,22 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
-    public ProducerData DefaultProducer
+    public int CollectOutputDistance
     {
-        get => this.Data.DefaultProducer;
-        set => ((IProducerData)value).CopyTo(this.Data.DefaultProducer);
+        get => this.Data.CollectOutputDistance;
+        set => this.Data.CollectOutputDistance = value;
+    }
+
+    /// <inheritdoc />
+    public int DispenseInputDistance
+    {
+        get => this.Data.DispenseInputDistance;
+        set => this.Data.DispenseInputDistance = value;
     }
 
     private IConfigData Data { get; }
 
     private IModHelper Helper { get; }
-
-    private IModServices Services { get; }
 
     /// <inheritdoc />
     public void Reset()
@@ -60,9 +54,5 @@ internal class ConfigModel : IConfigModel
     public void Save()
     {
         this.Helper.WriteConfig((ConfigData)this.Data);
-        foreach (var feature in this.Services.FindServices<Feature>())
-        {
-            feature.Toggle();
-        }
     }
 }
