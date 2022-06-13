@@ -3,6 +3,7 @@
 namespace StardewMods.FuryCore;
 
 using Common.Helpers;
+using CommonHarmony.Services;
 using StardewModdingAPI;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Services;
@@ -27,7 +28,7 @@ public class FuryCore : Mod
         I18n.Init(this.Helper.Translation);
         this.Config = this.Helper.ReadConfig<ConfigData>();
 
-        var harmony = new CommonHarmony.Services.HarmonyHelper();
+        var harmony = new HarmonyHelper();
         this.Services.Add(
             new AssetHandler(this.Helper),
             new CommandHandler(this.Helper, this.Services),

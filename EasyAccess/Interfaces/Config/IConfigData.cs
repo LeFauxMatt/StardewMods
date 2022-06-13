@@ -10,14 +10,14 @@ using StardewMods.EasyAccess.Models.Config;
 internal interface IConfigData
 {
     /// <summary>
-    ///     Gets or sets the control scheme.
-    /// </summary>
-    ControlScheme ControlScheme { get; set; }
-
-    /// <summary>
     ///     Gets or sets a value indicating the distance in tiles that the producer can be collected from.
     /// </summary>
     public int CollectOutputDistance { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the control scheme.
+    /// </summary>
+    ControlScheme ControlScheme { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating the distance in tiles that the producer can be dispensed into.

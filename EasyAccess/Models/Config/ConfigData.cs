@@ -8,10 +8,10 @@ using StardewMods.EasyAccess.Interfaces.Config;
 internal class ConfigData : IConfigData
 {
     /// <inheritdoc />
-    public ControlScheme ControlScheme { get; set; } = new();
+    public int CollectOutputDistance { get; set; } = 15;
 
     /// <inheritdoc />
-    public int CollectOutputDistance { get; set; } = 15;
+    public ControlScheme ControlScheme { get; set; } = new();
 
     /// <inheritdoc />
     public int DispenseInputDistance { get; set; } = 15;

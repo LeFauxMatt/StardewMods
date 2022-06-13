@@ -19,7 +19,6 @@ using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Models.CustomEvents;
 using StardewValley;
 using StardewValley.Menus;

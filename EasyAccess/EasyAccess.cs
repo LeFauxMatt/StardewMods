@@ -68,11 +68,11 @@ public class EasyAccess : Mod
                         {
                             obj.Quality = 4;
                         }
-                        else if (r.NextDouble() < (Game1.player.ForagingLevel / 30f))
+                        else if (r.NextDouble() < Game1.player.ForagingLevel / 30f)
                         {
                             obj.Quality = 2;
                         }
-                        else if (r.NextDouble() < (Game1.player.ForagingLevel / 15f))
+                        else if (r.NextDouble() < Game1.player.ForagingLevel / 15f)
                         {
                             obj.Quality = 1;
                         }
@@ -87,7 +87,7 @@ public class EasyAccess : Mod
                             Game1.player.gainExperience(2, 7);
                         }
 
-                        Game1.createItemDebris(obj, 64 * pos, (tY < pY) ? 0 : (tX > pX) ? 1 : (tY > pY) ? 2 : (tX < pX) ? 3 : -1, Game1.currentLocation);
+                        Game1.createItemDebris(obj, 64 * pos, tY < pY ? 0 : tX > pX ? 1 : tY > pY ? 2 : tX < pX ? 3 : -1, Game1.currentLocation);
                         Game1.currentLocation.Objects.Remove(pos);
                     }
 
@@ -178,14 +178,8 @@ public class EasyAccess : Mod
         // Register mod configuration
         gmcm.Register(
             this.ModManifest,
-            () =>
-            {
-                this.Config.Reset();
-            },
-            () =>
-            {
-                this.Config.Save();
-            });
+            () => { this.Config.Reset(); },
+            () => { this.Config.Save(); });
 
         gmcm.API.AddSectionTitle(this.ModManifest, I18n.Section_Features_Name, I18n.Section_Features_Description);
 

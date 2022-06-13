@@ -20,17 +20,17 @@ internal class ConfigModel : IConfigModel
     }
 
     /// <inheritdoc />
-    public ControlScheme ControlScheme
-    {
-        get => this.Data.ControlScheme;
-        set => ((IControlScheme)value).CopyTo(this.Data.ControlScheme);
-    }
-
-    /// <inheritdoc />
     public int CollectOutputDistance
     {
         get => this.Data.CollectOutputDistance;
         set => this.Data.CollectOutputDistance = value;
+    }
+
+    /// <inheritdoc />
+    public ControlScheme ControlScheme
+    {
+        get => this.Data.ControlScheme;
+        set => ((IControlScheme)value).CopyTo(this.Data.ControlScheme);
     }
 
     /// <inheritdoc />
