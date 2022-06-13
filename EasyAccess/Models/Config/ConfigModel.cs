@@ -40,6 +40,34 @@ internal class ConfigModel : IConfigModel
         set => this.Data.DispenseInputDistance = value;
     }
 
+    /// <inheritdoc />
+    public bool DoDigSpots
+    {
+        get => this.Data.DoDigSpots;
+        set => this.Data.DoDigSpots = value;
+    }
+
+    /// <inheritdoc />
+    public bool DoForage
+    {
+        get => this.Data.DoForage;
+        set => this.Data.DoForage = value;
+    }
+
+    /// <inheritdoc />
+    public bool DoMachines
+    {
+        get => this.Data.DoMachines;
+        set => this.Data.DoMachines = value;
+    }
+
+    /// <inheritdoc />
+    public bool DoTerrain
+    {
+        get => this.Data.DoTerrain;
+        set => this.Data.DoTerrain = value;
+    }
+
     private IConfigData Data { get; }
 
     private IModHelper Helper { get; }

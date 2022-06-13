@@ -1,24 +1,11 @@
 {
-  // Alerts
-  "alert.collect-outputs.no-eligible": "아이템을 수집할 적합한 기계를 찾을 수 없습니다.",
-  "alert.dispense-inputs.no-eligible": "아이템을 넣을 적합한 기계를 찾을 수 없습니다.",
-  // Commands
-  "command.info.documentation": "Easy Access 모드로 관리되는 모든 생산자에 대한 정보를 로그에 인쇄합니다.",
   // Feature Config
-  "config.collect-outputs.name": "생산품 수집",
-  "config.collect-outputs.tooltip": "완성된 아이템을 수집할 수 있는 기본 범위",
   "config.collect-outputs-distance.name": "생산품 수집 거리",
   "config.collect-outputs-distance.tooltip": "완성된 아이템을 수집할 수 있는 기계로부터의 거리.",
-  "config.dispense-inputs.name": "아이템 입력",
-  "config.dispense-inputs.tooltip": "기계에 아이템을 넣을 수 있는 기본 범위.",
   "config.dispense-inputs-distance.name": "아이템 입력 거리",
   "config.dispense-inputs-distance.tooltip": "아이템을 넣을 수 있는 기계로부터의 거리.",
   "config.dispense-inputs-priority.name": "아이템 입력 우선 순위",
   "config.dispense-inputs-priority.tooltip": "우선 순위가 높은 기계에 아이템을 먼저 넣을 수 있습니다.",
-  // Feature Option Formatting
-  "config.range-distance.value-unlimited": "무제한",
-  "config.range-distance.value-one": "1 타일",
-  "config.range-distance.value-many": "{0} 타일",
   // Config Controls
   "config.collect-items.name": "생산품 수집",
   "config.collect-items.tooltip": "접근 가능한 기계로부터 완성된 아이템을 수집하기 위한 키.",
@@ -27,18 +14,8 @@
   // Config Pages
   "section.general.name": "일반",
   "section.general.description": "기능에 대한 일반 사용자 정의 옵션.",
-  "section.features.name": "기능",
-  "section.features.description": "모든 상자에 적용되는 기본 옵션.",
   "section.controls.name": "단축키 설정",
   "section.controls.description": "단축키를 설정할 수 있습니다.",
-  "section.producers.name": "제작 기계 유형",
-  "section.producers.description": "각 기계 유형별로 설정 할 수 있습니다.",
-  // Config Options
-  "option.default.name": "기본",
-  "option.enabled.name": "활성화",
-  "option.disabled.name": "비활성화",
-  "option.location.name": "현재 위치",
-  "option.world.name": "어디서나",
   // UI - Button
   "button.collect-outputs.name": "생산품 수집",
   "button.dispense-inputs.name": "아이템 입력"

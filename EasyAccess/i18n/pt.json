@@ -1,22 +1,11 @@
 ﻿{
-  // Alerts
-  "alert.collect-outputs.no-eligible": "Nenhum produtor qualificado encontrado para coletar itens",
-  "alert.dispense-inputs.no-eligible": "Nenhum produtor qualificado encontrado para distribuir itens",
   // Feature Config
-  "config.collect-outputs.name": "Coletar Produção",
-  "config.collect-outputs.tooltip": "A distância padrão da qual é possível coletar dos produtores.",
   "config.collect-outputs-distance.name": "Distância para Coletar Produção",
   "config.collect-outputs-distance.tooltip": "A quantas células de distância é possível coletar de um produtor.",
-  "config.dispense-inputs.name": "Distribuir Materiais",
-  "config.dispense-inputs.tooltip": "A distância padrão da qual é possível distribuir para os produtores.",
   "config.dispense-inputs-distance.name": "Distância para Distribuir Materiais",
   "config.dispense-inputs-distance.tooltip": "A quantas células de distância é possível distribuir para um produtor.",
   "config.dispense-inputs-priority.name": "Prioridade de Distribuição de Materiais",
   "config.dispense-inputs-priority.tooltip": "Produtores com uma maior prioridade receberão materiais primeiro.",
-  // Feature Option Formatting
-  "config.range-distance.value-unlimited": "Ilimitado",
-  "config.range-distance.value-one": "1 célula",
-  "config.range-distance.value-many": "{0} células",
   // Config Controls
   "config.collect-items.name": "Botão para Coletar Itens",
   "config.collect-items.tooltip": "Botão para coletar itens de produtores acessíveis.",
@@ -25,18 +14,8 @@
   // Config Pages
   "section.general.name": "Geral",
   "section.general.description": "Opções de configuração de funções em geral.",
-  "section.features.name": "Funções",
-  "section.features.description": "Opções padrão que são aplicadas a todos os baús.",
   "section.controls.name": "Controles",
   "section.controls.description": "Configurações de controle/teclado.",
-  "section.producers.name": "Produtores",
-  "section.producers.description": "Configure cada tipo de produtor individualmente.",
-  // Config Options
-  "option.default.name": "Padrão",
-  "option.enabled.name": "Ativado",
-  "option.disabled.name": "Desativado",
-  "option.location.name": "Localização",
-  "option.world.name": "Mundo",
   // UI - Button
   "button.collect-outputs.name": "Coletar Produção",
   "button.dispense-inputs.name": "Distribuir Materiais"

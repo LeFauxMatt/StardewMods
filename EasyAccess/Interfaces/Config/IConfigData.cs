@@ -25,6 +25,26 @@ internal interface IConfigData
     public int DispenseInputDistance { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether CollectItems will grab from dig spots.
+    /// </summary>
+    public bool DoDigSpots { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether CollectItems will drop forage as debris.
+    /// </summary>
+    public bool DoForage { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether CollectItems will collect from machines.
+    /// </summary>
+    public bool DoMachines { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether CollectItems will interact with Terrain features such as bushes and trees.
+    /// </summary>
+    public bool DoTerrain { get; set; }
+
+    /// <summary>
     ///     Copies data from one <see cref="IConfigData" /> to another.
     /// </summary>
     /// <param name="other">The <see cref="IConfigData" /> to copy values to.</param>
@@ -34,6 +54,10 @@ internal interface IConfigData
     {
         other.CollectOutputDistance = this.CollectOutputDistance;
         other.DispenseInputDistance = this.DispenseInputDistance;
+        other.DoDigSpots = this.DoDigSpots;
+        other.DoForage = this.DoForage;
+        other.DoMachines = this.DoMachines;
+        other.DoTerrain = this.DoTerrain;
         ((IControlScheme)other.ControlScheme).CopyTo(this.ControlScheme);
     }
 }

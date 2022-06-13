@@ -15,4 +15,16 @@ internal class ConfigData : IConfigData
 
     /// <inheritdoc />
     public int DispenseInputDistance { get; set; } = 15;
+
+    /// <inheritdoc />
+    public bool DoDigSpots { get; set; } = true;
+
+    /// <inheritdoc />
+    public bool DoForage { get; set; } = true;
+
+    /// <inheritdoc />
+    public bool DoMachines { get; set; } = true;
+
+    /// <inheritdoc />
+    public bool DoTerrain { get; set; } = true;
 }

@@ -1,19 +1,7 @@
 ﻿{
-  // Feature Option Formatting
-  "config.range-distance.value-unlimited": "Illimitato",
-  "config.range-distance.value-one": "1 casella",
-  "config.range-distance.value-many": "{0} caselle",
   // Config Pages
   "section.general.name": "Generale",
   "section.general.description": "Opzioni generali di personalizzazione delle funzionalità.",
-  "section.features.name": "Caratteristiche",
-  "section.features.description": "Opzioni predefinite che si applicano a qualsiasi tipo di baule.",
   "section.controls.name": "Controlli",
-  "section.controls.description": "Configurazioni di controller/tastiera.",
-  // Config Options
-  "option.default.name": "Predefinito",
-  "option.enabled.name": "Abilitato",
-  "option.disabled.name": "Disabilitato",
-  "option.location.name": "Mappa Corrente",
-  "option.world.name": "Mondo"
+  "section.controls.description": "Configurazioni di controller/tastiera."
 }

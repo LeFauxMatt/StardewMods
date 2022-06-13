@@ -57,10 +57,23 @@ public class EasyAccess : Mod
 
                 var pos = new Vector2(tX, tY);
 
-                // Big Craftables
                 if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
                 {
-                    if (obj.IsSpawnedObject && obj.isForage(Game1.currentLocation))
+                    // Dig Spot
+                    if (this.Config.DoDigSpots && obj.ParentSheetIndex == 590)
+                    {
+                        Game1.currentLocation.digUpArtifactSpot(tX, tY, Game1.player);
+                        if (!Game1.currentLocation.terrainFeatures.ContainsKey(pos))
+                        {
+                            Game1.currentLocation.makeHoeDirt(pos, true);
+                        }
+
+                        Game1.currentLocation.Objects.Remove(pos);
+                        continue;
+                    }
+
+                    // Big Craftables
+                    if (this.Config.DoForage && obj.IsSpawnedObject && obj.isForage(Game1.currentLocation))
                     {
                         // Vanilla Logic
                         var r = new Random((int)Game1.uniqueIDForThisGame / 2 + (int)Game1.stats.DaysPlayed + (int)pos.X + (int)pos.Y * 777);
@@ -89,13 +102,23 @@ public class EasyAccess : Mod
 
                         Game1.createItemDebris(obj, 64 * pos, tY < pY ? 0 : tX > pX ? 1 : tY > pY ? 2 : tX < pX ? 3 : -1, Game1.currentLocation);
                         Game1.currentLocation.Objects.Remove(pos);
+                        Log.Info($"Dropped {obj.DisplayName} from forage.");
+                        continue;
                     }
 
-                    var item = obj.heldObject.Value;
-                    if (item is not null && obj.checkForAction(Game1.player))
+                    if (this.Config.DoMachines)
                     {
-                        Log.Info($"Collected {item.DisplayName} from producer {obj.DisplayName}.");
+                        var item = obj.heldObject.Value;
+                        if (item is not null && obj.checkForAction(Game1.player))
+                        {
+                            Log.Info($"Collected {item.DisplayName} from producer {obj.DisplayName}.");
+                        }
                     }
+                }
+
+                if (!this.Config.DoTerrain)
+                {
+                    continue;
                 }
 
                 // Terrain Features
@@ -132,7 +155,7 @@ public class EasyAccess : Mod
 
                 // Big Craftables
                 if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-                    && (obj.Type.Equals("Crafting") || obj.Type.Equals("interactive"))
+                    && (obj.Type?.Equals("Crafting") == true || obj.Type?.Equals("interactive") == true)
                     && obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
                 {
                     Game1.player.reduceActiveItemByOne();
@@ -181,8 +204,6 @@ public class EasyAccess : Mod
             () => { this.Config.Reset(); },
             () => { this.Config.Save(); });
 
-        gmcm.API.AddSectionTitle(this.ModManifest, I18n.Section_Features_Name, I18n.Section_Features_Description);
-
         // Collect Items
         gmcm.API.AddKeybindList(
             this.ModManifest,
@@ -224,5 +245,41 @@ public class EasyAccess : Mod
             16,
             1,
             fieldId: nameof(IConfigData.DispenseInputDistance));
+
+        // Do Dig Spots
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.DoDigSpots,
+            value => this.Config.DoDigSpots = value,
+            I18n.Config_DoDigSpots_Name,
+            I18n.Config_DoDigSpots_Tooltip,
+            nameof(IConfigData.DoDigSpots));
+
+        // Do Forage
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.DoForage,
+            value => this.Config.DoForage = value,
+            I18n.Config_DoForage_Name,
+            I18n.Config_DoForage_Tooltip,
+            nameof(IConfigData.DoForage));
+
+        // Do Machines
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.DoMachines,
+            value => this.Config.DoMachines = value,
+            I18n.Config_DoMachines_Name,
+            I18n.Config_DoMachines_Tooltip,
+            nameof(IConfigData.DoMachines));
+
+        // Do Terrain
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.DoTerrain,
+            value => this.Config.DoTerrain = value,
+            I18n.Config_DoTerrain_Name,
+            I18n.Config_DoTerrain_Tooltip,
+            nameof(IConfigData.DoTerrain));
     }
 }
