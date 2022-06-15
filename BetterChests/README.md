@@ -540,16 +540,16 @@ Sample `content.json`:
 
 See [here](i18n/default.json) for the base translation file.
 
-| Language                   | Status            | Credits     |
-|:---------------------------|:------------------|:------------|
-| [Chinese](i18n/zh.json)    | ✔️ Complete       | Andyc66     |
-| [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus      |
-| [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever   |
-| [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |
-| [Italian](i18n/it.json)    | ✔️ Complete       | zomboide    |
-| Japanese                   | ❌️ Not Translated |             |
-| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232    |
-| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon    |
-| [Russian](i18n/ru.json)    | ❔ Incomplete      | Newrotd     |
-| [Spanish](i18n/es.json)    | ❔ Incomplete      | Soraien     |
-| Turkish                    | ❌️ Not Translated |             |
+| Language                   | Status            | Credits               |
+|:---------------------------|:------------------|:----------------------|
+| [Chinese](i18n/zh.json)    | ✔️ Complete       | Andyc66               |
+| [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus                |
+| [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever             |
+| [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789           |
+| [Italian](i18n/it.json)    | ✔️ Complete       | zomboide              |
+| Japanese                   | ❌️ Not Translated |                       |
+| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232              |
+| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon              |
+| [Russian](i18n/ru.json)    | ❔ Incomplete      | Newrotd               |
+| [Spanish](i18n/es.json)    | ❔ Incomplete      | Soraien               |
+| [Turkish](i18n/tr.json)    | ✔️ Complete       | @KawaiFoxHappyClaws76 |
