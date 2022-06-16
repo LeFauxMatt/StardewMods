@@ -1,7 +1,7 @@
-#nullable disable
-
+/*
 namespace StardewMods.BetterChests.UI;
 
+using Common.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
@@ -80,3 +80,5 @@ internal class NumberComponent : IClickableComponent
     {
     }
 }
+*/
+

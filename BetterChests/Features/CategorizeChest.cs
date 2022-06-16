@@ -1,8 +1,8 @@
-#nullable disable
-
+/*
 namespace StardewMods.BetterChests.Features;
 
 using System;
+using Common.Enums;
 using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -10,7 +10,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.BetterChests.UI;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
@@ -209,3 +208,5 @@ internal class CategorizeChest : Feature
         }
     }
 }
+*/
+

@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
 using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -24,7 +25,6 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 // TODO: Prevent losing chests if passed out
-
 /// <inheritdoc />
 internal class CarryChest : Feature
 {
@@ -44,7 +44,7 @@ internal class CarryChest : Feature
         this.Harmony = harmony;
         this.Harmony.AddPatches(
             this.Id,
-            new CommonHarmony.Models.SavedPatch[]
+            new SavedPatch[]
             {
                 new(
                     AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),

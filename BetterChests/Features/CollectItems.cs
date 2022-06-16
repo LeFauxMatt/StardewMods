@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
@@ -17,7 +18,6 @@ using StardewMods.BetterChests.Interfaces.ManagedObjects;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
-using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class CollectItems : Feature

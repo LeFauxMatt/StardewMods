@@ -1,8 +1,8 @@
-#nullable disable
-
+/*
 namespace StardewMods.BetterChests.UI;
 
 using System.Collections.Generic;
+using Common.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
@@ -51,3 +51,5 @@ internal class TabComponent : CustomClickableComponent
         // Do Nothing
     }
 }
+*/
+

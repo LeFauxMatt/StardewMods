@@ -11,6 +11,7 @@ using Common.Extensions;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,7 +27,6 @@ using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
-using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class ResizeChestMenu : Feature

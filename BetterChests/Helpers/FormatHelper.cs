@@ -3,8 +3,8 @@
 namespace StardewMods.BetterChests.Helpers;
 
 using System;
+using Common.Enums;
 using StardewMods.BetterChests.Enums;
-using StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Helper methods to convert between different text formats.

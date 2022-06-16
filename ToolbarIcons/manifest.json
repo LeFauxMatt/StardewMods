@@ -1,0 +1,12 @@
+{
+  "EntryDll": "ToolbarIcons.dll",
+  "Name": "Toolbar Icons",
+  "Author": "furyx639",
+  "Version": "1.0.0-beta.1",
+  "Description": "Adds icons above or below the toolbar.",
+  "UniqueID": "furyx639.ToolbarIcons",
+  "MinimumApiVersion": "3.14.0",
+  "UpdateKeys": [
+    "Nexus:12512"
+  ]
+}

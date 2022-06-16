@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Helpers;
 using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
@@ -15,8 +16,6 @@ using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.FuryCore.Interfaces;
 using StardewValley;
 using StardewValley.Objects;
-using Object = StardewValley.Object;
-using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class OpenHeldChest : Feature

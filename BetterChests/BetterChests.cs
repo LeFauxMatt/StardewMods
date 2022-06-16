@@ -1,10 +1,9 @@
-#nullable disable
-
 namespace StardewMods.BetterChests;
 
 using System;
 using Common.Helpers;
 using Common.Integrations.FuryCore;
+using Common.Integrations.ToolbarIcons;
 using CommonHarmony.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -17,14 +16,36 @@ using StardewMods.FuryCore.Services;
 /// <inheritdoc />
 public class BetterChests : Mod
 {
+    private ConfigModel? _config;
+
     /// <summary>
     ///     Gets the unique Mod Id.
     /// </summary>
     internal static string ModUniqueId { get; private set; }
 
-    private ConfigModel Config { get; set; }
+    private ConfigModel Config
+    {
+        get
+        {
+            if (this._config is not null)
+            {
+                return this._config;
+            }
 
-    private FuryCoreIntegration FuryCore { get; set; }
+            IConfigData? config = null;
+            try
+            {
+                config = this.Helper.ReadConfig<ConfigData>();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            this._config = new(config ?? new ConfigData(), this.Helper, this.Services);
+            return this._config;
+        }
+    }
 
     private ModServices Services { get; } = new();
 
@@ -34,20 +55,6 @@ public class BetterChests : Mod
         BetterChests.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
-        this.FuryCore = new(this.Helper.ModRegistry);
-
-        // Mod Config
-        IConfigData config = null;
-        try
-        {
-            config = this.Helper.ReadConfig<ConfigData>();
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        this.Config = new(config ?? new ConfigData(), this.Helper, this.Services);
 
         // Core Services
         this.Services.Add(
@@ -67,20 +74,22 @@ public class BetterChests : Mod
         return new BetterChestsApi(this.Services);
     }
 
-    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var harmony = new HarmonyHelper();
-        this.FuryCore.API.AddFuryCoreServices(this.Services);
+        var furyCore = new FuryCoreIntegration(this.Helper.ModRegistry);
+        var toolbarIcons = new ToolbarIconsIntegration(this.Helper.ModRegistry);
+        furyCore.API!.AddFuryCoreServices(this.Services);
 
         // Features
         this.Services.Add(
             new AutoOrganize(this.Config, this.Helper, this.Services),
             new CarryChest(this.Config, this.Helper, this.Services, harmony),
-            new CategorizeChest(this.Config, this.Helper, this.Services),
-            new ChestMenuTabs(this.Config, this.Helper, this.Services),
+            //new CategorizeChest(this.Config, this.Helper, this.Services),
+            //new ChestMenuTabs(this.Config, this.Helper, this.Services),
             new CollectItems(this.Config, this.Helper, this.Services, harmony),
             new Configurator(this.Config, this.Helper, this.Services),
-            new CraftFromChest(this.Config, this.Helper, this.Services, harmony),
+            new CraftFromChest(this.Config, this.Helper, this.Services, harmony, toolbarIcons),
             new CustomColorPicker(this.Config, this.Helper, this.Services, harmony),
             new FilterItems(this.Config, this.Helper, this.Services, harmony),
             new InventoryProviderForBetterCrafting(this.Config, this.Helper, this.Services),
@@ -91,7 +100,7 @@ public class BetterChests : Mod
             new ResizeChestMenu(this.Config, this.Helper, this.Services, harmony),
             new SearchItems(this.Config, this.Helper, this.Services, harmony),
             new SlotLock(this.Config, this.Helper, this.Services, harmony),
-            new StashToChest(this.Config, this.Helper, this.Services),
+            new StashToChest(this.Config, this.Helper, this.Services, toolbarIcons),
             new UnloadChest(this.Config, this.Helper, this.Services));
 
         // Activate Features

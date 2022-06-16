@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
 using System;
@@ -8,9 +6,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Integrations.BetterCrafting;
+using Common.Integrations.ToolbarIcons;
+using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -18,26 +18,18 @@ using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Models.ClickableComponents;
-using StardewMods.FuryCore.Models.CustomEvents;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
-using PatchType = CommonHarmony.Enums.PatchType;
-using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class CraftFromChest : Feature
 {
-    private readonly PerScreen<IClickableComponent> _craftButton = new();
     private readonly PerScreen<MultipleChestCraftingPage> _multipleChestCraftingPage = new();
-    private readonly Lazy<IHudComponents> _toolbarIcons;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CraftFromChest" /> class.
@@ -46,7 +38,8 @@ internal class CraftFromChest : Feature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
     /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
+    /// <param name="toolbarIcons">Integration with Toolbar Icons.</param>
+    public CraftFromChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony, ToolbarIconsIntegration toolbarIcons)
         : base(config, helper, services)
     {
         this.BetterCrafting = new(this.Helper.ModRegistry);
@@ -66,7 +59,7 @@ internal class CraftFromChest : Feature
                     nameof(CraftFromChest.CraftingPage_getContainerContents_postfix),
                     PatchType.Postfix),
             });
-        this._toolbarIcons = services.Lazy<IHudComponents>();
+        this.ToolbarIcons = toolbarIcons;
     }
 
     /// <summary>
@@ -148,27 +141,7 @@ internal class CraftFromChest : Feature
 
     private BetterCraftingIntegration BetterCrafting { get; }
 
-    private IClickableComponent CraftButton
-    {
-        get => this._craftButton.Value ??= new CustomClickableComponent(
-            new(
-                new(0, 0, 32, 32),
-                this.Helper.GameContent.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons"),
-                new(32, 0, 16, 16),
-                2f)
-            {
-                name = "Craft from Chest",
-                hoverText = I18n.Button_CraftFromChest_Name(),
-            },
-            ComponentArea.Right);
-    }
-
     private HarmonyHelper Harmony { get; }
-
-    private IHudComponents HudComponents
-    {
-        get => this._toolbarIcons.Value;
-    }
 
     private MultipleChestCraftingPage MultipleChestCraftingPage
     {
@@ -176,13 +149,23 @@ internal class CraftFromChest : Feature
         set => this._multipleChestCraftingPage.Value = value;
     }
 
+    private ToolbarIconsIntegration ToolbarIcons { get; }
+
     /// <inheritdoc />
     protected override void Activate()
     {
-        this.HudComponents.AddToolbarIcon(this.CraftButton);
+        if (this.ToolbarIcons.IsLoaded)
+        {
+            this.ToolbarIcons.API!.AddToolbarIcon(
+                "BetterChests.CraftFromChest",
+                $"{BetterChests.ModUniqueId}/Icons",
+                new(32, 0, 16, 16),
+                I18n.Button_CraftFromChest_Name());
+            this.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+        }
+
         this.Harmony.ApplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.HudComponents.HudComponentPressed += this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
@@ -190,10 +173,14 @@ internal class CraftFromChest : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this.HudComponents.RemoveToolbarIcon(this.CraftButton);
+        if (this.ToolbarIcons.IsLoaded)
+        {
+            this.ToolbarIcons.API!.RemoveToolbarIcon("BetterChests.CraftFromChest");
+            this.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        }
+
         this.Harmony.UnapplyPatches(this.Id);
         this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.HudComponents.HudComponentPressed -= this.OnHudComponentPressed;
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
@@ -290,16 +277,15 @@ internal class CraftFromChest : Feature
         craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
     }
 
-    private void OnHudComponentPressed(object sender, ClickableComponentPressedEventArgs e)
+    private void OnToolbarIconPressed(object? sender, string id)
     {
-        if (ReferenceEquals(this.CraftButton, e.Component))
+        if (id == "BetterChests.CraftFromChest")
         {
             this.OpenCrafting();
-            e.SuppressInput();
         }
     }
 
-    private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
         if (this.MultipleChestCraftingPage?.Update() == false)
         {
@@ -318,7 +304,7 @@ internal class CraftFromChest : Feature
 
         if (this.BetterCrafting.IsLoaded)
         {
-            this.BetterCrafting.API.OpenCraftingMenu(
+            this.BetterCrafting.API!.OpenCraftingMenu(
                 false,
                 false,
                 null,

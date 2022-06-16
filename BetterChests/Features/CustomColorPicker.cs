@@ -5,7 +5,10 @@ namespace StardewMods.BetterChests.Features;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
+using Common.Enums;
 using Common.Helpers;
+using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -13,7 +16,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
@@ -21,8 +23,6 @@ using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
-using PatchType = CommonHarmony.Enums.PatchType;
-using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class CustomColorPicker : Feature

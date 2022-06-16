@@ -2,9 +2,9 @@
 
 namespace StardewMods.BetterChests.Interfaces.Config;
 
+using Common.Enums;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models.Config;
-using StardewMods.FuryCore.Enums;
 
 /// <summary>
 ///     Mod config data.

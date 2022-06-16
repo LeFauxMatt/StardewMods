@@ -1,9 +1,9 @@
 ﻿# Better Chests Change Log
 
-## 1.7.4 (Unreleased)
+## 1.8.0 (Unreleased)
 
 * Updated to SMAPI 3.14.0.
-* Updated to FuryCore 1.6.4.
+* Updated to FuryCore 1.7.0.
 
 ### Changed
 

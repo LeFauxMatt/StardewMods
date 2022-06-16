@@ -9,6 +9,7 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\IPatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
@@ -34,6 +35,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\MoreChests\IMoreChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\IProducerFrameworkModApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\ProducerFrameworkModIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\IToolbarIconsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
   </ItemGroup>

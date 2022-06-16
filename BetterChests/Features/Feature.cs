@@ -85,8 +85,8 @@ internal abstract class Feature : IModService
         {
             AutoOrganize => this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled,
             CarryChest => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled,
-            CategorizeChest => this.Config.CategorizeChest,
-            ChestMenuTabs => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled,
+            //CategorizeChest => this.Config.CategorizeChest,
+            //ChestMenuTabs => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled,
             CollectItems => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled,
             Configurator => this.Config.Configurator,
             CraftFromChest => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled,

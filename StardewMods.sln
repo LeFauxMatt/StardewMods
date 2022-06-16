@@ -44,22 +44,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrdinaryCapsule", "Ordinary
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JasonShuffle", "JasonShuffle\JasonShuffle.csproj", "{155F13A9-E725-4634-B72C-615FA0E0A8B0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolbarIcons", "ToolbarIcons\ToolbarIcons.csproj", "{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		CommonHarmony\CommonHarmony.projitems*{0c60294e-c98c-481e-b2d0-fc7953fec7c2}*SharedItemsImports = 13
-		Common\Common.projitems*{155f13a9-e725-4634-b72c-615fa0e0a8b0}*SharedItemsImports = 5
-		CommonHarmony\CommonHarmony.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
-		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
-		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
-		CommonHarmony\CommonHarmony.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
-		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
-		CommonHarmony\CommonHarmony.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
-		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
-		Common\Common.projitems*{a13ea40a-a388-44c0-8241-283ce90e1dc4}*SharedItemsImports = 5
-		Common\Common.projitems*{ddb9f8ca-7899-40e5-bcd9-c869fa6b5f2d}*SharedItemsImports = 5
-		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
-		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -121,6 +108,10 @@ Global
 		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{155F13A9-E725-4634-B72C-615FA0E0A8B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -133,5 +124,20 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		CommonHarmony\CommonHarmony.projitems*{0c60294e-c98c-481e-b2d0-fc7953fec7c2}*SharedItemsImports = 13
+		CommonHarmony\CommonHarmony.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
+		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
+		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
+		CommonHarmony\CommonHarmony.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
+		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
+		CommonHarmony\CommonHarmony.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
+		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
+		Common\Common.projitems*{a13ea40a-a388-44c0-8241-283ce90e1dc4}*SharedItemsImports = 5
+		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
+		Common\Common.projitems*{ddb9f8ca-7899-40e5-bcd9-c869fa6b5f2d}*SharedItemsImports = 5
+		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
+		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

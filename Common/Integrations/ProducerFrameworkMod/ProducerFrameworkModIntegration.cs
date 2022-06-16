@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace Common.Integrations.ProducerFrameworkMod;
 
 using StardewModdingAPI;

@@ -2,10 +2,10 @@
 
 namespace StardewMods.BetterChests.Models.Config;
 
+using Common.Enums;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc />

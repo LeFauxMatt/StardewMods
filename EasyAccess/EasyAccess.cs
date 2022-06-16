@@ -1,10 +1,9 @@
-#nullable disable
-
 namespace StardewMods.EasyAccess;
 
 using System;
 using Common.Helpers;
 using Common.Integrations.GenericModConfigMenu;
+using Common.Integrations.ToolbarIcons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -16,26 +15,38 @@ using StardewValley;
 /// <inheritdoc />
 public class EasyAccess : Mod
 {
-    private ConfigModel Config { get; set; }
+    private ConfigModel? _config;
+
+    private ConfigModel Config
+    {
+        get
+        {
+            if (this._config is not null)
+            {
+                return this._config;
+            }
+
+            // Mod Config
+            IConfigData? config = null;
+            try
+            {
+                config = this.Helper.ReadConfig<ConfigData>();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            this._config = new(config ?? new ConfigData(), this.Helper);
+            return this._config;
+        }
+    }
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
-
-        // Mod Config
-        IConfigData config = null;
-        try
-        {
-            config = this.Helper.ReadConfig<ConfigData>();
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        this.Config = new(config ?? new ConfigData(), this.Helper);
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
@@ -165,7 +176,7 @@ public class EasyAccess : Mod
         }
     }
 
-    private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
+    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo($"{this.ModManifest.UniqueID}/Icons"))
         {
@@ -173,7 +184,7 @@ public class EasyAccess : Mod
         }
     }
 
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (this.Config.ControlScheme.CollectItems.JustPressed())
         {
@@ -189,97 +200,126 @@ public class EasyAccess : Mod
         }
     }
 
-    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
+        var toolbarIcons = new ToolbarIconsIntegration(this.Helper.ModRegistry);
 
-        if (!gmcm.IsLoaded)
+        if (gmcm.IsLoaded)
         {
-            return;
+            // Register mod configuration
+            gmcm.Register(
+                this.ModManifest,
+                () => { this.Config.Reset(); },
+                () => { this.Config.Save(); });
+
+            // Collect Items
+            gmcm.API!.AddKeybindList(
+                this.ModManifest,
+                () => this.Config.ControlScheme.CollectItems,
+                value => this.Config.ControlScheme.CollectItems = value,
+                I18n.Config_CollectItems_Name,
+                I18n.Config_CollectItems_Tooltip,
+                nameof(IControlScheme.CollectItems));
+
+            // Dispense Items
+            gmcm.API.AddKeybindList(
+                this.ModManifest,
+                () => this.Config.ControlScheme.DispenseItems,
+                value => this.Config.ControlScheme.DispenseItems = value,
+                I18n.Config_DispenseItems_Name,
+                I18n.Config_DispenseItems_Tooltip,
+                nameof(IControlScheme.DispenseItems));
+
+            // Collect Output Distance
+            gmcm.API.AddNumberOption(
+                this.ModManifest,
+                () => this.Config.CollectOutputDistance,
+                value => this.Config.CollectOutputDistance = value,
+                I18n.Config_CollectOutputsDistance_Name,
+                I18n.Config_CollectOutputsDistance_Tooltip,
+                1,
+                16,
+                1,
+                fieldId: nameof(IConfigData.CollectOutputDistance));
+
+            // Dispense Input Distance
+            gmcm.API.AddNumberOption(
+                this.ModManifest,
+                () => this.Config.DispenseInputDistance,
+                value => this.Config.DispenseInputDistance = value,
+                I18n.Config_DispenseInputsDistance_Name,
+                I18n.Config_DispenseInputsDistance_Tooltip,
+                1,
+                16,
+                1,
+                fieldId: nameof(IConfigData.DispenseInputDistance));
+
+            // Do Dig Spots
+            gmcm.API.AddBoolOption(
+                this.ModManifest,
+                () => this.Config.DoDigSpots,
+                value => this.Config.DoDigSpots = value,
+                I18n.Config_DoDigSpots_Name,
+                I18n.Config_DoDigSpots_Tooltip,
+                nameof(IConfigData.DoDigSpots));
+
+            // Do Forage
+            gmcm.API.AddBoolOption(
+                this.ModManifest,
+                () => this.Config.DoForage,
+                value => this.Config.DoForage = value,
+                I18n.Config_DoForage_Name,
+                I18n.Config_DoForage_Tooltip,
+                nameof(IConfigData.DoForage));
+
+            // Do Machines
+            gmcm.API.AddBoolOption(
+                this.ModManifest,
+                () => this.Config.DoMachines,
+                value => this.Config.DoMachines = value,
+                I18n.Config_DoMachines_Name,
+                I18n.Config_DoMachines_Tooltip,
+                nameof(IConfigData.DoMachines));
+
+            // Do Terrain
+            gmcm.API.AddBoolOption(
+                this.ModManifest,
+                () => this.Config.DoTerrain,
+                value => this.Config.DoTerrain = value,
+                I18n.Config_DoTerrain_Name,
+                I18n.Config_DoTerrain_Tooltip,
+                nameof(IConfigData.DoTerrain));
         }
 
-        // Register mod configuration
-        gmcm.Register(
-            this.ModManifest,
-            () => { this.Config.Reset(); },
-            () => { this.Config.Save(); });
+        if (toolbarIcons.IsLoaded)
+        {
+            toolbarIcons.API!.AddToolbarIcon(
+                "EasyAccess.CollectItems",
+                $"{this.ModManifest.UniqueID}/Icons",
+                new Rectangle(0, 0, 16, 16),
+                I18n.Button_CollectOutputs_Name());
 
-        // Collect Items
-        gmcm.API.AddKeybindList(
-            this.ModManifest,
-            () => this.Config.ControlScheme.CollectItems,
-            value => this.Config.ControlScheme.CollectItems = value,
-            I18n.Config_CollectItems_Name,
-            I18n.Config_CollectItems_Tooltip,
-            nameof(IControlScheme.CollectItems));
+            toolbarIcons.API.AddToolbarIcon(
+                "EasyAccess.DispenseInputs",
+                $"{this.ModManifest.UniqueID}/Icons",
+                new Rectangle(16, 0, 16, 16),
+                I18n.Button_DispenseInputs_Name());
 
-        // Dispense Items
-        gmcm.API.AddKeybindList(
-            this.ModManifest,
-            () => this.Config.ControlScheme.DispenseItems,
-            value => this.Config.ControlScheme.DispenseItems = value,
-            I18n.Config_DispenseItems_Name,
-            I18n.Config_DispenseItems_Tooltip,
-            nameof(IControlScheme.DispenseItems));
+            toolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+        }
+    }
 
-        // Collect Output Distance
-        gmcm.API.AddNumberOption(
-            this.ModManifest,
-            () => this.Config.CollectOutputDistance,
-            value => this.Config.CollectOutputDistance = value,
-            I18n.Config_CollectOutputsDistance_Name,
-            I18n.Config_CollectOutputsDistance_Tooltip,
-            1,
-            16,
-            1,
-            fieldId: nameof(IConfigData.CollectOutputDistance));
-
-        // Dispense Input Distance
-        gmcm.API.AddNumberOption(
-            this.ModManifest,
-            () => this.Config.DispenseInputDistance,
-            value => this.Config.DispenseInputDistance = value,
-            I18n.Config_DispenseInputsDistance_Name,
-            I18n.Config_DispenseInputsDistance_Tooltip,
-            1,
-            16,
-            1,
-            fieldId: nameof(IConfigData.DispenseInputDistance));
-
-        // Do Dig Spots
-        gmcm.API.AddBoolOption(
-            this.ModManifest,
-            () => this.Config.DoDigSpots,
-            value => this.Config.DoDigSpots = value,
-            I18n.Config_DoDigSpots_Name,
-            I18n.Config_DoDigSpots_Tooltip,
-            nameof(IConfigData.DoDigSpots));
-
-        // Do Forage
-        gmcm.API.AddBoolOption(
-            this.ModManifest,
-            () => this.Config.DoForage,
-            value => this.Config.DoForage = value,
-            I18n.Config_DoForage_Name,
-            I18n.Config_DoForage_Tooltip,
-            nameof(IConfigData.DoForage));
-
-        // Do Machines
-        gmcm.API.AddBoolOption(
-            this.ModManifest,
-            () => this.Config.DoMachines,
-            value => this.Config.DoMachines = value,
-            I18n.Config_DoMachines_Name,
-            I18n.Config_DoMachines_Tooltip,
-            nameof(IConfigData.DoMachines));
-
-        // Do Terrain
-        gmcm.API.AddBoolOption(
-            this.ModManifest,
-            () => this.Config.DoTerrain,
-            value => this.Config.DoTerrain = value,
-            I18n.Config_DoTerrain_Name,
-            I18n.Config_DoTerrain_Tooltip,
-            nameof(IConfigData.DoTerrain));
+    private void OnToolbarIconPressed(object? sender, string id)
+    {
+        switch (id)
+        {
+            case "EasyAccess.CollectItems":
+                this.CollectItems();
+                return;
+            case "EasyAccess.DispenseInputs":
+                this.DispenseInputs();
+                return;
+        }
     }
 }

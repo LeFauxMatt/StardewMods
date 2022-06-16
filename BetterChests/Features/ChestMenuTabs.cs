@@ -1,5 +1,4 @@
-#nullable disable
-
+/*
 namespace StardewMods.BetterChests.Features;
 
 using System;
@@ -30,11 +29,11 @@ internal class ChestMenuTabs : Feature
     private readonly Lazy<AssetHandler> _assetHandler;
     private readonly PerScreen<IStorageContainer> _context = new();
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
-    private readonly PerScreen<ItemGrabMenu> _menu = new();
+    private readonly PerScreen<ItemGrabMenu?> _menu = new();
     private readonly Lazy<IMenuComponents> _menuComponents;
     private readonly Lazy<IMenuItems> _menuItems;
     private readonly PerScreen<int> _tabIndex = new(() => -1);
-    private readonly PerScreen<IList<TabComponent>> _tabs = new();
+    private readonly PerScreen<IList<TabComponent>?> _tabs = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChestMenuTabs" /> class.
@@ -72,7 +71,7 @@ internal class ChestMenuTabs : Feature
         get => this._itemMatcher.Value;
     }
 
-    private ItemGrabMenu Menu
+    private ItemGrabMenu? Menu
     {
         get => this._menu.Value;
         set => this._menu.Value = value;
@@ -109,10 +108,11 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Activate()
     {
+        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
         this.MenuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
         this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
         this.MenuItems.MenuItemsChanged += this.OnMenuItemsChanged;
@@ -121,10 +121,11 @@ internal class ChestMenuTabs : Feature
     /// <inheritdoc />
     protected override void Deactivate()
     {
+        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
         this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
         this.MenuComponents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
         this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
         this.MenuItems.MenuItemsChanged -= this.OnMenuItemsChanged;
@@ -169,12 +170,12 @@ internal class ChestMenuTabs : Feature
         }
     }
 
-    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        this.Menu = e.Menu switch
+        this.Menu = e.NewMenu switch
         {
             ItemSelectionMenu itemSelectionMenu when this.Config.DefaultChest.ChestMenuTabs == FeatureOption.Enabled => itemSelectionMenu,
-            ItemGrabMenu itemGrabMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => itemGrabMenu,
+            ItemGrabMenu { context: { } context } itemGrabMenu when this.ManagedObjects.TryGetManagedStorage(context, out var managedStorage) && managedStorage.ChestMenuTabs == FeatureOption.Enabled => itemGrabMenu,
             _ => null,
         };
     }
@@ -302,3 +303,5 @@ internal class ChestMenuTabs : Feature
         }
     }
 }
+*/
+

@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using Common.Helpers;
 using Common.Helpers.PatternPatcher;
 using CommonHarmony.Enums;
+using CommonHarmony.Models;
 using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -25,7 +26,6 @@ using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.UI;
 using StardewValley;
 using StardewValley.Menus;
-using SavedPatch = CommonHarmony.Models.SavedPatch;
 
 /// <inheritdoc />
 internal class SearchItems : Feature

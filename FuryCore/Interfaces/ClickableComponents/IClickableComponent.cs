@@ -2,6 +2,7 @@
 
 namespace StardewMods.FuryCore.Interfaces.ClickableComponents;
 
+using Common.Enums;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.FuryCore.Enums;
 using StardewValley.Menus;

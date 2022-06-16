@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace Common.Integrations;
 
 using System;
@@ -10,7 +8,7 @@ using StardewModdingAPI;
 internal abstract class ModIntegration<T>
     where T : class
 {
-    private readonly Lazy<T> _modAPI;
+    private readonly Lazy<T?> _modAPI;
 
     /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
@@ -27,7 +25,7 @@ internal abstract class ModIntegration<T>
     }
 
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
-    protected internal T API
+    protected internal T? API
     {
         get => this.IsLoaded ? this._modAPI.Value : default;
     }
@@ -46,7 +44,7 @@ internal abstract class ModIntegration<T>
     /// <summary>
     ///     Gets the minimum supported version for this mod.
     /// </summary>
-    protected internal string Version { get; }
+    protected internal string? Version { get; }
 
     private IModRegistry ModRegistry { get; }
 }

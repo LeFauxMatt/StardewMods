@@ -6,7 +6,7 @@
         <Name>Too Many Animals</Name>
         <Author>furyx639</Author>
         <Description>Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.</Description>
-        <Version>1.2.4-beta.1</Version>
+        <Version>1.3.0-beta.1</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.TooManyAnimals</RootNamespace>
         <UniqueId>furyx639.TooManyAnimals</UniqueId>

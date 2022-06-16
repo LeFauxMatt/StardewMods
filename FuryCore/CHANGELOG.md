@@ -1,6 +1,6 @@
 ﻿# FuryCore Change Log
 
-## 1.6.4 (Unreleased)
+## 1.7.0 (Unreleased)
 
 * Updated to SMAPI 3.14.0
 

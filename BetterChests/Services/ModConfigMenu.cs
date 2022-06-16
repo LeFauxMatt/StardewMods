@@ -5,6 +5,7 @@ namespace StardewMods.BetterChests.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Enums;
 using Common.Integrations.GenericModConfigMenu;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -14,7 +15,6 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;
 using StardewMods.BetterChests.Models.Config;
 using StardewMods.BetterChests.Models.ManagedObjects;
-using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Interfaces;
 
 /// <inheritdoc />
@@ -106,7 +106,7 @@ internal class ModConfigMenu : IModService
             optionValues,
             FormatHelper.FormatOption,
             nameof(CarryChest));
-
+/*
         // Chest Menu Tabs
         this.GMCM.API.AddTextOption(
             manifest,
@@ -117,7 +117,7 @@ internal class ModConfigMenu : IModService
             optionValues,
             FormatHelper.FormatOption,
             nameof(ChestMenuTabs));
-
+*/
         // Collect Items
         this.GMCM.API.AddTextOption(
             manifest,
@@ -471,7 +471,7 @@ internal class ModConfigMenu : IModService
             1,
             FormatHelper.FormatCarryChestSlow,
             nameof(IConfigData.CarryChestSlow));
-
+/*
         // Categorize Chest
         this.GMCM.API.AddBoolOption(
             this.Manifest,
@@ -480,7 +480,7 @@ internal class ModConfigMenu : IModService
             I18n.Config_CategorizeChest_Name,
             I18n.Config_CategorizeChest_Tooltip,
             nameof(CategorizeChest));
-
+*/
         // Slot Lock
         this.GMCM.API.AddBoolOption(
             this.Manifest,

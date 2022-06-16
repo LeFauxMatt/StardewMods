@@ -38,13 +38,12 @@ public class FuryCore : Mod
             new GameObjects(this.Helper, this.Services),
             new MenuComponents(this.Helper, this.Services, harmony),
             new MenuItems(this.Config, this.Helper, this.Services, harmony),
-            new ModConfigMenu(this.Config, this.Helper, this.ModManifest),
-            new HudComponents(this.Config, this.Helper, this.Services));
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest));
     }
 
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new FuryCoreApi(this.Services);
+        return new FuryCoreApi(this.Helper, this.Services);
     }
 }
