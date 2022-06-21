@@ -1,9 +1,9 @@
-﻿namespace CommonHarmony.Models;
+﻿namespace StardewMods.CommonHarmony.Models;
 
 using System;
 using System.Reflection;
-using CommonHarmony.Enums;
 using HarmonyLib;
+using StardewMods.CommonHarmony.Enums;
 
 /// <summary>
 ///     Stores info about Harmony patches.

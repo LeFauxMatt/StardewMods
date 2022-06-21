@@ -1,60 +1,42 @@
 namespace StardewMods.BetterChests;
 
 using System;
+using System.Collections.Generic;
+using Common.Enums;
 using Common.Helpers;
-using Common.Integrations.FuryCore;
-using Common.Integrations.ToolbarIcons;
-using CommonHarmony.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Models.Config;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Services;
-using StardewMods.FuryCore.Services;
 
 /// <inheritdoc />
 public class BetterChests : Mod
 {
-    private ConfigModel? _config;
-
-    /// <summary>
-    ///     Gets the unique Mod Id.
-    /// </summary>
-    internal static string ModUniqueId { get; private set; }
-
-    private ConfigModel Config
-    {
-        get
-        {
-            if (this._config is not null)
-            {
-                return this._config;
-            }
-
-            IConfigData? config = null;
-            try
-            {
-                config = this.Helper.ReadConfig<ConfigData>();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            this._config = new(config ?? new ConfigData(), this.Helper, this.Services);
-            return this._config;
-        }
-    }
-
-    private ModServices Services { get; } = new();
+    private IDictionary<string, IFeature> Features { get; } = new Dictionary<string, IFeature>();
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        BetterChests.ModUniqueId = this.ModManifest.UniqueID;
         I18n.Init(helper.Translation);
+        Integrations.Init(helper);
         Log.Monitor = this.Monitor;
+
+        // Config
+        ModConfig? config = null;
+        try
+        {
+            config = helper.ReadConfig<ModConfig>();
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        Config.Data = config ?? new ModConfig();
+        StorageHelper.Init(this.Helper.Multiplayer);
 
         // Core Services
         this.Services.Add(
@@ -63,6 +45,25 @@ public class BetterChests : Mod
             new ManagedObjects(this.Config, this.Services),
             new ModConfigMenu(this.Config, this.Helper, this.ModManifest, this.Services),
             new ModIntegrations(this.Helper, this.Services));
+
+        // Features
+        AutoOrganize.Init(this.Helper);
+        this.Features.Add(nameof(AutoOrganize), AutoOrganize.Init(this.Helper));
+        this.Features.Add(nameof(BetterItemGrabMenu), BetterItemGrabMenu.Init(this.Helper));
+        this.Features.Add(nameof(BetterShippingBin), BetterShippingBin.Init(this.Helper));
+        this.Features.Add(nameof(CarryChest), CarryChest.Init(this.Helper));
+        this.Features.Add(nameof(CollectItems), CollectItems.Init(this.Helper));
+        this.Features.Add(nameof(CraftFromChest), CraftFromChest.Init(this.Helper));
+        this.Features.Add(nameof(CustomColorPicker), CustomColorPicker.Init(this.Helper));
+        this.Features.Add(nameof(FilterItems), FilterItems.Init(this.Helper));
+        this.Features.Add(nameof(OpenHeldChest), OpenHeldChest.Init(this.Helper));
+        this.Features.Add(nameof(OrganizeChest), OrganizeChest.Init(this.Helper));
+        this.Features.Add(nameof(ResizeChest), ResizeChest.Init(this.Helper));
+        this.Features.Add(nameof(ResizeChestMenu), ResizeChestMenu.Init(this.Helper));
+        this.Features.Add(nameof(SearchItems), SearchItems.Init(this.Helper));
+        this.Features.Add(nameof(SlotLock), SlotLock.Init(this.Helper));
+        this.Features.Add(nameof(StashToChest), StashToChest.Init(this.Helper));
+        this.Features.Add(nameof(UnloadChest), UnloadChest.Init(this.Helper));
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -76,37 +77,84 @@ public class BetterChests : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        var harmony = new HarmonyHelper();
-        var furyCore = new FuryCoreIntegration(this.Helper.ModRegistry);
-        var toolbarIcons = new ToolbarIconsIntegration(this.Helper.ModRegistry);
-        furyCore.API!.AddFuryCoreServices(this.Services);
-
         // Features
         this.Services.Add(
-            new AutoOrganize(this.Config, this.Helper, this.Services),
-            new CarryChest(this.Config, this.Helper, this.Services, harmony),
             //new CategorizeChest(this.Config, this.Helper, this.Services),
             //new ChestMenuTabs(this.Config, this.Helper, this.Services),
-            new CollectItems(this.Config, this.Helper, this.Services, harmony),
-            new Configurator(this.Config, this.Helper, this.Services),
-            new CraftFromChest(this.Config, this.Helper, this.Services, harmony, toolbarIcons),
-            new CustomColorPicker(this.Config, this.Helper, this.Services, harmony),
-            new FilterItems(this.Config, this.Helper, this.Services, harmony),
-            new InventoryProviderForBetterCrafting(this.Config, this.Helper, this.Services),
-            new MenuForShippingBin(this.Config, this.Helper, this.Services),
-            new OpenHeldChest(this.Config, this.Helper, this.Services, harmony),
-            new OrganizeChest(this.Config, this.Helper, this.Services, harmony),
-            new ResizeChest(this.Config, this.Helper, this.Services, harmony),
-            new ResizeChestMenu(this.Config, this.Helper, this.Services, harmony),
-            new SearchItems(this.Config, this.Helper, this.Services, harmony),
-            new SlotLock(this.Config, this.Helper, this.Services, harmony),
-            new StashToChest(this.Config, this.Helper, this.Services, toolbarIcons),
-            new UnloadChest(this.Config, this.Helper, this.Services));
+            new Configurator(this.Config, this.Helper, this.Services));
 
         // Activate Features
-        foreach (var feature in this.Services.FindServices<Feature>())
+        if (Config.DefaultChest.AutoOrganize != FeatureOption.Disabled)
         {
-            feature.Toggle();
+            this.Features[nameof(AutoOrganize)].Activate();
+        }
+
+        this.Features[nameof(BetterItemGrabMenu)].Activate();
+        this.Features[nameof(BetterShippingBin)].Activate();
+
+        if (Config.DefaultChest.CarryChest != FeatureOption.Disabled)
+        {
+            this.Features[nameof(CarryChest)].Activate();
+        }
+
+        if (Config.DefaultChest.CollectItems != FeatureOption.Disabled)
+        {
+            this.Features[nameof(CollectItems)].Activate();
+        }
+
+        if (Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled)
+        {
+            this.Features[nameof(CraftFromChest)].Activate();
+        }
+
+        if (Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled)
+        {
+            this.Features[nameof(CustomColorPicker)].Activate();
+        }
+
+        if (Config.DefaultChest.FilterItems != FeatureOption.Disabled)
+        {
+            this.Features[nameof(FilterItems)].Activate();
+        }
+
+        if (Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled)
+        {
+            this.Features[nameof(OpenHeldChest)].Activate();
+        }
+
+        if (Config.DefaultChest.OrganizeChest != FeatureOption.Disabled)
+        {
+            this.Features[nameof(OrganizeChest)].Activate();
+        }
+
+        if (Config.DefaultChest.ResizeChest != FeatureOption.Disabled)
+        {
+            this.Features[nameof(ResizeChest)].Activate();
+        }
+
+        if (Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled)
+        {
+            this.Features[nameof(ResizeChestMenu)].Activate();
+        }
+
+        if (Config.DefaultChest.SearchItems != FeatureOption.Disabled)
+        {
+            this.Features[nameof(SearchItems)].Activate();
+        }
+
+        if (Config.SlotLock)
+        {
+            this.Features[nameof(SlotLock)].Activate();
+        }
+
+        if (Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled)
+        {
+            this.Features[nameof(StashToChest)].Activate();
+        }
+
+        if (Config.DefaultChest.UnloadChest != FeatureOption.Disabled)
+        {
+            this.Features[nameof(UnloadChest)].Activate();
         }
     }
 }

@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
@@ -7,16 +5,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using Common.Enums;
 using Common.Helpers;
-using CommonHarmony.Enums;
-using CommonHarmony.Models;
-using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
 using StardewMods.FuryCore.UI;
@@ -24,26 +21,31 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class CustomColorPicker : Feature
+/// <summary>
+///     Adds a chest color picker that support hue, saturation, and lightness.
+/// </summary>
+internal class CustomColorPicker : IFeature
 {
-    private readonly PerScreen<HslColorPicker> _colorPicker = new();
+    private const string Id = "BetterChests.CustomColorPicker";
+
+    private readonly PerScreen<HslColorPicker?> _colorPicker = new();
     private readonly PerScreen<IGameObject> _context = new();
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="CustomColorPicker" /> class.
+    ///     Initializes <see cref="CustomColorPicker" />.
     /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public CustomColorPicker(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
-        : base(config, helper, services)
+    /// <returns>Returns an instance of the <see cref="CustomColorPicker" /> class.</returns>
+    public static CustomColorPicker Init(IModHelper helper)
     {
-        CustomColorPicker.Instance = this;
-        this.Harmony = harmony;
-        this.Harmony.AddPatches(
-            this.Id,
+        return CustomColorPicker.Instance ??= new(helper);
+    }
+
+    private CustomColorPicker(IModHelper helper)
+    {
+        this.Helper = helper;
+        HarmonyHelper.AddPatches(
+            CustomColorPicker.Id,
             new SavedPatch[]
             {
                 new(
@@ -84,9 +86,11 @@ internal class CustomColorPicker : Feature
             });
     }
 
-    private static CustomColorPicker Instance { get; set; }
+    private static CustomColorPicker? Instance { get; set; }
 
-    private HslColorPicker ColorPicker
+    private IModHelper Helper { get; }
+
+    private HslColorPicker? ColorPicker
     {
         get => this._colorPicker.Value;
         set => this._colorPicker.Value = value;
@@ -98,20 +102,18 @@ internal class CustomColorPicker : Feature
         set => this._context.Value = value;
     }
 
-    private HarmonyHelper Harmony { get; }
-
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
-        this.Harmony.ApplyPatches(this.Id);
-        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
+        HarmonyHelper.ApplyPatches(CustomColorPicker.Id);
+        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
-        this.Harmony.UnapplyPatches(this.Id);
-        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
+        HarmonyHelper.UnapplyPatches(CustomColorPicker.Id);
+        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -126,7 +128,7 @@ internal class CustomColorPicker : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetCurrentColor_postfix(DiscreteColorPicker __instance, ref Color __result)
     {
-        if (__instance is not HslColorPicker colorPicker || !ReferenceEquals(colorPicker, CustomColorPicker.Instance.ColorPicker))
+        if (__instance is not HslColorPicker colorPicker || !ReferenceEquals(colorPicker, CustomColorPicker.Instance!.ColorPicker))
         {
             return;
         }
@@ -170,7 +172,7 @@ internal class CustomColorPicker : Feature
         Log.Verbose("Adding CustomColorPicker to ItemGrabMenu");
         CustomColorPicker.Instance.ColorPicker = new(
             CustomColorPicker.Instance.Helper.Content,
-            CustomColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
+            Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
             menu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2,
             chest.playerChoiceColor.Value,
             chestToDraw);
@@ -214,7 +216,7 @@ internal class CustomColorPicker : Feature
         __instance.discreteColorPickerCC = null;
     }
 
-    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.Menu is not ItemGrabMenu itemGrabMenu || e.Context is null || !this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
         {

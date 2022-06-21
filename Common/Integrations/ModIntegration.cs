@@ -1,6 +1,7 @@
-namespace Common.Integrations;
+namespace StardewMods.Common.Integrations;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using StardewModdingAPI;
 
 /// <summary>Provides an integration point for using external mods' APIs.</summary>
@@ -31,6 +32,7 @@ internal abstract class ModIntegration<T>
     }
 
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
+    [MemberNotNullWhen(true, nameof(ModIntegration<T>.API))]
     protected internal bool IsLoaded
     {
         get => this.ModRegistry.IsLoaded(this.UniqueId) && (this.Version is null || this.ModRegistry.Get(this.UniqueId)?.Manifest.Version.IsOlderThan(this.Version) == true);

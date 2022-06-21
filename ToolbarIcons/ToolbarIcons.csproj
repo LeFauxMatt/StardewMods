@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
     <PropertyGroup>
         <Name>Toolbar Icons</Name>
         <Author>furyx639</Author>
@@ -12,4 +12,7 @@
         <UpdateKeys>Nexus:12512</UpdateKeys>
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04" />
+    </ItemGroup>
 </Project>

@@ -3,8 +3,8 @@
 namespace StardewMods.FuryCore;
 
 using Common.Helpers;
-using CommonHarmony.Services;
 using StardewModdingAPI;
+using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Services;
 

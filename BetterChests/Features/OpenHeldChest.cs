@@ -1,38 +1,31 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.Helpers;
-using CommonHarmony.Enums;
-using CommonHarmony.Models;
-using CommonHarmony.Services;
+using Common.Enums;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Storages;
 using StardewValley;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class OpenHeldChest : Feature
+/// <summary>
+///     Allows a chest to be opened while in the farmer's inventory.
+/// </summary>
+internal class OpenHeldChest : IFeature
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="OpenHeldChest" /> class.
-    /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public OpenHeldChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
-        : base(config, helper, services)
+    private const string Id = "BetterChests.OpenHeldChest";
+
+    private OpenHeldChest(IModHelper helper)
     {
-        this.Harmony = harmony;
-        this.Harmony.AddPatches(
-            this.Id,
+        this.Helper = helper;
+        HarmonyHelper.AddPatches(
+            OpenHeldChest.Id,
             new SavedPatch[]
             {
                 new(
@@ -43,27 +36,51 @@ internal class OpenHeldChest : Feature
             });
     }
 
-    private HarmonyHelper Harmony { get; }
+    private static OpenHeldChest? Instance { get; set; }
+
+    private IModHelper Helper { get; }
+
+    /// <summary>
+    ///     Initializes <see cref="OpenHeldChest" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <returns>Returns an instance of the <see cref="OpenHeldChest" /> class.</returns>
+    public static OpenHeldChest Init(IModHelper helper)
+    {
+        return OpenHeldChest.Instance ??= new(helper);
+    }
 
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
-        this.Harmony.ApplyPatches(this.Id);
+        HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
         if (Context.IsMainPlayer)
         {
             this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
         }
+
+        if (Integrations.BetterCrafting.IsLoaded)
+        {
+            Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(IStorageData), new HeldStorage());
+        }
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
-        this.Harmony.UnapplyPatches(this.Id);
+        HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+
         if (Context.IsMainPlayer)
         {
             this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
+        }
+
+        if (Integrations.BetterCrafting.IsLoaded)
+        {
+            Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(IStorageData));
         }
     }
 
@@ -82,7 +99,7 @@ internal class OpenHeldChest : Feature
         return false;
     }
 
-    private static void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+    private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
         if (!Context.IsPlayerFree)
         {
@@ -99,24 +116,24 @@ internal class OpenHeldChest : Feature
     }
 
     /// <summary>Open inventory for currently held chest.</summary>
-    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not Object obj)
         {
             return;
         }
 
-        if (!this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var managedStorage) || managedStorage.OpenHeldChest == FeatureOption.Disabled)
+        // Disabled for object
+        if (!StorageHelper.TryGetOne(obj, out var storage) || storage.OpenHeldChest == FeatureOption.Disabled)
         {
             return;
         }
 
-        Log.Trace($"Opening ItemGrabMenu for Held Chest ${managedStorage.QualifiedItemId}.");
         if (Context.IsMainPlayer)
         {
             obj.checkForAction(Game1.player);
         }
-        else if (managedStorage.Context is Chest chest)
+        else if (obj is Chest chest)
         {
             Game1.player.currentLocation.localSound("openChest");
             chest.ShowMenu();

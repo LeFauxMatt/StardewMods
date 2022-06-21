@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1"/>
         <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="1.0.3"/>
+        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">

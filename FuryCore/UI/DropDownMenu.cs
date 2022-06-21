@@ -8,6 +8,7 @@ using System.Linq;
 using Common.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Models.ClickableComponents;
 using StardewValley;
 using StardewValley.Menus;

@@ -1,4 +1,4 @@
-﻿namespace CommonHarmony.Enums;
+﻿namespace StardewMods.CommonHarmony.Enums;
 
 internal enum PatchType
 {

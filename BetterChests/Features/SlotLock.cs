@@ -1,65 +1,69 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
-using Common.Helpers.PatternPatcher;
-using CommonHarmony.Enums;
-using CommonHarmony.Services;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Helpers.PatternPatcher;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc />
-internal class SlotLock : Feature
+/// <summary>
+///     Locks items in inventory so they cannot be stashed.
+/// </summary>
+internal class SlotLock : IFeature
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SlotLock" /> class.
-    /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public SlotLock(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
-        : base(config, helper, services)
+    private const string Id = "BetterChests.SlotLock";
+
+    private SlotLock(IModHelper helper)
     {
-        this.Harmony = harmony;
-        this.Harmony.AddPatch(
-            this.Id,
-            AccessTools.Method(
-                typeof(InventoryMenu),
-                nameof(InventoryMenu.draw),
-                new[]
-                {
-                    typeof(SpriteBatch), typeof(int), typeof(int), typeof(int),
-                }),
-            typeof(SlotLock),
-            nameof(SlotLock.InventoryMenu_draw_transpiler),
-            PatchType.Transpiler);
+        this.Helper = helper;
+        HarmonyHelper.AddPatches(
+            SlotLock.Id,
+            new SavedPatch[]
+            {
+                new(
+                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                    typeof(SlotLock),
+                    nameof(SlotLock.InventoryMenu_draw_transpiler),
+                    PatchType.Transpiler),
+            });
     }
 
-    private HarmonyHelper Harmony { get; }
+    private static SlotLock? Instance { get; set; }
+
+    private IModHelper Helper { get; }
+
+    /// <summary>
+    ///     Initializes <see cref="SlotLock" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
+    public static SlotLock Init(IModHelper helper)
+    {
+        return SlotLock.Instance ??= new(helper);
+    }
 
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
-        this.Harmony.ApplyPatches(this.Id);
+        HarmonyHelper.ApplyPatches(SlotLock.Id);
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
-        this.Harmony.UnapplyPatches(this.Id);
+        HarmonyHelper.UnapplyPatches(SlotLock.Id);
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
@@ -114,7 +118,7 @@ internal class SlotLock : Feature
         {
             case ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu):
             case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage } && ReferenceEquals(inventoryPage, menu):
-                return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot") == true
+                return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true
                     ? Color.Red
                     : tint;
             default:
@@ -122,7 +126,7 @@ internal class SlotLock : Feature
         }
     }
 
-    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         var menu = Game1.activeClickableMenu switch
         {
@@ -136,8 +140,8 @@ internal class SlotLock : Feature
             return;
         }
 
-        if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
-            && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
+        if (!(Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(Config.ControlScheme.LockSlot))
+            && !(!Config.SlotLockHold && e.Button == Config.ControlScheme.LockSlot))
         {
             return;
         }
@@ -155,13 +159,13 @@ internal class SlotLock : Feature
             return;
         }
 
-        if (item.modData.ContainsKey($"{BetterChests.ModUniqueId}/LockedSlot"))
+        if (item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
         {
-            item.modData.Remove($"{BetterChests.ModUniqueId}/LockedSlot");
+            item.modData.Remove("furyx639.BetterChests/LockedSlot");
         }
         else
         {
-            item.modData[$"{BetterChests.ModUniqueId}/LockedSlot"] = true.ToString();
+            item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
         }
 
         this.Helper.Input.Suppress(e.Button);

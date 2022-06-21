@@ -1,4 +1,4 @@
-﻿namespace Common.Enums;
+﻿namespace StardewMods.Common.Enums;
 
 /// <summary>
 ///     Align a component to an area around the menu.

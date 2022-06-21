@@ -1,4 +1,4 @@
-namespace Common.Integrations.FuryCore;
+namespace StardewMods.Common.Integrations.FuryCore;
 
 using System;
 using System.Collections.Generic;

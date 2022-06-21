@@ -3,6 +3,7 @@
 namespace StardewMods.BetterChests.Models.Config;
 
 using System.Collections.Generic;
+using Common.Enums;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Interfaces.Config;
 

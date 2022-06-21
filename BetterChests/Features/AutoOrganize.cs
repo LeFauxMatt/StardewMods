@@ -1,73 +1,77 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Enums;
 using Common.Helpers;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Interfaces.ManagedObjects;
+using StardewMods.BetterChests.Storages;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models.GameObjects;
 using StardewValley;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class AutoOrganize : Feature
+/// <summary>
+///     Automatically organizes items between chests during sleep.
+/// </summary>
+internal class AutoOrganize : IFeature
 {
-    private readonly Lazy<OrganizeChest> _organizeChest;
+    private AutoOrganize(IModHelper helper)
+    {
+        this.Helper = helper;
+    }
+
+    private static AutoOrganize? Instance { get; set; }
+
+    private IModHelper Helper { get; }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="AutoOrganize" /> class.
+    ///     Initializes <see cref="AutoOrganize" />.
     /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public AutoOrganize(IConfigModel config, IModHelper helper, IModServices services)
-        : base(config, helper, services)
+    /// <returns>Returns an instance of the <see cref="AutoOrganize" /> class.</returns>
+    public static AutoOrganize Init(IModHelper helper)
     {
-        this._organizeChest = services.Lazy<OrganizeChest>();
+        return AutoOrganize.Instance ??= new(helper);
     }
 
-    private List<KeyValuePair<IGameObjectType, IManagedStorage>> EligibleStorages
+    /// <inheritdoc />
+    public void Activate()
     {
-        get
+        this.Helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
+    }
+
+    /// <inheritdoc />
+    public void Deactivate()
+    {
+        this.Helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
+    }
+
+    private static void OnDayEnding(object? sender, DayEndingEventArgs e)
+    {
+        var storages =
+            StorageHelper.Inventory
+                         .Where(storage => storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+                         .Concat(StorageHelper.World.Select(placed => placed.Storage).Where(storage => storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }))
+                         .OrderByDescending(storage => storage.StashToChestPriority)
+                         .ToList();
+
+        foreach (var storage in StorageHelper.Inventory.Where(storage => storages.Contains(storage)))
         {
-            var storages = new List<KeyValuePair<IGameObjectType, IManagedStorage>>();
-            storages.AddRange(
-                from inventoryStorage in this.ManagedObjects.InventoryStorages
-                where inventoryStorage.Value.AutoOrganize == FeatureOption.Enabled
-                      && (inventoryStorage.Value.Context as Chest)?.SpecialChestType is not null or Chest.SpecialChestTypes.JunimoChest
-                select new KeyValuePair<IGameObjectType, IManagedStorage>(inventoryStorage.Key, inventoryStorage.Value));
-            storages.AddRange(
-                from locationStorage in this.ManagedObjects.LocationStorages
-                where locationStorage.Value.AutoOrganize == FeatureOption.Enabled
-                      && (locationStorage.Value.Context as Chest)?.SpecialChestType is not null or Chest.SpecialChestTypes.JunimoChest
-                select new KeyValuePair<IGameObjectType, IManagedStorage>(locationStorage.Key, locationStorage.Value));
-            return storages;
+            AutoOrganize.StashItems(storage);
         }
-    }
 
-    private OrganizeChest OrganizeChest
-    {
-        get => this._organizeChest.Value;
-    }
-
-    /// <inheritdoc />
-    protected override void Activate()
-    {
-        this.Helper.Events.GameLoop.DayEnding += this.OnDayEnding;
-    }
-
-    /// <inheritdoc />
-    protected override void Deactivate()
-    {
-        this.Helper.Events.GameLoop.DayEnding -= this.OnDayEnding;
+        foreach (var (storage, location, position) in StorageHelper.World.Where(placed => storages.Contains(placed.Storage)))
+        {
+            AutoOrganize.StashItems(storage);
+        }
     }
 
     private static void StashItems(IManagedStorage fromStorage, GameLocation fromLocation, Vector2 fromPosition, IGameObjectType toGameObjectType, IManagedStorage toStorage)
@@ -138,16 +142,11 @@ internal class AutoOrganize : Feature
         }
     }
 
-    private void OnDayEnding(object sender, DayEndingEventArgs e)
+    private static void StashItems(BaseStorage storage)
     {
-        var allStorages = this.EligibleStorages;
-        foreach (var (fromGameObjectType, fromStorage) in allStorages)
-        {
-            this.StashItems(allStorages, fromGameObjectType, fromStorage);
-        }
     }
 
-    private void StashItems(IEnumerable<KeyValuePair<IGameObjectType, IManagedStorage>> allStorages, IGameObjectType fromGameObjectType, IManagedStorage fromStorage)
+    private static void StashItems(IEnumerable<KeyValuePair<IGameObjectType, IManagedStorage>> allStorages, IGameObjectType fromGameObjectType, IManagedStorage fromStorage)
     {
         var toStorages = (
             from storage in allStorages
@@ -158,7 +157,7 @@ internal class AutoOrganize : Feature
 
         if (!toStorages.Any())
         {
-            this.OrganizeChest.OrganizeItems(fromStorage, true);
+            OrganizeChest.OrganizeItems(fromStorage);
             return;
         }
 
@@ -185,6 +184,6 @@ internal class AutoOrganize : Feature
             }
         }
 
-        this.OrganizeChest.OrganizeItems(fromStorage, true);
+        OrganizeChest.OrganizeItems(fromStorage);
     }
 }

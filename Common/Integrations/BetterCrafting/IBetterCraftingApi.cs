@@ -1,4 +1,4 @@
-namespace Common.Integrations.BetterCrafting;
+namespace StardewMods.Common.Integrations.BetterCrafting;
 
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace Common.Helpers;
+namespace StardewMods.Common.Helpers;
 
 using System;
 using System.Linq;
@@ -16,7 +14,7 @@ internal static class ReflectionHelper
     /// </summary>
     /// <param name="name">The name of the assembly.</param>
     /// <returns>The first assembly that matches the name.</returns>
-    public static Assembly GetAssemblyByName(string name)
+    public static Assembly? GetAssemblyByName(string name)
     {
         return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.FullName?.StartsWith($"{name},") == true);
     }

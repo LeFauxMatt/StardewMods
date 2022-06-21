@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace Common.Integrations.GenericModConfigMenu;
+namespace StardewMods.Common.Integrations.GenericModConfigMenu;
 
 using System;
 using Microsoft.Xna.Framework;

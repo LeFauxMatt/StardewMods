@@ -3,11 +3,11 @@
 namespace StardewMods.FuryCore.Services;
 
 using System;
-using CommonHarmony.Services;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Events;
+using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 

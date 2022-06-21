@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace Common.Models;
+namespace StardewMods.Common.Models;
 
 using System;
 

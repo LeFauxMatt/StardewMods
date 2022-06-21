@@ -1,43 +1,35 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using CommonHarmony.Enums;
-using CommonHarmony.Models;
-using CommonHarmony.Services;
+using Common.Enums;
+using Common.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class CollectItems : Feature
+/// <summary>
+///     Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.
+/// </summary>
+internal class CollectItems : IFeature
 {
-    private readonly PerScreen<IList<IManagedStorage>> _eligibleChests = new();
+    private const string Id = "BetterChests.CollectItems";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="CollectItems" /> class.
-    /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public CollectItems(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
-        : base(config, helper, services)
+    private readonly PerScreen<List<EligibleChest>?> _cachedEligibleChests = new();
+
+    private CollectItems(IModHelper helper)
     {
-        CollectItems.Instance ??= this;
-        this.Harmony = harmony;
-        this.Harmony.AddPatches(
-            this.Id,
+        this.Helper = helper;
+        HarmonyHelper.AddPatches(
+            CollectItems.Id,
             new SavedPatch[]
             {
                 new(
@@ -48,43 +40,104 @@ internal class CollectItems : Feature
             });
     }
 
-    private static CollectItems Instance { get; set; }
-
-    private IList<IManagedStorage> EligibleChests
+    private static IEnumerable<EligibleChest> EligibleChests
     {
-        get => this._eligibleChests.Value ??= (
-            from inventoryStorage in this.ManagedObjects.InventoryStorages
-            where inventoryStorage.Value.CollectItems == FeatureOption.Enabled
-            select inventoryStorage.Value).ToList();
-        set => this._eligibleChests.Value = value;
+        get
+        {
+            foreach (var chest in Game1.player.Items.Take(12).OfType<Chest>())
+            {
+                // Disabled for object
+                if (!StorageHelper.TryGetOne(chest, out var storage) || storage.CollectItems == FeatureOption.Disabled)
+                {
+                    continue;
+                }
+
+                // Try to stash
+                if (storage.FilterItems != FeatureOption.Disabled && storage.FilterItemsList is not null)
+                {
+                    var itemMatcher = new ItemMatcher(true);
+                    foreach (var filter in storage.FilterItemsList)
+                    {
+                        itemMatcher.Add(filter);
+                    }
+
+                    if (itemMatcher.Any() && !itemMatcher.All(filter => filter.StartsWith("!")))
+                    {
+                        yield return new(chest, itemMatcher);
+                        continue;
+                    }
+                }
+
+                yield return new(chest, null);
+            }
+        }
     }
 
-    private HarmonyHelper Harmony { get; }
+    private static CollectItems? Instance { get; set; }
+
+    private List<EligibleChest>? CachedEligibleChest
+    {
+        get => this._cachedEligibleChests.Value;
+        set => this._cachedEligibleChests.Value = value;
+    }
+
+    private IModHelper Helper { get; }
+
+    /// <summary>
+    ///     Initializes <see cref="CollectItems" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <returns>Returns an instance of the <see cref="CollectItems" /> class.</returns>
+    public static CollectItems Init(IModHelper helper)
+    {
+        return CollectItems.Instance ??= new(helper);
+    }
 
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
-        this.Harmony.ApplyPatches(this.Id);
+        HarmonyHelper.ApplyPatches(CollectItems.Id);
         this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
-        this.Harmony.UnapplyPatches(this.Id);
+        HarmonyHelper.UnapplyPatches(CollectItems.Id);
         this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
-    private static bool AddItemToInventoryBool(Farmer farmer, Item item, bool makeActiveObject)
+    private static bool AddItemToInventoryBool(Farmer farmer, Item? item, bool makeActiveObject)
     {
-        if (!CollectItems.Instance.EligibleChests.Any())
+        if (item is null)
+        {
+            return true;
+        }
+
+        CollectItems.Instance!.CachedEligibleChest ??= CollectItems.EligibleChests.ToList();
+
+        if (!CollectItems.Instance.CachedEligibleChest.Any())
         {
             return farmer.addItemToInventoryBool(item, makeActiveObject);
         }
 
-        foreach (var managedChest in CollectItems.Instance.EligibleChests)
+        foreach (var (chest, itemMatcher) in CollectItems.Instance.CachedEligibleChest)
         {
-            item = managedChest.StashItem(item);
+            item.resetState();
+            chest.clearNulls();
+
+            // Add if categorized
+            if (itemMatcher?.Matches(item) == true)
+            {
+                item = chest.addItem(item);
+            }
+
+            // Add if stackable
+            if (item is not null && chest.items.Any(chestItem => chestItem.canStackWith(item)))
+            {
+                item = chest.addItem(item);
+            }
+
             if (item is null)
             {
                 break;
@@ -109,11 +162,13 @@ internal class CollectItems : Feature
         }
     }
 
-    private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
         if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any()))
         {
-            this.EligibleChests = null;
+            this.CachedEligibleChest = null;
         }
     }
+
+    private record EligibleChest(Chest Chest, ItemMatcher? Filter);
 }

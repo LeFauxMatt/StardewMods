@@ -5,6 +5,7 @@ namespace StardewMods.BetterChests.Models.ManagedObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Enums;
 using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Interfaces.Config;

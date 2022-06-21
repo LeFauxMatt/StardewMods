@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace Common.Integrations.BetterChests;
+namespace StardewMods.Common.Integrations.BetterChests;
 
 using System.Collections.Generic;
 using StardewModdingAPI;

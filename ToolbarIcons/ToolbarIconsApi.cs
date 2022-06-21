@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using Common.Integrations.ToolbarIcons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewMods.ToolbarIcons.Integrations.ToolbarIcons;
 using StardewValley.Menus;
 
 /// <inheritdoc />

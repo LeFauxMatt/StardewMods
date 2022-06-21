@@ -3,10 +3,10 @@
 namespace StardewMods.FuryCore.Services;
 
 using System;
-using Common.Integrations.GenericModConfigMenu;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Integrations.GenericModConfigMenu;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Models;
 

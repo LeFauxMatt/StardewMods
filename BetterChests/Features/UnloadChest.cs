@@ -1,54 +1,53 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
-using System;
-using Common.Helpers;
+using Common.Enums;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class UnloadChest : Feature
+/// <summary>
+///     Unload a held chest's contents into another chest.
+/// </summary>
+internal class UnloadChest : IFeature
 {
-    private readonly Lazy<CarryChest> _carryChest;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="UnloadChest" /> class.
-    /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public UnloadChest(IConfigModel config, IModHelper helper, IModServices services)
-        : base(config, helper, services)
+    private UnloadChest(IModHelper helper)
     {
-        this._carryChest = services.Lazy<CarryChest>();
+        this.Helper = helper;
     }
 
-    private CarryChest CarryChest
+    private static UnloadChest? Instance { get; set; }
+
+    private IModHelper Helper { get; }
+
+    /// <summary>
+    ///     Initializes <see cref="UnloadChest" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <returns>Returns an instance of the <see cref="UnloadChest" /> class.</returns>
+    public static UnloadChest Init(IModHelper helper)
     {
-        get => this._carryChest.Value;
+        return UnloadChest.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
-    [EventPriority(EventPriority.High + 1)]
-    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+    [EventPriority(EventPriority.High)]
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or not Chest or null || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
@@ -67,54 +66,34 @@ internal class UnloadChest : Feature
             return;
         }
 
-        // CurrentItem supports Unload Chest
-        if (!this.ManagedObjects.TryGetManagedStorage(Game1.player.CurrentItem, out var source) || source.UnloadChest != FeatureOption.Enabled)
+        if (!StorageHelper.TryGetOne(obj, out var target))
         {
             return;
         }
 
-        // Object supports Unload Chest
-        if (!this.ManagedObjects.TryGetManagedStorage(obj, out var target) || target.UnloadChest != FeatureOption.Enabled)
+        // Disabled for object
+        if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var storage) || storage.UnloadChest == FeatureOption.Disabled)
         {
             return;
         }
 
         // Stash items into target chest
-        for (var index = source.Items.Count - 1; index >= 0; index--)
+        for (var index = storage.Items.Count - 1; index >= 0; index--)
         {
-            var item = source.Items[index];
-            if (item is null)
+            if (storage.Items[index] is null)
             {
                 continue;
             }
 
-            item = target.StashItem(item);
-
-            if (item is null)
+            var tmp = target.AddItem(storage.Items[index]!);
+            if (tmp is null)
             {
-                source.Items[index] = null;
+                storage.Items[index] = null;
             }
         }
 
-        // Add remaining items to target chest
-        for (var index = source.Items.Count - 1; index >= 0; index--)
-        {
-            var item = source.Items[index];
-            if (item is null)
-            {
-                continue;
-            }
-
-            item = target.AddItem(item);
-            if (item is null)
-            {
-                source.Items[index] = null;
-            }
-        }
-
-        Log.Info($"Unloading items from Chest {source.QualifiedItemId} into Chest {target.QualifiedItemId}");
-        source.ClearNulls();
-        this.CarryChest.CheckForOverburdened();
+        storage.ClearNulls();
+        CarryChest.CheckForOverburdened();
         this.Helper.Input.Suppress(e.Button);
     }
 }

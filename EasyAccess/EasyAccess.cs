@@ -2,22 +2,21 @@ namespace StardewMods.EasyAccess;
 
 using System;
 using Common.Helpers;
-using Common.Integrations.GenericModConfigMenu;
-using Common.Integrations.ToolbarIcons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.EasyAccess.Interfaces.Config;
-using StardewMods.EasyAccess.Models.Config;
+using StardewMods.EasyAccess.Helpers;
+using StardewMods.EasyAccess.Integrations.GenericModConfigMenu;
+using StardewMods.EasyAccess.Integrations.ToolbarIcons;
 using StardewValley;
 
 /// <inheritdoc />
 public class EasyAccess : Mod
 {
-    private ConfigModel? _config;
+    private ModConfig? _config;
 
-    private ConfigModel Config
+    private ModConfig Config
     {
         get
         {
@@ -27,17 +26,17 @@ public class EasyAccess : Mod
             }
 
             // Mod Config
-            IConfigData? config = null;
+            ModConfig? config = null;
             try
             {
-                config = this.Helper.ReadConfig<ConfigData>();
+                config = this.Helper.ReadConfig<ModConfig>();
             }
             catch (Exception)
             {
                 // ignored
             }
 
-            this._config = new(config ?? new ConfigData(), this.Helper);
+            this._config = config ?? new ModConfig();
             return this._config;
         }
     }
@@ -210,17 +209,17 @@ public class EasyAccess : Mod
             // Register mod configuration
             gmcm.Register(
                 this.ModManifest,
-                () => { this.Config.Reset(); },
-                () => { this.Config.Save(); });
+                () => this._config = new(),
+                () => this.Helper.WriteConfig(this.Config));
 
             // Collect Items
-            gmcm.API!.AddKeybindList(
+            gmcm.API.AddKeybindList(
                 this.ModManifest,
                 () => this.Config.ControlScheme.CollectItems,
                 value => this.Config.ControlScheme.CollectItems = value,
                 I18n.Config_CollectItems_Name,
                 I18n.Config_CollectItems_Tooltip,
-                nameof(IControlScheme.CollectItems));
+                nameof(Controls.CollectItems));
 
             // Dispense Items
             gmcm.API.AddKeybindList(
@@ -229,7 +228,7 @@ public class EasyAccess : Mod
                 value => this.Config.ControlScheme.DispenseItems = value,
                 I18n.Config_DispenseItems_Name,
                 I18n.Config_DispenseItems_Tooltip,
-                nameof(IControlScheme.DispenseItems));
+                nameof(Controls.DispenseItems));
 
             // Collect Output Distance
             gmcm.API.AddNumberOption(
@@ -241,7 +240,7 @@ public class EasyAccess : Mod
                 1,
                 16,
                 1,
-                fieldId: nameof(IConfigData.CollectOutputDistance));
+                fieldId: nameof(ModConfig.CollectOutputDistance));
 
             // Dispense Input Distance
             gmcm.API.AddNumberOption(
@@ -253,7 +252,7 @@ public class EasyAccess : Mod
                 1,
                 16,
                 1,
-                fieldId: nameof(IConfigData.DispenseInputDistance));
+                fieldId: nameof(ModConfig.DispenseInputDistance));
 
             // Do Dig Spots
             gmcm.API.AddBoolOption(
@@ -262,7 +261,7 @@ public class EasyAccess : Mod
                 value => this.Config.DoDigSpots = value,
                 I18n.Config_DoDigSpots_Name,
                 I18n.Config_DoDigSpots_Tooltip,
-                nameof(IConfigData.DoDigSpots));
+                nameof(ModConfig.DoDigSpots));
 
             // Do Forage
             gmcm.API.AddBoolOption(
@@ -271,7 +270,7 @@ public class EasyAccess : Mod
                 value => this.Config.DoForage = value,
                 I18n.Config_DoForage_Name,
                 I18n.Config_DoForage_Tooltip,
-                nameof(IConfigData.DoForage));
+                nameof(ModConfig.DoForage));
 
             // Do Machines
             gmcm.API.AddBoolOption(
@@ -280,7 +279,7 @@ public class EasyAccess : Mod
                 value => this.Config.DoMachines = value,
                 I18n.Config_DoMachines_Name,
                 I18n.Config_DoMachines_Tooltip,
-                nameof(IConfigData.DoMachines));
+                nameof(ModConfig.DoMachines));
 
             // Do Terrain
             gmcm.API.AddBoolOption(
@@ -289,12 +288,12 @@ public class EasyAccess : Mod
                 value => this.Config.DoTerrain = value,
                 I18n.Config_DoTerrain_Name,
                 I18n.Config_DoTerrain_Tooltip,
-                nameof(IConfigData.DoTerrain));
+                nameof(ModConfig.DoTerrain));
         }
 
         if (toolbarIcons.IsLoaded)
         {
-            toolbarIcons.API!.AddToolbarIcon(
+            toolbarIcons.API.AddToolbarIcon(
                 "EasyAccess.CollectItems",
                 $"{this.ModManifest.UniqueID}/Icons",
                 new Rectangle(0, 0, 16, 16),

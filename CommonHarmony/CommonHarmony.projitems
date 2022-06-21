@@ -11,6 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\PatchType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\SavedPatch.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\HarmonyHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\HarmonyHelper.cs" />
   </ItemGroup>
 </Project>

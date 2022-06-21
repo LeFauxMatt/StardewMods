@@ -1,19 +1,15 @@
-#nullable disable
-
 namespace StardewMods.TooManyAnimals;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Helpers;
-using Common.Integrations.GenericModConfigMenu;
-using CommonHarmony.Services;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.TooManyAnimals.Interfaces;
-using StardewMods.TooManyAnimals.Models;
+using StardewMods.TooManyAnimals.Helpers;
+using StardewMods.TooManyAnimals.Integrations.GenericModConfigMenu;
 using StardewValley;
 using StardewValley.Menus;
 using SObject = StardewValley.Object;
@@ -22,13 +18,35 @@ using SObject = StardewValley.Object;
 public class TooManyAnimals : Mod
 {
     private readonly PerScreen<int> _currentPage = new();
-    private readonly PerScreen<PurchaseAnimalsMenu> _menu = new();
-    private readonly PerScreen<ClickableTextureComponent> _nextPage = new();
-    private readonly PerScreen<ClickableTextureComponent> _previousPage = new();
+    private readonly PerScreen<ClickableTextureComponent?> _nextPage = new();
+    private readonly PerScreen<ClickableTextureComponent?> _previousPage = new();
+    private ModConfig? _config;
 
-    private static TooManyAnimals Instance { get; set; }
+    private static TooManyAnimals? Instance { get; set; }
 
-    private ConfigModel Config { get; set; }
+    private ModConfig Config
+    {
+        get
+        {
+            if (this._config is not null)
+            {
+                return this._config;
+            }
+
+            ModConfig? config = null;
+            try
+            {
+                config = this.Helper.ReadConfig<ModConfig>();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            this._config = config ?? new ModConfig();
+            return this._config;
+        }
+    }
 
     private int CurrentPage
     {
@@ -43,12 +61,6 @@ public class TooManyAnimals : Mod
             this._currentPage.Value = value;
             Game1.activeClickableMenu = new PurchaseAnimalsMenu(this.Stock);
         }
-    }
-
-    private PurchaseAnimalsMenu Menu
-    {
-        get => this._menu.Value;
-        set => this._menu.Value = value;
     }
 
     private ClickableTextureComponent NextPage
@@ -75,7 +87,7 @@ public class TooManyAnimals : Mod
         };
     }
 
-    private List<SObject> Stock { get; set; }
+    private List<SObject>? Stock { get; set; }
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -84,26 +96,13 @@ public class TooManyAnimals : Mod
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
 
-        // Mod Config
-        IConfigData config = null;
-        try
-        {
-            config = this.Helper.ReadConfig<ConfigData>();
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        this.Config = new(config ?? new ConfigData(), this.Helper);
-
-        var harmony = new HarmonyHelper();
-        harmony.AddPatch(
+        // Patches
+        HarmonyHelper.AddPatch(
             this.ModManifest.UniqueID,
             AccessTools.Constructor(typeof(PurchaseAnimalsMenu), new[] { typeof(List<SObject>) }),
             typeof(TooManyAnimals),
             nameof(TooManyAnimals.PurchaseAnimalsMenu_constructor_prefix));
-        harmony.ApplyPatches(this.ModManifest.UniqueID);
+        HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
 
         // Events
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
@@ -116,7 +115,7 @@ public class TooManyAnimals : Mod
     private static void PurchaseAnimalsMenu_constructor_prefix(ref List<SObject> stock)
     {
         // Get actual stock
-        TooManyAnimals.Instance.Stock ??= stock;
+        TooManyAnimals.Instance!.Stock ??= stock;
 
         // Limit stock
         stock = TooManyAnimals.Instance.Stock
@@ -125,9 +124,9 @@ public class TooManyAnimals : Mod
                               .ToList();
     }
 
-    private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (this.Menu is null)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
         {
             return;
         }
@@ -149,7 +148,7 @@ public class TooManyAnimals : Mod
         }
     }
 
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
         {
@@ -168,7 +167,7 @@ public class TooManyAnimals : Mod
         }
     }
 
-    private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
         if (!gmcm.IsLoaded)
@@ -177,9 +176,12 @@ public class TooManyAnimals : Mod
         }
 
         // Register mod configuration
-        gmcm.Register(this.ModManifest, this.Config.Reset, this.Config.Save);
+        gmcm.Register(
+            this.ModManifest,
+            () => this._config = new(),
+            () => this.Helper.WriteConfig(this.Config));
 
-        gmcm.API.AddSectionTitle(this.ModManifest, I18n.Section_General_Name, I18n.Section_General_Description);
+        gmcm.API!.AddSectionTitle(this.ModManifest, I18n.Section_General_Name, I18n.Section_General_Description);
 
         // Animal Shop Limit
         gmcm.API.AddNumberOption(
@@ -188,7 +190,7 @@ public class TooManyAnimals : Mod
             value => this.Config.AnimalShopLimit = value,
             I18n.Config_AnimalShopLimit_Name,
             I18n.Config_AnimalShopLimit_Tooltip,
-            fieldId: nameof(IConfigData.AnimalShopLimit));
+            fieldId: nameof(ModConfig.AnimalShopLimit));
 
         gmcm.API.AddSectionTitle(this.ModManifest, I18n.Section_Controls_Name, I18n.Section_Controls_Description);
 
@@ -199,7 +201,7 @@ public class TooManyAnimals : Mod
             value => this.Config.ControlScheme.NextPage = value,
             I18n.Config_NextPage_Name,
             I18n.Config_NextPage_Tooltip,
-            nameof(IControlScheme.NextPage));
+            nameof(Controls.NextPage));
 
         // Previous Page
         gmcm.API.AddKeybindList(
@@ -208,42 +210,40 @@ public class TooManyAnimals : Mod
             value => this.Config.ControlScheme.PreviousPage = value,
             I18n.Config_PreviousPage_Name,
             I18n.Config_PreviousPage_Tooltip,
-            nameof(IControlScheme.PreviousPage));
+            nameof(Controls.PreviousPage));
     }
 
-    private void OnMenuChanged(object sender, MenuChangedEventArgs e)
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         // Reset Stock/CurrentPage
         if (e.NewMenu is not PurchaseAnimalsMenu menu)
         {
-            this.Menu = null;
             this.Stock = null;
             this._currentPage.Value = 0;
             return;
         }
 
         // Reposition Next/Previous Page Buttons
-        this.Menu = menu;
-        this.NextPage.bounds.X = this.Menu.xPositionOnScreen + this.Menu.width - this.NextPage.bounds.Width;
-        this.NextPage.bounds.Y = this.Menu.yPositionOnScreen + this.Menu.height;
+        this.NextPage.bounds.X = menu.xPositionOnScreen + menu.width - this.NextPage.bounds.Width;
+        this.NextPage.bounds.Y = menu.yPositionOnScreen + menu.height;
         this.NextPage.leftNeighborID = this.PreviousPage.myID;
-        this.PreviousPage.bounds.X = this.Menu.xPositionOnScreen;
-        this.PreviousPage.bounds.Y = this.Menu.yPositionOnScreen + this.Menu.height;
+        this.PreviousPage.bounds.X = menu.xPositionOnScreen;
+        this.PreviousPage.bounds.Y = menu.yPositionOnScreen + menu.height;
         this.PreviousPage.rightNeighborID = this.NextPage.myID;
 
-        for (var index = 0; index < this.Menu.animalsToPurchase.Count; index++)
+        for (var index = 0; index < menu.animalsToPurchase.Count; index++)
         {
             var i = index + this.CurrentPage * this.Config.AnimalShopLimit;
-            if (ReferenceEquals(this.Menu.animalsToPurchase[index].texture, Game1.mouseCursors))
+            if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors))
             {
-                this.Menu.animalsToPurchase[index].sourceRect.X = i % 3 * 16 * 2;
-                this.Menu.animalsToPurchase[index].sourceRect.Y = 448 + i / 3 * 16;
+                menu.animalsToPurchase[index].sourceRect.X = i % 3 * 16 * 2;
+                menu.animalsToPurchase[index].sourceRect.Y = 448 + i / 3 * 16;
             }
 
-            if (ReferenceEquals(this.Menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
+            if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
             {
-                this.Menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
-                this.Menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
+                menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
+                menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
             }
         }
 
@@ -258,9 +258,9 @@ public class TooManyAnimals : Mod
         }
     }
 
-    private void OnRenderedActiveMenu(object sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (this.Menu is null)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
         {
             return;
         }

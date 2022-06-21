@@ -1,64 +1,46 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CommonHarmony.Enums;
-using CommonHarmony.Services;
-using HarmonyLib;
+using Common.Enums;
 using StardewModdingAPI;
-using StardewModdingAPI.Utilities;
+using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Storages;
 using StardewValley;
 using StardewValley.Menus;
 using SObject = StardewValley.Object;
 
-/// <inheritdoc />
-internal class OrganizeChest : Feature
+/// <summary>
+///     Sort items in a chest using a customized criteria.
+/// </summary>
+internal class OrganizeChest : IFeature
 {
-    private readonly PerScreen<IManagedStorage> _currentStorage = new();
+    private OrganizeChest(IModHelper helper)
+    {
+        this.Helper = helper;
+    }
+
+    private static OrganizeChest? Instance { get; set; }
+
+    private IModHelper Helper { get; }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="OrganizeChest" /> class.
+    ///     Initializes <see cref="OrganizeChest" />.
     /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public OrganizeChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
-        : base(config, helper, services)
+    /// <returns>Returns an instance of the <see cref="OrganizeChest" /> class.</returns>
+    public static OrganizeChest Init(IModHelper helper)
     {
-        OrganizeChest.Instance = this;
-        this.Harmony = harmony;
-        this.Harmony.AddPatch(
-            this.Id,
-            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
-            typeof(OrganizeChest),
-            nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_postfix),
-            PatchType.Postfix);
+        return OrganizeChest.Instance ??= new(helper);
     }
-
-    private static OrganizeChest Instance { get; set; }
-
-    private IManagedStorage CurrentStorage
-    {
-        get => this._currentStorage.Value;
-        set => this._currentStorage.Value = value;
-    }
-
-    private HarmonyHelper Harmony { get; }
 
     /// <summary>
     ///     Organizes items in a storage.
     /// </summary>
     /// <param name="storage">The storage to organize.</param>
-    /// <param name="forceAscending">Forces ascending order.</param>
-    public void OrganizeItems(IManagedStorage storage, bool forceAscending = false)
+    public static void OrganizeItems(BaseStorage storage)
     {
         string OrderBy(Item item)
         {
@@ -67,8 +49,7 @@ internal class OrganizeChest : Feature
                 GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")),
                 GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")),
                 GroupBy.Name => item.DisplayName,
-                GroupBy.Default or _ => string.Empty,
-            };
+            } ?? string.Empty;
         }
 
         int ThenBy(Item item)
@@ -82,19 +63,17 @@ internal class OrganizeChest : Feature
             };
         }
 
-        var items = storage.OrganizeChestOrderByDescending && !forceAscending
-            ? storage.Items
+        var items = storage.OrganizeChestOrderByDescending
+            ? storage.Items.OfType<Item>()
                      .OrderByDescending(OrderBy)
                      .ThenByDescending(ThenBy)
                      .ToList()
-            : storage.Items
+            : storage.Items.OfType<Item>()
                      .OrderBy(OrderBy)
                      .ThenBy(ThenBy)
                      .ToList();
-        if (!forceAscending)
-        {
-            storage.OrganizeChestOrderByDescending = !storage.OrganizeChestOrderByDescending;
-        }
+
+        storage.OrganizeChestOrderByDescending = !storage.OrganizeChestOrderByDescending;
 
         storage.Items.Clear();
         foreach (var item in items)
@@ -104,34 +83,32 @@ internal class OrganizeChest : Feature
     }
 
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
-        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.Harmony.ApplyPatches(this.Id);
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
-        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.Harmony.UnapplyPatches(this.Id);
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void ItemGrabMenu_organizeItemsInList_postfix()
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (OrganizeChest.Instance.CurrentStorage is not null)
+        if (e.Button is not SButton.MouseLeft
+            || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
+            || !StorageHelper.TryGetOne(context, out var storage))
         {
-            OrganizeChest.Instance.OrganizeItems(OrganizeChest.Instance.CurrentStorage);
+            return;
         }
-    }
 
-    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
-    {
-        this.CurrentStorage = e.Menu is ItemGrabMenu && e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage) && managedStorage.OrganizeChest == FeatureOption.Enabled
-            ? managedStorage
-            : null;
+        var (x, y) = Game1.getMousePosition(true);
+        if (itemGrabMenu.organizeButton?.containsPoint(x, y) != true)
+        {
+            return;
+        }
+
+        OrganizeChest.OrganizeItems(storage);
     }
 }

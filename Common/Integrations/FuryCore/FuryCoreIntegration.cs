@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace Common.Integrations.FuryCore;
+namespace StardewMods.Common.Integrations.FuryCore;
 
 using StardewModdingAPI;
 

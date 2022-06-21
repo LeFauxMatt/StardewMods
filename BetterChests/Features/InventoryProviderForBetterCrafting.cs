@@ -1,7 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
-using Common.Integrations.BetterCrafting;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Interfaces.Config;

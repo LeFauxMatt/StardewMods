@@ -193,7 +193,7 @@ internal class CommandHandler : IModService
         }
 
         CommandHandler.AppendHeader(sb, "Craft from Chests Eligible Chests");
-        foreach (var (gameObjectType, managedChest) in this.CraftFromChest.EligibleStorages)
+        foreach (var (gameObjectType, managedChest) in this.CraftFromChest.EligibleChests)
         {
             switch (gameObjectType)
             {

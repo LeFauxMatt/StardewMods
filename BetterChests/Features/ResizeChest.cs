@@ -1,65 +1,63 @@
-#nullable disable
-
 namespace StardewMods.BetterChests.Features;
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using CommonHarmony.Enums;
-using CommonHarmony.Services;
+using Common.Enums;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
+using StardewMods.BetterChests.Models;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class ResizeChest : Feature
+/// <summary>
+///     Expand the capacity of chests and add scrolling to access extra items.
+/// </summary>
+internal class ResizeChest : IFeature
 {
-    private readonly Lazy<IMenuItems> _menuItems;
+    private const string Id = "BetterChests.ResizeChest";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ResizeChest" /> class.
-    /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
-    public ResizeChest(IConfigModel config, IModHelper helper, IModServices services, HarmonyHelper harmony)
-        : base(config, helper, services)
+    private ResizeChest(IModHelper helper)
     {
-        ResizeChest.Instance = this;
-        this.Harmony = harmony;
-        this.Harmony.AddPatch(
-            this.Id,
-            AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-            typeof(ResizeChest),
-            nameof(ResizeChest.Chest_GetActualCapacity_postfix),
-            PatchType.Postfix);
-        this._menuItems = services.Lazy<IMenuItems>();
+        this.Helper = helper;
+        HarmonyHelper.AddPatches(
+            ResizeChest.Id,
+            new SavedPatch[]
+            {
+                new(
+                    AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
+                    typeof(ResizeChest),
+                    nameof(ResizeChest.Chest_GetActualCapacity_postfix),
+                    PatchType.Postfix),
+            });
     }
 
-    private static ResizeChest Instance { get; set; }
+    private static ResizeChest? Instance { get; set; }
 
-    private HarmonyHelper Harmony { get; }
+    private IModHelper Helper { get; }
 
-    private IMenuItems MenuItems
+    /// <summary>
+    ///     Initializes <see cref="ResizeChest" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <returns>Returns an instance of the <see cref="ResizeChest" /> class.</returns>
+    public static ResizeChest Init(IModHelper helper)
     {
-        get => this._menuItems.Value;
+        return ResizeChest.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
-    protected override void Activate()
+    public void Activate()
     {
-        this.Harmony.ApplyPatches(this.Id);
+        HarmonyHelper.ApplyPatches(ResizeChest.Id);
         this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Deactivate()
     {
-        this.Harmony.UnapplyPatches(this.Id);
+        HarmonyHelper.UnapplyPatches(ResizeChest.Id);
         this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
@@ -68,32 +66,33 @@ internal class ResizeChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (ResizeChest.Instance.ManagedObjects.TryGetManagedStorage(__instance, out var managedChest) && managedChest.ResizeChest == FeatureOption.Enabled && managedChest.ResizeChestCapacity != 0)
+        // Disabled for object
+        if (!StorageHelper.TryGetOne(__instance, out var storage) || storage.ResizeChest == FeatureOption.Disabled || storage.ResizeChestCapacity == 0)
         {
-            __result = managedChest.ResizeChestCapacity > 0
-                ? managedChest.ResizeChestCapacity
-                : int.MaxValue;
+            return;
         }
+
+        __result = storage.Capacity;
     }
 
-    private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.MenuItems.Menu is null)
+        /*if (ResizeChest.MenuItems.Menu is null)
         {
             return;
         }
 
-        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        if (Config.ControlScheme.ScrollUp.JustPressed())
         {
-            this.MenuItems.Offset--;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+            ResizeChest.MenuItems.Offset--;
+            ResizeChest.Helper.Input.SuppressActiveKeybinds(ResizeChest.Config.ControlScheme.ScrollUp);
             return;
         }
 
-        if (this.Config.ControlScheme.ScrollDown.JustPressed())
+        if (Config.ControlScheme.ScrollDown.JustPressed())
         {
-            this.MenuItems.Offset++;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
-        }
+            ResizeChest.MenuItems.Offset++;
+            ResizeChest.Helper.Input.SuppressActiveKeybinds(ResizeChest.Config.ControlScheme.ScrollDown);
+        }*/
     }
 }
