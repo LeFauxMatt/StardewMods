@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.BetterChests.Storages;
 
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -12,14 +15,17 @@ internal class JunimoHutStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="JunimoHutStorage" /> class.
     /// </summary>
     /// <param name="junimoHut">The junimo hut.</param>
-    public JunimoHutStorage(JunimoHut junimoHut)
-        : base(junimoHut)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="location">The location of the source object.</param>
+    /// <param name="position">The position of the source object.</param>
+    public JunimoHutStorage(JunimoHut junimoHut, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
+        : base(junimoHut, location, position, defaultChest)
     {
         this.JunimoHut = junimoHut;
     }
 
     /// <inheritdoc />
-    public override int Capacity
+    public override int ActualCapacity
     {
         get => this.Chest.GetActualCapacity();
     }
@@ -39,6 +45,12 @@ internal class JunimoHutStorage : BaseStorage
     public override ModDataDictionary ModData
     {
         get => this.JunimoHut.modData;
+    }
+
+    /// <inheritdoc/>
+    public override NetMutex? Mutex
+    {
+        get => this.JunimoHut.output.Value.GetMutex();
     }
 
     private Chest Chest

@@ -51,6 +51,7 @@ public class ToolbarIcons : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        this.Helper.Events.Content.AssetRequested += ToolbarIcons.OnAssetRequested;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
@@ -62,6 +63,14 @@ public class ToolbarIcons : Mod
     public override object GetApi()
     {
         return this.Api;
+    }
+
+    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    {
+        if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
+        {
+            e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
+        }
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

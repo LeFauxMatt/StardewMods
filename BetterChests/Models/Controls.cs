@@ -1,6 +1,4 @@
-#nullable disable
-
-namespace StardewMods.BetterChests.Interfaces.Config;
+﻿namespace StardewMods.BetterChests.Models;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
@@ -8,7 +6,7 @@ using StardewModdingAPI.Utilities;
 /// <summary>
 ///     Controls config data.
 /// </summary>
-internal interface IControlScheme
+internal class Controls
 {
     /// <summary>
     ///     Gets or sets controls to lock an item slot.
@@ -44,20 +42,4 @@ internal interface IControlScheme
     ///     Gets or sets controls to stash player items into storages.
     /// </summary>
     public KeybindList StashItems { get; set; }
-
-    /// <summary>
-    ///     Copies data from one <see cref="IConfigData" /> to another.
-    /// </summary>
-    /// <param name="other">The <see cref="IConfigData" /> to copy values to.</param>
-    /// <typeparam name="TOther">The class/type of the other <see cref="IConfigData" />.</typeparam>
-    public void CopyTo<TOther>(TOther other)
-        where TOther : IControlScheme
-    {
-        other.OpenCrafting = this.OpenCrafting;
-        other.StashItems = this.StashItems;
-        other.ScrollUp = this.ScrollUp;
-        other.ScrollDown = this.ScrollDown;
-        other.PreviousTab = this.PreviousTab;
-        other.NextTab = this.NextTab;
-    }
 }

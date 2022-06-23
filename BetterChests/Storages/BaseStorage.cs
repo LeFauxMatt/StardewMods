@@ -1,48 +1,50 @@
 ﻿namespace StardewMods.BetterChests.Storages;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Enums;
-using StardewMods.BetterChests.Enums;
+using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Network;
 using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
 /// <inheritdoc />
 internal abstract class BaseStorage : IStorageData
 {
+    private readonly HashSet<string> _filterItemsList = new();
+    private readonly ItemMatcher _filterMatcher = new(true);
+    private int _capacity;
+    private int _extraMenuSpace;
+    private int _menuCapacity;
+    private int _menuRows;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="BaseStorage" /> class.
     /// </summary>
     /// <param name="context">The source object.</param>
-    protected BaseStorage(object context)
+    /// <param name="location">The location of the source object.</param>
+    /// <param name="position">The position of the source object.</param>
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    protected BaseStorage(object context, GameLocation? location, Vector2? position, IStorageData defaultChest)
     {
         this.Context = context;
+        this.Location = location ?? Game1.currentLocation;
+        this.Position = position ?? Vector2.Zero;
+        this.DefaultChest = defaultChest;
         this.Data = new StorageModData(this);
         this.Type = new StorageData();
-    }
-
-    /// <inheritdoc />
-    public FeatureOption AutoOrganize
-    {
-        get => this.Data.AutoOrganize switch
-        {
-            _ when this.Type.AutoOrganize == FeatureOption.Disabled => FeatureOption.Disabled,
-            FeatureOption.Default => this.Type.AutoOrganize switch
-            {
-                FeatureOption.Default => Config.DefaultChest.AutoOrganize,
-                _ => this.Type.AutoOrganize,
-            },
-            _ => this.Data.AutoOrganize,
-        };
-        set => this.Data.AutoOrganize = value;
     }
 
     /// <summary>
     ///     Gets the actual capacity of the object's storage.
     /// </summary>
-    public virtual int Capacity
+    public virtual int ActualCapacity
     {
         get => this.ResizeChestCapacity switch
         {
@@ -53,6 +55,22 @@ internal abstract class BaseStorage : IStorageData
     }
 
     /// <inheritdoc />
+    public FeatureOption AutoOrganize
+    {
+        get => this.Data.AutoOrganize switch
+        {
+            _ when this.Type.AutoOrganize == FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default => this.Type.AutoOrganize switch
+            {
+                FeatureOption.Default => this.DefaultChest.AutoOrganize,
+                _ => this.Type.AutoOrganize,
+            },
+            _ => this.Data.AutoOrganize,
+        };
+        set => this.Data.AutoOrganize = value;
+    }
+
+    /// <inheritdoc />
     public FeatureOption CarryChest
     {
         get => this.Data.CarryChest switch
@@ -60,12 +78,28 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.CarryChest == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.CarryChest switch
             {
-                FeatureOption.Default => Config.DefaultChest.CarryChest,
+                FeatureOption.Default => this.DefaultChest.CarryChest,
                 _ => this.Type.CarryChest,
             },
             _ => this.Data.CarryChest,
         };
         set => this.Data.CarryChest = value;
+    }
+
+    /// <inheritdoc />
+    public FeatureOption CarryChestSlow
+    {
+        get => this.Data.CarryChestSlow switch
+        {
+            _ when this.Type.CarryChestSlow == FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default => this.Type.CarryChestSlow switch
+            {
+                FeatureOption.Default => this.DefaultChest.CarryChest,
+                _ => this.Type.CarryChestSlow,
+            },
+            _ => this.Data.CarryChestSlow,
+        };
+        set => this.Data.CarryChestSlow = value;
     }
 
     /// <inheritdoc />
@@ -76,7 +110,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.ChestMenuTabs == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.ChestMenuTabs switch
             {
-                FeatureOption.Default => Config.DefaultChest.ChestMenuTabs,
+                FeatureOption.Default => this.DefaultChest.ChestMenuTabs,
                 _ => this.Type.ChestMenuTabs,
             },
             _ => this.Data.ChestMenuTabs,
@@ -91,7 +125,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.ChestMenuTabSet
             : this.Type.ChestMenuTabSet is not null && this.Type.ChestMenuTabSet.Any()
                 ? this.Type.ChestMenuTabSet
-                : Config.DefaultChest.ChestMenuTabSet;
+                : this.DefaultChest.ChestMenuTabSet;
         set => this.Data.ChestMenuTabSet = value;
     }
 
@@ -103,7 +137,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.CollectItems == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.CollectItems switch
             {
-                FeatureOption.Default => Config.DefaultChest.CollectItems,
+                FeatureOption.Default => this.DefaultChest.CollectItems,
                 _ => this.Type.CollectItems,
             },
             _ => this.Data.CollectItems,
@@ -124,7 +158,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.CraftFromChest == FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
             FeatureOptionRange.Default => this.Type.CraftFromChest switch
             {
-                FeatureOptionRange.Default => Config.DefaultChest.CraftFromChest,
+                FeatureOptionRange.Default => this.DefaultChest.CraftFromChest,
                 _ => this.Type.CraftFromChest,
             },
             _ => this.Data.CraftFromChest,
@@ -139,7 +173,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.CraftFromChestDisableLocations
             : this.Type.CraftFromChestDisableLocations is not null && this.Type.CraftFromChestDisableLocations.Any()
                 ? this.Type.CraftFromChestDisableLocations
-                : Config.DefaultChest.CraftFromChestDisableLocations;
+                : this.DefaultChest.CraftFromChestDisableLocations;
         set => this.Data.CraftFromChestDisableLocations = value;
     }
 
@@ -150,7 +184,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.CraftFromChestDistance
             : this.Type.CraftFromChestDistance != 0
                 ? this.Type.CraftFromChestDistance
-                : Config.DefaultChest.CraftFromChestDistance;
+                : this.DefaultChest.CraftFromChestDistance;
         set => this.Data.CraftFromChestDistance = value;
     }
 
@@ -162,7 +196,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.CustomColorPicker == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.CustomColorPicker switch
             {
-                FeatureOption.Default => Config.DefaultChest.CustomColorPicker,
+                FeatureOption.Default => this.DefaultChest.CustomColorPicker,
                 _ => this.Type.CustomColorPicker,
             },
             _ => this.Data.CustomColorPicker,
@@ -183,7 +217,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.FilterItems == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.FilterItems switch
             {
-                FeatureOption.Default => Config.DefaultChest.FilterItems,
+                FeatureOption.Default => this.DefaultChest.FilterItems,
                 _ => this.Type.FilterItems,
             },
             _ => this.Data.FilterItems,
@@ -198,7 +232,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.FilterItemsList
             : this.Type.FilterItemsList is not null && this.Type.FilterItemsList.Any()
                 ? this.Type.FilterItemsList
-                : Config.DefaultChest.FilterItemsList;
+                : this.DefaultChest.FilterItemsList;
         set => this.Data.FilterItemsList = value;
     }
 
@@ -208,9 +242,78 @@ internal abstract class BaseStorage : IStorageData
     public abstract IList<Item?> Items { get; }
 
     /// <summary>
+    ///     Gets the location where this storage is placed.
+    /// </summary>
+    public GameLocation Location { get; }
+
+    /// <summary>
+    ///     Gets the calculated capacity of the <see cref="InventoryMenu" />.
+    /// </summary>
+    public int MenuCapacity
+    {
+        get
+        {
+            if (this._capacity == this.ResizeChestCapacity)
+            {
+                return this._menuCapacity;
+            }
+
+            return this._menuCapacity = this.MenuRows * 12;
+        }
+    }
+
+    /// <summary>
+    ///     Gets the extra vertical space needed for the <see cref="InventoryMenu" /> based on
+    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
+    /// </summary>
+    public int MenuExtraSpace
+    {
+        get
+        {
+            if (this._capacity == this.ResizeChestCapacity)
+            {
+                return this._extraMenuSpace;
+            }
+
+            return this._extraMenuSpace = (this.MenuRows - 3) * Game1.tileSize;
+        }
+    }
+
+    /// <summary>
+    ///     Gets the number of rows to display on the <see cref="InventoryMenu" /> based on
+    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
+    /// </summary>
+    public int MenuRows
+    {
+        get
+        {
+            if (this._capacity == this.ResizeChestCapacity)
+            {
+                return this._menuRows;
+            }
+
+            this._capacity = this.ResizeChestCapacity;
+            return this._menuRows = this.ResizeChestCapacity switch
+            {
+                0 or Chest.capacity => 0,
+                < 0 or >= 72 => this.ResizeChestMenuRows,
+                < 72 => (int)Math.Min(this.ResizeChestMenuRows, Math.Ceiling(this.ResizeChestCapacity / 12f)),
+            };
+        }
+    }
+
+    /// <summary>
     ///     Gets the ModData associated with the context object.
     /// </summary>
     public abstract ModDataDictionary ModData { get; }
+
+    /// <summary>
+    ///     Gets the mutex required to lock this object.
+    /// </summary>
+    public virtual NetMutex? Mutex
+    {
+        get => default;
+    }
 
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
@@ -220,7 +323,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.OpenHeldChest == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.OpenHeldChest switch
             {
-                FeatureOption.Default => Config.DefaultChest.OpenHeldChest,
+                FeatureOption.Default => this.DefaultChest.OpenHeldChest,
                 _ => this.Type.OpenHeldChest,
             },
             _ => this.Data.OpenHeldChest,
@@ -236,7 +339,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.OrganizeChest == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.OrganizeChest switch
             {
-                FeatureOption.Default => Config.DefaultChest.OrganizeChest,
+                FeatureOption.Default => this.DefaultChest.OrganizeChest,
                 _ => this.Type.OrganizeChest,
             },
             _ => this.Data.OrganizeChest,
@@ -251,7 +354,7 @@ internal abstract class BaseStorage : IStorageData
         {
             GroupBy.Default => this.Type.OrganizeChestGroupBy switch
             {
-                GroupBy.Default => Config.DefaultChest.OrganizeChestGroupBy,
+                GroupBy.Default => this.DefaultChest.OrganizeChestGroupBy,
                 _ => this.Type.OrganizeChestGroupBy,
             },
             _ => this.Data.OrganizeChestGroupBy,
@@ -284,13 +387,18 @@ internal abstract class BaseStorage : IStorageData
         {
             SortBy.Default => this.Type.OrganizeChestSortBy switch
             {
-                SortBy.Default => Config.DefaultChest.OrganizeChestSortBy,
+                SortBy.Default => this.DefaultChest.OrganizeChestSortBy,
                 _ => this.Type.OrganizeChestSortBy,
             },
             _ => this.Data.OrganizeChestSortBy,
         };
         set => this.Data.OrganizeChestSortBy = value;
     }
+
+    /// <summary>
+    ///     Gets the coordinate of this object.
+    /// </summary>
+    public Vector2 Position { get; }
 
     /// <inheritdoc />
     public FeatureOption ResizeChest
@@ -300,7 +408,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.ResizeChest == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.ResizeChest switch
             {
-                FeatureOption.Default => Config.DefaultChest.ResizeChest,
+                FeatureOption.Default => this.DefaultChest.ResizeChest,
                 _ => this.Type.ResizeChest,
             },
             _ => this.Data.ResizeChest,
@@ -315,7 +423,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.ResizeChestCapacity
             : this.Type.ResizeChestCapacity != 0
                 ? this.Type.ResizeChestCapacity
-                : Config.DefaultChest.ResizeChestCapacity;
+                : this.DefaultChest.ResizeChestCapacity;
         set => this.Data.ResizeChestCapacity = value;
     }
 
@@ -327,7 +435,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.ResizeChestMenu == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.ResizeChestMenu switch
             {
-                FeatureOption.Default => Config.DefaultChest.ResizeChestMenu,
+                FeatureOption.Default => this.DefaultChest.ResizeChestMenu,
                 _ => this.Type.ResizeChestMenu,
             },
             _ => this.Data.ResizeChestMenu,
@@ -342,7 +450,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.ResizeChestMenuRows
             : this.Type.ResizeChestMenuRows != 0
                 ? this.Type.ResizeChestMenuRows
-                : Config.DefaultChest.ResizeChestMenuRows;
+                : this.DefaultChest.ResizeChestMenuRows;
         set => this.Data.ResizeChestMenuRows = value;
     }
 
@@ -354,7 +462,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.SearchItems == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.SearchItems switch
             {
-                FeatureOption.Default => Config.DefaultChest.SearchItems,
+                FeatureOption.Default => this.DefaultChest.SearchItems,
                 _ => this.Type.SearchItems,
             },
             _ => this.Data.SearchItems,
@@ -370,7 +478,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.StashToChest == FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
             FeatureOptionRange.Default => this.Type.StashToChest switch
             {
-                FeatureOptionRange.Default => Config.DefaultChest.StashToChest,
+                FeatureOptionRange.Default => this.DefaultChest.StashToChest,
                 _ => this.Type.StashToChest,
             },
             _ => this.Data.StashToChest,
@@ -385,7 +493,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.StashToChestDisableLocations
             : this.Type.StashToChestDisableLocations is not null && this.Type.StashToChestDisableLocations.Any()
                 ? this.Type.StashToChestDisableLocations
-                : Config.DefaultChest.StashToChestDisableLocations;
+                : this.DefaultChest.StashToChestDisableLocations;
         set => this.Data.StashToChestDisableLocations = value;
     }
 
@@ -396,7 +504,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.StashToChestDistance
             : this.Type.StashToChestDistance != 0
                 ? this.Type.StashToChestDistance
-                : Config.DefaultChest.StashToChestDistance;
+                : this.DefaultChest.StashToChestDistance;
         set => this.Data.StashToChestDistance = value;
     }
 
@@ -407,7 +515,7 @@ internal abstract class BaseStorage : IStorageData
             ? this.Data.StashToChestPriority
             : this.Type.StashToChestPriority != 0
                 ? this.Type.StashToChestPriority
-                : Config.DefaultChest.StashToChestPriority;
+                : this.DefaultChest.StashToChestPriority;
         set => this.Data.StashToChestPriority = value;
     }
 
@@ -419,7 +527,7 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.StashToChestStacks == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.StashToChestStacks switch
             {
-                FeatureOption.Default => Config.DefaultChest.StashToChestStacks,
+                FeatureOption.Default => this.DefaultChest.StashToChestStacks,
                 _ => this.Type.StashToChestStacks,
             },
             _ => this.Data.StashToChestStacks,
@@ -440,13 +548,15 @@ internal abstract class BaseStorage : IStorageData
             _ when this.Type.UnloadChest == FeatureOption.Disabled => FeatureOption.Disabled,
             FeatureOption.Default => this.Type.UnloadChest switch
             {
-                FeatureOption.Default => Config.DefaultChest.UnloadChest,
+                FeatureOption.Default => this.DefaultChest.UnloadChest,
                 _ => this.Type.UnloadChest,
             },
             _ => this.Data.UnloadChest,
         };
         set => this.Data.UnloadChest = value;
     }
+
+    private IStorageData DefaultChest { get; }
 
     /// <summary>
     ///     Attempts to add an item into the storage.
@@ -466,7 +576,7 @@ internal abstract class BaseStorage : IStorageData
             }
         }
 
-        if (this.Items.Count < this.Capacity)
+        if (this.Items.Count < this.ActualCapacity)
         {
             this.Items.Add(item);
             return null;
@@ -487,6 +597,32 @@ internal abstract class BaseStorage : IStorageData
                 this.Items.RemoveAt(index);
             }
         }
+    }
+
+    /// <summary>
+    ///     Tests if a <see cref="Item" /> matches the <see cref="IStorageData.FilterItemsList" /> condition.
+    /// </summary>
+    /// <param name="item">The <see cref="Item" /> to test.</param>
+    /// <returns>Returns true if the <see cref="Item" /> matches the filters.</returns>
+    public bool FilterMatches(Item item)
+    {
+        if (this.FilterItems == FeatureOption.Disabled || this.FilterItemsList?.Any() != true)
+        {
+            return true;
+        }
+
+        if (!this.FilterItemsList.SetEquals(this._filterItemsList))
+        {
+            this._filterItemsList.Clear();
+            this._filterMatcher.Clear();
+            foreach (var filter in this.FilterItemsList)
+            {
+                this._filterItemsList.Add(filter);
+                this._filterMatcher.Add(filter);
+            }
+        }
+
+        return this._filterMatcher.Matches(item);
     }
 
     /// <summary>
@@ -538,6 +674,22 @@ internal abstract class BaseStorage : IStorageData
     }
 
     /// <summary>
+    ///     Gets the item tag that will be used to sort in <see cref="OrganizeChest" />.
+    /// </summary>
+    /// <param name="item">The <see cref="Item" />.</param>
+    /// <returns>Returns the <see cref="Item" /> tag based on the <see cref="IStorageData.OrganizeChestGroupBy" /> option.</returns>
+    public string OrderBy(Item item)
+    {
+        return this.OrganizeChestGroupBy switch
+        {
+            GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")) ?? string.Empty,
+            GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")) ?? string.Empty,
+            GroupBy.Name => item.DisplayName,
+            GroupBy.Default or _ => string.Empty,
+        };
+    }
+
+    /// <summary>
     ///     Creates an <see cref="ItemGrabMenu" /> for this storage container.
     /// </summary>
     public virtual void ShowMenu()
@@ -559,5 +711,47 @@ internal abstract class BaseStorage : IStorageData
             null,
             -1,
             this.Context);
+    }
+
+    /// <summary>
+    ///     Stashes an item into storage based on categorization and stack settings.
+    /// </summary>
+    /// <param name="item">The item to stash.</param>
+    /// <param name="existingStacks">Whether to stash into stackable items or based on categorization.</param>
+    /// <returns>Returns the <see cref="Item" /> if not all could be stashed or null if successful.</returns>
+    public Item? StashItem(Item item, bool existingStacks = false)
+    {
+        if (existingStacks)
+        {
+            if (this.StashToChestStacks == FeatureOption.Disabled)
+            {
+                return item;
+            }
+
+            return this.Items.Any(otherItem => otherItem?.canStackWith(item) == true) ? this.AddItem(item) : item;
+        }
+
+        if (this.FilterItemsList?.All(filter => filter.StartsWith("!")) == true)
+        {
+            return item;
+        }
+
+        return this.FilterMatches(item) ? this.AddItem(item) : item;
+    }
+
+    /// <summary>
+    ///     Gets the item tag that will be used to sub-sort in <see cref="OrganizeChest" />.
+    /// </summary>
+    /// <param name="item">The <see cref="Item" />.</param>
+    /// <returns>Returns the <see cref="Item" /> tag based on the <see cref="IStorageData.OrganizeChestSortBy" /> option.</returns>
+    public int ThenBy(Item item)
+    {
+        return this.OrganizeChestSortBy switch
+        {
+            SortBy.Quality when item is SObject obj => obj.Quality,
+            SortBy.Quantity => item.Stack,
+            SortBy.Type => item.Category,
+            SortBy.Default or _ => 0,
+        };
     }
 }

@@ -6,9 +6,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.EasyAccess.Helpers;
-using StardewMods.EasyAccess.Integrations.GenericModConfigMenu;
-using StardewMods.EasyAccess.Integrations.ToolbarIcons;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley;
 
 /// <inheritdoc />
@@ -25,7 +24,6 @@ public class EasyAccess : Mod
                 return this._config;
             }
 
-            // Mod Config
             ModConfig? config = null;
             try
             {
@@ -36,8 +34,7 @@ public class EasyAccess : Mod
                 // ignored
             }
 
-            this._config = config ?? new ModConfig();
-            return this._config;
+            return this._config = config ?? new ModConfig();
         }
     }
 

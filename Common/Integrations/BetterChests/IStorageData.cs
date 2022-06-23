@@ -16,6 +16,11 @@ public interface IStorageData
     public FeatureOption CarryChest { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
+    /// </summary>
+    public FeatureOption CarryChestSlow { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if tabs can be added to the chest menu.
     /// </summary>
     public FeatureOption ChestMenuTabs { get; set; }

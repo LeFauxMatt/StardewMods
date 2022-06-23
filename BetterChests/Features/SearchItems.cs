@@ -2,19 +2,22 @@ namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
-using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Helpers.PatternPatcher;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
+using StardewMods.Common.Helpers.PatternPatcher;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -23,23 +26,21 @@ using StardewValley.Menus;
 /// </summary>
 internal class SearchItems : IFeature
 {
+    private const int ExtraSpace = 24;
     private const string Id = "BetterChests.SearchItems";
-    private const int SearchBarHeight = 24;
 
+    private readonly PerScreen<object?> _context = new();
     private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
     private readonly PerScreen<ClickableComponent?> _searchArea = new();
     private readonly PerScreen<TextBox?> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent?> _searchIcon = new();
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
+    private readonly PerScreen<BaseStorage?> _storage = new();
 
-    private SearchItems(IModHelper helper)
+    private SearchItems(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
-        var drawMenuWithInventory = new[]
-        {
-            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int),
-        };
-
+        this.Config = config;
         HarmonyHelper.AddPatches(
             SearchItems.Id,
             new SavedPatch[]
@@ -50,7 +51,7 @@ internal class SearchItems : IFeature
                     nameof(SearchItems.ItemGrabMenu_draw_transpiler),
                     PatchType.Transpiler),
                 new(
-                    AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), drawMenuWithInventory),
+                    AccessTools.Method(typeof(MenuWithInventory), nameof(MenuWithInventory.draw), new[] { typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int), typeof(int) }),
                     typeof(SearchItems),
                     nameof(SearchItems.MenuWithInventory_draw_transpiler),
                     PatchType.Transpiler),
@@ -59,11 +60,19 @@ internal class SearchItems : IFeature
 
     private static SearchItems? Instance { get; set; }
 
+    private ModConfig Config { get; }
+
+    private object? Context
+    {
+        get => this._context.Value;
+        set => this._context.Value = value;
+    }
+
     private IModHelper Helper { get; }
 
     private ItemMatcher ItemMatcher
     {
-        get => this._itemMatcher.Value ??= new(false, Config.SearchTagSymbol.ToString());
+        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
         set => this._itemMatcher.Value = value;
     }
 
@@ -88,14 +97,21 @@ internal class SearchItems : IFeature
         set => this._searchText.Value = value;
     }
 
+    private BaseStorage? Storage
+    {
+        get => this._storage.Value;
+        set => this._storage.Value = value;
+    }
+
     /// <summary>
     ///     Initializes <see cref="SearchItems" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SearchItems" /> class.</returns>
-    public static SearchItems Init(IModHelper helper)
+    public static SearchItems Init(IModHelper helper, ModConfig config)
     {
-        return SearchItems.Instance ??= new(helper);
+        return SearchItems.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
@@ -118,26 +134,36 @@ internal class SearchItems : IFeature
         this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
-    private static int GetPadding(MenuWithInventory menu)
+    private static int GetExtraSpace(ItemGrabMenu itemGrabMenu)
     {
-        return SearchItems.SearchBarHeight;
+        if (itemGrabMenu is { context: { } context } && !ReferenceEquals(SearchItems.Instance!.Context, context))
+        {
+            SearchItems.Instance.Context = context;
+            SearchItems.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
+        }
+
+        return SearchItems.Instance?.Storage?.SearchItems switch
+        {
+            null or FeatureOption.Disabled => 0,
+            _ => SearchItems.ExtraSpace,
+        };
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)}");
+        Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)} from {nameof(SearchItems)}");
         IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Draw Backpack Patch
-        // This adds SearchItems.GetMenuPadding() to the y-coordinate of the backpack sprite
+        // This adds SearchItems.GetExtraSpace() to the y-coordinate of the backpack sprite
         patcher.AddSeek(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
         patcher.AddPatch(
                    code =>
                    {
                        Log.Trace("Moving backpack icon down by search bar height.", true);
                        code.Add(new(OpCodes.Ldarg_0));
-                       code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetPadding))));
+                       code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
                        code.Add(new(OpCodes.Add));
                    },
                    new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
@@ -145,14 +171,14 @@ internal class SearchItems : IFeature
 
         // ****************************************************************************************
         // Move Dialogue Patch
-        // This subtracts SearchItems.GetMenuPadding() from the y-coordinate of the ItemsToGrabMenu
+        // This subtracts SearchItems.GetExtraSpace() from the y-coordinate of the ItemsToGrabMenu
         // dialogue box
         patcher.AddPatch(
             code =>
             {
                 Log.Trace("Moving top dialogue box up by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetPadding))));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
                 code.Add(new(OpCodes.Sub));
             },
             new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
@@ -164,13 +190,13 @@ internal class SearchItems : IFeature
 
         // ****************************************************************************************
         // Expand Dialogue Patch
-        // This adds SearchItems.GetMenuPadding() to the height of the ItemsToGrabMenu dialogue box
+        // This adds SearchItems.GetExtraSpace() to the height of the ItemsToGrabMenu dialogue box
         patcher.AddPatch(
             code =>
             {
                 Log.Trace("Expanding top dialogue box by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetPadding))));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
                 code.Add(new(OpCodes.Add));
             },
             new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
@@ -207,18 +233,18 @@ internal class SearchItems : IFeature
 
     private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace($"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)}");
+        Log.Trace($"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)} from {nameof(SearchItems)}");
         IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Move Dialogue Patch
-        // This adds SearchItems.GetMenuPadding() to the y-coordinate of the inventory dialogue box
+        // This adds SearchItems.GetExtraSpace() to the y-coordinate of the inventory dialogue box
         patcher.AddPatch(
             code =>
             {
                 Log.Trace("Moving bottom dialogue box down by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetPadding))));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
                 code.Add(new(OpCodes.Add));
             },
             new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
@@ -231,13 +257,13 @@ internal class SearchItems : IFeature
 
         // ****************************************************************************************
         // Shrink Dialogue Patch
-        // This adds SearchItems.GetMenuPadding() to the height of the inventory dialogue box
+        // This adds SearchItems.GetExtraSpace() to the height of the inventory dialogue box
         patcher.AddPatch(
             code =>
             {
                 Log.Trace("Shrinking bottom dialogue box height by search bar height.", true);
                 code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetPadding))));
+                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
                 code.Add(new(OpCodes.Add));
             },
             new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
@@ -313,7 +339,9 @@ internal class SearchItems : IFeature
             return;
         }
 
-        this.ItemMatcher = new(false, Config.SearchTagSymbol.ToString());
+        itemGrabMenu.yPositionOnScreen -= SearchItems.ExtraSpace;
+        itemGrabMenu.height += SearchItems.ExtraSpace;
+        this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString());
         this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
         this.SearchField.Selected = false;

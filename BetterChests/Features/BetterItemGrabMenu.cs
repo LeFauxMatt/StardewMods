@@ -5,13 +5,13 @@ using System.Linq;
 using System.Reflection.Emit;
 using Common.Helpers;
 using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Helpers.PatternPatcher;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.Common.Helpers.PatternPatcher;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -44,7 +44,7 @@ internal class BetterItemGrabMenu : IFeature
             new SavedPatch[]
             {
                 new(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw)),
+                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
@@ -152,7 +152,7 @@ internal class BetterItemGrabMenu : IFeature
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)}");
+        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(BetterItemGrabMenu)}");
         IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************

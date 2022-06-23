@@ -1,28 +1,30 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Integrations.BetterCrafting;
 using StardewValley;
 using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class HeldStorage : IInventoryProvider
+internal class StorageProvider : IInventoryProvider
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool CanExtractItems(object obj, GameLocation? location, Farmer? who)
     {
         return true;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool CanInsertItems(object obj, GameLocation? location, Farmer? who)
     {
         return true;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void CleanInventory(object obj, GameLocation? location, Farmer? who)
     {
         if (obj is BaseStorage storage)
@@ -31,32 +33,25 @@ internal class HeldStorage : IInventoryProvider
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int GetActualCapacity(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is IStorageData { ResizeChestCapacity: not 0 } storage
-            ? storage.ResizeChestCapacity switch
-            {
-                < 0 => int.MaxValue,
-                > 0 => storage.ResizeChestCapacity,
-                0 => Chest.capacity,
-            }
-            : Chest.capacity;
+        return (obj as BaseStorage)?.ActualCapacity ?? Chest.capacity;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IList<Item?>? GetItems(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is IStorageData storage ? storage.Items : default;
+        return (obj as BaseStorage)?.Items ?? default;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Rectangle? GetMultiTileRegion(object obj, GameLocation? location, Farmer? who)
     {
         return null;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public NetMutex? GetMutex(object obj, GameLocation? location, Farmer? who)
     {
         return obj switch
@@ -66,20 +61,17 @@ internal class HeldStorage : IInventoryProvider
         };
     }
 
+    /// <inheritdoc />
     public Vector2? GetTilePosition(object obj, GameLocation? location, Farmer? who)
     {
-        throw new System.NotImplementedException();
+        // Location storage position
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc />
     public bool IsItemValid(object obj, GameLocation? location, Farmer? who, Item item)
     {
-        if (obj is BaseStorage storage)
-        {
-            
-        }
-
-        return obj is KeyValuePair<IGameObjectType, IManagedStorage> pair && pair.Value.ItemMatcher.Matches(item);
+        return (obj as BaseStorage)?.FilterMatches(item) ?? false;
     }
 
     /// <inheritdoc />

@@ -3,17 +3,16 @@ namespace StardewMods.BetterChests.Features;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Enums;
-using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Helpers.PatternPatcher;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.Common.Helpers;
+using StardewMods.Common.Helpers.PatternPatcher;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -24,9 +23,10 @@ internal class SlotLock : IFeature
 {
     private const string Id = "BetterChests.SlotLock";
 
-    private SlotLock(IModHelper helper)
+    private SlotLock(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
+        this.Config = config;
         HarmonyHelper.AddPatches(
             SlotLock.Id,
             new SavedPatch[]
@@ -41,16 +41,19 @@ internal class SlotLock : IFeature
 
     private static SlotLock? Instance { get; set; }
 
+    private ModConfig Config { get; }
+
     private IModHelper Helper { get; }
 
     /// <summary>
     ///     Initializes <see cref="SlotLock" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
-    public static SlotLock Init(IModHelper helper)
+    public static SlotLock Init(IModHelper helper, ModConfig config)
     {
-        return SlotLock.Instance ??= new(helper);
+        return SlotLock.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
@@ -69,7 +72,7 @@ internal class SlotLock : IFeature
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)}");
+        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(SlotLock)}");
         IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
@@ -140,8 +143,8 @@ internal class SlotLock : IFeature
             return;
         }
 
-        if (!(Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(Config.ControlScheme.LockSlot))
-            && !(!Config.SlotLockHold && e.Button == Config.ControlScheme.LockSlot))
+        if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
+            && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
         {
             return;
         }

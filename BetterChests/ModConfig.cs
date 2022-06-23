@@ -1,8 +1,8 @@
 ﻿namespace StardewMods.BetterChests;
 
-using Common.Enums;
-using StardewMods.BetterChests.Enums;
+using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
+using StardewMods.Common.Enums;
 
 /// <summary>
 ///     Mod config data.
@@ -12,12 +12,12 @@ internal class ModConfig
     /// <summary>
     ///     Gets or sets a value indicating how many chests containing items can be carried at once.
     /// </summary>
-    public int CarryChestLimit { get; set; } = 0;
+    public int CarryChestLimit { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
     /// </summary>
-    public int CarryChestSlow { get; set; } = 0;
+    public int CarryChestSlowAmount { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.
@@ -35,7 +35,7 @@ internal class ModConfig
     public Controls ControlScheme { get; set; } = new();
 
     /// <summary>
-    ///     Gets or sets the <see cref="ComponentArea" /> that the <see cref="CustomColorPicker" /> will be aligned to.
+    ///     Gets or sets the <see cref="ComponentArea" /> that the <see cref="BetterColorPicker" /> will be aligned to.
     /// </summary>
     public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
 

@@ -15,7 +15,6 @@
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04" />
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1" />
     </ItemGroup>
 </Project>

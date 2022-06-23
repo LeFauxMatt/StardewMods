@@ -1,7 +1,10 @@
 ﻿namespace StardewMods.BetterChests.Storages;
 
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
+using StardewValley.Network;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
@@ -12,14 +15,17 @@ internal class ObjectStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ObjectStorage" /> class.
     /// </summary>
     /// <param name="obj">The source object.</param>
-    public ObjectStorage(SObject obj)
-        : base(obj)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="location">The location of the source object.</param>
+    /// <param name="position">The position of the source object.</param>
+    public ObjectStorage(Object obj, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
+        : base(obj, location, position, defaultChest)
     {
         this.Object = obj;
     }
 
     /// <inheritdoc />
-    public override int Capacity
+    public override int ActualCapacity
     {
         get => this.Chest.GetActualCapacity();
     }
@@ -34,6 +40,12 @@ internal class ObjectStorage : BaseStorage
     public override ModDataDictionary ModData
     {
         get => this.Object.modData;
+    }
+
+    /// <inheritdoc/>
+    public override NetMutex? Mutex
+    {
+        get => this.Chest.GetMutex();
     }
 
     /// <summary>

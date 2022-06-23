@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using Common.Enums;
-using Common.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Storages;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -23,7 +23,7 @@ internal class CollectItems : IFeature
 {
     private const string Id = "BetterChests.CollectItems";
 
-    private readonly PerScreen<List<EligibleChest>?> _cachedEligibleChests = new();
+    private readonly PerScreen<List<BaseStorage>?> _cachedEligible = new();
 
     private CollectItems(IModHelper helper)
     {
@@ -40,45 +40,26 @@ internal class CollectItems : IFeature
             });
     }
 
-    private static IEnumerable<EligibleChest> EligibleChests
+    private static IEnumerable<BaseStorage> Eligible
     {
         get
         {
-            foreach (var chest in Game1.player.Items.Take(12).OfType<Chest>())
+            foreach (var item in Game1.player.Items.Take(12))
             {
-                // Disabled for object
-                if (!StorageHelper.TryGetOne(chest, out var storage) || storage.CollectItems == FeatureOption.Disabled)
+                if (StorageHelper.TryGetOne(item, out var storage) && storage.CollectItems != FeatureOption.Disabled)
                 {
-                    continue;
+                    yield return storage;
                 }
-
-                // Try to stash
-                if (storage.FilterItems != FeatureOption.Disabled && storage.FilterItemsList is not null)
-                {
-                    var itemMatcher = new ItemMatcher(true);
-                    foreach (var filter in storage.FilterItemsList)
-                    {
-                        itemMatcher.Add(filter);
-                    }
-
-                    if (itemMatcher.Any() && !itemMatcher.All(filter => filter.StartsWith("!")))
-                    {
-                        yield return new(chest, itemMatcher);
-                        continue;
-                    }
-                }
-
-                yield return new(chest, null);
             }
         }
     }
 
     private static CollectItems? Instance { get; set; }
 
-    private List<EligibleChest>? CachedEligibleChest
+    private List<BaseStorage>? CachedEligible
     {
-        get => this._cachedEligibleChests.Value;
-        set => this._cachedEligibleChests.Value = value;
+        get => this._cachedEligible.Value;
+        set => this._cachedEligible.Value = value;
     }
 
     private IModHelper Helper { get; }
@@ -114,29 +95,25 @@ internal class CollectItems : IFeature
             return true;
         }
 
-        CollectItems.Instance!.CachedEligibleChest ??= CollectItems.EligibleChests.ToList();
+        CollectItems.Instance!.CachedEligible ??= CollectItems.Eligible.ToList();
 
-        if (!CollectItems.Instance.CachedEligibleChest.Any())
+        if (!CollectItems.Instance.CachedEligible.Any())
         {
             return farmer.addItemToInventoryBool(item, makeActiveObject);
         }
 
-        foreach (var (chest, itemMatcher) in CollectItems.Instance.CachedEligibleChest)
+        foreach (var storage in CollectItems.Instance.CachedEligible)
         {
             item.resetState();
-            chest.clearNulls();
+            storage.ClearNulls();
+            item = storage.StashItem(item);
 
-            // Add if categorized
-            if (itemMatcher?.Matches(item) == true)
+            if (item is null)
             {
-                item = chest.addItem(item);
+                break;
             }
 
-            // Add if stackable
-            if (item is not null && chest.items.Any(chestItem => chestItem.canStackWith(item)))
-            {
-                item = chest.addItem(item);
-            }
+            item = storage.StashItem(item, true);
 
             if (item is null)
             {
@@ -166,9 +143,7 @@ internal class CollectItems : IFeature
     {
         if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any()))
         {
-            this.CachedEligibleChest = null;
+            this.CachedEligible = null;
         }
     }
-
-    private record EligibleChest(Chest Chest, ItemMatcher? Filter);
 }

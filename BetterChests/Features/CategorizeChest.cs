@@ -1,212 +1,181 @@
-/*
 namespace StardewMods.BetterChests.Features;
 
-using System;
-using Common.Enums;
-using Common.Helpers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Interfaces.Config;
-using StardewMods.BetterChests.Interfaces.ManagedObjects;
-using StardewMods.BetterChests.UI;
-using StardewMods.FuryCore.Interfaces;
-using StardewMods.FuryCore.Interfaces.ClickableComponents;
-using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Models.ClickableComponents;
-using StardewMods.FuryCore.Models.CustomEvents;
-using StardewMods.FuryCore.UI;
+using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Storages;
+using StardewMods.Common.UI;
 using StardewValley;
 using StardewValley.Menus;
 
-/// <inheritdoc />
-internal class CategorizeChest : Feature
+// TODO: Test activating ItemSelectionMenu as child menu
+
+/// <summary>
+///     Allows categories to be assigned to storages.
+/// </summary>
+internal class CategorizeChest : IFeature
 {
-    private readonly PerScreen<IClickableComponent> _configureButton = new();
-    private readonly PerScreen<IManagedStorage> _currentStorage = new();
-    private readonly PerScreen<ItemSelectionMenu> _itemSelectionMenu = new();
-    private readonly Lazy<IMenuComponents> _menuComponents;
-    private readonly PerScreen<IClickableComponent> _minusButton = new();
-    private readonly PerScreen<NumberComponent> _numberComponent = new();
-    private readonly PerScreen<IClickableComponent> _plusButton = new();
-    private readonly PerScreen<ItemGrabMenu> _returnMenu = new();
+    private readonly PerScreen<ClickableTextureComponent?> _configureButton = new();
+    private readonly PerScreen<ClickableTextureComponent?> _minusButton = new();
+    private readonly PerScreen<ClickableTextureComponent?> _plusButton = new();
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="CategorizeChest" /> class.
-    /// </summary>
-    /// <param name="config">Data for player configured mod options.</param>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public CategorizeChest(IConfigModel config, IModHelper helper, IModServices services)
-        : base(config, helper, services)
+    private CategorizeChest(IModHelper helper)
     {
-        this.Services = services;
-        this._menuComponents = services.Lazy<IMenuComponents>();
+        this.Helper = helper;
     }
 
-    private IClickableComponent ConfigureButton
+    private static CategorizeChest? Instance { get; set; }
+
+    private ClickableTextureComponent ConfigureButton
     {
-        get => this._configureButton.Value ??= new CustomClickableComponent(
-            new(
-                new(0, 0, Game1.tileSize, Game1.tileSize),
-                this.Helper.GameContent.Load<Texture2D>($"{BetterChests.ModUniqueId}/Icons"),
-                new(0, 0, 16, 16),
-                Game1.pixelZoom)
-            {
-                name = "Configure",
-                hoverText = I18n.Button_Configure_Name(),
-            },
-            ComponentArea.Right);
+        get => this._configureButton.Value ??= new(
+            new(0, 0, Game1.tileSize, Game1.tileSize),
+            this.Helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+            new(0, 0, 16, 16),
+            Game1.pixelZoom)
+        {
+            name = "Configure",
+            hoverText = I18n.Button_Configure_Name(),
+        };
     }
 
-    private ItemSelectionMenu CurrentItemSelectionMenu
-    {
-        get => this._itemSelectionMenu.Value;
-        set => this._itemSelectionMenu.Value = value;
-    }
+    private IModHelper Helper { get; }
 
-    private IManagedStorage CurrentStorage
+    private ClickableTextureComponent MinusButton
     {
-        get => this._currentStorage.Value;
-        set => this._currentStorage.Value = value;
-    }
-
-    private IMenuComponents MenuComponents
-    {
-        get => this._menuComponents.Value;
-    }
-
-    private IClickableComponent MinusButton
-    {
-        get => this._minusButton.Value ??= new CustomClickableComponent(
+        get => this._minusButton.Value ??=
             new(new(0, 0, 28, 32), Game1.mouseCursors, new(177, 345, 7, 8), Game1.pixelZoom)
             {
                 hoverText = I18n.Button_MinusPriority_Name(),
                 name = "Minus",
-            });
+            };
     }
 
-    private NumberComponent NumberComponent
+    private ClickableTextureComponent PlusButton
     {
-        get => this._numberComponent.Value ??= new();
-    }
-
-    private IClickableComponent PlusButton
-    {
-        get => this._plusButton.Value ??= new CustomClickableComponent(
+        get => this._plusButton.Value ??=
             new(new(0, 0, 28, 32), Game1.mouseCursors, new(184, 345, 7, 8), Game1.pixelZoom)
             {
                 hoverText = I18n.Button_PlusPriority_Name(),
                 name = "Plus",
-            });
+            };
     }
 
-    private ItemGrabMenu ReturnMenu
+    /// <summary>
+    ///     Initializes <see cref="CategorizeChest" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <returns>Returns an instance of the <see cref="CategorizeChest" /> class.</returns>
+    public static CategorizeChest Init(IModHelper helper)
     {
-        get => this._returnMenu.Value;
-        set => this._returnMenu.Value = value;
-    }
-
-    private IModServices Services { get; }
-
-    /// <inheritdoc />
-    protected override void Activate()
-    {
-        this.CustomEvents.ClickableMenuChanged += this.OnClickableMenuChanged;
-        this.MenuComponents.MenuComponentsLoading += this.OnMenuComponentsLoading;
-        this.MenuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
+        return CategorizeChest.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
-    protected override void Deactivate()
+    public void Activate()
     {
-        this.CustomEvents.ClickableMenuChanged -= this.OnClickableMenuChanged;
-        this.MenuComponents.MenuComponentsLoading -= this.OnMenuComponentsLoading;
-        this.MenuComponents.MenuComponentPressed -= this.OnMenuComponentPressed;
+        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
-    private void OnClickableMenuChanged(object sender, IClickableMenuChangedEventArgs e)
+    /// <inheritdoc />
+    public void Deactivate()
     {
-        switch (e.Menu)
+        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+    }
+
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        switch (e.NewMenu)
         {
-            // Enter ItemSelectionMenu
             case ItemSelectionMenu itemSelectionMenu:
-                this.NumberComponent.Value = this.CurrentStorage.StashToChestPriority;
-                this.NumberComponent.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize - 12 * Game1.pixelZoom;
-                this.NumberComponent.Y = itemSelectionMenu.yPositionOnScreen;
-                this.PlusButton.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize + 5 * Game1.pixelZoom;
-                this.PlusButton.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
-                this.MinusButton.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize * 2 - 4 * Game1.pixelZoom;
-                this.MinusButton.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
+                this.PlusButton.bounds.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize + 5 * Game1.pixelZoom;
+                this.PlusButton.bounds.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
+                this.MinusButton.bounds.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize * 2 - 4 * Game1.pixelZoom;
+                this.MinusButton.bounds.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
                 return;
 
-            // Exit ItemSelectionMenu
-            case null when this.ReturnMenu is not null && this.CurrentItemSelectionMenu is not null && this.CurrentStorage is not null:
-                // Save ItemSelectionMenu to ModData
-                Log.Trace($"Saving FilterItemsList to Chest {this.CurrentStorage.QualifiedItemId}.");
-                this.CurrentStorage.FilterItemsList = new(this.CurrentStorage.ItemMatcher);
-                this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
-                this.CurrentItemSelectionMenu = null;
-                Game1.activeClickableMenu = this.ReturnMenu;
+            case ItemGrabMenu itemGrabMenu:
+                this.ConfigureButton.bounds.X = itemGrabMenu.xPositionOnScreen - Game1.tileSize - 12 * Game1.pixelZoom;
+                this.ConfigureButton.bounds.Y = itemGrabMenu.yPositionOnScreen;
                 return;
 
-            case not null when this.ReturnMenu is not null:
+            case null when e.OldMenu is ItemSelectionMenu { context: BaseStorage storage }:
+                storage.ShowMenu();
                 break;
+        }
+    }
 
-            default:
-                this.ReturnMenu = null;
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    {
+        switch (Game1.activeClickableMenu)
+        {
+            case ItemSelectionMenu { context: BaseStorage storage }:
+                var (x, y) = Game1.getMousePosition(true);
+
+                if (this.PlusButton.containsPoint(x, y))
+                {
+                    storage.StashToChestPriority++;
+                    this.Helper.Input.Suppress(e.Button);
+                    return;
+                }
+
+                if (this.MinusButton.containsPoint(x, y))
+                {
+                    storage.StashToChestPriority--;
+                    this.Helper.Input.Suppress(e.Button);
+                }
+                return;
+
+            case ItemGrabMenu { context: { } context } when StorageHelper.TryGetOne(context, out var storage):
+                (x, y) = Game1.getMousePosition(true);
+                if (this.ConfigureButton.containsPoint(x, y))
+                {
+                    Game1.activeClickableMenu = new ItemSelectionMenu(this.Helper, storage);
+                    this.Helper.Input.Suppress(e.Button);
+                    return;
+                }
                 return;
         }
     }
 
-    private void OnMenuComponentPressed(object sender, ClickableComponentPressedEventArgs e)
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (this.CurrentStorage is null || (e.Button is not SButton.MouseLeft && !e.Button.IsActionButton()))
+        switch (Game1.activeClickableMenu)
         {
-            return;
-        }
+            case ItemSelectionMenu { context: BaseStorage storage } itemSelectionMenu:
+                this.PlusButton.draw(e.SpriteBatch);
+                this.MinusButton.draw(e.SpriteBatch);
 
-        if (ReferenceEquals(this.ConfigureButton, e.Component))
-        {
-            this.CurrentItemSelectionMenu?.UnregisterEvents(this.Helper.Events.Input);
-            this.CurrentItemSelectionMenu ??= new(this.Helper.Input, this.Services, this.CurrentStorage.ItemMatcher);
-            this.CurrentItemSelectionMenu.RegisterEvents(this.Helper.Events.Input);
-            Game1.activeClickableMenu = this.CurrentItemSelectionMenu;
-        }
-        else if (ReferenceEquals(this.MinusButton, e.Component))
-        {
-            this.CurrentStorage.StashToChestPriority--;
-            this.NumberComponent.Value = this.CurrentStorage.StashToChestPriority;
-        }
-        else if (ReferenceEquals(this.PlusButton, e.Component))
-        {
-            this.CurrentStorage.StashToChestPriority++;
-            this.NumberComponent.Value = this.CurrentStorage.StashToChestPriority;
-        }
-        else
-        {
-            return;
-        }
+                IClickableMenu.drawTextureBox(
+                    e.SpriteBatch,
+                    Game1.menuTexture,
+                    new(0, 256, 60, 60),
+                    itemSelectionMenu.xPositionOnScreen - Game1.tileSize - 12 * Game1.pixelZoom,
+                    itemSelectionMenu.yPositionOnScreen,
+                    64,
+                    34 + Game1.tileSize / 3 + Game1.tileSize / 16,
+                    Color.White,
+                    drawShadow: true);
+                Utility.drawTextWithShadow(
+                    e.SpriteBatch,
+                    storage.StashToChestPriority.ToString(),
+                    Game1.smallFont,
+                    new(
+                        itemSelectionMenu.xPositionOnScreen - Game1.tileSize - 8 * Game1.pixelZoom,
+                        itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom),
+                    Game1.textColor);
+                return;
 
-        e.SuppressInput();
-    }
-
-    private void OnMenuComponentsLoading(object sender, IMenuComponentsLoadingEventArgs e)
-    {
-        switch (e.Menu)
-        {
-            case ItemSelectionMenu:
-                e.AddComponent(this.NumberComponent);
-                e.AddComponent(this.PlusButton);
-                e.AddComponent(this.MinusButton);
-                break;
-            case ItemGrabMenu itemGrabMenu and not ItemSelectionMenu when e.Context is not null && this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedStorage):
-                e.AddComponent(this.ConfigureButton, 0);
-                this.ReturnMenu = itemGrabMenu;
-                this.CurrentStorage = managedStorage;
-                break;
+            case ItemGrabMenu { context: { } context } when StorageHelper.TryGetOne(context, out _):
+                this.ConfigureButton.draw(e.SpriteBatch);
+                return;
         }
     }
 }
-*/
-

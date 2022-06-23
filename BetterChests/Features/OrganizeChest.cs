@@ -1,16 +1,12 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Linq;
-using Common.Enums;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Storages;
 using StardewValley;
 using StardewValley.Menus;
-using SObject = StardewValley.Object;
 
 /// <summary>
 ///     Sort items in a chest using a customized criteria.
@@ -42,35 +38,14 @@ internal class OrganizeChest : IFeature
     /// <param name="storage">The storage to organize.</param>
     public static void OrganizeItems(BaseStorage storage)
     {
-        string OrderBy(Item item)
-        {
-            return storage.OrganizeChestGroupBy switch
-            {
-                GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")),
-                GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")),
-                GroupBy.Name => item.DisplayName,
-            } ?? string.Empty;
-        }
-
-        int ThenBy(Item item)
-        {
-            return storage.OrganizeChestSortBy switch
-            {
-                SortBy.Quality when item is SObject obj => obj.Quality,
-                SortBy.Quantity => item.Stack,
-                SortBy.Type => item.Category,
-                SortBy.Default or _ => 0,
-            };
-        }
-
         var items = storage.OrganizeChestOrderByDescending
             ? storage.Items.OfType<Item>()
-                     .OrderByDescending(OrderBy)
-                     .ThenByDescending(ThenBy)
+                     .OrderByDescending(storage.OrderBy)
+                     .ThenByDescending(storage.ThenBy)
                      .ToList()
             : storage.Items.OfType<Item>()
-                     .OrderBy(OrderBy)
-                     .ThenBy(ThenBy)
+                     .OrderBy(storage.OrderBy)
+                     .ThenBy(storage.ThenBy)
                      .ToList();
 
         storage.OrganizeChestOrderByDescending = !storage.OrganizeChestOrderByDescending;
@@ -85,16 +60,16 @@ internal class OrganizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonPressed += OrganizeChest.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonPressed -= OrganizeChest.OnButtonPressed;
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
             || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu

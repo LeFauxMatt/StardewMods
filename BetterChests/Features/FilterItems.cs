@@ -1,16 +1,14 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
-using Common.Enums;
 using Common.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -37,7 +35,7 @@ internal class FilterItems : IFeature
                     PatchType.Prefix),
             });
 
-        if (Integrations.Automate.IsLoaded)
+        if (IntegrationHelper.Automate.IsLoaded)
         {
             var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
                 .GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")?
@@ -85,20 +83,7 @@ internal class FilterItems : IFeature
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
         var item = FilterItems.Instance!.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        if (!StorageHelper.TryGetOne(___Chest, out var storage)
-            || storage.FilterItems == FeatureOption.Disabled
-            || storage.FilterItemsList?.Any() != true)
-        {
-            return true;
-        }
-
-        var itemMatcher = new ItemMatcher(true);
-        foreach (var filter in storage.FilterItemsList)
-        {
-            itemMatcher.Add(filter);
-        }
-
-        return itemMatcher.Matches(item);
+        return !StorageHelper.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -107,25 +92,12 @@ internal class FilterItems : IFeature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!StorageHelper.TryGetOne(__instance, out var storage)
-            || storage.FilterItems == FeatureOption.Disabled
-            || storage.FilterItemsList?.Any() != true)
+        if (!StorageHelper.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
         {
             return true;
         }
 
-        var itemMatcher = new ItemMatcher(true);
-        foreach (var filter in storage.FilterItemsList)
-        {
-            itemMatcher.Add(filter);
-        }
-
-        if (itemMatcher.Matches(item))
-        {
-            __result = item;
-            return false;
-        }
-
-        return true;
+        __result = item;
+        return false;
     }
 }

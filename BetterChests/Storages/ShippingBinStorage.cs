@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
@@ -15,8 +17,10 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="location">The location of the shipping bin.</param>
-    public ShippingBinStorage(GameLocation location)
-        : base(location)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="position">The position of the source object.</param>
+    public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2? position = default)
+        : base(location, location, position, defaultChest)
     {
     }
 
@@ -24,8 +28,11 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="shippingBin">The shipping bin.</param>
-    public ShippingBinStorage(ShippingBin shippingBin)
-        : base(shippingBin)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="location">The location of the shipping bin.</param>
+    /// <param name="position">The position of the source object.</param>
+    public ShippingBinStorage(ShippingBin shippingBin, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
+        : base(shippingBin, location, position, defaultChest)
     {
     }
 
@@ -33,13 +40,16 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="chest">The mini-shipping bin.</param>
-    public ShippingBinStorage(Chest chest)
-        : base(chest)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="location">The location of the shipping bin.</param>
+    /// <param name="position">The position of the source object.</param>
+    public ShippingBinStorage(Chest chest, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
+        : base(chest, location, position, defaultChest)
     {
     }
 
     /// <inheritdoc />
-    public override int Capacity
+    public override int ActualCapacity
     {
         get => this.Context switch
         {
@@ -89,7 +99,7 @@ internal class ShippingBinStorage : BaseStorage
             }
         }
 
-        if (this.Items.Count < this.Capacity)
+        if (this.Items.Count < this.ActualCapacity)
         {
             this.Items.Add(item);
             return null;

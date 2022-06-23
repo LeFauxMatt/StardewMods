@@ -4,17 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.Enums;
-using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -32,9 +32,10 @@ internal class CarryChest : IFeature
     private const string Id = "BetterChests.CarryChest";
     private const int WhichBuff = 69420;
 
-    private CarryChest(IModHelper helper)
+    private CarryChest(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
+        this.Config = config;
         HarmonyHelper.AddPatches(
             CarryChest.Id,
             new SavedPatch[]
@@ -84,6 +85,8 @@ internal class CarryChest : IFeature
 
     private static CarryChest? Instance { get; set; }
 
+    private ModConfig Config { get; }
+
     private IModHelper Helper { get; }
 
     /// <summary>
@@ -92,7 +95,7 @@ internal class CarryChest : IFeature
     /// <param name="excludeCurrent">Whether to exclude the current item.</param>
     public static void CheckForOverburdened(bool excludeCurrent = false)
     {
-        if (Config.CarryChestSlow == 0)
+        if (CarryChest.Instance!.Config.CarryChestSlowAmount == 0)
         {
             Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
             return;
@@ -100,7 +103,7 @@ internal class CarryChest : IFeature
 
         if (Game1.player.Items.OfType<Chest>().Any(chest => !excludeCurrent || Game1.player.CurrentItem != chest))
         {
-            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(Config.CarryChestSlow));
+            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(CarryChest.Instance.Config.CarryChestSlowAmount));
             return;
         }
 
@@ -111,10 +114,11 @@ internal class CarryChest : IFeature
     ///     Initializes <see cref="CarryChest" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="CarryChest" /> class.</returns>
-    public static CarryChest Init(IModHelper helper)
+    public static CarryChest Init(IModHelper helper, ModConfig config)
     {
-        return CarryChest.Instance ??= new(helper);
+        return CarryChest.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
@@ -302,12 +306,9 @@ internal class CarryChest : IFeature
         }
 
         // Only copy items from regular chest types
-        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } && !placed.items.Any())
+        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
-            foreach (var item in held.items.Where(item => item is not null))
-            {
-                placed.addItem(item);
-            }
+            placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
         // Copy modData
@@ -395,7 +396,7 @@ internal class CarryChest : IFeature
         }
 
         // Already carrying the limit
-        var limit = Config.CarryChestLimit;
+        var limit = this.Config.CarryChestLimit;
         if (limit > 0)
         {
             foreach (var item in Game1.player.Items.OfType<Chest>())

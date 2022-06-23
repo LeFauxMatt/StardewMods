@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using Common.Enums;
-using StardewMods.BetterChests.Enums;
+using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
 internal class StorageData : IStorageData
@@ -12,6 +12,9 @@ internal class StorageData : IStorageData
 
     /// <inheritdoc />
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc/>
+    public FeatureOption CarryChestSlow { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
     public FeatureOption ChestMenuTabs { get; set; } = FeatureOption.Default;

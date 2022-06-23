@@ -3,7 +3,6 @@ namespace StardewMods.BetterChests.Features;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
@@ -47,7 +46,8 @@ internal class BetterShippingBin : IFeature
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
-        if (e.NewMenu is ItemGrabMenu { context: ShippingBin shippingBin, shippingBin: true } itemGrabMenu && StorageHelper.TryGetOne(shippingBin, out var storage))
+        if (e.NewMenu is ItemGrabMenu { context: ShippingBin shippingBin, shippingBin: true } itemGrabMenu
+            && StorageHelper.TryGetOne(shippingBin, out var storage))
         {
             var lastSnappedComponent = itemGrabMenu.currentlySnappedComponent;
             var heldItem = itemGrabMenu.heldItem;

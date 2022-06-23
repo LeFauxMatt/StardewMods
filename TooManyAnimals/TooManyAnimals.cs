@@ -8,8 +8,8 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.TooManyAnimals.Helpers;
-using StardewMods.TooManyAnimals.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.CommonHarmony.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 using SObject = StardewValley.Object;
@@ -43,8 +43,7 @@ public class TooManyAnimals : Mod
                 // ignored
             }
 
-            this._config = config ?? new ModConfig();
-            return this._config;
+            return this._config = config ?? new ModConfig();
         }
     }
 

@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.Common.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Grouping type for items.
 /// </summary>
+[EnumExtensions]
 public enum GroupBy
 {
     /// <summary>Default grouping (Ungrouped).</summary>

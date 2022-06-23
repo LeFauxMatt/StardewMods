@@ -6,11 +6,12 @@ using Common.Enums;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Storages;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -61,9 +62,9 @@ internal class OpenHeldChest : IFeature
             this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
         }
 
-        if (Integrations.BetterCrafting.IsLoaded)
+        if (IntegrationHelper.BetterCrafting.IsLoaded)
         {
-            Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(IStorageData), new HeldStorage());
+            IntegrationHelper.BetterCrafting.API.RegisterInventoryProvider(typeof(BaseStorage), new StorageProvider());
         }
     }
 
@@ -78,9 +79,9 @@ internal class OpenHeldChest : IFeature
             this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
         }
 
-        if (Integrations.BetterCrafting.IsLoaded)
+        if (IntegrationHelper.BetterCrafting.IsLoaded)
         {
-            Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(IStorageData));
+            IntegrationHelper.BetterCrafting.API.UnregisterInventoryProvider(typeof(BaseStorage));
         }
     }
 

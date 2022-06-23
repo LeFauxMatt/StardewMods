@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.BetterChests.Storages;
 
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -12,14 +15,17 @@ internal class ChestStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ChestStorage" /> class.
     /// </summary>
     /// <param name="chest">The source chest.</param>
-    public ChestStorage(Chest chest)
-        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="location">The location of the source object.</param>
+    /// <param name="position">The position of the source object.</param>
+    public ChestStorage(Chest chest, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
+        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest, location, position, defaultChest)
     {
         this.Chest = chest;
     }
 
     /// <inheritdoc/>
-    public override int Capacity
+    public override int ActualCapacity
     {
         get => this.Chest.GetActualCapacity();
     }
@@ -39,6 +45,12 @@ internal class ChestStorage : BaseStorage
     public override ModDataDictionary ModData
     {
         get => this.Chest.modData;
+    }
+
+    /// <inheritdoc/>
+    public override NetMutex? Mutex
+    {
+        get => this.Chest.GetMutex();
     }
 
     /// <inheritdoc />

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
-using StardewMods.ToolbarIcons.Integrations.ToolbarIcons;
+using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley.Menus;
 
 /// <inheritdoc />

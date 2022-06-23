@@ -5,10 +5,10 @@ using Common.Enums;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley.Objects;
 
 /// <summary>
@@ -72,7 +72,7 @@ internal class ResizeChest : IFeature
             return;
         }
 
-        __result = storage.Capacity;
+        __result = storage.ActualCapacity;
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)

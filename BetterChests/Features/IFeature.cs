@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Interfaces;
+﻿namespace StardewMods.BetterChests.Features;
 
 internal interface IFeature
 {

@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using HarmonyLib;
 using StardewModdingAPI;
-using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Helpers;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Models;
 

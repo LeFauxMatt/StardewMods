@@ -12,7 +12,4 @@
         <UpdateKeys>Nexus:12512</UpdateKeys>
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
-    <ItemGroup>
-      <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04" />
-    </ItemGroup>
 </Project>

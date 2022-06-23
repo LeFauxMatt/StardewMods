@@ -3,8 +3,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Enums;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 
 /// <inheritdoc />
@@ -35,6 +35,15 @@ internal class StorageModData : IStorageData
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/CarryChest"] = value.ToStringFast();
+    }
+
+    /// <inheritdoc/>
+    public FeatureOption CarryChestSlow
+    {
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CarryChestSlow", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+            ? option
+            : FeatureOption.Default;
+        set => this.ModData["furyx639.BetterChests/CarryChestSlow"] = value.ToStringFast();
     }
 
     /// <inheritdoc />

@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.Common.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Sorting type for items.
 /// </summary>
+[EnumExtensions]
 public enum SortBy
 {
     /// <summary>Default sorting.</summary>

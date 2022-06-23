@@ -2,8 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Locations;
+using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -13,14 +16,15 @@ internal class FridgeStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="FridgeStorage" /> class.
     /// </summary>
     /// <param name="location">The farmhouse or island farmhouse location.</param>
-    public FridgeStorage(GameLocation location)
-        : base(location)
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="position">The position of the source object.</param>
+    public FridgeStorage(GameLocation location, IStorageData defaultChest, Vector2? position = default)
+        : base(location, location, position, defaultChest)
     {
-        this.Location = location;
     }
 
     /// <inheritdoc />
-    public override int Capacity
+    public override int ActualCapacity
     {
         get => this.Chest.GetActualCapacity();
     }
@@ -37,6 +41,12 @@ internal class FridgeStorage : BaseStorage
         get => this.Location.modData;
     }
 
+    /// <inheritdoc/>
+    public override NetMutex? Mutex
+    {
+        get => this.Chest.GetMutex();
+    }
+
     private Chest Chest
     {
         get => this.Location switch
@@ -46,6 +56,4 @@ internal class FridgeStorage : BaseStorage
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
-
-    private GameLocation Location { get; }
 }

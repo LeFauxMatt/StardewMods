@@ -1,8 +1,7 @@
-#nullable disable
-
-namespace StardewMods.FuryCore.UI;
+﻿namespace StardewMods.Common.UI;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,18 +9,16 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Models;
-using StardewMods.FuryCore.Enums;
-using StardewMods.FuryCore.Extensions;
-using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
-///     A widget for choosing a color using HSL sliders.
+///     A component for picking a color using HSL sliders.
 /// </summary>
-public class HslColorPicker : DiscreteColorPicker
+internal class HslColorPicker : DiscreteColorPicker
 {
+    private const int Cells = 16;
     private const int Gap = 6;
     private const int Height = 558;
     private const int Width = 58;
@@ -29,55 +26,50 @@ public class HslColorPicker : DiscreteColorPicker
     private static readonly Rectangle SelectRect = new(412, 495, 5, 4);
     private static readonly Range<float> UnitRange = new(0, 1);
 
+    private static Color[]? CachedColorValues;
+    private static Range<int>? CachedHslTrack;
+    private static HslColor[]? CachedHslValues;
+    private static Texture2D? CachedHueBar;
+
     private HslColor _hslColor;
     private int _hueCoord;
     private int _lightnessCoord;
     private int _saturationCoord;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="HslColorPicker" /> class.
-    /// </summary>
-    /// <param name="contentHelper">Load assets from mod folder.</param>
-    /// <param name="xPosition">The X coordinate to draw the HslColorPicker at.</param>
-    /// <param name="yPosition">The Y coordinate to draw the HslColorPicker at.</param>
-    /// <param name="initColor">The initial color to set the color picker to.</param>
-    /// <param name="itemToDrawColored">The item to draw next to the color picker.</param>
-    public HslColorPicker(IContentHelper contentHelper, int xPosition, int yPosition, Color initColor = default, Item itemToDrawColored = null)
-        : base(xPosition, yPosition, 0, itemToDrawColored)
+    public HslColorPicker(IModHelper helper, int x, int y, Color color = default, Item? item = default)
+        : base(x, y, 0, item)
     {
-        if (HslColorPicker.HueBar is null)
-        {
-            HslColorPicker.HueBar = contentHelper.Load<Texture2D>("assets/hue.png");
-            HslColorPicker.ColorValues = new Color[HslColorPicker.HueBar.Width * HslColorPicker.HueBar.Height];
-            HslColorPicker.HueBar.GetData(HslColorPicker.ColorValues);
-            HslColorPicker.HslValues = HslColorPicker.ColorValues.Select(HslColor.FromColor).Distinct().ToArray();
-            HslColorPicker.HslTrack = new(0, HslColorPicker.HslValues.Length);
-        }
-
+        this.Helper = helper;
         this.width = HslColorPicker.Width;
         this.height = HslColorPicker.Height;
 
         var barWidth = this.width / 2 - HslColorPicker.Gap;
         var barHeight = (this.height - HslColorPicker.Gap - 36) / 2;
+        var cellSize = barHeight / HslColorPicker.Cells;
         var centerX = this.xPositionOnScreen + this.width / 2;
+        var top = this.yPositionOnScreen + 36;
 
         this.HueBarArea = new(this.xPositionOnScreen, this.yPositionOnScreen + 36, barWidth, this.height - 36);
-        this.LightnessBar = new(Axis.Vertical, new(centerX + HslColorPicker.Gap / 2, this.yPositionOnScreen + 36, barWidth, barHeight), this.GetLightnessShade);
-        this.SaturationBar = new(Axis.Vertical, new(centerX + HslColorPicker.Gap / 2, this.yPositionOnScreen + 36 + barHeight + HslColorPicker.Gap, barWidth, barHeight), this.GetSaturationShade);
+        this.LightnessBar = Enumerable.Range(0, HslColorPicker.Cells)
+                                      .Select(i => new Rectangle(centerX + HslColorPicker.Gap / 2, top + i * cellSize, barWidth, cellSize))
+                                      .ToList();
+        this.SaturationBar = Enumerable.Range(0, HslColorPicker.Cells)
+                                       .Select(i => new Rectangle(centerX + HslColorPicker.Gap / 2, top + 36 + barHeight + HslColorPicker.Gap + i * cellSize, barWidth, cellSize))
+                                       .ToList();
 
         this.HueTrack = new(this.HueBarArea.Top, this.HueBarArea.Bottom);
-        this.LightnessTrack = new(this.LightnessBar.Area.Top, this.LightnessBar.Area.Bottom);
-        this.SaturationTrack = new(this.SaturationBar.Area.Top, this.SaturationBar.Area.Bottom);
+        this.LightnessTrack = new(this.LightnessBar.First().Top, this.LightnessBar.Last().Bottom);
+        this.SaturationTrack = new(this.SaturationBar.First().Top, this.SaturationBar.Last().Bottom);
 
         this.NoColorButton = new(new(this.xPositionOnScreen - 2, this.yPositionOnScreen, 7, 7), Game1.mouseCursors, new(295, 503, 7, 7), Game1.pixelZoom);
         this.NoColorButtonArea = new(this.xPositionOnScreen - 6, this.yPositionOnScreen - 4, 36, 36);
 
-        this.IsBlack = initColor.Equals(Color.Black);
+        this.IsBlack = color.Equals(Color.Black);
         if (!this.IsBlack)
         {
-            var initHsl = HslColor.FromColor(initColor);
-            var hueIndex = HslColorPicker.HslValues.Select((hsl, i) => (h: Math.Abs(hsl.H - initHsl.H), i)).OrderBy(item => item.h).First().i;
-            this.HueCoord = hueIndex.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange).Remap(HslColorPicker.UnitRange, this.HueTrack);
+            var initHsl = HslColor.FromColor(color);
+            var hueIndex = this.HslValues.Select((hsl, i) => (h: Math.Abs(hsl.H - initHsl.H), i)).OrderBy(i => i.h).First().i;
+            this.HueCoord = hueIndex.Remap(this.HslTrack, HslColorPicker.UnitRange).Remap(HslColorPicker.UnitRange, this.HueTrack);
             this.SaturationCoord = initHsl.S.Remap(HslColorPicker.UnitRange, this.SaturationTrack);
             this.LightnessCoord = initHsl.L.Remap(HslColorPicker.UnitRange, this.LightnessTrack);
         }
@@ -94,15 +86,29 @@ public class HslColorPicker : DiscreteColorPicker
         Transparent,
     }
 
-    private static Color[] ColorValues { get; set; }
-
-    private static Range<int> HslTrack { get; set; }
-
-    private static HslColor[] HslValues { get; set; }
-
-    private static Texture2D HueBar { get; set; }
+    private Color[] ColorValues
+    {
+        get => HslColorPicker.CachedColorValues ??= new Color[this.HueBar.Width * this.HueBar.Height];
+    }
 
     private TrackThumb HeldThumb { get; set; } = TrackThumb.None;
+
+    private IModHelper Helper { get; }
+
+    private Range<int> HslTrack
+    {
+        get => HslColorPicker.CachedHslTrack ??= new(0, this.HslValues.Length);
+    }
+
+    private HslColor[] HslValues
+    {
+        get => HslColorPicker.CachedHslValues ??= this.ColorValues.Select(HslColor.FromColor).Distinct().ToArray();
+    }
+
+    private Texture2D HueBar
+    {
+        get => HslColorPicker.CachedHueBar ??= this.Helper.ModContent.Load<Texture2D>("assets/hue.png");
+    }
 
     private Rectangle HueBarArea { get; }
 
@@ -112,10 +118,10 @@ public class HslColorPicker : DiscreteColorPicker
         set
         {
             this._hueCoord = this.HueTrack.Clamp(value);
-            var hueIndex = HslColorPicker.HslTrack.Clamp(this._hueCoord
+            var hueIndex = this.HslTrack.Clamp(this._hueCoord
                                                              .Remap(this.HueTrack, HslColorPicker.UnitRange)
-                                                             .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack));
-            var hslColor = HslColorPicker.HslValues.ElementAtOrDefault(hueIndex);
+                                                             .Remap(HslColorPicker.UnitRange, this.HslTrack));
+            var hslColor = this.HslValues.ElementAtOrDefault(hueIndex);
             this._hslColor.H = hslColor.H;
             if (this.IsBlack)
             {
@@ -131,7 +137,7 @@ public class HslColorPicker : DiscreteColorPicker
 
     private bool IsBlack { get; set; }
 
-    private GradientBar LightnessBar { get; }
+    private List<Rectangle> LightnessBar { get; }
 
     private int LightnessCoord
     {
@@ -150,7 +156,7 @@ public class HslColorPicker : DiscreteColorPicker
 
     private Rectangle NoColorButtonArea { get; }
 
-    private GradientBar SaturationBar { get; }
+    private List<Rectangle> SaturationBar { get; }
 
     private int SaturationCoord
     {
@@ -213,11 +219,19 @@ public class HslColorPicker : DiscreteColorPicker
         this.NoColorButton.draw(b);
 
         // Hue Bar
-        b.Draw(HslColorPicker.HueBar, this.HueBarArea, Color.White);
+        b.Draw(this.HueBar, this.HueBarArea, Color.White);
 
-        // Gradient Bars
-        this.SaturationBar.Draw(b);
-        this.LightnessBar.Draw(b);
+        // Saturation Bar
+        foreach (var (bar, color) in this.SaturationBar.Select((bar, index) => (bar, this.GetSaturationShade((float)index / HslColorPicker.Cells))))
+        {
+            b.Draw(Game1.staminaRect, bar, color);
+        }
+
+        // Lightness Bar
+        foreach (var (bar, color) in this.LightnessBar.Select((bar, index) => (bar, this.GetLightnessShade((float)index / HslColorPicker.Cells))))
+        {
+            b.Draw(Game1.staminaRect, bar, color);
+        }
 
         if (this.IsBlack)
         {
@@ -248,7 +262,7 @@ public class HslColorPicker : DiscreteColorPicker
         // Saturation Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this.SaturationBar.Area.Left - 8, this.SaturationCoord, 20, 16),
+            new(this.SaturationBar.First().Left - 8, this.SaturationCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
@@ -259,7 +273,7 @@ public class HslColorPicker : DiscreteColorPicker
         // Luminance Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this.LightnessBar.Area.Left - 8, this.LightnessCoord, 20, 16),
+            new(this.LightnessBar.First().Left - 8, this.LightnessCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
@@ -352,12 +366,12 @@ public class HslColorPicker : DiscreteColorPicker
             this.HeldThumb = TrackThumb.Hue;
             this.HueCoord = y;
         }
-        else if (this.SaturationBar.Area.Contains(x, y))
+        else if (this.SaturationBar.Any(bar => bar.Contains(x, y)))
         {
             this.HeldThumb = TrackThumb.Saturation;
             this.SaturationCoord = y;
         }
-        else if (this.LightnessBar.Area.Contains(x, y))
+        else if (this.LightnessBar.Any(bar => bar.Contains(x, y)))
         {
             this.HeldThumb = TrackThumb.Luminance;
             this.LightnessCoord = y;
@@ -418,11 +432,11 @@ public class HslColorPicker : DiscreteColorPicker
         {
             this.HueCoord += delta;
         }
-        else if (this.SaturationBar.Area.Contains(x, y))
+        else if (this.SaturationBar.Any(bar => bar.Contains(x, y)))
         {
             this.SaturationCoord += delta;
         }
-        else if (this.LightnessBar.Area.Contains(x, y))
+        else if (this.LightnessBar.Any(bar => bar.Contains(x, y)))
         {
             this.LightnessCoord += delta;
         }

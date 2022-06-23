@@ -16,9 +16,5 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1" />
-        <Reference Include="FuryCore">
-            <HintPath>$(GameModsPath)\FuryCore\FuryCore.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
     </ItemGroup>
 </Project>

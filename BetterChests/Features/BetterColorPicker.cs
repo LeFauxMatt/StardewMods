@@ -3,20 +3,18 @@ namespace StardewMods.BetterChests.Features;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using Common.Enums;
-using Common.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Enums;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Interfaces;
-using StardewMods.BetterChests.Models;
-using StardewMods.FuryCore.Interfaces.CustomEvents;
-using StardewMods.FuryCore.Interfaces.GameObjects;
-using StardewMods.FuryCore.UI;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
+using StardewMods.Common.UI;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -24,71 +22,59 @@ using StardewValley.Objects;
 /// <summary>
 ///     Adds a chest color picker that support hue, saturation, and lightness.
 /// </summary>
-internal class CustomColorPicker : IFeature
+internal class BetterColorPicker : IFeature
 {
     private const string Id = "BetterChests.CustomColorPicker";
 
     private readonly PerScreen<HslColorPicker?> _colorPicker = new();
-    private readonly PerScreen<IGameObject> _context = new();
 
-    /// <summary>
-    ///     Initializes <see cref="CustomColorPicker" />.
-    /// </summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="CustomColorPicker" /> class.</returns>
-    public static CustomColorPicker Init(IModHelper helper)
-    {
-        return CustomColorPicker.Instance ??= new(helper);
-    }
-
-    private CustomColorPicker(IModHelper helper)
+    private BetterColorPicker(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
+        this.Config = config;
         HarmonyHelper.AddPatches(
-            CustomColorPicker.Id,
+            BetterColorPicker.Id,
             new SavedPatch[]
             {
                 new(
                     AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getCurrentColor)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.DiscreteColorPicker_GetCurrentColor_postfix),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.DiscreteColorPicker_GetCurrentColor_postfix),
                     PatchType.Postfix),
                 new(
                     AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.DiscreteColorPicker_GetColorFromSelection_postfix),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.DiscreteColorPicker_GetColorFromSelection_postfix),
                     PatchType.Postfix),
                 new(
                     AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.DiscreteColorPicker_GetSelectionFromColor_postfix),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.DiscreteColorPicker_GetSelectionFromColor_postfix),
                     PatchType.Postfix),
                 new(
                     AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
                     PatchType.Transpiler),
                 new(
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
                     PatchType.Transpiler),
                 new(
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
                     PatchType.Transpiler),
                 new(
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-                    typeof(CustomColorPicker),
-                    nameof(CustomColorPicker.ItemGrabMenu_setSourceItem_postfix),
+                    typeof(BetterColorPicker),
+                    nameof(BetterColorPicker.ItemGrabMenu_setSourceItem_postfix),
                     PatchType.Postfix),
             });
     }
 
-    private static CustomColorPicker? Instance { get; set; }
-
-    private IModHelper Helper { get; }
+    private static BetterColorPicker? Instance { get; set; }
 
     private HslColorPicker? ColorPicker
     {
@@ -96,24 +82,33 @@ internal class CustomColorPicker : IFeature
         set => this._colorPicker.Value = value;
     }
 
-    private IGameObject Context
+    private ModConfig Config { get; }
+
+    private IModHelper Helper { get; }
+
+    /// <summary>
+    ///     Initializes <see cref="BetterColorPicker" />.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="config">Mod config data.</param>
+    /// <returns>Returns an instance of the <see cref="BetterColorPicker" /> class.</returns>
+    public static BetterColorPicker Init(IModHelper helper, ModConfig config)
     {
-        get => this._context.Value;
-        set => this._context.Value = value;
+        return BetterColorPicker.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(CustomColorPicker.Id);
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        HarmonyHelper.ApplyPatches(BetterColorPicker.Id);
+        this.Helper.Events.Display.MenuChanged += BetterColorPicker.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(CustomColorPicker.Id);
-        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+        HarmonyHelper.UnapplyPatches(BetterColorPicker.Id);
+        this.Helper.Events.Display.MenuChanged -= BetterColorPicker.OnMenuChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -128,7 +123,7 @@ internal class CustomColorPicker : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void DiscreteColorPicker_GetCurrentColor_postfix(DiscreteColorPicker __instance, ref Color __result)
     {
-        if (__instance is not HslColorPicker colorPicker || !ReferenceEquals(colorPicker, CustomColorPicker.Instance!.ColorPicker))
+        if (__instance is not HslColorPicker colorPicker || !ReferenceEquals(colorPicker, BetterColorPicker.Instance!.ColorPicker))
         {
             return;
         }
@@ -147,12 +142,12 @@ internal class CustomColorPicker : IFeature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     private static DiscreteColorPicker GetColorPicker(int xPosition, int yPosition, int startingColor, Item itemToDrawColored, ItemGrabMenu menu)
     {
-        CustomColorPicker.Instance.ColorPicker?.UnregisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
+        //BetterColorPicker.Instance!.ColorPicker?.UnregisterEvents(BetterColorPicker.Instance.Helper.Events.Input);
 
-        var item = CustomColorPicker.Instance.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
+        var item = BetterColorPicker.Instance!.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
         if (item is not Chest chest)
         {
-            CustomColorPicker.Instance.ColorPicker = null;
+            BetterColorPicker.Instance.ColorPicker = null;
             return new(xPosition, yPosition, startingColor, itemToDrawColored);
         }
 
@@ -170,15 +165,15 @@ internal class CustomColorPicker : IFeature
         }
 
         Log.Verbose("Adding CustomColorPicker to ItemGrabMenu");
-        CustomColorPicker.Instance.ColorPicker = new(
-            CustomColorPicker.Instance.Helper.Content,
-            Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
+        BetterColorPicker.Instance.ColorPicker = new(
+            BetterColorPicker.Instance.Helper,
+            BetterColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
             menu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2,
             chest.playerChoiceColor.Value,
             chestToDraw);
-        CustomColorPicker.Instance.ColorPicker.RegisterEvents(CustomColorPicker.Instance.Helper.Events.Input);
+        //BetterColorPicker.Instance.ColorPicker.RegisterEvents(BetterColorPicker.Instance.Helper.Events.Input);
 
-        return CustomColorPicker.Instance.ColorPicker;
+        return BetterColorPicker.Instance.ColorPicker;
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_DiscreteColorPicker_Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -190,7 +185,7 @@ internal class CustomColorPicker : IFeature
                 if (instruction.operand.Equals(AccessTools.Constructor(typeof(DiscreteColorPicker), new[] { typeof(int), typeof(int), typeof(int), typeof(Item) })))
                 {
                     yield return new(OpCodes.Ldarg_0);
-                    yield return new(OpCodes.Call, AccessTools.Method(typeof(CustomColorPicker), nameof(CustomColorPicker.GetColorPicker)));
+                    yield return new(OpCodes.Call, AccessTools.Method(typeof(BetterColorPicker), nameof(BetterColorPicker.GetColorPicker)));
                 }
                 else
                 {
@@ -208,7 +203,7 @@ internal class CustomColorPicker : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance.context is null || !ReferenceEquals(__instance.context, CustomColorPicker.Instance.Context))
+        if (__instance.context is null || !StorageHelper.TryGetOne(__instance.context, out var storage) || storage.CustomColorPicker != FeatureOption.Disabled)
         {
             return;
         }
@@ -216,16 +211,15 @@ internal class CustomColorPicker : IFeature
         __instance.discreteColorPickerCC = null;
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.Menu is not ItemGrabMenu itemGrabMenu || e.Context is null || !this.ManagedObjects.TryGetManagedStorage(e.Context, out var managedChest) || managedChest.CustomColorPicker != FeatureOption.Enabled)
+        switch (e.NewMenu)
         {
-            this.ColorPicker?.UnregisterEvents(this.Helper.Events.Input);
-            this.ColorPicker = null;
-            return;
+            case ItemSelectionMenu:
+                return;
+            case ItemGrabMenu { context: { } context } itemGrabMenu when StorageHelper.TryGetOne(context, out var storage) && storage.CustomColorPicker != FeatureOption.Disabled:
+                itemGrabMenu.discreteColorPickerCC = null;
+                return;
         }
-
-        this.Context = e.Context;
-        itemGrabMenu.discreteColorPickerCC = null;
     }
 }

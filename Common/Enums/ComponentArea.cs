@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.Common.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Align a component to an area around the menu.
 /// </summary>
+[EnumExtensions]
 public enum ComponentArea
 {
     /// <summary>Above the menu.</summary>
