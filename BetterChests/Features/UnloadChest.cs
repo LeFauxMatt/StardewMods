@@ -1,9 +1,9 @@
 namespace StardewMods.BetterChests.Features;
 
-using Common.Enums;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Enums;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -22,6 +22,8 @@ internal class UnloadChest : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="UnloadChest" />.
     /// </summary>
@@ -35,13 +37,21 @@ internal class UnloadChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        }
     }
 
     [EventPriority(EventPriority.High)]

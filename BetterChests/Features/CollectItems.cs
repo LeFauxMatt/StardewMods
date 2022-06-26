@@ -3,13 +3,13 @@ namespace StardewMods.BetterChests.Features;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using Common.Enums;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -21,9 +21,9 @@ using StardewValley.Objects;
 /// </summary>
 internal class CollectItems : IFeature
 {
-    private const string Id = "BetterChests.CollectItems";
+    private const string Id = "furyx639.BetterChests/CollectItems";
 
-    private readonly PerScreen<List<BaseStorage>?> _cachedEligible = new();
+    private readonly PerScreen<List<IStorageObject>?> _cachedEligible = new();
 
     private CollectItems(IModHelper helper)
     {
@@ -40,7 +40,7 @@ internal class CollectItems : IFeature
             });
     }
 
-    private static IEnumerable<BaseStorage> Eligible
+    private static IEnumerable<IStorageObject> Eligible
     {
         get
         {
@@ -56,13 +56,15 @@ internal class CollectItems : IFeature
 
     private static CollectItems? Instance { get; set; }
 
-    private List<BaseStorage>? CachedEligible
+    private List<IStorageObject>? CachedEligible
     {
         get => this._cachedEligible.Value;
         set => this._cachedEligible.Value = value;
     }
 
     private IModHelper Helper { get; }
+
+    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
@@ -77,15 +79,23 @@ internal class CollectItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(CollectItems.Id);
-        this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(CollectItems.Id);
+            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(CollectItems.Id);
-        this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(CollectItems.Id);
+            this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+        }
     }
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item? item, bool makeActiveObject)

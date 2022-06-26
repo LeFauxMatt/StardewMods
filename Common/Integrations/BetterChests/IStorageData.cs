@@ -3,6 +3,9 @@
 using System.Collections.Generic;
 using StardewMods.Common.Enums;
 
+/// <summary>
+///     Per storage configurable options.
+/// </summary>
 public interface IStorageData
 {
     /// <summary>
@@ -28,7 +31,7 @@ public interface IStorageData
     /// <summary>
     ///     Gets or sets a value indicating which tabs will be added to the chest menu.
     /// </summary>
-    public HashSet<string>? ChestMenuTabSet { get; set; }
+    public HashSet<string> ChestMenuTabSet { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating if the chest can collect dropped items.
@@ -44,7 +47,7 @@ public interface IStorageData
     ///     Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
     ///     listed locations.
     /// </summary>
-    public HashSet<string>? CraftFromChestDisableLocations { get; set; }
+    public HashSet<string> CraftFromChestDisableLocations { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating the distance in tiles that the chest can be remotely crafted from.
@@ -65,7 +68,7 @@ public interface IStorageData
     /// <summary>
     ///     Gets or sets a value indicating what categories of items are allowed in the chest.
     /// </summary>
-    public HashSet<string>? FilterItemsList { get; set; }
+    public HashSet<string> FilterItemsList { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating if the chest can be opened while it's being carried in the players inventory.
@@ -121,7 +124,7 @@ public interface IStorageData
     ///     Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
     ///     listed locations.
     /// </summary>
-    public HashSet<string>? StashToChestDisableLocations { get; set; }
+    public HashSet<string> StashToChestDisableLocations { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating the distance in tiles that the chest can be remotely stashed into.

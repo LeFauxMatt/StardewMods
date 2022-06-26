@@ -23,13 +23,12 @@ using SObject = StardewValley.Object;
 
 // TODO: Prevent losing chests if passed out
 // TODO: Patch addToStack
-
 /// <summary>
 ///     Allows a placed chest full of items to be picked up by the farmer.
 /// </summary>
 internal class CarryChest : IFeature
 {
-    private const string Id = "BetterChests.CarryChest";
+    private const string Id = "furyx639.BetterChests/CarryChest";
     private const int WhichBuff = 69420;
 
     private CarryChest(IModHelper helper, ModConfig config)
@@ -89,6 +88,8 @@ internal class CarryChest : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Checks if the player should be overburdened while carrying a chest.
     /// </summary>
@@ -124,19 +125,27 @@ internal class CarryChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(CarryChest.Id);
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-        this.Helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(CarryChest.Id);
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+            this.Helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(CarryChest.Id);
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
-        this.Helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(CarryChest.Id);
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            this.Helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
+            this.Helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -372,7 +381,7 @@ internal class CarryChest : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is not null || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }

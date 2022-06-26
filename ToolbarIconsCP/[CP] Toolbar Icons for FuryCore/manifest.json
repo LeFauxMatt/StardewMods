@@ -12,9 +12,8 @@
   },
   "Dependencies": [
     {
-      "UniqueID": "furyx639.FuryCore",
-      "IsRequired": true,
-      "MinimumVersion": "1.4.1"
+      "UniqueID": "furyx639.ToolbarIcons",
+      "IsRequired": true
     }
   ]
 }

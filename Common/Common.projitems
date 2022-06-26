@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomationFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\BetterCraftingIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\IBetterCraftingApi.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\DropDownList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\HslColorPicker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ItemSelectionMenu.cs" />
   </ItemGroup>

@@ -2,14 +2,14 @@ namespace StardewMods.BetterChests;
 
 using System;
 using System.Collections.Generic;
-using Common.Enums;
-using Common.Helpers;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 
@@ -41,7 +41,7 @@ public class BetterChests : Mod
         }
     }
 
-    private IDictionary<string, IFeature> Features { get; } = new Dictionary<string, IFeature>();
+    private Dictionary<string, (IFeature Feature, Func<bool> Condition)> Features { get; } = new();
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -52,32 +52,11 @@ public class BetterChests : Mod
         StorageHelper.Init(this.Helper.Multiplayer, this.Config);
 
         // Events
-        this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this.Helper.Events.Content.AssetRequested += BetterChests.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-
-        // Features
-        AutoOrganize.Init(this.Helper);
-        this.Features.Add(nameof(AutoOrganize), AutoOrganize.Init(this.Helper));
-        this.Features.Add(nameof(BetterColorPicker), BetterColorPicker.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(BetterItemGrabMenu), BetterItemGrabMenu.Init(this.Helper));
-        this.Features.Add(nameof(BetterShippingBin), BetterShippingBin.Init(this.Helper));
-        this.Features.Add(nameof(CarryChest), CarryChest.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(CategorizeChest), CategorizeChest.Init(this.Helper));
-        this.Features.Add(nameof(ChestMenuTabs), ChestMenuTabs.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(CollectItems), CollectItems.Init(this.Helper));
-        this.Features.Add(nameof(CraftFromChest), CraftFromChest.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(FilterItems), FilterItems.Init(this.Helper));
-        this.Features.Add(nameof(OpenHeldChest), OpenHeldChest.Init(this.Helper));
-        this.Features.Add(nameof(OrganizeChest), OrganizeChest.Init(this.Helper));
-        this.Features.Add(nameof(ResizeChest), ResizeChest.Init(this.Helper));
-        this.Features.Add(nameof(ResizeChestMenu), ResizeChestMenu.Init(this.Helper));
-        this.Features.Add(nameof(SearchItems), SearchItems.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(SlotLock), SlotLock.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(StashToChest), StashToChest.Init(this.Helper, this.Config));
-        this.Features.Add(nameof(UnloadChest), UnloadChest.Init(this.Helper));
     }
 
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo("furyx639.BetterChests/Icons"))
         {
@@ -97,93 +76,33 @@ public class BetterChests : Mod
     {
         var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
 
-        this.Features[nameof(CarryChest)].Activate();
-        this.Features[nameof(ChestMenuTabs)].Activate();
-        this.Features[nameof(SearchItems)].Activate();
+        // Features
+        this.Features.Add(nameof(AutoOrganize), new(AutoOrganize.Init(this.Helper), () => this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled));
+        this.Features.Add(nameof(BetterColorPicker), new(BetterColorPicker.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled));
+        this.Features.Add(nameof(BetterItemGrabMenu), new(BetterItemGrabMenu.Init(this.Helper, this.Config), () => true));
+        this.Features.Add(nameof(BetterShippingBin), new(BetterShippingBin.Init(this.Helper), () => true));
+        this.Features.Add(nameof(CarryChest), new(CarryChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled));
+        this.Features.Add(nameof(CategorizeChest), new(CategorizeChest.Init(this.Helper), () => this.Config.CategorizeChest));
+        this.Features.Add(nameof(ChestMenuTabs), new(ChestMenuTabs.Init(this.Helper, this.Config), () => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled));
+        this.Features.Add(nameof(CollectItems), new(CollectItems.Init(this.Helper), () => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled));
+        this.Features.Add(nameof(CraftFromChest), new(CraftFromChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled));
+        this.Features.Add(nameof(FilterItems), new(FilterItems.Init(this.Helper), () => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled));
+        this.Features.Add(nameof(OpenHeldChest), new(OpenHeldChest.Init(this.Helper), () => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled));
+        this.Features.Add(nameof(OrganizeChest), new(OrganizeChest.Init(this.Helper), () => this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled));
+        this.Features.Add(nameof(ResizeChest), new(ResizeChest.Init(this.Helper), () => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled));
+        this.Features.Add(nameof(ResizeChestMenu), new(ResizeChestMenu.Init(this.Helper), () => this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled));
+        this.Features.Add(nameof(SearchItems), new(SearchItems.Init(this.Helper, this.Config), () => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled));
+        this.Features.Add(nameof(SlotLock), new(SlotLock.Init(this.Helper, this.Config), () => this.Config.SlotLock));
+        this.Features.Add(nameof(StashToChest), new(StashToChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled));
+        this.Features.Add(nameof(UnloadChest), new(UnloadChest.Init(this.Helper), () => this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled));
 
-        // Activate Features
-        /*if (this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled)
+        foreach (var (feature, condition) in this.Features.Values)
         {
-            this.Features[nameof(AutoOrganize)].Activate();
+            if (condition())
+            {
+                feature.Activate();
+            }
         }
-
-        this.Features[nameof(BetterItemGrabMenu)].Activate();
-        this.Features[nameof(BetterShippingBin)].Activate();
-
-        if (this.Config.DefaultChest.CarryChest != FeatureOption.Disabled)
-        {
-            this.Features[nameof(CarryChest)].Activate();
-        }
-
-        if (this.Config.CategorizeChest)
-        {
-            this.Features[nameof(CategorizeChest)].Activate();
-        }
-
-        if (this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled)
-        {
-            this.Features[nameof(ChestMenuTabs)].Activate();
-        }
-
-        if (this.Config.DefaultChest.CollectItems != FeatureOption.Disabled)
-        {
-            this.Features[nameof(CollectItems)].Activate();
-        }
-
-        if (this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled)
-        {
-            this.Features[nameof(CraftFromChest)].Activate();
-        }
-
-        if (this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled)
-        {
-            this.Features[nameof(BetterColorPicker)].Activate();
-        }
-
-        if (this.Config.DefaultChest.FilterItems != FeatureOption.Disabled)
-        {
-            this.Features[nameof(FilterItems)].Activate();
-        }
-
-        if (this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled)
-        {
-            this.Features[nameof(OpenHeldChest)].Activate();
-        }
-
-        if (this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled)
-        {
-            this.Features[nameof(OrganizeChest)].Activate();
-        }
-
-        if (this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled)
-        {
-            this.Features[nameof(ResizeChest)].Activate();
-        }
-
-        if (this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled)
-        {
-            this.Features[nameof(ResizeChestMenu)].Activate();
-        }
-
-        if (this.Config.DefaultChest.SearchItems != FeatureOption.Disabled)
-        {
-            this.Features[nameof(SearchItems)].Activate();
-        }
-
-        if (this.Config.SlotLock)
-        {
-            this.Features[nameof(SlotLock)].Activate();
-        }
-
-        if (this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled)
-        {
-            this.Features[nameof(StashToChest)].Activate();
-        }
-
-        if (this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled)
-        {
-            this.Features[nameof(UnloadChest)].Activate();
-        }*/
 
         if (gmcm.IsLoaded)
         {
@@ -191,7 +110,7 @@ public class BetterChests : Mod
             gmcm.Register(
                 this.ModManifest,
                 () => this._config = new(),
-                () => this.Helper.WriteConfig(this.Config));
+                this.SaveConfig);
 
             // Auto Organize
             gmcm.API.AddTextOption(
@@ -328,7 +247,7 @@ public class BetterChests : Mod
                         (int)FeatureOptionRange.Inventory => 0,
                         (int)FeatureOptionRange.World - 1 => -1,
                         (int)FeatureOptionRange.World => 0,
-                        >= (int)FeatureOptionRange.Location => 2 ^ (1 + value - (int)FeatureOptionRange.Location),
+                        >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location),
                         _ => 0,
                     };
                     this.Config.DefaultChest.CraftFromChest = value switch
@@ -580,7 +499,7 @@ public class BetterChests : Mod
                         (int)FeatureOptionRange.Inventory => 0,
                         (int)FeatureOptionRange.World - 1 => -1,
                         (int)FeatureOptionRange.World => 0,
-                        >= (int)FeatureOptionRange.Location => 2 ^ (1 + value - (int)FeatureOptionRange.Location),
+                        >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location),
                         _ => 0,
                     };
                     this.Config.DefaultChest.StashToChest = value switch
@@ -637,6 +556,21 @@ public class BetterChests : Mod
                 FeatureOptionExtensions.GetNames(),
                 FormatHelper.FormatOption,
                 nameof(IStorageData.UnloadChest));
+        }
+    }
+
+    private void SaveConfig()
+    {
+        this.Helper.WriteConfig(this.Config);
+        foreach (var (feature, condition) in this.Features.Values)
+        {
+            if (condition())
+            {
+                feature.Activate();
+                continue;
+            }
+
+            feature.Deactivate();
         }
     }
 }

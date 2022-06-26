@@ -1,9 +1,9 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Enums;
-using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 
@@ -14,7 +14,7 @@ internal class StorageModData : IStorageData
     ///     Initializes a new instance of the <see cref="StorageModData" /> class.
     /// </summary>
     /// <param name="storage">The base storage object.</param>
-    public StorageModData(BaseStorage storage)
+    public StorageModData(IStorageObject storage)
     {
         this.Storage = storage;
     }
@@ -37,7 +37,7 @@ internal class StorageModData : IStorageData
         set => this.ModData["furyx639.BetterChests/CarryChest"] = value.ToStringFast();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption CarryChestSlow
     {
         get => this.ModData.TryGetValue("furyx639.BetterChests/CarryChestSlow", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
@@ -56,19 +56,17 @@ internal class StorageModData : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? ChestMenuTabSet
+    public HashSet<string> ChestMenuTabSet
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabSet", out var value) && !string.IsNullOrWhiteSpace(value)
-            ? new HashSet<string>(value.Split(','))
-            : null;
+        get => new(this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabSet", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
         set
         {
-            if (value is null || !value.Any())
+            if (!value.Any())
             {
                 this.ModData.Remove("furyx639.BetterChests/ChestMenuTabSet");
             }
 
-            this.ModData["furyx639.BetterChests/ChestMenuTabSet"] = string.Join(",", value!);
+            this.ModData["furyx639.BetterChests/ChestMenuTabSet"] = string.Join(",", value);
         }
     }
 
@@ -91,19 +89,17 @@ internal class StorageModData : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? CraftFromChestDisableLocations
+    public HashSet<string> CraftFromChestDisableLocations
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value)
-            ? new HashSet<string>(value.Split(','))
-            : null;
+        get => new(this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
         set
         {
-            if (value is null || !value.Any())
+            if (!value.Any())
             {
                 this.ModData.Remove("furyx639.BetterChests/CraftFromChestDisableLocations");
             }
 
-            this.ModData["furyx639.BetterChests/CraftFromChestDisableLocations"] = string.Join(",", value!);
+            this.ModData["furyx639.BetterChests/CraftFromChestDisableLocations"] = string.Join(",", value);
         }
     }
 
@@ -135,19 +131,17 @@ internal class StorageModData : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? FilterItemsList
+    public HashSet<string> FilterItemsList
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/FilterItemsList", out var value) && !string.IsNullOrWhiteSpace(value)
-            ? new HashSet<string>(value.Split(','))
-            : null;
+        get => new(this.ModData.TryGetValue("furyx639.BetterChests/FilterItemsList", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
         set
         {
-            if (value is null || !value.Any())
+            if (!value.Any())
             {
                 this.ModData.Remove("furyx639.BetterChests/FilterItemsList");
             }
 
-            this.ModData["furyx639.BetterChests/FilterItemsList"] = string.Join(",", value!);
+            this.ModData["furyx639.BetterChests/FilterItemsList"] = string.Join(",", value);
         }
     }
 
@@ -242,19 +236,17 @@ internal class StorageModData : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? StashToChestDisableLocations
+    public HashSet<string> StashToChestDisableLocations
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value)
-            ? new HashSet<string>(value.Split(','))
-            : null;
+        get => new(this.ModData.TryGetValue("furyx639.BetterChests/StashToChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
         set
         {
-            if (value is null || !value.Any())
+            if (!value.Any())
             {
                 this.ModData.Remove("furyx639.BetterChests/StashToChestDisableLocations");
             }
 
-            this.ModData["furyx639.BetterChests/StashToChestDisableLocations"] = string.Join(",", value!);
+            this.ModData["furyx639.BetterChests/StashToChestDisableLocations"] = string.Join(",", value);
         }
     }
 
@@ -299,5 +291,5 @@ internal class StorageModData : IStorageData
         get => this.Storage.ModData;
     }
 
-    private BaseStorage Storage { get; }
+    private IStorageObject Storage { get; }
 }

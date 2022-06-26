@@ -19,14 +19,9 @@ internal class FridgeStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public FridgeStorage(GameLocation location, IStorageData defaultChest, Vector2? position = default)
-        : base(location, location, position, defaultChest)
+        : base(location, location, defaultChest, position)
     {
-    }
-
-    /// <inheritdoc />
-    public override int ActualCapacity
-    {
-        get => this.Chest.GetActualCapacity();
+        this.Location = location;
     }
 
     /// <inheritdoc />
@@ -35,13 +30,18 @@ internal class FridgeStorage : BaseStorage
         get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
     }
 
+    /// <summary>
+    ///     Gets the location of the fridge.
+    /// </summary>
+    public GameLocation Location { get; }
+
     /// <inheritdoc />
     public override ModDataDictionary ModData
     {
         get => this.Location.modData;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override NetMutex? Mutex
     {
         get => this.Chest.GetMutex();

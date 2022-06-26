@@ -2,7 +2,7 @@ namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -11,10 +11,10 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.PatternPatcher;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -27,7 +27,7 @@ using StardewValley.Menus;
 internal class SearchItems : IFeature
 {
     private const int ExtraSpace = 24;
-    private const string Id = "BetterChests.SearchItems";
+    private const string Id = "furyx639.BetterChests/SearchItems";
 
     private readonly PerScreen<object?> _context = new();
     private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
@@ -35,7 +35,7 @@ internal class SearchItems : IFeature
     private readonly PerScreen<TextBox?> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent?> _searchIcon = new();
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
-    private readonly PerScreen<BaseStorage?> _storage = new();
+    private readonly PerScreen<IStorageObject?> _storage = new();
 
     private SearchItems(IModHelper helper, ModConfig config)
     {
@@ -45,6 +45,11 @@ internal class SearchItems : IFeature
             SearchItems.Id,
             new SavedPatch[]
             {
+                new(
+                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    typeof(SearchItems),
+                    nameof(SearchItems.ItemGrabMenu_constructor_postfix),
+                    PatchType.Postfix),
                 new(
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
                     typeof(SearchItems),
@@ -69,6 +74,8 @@ internal class SearchItems : IFeature
     }
 
     private IModHelper Helper { get; }
+
+    private bool IsActivated { get; set; }
 
     private ItemMatcher ItemMatcher
     {
@@ -97,7 +104,7 @@ internal class SearchItems : IFeature
         set => this._searchText.Value = value;
     }
 
-    private BaseStorage? Storage
+    private IStorageObject? Storage
     {
         get => this._storage.Value;
         set => this._storage.Value = value;
@@ -117,21 +124,29 @@ internal class SearchItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(SearchItems.Id);
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(SearchItems.Id);
+            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(SearchItems.Id);
-        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(SearchItems.Id);
+            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+            this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        }
     }
 
     private static int GetExtraSpace(ItemGrabMenu itemGrabMenu)
@@ -147,6 +162,14 @@ internal class SearchItems : IFeature
             null or FeatureOption.Disabled => 0,
             _ => SearchItems.ExtraSpace,
         };
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
+    {
+        __instance.yPositionOnScreen -= SearchItems.ExtraSpace;
+        __instance.height += SearchItems.ExtraSpace;
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -298,7 +321,7 @@ internal class SearchItems : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu || !this.SearchArea.visible)
         {
             return;
         }
@@ -334,25 +357,32 @@ internal class SearchItems : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu)
+        if (e.NewMenu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu }
+            || !StorageHelper.TryGetOne(context, out var storage)
+            || storage.SearchItems == FeatureOption.Disabled)
         {
+            this.SearchArea.visible = false;
             return;
         }
 
-        itemGrabMenu.yPositionOnScreen -= SearchItems.ExtraSpace;
-        itemGrabMenu.height += SearchItems.ExtraSpace;
         this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString());
         this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-        this.SearchField.Selected = false;
-        this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
         this.SearchField.Width = itemsToGrabMenu.width;
+        this.SearchField.Selected = false;
+        this.SearchArea.visible = true;
+        this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
         this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
+
+        if (BetterItemGrabMenu.ItemsToGrabMenu is not null)
+        {
+            BetterItemGrabMenu.ItemsToGrabMenu.AddMatcher(this.ItemMatcher);
+        }
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        if (Game1.activeClickableMenu is not ItemGrabMenu || !this.SearchArea.visible)
         {
             return;
         }
@@ -363,7 +393,7 @@ internal class SearchItems : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        if (Game1.activeClickableMenu is not ItemGrabMenu || !this.SearchArea.visible)
         {
             return;
         }

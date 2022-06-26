@@ -1,12 +1,14 @@
 namespace StardewMods.BetterChests.Features;
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.UI;
 using StardewValley;
 using StardewValley.Menus;
@@ -44,6 +46,8 @@ internal class CategorizeChest : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     private ClickableTextureComponent MinusButton
     {
         get => this._minusButton.Value ??=
@@ -77,38 +81,24 @@ internal class CategorizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-    }
-
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
-    {
-        switch (e.NewMenu)
+        if (this.IsActivated)
         {
-            case ItemSelectionMenu itemSelectionMenu:
-                this.PlusButton.bounds.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize + 5 * Game1.pixelZoom;
-                this.PlusButton.bounds.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
-                this.MinusButton.bounds.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize * 2 - 4 * Game1.pixelZoom;
-                this.MinusButton.bounds.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
-                return;
-
-            case ItemGrabMenu itemGrabMenu:
-                this.ConfigureButton.bounds.X = itemGrabMenu.xPositionOnScreen - Game1.tileSize - 12 * Game1.pixelZoom;
-                this.ConfigureButton.bounds.Y = itemGrabMenu.yPositionOnScreen;
-                return;
-
-            case null when e.OldMenu is ItemSelectionMenu { context: BaseStorage storage }:
-                storage.ShowMenu();
-                break;
+            this.IsActivated = false;
+            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         }
     }
 
@@ -116,7 +106,7 @@ internal class CategorizeChest : IFeature
     {
         switch (Game1.activeClickableMenu)
         {
-            case ItemSelectionMenu { context: BaseStorage storage }:
+            case ItemSelectionMenu { context: IStorageObject storage }:
                 var (x, y) = Game1.getMousePosition(true);
 
                 if (this.PlusButton.containsPoint(x, y))
@@ -131,17 +121,63 @@ internal class CategorizeChest : IFeature
                     storage.StashToChestPriority--;
                     this.Helper.Input.Suppress(e.Button);
                 }
+
                 return;
 
             case ItemGrabMenu { context: { } context } when StorageHelper.TryGetOne(context, out var storage):
                 (x, y) = Game1.getMousePosition(true);
                 if (this.ConfigureButton.containsPoint(x, y))
                 {
-                    Game1.activeClickableMenu = new ItemSelectionMenu(this.Helper, storage);
+                    Game1.activeClickableMenu = new ItemSelectionMenu(storage, storage.FilterMatcher);
                     this.Helper.Input.Suppress(e.Button);
                     return;
                 }
+
                 return;
+        }
+    }
+
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        switch (e.NewMenu)
+        {
+            case ItemSelectionMenu itemSelectionMenu:
+                this.PlusButton.bounds.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize + 5 * Game1.pixelZoom;
+                this.PlusButton.bounds.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
+                this.MinusButton.bounds.X = itemSelectionMenu.xPositionOnScreen - Game1.tileSize * 2 - 4 * Game1.pixelZoom;
+                this.MinusButton.bounds.Y = itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom;
+                return;
+
+            case ItemGrabMenu itemGrabMenu:
+                var buttons = new List<ClickableComponent>();
+                if (itemGrabMenu.colorPickerToggleButton is not null)
+                {
+                    buttons.Add(itemGrabMenu.colorPickerToggleButton);
+                }
+
+                if (itemGrabMenu.organizeButton is not null)
+                {
+                    buttons.Add(itemGrabMenu.organizeButton);
+                }
+
+                if (itemGrabMenu.fillStacksButton is not null)
+                {
+                    buttons.Add(itemGrabMenu.fillStacksButton);
+                }
+
+                buttons = buttons.OrderBy(button => button.bounds.Y).ToList();
+                this.ConfigureButton.bounds.X = buttons[0].bounds.X;
+                this.ConfigureButton.bounds.Y = buttons[0].bounds.Y;
+                if (buttons.Count >= 2)
+                {
+                    this.ConfigureButton.bounds.Y += buttons[0].bounds.Y - buttons[1].bounds.Y;
+                }
+
+                return;
+
+            case null when e.OldMenu is ItemSelectionMenu { context: IStorageObject storage }:
+                storage.ShowMenu();
+                break;
         }
     }
 
@@ -149,7 +185,7 @@ internal class CategorizeChest : IFeature
     {
         switch (Game1.activeClickableMenu)
         {
-            case ItemSelectionMenu { context: BaseStorage storage } itemSelectionMenu:
+            case ItemSelectionMenu { context: IStorageObject storage } itemSelectionMenu:
                 this.PlusButton.draw(e.SpriteBatch);
                 this.MinusButton.draw(e.SpriteBatch);
 
@@ -171,10 +207,12 @@ internal class CategorizeChest : IFeature
                         itemSelectionMenu.xPositionOnScreen - Game1.tileSize - 8 * Game1.pixelZoom,
                         itemSelectionMenu.yPositionOnScreen + 4 * Game1.pixelZoom),
                     Game1.textColor);
+                itemSelectionMenu.drawMouse(e.SpriteBatch);
                 return;
 
-            case ItemGrabMenu { context: { } context } when StorageHelper.TryGetOne(context, out _):
+            case ItemGrabMenu { context: { } context } itemGrabMenu when StorageHelper.TryGetOne(context, out _):
                 this.ConfigureButton.draw(e.SpriteBatch);
+                itemGrabMenu.drawMouse(e.SpriteBatch);
                 return;
         }
     }

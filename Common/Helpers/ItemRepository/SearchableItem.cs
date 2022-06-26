@@ -67,7 +67,10 @@ internal class SearchableItem
     public Func<Item> CreateItem { get; }
 
     /// <summary>The item's display name for the current language.</summary>
-    public string DisplayName => this.Item.DisplayName;
+    public string DisplayName
+    {
+        get => this.Item.DisplayName;
+    }
 
     /// <summary>The item's unique ID for its type.</summary>
     public int ID { get; }
@@ -76,7 +79,10 @@ internal class SearchableItem
     public Item Item { get; }
 
     /// <summary>The item's default name.</summary>
-    public string Name => this.Item.Name;
+    public string Name
+    {
+        get => this.Item.Name;
+    }
 
     /*********
     ** Accessors

@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
 using System.Collections.Generic;
-using Common.Enums;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
@@ -13,14 +13,14 @@ internal class StorageData : IStorageData
     /// <inheritdoc />
     public FeatureOption CarryChest { get; set; } = FeatureOption.Default;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public FeatureOption CarryChestSlow { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
     public FeatureOption ChestMenuTabs { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
-    public HashSet<string>? ChestMenuTabSet { get; set; }
+    public HashSet<string> ChestMenuTabSet { get; set; } = new();
 
     /// <inheritdoc />
     public FeatureOption CollectItems { get; set; } = FeatureOption.Default;
@@ -29,7 +29,7 @@ internal class StorageData : IStorageData
     public FeatureOptionRange CraftFromChest { get; set; } = FeatureOptionRange.Default;
 
     /// <inheritdoc />
-    public HashSet<string>? CraftFromChestDisableLocations { get; set; }
+    public HashSet<string> CraftFromChestDisableLocations { get; set; } = new();
 
     /// <inheritdoc />
     public int CraftFromChestDistance { get; set; }
@@ -41,7 +41,7 @@ internal class StorageData : IStorageData
     public FeatureOption FilterItems { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
-    public HashSet<string>? FilterItemsList { get; set; }
+    public HashSet<string> FilterItemsList { get; set; } = new();
 
     /// <inheritdoc />
     public FeatureOption OpenHeldChest { get; set; } = FeatureOption.Default;
@@ -74,7 +74,7 @@ internal class StorageData : IStorageData
     public FeatureOptionRange StashToChest { get; set; } = FeatureOptionRange.Default;
 
     /// <inheritdoc />
-    public HashSet<string>? StashToChestDisableLocations { get; set; }
+    public HashSet<string> StashToChestDisableLocations { get; set; } = new();
 
     /// <inheritdoc />
     public int StashToChestDistance { get; set; }

@@ -15,19 +15,13 @@ internal class ChestStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ChestStorage" /> class.
     /// </summary>
     /// <param name="chest">The source chest.</param>
+    /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
-    /// <param name="location">The location of the source object.</param>
     /// <param name="position">The position of the source object.</param>
-    public ChestStorage(Chest chest, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
-        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest, location, position, defaultChest)
+    public ChestStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2? position = default)
+        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest, parent, defaultChest, position)
     {
         this.Chest = chest;
-    }
-
-    /// <inheritdoc/>
-    public override int ActualCapacity
-    {
-        get => this.Chest.GetActualCapacity();
     }
 
     /// <summary>
@@ -35,19 +29,19 @@ internal class ChestStorage : BaseStorage
     /// </summary>
     public Chest Chest { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override IList<Item?> Items
     {
         get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override ModDataDictionary ModData
     {
         get => this.Chest.modData;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override NetMutex? Mutex
     {
         get => this.Chest.GetMutex();
@@ -56,22 +50,6 @@ internal class ChestStorage : BaseStorage
     /// <inheritdoc />
     public override void ShowMenu()
     {
-        Game1.activeClickableMenu = new ItemGrabMenu(
-            this.Items,
-            false,
-            true,
-            InventoryMenu.highlightAllItems,
-            this.Chest.grabItemFromInventory,
-            null,
-            this.Chest.grabItemFromChest,
-            false,
-            true,
-            true,
-            true,
-            true,
-            1,
-            this.Chest,
-            -1,
-            this.Context);
+        this.Chest.ShowMenu();
     }
 }

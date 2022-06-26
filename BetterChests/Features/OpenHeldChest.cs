@@ -2,13 +2,11 @@ namespace StardewMods.BetterChests.Features;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Common.Enums;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Models;
-using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Enums;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -20,7 +18,7 @@ using StardewValley.Objects;
 /// </summary>
 internal class OpenHeldChest : IFeature
 {
-    private const string Id = "BetterChests.OpenHeldChest";
+    private const string Id = "furyx639.BetterChests/OpenHeldChest";
 
     private OpenHeldChest(IModHelper helper)
     {
@@ -41,6 +39,8 @@ internal class OpenHeldChest : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="OpenHeldChest" />.
     /// </summary>
@@ -54,34 +54,24 @@ internal class OpenHeldChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-
-        if (Context.IsMainPlayer)
+        if (!this.IsActivated)
         {
-            this.Helper.Events.GameLoop.UpdateTicked += OpenHeldChest.OnUpdateTicked;
-        }
-
-        if (IntegrationHelper.BetterCrafting.IsLoaded)
-        {
-            IntegrationHelper.BetterCrafting.API.RegisterInventoryProvider(typeof(BaseStorage), new StorageProvider());
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
         }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-
-        if (Context.IsMainPlayer)
+        if (this.IsActivated)
         {
-            this.Helper.Events.GameLoop.UpdateTicked -= OpenHeldChest.OnUpdateTicked;
-        }
-
-        if (IntegrationHelper.BetterCrafting.IsLoaded)
-        {
-            IntegrationHelper.BetterCrafting.API.UnregisterInventoryProvider(typeof(BaseStorage));
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            this.Helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
         }
     }
 
@@ -100,19 +90,11 @@ internal class OpenHeldChest : IFeature
         return false;
     }
 
-    private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+    private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
     {
-        if (!Context.IsPlayerFree)
+        foreach (var item in Game1.player.Items.Take(12).OfType<Object>())
         {
-            return;
-        }
-
-        foreach (var player in Game1.getOnlineFarmers())
-        {
-            foreach (var item in player.Items.Take(12).OfType<Object>())
-            {
-                item.updateWhenCurrentLocation(Game1.currentGameTime, player.currentLocation);
-            }
+            item.updateWhenCurrentLocation(Game1.currentGameTime, Game1.currentLocation);
         }
     }
 

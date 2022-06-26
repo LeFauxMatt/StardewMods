@@ -24,7 +24,7 @@ using StardewValley.Objects;
 /// </summary>
 internal class BetterColorPicker : IFeature
 {
-    private const string Id = "BetterChests.CustomColorPicker";
+    private const string Id = "furyx639.BetterChests/BetterColorPicker";
 
     private readonly PerScreen<HslColorPicker?> _colorPicker = new();
 
@@ -86,6 +86,8 @@ internal class BetterColorPicker : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="BetterColorPicker" />.
     /// </summary>
@@ -100,15 +102,23 @@ internal class BetterColorPicker : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(BetterColorPicker.Id);
-        this.Helper.Events.Display.MenuChanged += BetterColorPicker.OnMenuChanged;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(BetterColorPicker.Id);
+            this.Helper.Events.Display.MenuChanged += BetterColorPicker.OnMenuChanged;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(BetterColorPicker.Id);
-        this.Helper.Events.Display.MenuChanged -= BetterColorPicker.OnMenuChanged;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(BetterColorPicker.Id);
+            this.Helper.Events.Display.MenuChanged -= BetterColorPicker.OnMenuChanged;
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
@@ -142,8 +152,6 @@ internal class BetterColorPicker : IFeature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
     private static DiscreteColorPicker GetColorPicker(int xPosition, int yPosition, int startingColor, Item itemToDrawColored, ItemGrabMenu menu)
     {
-        //BetterColorPicker.Instance!.ColorPicker?.UnregisterEvents(BetterColorPicker.Instance.Helper.Events.Input);
-
         var item = BetterColorPicker.Instance!.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
         if (item is not Chest chest)
         {
@@ -171,7 +179,6 @@ internal class BetterColorPicker : IFeature
             menu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2,
             chest.playerChoiceColor.Value,
             chestToDraw);
-        //BetterColorPicker.Instance.ColorPicker.RegisterEvents(BetterColorPicker.Instance.Helper.Events.Input);
 
         return BetterColorPicker.Instance.ColorPicker;
     }

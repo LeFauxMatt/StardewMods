@@ -15,19 +15,13 @@ internal class ObjectStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ObjectStorage" /> class.
     /// </summary>
     /// <param name="obj">The source object.</param>
+    /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
-    /// <param name="location">The location of the source object.</param>
     /// <param name="position">The position of the source object.</param>
-    public ObjectStorage(Object obj, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
-        : base(obj, location, position, defaultChest)
+    public ObjectStorage(SObject obj, object? parent, IStorageData defaultChest, Vector2? position = default)
+        : base(obj, parent, defaultChest, position)
     {
         this.Object = obj;
-    }
-
-    /// <inheritdoc />
-    public override int ActualCapacity
-    {
-        get => this.Chest.GetActualCapacity();
     }
 
     /// <inheritdoc />
@@ -42,7 +36,7 @@ internal class ObjectStorage : BaseStorage
         get => this.Object.modData;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override NetMutex? Mutex
     {
         get => this.Chest.GetMutex();

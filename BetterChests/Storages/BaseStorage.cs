@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
@@ -15,35 +16,32 @@ using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
 /// <inheritdoc />
-internal abstract class BaseStorage : IStorageData
+internal abstract class BaseStorage : IStorageObject
 {
-    private readonly HashSet<string> _filterItemsList = new();
+    private readonly HashSet<string> _cachedFilterList = new();
     private readonly ItemMatcher _filterMatcher = new(true);
     private int _capacity;
-    private int _extraMenuSpace;
-    private int _menuCapacity;
     private int _menuRows;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="BaseStorage" /> class.
     /// </summary>
     /// <param name="context">The source object.</param>
-    /// <param name="location">The location of the source object.</param>
-    /// <param name="position">The position of the source object.</param>
+    /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
-    protected BaseStorage(object context, GameLocation? location, Vector2? position, IStorageData defaultChest)
+    /// <param name="position">The position of the source object.</param>
+    protected BaseStorage(object context, object? parent, IStorageData defaultChest, Vector2? position = default)
     {
         this.Context = context;
-        this.Location = location ?? Game1.currentLocation;
+        this.Parent = parent;
         this.Position = position ?? Vector2.Zero;
         this.DefaultChest = defaultChest;
         this.Data = new StorageModData(this);
         this.Type = new StorageData();
+        this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
-    /// <summary>
-    ///     Gets the actual capacity of the object's storage.
-    /// </summary>
+    /// <inheritdoc />
     public virtual int ActualCapacity
     {
         get => this.ResizeChestCapacity switch
@@ -119,11 +117,11 @@ internal abstract class BaseStorage : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? ChestMenuTabSet
+    public HashSet<string> ChestMenuTabSet
     {
-        get => this.Data.ChestMenuTabSet is not null && this.Data.ChestMenuTabSet.Any()
+        get => this.Data.ChestMenuTabSet.Any()
             ? this.Data.ChestMenuTabSet
-            : this.Type.ChestMenuTabSet is not null && this.Type.ChestMenuTabSet.Any()
+            : this.Type.ChestMenuTabSet.Any()
                 ? this.Type.ChestMenuTabSet
                 : this.DefaultChest.ChestMenuTabSet;
         set => this.Data.ChestMenuTabSet = value;
@@ -145,9 +143,7 @@ internal abstract class BaseStorage : IStorageData
         set => this.Data.CollectItems = value;
     }
 
-    /// <summary>
-    ///     Gets the context object.
-    /// </summary>
+    /// <inheritdoc />
     public object Context { get; }
 
     /// <inheritdoc />
@@ -167,11 +163,11 @@ internal abstract class BaseStorage : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? CraftFromChestDisableLocations
+    public HashSet<string> CraftFromChestDisableLocations
     {
-        get => this.Data.CraftFromChestDisableLocations is not null && this.Data.CraftFromChestDisableLocations.Any()
+        get => this.Data.CraftFromChestDisableLocations.Any()
             ? this.Data.CraftFromChestDisableLocations
-            : this.Type.CraftFromChestDisableLocations is not null && this.Type.CraftFromChestDisableLocations.Any()
+            : this.Type.CraftFromChestDisableLocations.Any()
                 ? this.Type.CraftFromChestDisableLocations
                 : this.DefaultChest.CraftFromChestDisableLocations;
         set => this.Data.CraftFromChestDisableLocations = value;
@@ -226,63 +222,55 @@ internal abstract class BaseStorage : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? FilterItemsList
+    public HashSet<string> FilterItemsList
     {
-        get => this.Data.FilterItemsList is not null && this.Data.FilterItemsList.Any()
+        get => this.Data.FilterItemsList.Any()
             ? this.Data.FilterItemsList
-            : this.Type.FilterItemsList is not null && this.Type.FilterItemsList.Any()
+            : this.Type.FilterItemsList.Any()
                 ? this.Type.FilterItemsList
                 : this.DefaultChest.FilterItemsList;
         set => this.Data.FilterItemsList = value;
     }
 
-    /// <summary>
-    ///     Gets the items in the object's storage.
-    /// </summary>
+    /// <inheritdoc />
+    public ItemMatcher FilterMatcher
+    {
+        get
+        {
+            if (!this._cachedFilterList.SetEquals(this.FilterItemsList))
+            {
+                this._filterMatcher.CollectionChanged -= this.OnCollectionChanged;
+                this._cachedFilterList.Clear();
+                this._filterMatcher.Clear();
+                foreach (var filter in this.FilterItemsList)
+                {
+                    this._cachedFilterList.Add(filter);
+                    this._filterMatcher.Add(filter);
+                }
+
+                this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
+            }
+
+            return this._filterMatcher;
+        }
+    }
+
+    /// <inheritdoc />
     public abstract IList<Item?> Items { get; }
 
-    /// <summary>
-    ///     Gets the location where this storage is placed.
-    /// </summary>
-    public GameLocation Location { get; }
-
-    /// <summary>
-    ///     Gets the calculated capacity of the <see cref="InventoryMenu" />.
-    /// </summary>
+    /// <inheritdoc />
     public int MenuCapacity
     {
-        get
-        {
-            if (this._capacity == this.ResizeChestCapacity)
-            {
-                return this._menuCapacity;
-            }
-
-            return this._menuCapacity = this.MenuRows * 12;
-        }
+        get => this.MenuRows * 12;
     }
 
-    /// <summary>
-    ///     Gets the extra vertical space needed for the <see cref="InventoryMenu" /> based on
-    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
-    /// </summary>
+    /// <inheritdoc />
     public int MenuExtraSpace
     {
-        get
-        {
-            if (this._capacity == this.ResizeChestCapacity)
-            {
-                return this._extraMenuSpace;
-            }
-
-            return this._extraMenuSpace = (this.MenuRows - 3) * Game1.tileSize;
-        }
+        get => (this.MenuRows - 3) * Game1.tileSize;
     }
 
-    /// <summary>
-    ///     Gets the number of rows to display on the <see cref="InventoryMenu" /> based on
-    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
-    /// </summary>
+    /// <inheritdoc />
     public int MenuRows
     {
         get
@@ -302,14 +290,10 @@ internal abstract class BaseStorage : IStorageData
         }
     }
 
-    /// <summary>
-    ///     Gets the ModData associated with the context object.
-    /// </summary>
+    /// <inheritdoc />
     public abstract ModDataDictionary ModData { get; }
 
-    /// <summary>
-    ///     Gets the mutex required to lock this object.
-    /// </summary>
+    /// <inheritdoc />
     public virtual NetMutex? Mutex
     {
         get => default;
@@ -362,24 +346,6 @@ internal abstract class BaseStorage : IStorageData
         set => this.Data.OrganizeChestGroupBy = value;
     }
 
-    /// <summary>
-    ///     Gets or sets a value indicating whether the storage is sorted in descending order.
-    /// </summary>
-    public bool OrganizeChestOrderByDescending
-    {
-        get => this.ModData.ContainsKey("furyx639.BetterChests/OrganizeChestSortByDescending");
-        set
-        {
-            if (value)
-            {
-                this.ModData["furyx639.BetterChests/OrganizeChestSortByDescending"] = "true";
-                return;
-            }
-
-            this.ModData.Remove("furyx639.BetterChests/OrganizeChestSortByDescending");
-        }
-    }
-
     /// <inheritdoc />
     public SortBy OrganizeChestSortBy
     {
@@ -395,9 +361,10 @@ internal abstract class BaseStorage : IStorageData
         set => this.Data.OrganizeChestSortBy = value;
     }
 
-    /// <summary>
-    ///     Gets the coordinate of this object.
-    /// </summary>
+    /// <inheritdoc />
+    public object? Parent { get; }
+
+    /// <inheritdoc />
     public Vector2 Position { get; }
 
     /// <inheritdoc />
@@ -487,11 +454,11 @@ internal abstract class BaseStorage : IStorageData
     }
 
     /// <inheritdoc />
-    public HashSet<string>? StashToChestDisableLocations
+    public HashSet<string> StashToChestDisableLocations
     {
-        get => this.Data.StashToChestDisableLocations is not null && this.Data.StashToChestDisableLocations.Any()
+        get => this.Data.StashToChestDisableLocations.Any()
             ? this.Data.StashToChestDisableLocations
-            : this.Type.StashToChestDisableLocations is not null && this.Type.StashToChestDisableLocations.Any()
+            : this.Type.StashToChestDisableLocations.Any()
                 ? this.Type.StashToChestDisableLocations
                 : this.DefaultChest.StashToChestDisableLocations;
         set => this.Data.StashToChestDisableLocations = value;
@@ -558,11 +525,7 @@ internal abstract class BaseStorage : IStorageData
 
     private IStorageData DefaultChest { get; }
 
-    /// <summary>
-    ///     Attempts to add an item into the storage.
-    /// </summary>
-    /// <param name="item">The item to stash.</param>
-    /// <returns>Returns the item if it could not be added completely, or null if it could.</returns>
+    /// <inheritdoc />
     public virtual Item? AddItem(Item item)
     {
         item.resetState();
@@ -585,9 +548,7 @@ internal abstract class BaseStorage : IStorageData
         return item;
     }
 
-    /// <summary>
-    ///     Removes null items from the storage.
-    /// </summary>
+    /// <inheritdoc />
     public virtual void ClearNulls()
     {
         for (var index = this.Items.Count - 1; index >= 0; index--)
@@ -599,37 +560,18 @@ internal abstract class BaseStorage : IStorageData
         }
     }
 
-    /// <summary>
-    ///     Tests if a <see cref="Item" /> matches the <see cref="IStorageData.FilterItemsList" /> condition.
-    /// </summary>
-    /// <param name="item">The <see cref="Item" /> to test.</param>
-    /// <returns>Returns true if the <see cref="Item" /> matches the filters.</returns>
+    /// <inheritdoc />
     public bool FilterMatches(Item item)
     {
-        if (this.FilterItems == FeatureOption.Disabled || this.FilterItemsList?.Any() != true)
+        if (this.FilterItems == FeatureOption.Disabled || !this.FilterItemsList.Any())
         {
             return true;
         }
 
-        if (!this.FilterItemsList.SetEquals(this._filterItemsList))
-        {
-            this._filterItemsList.Clear();
-            this._filterMatcher.Clear();
-            foreach (var filter in this.FilterItemsList)
-            {
-                this._filterItemsList.Add(filter);
-                this._filterMatcher.Add(filter);
-            }
-        }
-
-        return this._filterMatcher.Matches(item);
+        return this.FilterMatcher.Matches(item);
     }
 
-    /// <summary>
-    ///     Grabs an item from a player into this storage container.
-    /// </summary>
-    /// <param name="item">The item to grab.</param>
-    /// <param name="who">The player whose inventory to grab the item from.</param>
+    /// <inheritdoc />
     public virtual void GrabInventoryItem(Item item, Farmer who)
     {
         if (item.Stack == 0)
@@ -658,11 +600,7 @@ internal abstract class BaseStorage : IStorageData
         }
     }
 
-    /// <summary>
-    ///     Grab an item from this storage container.
-    /// </summary>
-    /// <param name="item">The item to grab.</param>
-    /// <param name="who">The player grabbing the item.</param>
+    /// <inheritdoc />
     public virtual void GrabStorageItem(Item item, Farmer who)
     {
         if (who.couldInventoryAcceptThisItem(item))
@@ -673,11 +611,7 @@ internal abstract class BaseStorage : IStorageData
         }
     }
 
-    /// <summary>
-    ///     Gets the item tag that will be used to sort in <see cref="OrganizeChest" />.
-    /// </summary>
-    /// <param name="item">The <see cref="Item" />.</param>
-    /// <returns>Returns the <see cref="Item" /> tag based on the <see cref="IStorageData.OrganizeChestGroupBy" /> option.</returns>
+    /// <inheritdoc />
     public string OrderBy(Item item)
     {
         return this.OrganizeChestGroupBy switch
@@ -689,9 +623,7 @@ internal abstract class BaseStorage : IStorageData
         };
     }
 
-    /// <summary>
-    ///     Creates an <see cref="ItemGrabMenu" /> for this storage container.
-    /// </summary>
+    /// <inheritdoc />
     public virtual void ShowMenu()
     {
         Game1.activeClickableMenu = new ItemGrabMenu(
@@ -713,12 +645,7 @@ internal abstract class BaseStorage : IStorageData
             this.Context);
     }
 
-    /// <summary>
-    ///     Stashes an item into storage based on categorization and stack settings.
-    /// </summary>
-    /// <param name="item">The item to stash.</param>
-    /// <param name="existingStacks">Whether to stash into stackable items or based on categorization.</param>
-    /// <returns>Returns the <see cref="Item" /> if not all could be stashed or null if successful.</returns>
+    /// <inheritdoc />
     public Item? StashItem(Item item, bool existingStacks = false)
     {
         if (existingStacks)
@@ -731,7 +658,7 @@ internal abstract class BaseStorage : IStorageData
             return this.Items.Any(otherItem => otherItem?.canStackWith(item) == true) ? this.AddItem(item) : item;
         }
 
-        if (this.FilterItemsList?.All(filter => filter.StartsWith("!")) == true)
+        if (this.FilterItemsList.All(filter => filter.StartsWith("!")))
         {
             return item;
         }
@@ -739,11 +666,7 @@ internal abstract class BaseStorage : IStorageData
         return this.FilterMatches(item) ? this.AddItem(item) : item;
     }
 
-    /// <summary>
-    ///     Gets the item tag that will be used to sub-sort in <see cref="OrganizeChest" />.
-    /// </summary>
-    /// <param name="item">The <see cref="Item" />.</param>
-    /// <returns>Returns the <see cref="Item" /> tag based on the <see cref="IStorageData.OrganizeChestSortBy" /> option.</returns>
+    /// <inheritdoc />
     public int ThenBy(Item item)
     {
         return this.OrganizeChestSortBy switch
@@ -753,5 +676,10 @@ internal abstract class BaseStorage : IStorageData
             SortBy.Type => item.Category,
             SortBy.Default or _ => 0,
         };
+    }
+
+    private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
+    {
+        this.Data.FilterItemsList = new(this.FilterMatcher);
     }
 }

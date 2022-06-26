@@ -20,7 +20,7 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2? position = default)
-        : base(location, location, position, defaultChest)
+        : base(location, location, defaultChest, position)
     {
     }
 
@@ -28,11 +28,11 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="shippingBin">The shipping bin.</param>
+    /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
-    /// <param name="location">The location of the shipping bin.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(ShippingBin shippingBin, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
-        : base(shippingBin, location, position, defaultChest)
+    public ShippingBinStorage(ShippingBin shippingBin, object? parent, IStorageData defaultChest, Vector2? position = default)
+        : base(shippingBin, parent, defaultChest, position)
     {
     }
 
@@ -40,11 +40,11 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="chest">The mini-shipping bin.</param>
+    /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
-    /// <param name="location">The location of the shipping bin.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(Chest chest, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
-        : base(chest, location, position, defaultChest)
+    public ShippingBinStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2? position = default)
+        : base(chest, parent, defaultChest, position)
     {
     }
 
@@ -53,8 +53,8 @@ internal class ShippingBinStorage : BaseStorage
     {
         get => this.Context switch
         {
-            Chest chest => chest.GetActualCapacity(),
-            _ => int.MaxValue,
+            GameLocation or ShippingBin => int.MaxValue,
+            _ => base.ActualCapacity,
         };
     }
 

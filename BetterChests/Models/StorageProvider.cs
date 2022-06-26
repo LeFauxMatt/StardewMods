@@ -1,9 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Integrations.BetterCrafting;
 using StardewValley;
 using StardewValley.Network;
@@ -27,7 +25,7 @@ internal class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public void CleanInventory(object obj, GameLocation? location, Farmer? who)
     {
-        if (obj is BaseStorage storage)
+        if (obj is StorageWrapper { Storage: { } storage })
         {
             storage.ClearNulls();
         }
@@ -36,13 +34,13 @@ internal class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public int GetActualCapacity(object obj, GameLocation? location, Farmer? who)
     {
-        return (obj as BaseStorage)?.ActualCapacity ?? Chest.capacity;
+        return obj is StorageWrapper { Storage: { } storage } ? storage.ActualCapacity : Chest.capacity;
     }
 
     /// <inheritdoc />
     public IList<Item?>? GetItems(object obj, GameLocation? location, Farmer? who)
     {
-        return (obj as BaseStorage)?.Items ?? default;
+        return obj is StorageWrapper { Storage: { } storage } ? storage.Items : default;
     }
 
     /// <inheritdoc />
@@ -54,35 +52,30 @@ internal class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public NetMutex? GetMutex(object obj, GameLocation? location, Farmer? who)
     {
-        return obj switch
-        {
-            ChestStorage { Chest: { } chest } => chest.GetMutex(),
-            _ => default,
-        };
+        return obj is StorageWrapper { Storage: { } storage } ? storage.Mutex : default;
     }
 
     /// <inheritdoc />
     public Vector2? GetTilePosition(object obj, GameLocation? location, Farmer? who)
     {
-        // Location storage position
-        throw new NotImplementedException();
+        return obj is StorageWrapper { Storage: { } storage } ? storage.Position : default;
     }
 
     /// <inheritdoc />
     public bool IsItemValid(object obj, GameLocation? location, Farmer? who, Item item)
     {
-        return (obj as BaseStorage)?.FilterMatches(item) ?? false;
+        return obj is StorageWrapper { Storage: { } storage } && storage.FilterMatches(item);
     }
 
     /// <inheritdoc />
     public bool IsMutexRequired(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is BaseStorage;
+        return true;
     }
 
     /// <inheritdoc />
     public bool IsValid(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is BaseStorage;
+        return obj is StorageWrapper;
     }
 }

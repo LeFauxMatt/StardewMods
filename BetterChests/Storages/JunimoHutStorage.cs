@@ -15,19 +15,13 @@ internal class JunimoHutStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="JunimoHutStorage" /> class.
     /// </summary>
     /// <param name="junimoHut">The junimo hut.</param>
+    /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
-    /// <param name="location">The location of the source object.</param>
     /// <param name="position">The position of the source object.</param>
-    public JunimoHutStorage(JunimoHut junimoHut, IStorageData defaultChest, GameLocation? location = default, Vector2? position = default)
-        : base(junimoHut, location, position, defaultChest)
+    public JunimoHutStorage(JunimoHut junimoHut, object? parent, IStorageData defaultChest, Vector2? position = default)
+        : base(junimoHut, parent, defaultChest, position)
     {
         this.JunimoHut = junimoHut;
-    }
-
-    /// <inheritdoc />
-    public override int ActualCapacity
-    {
-        get => this.Chest.GetActualCapacity();
     }
 
     /// <inheritdoc />
@@ -47,7 +41,7 @@ internal class JunimoHutStorage : BaseStorage
         get => this.JunimoHut.modData;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override NetMutex? Mutex
     {
         get => this.JunimoHut.output.Value.GetMutex();

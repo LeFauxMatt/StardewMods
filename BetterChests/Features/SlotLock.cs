@@ -21,7 +21,7 @@ using StardewValley.Menus;
 /// </summary>
 internal class SlotLock : IFeature
 {
-    private const string Id = "BetterChests.SlotLock";
+    private const string Id = "furyx639.BetterChests/SlotLock";
 
     private SlotLock(IModHelper helper, ModConfig config)
     {
@@ -45,6 +45,8 @@ internal class SlotLock : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="SlotLock" />.
     /// </summary>
@@ -59,15 +61,23 @@ internal class SlotLock : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(SlotLock.Id);
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(SlotLock.Id);
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(SlotLock.Id);
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(SlotLock.Id);
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        }
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)

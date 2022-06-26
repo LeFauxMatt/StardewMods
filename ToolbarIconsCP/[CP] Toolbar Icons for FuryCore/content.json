@@ -106,7 +106,7 @@
     // Load Texture Icons
     {
       "Action": "Load",
-      "Target": "furyx639.FuryCore/Icons",
+      "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
       "FromFile": "assets/icons.png"
     },
     // Add Always Scroll Map Icon

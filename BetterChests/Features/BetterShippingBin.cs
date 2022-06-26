@@ -21,6 +21,8 @@ internal class BetterShippingBin : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="BetterShippingBin" />.
     /// </summary>
@@ -34,13 +36,21 @@ internal class BetterShippingBin : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            this.Helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            this.Helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
+        }
     }
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)

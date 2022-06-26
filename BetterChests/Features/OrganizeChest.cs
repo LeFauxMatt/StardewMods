@@ -1,10 +1,11 @@
 namespace StardewMods.BetterChests.Features;
 
+using System.Collections.Generic;
 using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -22,6 +23,8 @@ internal class OrganizeChest : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="OrganizeChest" />.
     /// </summary>
@@ -36,19 +39,12 @@ internal class OrganizeChest : IFeature
     ///     Organizes items in a storage.
     /// </summary>
     /// <param name="storage">The storage to organize.</param>
-    public static void OrganizeItems(BaseStorage storage)
+    /// <param name="descending">Sort in descending order.</param>
+    public static void OrganizeItems(IStorageObject storage, bool descending = false)
     {
-        var items = storage.OrganizeChestOrderByDescending
-            ? storage.Items.OfType<Item>()
-                     .OrderByDescending(storage.OrderBy)
-                     .ThenByDescending(storage.ThenBy)
-                     .ToList()
-            : storage.Items.OfType<Item>()
-                     .OrderBy(storage.OrderBy)
-                     .ThenBy(storage.ThenBy)
-                     .ToList();
-
-        storage.OrganizeChestOrderByDescending = !storage.OrganizeChestOrderByDescending;
+        var items = new List<Item>(descending
+            ? storage.Items.OfType<Item>().OrderByDescending(storage.OrderBy).ThenByDescending(storage.ThenBy)
+            : storage.Items.OfType<Item>().OrderBy(storage.OrderBy).ThenBy(storage.ThenBy));
 
         storage.Items.Clear();
         foreach (var item in items)
@@ -60,20 +56,26 @@ internal class OrganizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.Input.ButtonPressed += OrganizeChest.OnButtonPressed;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            this.Helper.Events.Input.ButtonPressed += OrganizeChest.OnButtonPressed;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.Input.ButtonPressed -= OrganizeChest.OnButtonPressed;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            this.Helper.Events.Input.ButtonPressed -= OrganizeChest.OnButtonPressed;
+        }
     }
 
     private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (e.Button is not SButton.MouseLeft
-            || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
-            || !StorageHelper.TryGetOne(context, out var storage))
+        if (Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu || !StorageHelper.TryGetOne(context, out var storage))
         {
             return;
         }
@@ -84,6 +86,15 @@ internal class OrganizeChest : IFeature
             return;
         }
 
-        OrganizeChest.OrganizeItems(storage);
+        switch (e.Button)
+        {
+            case SButton.MouseLeft:
+                OrganizeChest.OrganizeItems(storage);
+                break;
+            case SButton.MouseRight:
+                OrganizeChest.OrganizeItems(storage, true);
+                Game1.playSound("Ship");
+                break;
+        }
     }
 }

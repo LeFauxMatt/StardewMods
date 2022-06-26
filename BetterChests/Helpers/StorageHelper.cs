@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
@@ -18,7 +19,9 @@ using SObject = StardewValley.Object;
 /// </summary>
 internal class StorageHelper
 {
-    private StorageHelper(IMultiplayerHelper multiplayer, ModConfig config)
+    private StorageHelper(
+        IMultiplayerHelper multiplayer,
+        ModConfig config)
     {
         this.Multiplayer = multiplayer;
         this.Config = config;
@@ -27,12 +30,12 @@ internal class StorageHelper
     /// <summary>
     ///     Gets storages from all locations and farmer inventory in the game.
     /// </summary>
-    public static IEnumerable<BaseStorage> All
+    public static IEnumerable<IStorageObject> All
     {
         get
         {
             var excluded = new HashSet<object>();
-            var storages = new List<BaseStorage>();
+            var storages = new List<IStorageObject>();
 
             // Inventory Mod Integrations
             foreach (var storage in IntegrationHelper.FromPlayer(Game1.player, excluded))
@@ -76,7 +79,7 @@ internal class StorageHelper
     /// <summary>
     ///     Gets storages in the farmer's inventory.
     /// </summary>
-    public static IEnumerable<BaseStorage> Inventory
+    public static IEnumerable<IStorageObject> Inventory
     {
         get
         {
@@ -88,12 +91,15 @@ internal class StorageHelper
         }
     }
 
+    /// <summary>
+    ///     Gets the types of storages in the game.
+    /// </summary>
     public static Dictionary<string, StorageData> Types { get; } = new();
 
     /// <summary>
     ///     Gets all placed storages in the world.
     /// </summary>
-    public static IEnumerable<BaseStorage> World
+    public static IEnumerable<IStorageObject> World
     {
         get
         {
@@ -125,7 +131,9 @@ internal class StorageHelper
     /// <param name="player">The farmer to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all held storages in the farmer's inventory.</returns>
-    public static IEnumerable<BaseStorage> FromPlayer(Farmer player, ISet<object>? excluded = null)
+    public static IEnumerable<IStorageObject> FromPlayer(
+        Farmer player,
+        ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(player))
@@ -145,7 +153,7 @@ internal class StorageHelper
         for (var index = 0; index < player.MaxItems; index++)
         {
             var item = player.Items[index];
-            if (StorageHelper.TryGetOne(item, player.currentLocation, position, out var storage) && !excluded.Contains(storage.Context))
+            if (StorageHelper.TryGetOne(item, player, position, out var storage) && !excluded.Contains(storage.Context))
             {
                 excluded.Add(storage.Context);
                 yield return storage;
@@ -159,7 +167,9 @@ internal class StorageHelper
     /// <param name="multiplayer">API for multiplayer utilities.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="StorageHelper" /> class.</returns>
-    public static StorageHelper Init(IMultiplayerHelper multiplayer, ModConfig config)
+    public static StorageHelper Init(
+        IMultiplayerHelper multiplayer,
+        ModConfig config)
     {
         return StorageHelper.Instance ??= new(multiplayer, config);
     }
@@ -170,9 +180,11 @@ internal class StorageHelper
     /// <param name="context">The context object.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found for the context object.</returns>
-    public static bool TryGetOne(object? context, [NotNullWhen(true)] out BaseStorage? storage)
+    public static bool TryGetOne(
+        object? context,
+        [NotNullWhen(true)] out IStorageObject? storage)
     {
-        if (context is BaseStorage baseStorage)
+        if (context is IStorageObject baseStorage)
         {
             storage = baseStorage;
             return true;
@@ -187,7 +199,9 @@ internal class StorageHelper
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
-    public IEnumerable<BaseStorage> FromLocation(GameLocation location, ISet<object>? excluded = null)
+    public IEnumerable<IStorageObject> FromLocation(
+        GameLocation location,
+        ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(location))
@@ -230,11 +244,11 @@ internal class StorageHelper
                 {
                     case JunimoHut junimoHut when !excluded.Contains(junimoHut):
                         excluded.Add(junimoHut);
-                        yield return new JunimoHutStorage(junimoHut, this.Config.DefaultChest, location, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
+                        yield return new JunimoHutStorage(junimoHut, location, this.Config.DefaultChest, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
                         break;
                     case ShippingBin shippingBin when !excluded.Contains(shippingBin):
                         excluded.Add(shippingBin);
-                        yield return new ShippingBinStorage(shippingBin, this.Config.DefaultChest, location, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
+                        yield return new ShippingBinStorage(shippingBin, location, this.Config.DefaultChest, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
                         break;
                 }
 
@@ -261,7 +275,9 @@ internal class StorageHelper
         }
     }
 
-    private static IEnumerable<BaseStorage> FromStorage(BaseStorage storage, ISet<object>? excluded = null)
+    private static IEnumerable<IStorageObject> FromStorage(
+        IStorageObject storage,
+        ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(storage.Context))
@@ -270,11 +286,11 @@ internal class StorageHelper
         }
 
         excluded.Add(storage.Context);
-        var managedStorages = new List<BaseStorage>();
+        var managedStorages = new List<IStorageObject>();
 
         foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
         {
-            if (StorageHelper.TryGetOne(item, storage.Location, storage.Position, out var managedStorage) && !excluded.Contains(managedStorage.Context))
+            if (StorageHelper.TryGetOne(item, storage.Parent, storage.Position, out var managedStorage) && !excluded.Contains(managedStorage.Context))
             {
                 excluded.Add(managedStorage.Context);
                 managedStorages.Add(managedStorage);
@@ -289,24 +305,28 @@ internal class StorageHelper
         }
     }
 
-    private static bool TryGetOne(object? context, GameLocation? location, Vector2? position, [NotNullWhen(true)] out BaseStorage? storage)
+    private static bool TryGetOne(
+        object? context,
+        object? parent,
+        Vector2? position,
+        [NotNullWhen(true)] out IStorageObject? storage)
     {
         switch (context)
         {
             case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } shippingChest:
-                storage = new ShippingBinStorage(shippingChest, StorageHelper.Instance!.Config.DefaultChest, location, position);
+                storage = new ShippingBinStorage(shippingChest, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
             case Chest chest:
-                storage = new ChestStorage(chest, StorageHelper.Instance!.Config.DefaultChest, location, position);
+                storage = new ChestStorage(chest, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
             case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
-                storage = new ObjectStorage(heldObj, StorageHelper.Instance!.Config.DefaultChest, location, position);
+                storage = new ObjectStorage(heldObj, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
             case ShippingBin shippingBin:
-                storage = new ShippingBinStorage(shippingBin, StorageHelper.Instance!.Config.DefaultChest, location, position);
+                storage = new ShippingBinStorage(shippingBin, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
             case JunimoHut junimoHut:
-                storage = new JunimoHutStorage(junimoHut, StorageHelper.Instance!.Config.DefaultChest, location, position);
+                storage = new JunimoHutStorage(junimoHut, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
             case FarmHouse { fridge.Value: { } } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(farmHouse, StorageHelper.Instance!.Config.DefaultChest, position);

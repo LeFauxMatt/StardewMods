@@ -1,5 +1,8 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
+/// <summary>
+///     Implementation of a Better Chest feature.
+/// </summary>
 internal interface IFeature
 {
     /// <summary>

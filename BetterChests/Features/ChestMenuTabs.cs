@@ -1,7 +1,9 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -10,6 +12,9 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
+using StardewMods.CommonHarmony.Enums;
+using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -18,7 +23,10 @@ using StardewValley.Menus;
 /// </summary>
 internal class ChestMenuTabs : IFeature
 {
+    private const string Id = "furyx639.BetterChests/ChestMenuTabs";
+
     private static Dictionary<string, ClickableTextureComponent>? CachedTabs;
+
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly PerScreen<List<ClickableTextureComponent>?> _tabs = new();
@@ -27,6 +35,16 @@ internal class ChestMenuTabs : IFeature
     {
         this.Helper = helper;
         this.Config = config;
+        HarmonyHelper.AddPatches(
+            ChestMenuTabs.Id,
+            new SavedPatch[]
+            {
+                new(
+                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    typeof(ChestMenuTabs),
+                    nameof(ChestMenuTabs.ItemGrabMenu_constructor_postfix),
+                    PatchType.Postfix),
+            });
     }
 
     private static ChestMenuTabs? Instance { get; set; }
@@ -104,8 +122,25 @@ internal class ChestMenuTabs : IFeature
     private int Index
     {
         get => this._tabIndex.Value;
-        set => this._tabIndex.Value = value;
+        set
+        {
+            this._tabIndex.Value = value;
+            this.ItemMatcher.Clear();
+            if (value == -1 || this.Tabs is null || !this.Tabs.Any())
+            {
+                return;
+            }
+
+            var tab = this.Tabs[value];
+            var tags = tab.name.Split(' ');
+            foreach (var tag in tags)
+            {
+                this.ItemMatcher.Add(tag);
+            }
+        }
     }
+
+    private bool IsActivated { get; set; }
 
     private ItemMatcher ItemMatcher
     {
@@ -132,23 +167,40 @@ internal class ChestMenuTabs : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(ChestMenuTabs.Id);
+            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
+            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this.Helper.Events.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(ChestMenuTabs.Id);
+            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
+            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
+    {
+        __instance.setBackgroundTransparency(false);
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -168,12 +220,6 @@ internal class ChestMenuTabs : IFeature
                 break;
             case SButton.MouseRight when index != -1:
                 this.Index = this.Index == index ? -1 : index;
-                break;
-            case SButton.MouseLeft when this.Index != -1:
-                this.Index = -1;
-                break;
-            case SButton.MouseRight when this.Index != -1:
-                this.Index = -1;
                 break;
             default:
                 return;
@@ -204,7 +250,7 @@ internal class ChestMenuTabs : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { context: { } context } itemGrabMenu
+        if (e.NewMenu is not ItemGrabMenu { context: { } context }
             || !StorageHelper.TryGetOne(context, out var storage)
             || storage.ChestMenuTabs == FeatureOption.Disabled)
         {
@@ -212,9 +258,7 @@ internal class ChestMenuTabs : IFeature
             return;
         }
 
-        itemGrabMenu.setBackgroundTransparency(false);
-
-        var tabs = storage.ChestMenuTabSet?.Any() == true
+        var tabs = storage.ChestMenuTabSet.Any()
             ? this.AllTabs.Where(tab => storage.ChestMenuTabSet.Contains(tab.Key))
             : this.AllTabs;
 
@@ -241,6 +285,11 @@ internal class ChestMenuTabs : IFeature
             }
 
             prevTab = tab;
+        }
+
+        if (BetterItemGrabMenu.ItemsToGrabMenu is not null)
+        {
+            BetterItemGrabMenu.ItemsToGrabMenu.AddMatcher(this.ItemMatcher);
         }
     }
 
@@ -272,7 +321,7 @@ internal class ChestMenuTabs : IFeature
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu || this.Tabs is null)
+        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu || this.Tabs is null)
         {
             return;
         }
@@ -283,6 +332,8 @@ internal class ChestMenuTabs : IFeature
         {
             IClickableMenu.drawHoverText(e.SpriteBatch, tab.hoverText, Game1.smallFont);
         }
+
+        itemGrabMenu.drawMouse(e.SpriteBatch);
     }
 
     private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)

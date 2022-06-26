@@ -1,5 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -22,11 +23,14 @@ internal class AutoOrganize : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="AutoOrganize" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="AutoOrganize" /> class.</returns>
+    [MemberNotNull(nameof(AutoOrganize.Instance))]
     public static AutoOrganize Init(IModHelper helper)
     {
         return AutoOrganize.Instance ??= new(helper);
@@ -35,13 +39,21 @@ internal class AutoOrganize : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        this.Helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            this.Helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        this.Helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            this.Helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
+        }
     }
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)

@@ -75,22 +75,28 @@ internal class ItemRepository
 
         IEnumerable<SearchableItem> GetAllRaw()
         {
-            HashSet<ItemType> types = itemTypes?.Any() == true ? new HashSet<ItemType>(itemTypes) : null;
-            bool ShouldGet(ItemType type) => types == null || types.Contains(type);
+            var types = itemTypes?.Any() == true ? new HashSet<ItemType>(itemTypes) : null;
+
+            bool ShouldGet(ItemType type)
+            {
+                return types == null || types.Contains(type);
+            }
 
             // get tools
             if (ShouldGet(ItemType.Tool))
             {
-                for (int q = Tool.stone; q <= Tool.iridium; q++)
+                for (var q = Tool.stone; q <= Tool.iridium; q++)
                 {
-                    int quality = q;
+                    var quality = q;
 
                     yield return this.TryCreate(ItemType.Tool, ToolFactory.axe, _ => ToolFactory.getToolFromDescription(ToolFactory.axe, quality));
                     yield return this.TryCreate(ItemType.Tool, ToolFactory.hoe, _ => ToolFactory.getToolFromDescription(ToolFactory.hoe, quality));
                     yield return this.TryCreate(ItemType.Tool, ToolFactory.pickAxe, _ => ToolFactory.getToolFromDescription(ToolFactory.pickAxe, quality));
                     yield return this.TryCreate(ItemType.Tool, ToolFactory.wateringCan, _ => ToolFactory.getToolFromDescription(ToolFactory.wateringCan, quality));
                     if (quality != Tool.iridium)
+                    {
                         yield return this.TryCreate(ItemType.Tool, ToolFactory.fishingRod, _ => ToolFactory.getToolFromDescription(ToolFactory.fishingRod, quality));
+                    }
                 }
 
                 yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset, _ => new MilkPail()); // these don't have any sort of ID, so we'll just assign some arbitrary ones
@@ -102,14 +108,17 @@ internal class ItemRepository
             // clothing
             if (ShouldGet(ItemType.Clothing))
             {
-                foreach (int id in this.GetShirtIds())
+                foreach (var id in this.GetShirtIds())
+                {
                     yield return this.TryCreate(ItemType.Clothing, id, p => new Clothing(p.ID));
+                }
             }
 
             // wallpapers
             if (ShouldGet(ItemType.Wallpaper))
             {
-                for (int id = 0; id < 112; id++)
+                for (var id = 0; id < 112; id++)
+                {
                     yield return this.TryCreate(
                         ItemType.Wallpaper,
                         id,
@@ -117,44 +126,51 @@ internal class ItemRepository
                         {
                             Category = SObject.furnitureCategory,
                         });
+                }
             }
 
             // flooring
             if (ShouldGet(ItemType.Flooring))
             {
-                for (int id = 0; id < 56; id++)
+                for (var id = 0; id < 56; id++)
+                {
                     yield return this.TryCreate(
                         ItemType.Flooring,
                         id,
-                        p => new Wallpaper(p.ID, isFloor: true)
+                        p => new Wallpaper(p.ID, true)
                         {
                             Category = SObject.furnitureCategory,
                         });
+                }
             }
 
             // equipment
             if (ShouldGet(ItemType.Boots))
             {
-                foreach (int id in this.TryLoad<int, string>("Data\\Boots").Keys)
+                foreach (var id in this.TryLoad<int, string>("Data\\Boots").Keys)
+                {
                     yield return this.TryCreate(ItemType.Boots, id, p => new Boots(p.ID));
+                }
             }
 
             if (ShouldGet(ItemType.Hat))
             {
-                foreach (int id in this.TryLoad<int, string>("Data\\hats").Keys)
+                foreach (var id in this.TryLoad<int, string>("Data\\hats").Keys)
+                {
                     yield return this.TryCreate(ItemType.Hat, id, p => new Hat(p.ID));
+                }
             }
 
             // weapons
             if (ShouldGet(ItemType.Weapon))
             {
-                foreach (int id in this.TryLoad<int, string>("Data\\weapons").Keys)
+                foreach (var id in this.TryLoad<int, string>("Data\\weapons").Keys)
                 {
                     yield return this.TryCreate(
                         ItemType.Weapon,
                         id,
-                        p => (p.ID >= 32 && p.ID <= 34)
-                            ? (Item)new Slingshot(p.ID)
+                        p => p.ID >= 32 && p.ID <= 34
+                            ? new Slingshot(p.ID)
                             : new MeleeWeapon(p.ID));
                 }
             }
@@ -162,37 +178,41 @@ internal class ItemRepository
             // furniture
             if (ShouldGet(ItemType.Furniture))
             {
-                foreach (int id in this.TryLoad<int, string>("Data\\Furniture").Keys)
+                foreach (var id in this.TryLoad<int, string>("Data\\Furniture").Keys)
+                {
                     yield return this.TryCreate(ItemType.Furniture, id, p => Furniture.GetFurnitureInstance(p.ID));
+                }
             }
 
             // craftables
             if (ShouldGet(ItemType.BigCraftable))
             {
-                foreach (int id in Game1.bigCraftablesInformation.Keys)
+                foreach (var id in Game1.bigCraftablesInformation.Keys)
+                {
                     yield return this.TryCreate(ItemType.BigCraftable, id, p => new SObject(Vector2.Zero, p.ID));
+                }
             }
 
             // objects
             if (ShouldGet(ItemType.Object) || ShouldGet(ItemType.Ring))
             {
-                foreach (int id in Game1.objectInformation.Keys)
+                foreach (var id in Game1.objectInformation.Keys)
                 {
-                    string[] fields = Game1.objectInformation[id]?.Split('/');
+                    var fields = Game1.objectInformation[id]?.Split('/');
 
                     // secret notes
                     if (id == 79)
                     {
                         if (ShouldGet(ItemType.Object))
                         {
-                            foreach (int secretNoteId in this.TryLoad<int, string>("Data\\SecretNotes").Keys)
+                            foreach (var secretNoteId in this.TryLoad<int, string>("Data\\SecretNotes").Keys)
                             {
                                 yield return this.TryCreate(
                                     ItemType.Object,
                                     this.CustomIDOffset + secretNoteId,
                                     _ =>
                                     {
-                                        SObject note = new SObject(79, 1);
+                                        var note = new SObject(79, 1);
                                         note.name = $"{note.name} #{secretNoteId}";
                                         return note;
                                     });
@@ -204,7 +224,9 @@ internal class ItemRepository
                     else if (id != 801 && fields?.Length >= 4 && fields[3] == "Ring") // 801 = wedding ring, which isn't an equippable ring
                     {
                         if (ShouldGet(ItemType.Ring))
+                        {
                             yield return this.TryCreate(ItemType.Ring, id, p => new Ring(p.ID));
+                        }
                     }
 
                     // item
@@ -217,14 +239,15 @@ internal class ItemRepository
                             id,
                             p =>
                             {
-                                return item = (p.ID == 812 // roe
-                                        ? new ColoredObject(p.ID, 1, Color.White)
-                                        : new SObject(p.ID, 1)
-                                    );
+                                return item = p.ID == 812 // roe
+                                    ? new ColoredObject(p.ID, 1, Color.White)
+                                    : new SObject(p.ID, 1);
                             });
 
                         if (item == null)
+                        {
                             continue;
+                        }
 
                         // flavored items
                         if (includeVariants)
@@ -318,7 +341,7 @@ internal class ItemRepository
                                         this.CustomIDOffset * 5 + item.ParentSheetIndex,
                                         _ =>
                                         {
-                                            SObject honey = new SObject(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
+                                            var honey = new SObject(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
                                             {
                                                 Name = $"{item.Name} Honey",
                                                 preservedParentSheetIndex =
@@ -336,23 +359,27 @@ internal class ItemRepository
                                 // roe and aged roe (derived from FishPond.GetFishProduce)
                                 case SObject.sellAtFishShopCategory when item.ParentSheetIndex == 812:
                                 {
-                                    this.GetRoeContextTagLookups(out HashSet<string> simpleTags, out List<List<string>> complexTags);
+                                    this.GetRoeContextTagLookups(out var simpleTags, out var complexTags);
 
                                     foreach (var pair in Game1.objectInformation)
                                     {
                                         // get input
-                                        SObject input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))?.Item as SObject;
+                                        var input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))?.Item as SObject;
                                         var inputTags = input?.GetContextTags();
                                         if (inputTags?.Any() != true)
+                                        {
                                             continue;
+                                        }
 
                                         // check if roe-producing fish
                                         if (!inputTags.Any(tag => simpleTags.Contains(tag)) && !complexTags.Any(set => set.All(tag => input.HasContextTag(tag))))
+                                        {
                                             continue;
+                                        }
 
                                         // yield roe
                                         SObject roe = null;
-                                        Color color = this.GetRoeColor(input);
+                                        var color = this.GetRoeColor(input);
                                         yield return this.TryCreate(
                                             ItemType.Object,
                                             this.CustomIDOffset * 7 + item.ParentSheetIndex,
@@ -416,8 +443,8 @@ internal class ItemRepository
     private Color GetRoeColor(SObject fish)
     {
         return fish.ParentSheetIndex == 698 // sturgeon
-            ? new Color(61, 55, 42)
-            : (TailoringMenu.GetDyeColor(fish) ?? Color.Orange);
+            ? new(61, 55, 42)
+            : TailoringMenu.GetDyeColor(fish) ?? Color.Orange;
     }
 
     /*********
@@ -428,18 +455,24 @@ internal class ItemRepository
     /// <param name="complexTags">A list of tag sets which match roe-producing fish.</param>
     private void GetRoeContextTagLookups(out HashSet<string> simpleTags, out List<List<string>> complexTags)
     {
-        simpleTags = new HashSet<string>();
-        complexTags = new List<List<string>>();
+        simpleTags = new();
+        complexTags = new();
 
-        foreach (FishPondData data in Game1.content.Load<List<FishPondData>>("Data\\FishPondData"))
+        foreach (var data in Game1.content.Load<List<FishPondData>>("Data\\FishPondData"))
         {
             if (data.ProducedItems.All(p => p.ItemID != 812))
+            {
                 continue; // doesn't produce roe
+            }
 
             if (data.RequiredTags.Count == 1 && !data.RequiredTags[0].StartsWith("!"))
+            {
                 simpleTags.Add(data.RequiredTags[0]);
+            }
             else
+            {
                 complexTags.Add(data.RequiredTags);
+            }
         }
     }
 
@@ -463,20 +496,24 @@ internal class ItemRepository
     private IEnumerable<int> GetShirtIds()
     {
         // defined shirt items
-        foreach (int id in Game1.clothingInformation.Keys)
+        foreach (var id in Game1.clothingInformation.Keys)
         {
             if (id < 0)
+            {
                 continue; // placeholder data for character customization clothing below
+            }
 
             yield return id;
         }
 
         // dynamic shirts
-        HashSet<int> clothingIds = new HashSet<int>(Game1.clothingInformation.Keys);
-        for (int id = 1000; id <= 1299; id++)
+        var clothingIds = new HashSet<int>(Game1.clothingInformation.Keys);
+        for (var id = 1000; id <= 1299; id++)
         {
             if (!clothingIds.Contains(id))
+            {
                 yield return id;
+            }
         }
     }
 
@@ -511,7 +548,7 @@ internal class ItemRepository
         catch (ContentLoadException)
         {
             // generally due to a player incorrectly replacing a data file with an XNB mod
-            return new Dictionary<TKey, TValue>();
+            return new();
         }
     }
 }

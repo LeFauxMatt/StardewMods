@@ -7,8 +7,10 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -20,8 +22,8 @@ using StardewValley.Objects;
 internal class CraftFromChest : IFeature
 {
     private const int MaxTimeOut = 60;
-
-    private readonly PerScreen<List<BaseStorage>> _cachedEligible = new(() => new());
+    private readonly PerScreen<List<IStorageObject>> _cachedEligible = new(() => new());
+    private readonly PerScreen<int> _currentTab = new();
     private readonly PerScreen<int> _timeOut = new();
 
     private CraftFromChest(IModHelper helper, ModConfig config)
@@ -30,63 +32,37 @@ internal class CraftFromChest : IFeature
         this.Config = config;
     }
 
-    private static IEnumerable<BaseStorage> Eligible
+    private static IEnumerable<IStorageObject> Eligible
     {
-        get
-        {
-            foreach (var storage in StorageHelper.World)
-            {
-                if (storage is not ChestStorage { Chest: { } chest } || chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
-                {
-                    continue;
-                }
-
-                // Disabled in config or by location name
-                if (storage.CraftFromChest == FeatureOptionRange.Disabled || storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) == true)
-                {
-                    continue;
-                }
-
-                // Disabled in mines
-                if (storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
-                {
-                    continue;
-                }
-
-                if (RangeHelper.IsWithinRangeOfPlayer(storage.CraftFromChest, storage.CraftFromChestDistance, storage.Location, storage.Position))
-                {
-                    yield return storage;
-                }
-            }
-
-            foreach (var storage in StorageHelper.Inventory)
-            {
-                if (storage is not ChestStorage { Chest: { } chest } || chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
-                {
-                    continue;
-                }
-
-                // Disabled in config
-                if (storage.CraftFromChest == FeatureOptionRange.Disabled || storage.OpenHeldChest == FeatureOption.Disabled)
-                {
-                    continue;
-                }
-
-                yield return storage;
-            }
-        }
+        get =>
+            from storage in StorageHelper.All
+            where storage is not ChestStorage { Chest: { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } }
+                  && storage.CraftFromChest != FeatureOptionRange.Disabled
+                  && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
+                  && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
+                  && storage.Parent is not null
+                  && RangeHelper.IsWithinRangeOfPlayer(storage.StashToChest, storage.StashToChestDistance, storage.Parent, storage.Position)
+            select storage;
     }
 
     private static CraftFromChest? Instance { get; set; }
 
-    private List<BaseStorage> CachedEligible
+    private List<IStorageObject> CachedEligible
     {
         get => this._cachedEligible.Value;
     }
 
     private ModConfig Config { get; }
 
+    private int CurrentTab
+    {
+        get => this._currentTab.Value;
+        set => this._currentTab.Value = value;
+    }
+
     private IModHelper Helper { get; }
+
+    private bool IsActivated { get; set; }
 
     private int TimeOut
     {
@@ -108,33 +84,51 @@ internal class CraftFromChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (!this.IsActivated)
         {
-            IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
-                "BetterChests.CraftFromChest",
-                "furyx639.BetterChests/Icons",
-                new(32, 0, 16, 16),
-                I18n.Button_CraftFromChest_Name());
-            IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
-        }
+            this.IsActivated = true;
+            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            if (IntegrationHelper.ToolbarIcons.IsLoaded)
+            {
+                IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
+                    "BetterChests.CraftFromChest",
+                    "furyx639.BetterChests/Icons",
+                    new(32, 0, 16, 16),
+                    I18n.Button_CraftFromChest_Name());
+                IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+            }
+
+            if (IntegrationHelper.BetterCrafting.IsLoaded)
+            {
+                IntegrationHelper.BetterCrafting.API.RegisterInventoryProvider(typeof(StorageWrapper), new StorageProvider());
+            }
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (this.IsActivated)
         {
-            IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
-            IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
-        }
+            this.IsActivated = false;
+            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
-        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            if (IntegrationHelper.ToolbarIcons.IsLoaded)
+            {
+                IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
+                IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
+            }
+
+            if (IntegrationHelper.BetterCrafting.IsLoaded)
+            {
+                IntegrationHelper.BetterCrafting.API.UnregisterInventoryProvider(typeof(StorageWrapper));
+            }
+        }
     }
 
     private void ExitFunction()
@@ -160,31 +154,12 @@ internal class CraftFromChest : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        CraftingPage craftingPage;
-        switch (e.NewMenu)
+        if (e.NewMenu is CraftingPage craftingPage)
         {
-            case GameMenu { currentTab: var currentTab } gameMenu when gameMenu.pages[currentTab] is CraftingPage tab:
-                craftingPage = tab;
-                break;
-            case CraftingPage menu:
-                craftingPage = menu;
-                break;
-            case { } when this.CachedEligible.Any():
-                this.ExitFunction();
-                return;
-            default:
-                return;
+            craftingPage._materialContainers ??= new();
+            craftingPage._materialContainers.AddRange(CraftFromChest.Eligible.OfType<ChestStorage>().Select(storage => storage.Chest));
+            craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
         }
-
-        // Add player inventory chests to crafting page
-        craftingPage._materialContainers ??= new();
-        craftingPage._materialContainers.AddRange(
-            from storage in StorageHelper.Inventory.OfType<ChestStorage>()
-            where storage.CraftFromChest >= FeatureOptionRange.Inventory
-                  && storage.OpenHeldChest == FeatureOption.Enabled
-                  && storage.Chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            select storage.Chest);
-        craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
     }
 
     private void OnToolbarIconPressed(object? sender, string id)
@@ -197,6 +172,23 @@ internal class CraftFromChest : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
+        switch (Game1.activeClickableMenu)
+        {
+            case GameMenu { currentTab: var currentTab } gameMenu:
+                if (currentTab != this.CurrentTab && gameMenu.pages[currentTab] is CraftingPage craftingPage)
+                {
+                    this.CurrentTab = currentTab;
+                    craftingPage._materialContainers ??= new();
+                    craftingPage._materialContainers.AddRange(CraftFromChest.Eligible.OfType<ChestStorage>().Select(storage => storage.Chest));
+                    craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
+                }
+
+                break;
+            default:
+                this.CurrentTab = 0;
+                break;
+        }
+
         // No current attempt to lock chests
         if (!this.CachedEligible.Any() || this.TimeOut == 0)
         {
@@ -209,10 +201,10 @@ internal class CraftFromChest : IFeature
             this.TimeOut = 0;
             var width = 800 + IClickableMenu.borderWidth * 2;
             var height = 600 + IClickableMenu.borderWidth * 2;
-            var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height);
+            var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height).ToPoint();
             Game1.activeClickableMenu = new CraftingPage(
-                (int)x,
-                (int)y,
+                x,
+                y,
                 width,
                 height,
                 false,
@@ -230,7 +222,7 @@ internal class CraftFromChest : IFeature
         // Attempt to lock chests
         foreach (var storage in this.CachedEligible)
         {
-            storage.Mutex?.Update(storage.Location);
+            storage.Mutex?.Update(storage.Parent as GameLocation ?? Game1.currentLocation);
         }
     }
 
@@ -253,7 +245,7 @@ internal class CraftFromChest : IFeature
                 null,
                 null,
                 false,
-                this.CachedEligible.Select(storage => new Tuple<object, GameLocation>(storage, storage.Location)).ToList());
+                this.CachedEligible.Select(storage => new Tuple<object, GameLocation>(new StorageWrapper(storage), storage.Parent as GameLocation ?? Game1.currentLocation)).ToList());
             this.CachedEligible.Clear();
         }
 

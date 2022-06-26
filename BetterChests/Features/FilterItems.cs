@@ -2,10 +2,10 @@ namespace StardewMods.BetterChests.Features;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Common.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Helpers;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -13,13 +13,12 @@ using StardewValley;
 using StardewValley.Objects;
 
 // TODO: Add highlighter
-
 /// <summary>
 ///     Restricts what items can be added into a chest.
 /// </summary>
 internal class FilterItems : IFeature
 {
-    private const string Id = "BetterChests.FilterItems";
+    private const string Id = "furyx639.BetterChests/FilterItems";
 
     private FilterItems(IModHelper helper)
     {
@@ -55,6 +54,8 @@ internal class FilterItems : IFeature
 
     private IModHelper Helper { get; }
 
+    private bool IsActivated { get; set; }
+
     /// <summary>
     ///     Initializes <see cref="FilterItems" />.
     /// </summary>
@@ -68,13 +69,21 @@ internal class FilterItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        HarmonyHelper.ApplyPatches(FilterItems.Id);
+        if (!this.IsActivated)
+        {
+            this.IsActivated = true;
+            HarmonyHelper.ApplyPatches(FilterItems.Id);
+        }
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        HarmonyHelper.UnapplyPatches(FilterItems.Id);
+        if (this.IsActivated)
+        {
+            this.IsActivated = false;
+            HarmonyHelper.UnapplyPatches(FilterItems.Id);
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]

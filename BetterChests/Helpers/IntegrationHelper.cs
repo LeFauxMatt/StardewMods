@@ -6,6 +6,7 @@ using System.Linq;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Integrations.Automate;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.BetterCrafting;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley;
@@ -69,7 +70,7 @@ internal class IntegrationHelper
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
-    public static IEnumerable<BaseStorage> FromLocation(GameLocation location, ISet<object>? excluded = null)
+    public static IEnumerable<IStorageObject> FromLocation(GameLocation location, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
 
@@ -92,7 +93,7 @@ internal class IntegrationHelper
     /// <param name="player">The farmer to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all held storages in the farmer's inventory.</returns>
-    public static IEnumerable<BaseStorage> FromPlayer(Farmer player, ISet<object>? excluded = null)
+    public static IEnumerable<IStorageObject> FromPlayer(Farmer player, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
 
@@ -119,7 +120,7 @@ internal class IntegrationHelper
     /// <param name="context">The context object.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found for the context object.</returns>
-    public static bool TryGetOne(object? context, [NotNullWhen(true)] out BaseStorage? storage)
+    public static bool TryGetOne(object? context, [NotNullWhen(true)] out IStorageObject? storage)
     {
         if (IntegrationHelper.Instance!.HorseOverhaul_TryGetOne(context, out storage))
         {
@@ -130,7 +131,7 @@ internal class IntegrationHelper
         return false;
     }
 
-    private IEnumerable<BaseStorage> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
+    private IEnumerable<IStorageObject> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
     {
         if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
         {
@@ -153,19 +154,19 @@ internal class IntegrationHelper
             if (horse?.HorseId == stable.HorseId && Game1.player.currentLocation.Equals(location))
             {
                 excluded.Add(chest);
-                yield return new ChestStorage(chest, this.Config.DefaultChest, Game1.player.currentLocation, Game1.player.getTileLocation());
+                yield return new ChestStorage(chest, horse, this.Config.DefaultChest, Game1.player.getTileLocation());
             }
 
             horse = stable.getStableHorse();
             if (horse?.getOwner() == Game1.player && horse.currentLocation.Equals(location))
             {
                 excluded.Add(chest);
-                yield return new ChestStorage(chest, this.Config.DefaultChest, horse.currentLocation, horse.getTileLocation());
+                yield return new ChestStorage(chest, horse, this.Config.DefaultChest, horse.getTileLocation());
             }
         }
     }
 
-    private IEnumerable<BaseStorage> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
+    private IEnumerable<IStorageObject> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
     {
         if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
         {
@@ -189,11 +190,11 @@ internal class IntegrationHelper
             }
 
             excluded.Add(chest);
-            yield return new ChestStorage(chest, this.Config.DefaultChest, player.currentLocation, player.getTileLocation());
+            yield return new ChestStorage(chest, Game1.player, this.Config.DefaultChest, player.getTileLocation());
         }
     }
 
-    private bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out BaseStorage? storage)
+    private bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out IStorageObject? storage)
     {
         if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId)
             || context is not Chest chest
@@ -217,14 +218,14 @@ internal class IntegrationHelper
             var horse = Game1.player.mount;
             if (horse?.HorseId == stable.HorseId)
             {
-                storage = new ChestStorage(chest, this.Config.DefaultChest);
+                storage = new ChestStorage(chest, Game1.player, this.Config.DefaultChest);
                 return true;
             }
 
             horse = stable.getStableHorse();
             if (horse?.getOwner() == Game1.player)
             {
-                storage = new ChestStorage(chest, this.Config.DefaultChest);
+                storage = new ChestStorage(chest, horse, this.Config.DefaultChest);
                 return true;
             }
         }
