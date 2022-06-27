@@ -47,6 +47,24 @@ internal class StorageModData : IStorageData
     }
 
     /// <inheritdoc />
+    public string ChestLabel
+    {
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestLabel", out var label)
+            ? label
+            : string.Empty;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                this.ModData.Remove("furyx639.BetterChests/ChestLabel");
+                return;
+            }
+
+            this.ModData["furyx639.BetterChests/ChestLabel"] = value;
+        }
+    }
+
+    /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
         get => this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabs", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)

@@ -160,7 +160,7 @@ internal class CarryChest : IFeature
         var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
         if (items > 0)
         {
-            Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
+            Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
         }
     }
 
@@ -273,7 +273,7 @@ internal class CarryChest : IFeature
         }
 
         var (x, y) = objectPosition;
-        chest.draw(spriteBatch, (int)x, (int)y + 64, 1f, true);
+        chest.draw(spriteBatch, (int)x, (int)y + Game1.tileSize, 1f, true);
         return false;
     }
 
@@ -284,7 +284,7 @@ internal class CarryChest : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y, ref bool __result)
     {
-        if (!__result || __instance is not Chest held || !location.Objects.TryGetValue(new(x / 64, y / 64), out var obj) || obj is not Chest placed)
+        if (!__result || __instance is not Chest held || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj) || obj is not Chest placed)
         {
             return;
         }
@@ -361,20 +361,15 @@ internal class CarryChest : IFeature
             return;
         }
 
-        var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
-        var x = (int)pos.X;
-        var y = (int)pos.Y;
-        pos.X = x;
-        pos.Y = y;
-
-        // Object exists at pos, is within reach of player, and is a Chest
-        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player) || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
+        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
+        if (!Game1.wasMouseVisibleThisFrame || Game1.mouseCursorTransparency == 0f || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
         {
-            return;
+            pos = Game1.player.GetGrabTile();
         }
 
-        // Disabled for object
-        if (!StorageHelper.TryGetOne(obj, out var storage) || storage.CarryChest == FeatureOption.Disabled)
+        pos.X = (int)pos.X;
+        pos.Y = (int)pos.Y;
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var storage) || storage.CarryChest == FeatureOption.Disabled)
         {
             return;
         }

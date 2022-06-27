@@ -209,6 +209,17 @@ internal class ConfigHelper
                 I18n.Config_CategorizeChest_Tooltip,
                 nameof(ModConfig.CategorizeChest));
         }
+        else
+        {
+            // Chest Label
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => storage.ChestLabel,
+                value => storage.ChestLabel = value,
+                I18n.Config_ChestLabel_Name,
+                I18n.Config_ChestLabel_Tooltip,
+                fieldId: nameof(IStorageData.ChestLabel));
+        }
 
         // Chest Menu Tabs
         IntegrationHelper.GMCM.API.AddTextOption(
@@ -351,6 +362,18 @@ internal class ConfigHelper
             FeatureOptionExtensions.GetNames(),
             FormatHelper.FormatOption,
             nameof(IStorageData.CustomColorPicker));
+
+        if (main)
+        {
+            // Label Chest
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                manifest,
+                () => this.Config.LabelChest,
+                value => this.Config.LabelChest = value,
+                I18n.Config_ChestLabel_Name,
+                I18n.Config_ChestLabel_Tooltip,
+                nameof(ModConfig.LabelChest));
+        }
 
         // Open Held Chest
         IntegrationHelper.GMCM.API.AddTextOption(

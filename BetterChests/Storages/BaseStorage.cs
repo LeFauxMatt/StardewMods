@@ -101,6 +101,13 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
+    public string ChestLabel
+    {
+        get => this.Data.ChestLabel;
+        set => this.Data.ChestLabel = value;
+    }
+
+    /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
         get => this.Data.ChestMenuTabs switch

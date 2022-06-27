@@ -45,6 +45,11 @@ internal class ModConfig
     public StorageData DefaultChest { get; set; } = new();
 
     /// <summary>
+    ///     Gets or sets a value indicating whether chests can be labeled.
+    /// </summary>
+    public bool LabelChest { get; set; } = true;
+
+    /// <summary>
     ///     Gets or sets the symbol used to denote context tags in searches.
     /// </summary>
     public char SearchTagSymbol { get; set; } = '#';

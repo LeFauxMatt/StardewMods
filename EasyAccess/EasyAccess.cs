@@ -107,7 +107,7 @@ public class EasyAccess : Mod
                             Game1.player.gainExperience(2, 7);
                         }
 
-                        Game1.createItemDebris(obj, 64 * pos, tY < pY ? 0 : tX > pX ? 1 : tY > pY ? 2 : tX < pX ? 3 : -1, Game1.currentLocation);
+                        Game1.createItemDebris(obj, Game1.tileSize * pos, tY < pY ? 0 : tX > pX ? 1 : tY > pY ? 2 : tX < pX ? 3 : -1, Game1.currentLocation);
                         Game1.currentLocation.Objects.Remove(pos);
                         Log.Info($"Dropped {obj.DisplayName} from forage.");
                         continue;

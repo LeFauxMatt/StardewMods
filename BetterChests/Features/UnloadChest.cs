@@ -1,5 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
@@ -62,24 +63,20 @@ internal class UnloadChest : IFeature
             return;
         }
 
-        var pos = e.Button.TryGetController(out _) ? Game1.player.GetToolLocation() / 64 : e.Cursor.Tile;
-        var x = (int)pos.X;
-        var y = (int)pos.Y;
-        pos.X = x;
-        pos.Y = y;
+        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
+        if (!Game1.wasMouseVisibleThisFrame || Game1.mouseCursorTransparency == 0f || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
+        {
+            pos = Game1.player.GetGrabTile();
+        }
 
-        // Object exists at pos and is within reach of player
-        if (!Utility.withinRadiusOfPlayer(x * Game1.tileSize, y * Game1.tileSize, 1, Game1.player) || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
+        pos.X = (int)pos.X;
+        pos.Y = (int)pos.Y;
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var target))
         {
             return;
         }
 
-        if (!StorageHelper.TryGetOne(obj, out var target))
-        {
-            return;
-        }
-
-        // Disabled for object
+        // Disabled for held object
         if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var storage) || storage.UnloadChest == FeatureOption.Disabled)
         {
             return;
