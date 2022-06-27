@@ -38,6 +38,8 @@
   "config.chest-menu-tabs-area.tooltip": "The area next to the inventory menu that the chest menu tabs will be.",
   "config.collect-items.name": "Collect Items",
   "config.collect-items.tooltip": "Allows chests in player inventory to collect items dropped on the ground (uses categories).",
+  "config.configure.name": "Configure Chest",
+  "config.configure.tooltip": "Configure the currently facing or held chest.",
   "config.craft-from-chest.name": "Craft From Chest",
   "config.craft-from-chest.tooltip": "The default range that chests can be remotely crafted from.",
   "config.craft-from-chest-distance.name": "Craft from Chest Distance",
@@ -142,5 +144,8 @@
   "tabs.Fishing.name": "Fish",
   "tabs.Materials.name": "Materials",
   "tabs.Misc.name": "Misc",
-  "tabs.Seeds.name": "Seeds"
+  "tabs.Seeds.name": "Seeds",
+  // Objects
+  "tool.config-tool.name": "Config Tool",
+  "tool.config-tool.description": "This tool can be used to configure game objects."
 }

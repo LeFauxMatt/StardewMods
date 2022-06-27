@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Models;
+﻿namespace StardewMods.BetterChests.UI;
 
 using System;
 using System.Collections.Generic;
@@ -30,6 +30,8 @@ internal class DisplayedItems
                          .Take(menu.capacity)
                          .ToList();
         this.Columns = this.Menu.capacity / this.Menu.rows;
+        this.HighlightMethod = this.Menu.highlightMethod;
+        this.Menu.highlightMethod = this.Highlight;
 
         // Reposition Arrows
         var topSlot = this.Columns - 1;
@@ -78,8 +80,8 @@ internal class DisplayedItems
 
     private IList<Item> ActualInventory
     {
-        get => this.ItemMatchers.Any()
-            ? this.Menu.actualInventory.Where(item => this.ItemMatchers.All(matcher => matcher.Matches(item))).ToList()
+        get => this.Filters.Any()
+            ? this.Menu.actualInventory.Where(item => this.Filters.All(matcher => matcher.Matches(item))).ToList()
             : this.Menu.actualInventory;
     }
 
@@ -97,7 +99,13 @@ internal class DisplayedItems
         };
     }
 
-    private List<ItemMatcher> ItemMatchers { get; } = new();
+    private List<ItemMatcher> Filters { get; } = new();
+
+    private List<ItemMatcher> Highlighters { get; } = new();
+
+    private InventoryMenu.highlightThisItem HighlightMethod { get; }
+
+    private List<Func<IEnumerable<Item>, IEnumerable<Item>>> Transformers { get; } = new();
 
     private ClickableTextureComponent UpArrow
     {
@@ -112,13 +120,32 @@ internal class DisplayedItems
     }
 
     /// <summary>
-    ///     Adds a <see cref="ItemMatcher" /> to the inventory.
+    ///     Adds a <see cref="ItemMatcher" /> to filter inventory.
     /// </summary>
     /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
-    public void AddMatcher(ItemMatcher matcher)
+    public void AddFilter(ItemMatcher matcher)
     {
-        this.ItemMatchers.Add(matcher);
+        this.Filters.Add(matcher);
         matcher.CollectionChanged += this.OnCollectionChanged;
+    }
+
+    /// <summary>
+    ///     Adds a <see cref="ItemMatcher" /> to highlight inventory.
+    /// </summary>
+    /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
+    public void AddHighlighter(ItemMatcher matcher)
+    {
+        this.Highlighters.Add(matcher);
+        matcher.CollectionChanged += this.OnCollectionChanged;
+    }
+
+    /// <summary>
+    ///     Adds a function to transform the list of displayed items.
+    /// </summary>
+    /// <param name="transformer">The function to add.</param>
+    public void AddTransformer(Func<IEnumerable<Item>, IEnumerable<Item>> transformer)
+    {
+        this.Transformers.Add(transformer);
     }
 
     /// <summary>
@@ -158,36 +185,50 @@ internal class DisplayedItems
     /// </summary>
     /// <param name="x">The x-coord of the mouse.</param>
     /// <param name="y">The y-coord of the mouse.</param>
-    public void LeftClick(int x, int y)
+    /// <returns>Returns true if an item was clicked.</returns>
+    public bool LeftClick(int x, int y)
     {
         if (this.UpArrow.containsPoint(x, y))
         {
             this.Offset--;
+            return true;
         }
 
         if (this.DownArrow.containsPoint(x, y))
         {
             this.Offset++;
+            return true;
         }
+
+        return false;
     }
 
-    private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
+    /// <summary>
+    ///     Forces the displayed items to be refreshed.
+    /// </summary>
+    public void RefreshItems()
     {
-        this.Offset = 0;
-        this.RefreshItems();
-    }
-
-    private void RefreshItems()
-    {
-        this.Items = this.ActualInventory
-                         .Skip(this._offset * this.Columns)
-                         .Take(this.Menu.capacity)
-                         .ToList();
+        var items = this.ActualInventory.AsEnumerable();
+        items = this.Transformers.Aggregate(items, (current, transformer) => transformer(current));
+        items = items.Skip(this.Offset * this.Columns)
+                     .Take(this.Menu.capacity);
+        this.Items = items.ToList();
         for (var index = 0; index < this.Menu.inventory.Count; index++)
         {
             this.Menu.inventory[index].name = (index < this.Items.Count
                 ? this.Menu.actualInventory.IndexOf(this.Items[index])
                 : int.MaxValue).ToString();
         }
+    }
+
+    private bool Highlight(Item item)
+    {
+        return this.HighlightMethod(item) && (!this.Highlighters.Any() || this.Highlighters.All(matcher => matcher.Matches(item)));
+    }
+
+    private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
+    {
+        this.Offset = 0;
+        this.RefreshItems();
     }
 }

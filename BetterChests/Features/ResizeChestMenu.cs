@@ -13,7 +13,6 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.PatternPatcher;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewMods.Common.UI;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;

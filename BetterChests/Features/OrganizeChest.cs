@@ -1,11 +1,8 @@
 namespace StardewMods.BetterChests.Features;
 
-using System.Collections.Generic;
-using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -33,24 +30,6 @@ internal class OrganizeChest : IFeature
     public static OrganizeChest Init(IModHelper helper)
     {
         return OrganizeChest.Instance ??= new(helper);
-    }
-
-    /// <summary>
-    ///     Organizes items in a storage.
-    /// </summary>
-    /// <param name="storage">The storage to organize.</param>
-    /// <param name="descending">Sort in descending order.</param>
-    public static void OrganizeItems(IStorageObject storage, bool descending = false)
-    {
-        var items = new List<Item>(descending
-            ? storage.Items.OfType<Item>().OrderByDescending(storage.OrderBy).ThenByDescending(storage.ThenBy)
-            : storage.Items.OfType<Item>().OrderBy(storage.OrderBy).ThenBy(storage.ThenBy));
-
-        storage.Items.Clear();
-        foreach (var item in items)
-        {
-            storage.Items.Add(item);
-        }
     }
 
     /// <inheritdoc />
@@ -89,12 +68,16 @@ internal class OrganizeChest : IFeature
         switch (e.Button)
         {
             case SButton.MouseLeft:
-                OrganizeChest.OrganizeItems(storage);
+                storage.OrganizeItems();
                 break;
             case SButton.MouseRight:
-                OrganizeChest.OrganizeItems(storage, true);
+                storage.OrganizeItems(true);
                 Game1.playSound("Ship");
                 break;
+            default:
+                return;
         }
+
+        BetterItemGrabMenu.ItemsToGrabMenu?.RefreshItems();
     }
 }

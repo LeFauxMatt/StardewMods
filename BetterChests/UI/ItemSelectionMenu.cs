@@ -1,10 +1,11 @@
-﻿namespace StardewMods.Common.UI;
+﻿namespace StardewMods.BetterChests.UI;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.BetterChests.Features;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.ItemRepository;
 using StardewValley;
@@ -40,11 +41,15 @@ internal class ItemSelectionMenu : ItemGrabMenu
             context: context)
     {
         this.Selected = new(matcher);
-        this.ItemMatcher = matcher;
-        this.ItemsToGrabMenu.highlightMethod = this.ItemMatcher.Matches;
+        this.Selection = matcher;
         this.inventory.inventory = this.Tags.ToList();
-        this.InitializeInventory();
         this.RepositionTags();
+
+        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items.ToList();
+        this.DisplayedItems = BetterItemGrabMenu.ItemsToGrabMenu!;
+        this.DisplayedItems.AddHighlighter(this.Selection);
+        this.DisplayedItems.AddTransformer(this.SortItems);
+        this.DisplayedItems.RefreshItems();
     }
 
     private static List<ClickableComponent> AllTags
@@ -75,13 +80,15 @@ internal class ItemSelectionMenu : ItemGrabMenu
         get => ItemSelectionMenu.CachedLineHeight ??= ItemSelectionMenu.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing;
     }
 
-    private DropDownList? DropDown { get; set; }
+    private DisplayedItems DisplayedItems { get; }
 
-    private ItemMatcher ItemMatcher { get; }
+    private DropDownList? DropDown { get; set; }
 
     private int Offset { get; set; }
 
-    private HashSet<string> Selected { get; set; }
+    private HashSet<string> Selected { get; }
+
+    private ItemMatcher Selection { get; }
 
     private IEnumerable<ClickableComponent> Tags
     {
@@ -142,32 +149,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
                     this.Selected.Contains(tag.name) ? Game1.textColor : Game1.unselectedOptionColor);
             }
         }
-
-        if (this.DropDown is not null)
-        {
-            this.DropDown.Draw(b);
-            this.drawMouse(b);
-            return;
-        }
-
-        if (this.hoveredItem is not null)
-        {
-            ItemSelectionMenu.drawToolTip(b, this.hoveredItem.getDescription(), this.hoveredItem.DisplayName, this.hoveredItem, this.heldItem != null);
-        }
-        else if (!string.IsNullOrWhiteSpace(this.hoverText))
-        {
-            if (this.hoverAmount > 0)
-            {
-                ItemSelectionMenu.drawToolTip(b, this.hoverText, string.Empty, null, true, -1, 0, -1, -1, null, this.hoverAmount);
-            }
-            else
-            {
-                ItemSelectionMenu.drawHoverText(b, this.hoverText, Game1.smallFont);
-            }
-        }
-
-        Game1.mouseCursorTransparency = 1f;
-        this.drawMouse(b);
     }
 
     /// <inheritdoc />
@@ -200,13 +181,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        if (this.DropDown is not null)
-        {
-            this.DropDown.LeftClick(x, y);
-            this.DropDown = null;
-            return;
-        }
-
         if (this.okButton.containsPoint(x, y) && this.readyToClose())
         {
             this.exitThisMenu();
@@ -257,15 +231,13 @@ internal class ItemSelectionMenu : ItemGrabMenu
                 tags.Add("quality_iridium");
             }
 
-            this.DropDown = new(
-                tags.ToList(),
-                x,
-                y,
-                tag =>
-                {
-                    this.AddTag(tag);
-                    this.DropDown = null;
-                });
+            if (this.DropDown is not null)
+            {
+                BetterItemGrabMenu.RemoveOverlay();
+            }
+
+            this.DropDown = new(tags.ToList(), x, y, this.Callback);
+            BetterItemGrabMenu.AddOverlay(this.DropDown);
         }
     }
 
@@ -292,24 +264,24 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void update(GameTime time)
     {
-        if (!this.Selected.SetEquals(this.ItemMatcher))
+        if (!this.Selected.SetEquals(this.Selection))
         {
-            var added = this.Selected.Except(this.ItemMatcher).ToList();
-            var removed = this.ItemMatcher.Except(this.Selected).ToList();
+            var added = this.Selected.Except(this.Selection).ToList();
+            var removed = this.Selection.Except(this.Selected).ToList();
             foreach (var tag in added)
             {
-                this.ItemMatcher.Add(tag);
+                this.Selection.Add(tag);
             }
 
             foreach (var tag in removed)
             {
-                this.ItemMatcher.Remove(tag);
+                this.Selection.Remove(tag);
             }
 
-            this.InitializeInventory();
+            this.DisplayedItems.RefreshItems();
             this.RepositionTags();
         }
     }
@@ -334,17 +306,15 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
     }
 
-    private void InitializeInventory()
+    private void Callback(string? tag)
     {
-        if (!this.Selected.Any())
+        if (tag is not null)
         {
-            this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items.ToList();
-            return;
+            this.AddTag(tag);
         }
 
-        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items
-                                                                .OrderBy(item => this.ItemMatcher.Matches(item) ? 0 : 1)
-                                                                .ToList();
+        BetterItemGrabMenu.RemoveOverlay();
+        this.DropDown = null;
     }
 
     private void RepositionTags()
@@ -358,7 +328,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.inventory.inventory = this.Tags.ToList();
         var x = this.inventory.xPositionOnScreen;
         var y = this.inventory.yPositionOnScreen;
-        var matched = this.ItemMatcher.Any();
+        var matched = this.Selection.Any();
 
         foreach (var tag in this.inventory.inventory)
         {
@@ -378,5 +348,10 @@ internal class ItemSelectionMenu : ItemGrabMenu
             tag.bounds.Y = y;
             x += tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing;
         }
+    }
+
+    private IEnumerable<Item> SortItems(IEnumerable<Item> items)
+    {
+        return items.OrderBy(item => this.Selection.Matches(item) ? 0 : 1);
     }
 }

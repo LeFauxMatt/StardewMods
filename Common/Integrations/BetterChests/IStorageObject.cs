@@ -110,6 +110,12 @@ public interface IStorageObject : IStorageData
     public string OrderBy(Item item);
 
     /// <summary>
+    ///     Organizes items in a storage.
+    /// </summary>
+    /// <param name="descending">Sort in descending order.</param>
+    public void OrganizeItems(bool descending = false);
+
+    /// <summary>
     ///     Creates an <see cref="ItemGrabMenu" /> for this storage container.
     /// </summary>
     public void ShowMenu();

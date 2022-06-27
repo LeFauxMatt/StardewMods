@@ -8,6 +8,7 @@ using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Integrations.Automate;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.BetterCrafting;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley;
 using StardewValley.Buildings;
@@ -23,6 +24,7 @@ internal class IntegrationHelper
 
     private readonly AutomateIntegration _automate;
     private readonly BetterCraftingIntegration _betterCrafting;
+    private readonly GenericModConfigMenuIntegration _gmcm;
     private readonly ToolbarIconsIntegration _toolbarIcons;
 
     private IntegrationHelper(IModHelper helper, ModConfig config)
@@ -31,6 +33,7 @@ internal class IntegrationHelper
         this.Config = config;
         this._automate = new(helper.ModRegistry);
         this._betterCrafting = new(helper.ModRegistry);
+        this._gmcm = new(helper.ModRegistry);
         this._toolbarIcons = new(helper.ModRegistry);
     }
 
@@ -48,6 +51,14 @@ internal class IntegrationHelper
     public static BetterCraftingIntegration BetterCrafting
     {
         get => IntegrationHelper.Instance!._betterCrafting;
+    }
+
+    /// <summary>
+    ///     Gets Generic Mod Config Menu integration.
+    /// </summary>
+    public static GenericModConfigMenuIntegration GMCM
+    {
+        get => IntegrationHelper.Instance!._gmcm;
     }
 
     /// <summary>

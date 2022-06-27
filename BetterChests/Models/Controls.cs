@@ -9,6 +9,11 @@ using StardewModdingAPI.Utilities;
 internal class Controls
 {
     /// <summary>
+    ///     Gets or sets controls to configure currently held object.
+    /// </summary>
+    public KeybindList Configure { get; set; } = new(SButton.End);
+
+    /// <summary>
     ///     Gets or sets controls to lock an item slot.
     /// </summary>
     public SButton LockSlot { get; set; } = SButton.LeftAlt;

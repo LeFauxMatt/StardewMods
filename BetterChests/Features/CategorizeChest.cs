@@ -8,12 +8,10 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.UI;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewMods.Common.UI;
 using StardewValley;
 using StardewValley.Menus;
-
-// TODO: Test activating ItemSelectionMenu as child menu
 
 /// <summary>
 ///     Allows categories to be assigned to storages.

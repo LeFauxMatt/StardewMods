@@ -38,6 +38,8 @@
   "config.chest-menu-tabs-area.tooltip": "상자의 탭이 있을 인벤토리 메뉴 옆의 영역.",
   "config.collect-items.name": "아이템 수집",
   "config.collect-items.tooltip": "상자를 들고 있는 동안, 인벤토리를 거치지 않고 모든 아이템을 상자로 직접 수집할 수 있습니다.(카테고리 사용)",
+  "config.configure.name": "개체 구성",
+  "config.configure.tooltip": "현재 직면하거나 보유하고 있는 개체를 구성합니다.",
   "config.craft-from-chest.name": "상자에서 제작",
   "config.craft-from-chest.tooltip": "근처 상자에 보관된 아이템을 사용하여 제작 할 수 있습니다.",
   "config.craft-from-chest-distance.name": "상자 제작 거리",
@@ -142,5 +144,8 @@
   "tabs.Fishing.name": "생선",
   "tabs.Materials.name": "자원",
   "tabs.Misc.name": "기타",
-  "tabs.Seeds.name": "씨앗"
+  "tabs.Seeds.name": "씨앗",
+  // Objects
+  "tool.config-tool.name": "구성 도구",
+  "tool.config-tool.description": "이 도구는 게임 개체를 구성하는 데 사용할 수 있습니다."
 }

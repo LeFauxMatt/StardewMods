@@ -624,6 +624,22 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
+    public void OrganizeItems(bool descending = false)
+    {
+        var items = this.Items.OfType<Item>().OrderBy(this.OrderBy).ThenBy(this.ThenBy).ToList();
+        if (descending)
+        {
+            items.Reverse();
+        }
+
+        this.Items.Clear();
+        foreach (var item in items)
+        {
+            this.Items.Add(item);
+        }
+    }
+
+    /// <inheritdoc />
     public virtual void ShowMenu()
     {
         Game1.activeClickableMenu = new ItemGrabMenu(

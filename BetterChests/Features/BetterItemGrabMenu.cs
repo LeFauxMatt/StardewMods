@@ -1,6 +1,8 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
@@ -8,10 +10,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.UI;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.PatternPatcher;
-using StardewMods.Common.UI;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -31,6 +32,8 @@ internal class BetterItemGrabMenu : IFeature
 
     private readonly PerScreen<DisplayedItems?> _itemsToGrabMenu = new();
 
+    private readonly PerScreen<Stack<IClickableMenu>> _overlaidMenus = new(() => new());
+
     private BetterItemGrabMenu(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
@@ -44,6 +47,11 @@ internal class BetterItemGrabMenu : IFeature
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
+                new(
+                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
+                    PatchType.Postfix),
             });
     }
 
@@ -79,6 +87,20 @@ internal class BetterItemGrabMenu : IFeature
         set => this._itemGrabMenu.Value = value;
     }
 
+    private Stack<IClickableMenu> OverlaidMenus
+    {
+        get => this._overlaidMenus.Value;
+    }
+
+    /// <summary>
+    ///     Adds an overlay to the current <see cref="ItemGrabMenu" />.
+    /// </summary>
+    /// <param name="menu">The <see cref="IClickableMenu" /> to add.</param>
+    public static void AddOverlay(IClickableMenu menu)
+    {
+        BetterItemGrabMenu.Instance!.OverlaidMenus.Push(menu);
+    }
+
     /// <summary>
     ///     Initializes <see cref="BetterItemGrabMenu" />.
     /// </summary>
@@ -90,6 +112,15 @@ internal class BetterItemGrabMenu : IFeature
         return BetterItemGrabMenu.Instance ??= new(helper, config);
     }
 
+    /// <summary>
+    ///     Removes an overlay from the current <see cref="ItemGrabMenu" />.
+    /// </summary>
+    /// <returns>Returns the removed overlay.</returns>
+    public static IClickableMenu RemoveOverlay()
+    {
+        return BetterItemGrabMenu.Instance!.OverlaidMenus.Pop();
+    }
+
     /// <inheritdoc />
     public void Activate()
     {
@@ -99,11 +130,11 @@ internal class BetterItemGrabMenu : IFeature
             HarmonyHelper.ApplyPatches(BetterItemGrabMenu.Id);
             this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
             this.Helper.Events.Display.RenderedActiveMenu += BetterItemGrabMenu.OnRenderedActiveMenu;
-            this.Helper.Events.Display.RenderedActiveMenu += BetterItemGrabMenu.OnRenderedActiveMenu_Low;
+            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            this.Helper.Events.Input.CursorMoved += BetterItemGrabMenu.OnCursorMoved;
-            this.Helper.Events.Input.MouseWheelScrolled += BetterItemGrabMenu.OnMouseWheelScrolled;
+            this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
+            this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
         }
     }
 
@@ -116,17 +147,21 @@ internal class BetterItemGrabMenu : IFeature
             HarmonyHelper.UnapplyPatches(BetterItemGrabMenu.Id);
             this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
             this.Helper.Events.Display.RenderedActiveMenu -= BetterItemGrabMenu.OnRenderedActiveMenu;
-            this.Helper.Events.Display.RenderedActiveMenu -= BetterItemGrabMenu.OnRenderedActiveMenu_Low;
+            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-            this.Helper.Events.Input.CursorMoved -= BetterItemGrabMenu.OnCursorMoved;
-            this.Helper.Events.Input.MouseWheelScrolled -= BetterItemGrabMenu.OnMouseWheelScrolled;
+            this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
+            this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
         }
     }
 
     private static IList<Item> ActualInventory(IList<Item> actualInventory, InventoryMenu inventoryMenu)
     {
-        return BetterItemGrabMenu.Instance!.GetItems(actualInventory, inventoryMenu);
+        return ReferenceEquals(inventoryMenu, BetterItemGrabMenu.Inventory?.Menu)
+            ? BetterItemGrabMenu.Inventory.Items
+            : ReferenceEquals(inventoryMenu, BetterItemGrabMenu.ItemsToGrabMenu?.Menu)
+                ? BetterItemGrabMenu.ItemsToGrabMenu.Items
+                : actualInventory;
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -170,7 +205,51 @@ internal class BetterItemGrabMenu : IFeature
         }
     }
 
-    private static void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
+    {
+        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu
+            || !StorageHelper.TryGetOne(context, out _))
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(itemGrabMenu, BetterItemGrabMenu.Instance!.Menu))
+        {
+            if (ReferenceEquals(context, BetterItemGrabMenu.Instance.Menu?.context))
+            {
+                BetterItemGrabMenu.Inventory = new(inventory)
+                {
+                    Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0,
+                };
+                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu)
+                {
+                    Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0,
+                };
+            }
+            else
+            {
+                BetterItemGrabMenu.Inventory = new(inventory);
+                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu);
+            }
+
+            BetterItemGrabMenu.Instance.Menu = itemGrabMenu;
+        }
+    }
+
+    private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        {
+            return;
+        }
+
+        BetterItemGrabMenu.ItemsToGrabMenu?.Draw(e.SpriteBatch);
+        BetterItemGrabMenu.Inventory?.Draw(e.SpriteBatch);
+    }
+
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu)
         {
@@ -178,11 +257,75 @@ internal class BetterItemGrabMenu : IFeature
         }
 
         var (x, y) = Game1.getMousePosition(true);
+        switch (e.Button)
+        {
+            case SButton.MouseLeft when this.OverlaidMenus.Any():
+                this.OverlaidMenus.Last().receiveLeftClick(x, y);
+                break;
+            case SButton.MouseLeft when BetterItemGrabMenu.Inventory?.LeftClick(x, y) == true:
+                break;
+            case SButton.MouseLeft when BetterItemGrabMenu.ItemsToGrabMenu?.LeftClick(x, y) == true:
+                break;
+            case SButton.MouseRight when this.OverlaidMenus.Any():
+                this.OverlaidMenus.Last().receiveRightClick(x, y);
+                break;
+            default:
+                return;
+        }
+
+        this.Helper.Input.Suppress(e.Button);
+    }
+
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    {
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+            || BetterItemGrabMenu.ItemsToGrabMenu is null
+            || this.OverlaidMenus.Any())
+        {
+            return;
+        }
+
+        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        {
+            BetterItemGrabMenu.ItemsToGrabMenu.Offset--;
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+        }
+
+        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        {
+            BetterItemGrabMenu.ItemsToGrabMenu.Offset++;
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+        }
+    }
+
+    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    {
+        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        if (this.OverlaidMenus.Any())
+        {
+            this.OverlaidMenus.Last().performHoverAction(x, y);
+            return;
+        }
+
         BetterItemGrabMenu.Inventory?.Hover(x, y);
         BetterItemGrabMenu.ItemsToGrabMenu?.Hover(x, y);
     }
 
-    private static void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (e.NewMenu is not ItemGrabMenu)
+        {
+            this.Menu = null;
+            this.OverlaidMenus.Clear();
+        }
+    }
+
+    private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
         {
@@ -190,6 +333,12 @@ internal class BetterItemGrabMenu : IFeature
         }
 
         var (x, y) = Game1.getMousePosition(true);
+        if (this.OverlaidMenus.Any())
+        {
+            this.OverlaidMenus.Last().receiveScrollWheelAction(e.Delta);
+            return;
+        }
+
         if (BetterItemGrabMenu.Inventory?.Menu.isWithinBounds(x, y) == true)
         {
             BetterItemGrabMenu.Inventory.Offset += e.Delta > 0 ? -1 : 1;
@@ -206,22 +355,22 @@ internal class BetterItemGrabMenu : IFeature
         }
     }
 
-    private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    [EventPriority(EventPriority.Low)]
+    private void OnRenderedActiveMenu_Low(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
         {
             return;
         }
 
-        BetterItemGrabMenu.ItemsToGrabMenu?.Draw(e.SpriteBatch);
-        BetterItemGrabMenu.Inventory?.Draw(e.SpriteBatch);
-    }
-
-    [EventPriority(EventPriority.Low)]
-    private static void OnRenderedActiveMenu_Low(object? sender, RenderedActiveMenuEventArgs e)
-    {
-        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu || Game1.activeClickableMenu is ItemSelectionMenu)
+        if (this.OverlaidMenus.Any())
         {
+            foreach (var overlay in this.OverlaidMenus)
+            {
+                overlay.draw(e.SpriteBatch);
+            }
+
+            itemGrabMenu.drawMouse(e.SpriteBatch);
             return;
         }
 
@@ -242,87 +391,5 @@ internal class BetterItemGrabMenu : IFeature
         }
 
         itemGrabMenu.drawMouse(e.SpriteBatch);
-    }
-
-    private IList<Item> GetItems(IList<Item> actualInventory, InventoryMenu inventoryMenu)
-    {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu || !StorageHelper.TryGetOne(context, out _))
-        {
-            return actualInventory;
-        }
-
-        if (!ReferenceEquals(itemGrabMenu, this.Menu))
-        {
-            if (ReferenceEquals(context, this.Menu?.context))
-            {
-                BetterItemGrabMenu.Inventory = new(inventory)
-                {
-                    Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0,
-                };
-                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu)
-                {
-                    Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0,
-                };
-            }
-            else
-            {
-                BetterItemGrabMenu.Inventory = new(inventory);
-                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu);
-            }
-
-            this.Menu = itemGrabMenu;
-        }
-
-        if (ReferenceEquals(inventoryMenu, BetterItemGrabMenu.Inventory?.Menu))
-        {
-            return BetterItemGrabMenu.Inventory.Items;
-        }
-
-        if (ReferenceEquals(inventoryMenu, BetterItemGrabMenu.ItemsToGrabMenu?.Menu))
-        {
-            return BetterItemGrabMenu.ItemsToGrabMenu.Items;
-        }
-
-        return actualInventory;
-    }
-
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
-    {
-        if (Game1.activeClickableMenu is not ItemGrabMenu)
-        {
-            return;
-        }
-
-        var (x, y) = Game1.getMousePosition(true);
-        BetterItemGrabMenu.Inventory?.LeftClick(x, y);
-        BetterItemGrabMenu.ItemsToGrabMenu?.LeftClick(x, y);
-    }
-
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
-    {
-        if (Game1.activeClickableMenu is not ItemGrabMenu || BetterItemGrabMenu.ItemsToGrabMenu is null)
-        {
-            return;
-        }
-
-        if (this.Config.ControlScheme.ScrollUp.JustPressed())
-        {
-            BetterItemGrabMenu.ItemsToGrabMenu.Offset--;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
-        }
-
-        if (this.Config.ControlScheme.ScrollUp.JustPressed())
-        {
-            BetterItemGrabMenu.ItemsToGrabMenu.Offset++;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
-        }
-    }
-
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
-    {
-        if (e.NewMenu is not ItemGrabMenu)
-        {
-            this.Menu = null;
-        }
     }
 }

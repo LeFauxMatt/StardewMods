@@ -376,7 +376,7 @@ internal class SearchItems : IFeature
 
         if (BetterItemGrabMenu.ItemsToGrabMenu is not null)
         {
-            BetterItemGrabMenu.ItemsToGrabMenu.AddMatcher(this.ItemMatcher);
+            BetterItemGrabMenu.ItemsToGrabMenu.AddFilter(this.ItemMatcher);
         }
     }
 

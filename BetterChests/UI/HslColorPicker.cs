@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.UI;
+﻿namespace StardewMods.BetterChests.UI;
 
 using System;
 using System.Collections.Generic;

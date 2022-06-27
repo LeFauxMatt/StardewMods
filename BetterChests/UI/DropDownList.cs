@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.UI;
+﻿namespace StardewMods.BetterChests.UI;
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     A dropdown for selecting a string from a list of values.
 /// </summary>
-internal class DropDownList
+internal class DropDownList : IClickableMenu
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="DropDownList" /> class.
@@ -20,30 +20,29 @@ internal class DropDownList
     /// <param name="x">The x-coordinate of the dropdown.</param>
     /// <param name="y">The y-coordinate of the dropdown.</param>
     /// <param name="callback">The action to call when a value is selected.</param>
-    public DropDownList(IList<string> values, int x, int y, Action<string> callback)
+    public DropDownList(IList<string> values, int x, int y, Action<string?> callback)
+        : base(x, y, 0, 0)
     {
         this.Callback = callback;
-
         var textBounds = values.Select(value => Game1.smallFont.MeasureString(value).ToPoint()).ToList();
         var textHeight = textBounds.Max(textBound => textBound.Y);
-        this.Bounds = new(x, y, textBounds.Max(textBound => textBound.X) + 16, textBounds.Sum(textBound => textBound.Y) + 16);
-        this.Values = values.Select((value, index) => new ClickableComponent(new(this.Bounds.X + 8, this.Bounds.Y + 8 + textHeight * index, textBounds[index].X, textBounds[index].Y), value)).ToList();
+        this.width = textBounds.Max(textBound => textBound.X) + 16;
+        this.height = textBounds.Sum(textBound => textBound.Y) + 16;
+        this.Bounds = new(x, y, this.width, this.height);
+        this.Values = values.Select((value, index) => new ClickableComponent(new(this.Bounds.X + 8, this.Bounds.Y + 8 + textHeight * index, this.Bounds.Width, textBounds[index].Y), value)).ToList();
     }
 
     private Rectangle Bounds { get; }
 
-    private Action<string> Callback { get; }
+    private Action<string?> Callback { get; }
 
     private List<ClickableComponent> Values { get; }
 
-    /// <summary>
-    ///     Draws the dropdown to screen.
-    /// </summary>
-    /// <param name="spriteBatch">The spritebatch to draw to.</param>
-    public void Draw(SpriteBatch spriteBatch)
+    /// <inheritdoc />
+    public override void draw(SpriteBatch b)
     {
-        IClickableMenu.drawTextureBox(
-            spriteBatch,
+        DropDownList.drawTextureBox(
+            b,
             Game1.mouseCursors,
             OptionsDropDown.dropDownBGSource,
             this.Bounds.X,
@@ -61,24 +60,17 @@ internal class DropDownList
         {
             if (value.bounds.Contains(x, y))
             {
-                spriteBatch.Draw(Game1.staminaRect, new(value.bounds.X, value.bounds.Y, this.Bounds.Width - 16, value.bounds.Height), new Rectangle(0, 0, 1, 1), Color.Wheat, 0f, Vector2.Zero, SpriteEffects.None, 0.975f);
+                b.Draw(Game1.staminaRect, new(value.bounds.X, value.bounds.Y, this.Bounds.Width - 16, value.bounds.Height), new Rectangle(0, 0, 1, 1), Color.Wheat, 0f, Vector2.Zero, SpriteEffects.None, 0.975f);
             }
 
-            spriteBatch.DrawString(Game1.smallFont, value.name, new(value.bounds.X, value.bounds.Y), Game1.textColor);
+            b.DrawString(Game1.smallFont, value.name, new(value.bounds.X, value.bounds.Y), Game1.textColor);
         }
     }
 
-    /// <summary>
-    ///     Receive a left click action.
-    /// </summary>
-    /// <param name="x">The x-coordinate of the left click action.</param>
-    /// <param name="y">The y-coordinate of the right click action.</param>
-    public void LeftClick(int x, int y)
+    /// <inheritdoc />
+    public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
         var value = this.Values.FirstOrDefault(value => value.bounds.Contains(x, y));
-        if (value is not null)
-        {
-            this.Callback(value.name);
-        }
+        this.Callback(value?.name);
     }
 }

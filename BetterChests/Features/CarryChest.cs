@@ -21,8 +21,6 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
-// TODO: Prevent losing chests if passed out
-// TODO: Patch addToStack
 /// <summary>
 ///     Allows a placed chest full of items to be picked up by the farmer.
 /// </summary>
@@ -58,6 +56,11 @@ internal class CarryChest : IFeature
                     AccessTools.Method(typeof(Item), nameof(Item.canBeDropped)),
                     typeof(CarryChest),
                     nameof(CarryChest.Item_canBeDropped_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(Item), nameof(Item.canBeTrashed)),
+                    typeof(CarryChest),
+                    nameof(CarryChest.Item_canBeTrashed_postfix),
                     PatchType.Postfix),
                 new(
                     AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
@@ -235,55 +238,27 @@ internal class CarryChest : IFeature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void Item_canBeTrashed_postfix(Item __instance, ref bool __result)
+    {
+        if (!__result || __instance is not Chest chest)
+        {
+            return;
+        }
+
+        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+            && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+        {
+            __result = false;
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
-        if (!__result)
-        {
-            return;
-        }
-
-        if (__instance is not Chest chest || other is not Chest otherChest)
-        {
-            return;
-        }
-
-        // Block if mismatched data
-        if (chest.SpecialChestType != otherChest.SpecialChestType
-            || chest.fridge.Value != otherChest.fridge.Value
-            || chest.playerChoiceColor.Value.PackedValue != otherChest.playerChoiceColor.Value.PackedValue)
+        if (__instance is Chest || other is Chest)
         {
             __result = false;
-            return;
-        }
-
-        // Block if either chest has any items
-        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            && (chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any() || otherChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any()))
-        {
-            __result = false;
-            return;
-        }
-
-        foreach (var key in __instance.modData.Keys.Concat(otherChest.modData.Keys).Distinct())
-        {
-            var hasValue = __instance.modData.TryGetValue(key, out var value);
-            var otherHasValue = otherChest.modData.TryGetValue(key, out var otherValue);
-            if (hasValue)
-            {
-                // Block if mismatched modData
-                if (otherHasValue && value != otherValue)
-                {
-                    __result = false;
-                    return;
-                }
-
-                continue;
-            }
-
-            if (otherHasValue)
-            {
-                __instance.modData[key] = otherValue;
-            }
         }
     }
 

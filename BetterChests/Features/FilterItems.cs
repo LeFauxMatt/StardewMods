@@ -4,15 +4,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
-// TODO: Add highlighter
 /// <summary>
 ///     Restricts what items can be added into a chest.
 /// </summary>
@@ -73,6 +75,7 @@ internal class FilterItems : IFeature
         {
             this.IsActivated = true;
             HarmonyHelper.ApplyPatches(FilterItems.Id);
+            this.Helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
         }
     }
 
@@ -83,6 +86,7 @@ internal class FilterItems : IFeature
         {
             this.IsActivated = false;
             HarmonyHelper.UnapplyPatches(FilterItems.Id);
+            this.Helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
         }
     }
 
@@ -108,5 +112,20 @@ internal class FilterItems : IFeature
 
         __result = item;
         return false;
+    }
+
+    private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (e.NewMenu is not ItemGrabMenu { context: { } context }
+            || !StorageHelper.TryGetOne(context, out var storage)
+            || storage.FilterItems == FeatureOption.Disabled)
+        {
+            return;
+        }
+
+        if (BetterItemGrabMenu.Inventory is not null)
+        {
+            BetterItemGrabMenu.Inventory.AddHighlighter(storage.FilterMatcher);
+        }
     }
 }
