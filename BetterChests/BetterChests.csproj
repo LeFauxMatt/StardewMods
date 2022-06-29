@@ -6,7 +6,7 @@
         <Name>Better Chests</Name>
         <Author>furyx639</Author>
         <Description>Framework that adds new features to chests.</Description>
-        <Version>1.8.0-beta.2</Version>
+        <Version>1.8.0-beta.4</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.BetterChests</RootNamespace>
         <UniqueId>furyx639.BetterChests</UniqueId>

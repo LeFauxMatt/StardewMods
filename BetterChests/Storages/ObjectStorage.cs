@@ -18,8 +18,8 @@ internal class ObjectStorage : BaseStorage
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    public ObjectStorage(SObject obj, object? parent, IStorageData defaultChest, Vector2? position = default)
-        : base(obj, parent, defaultChest)
+    public ObjectStorage(SObject obj, object? parent, IStorageData defaultChest, Vector2 position)
+        : base(obj, parent, defaultChest, position)
     {
         this.Object = obj;
     }

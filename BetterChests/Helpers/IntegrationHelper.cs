@@ -229,14 +229,14 @@ internal class IntegrationHelper
             var horse = Game1.player.mount;
             if (horse?.HorseId == stable.HorseId)
             {
-                storage = new ChestStorage(chest, Game1.player, this.Config.DefaultChest);
+                storage = new ChestStorage(chest, Game1.player, this.Config.DefaultChest, horse.getTileLocation());
                 return true;
             }
 
             horse = stable.getStableHorse();
             if (horse?.getOwner() == Game1.player)
             {
-                storage = new ChestStorage(chest, horse, this.Config.DefaultChest);
+                storage = new ChestStorage(chest, horse, this.Config.DefaultChest, horse.getTileLocation());
                 return true;
             }
         }

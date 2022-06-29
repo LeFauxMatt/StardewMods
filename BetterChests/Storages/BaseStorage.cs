@@ -31,11 +31,11 @@ internal abstract class BaseStorage : IStorageObject
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    protected BaseStorage(object context, object? parent, IStorageData defaultChest, Vector2? position = default)
+    protected BaseStorage(object context, object? parent, IStorageData defaultChest, Vector2 position)
     {
         this.Context = context;
         this.Parent = parent;
-        this.Position = position ?? Vector2.Zero;
+        this.Position = position;
         this.DefaultChest = defaultChest;
         this.Data = new StorageModData(this);
         this._filterMatcher.CollectionChanged += this.OnCollectionChanged;

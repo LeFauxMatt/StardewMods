@@ -19,8 +19,8 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="location">The location of the shipping bin.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2? position = default)
-        : base(location, location, defaultChest)
+    public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2 position)
+        : base(location, location, defaultChest, position)
     {
     }
 
@@ -31,8 +31,8 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(ShippingBin shippingBin, object? parent, IStorageData defaultChest, Vector2? position = default)
-        : base(shippingBin, parent, defaultChest)
+    public ShippingBinStorage(ShippingBin shippingBin, object? parent, IStorageData defaultChest, Vector2 position)
+        : base(shippingBin, parent, defaultChest, position)
     {
     }
 
@@ -43,8 +43,8 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2? position = default)
-        : base(chest, parent, defaultChest)
+    public ShippingBinStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2 position)
+        : base(chest, parent, defaultChest, position)
     {
     }
 

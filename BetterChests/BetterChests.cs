@@ -20,6 +20,56 @@ public class BetterChests : Mod
 
     private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; } = new();
 
+    private Dictionary<string, string> Tabs
+    {
+        get
+        {
+            var tabs = this.Helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
+            if (tabs is null)
+            {
+                tabs = new()
+                {
+                    {
+                        "Clothing",
+                        "/furyx639.BetterChests\\Tabs\\Texture/0/category_clothing category_boots category_hat"
+                    },
+                    {
+                        "Cooking",
+                        "/furyx639.BetterChests\\Tabs\\Texture/1/category_syrup category_artisan_goods category_ingredients category_sell_at_pierres_and_marnies category_sell_at_pierres category_meat category_cooking category_milk category_egg"
+                    },
+                    {
+                        "Crops",
+                        "/furyx639.BetterChests\\Tabs\\Texture/2/category_greens category_flowers category_fruits category_vegetable"
+                    },
+                    {
+                        "Equipment",
+                        "/furyx639.BetterChests\\Tabs\\Texture/3/category_equipment category_ring category_tool category_weapon"
+                    },
+                    {
+                        "Fishing",
+                        "/furyx639.BetterChests\\Tabs\\Texture/4/category_bait category_fish category_tackle category_sell_at_fish_shop"
+                    },
+                    {
+                        "Materials",
+                        "/furyx639.BetterChests\\Tabs\\Texture/5/category_monster_loot category_metal_resources category_building_resources category_minerals category_crafting category_gem"
+                    },
+                    {
+                        "Misc",
+                        "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk"
+                    },
+                    {
+                        "Seeds",
+                        "/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer"
+                    },
+                };
+
+                this.Helper.Data.WriteJsonFile("assets/tabs.json", tabs);
+            }
+
+            return tabs;
+        }
+    }
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
@@ -30,7 +80,7 @@ public class BetterChests : Mod
         StorageHelper.Init(this.Helper.Multiplayer, this.Config, this.StorageTypes);
 
         // Events
-        this.Helper.Events.Content.AssetRequested += BetterChests.OnAssetRequested;
+        this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
         // Features
@@ -62,7 +112,7 @@ public class BetterChests : Mod
         return new BetterChestsApi(this.StorageTypes);
     }
 
-    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo("furyx639.BetterChests/Icons"))
         {
@@ -70,7 +120,7 @@ public class BetterChests : Mod
         }
         else if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs"))
         {
-            e.LoadFromModFile<Dictionary<string, string>>("assets/tabs.json", AssetLoadPriority.Exclusive);
+            e.LoadFrom(() => this.Tabs, AssetLoadPriority.Exclusive);
         }
         else if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs/Texture"))
         {

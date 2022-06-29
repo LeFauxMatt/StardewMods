@@ -137,7 +137,7 @@ internal class StorageHelper
             {
                 foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
                 {
-                    foreach (var (kvp, type) in StorageHelper.Instance!.StorageTypes)
+                    foreach (var (kvp, type) in StorageHelper.Instance.StorageTypes)
                     {
                         if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
                         {
@@ -350,7 +350,7 @@ internal class StorageHelper
     private static bool TryGetOne(
         object? context,
         object? parent,
-        Vector2? position,
+        Vector2 position,
         [NotNullWhen(true)] out IStorageObject? storage)
     {
         switch (context)

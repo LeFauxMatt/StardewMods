@@ -1,6 +1,7 @@
 namespace StardewMods.BetterChests.Helpers;
 
 using System;
+using System.Globalization;
 using StardewMods.Common.Enums;
 
 /// <summary>
@@ -153,7 +154,7 @@ internal static class FormatHelper
             (int)FeatureOptionRange.Inventory => I18n.Option_Inventory_Name(),
             (int)FeatureOptionRange.World - 1 => I18n.Config_RangeDistance_ValueUnlimited(),
             (int)FeatureOptionRange.World => I18n.Option_World_Name(),
-            >= (int)FeatureOptionRange.Location => string.Format(I18n.Config_RangeDistance_ValueMany(), Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location).ToString()),
+            >= (int)FeatureOptionRange.Location => string.Format(I18n.Config_RangeDistance_ValueMany(), Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location).ToString(CultureInfo.InvariantCulture)),
             _ => I18n.Option_Default_Name(),
         };
     }

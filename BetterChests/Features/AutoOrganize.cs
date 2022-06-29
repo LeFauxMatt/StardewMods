@@ -60,11 +60,7 @@ internal class AutoOrganize : IFeature
     {
         var storages = (
             from storage in StorageHelper.All
-            where storage.AutoOrganize == FeatureOption.Enabled
-                  && storage is not ChestStorage
-                  {
-                      Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest
-                  }
+            where storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
             orderby storage.StashToChestPriority descending
             select storage).ToList();
 

@@ -1,5 +1,8 @@
 ﻿namespace StardewMods.CommonHarmony.Enums;
 
+/// <summary>
+///     The type of Harmony Patch.
+/// </summary>
 internal enum PatchType
 {
     /// <summary>Patches before the existing method.</summary>
