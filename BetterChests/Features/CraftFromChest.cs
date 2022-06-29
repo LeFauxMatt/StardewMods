@@ -87,7 +87,7 @@ internal class CraftFromChest : IFeature
         if (!this.IsActivated)
         {
             this.IsActivated = true;
-            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.MenuChanged += CraftFromChest.OnMenuChanged;
             this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
@@ -114,7 +114,7 @@ internal class CraftFromChest : IFeature
         if (this.IsActivated)
         {
             this.IsActivated = false;
-            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.Display.MenuChanged -= CraftFromChest.OnMenuChanged;
             this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
@@ -128,6 +128,16 @@ internal class CraftFromChest : IFeature
             {
                 IntegrationHelper.BetterCrafting.API.UnregisterInventoryProvider(typeof(StorageWrapper));
             }
+        }
+    }
+
+    private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (e.NewMenu is CraftingPage craftingPage)
+        {
+            craftingPage._materialContainers ??= new();
+            craftingPage._materialContainers.AddRange(CraftFromChest.Eligible.OfType<ChestStorage>().Select(storage => storage.Chest));
+            craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
         }
     }
 
@@ -150,16 +160,6 @@ internal class CraftFromChest : IFeature
 
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
         this.OpenCrafting();
-    }
-
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
-    {
-        if (e.NewMenu is CraftingPage craftingPage)
-        {
-            craftingPage._materialContainers ??= new();
-            craftingPage._materialContainers.AddRange(CraftFromChest.Eligible.OfType<ChestStorage>().Select(storage => storage.Chest));
-            craftingPage._materialContainers = craftingPage._materialContainers.Distinct().ToList();
-        }
     }
 
     private void OnToolbarIconPressed(object? sender, string id)

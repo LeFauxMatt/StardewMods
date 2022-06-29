@@ -132,27 +132,9 @@ internal class ConfigHelper
             () => this._config = new(),
             this.SaveConfig);
 
-        // Auto Organize
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.AutoOrganize.ToStringFast(),
-            value => storage.AutoOrganize = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_AutoOrganize_Name,
-            I18n.Config_AutoOrganize_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            FormatHelper.FormatOption,
-            nameof(IStorageData.AutoOrganize));
-
-        // Carry Chest
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.CarryChest.ToStringFast(),
-            value => storage.CarryChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_CarryChest_Name,
-            I18n.Config_CarryChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            FormatHelper.FormatOption,
-            nameof(IStorageData.CarryChest));
+        // General
+        IntegrationHelper.GMCM.API.AddSectionTitle(manifest, I18n.Section_General_Name);
+        IntegrationHelper.GMCM.API.AddParagraph(manifest, I18n.Section_General_Description);
 
         if (main)
         {
@@ -200,40 +182,83 @@ internal class ConfigHelper
                 FormatHelper.FormatCarryChestSlow,
                 nameof(ModConfig.CarryChestSlowAmount));
 
-            // Categorize Chest
-            IntegrationHelper.GMCM.API.AddBoolOption(
-                manifest,
-                () => this.Config.CategorizeChest,
-                value => this.Config.CategorizeChest = value,
-                I18n.Config_CategorizeChest_Name,
-                I18n.Config_CategorizeChest_Tooltip,
-                nameof(ModConfig.CategorizeChest));
-        }
-        else
-        {
-            // Chest Label
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.ChestLabel,
-                value => storage.ChestLabel = value,
-                I18n.Config_ChestLabel_Name,
-                I18n.Config_ChestLabel_Tooltip,
-                fieldId: nameof(IStorageData.ChestLabel));
-        }
+                () => this.Config.CustomColorPickerArea.ToStringFast(),
+                value => this.Config.CustomColorPickerArea = ComponentAreaExtensions.TryParse(value, out var area) ? area : ComponentArea.Right,
+                I18n.Config_CustomColorPickerArea_Name,
+                I18n.Config_CustomColorPickerArea_Tooltip,
+                new[] { ComponentArea.Left.ToStringFast(), ComponentArea.Right.ToStringFast() },
+                FormatHelper.FormatArea,
+                nameof(ModConfig.CustomColorPickerArea));
 
-        // Chest Menu Tabs
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.ChestMenuTabs.ToStringFast(),
-            value => storage.ChestMenuTabs = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_ChestMenuTabs_Name,
-            I18n.Config_ChestMenuTabs_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            FormatHelper.FormatOption,
-            nameof(IStorageData.ChestMenuTabs));
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => storage.OrganizeChestGroupBy.ToStringFast(),
+                value => storage.OrganizeChestGroupBy = GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : GroupBy.Default,
+                I18n.Config_OrganizeChestGroupBy_Name,
+                I18n.Config_OrganizeChestGroupBy_Tooltip,
+                GroupByExtensions.GetNames(),
+                FormatHelper.FormatGroupBy,
+                nameof(IStorageData.OrganizeChestGroupBy));
+
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => storage.OrganizeChestSortBy.ToStringFast(),
+                value => storage.OrganizeChestSortBy = SortByExtensions.TryParse(value, out var sortBy) ? sortBy : SortBy.Default,
+                I18n.Config_OrganizeChestSortBy_Name,
+                I18n.Config_OrganizeChestSortBy_Tooltip,
+                SortByExtensions.GetNames(),
+                FormatHelper.FormatSortBy,
+                nameof(IStorageData.OrganizeChestSortBy));
+
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => this.Config.SearchTagSymbol.ToString(),
+                value => this.Config.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
+                I18n.Config_SearchItemsSymbol_Name,
+                I18n.Config_SearchItemsSymbol_Tooltip,
+                fieldId: nameof(ModConfig.SearchTagSymbol));
+
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                manifest,
+                () => this.Config.SlotLockHold,
+                value => this.Config.SlotLockHold = value,
+                I18n.Config_SlotLockHold_Name,
+                I18n.Config_SlotLockHold_Tooltip,
+                nameof(ModConfig.SlotLockHold));
+        }
 
         if (main)
         {
+            // Controls
+            IntegrationHelper.GMCM.API.AddSectionTitle(manifest, I18n.Section_Controls_Name);
+            IntegrationHelper.GMCM.API.AddParagraph(manifest, I18n.Section_Controls_Description);
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
+                () => this.Config.ControlScheme.OpenCrafting,
+                value => this.Config.ControlScheme.OpenCrafting = value,
+                I18n.Config_OpenCrafting_Name,
+                I18n.Config_OpenCrafting_Tooltip,
+                nameof(Controls.OpenCrafting));
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
+                () => this.Config.ControlScheme.StashItems,
+                value => this.Config.ControlScheme.StashItems = value,
+                I18n.Config_StashItems_Name,
+                I18n.Config_StashItems_Tooltip,
+                nameof(Controls.StashItems));
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
+                () => this.Config.ControlScheme.Configure,
+                value => this.Config.ControlScheme.Configure = value,
+                I18n.Config_Configure_Name,
+                I18n.Config_Configure_Tooltip,
+                nameof(Controls.Configure));
+
             IntegrationHelper.GMCM.API.AddKeybindList(
                 manifest,
                 () => this.Config.ControlScheme.PreviousTab,
@@ -249,7 +274,108 @@ internal class ConfigHelper
                 I18n.Config_NextTab_Name,
                 I18n.Config_NextTab_Tooltip,
                 nameof(Controls.NextTab));
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
+                () => this.Config.ControlScheme.ScrollUp,
+                value => this.Config.ControlScheme.ScrollUp = value,
+                I18n.Config_ScrollUp_Name,
+                I18n.Config_ScrollUp_Tooltip,
+                nameof(Controls.ScrollUp));
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
+                () => this.Config.ControlScheme.ScrollDown,
+                value => this.Config.ControlScheme.ScrollDown = value,
+                I18n.Config_ScrollDown_Name,
+                I18n.Config_ScrollDown_Tooltip,
+                nameof(Controls.ScrollDown));
+
+            IntegrationHelper.GMCM.API.AddKeybind(
+                manifest,
+                () => this.Config.ControlScheme.LockSlot,
+                value => this.Config.ControlScheme.LockSlot = value,
+                I18n.Config_LockSlot_Name,
+                I18n.Config_LockSlot_Tooltip,
+                nameof(Controls.LockSlot));
         }
+        else
+        {
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => storage.ChestLabel,
+                value => storage.ChestLabel = value,
+                I18n.Config_ChestLabel_Name,
+                I18n.Config_ChestLabel_Tooltip,
+                fieldId: nameof(IStorageData.ChestLabel));
+
+            IntegrationHelper.GMCM.API.AddNumberOption(
+                manifest,
+                () => storage.StashToChestPriority,
+                value => storage.StashToChestPriority = value,
+                I18n.Config_StashToChestPriority_Name,
+                I18n.Config_StashToChestPriority_Tooltip,
+                fieldId: nameof(IStorageData.StashToChestPriority));
+
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => storage.StashToChestStacks.ToStringFast(),
+                value => storage.StashToChestStacks = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                I18n.Config_StashToChestStacks_Name,
+                I18n.Config_StashToChestStacks_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                FormatHelper.FormatOption,
+                nameof(IStorageData.StashToChestStacks));
+        }
+
+        // Features
+        IntegrationHelper.GMCM.API.AddSectionTitle(manifest, I18n.Section_Features_Name);
+        IntegrationHelper.GMCM.API.AddParagraph(manifest, I18n.Section_Features_Description);
+
+        // Auto Organize
+        IntegrationHelper.GMCM.API.AddTextOption(
+            manifest,
+            () => storage.AutoOrganize.ToStringFast(),
+            value => storage.AutoOrganize = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+            I18n.Config_AutoOrganize_Name,
+            I18n.Config_AutoOrganize_Tooltip,
+            FeatureOptionExtensions.GetNames(),
+            FormatHelper.FormatOption,
+            nameof(IStorageData.AutoOrganize));
+
+        // Carry Chest
+        IntegrationHelper.GMCM.API.AddTextOption(
+            manifest,
+            () => storage.CarryChest.ToStringFast(),
+            value => storage.CarryChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+            I18n.Config_CarryChest_Name,
+            I18n.Config_CarryChest_Tooltip,
+            FeatureOptionExtensions.GetNames(),
+            FormatHelper.FormatOption,
+            nameof(IStorageData.CarryChest));
+
+        if (main)
+        {
+            // Categorize Chest
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                manifest,
+                () => this.Config.CategorizeChest,
+                value => this.Config.CategorizeChest = value,
+                I18n.Config_CategorizeChest_Name,
+                I18n.Config_CategorizeChest_Tooltip,
+                nameof(ModConfig.CategorizeChest));
+        }
+
+        // Chest Menu Tabs
+        IntegrationHelper.GMCM.API.AddTextOption(
+            manifest,
+            () => storage.ChestMenuTabs.ToStringFast(),
+            value => storage.ChestMenuTabs = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+            I18n.Config_ChestMenuTabs_Name,
+            I18n.Config_ChestMenuTabs_Tooltip,
+            FeatureOptionExtensions.GetNames(),
+            FormatHelper.FormatOption,
+            nameof(IStorageData.ChestMenuTabs));
 
         // Collect Items
         IntegrationHelper.GMCM.API.AddTextOption(
@@ -261,18 +387,6 @@ internal class ConfigHelper
             FeatureOptionExtensions.GetNames(),
             FormatHelper.FormatOption,
             nameof(IStorageData.CollectItems));
-
-        if (main)
-        {
-            // Configurator
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                manifest,
-                () => this.Config.ControlScheme.Configure,
-                value => this.Config.ControlScheme.Configure = value,
-                I18n.Config_Configure_Name,
-                I18n.Config_Configure_Tooltip,
-                nameof(Controls.Configure));
-        }
 
         // Craft From Chest
         IntegrationHelper.GMCM.API.AddNumberOption(
@@ -317,42 +431,7 @@ internal class ConfigHelper
             FormatHelper.FormatRangeDistance,
             nameof(IStorageData.CraftFromChest));
 
-        if (main)
-        {
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                manifest,
-                () => this.Config.ControlScheme.OpenCrafting,
-                value => this.Config.ControlScheme.OpenCrafting = value,
-                I18n.Config_OpenCrafting_Name,
-                I18n.Config_OpenCrafting_Tooltip,
-                nameof(Controls.OpenCrafting));
-        }
-
         // Custom Color Picker
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.CarryChest.ToStringFast(),
-            value => storage.CarryChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_CarryChest_Name,
-            I18n.Config_CarryChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            FormatHelper.FormatOption,
-            nameof(IStorageData.CarryChest));
-
-        if (main)
-        {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => this.Config.CustomColorPickerArea.ToStringFast(),
-                value => this.Config.CustomColorPickerArea = ComponentAreaExtensions.TryParse(value, out var area) ? area : ComponentArea.Right,
-                I18n.Config_CustomColorPickerArea_Name,
-                I18n.Config_CustomColorPickerArea_Tooltip,
-                new[] { ComponentArea.Left.ToStringFast(), ComponentArea.Right.ToStringFast() },
-                FormatHelper.FormatArea,
-                nameof(ModConfig.CustomColorPickerArea));
-        }
-
-        // Filter Items
         IntegrationHelper.GMCM.API.AddTextOption(
             manifest,
             () => storage.CustomColorPicker.ToStringFast(),
@@ -363,6 +442,17 @@ internal class ConfigHelper
             FormatHelper.FormatOption,
             nameof(IStorageData.CustomColorPicker));
 
+        // Filter Items
+        IntegrationHelper.GMCM.API.AddTextOption(
+            manifest,
+            () => storage.FilterItems.ToStringFast(),
+            value => storage.FilterItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+            I18n.Config_FilterItems_Name,
+            I18n.Config_FilterItems_Tooltip,
+            FeatureOptionExtensions.GetNames(),
+            FormatHelper.FormatOption,
+            nameof(IStorageData.FilterItems));
+
         if (main)
         {
             // Label Chest
@@ -370,8 +460,8 @@ internal class ConfigHelper
                 manifest,
                 () => this.Config.LabelChest,
                 value => this.Config.LabelChest = value,
-                I18n.Config_ChestLabel_Name,
-                I18n.Config_ChestLabel_Tooltip,
+                I18n.Config_LabelChest_Name,
+                I18n.Config_LabelChest_Tooltip,
                 nameof(ModConfig.LabelChest));
         }
 
@@ -396,26 +486,6 @@ internal class ConfigHelper
             FeatureOptionExtensions.GetNames(),
             FormatHelper.FormatOption,
             nameof(IStorageData.OrganizeChest));
-
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.OrganizeChestGroupBy.ToStringFast(),
-            value => storage.OrganizeChestGroupBy = GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : GroupBy.Default,
-            I18n.Config_OrganizeChestGroupBy_Name,
-            I18n.Config_OrganizeChestGroupBy_Tooltip,
-            GroupByExtensions.GetNames(),
-            FormatHelper.FormatGroupBy,
-            nameof(IStorageData.OrganizeChestGroupBy));
-
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.OrganizeChestSortBy.ToStringFast(),
-            value => storage.OrganizeChestSortBy = SortByExtensions.TryParse(value, out var sortBy) ? sortBy : SortBy.Default,
-            I18n.Config_OrganizeChestSortBy_Name,
-            I18n.Config_OrganizeChestSortBy_Tooltip,
-            SortByExtensions.GetNames(),
-            FormatHelper.FormatSortBy,
-            nameof(IStorageData.OrganizeChestSortBy));
 
         // Resize Chest
         IntegrationHelper.GMCM.API.AddNumberOption(
@@ -484,25 +554,6 @@ internal class ConfigHelper
             FormatHelper.FormatChestMenuRows,
             nameof(IStorageData.ResizeChestMenu));
 
-        if (main)
-        {
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                manifest,
-                () => this.Config.ControlScheme.ScrollUp,
-                value => this.Config.ControlScheme.ScrollUp = value,
-                I18n.Config_ScrollUp_Name,
-                I18n.Config_ScrollUp_Tooltip,
-                nameof(Controls.ScrollUp));
-
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                manifest,
-                () => this.Config.ControlScheme.ScrollDown,
-                value => this.Config.ControlScheme.ScrollDown = value,
-                I18n.Config_ScrollDown_Name,
-                I18n.Config_ScrollDown_Tooltip,
-                nameof(Controls.ScrollDown));
-        }
-
         // Search Items
         IntegrationHelper.GMCM.API.AddTextOption(
             manifest,
@@ -516,14 +567,6 @@ internal class ConfigHelper
 
         if (main)
         {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => this.Config.SearchTagSymbol.ToString(),
-                value => this.Config.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
-                I18n.Config_SearchItemsSymbol_Name,
-                I18n.Config_SearchItemsSymbol_Tooltip,
-                fieldId: nameof(ModConfig.SearchTagSymbol));
-
             // Slot Lock
             IntegrationHelper.GMCM.API.AddBoolOption(
                 manifest,
@@ -532,22 +575,6 @@ internal class ConfigHelper
                 I18n.Config_SlotLock_Name,
                 I18n.Config_SlotLock_Tooltip,
                 nameof(ModConfig.SlotLock));
-
-            IntegrationHelper.GMCM.API.AddKeybind(
-                manifest,
-                () => this.Config.ControlScheme.LockSlot,
-                value => this.Config.ControlScheme.LockSlot = value,
-                I18n.Config_LockSlot_Name,
-                I18n.Config_LockSlot_Tooltip,
-                nameof(Controls.LockSlot));
-
-            IntegrationHelper.GMCM.API.AddBoolOption(
-                manifest,
-                () => this.Config.SlotLockHold,
-                value => this.Config.SlotLockHold = value,
-                I18n.Config_SlotLockHold_Name,
-                I18n.Config_SlotLockHold_Tooltip,
-                nameof(ModConfig.SlotLockHold));
         }
 
         // Stash To Chest
@@ -592,35 +619,6 @@ internal class ConfigHelper
             1,
             FormatHelper.FormatRangeDistance,
             nameof(IStorageData.StashToChest));
-
-        if (main)
-        {
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                manifest,
-                () => this.Config.ControlScheme.StashItems,
-                value => this.Config.ControlScheme.StashItems = value,
-                I18n.Config_StashItems_Name,
-                I18n.Config_StashItems_Tooltip,
-                nameof(Controls.StashItems));
-        }
-
-        IntegrationHelper.GMCM.API.AddNumberOption(
-            manifest,
-            () => storage.StashToChestPriority,
-            value => storage.StashToChestPriority = value,
-            I18n.Config_StashToChestPriority_Name,
-            I18n.Config_StashToChestPriority_Tooltip,
-            fieldId: nameof(IStorageData.StashToChestPriority));
-
-        IntegrationHelper.GMCM.API.AddTextOption(
-            manifest,
-            () => storage.StashToChestStacks.ToStringFast(),
-            value => storage.StashToChestStacks = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_StashToChestStacks_Name,
-            I18n.Config_StashToChestStacks_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            FormatHelper.FormatOption,
-            nameof(IStorageData.StashToChestStacks));
 
         // Unload Chest
         IntegrationHelper.GMCM.API.AddTextOption(

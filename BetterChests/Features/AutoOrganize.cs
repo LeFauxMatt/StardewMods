@@ -58,22 +58,33 @@ internal class AutoOrganize : IFeature
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages = StorageHelper.All
-                                    .Where(storage => storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
-                                    .OrderByDescending(storage => storage.StashToChestPriority)
-                                    .ToList();
+        var storages = (
+            from storage in StorageHelper.All
+            where storage.AutoOrganize == FeatureOption.Enabled
+                  && storage is not ChestStorage
+                  {
+                      Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest
+                  }
+            orderby storage.StashToChestPriority descending
+            select storage).ToList();
 
         var items =
             from storage in storages
             from item in storage.Items
             select (item, storage);
 
-        foreach (var (item, fromStorage) in items)
+        foreach (var (item, fromStorage) in items.ToList())
         {
-            if (storages.Any(storage => storage.FilterMatches(item) && storage.StashItem(item) is null))
+            if (storages.Any(storage => storage.FilterMatches(item)
+                                        && storage.StashItem(item) is null))
             {
                 fromStorage.Items.Remove(item);
             }
+        }
+
+        foreach (var storage in storages)
+        {
+            storage.OrganizeItems();
         }
     }
 }

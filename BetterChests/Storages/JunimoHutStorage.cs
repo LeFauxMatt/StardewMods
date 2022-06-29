@@ -19,7 +19,7 @@ internal class JunimoHutStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public JunimoHutStorage(JunimoHut junimoHut, object? parent, IStorageData defaultChest, Vector2? position = default)
-        : base(junimoHut, parent, defaultChest, position)
+        : base(junimoHut, parent, defaultChest)
     {
         this.JunimoHut = junimoHut;
     }

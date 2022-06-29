@@ -17,7 +17,7 @@ internal class StorageData : IStorageData
     public FeatureOption CarryChestSlow { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
-    public string ChestLabel { get; set; }
+    public string ChestLabel { get; set; } = string.Empty;
 
     /// <inheritdoc />
     public FeatureOption ChestMenuTabs { get; set; } = FeatureOption.Default;

@@ -9,6 +9,7 @@ using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
 public class BetterChests : Mod
@@ -17,6 +18,8 @@ public class BetterChests : Mod
 
     private Dictionary<string, (IFeature Feature, Func<bool> Condition)> Features { get; } = new();
 
+    private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; } = new();
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
@@ -24,7 +27,7 @@ public class BetterChests : Mod
         I18n.Init(helper.Translation);
         this.Config = ConfigHelper.Init(this.Helper, this.ModManifest, this.Features);
         IntegrationHelper.Init(this.Helper, this.Config);
-        StorageHelper.Init(this.Helper.Multiplayer, this.Config);
+        StorageHelper.Init(this.Helper.Multiplayer, this.Config, this.StorageTypes);
 
         // Events
         this.Helper.Events.Content.AssetRequested += BetterChests.OnAssetRequested;
@@ -45,12 +48,18 @@ public class BetterChests : Mod
         this.Features.Add(nameof(FilterItems), new(FilterItems.Init(this.Helper), () => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled));
         this.Features.Add(nameof(OpenHeldChest), new(OpenHeldChest.Init(this.Helper), () => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled));
         this.Features.Add(nameof(OrganizeChest), new(OrganizeChest.Init(this.Helper), () => this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled));
-        this.Features.Add(nameof(ResizeChest), new(ResizeChest.Init(this.Helper), () => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled));
+        this.Features.Add(nameof(ResizeChest), new(ResizeChest.Init(), () => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled));
         this.Features.Add(nameof(ResizeChestMenu), new(ResizeChestMenu.Init(this.Helper), () => this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled));
         this.Features.Add(nameof(SearchItems), new(SearchItems.Init(this.Helper, this.Config), () => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled));
         this.Features.Add(nameof(SlotLock), new(SlotLock.Init(this.Helper, this.Config), () => this.Config.SlotLock));
         this.Features.Add(nameof(StashToChest), new(StashToChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled));
         this.Features.Add(nameof(UnloadChest), new(UnloadChest.Init(this.Helper), () => this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled));
+    }
+
+    /// <inheritdoc />
+    public override object GetApi()
+    {
+        return new BetterChestsApi(this.StorageTypes);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)

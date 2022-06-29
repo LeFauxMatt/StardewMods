@@ -12,12 +12,12 @@ internal class ModConfig
     /// <summary>
     ///     Gets or sets a value indicating how many chests containing items can be carried at once.
     /// </summary>
-    public int CarryChestLimit { get; set; }
+    public int CarryChestLimit { get; set; } = 1;
 
     /// <summary>
     ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
     /// </summary>
-    public int CarryChestSlowAmount { get; set; }
+    public int CarryChestSlowAmount { get; set; } = 1;
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be categorized.
@@ -42,7 +42,24 @@ internal class ModConfig
     /// <summary>
     ///     Gets or sets the default storage configuration.
     /// </summary>
-    public StorageData DefaultChest { get; set; } = new();
+    public StorageData DefaultChest { get; set; } = new()
+    {
+        CarryChest = FeatureOption.Enabled,
+        CarryChestSlow = FeatureOption.Enabled,
+        ChestMenuTabs = FeatureOption.Enabled,
+        CraftFromChest = FeatureOptionRange.Location,
+        CraftFromChestDistance = -1,
+        CustomColorPicker = FeatureOption.Enabled,
+        FilterItems = FeatureOption.Enabled,
+        OpenHeldChest = FeatureOption.Enabled,
+        ResizeChest = FeatureOption.Enabled,
+        ResizeChestCapacity = 60,
+        ResizeChestMenu = FeatureOption.Enabled,
+        ResizeChestMenuRows = 5,
+        SearchItems = FeatureOption.Enabled,
+        StashToChest = FeatureOptionRange.Location,
+        StashToChestDistance = -1,
+    };
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be labeled.

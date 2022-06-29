@@ -19,7 +19,7 @@ internal class FridgeStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public FridgeStorage(GameLocation location, IStorageData defaultChest, Vector2? position = default)
-        : base(location, location, defaultChest, position)
+        : base(location, location, defaultChest)
     {
         this.Location = location;
     }

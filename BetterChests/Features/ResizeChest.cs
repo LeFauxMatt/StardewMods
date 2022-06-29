@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using HarmonyLib;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -24,9 +22,8 @@ internal class ResizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChest";
 
-    private ResizeChest(IModHelper helper)
+    private ResizeChest()
     {
-        this.Helper = helper;
         HarmonyHelper.AddPatches(
             ResizeChest.Id,
             new SavedPatch[]
@@ -46,18 +43,15 @@ internal class ResizeChest : IFeature
 
     private static ResizeChest? Instance { get; set; }
 
-    private IModHelper Helper { get; }
-
     private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="ResizeChest" />.
     /// </summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="ResizeChest" /> class.</returns>
-    public static ResizeChest Init(IModHelper helper)
+    public static ResizeChest Init()
     {
-        return ResizeChest.Instance ??= new(helper);
+        return ResizeChest.Instance ??= new();
     }
 
     /// <inheritdoc />
@@ -67,7 +61,6 @@ internal class ResizeChest : IFeature
         {
             this.IsActivated = true;
             HarmonyHelper.ApplyPatches(ResizeChest.Id);
-            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         }
     }
 
@@ -78,7 +71,6 @@ internal class ResizeChest : IFeature
         {
             this.IsActivated = false;
             HarmonyHelper.UnapplyPatches(ResizeChest.Id);
-            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         }
     }
 
@@ -147,26 +139,5 @@ internal class ResizeChest : IFeature
         {
             Log.Warn("Failed to applied all patches!");
         }
-    }
-
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
-    {
-        /*if (ResizeChest.MenuItems.Menu is null)
-        {
-            return;
-        }
-
-        if (Config.ControlScheme.ScrollUp.JustPressed())
-        {
-            ResizeChest.MenuItems.Offset--;
-            ResizeChest.Helper.Input.SuppressActiveKeybinds(ResizeChest.Config.ControlScheme.ScrollUp);
-            return;
-        }
-
-        if (Config.ControlScheme.ScrollDown.JustPressed())
-        {
-            ResizeChest.MenuItems.Offset++;
-            ResizeChest.Helper.Input.SuppressActiveKeybinds(ResizeChest.Config.ControlScheme.ScrollDown);
-        }*/
     }
 }

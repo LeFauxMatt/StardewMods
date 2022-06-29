@@ -100,7 +100,7 @@ internal class ResizeChestMenu : IFeature
         {
             this.IsActivated = true;
             HarmonyHelper.ApplyPatches(ResizeChestMenu.Id);
-            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
         }
     }
 
@@ -111,16 +111,22 @@ internal class ResizeChestMenu : IFeature
         {
             this.IsActivated = false;
             HarmonyHelper.UnapplyPatches(ResizeChestMenu.Id);
-            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
         }
     }
 
     private static int GetExtraSpace(MenuWithInventory menu)
     {
-        if (menu is ItemGrabMenu { context: { } context } && !ReferenceEquals(ResizeChestMenu.Instance!.Context, context))
+        switch (menu)
         {
-            ResizeChestMenu.Instance.Context = context;
-            ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
+            case ItemGrabMenu { context: null }:
+                ResizeChestMenu.Instance!.Context = null;
+                ResizeChestMenu.Instance.Storage = null;
+                return 0;
+            case ItemGrabMenu { context: { } context } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
+                ResizeChestMenu.Instance.Context = context;
+                ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
+                break;
         }
 
         return ResizeChestMenu.Instance?.Storage?.MenuExtraSpace ?? 0;
@@ -128,10 +134,16 @@ internal class ResizeChestMenu : IFeature
 
     private static InventoryMenu GetItemsToGrabMenu(int x, int y, bool playerInventory, IList<Item> actualInventory, InventoryMenu.highlightThisItem highlightMethod, int capacity, int rows, int horizontalGap, int verticalGap, bool drawSlots, ItemGrabMenu menu)
     {
-        if (menu is { context: { } context } && !ReferenceEquals(ResizeChestMenu.Instance!.Context, context))
+        switch (menu)
         {
-            ResizeChestMenu.Instance.Context = context;
-            ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
+            case { context: null }:
+                ResizeChestMenu.Instance!.Context = null;
+                ResizeChestMenu.Instance.Storage = null;
+                break;
+            case { context: { } context } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
+                ResizeChestMenu.Instance.Context = context;
+                ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
+                break;
         }
 
         return new(
@@ -330,7 +342,7 @@ internal class ResizeChestMenu : IFeature
         }
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.NewMenu is not ItemGrabMenu { ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow })
         {

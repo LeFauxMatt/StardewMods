@@ -13,6 +13,7 @@ Adds enhanced chest features to the game.
     * [Craft From Chest](#craft-from-chest)
     * [Custom Color Picker](#custom-color-picker)
     * [Filter Items](#filter-items)
+    * [Label Chest](#label-chest)
     * [Open Held Chest](#open-held-chest)
     * [Organize Chest](#organize-chest)
     * [Resize Chest](#resize-chest)
@@ -143,6 +144,14 @@ the allowed list will be blocked.
 
 1. See [Option Values](#option-values).
 2. See [Item Tags](#item-tags).
+
+### Label Chest
+
+Add a label to a chest and have it appear in the menu and in-game while holding shift.
+
+| Config     | Description                      | Default Value | Other Value(s)  |
+|:-----------|:---------------------------------|:--------------|:----------------|
+| LabelChest | Enables the Label Chest feature. | `true`        | `true', 'false' |
 
 ### Open Held Chest
 

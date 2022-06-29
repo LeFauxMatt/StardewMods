@@ -57,7 +57,7 @@ internal class LabelChest : IFeature
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu
+        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context }
             || !StorageHelper.TryGetOne(context, out var storage)
             || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {

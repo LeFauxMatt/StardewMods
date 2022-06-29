@@ -70,6 +70,11 @@ public interface IStorageObject : IStorageData
     public Vector2 Position { get; }
 
     /// <summary>
+    ///     Gets or sets the storage data for this type of storage.
+    /// </summary>
+    public IStorageData Type { get; set; }
+
+    /// <summary>
     ///     Attempts to add an item into the storage.
     /// </summary>
     /// <param name="item">The item to stash.</param>

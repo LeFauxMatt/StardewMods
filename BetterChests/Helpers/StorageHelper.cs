@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Helpers;
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -21,10 +22,12 @@ internal class StorageHelper
 {
     private StorageHelper(
         IMultiplayerHelper multiplayer,
-        ModConfig config)
+        ModConfig config,
+        Dictionary<KeyValuePair<string, string>, IStorageData> storageTypes)
     {
         this.Multiplayer = multiplayer;
         this.Config = config;
+        this.StorageTypes = storageTypes;
     }
 
     /// <summary>
@@ -34,43 +37,60 @@ internal class StorageHelper
     {
         get
         {
-            var excluded = new HashSet<object>();
-            var storages = new List<IStorageObject>();
-
-            // Inventory Mod Integrations
-            foreach (var storage in IntegrationHelper.FromPlayer(Game1.player, excluded))
+            IEnumerable<IStorageObject> GetAll()
             {
-                storages.Add(storage);
-                yield return storage;
-            }
+                var excluded = new HashSet<object>();
+                var storages = new List<IStorageObject>();
 
-            // Iterate Inventory
-            foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
-            {
-                storages.Add(storage);
-                yield return storage;
-            }
-
-            // Iterate Locations
-            foreach (var location in StorageHelper.Instance!.Locations)
-            {
-                // Mod Integrations
-                foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
+                // Inventory Mod Integrations
+                foreach (var storage in IntegrationHelper.FromPlayer(Game1.player, excluded))
                 {
                     storages.Add(storage);
                     yield return storage;
                 }
 
-                foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
+                // Iterate Inventory
+                foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
                 {
                     storages.Add(storage);
                     yield return storage;
                 }
+
+                // Iterate Locations
+                foreach (var location in StorageHelper.Instance!.Locations)
+                {
+                    // Mod Integrations
+                    foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
+                    {
+                        storages.Add(storage);
+                        yield return storage;
+                    }
+
+                    foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
+                    {
+                        storages.Add(storage);
+                        yield return storage;
+                    }
+                }
+
+                // Sub Storage
+                foreach (var storage in storages.SelectMany(managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
+                {
+                    yield return storage;
+                }
             }
 
-            // Sub Storage
-            foreach (var storage in storages.SelectMany(managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
+            foreach (var storage in GetAll())
             {
+                foreach (var (kvp, type) in StorageHelper.Instance!.StorageTypes)
+                {
+                    if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        storage.Type = type;
+                        break;
+                    }
+                }
+
                 yield return storage;
             }
         }
@@ -86,6 +106,15 @@ internal class StorageHelper
             var excluded = new HashSet<object>();
             foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
             {
+                foreach (var (kvp, type) in StorageHelper.Instance!.StorageTypes)
+                {
+                    if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        storage.Type = type;
+                        break;
+                    }
+                }
+
                 yield return storage;
             }
         }
@@ -108,6 +137,15 @@ internal class StorageHelper
             {
                 foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
                 {
+                    foreach (var (kvp, type) in StorageHelper.Instance!.StorageTypes)
+                    {
+                        if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            storage.Type = type;
+                            break;
+                        }
+                    }
+
                     yield return storage;
                 }
             }
@@ -124,6 +162,8 @@ internal class StorageHelper
     }
 
     private IMultiplayerHelper Multiplayer { get; }
+
+    private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; }
 
     /// <summary>
     ///     Gets all storages placed in a particular farmer's inventory.
@@ -166,12 +206,14 @@ internal class StorageHelper
     /// </summary>
     /// <param name="multiplayer">API for multiplayer utilities.</param>
     /// <param name="config">Mod config data.</param>
+    /// <param name="storageTypes">A dictionary of all registered storage types.</param>
     /// <returns>Returns an instance of the <see cref="StorageHelper" /> class.</returns>
     public static StorageHelper Init(
         IMultiplayerHelper multiplayer,
-        ModConfig config)
+        ModConfig config,
+        Dictionary<KeyValuePair<string, string>, IStorageData> storageTypes)
     {
-        return StorageHelper.Instance ??= new(multiplayer, config);
+        return StorageHelper.Instance ??= new(multiplayer, config, storageTypes);
     }
 
     /// <summary>

@@ -135,6 +135,8 @@ internal class BetterItemGrabMenu : IFeature
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
             this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
             this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+            this.Helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
+            this.Helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
         }
     }
 
@@ -152,6 +154,8 @@ internal class BetterItemGrabMenu : IFeature
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
             this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
             this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+            this.Helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
+            this.Helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
         }
     }
 
@@ -212,6 +216,8 @@ internal class BetterItemGrabMenu : IFeature
         if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu
             || !StorageHelper.TryGetOne(context, out _))
         {
+            BetterItemGrabMenu.Inventory = null;
+            BetterItemGrabMenu.ItemsToGrabMenu = null;
             return;
         }
 
@@ -236,6 +242,28 @@ internal class BetterItemGrabMenu : IFeature
 
             BetterItemGrabMenu.Instance.Menu = itemGrabMenu;
         }
+    }
+
+    private static void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
+    {
+        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        {
+            return;
+        }
+
+        BetterItemGrabMenu.Inventory?.RefreshItems();
+        BetterItemGrabMenu.ItemsToGrabMenu?.RefreshItems();
+    }
+
+    private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+    {
+        if (Game1.activeClickableMenu is not ItemGrabMenu || !e.IsLocalPlayer)
+        {
+            return;
+        }
+
+        BetterItemGrabMenu.Inventory?.RefreshItems();
+        BetterItemGrabMenu.ItemsToGrabMenu?.RefreshItems();
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -318,7 +346,7 @@ internal class BetterItemGrabMenu : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu)
+        if (e.NewMenu is not ItemGrabMenu or ItemGrabMenu { context: null })
         {
             this.Menu = null;
             this.OverlaidMenus.Clear();

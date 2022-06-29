@@ -22,6 +22,7 @@ internal abstract class BaseStorage : IStorageObject
     private readonly ItemMatcher _filterMatcher = new(true);
     private int _capacity;
     private int _menuRows;
+    private IStorageData? _type;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="BaseStorage" /> class.
@@ -37,7 +38,6 @@ internal abstract class BaseStorage : IStorageObject
         this.Position = position ?? Vector2.Zero;
         this.DefaultChest = defaultChest;
         this.Data = new StorageModData(this);
-        this.Type = new StorageData();
         this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
@@ -509,10 +509,12 @@ internal abstract class BaseStorage : IStorageObject
         set => this.Data.StashToChestStacks = value;
     }
 
-    /// <summary>
-    ///     Gets the storage data for this type of storage.
-    /// </summary>
-    public IStorageData Type { get; }
+    /// <inheritdoc />
+    public IStorageData Type
+    {
+        get => this._type ?? this.DefaultChest;
+        set => this._type = value;
+    }
 
     /// <inheritdoc />
     public FeatureOption UnloadChest

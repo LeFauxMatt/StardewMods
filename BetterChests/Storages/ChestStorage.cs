@@ -18,7 +18,7 @@ internal class ChestStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ChestStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2? position = default)
-        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest, parent, defaultChest, position)
+        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest, parent, defaultChest)
     {
         this.Chest = chest;
     }
