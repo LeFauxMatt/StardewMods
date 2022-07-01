@@ -2,6 +2,9 @@
 
 ## 1.3.0 (July 1, 2022)
 
+* Added support for collecting foraging.
+* Added support for shaking trees and bushes.
+* Added support for collecting from dig spots.
 * Updated to SMAPI 3.15.0.
 * Removed dependency on FuryCore.
 
