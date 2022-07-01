@@ -37,7 +37,6 @@ Adds enhanced chest features to the game.
     * [Better Crafting](#better-crafting)
     * [Horse Overhaul](#horse-overhaul)
 * [Customization](#customization)
-    * [Custom Chests](#custom-chests)
     * [Customized Tabs](#customized-tabs)
     * [Other Assets](#other-assets)
 * [Translations](#translations)
@@ -406,49 +405,9 @@ The SaddleBag can have its own Better Chest config by adding an entry for a ches
 
 ## Customization
 
-### Custom Chests
-
-The config for chest types are stored in the `chests.json` in the `assets`
-folder.
-
-If `chests.json` is not found, a default one for vanilla chests is automatically generated with all default settings.
-
-For mods adding custom chests, there are two ways to register them with Better Chests:
-
 #### API
 
 Register your chest using the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
-
-#### Data Path
-
-`furyx639.BetterChests\\Chests`  
-Add/replace chest settings by editing entries<sup>1</sup>.
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    {
-      "Action": "EditData",
-      "Target": "furyx639.BetterChests\\Chests",
-      "Entries": {
-        "example.ModId_Chest": {
-          "CarryChest": "Enabled",
-          "FilterItems": "Enabled",
-          "ResizeChest": "Enabled",
-          "ResizeChestCapacity": "48"
-        }
-      }
-    }
-  ]
-}
-```
-
-1. See
-   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
-   docs for Content Patcher.
 
 ### Customized Tabs
 
@@ -467,47 +426,7 @@ If `tabs.json` is not found, a default one is automatically generated:
 | Misc            | Misc         | `furyx639.BetterChests\\Tabs\\Texture` | 6          | Big Craftable, Furniture, Junk                                                                               | 
 | Seeds           | Seeds        | `furyx639.BetterChests\\Tabs\\Texture` | 7          | Fertilizer, Seeds                                                                                            |
 
-You can edit these files directly for personal usage, or they may be targeted externally for edits from other mods at
-the following paths<sup>3</sup>:
-
-`furyx639.BetterChests\\Tabs`
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    // Customize Tabs
-    {
-      "Action": "EditData",
-      "Target": "furyx639.BetterChests\\Tabs",
-      "Entries": {
-        // Edit an existing tab
-        "Misc": "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk forage_item"
-        
-        // Add a new tab
-        "Community Center": "{{i18n: tab.community-center.name}}/example.ModId\\TabTexture/0/category_donate"
-      }
-    },
-    
-    // Load texture for new tab
-    {
-      "Action": "Load",
-      "Target": "example.ModId/TabTexture",
-      "FromFile": "assets/{{TargetWithoutPath}}j.png",
-    },
-    
-
-  ]
-}
-```
-
-1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
-2. See [Item Tags](#item-tags)
-3. See
-   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
-   docs for Content Patcher.
+You can edit these files directly for personal usage.
 
 ### Other Assets
 

@@ -69,7 +69,7 @@ public class ToolbarIcons : Mod
     {
         if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
         {
-            e.LoadFrom(() => new(), AssetLoadPriority.Exclusive);
+            e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
         }
     }
 
