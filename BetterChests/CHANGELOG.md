@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.0.1 (Unreleased)
+
+* Fixed Configure button being placed over community center.
+
 ## 2.0.0 (July 1, 2022)
 
 * Added LabelChest feature.

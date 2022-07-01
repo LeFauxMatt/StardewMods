@@ -147,33 +147,26 @@ internal class CategorizeChest : IFeature
                 return;
 
             case ItemGrabMenu itemGrabMenu:
-                var buttons = new List<ClickableComponent>();
-                if (itemGrabMenu.colorPickerToggleButton is not null)
-                {
-                    buttons.Add(itemGrabMenu.colorPickerToggleButton);
-                }
-
-                if (itemGrabMenu.organizeButton is not null)
-                {
-                    buttons.Add(itemGrabMenu.organizeButton);
-                }
-
-                if (itemGrabMenu.fillStacksButton is not null)
-                {
-                    buttons.Add(itemGrabMenu.fillStacksButton);
-                }
+                var buttons = new List<ClickableComponent>(
+                    new[]
+                    {
+                        itemGrabMenu.junimoNoteIcon,
+                        itemGrabMenu.specialButton,
+                        itemGrabMenu.colorPickerToggleButton,
+                        itemGrabMenu.organizeButton,
+                        itemGrabMenu.fillStacksButton,
+                    }.OfType<ClickableComponent>().OrderByDescending(button => button.bounds.Y));
 
                 if (!buttons.Any())
                 {
                     return;
                 }
 
-                buttons = buttons.OrderBy(button => button.bounds.Y).ToList();
                 this.ConfigureButton.bounds.X = buttons[0].bounds.X;
-                this.ConfigureButton.bounds.Y = buttons[0].bounds.Y;
+                this.ConfigureButton.bounds.Y = buttons[0].bounds.Bottom;
                 if (buttons.Count >= 2)
                 {
-                    this.ConfigureButton.bounds.Y += buttons[0].bounds.Y - buttons[1].bounds.Y;
+                    this.ConfigureButton.bounds.Y += buttons[0].bounds.Top - buttons[1].bounds.Bottom;
                 }
 
                 return;
@@ -214,8 +207,14 @@ internal class CategorizeChest : IFeature
                 return;
 
             case ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu when StorageHelper.TryGetOne(context, out _):
+                var (x, y) = Game1.getMousePosition(true);
+                this.ConfigureButton.tryHover(x, y);
                 this.ConfigureButton.draw(e.SpriteBatch);
-                itemGrabMenu.drawMouse(e.SpriteBatch);
+                if (this.ConfigureButton.containsPoint(x, y))
+                {
+                    itemGrabMenu.hoverText = this.ConfigureButton.hoverText;
+                }
+
                 return;
         }
     }
