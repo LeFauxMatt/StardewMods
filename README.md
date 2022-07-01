@@ -21,15 +21,6 @@ Adds enhanced chest features to the game.
 
 Provides easier access to machines and producers in the game.
 
-## [FuryCore](https://www.nexusmods.com/stardewvalley/mods/10696)
-
-( [source](FuryCore)
-| [docs](FuryCore/README.md)
-| [changelog](FuryCore/CHANGELOG.md)
-| [api](Common/Integrations/FuryCore/IFuryCoreApi.cs) )
-
-Provides additional APIs for my other mods.
-
 ## [Garbage Day](https://www.nexusmods.com/stardewvalley/mods/8204)
 
 ( [source](GarbageDay)
@@ -61,18 +52,10 @@ Allows custom items to be created as chests.
 
 Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.
 
-## [Toolbar Icons for FuryCore](https://www.nexusmods.com/stardewvalley/mods/11026)
+## [Toolbar Icons](https://www.nexusmods.com/stardewvalley/mods/11026)
 
 ( [source](ToolbarIcons)
 | [docs](ToolbarIcons/README.md)
 | [changelog](ToolbarIcons/CHANGELOG.md) )
 
 Adds shortcut icons to activate hotkeys/commands from other mods.
-
-## Utility Belt
-
-( [source](UtilityBelt)
-| [docs](UtilityBelt/README.md)
-| [changelog](UtilityBelt/CHANGELOG.md) )
-
-Adds a single tool that combines all of the tools into one.
