@@ -1,54 +1,25 @@
 ﻿namespace StardewMods.BetterChests;
 
-using System;
 using System.Collections.Generic;
-using Common.Integrations.BetterChests;
-using StardewModdingAPI;
-using StardewMods.BetterChests.Models.Config;
-using StardewMods.BetterChests.Services;
-using StardewMods.FuryCore.Interfaces;
+using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
 public class BetterChestsApi : IBetterChestsApi
 {
-    private readonly Lazy<AssetHandler> _assetHandler;
-    private readonly Lazy<ModConfigMenu> _modConfigMenu;
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="BetterChestsApi" /> class.
     /// </summary>
-    /// <param name="services">Provides access to internal and external services.</param>
-    public BetterChestsApi(IModServices services)
+    /// <param name="storageTypes">A dictionary of all registered storage types.</param>
+    public BetterChestsApi(Dictionary<KeyValuePair<string, string>, IStorageData> storageTypes)
     {
-        this._assetHandler = services.Lazy<AssetHandler>();
-        this._modConfigMenu = services.Lazy<ModConfigMenu>();
+        this.StorageTypes = storageTypes;
     }
 
-    private AssetHandler Assets
-    {
-        get => this._assetHandler.Value;
-    }
-
-    private ModConfigMenu ModConfigMenu
-    {
-        get => this._modConfigMenu.Value;
-    }
+    private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; }
 
     /// <inheritdoc />
-    public void AddChestOptions(IManifest manifest, IDictionary<string, string> data)
+    public void RegisterChest(string key, string value, IStorageData storage)
     {
-        this.ModConfigMenu.ChestConfig(manifest, data);
-    }
-
-    /// <inheritdoc />
-    public bool RegisterChest(string name)
-    {
-        return this.Assets.AddChestData(name, new StorageData());
-    }
-
-    /// <inheritdoc />
-    public void RegisterModDataKey(string key)
-    {
-        this.Assets.AddModDataKey(key);
+        this.StorageTypes[new(key, value)] = storage;
     }
 }

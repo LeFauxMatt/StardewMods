@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+#nullable disable
+
+namespace StardewMods.FuryCore.Interfaces;
 
 using System;
 using StardewValley;

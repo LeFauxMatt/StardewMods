@@ -1,10 +1,12 @@
 ﻿namespace StardewMods.FuryCore.Enums;
 
+using NetEscapades.EnumGenerators;
 using StardewMods.FuryCore.Interfaces;
 
 /// <summary>
 ///     Custom Item Context Tags that can be added by <see cref="ICustomTags" />.
 /// </summary>
+[EnumExtensions]
 public enum CustomTag
 {
     /// <summary>Context tag for Artifacts.</summary>

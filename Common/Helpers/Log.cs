@@ -1,4 +1,4 @@
-﻿namespace Common.Helpers;
+namespace StardewMods.Common.Helpers;
 
 using StardewModdingAPI;
 
@@ -8,7 +8,7 @@ using StardewModdingAPI;
 internal static class Log
 {
     /// <inheritdoc cref="IMonitor" />
-    public static IMonitor Monitor { get; set; }
+    public static IMonitor? Monitor { get; set; }
 
     /// <summary>Logs a message at an <see cref="LogLevel.Alert" /> level.</summary>
     /// <param name="message">The message to log.</param>
@@ -54,7 +54,7 @@ internal static class Log
     /// <param name="message">The message to log.</param>
     public static void Verbose(string message)
     {
-        if (Log.Monitor.IsVerbose)
+        if (Log.Monitor?.IsVerbose == true)
         {
             Log.Monitor.VerboseLog(message);
         }
@@ -65,7 +65,7 @@ internal static class Log
     /// <param name="args">The arguments to pass.</param>
     public static void Verbose(string message, params object[] args)
     {
-        if (Log.Monitor.IsVerbose)
+        if (Log.Monitor?.IsVerbose == true)
         {
             Log.Monitor.VerboseLog(string.Format(message, args));
         }
@@ -83,11 +83,11 @@ internal static class Log
     {
         if (once)
         {
-            Log.Monitor.LogOnce(message, logLevel);
+            Log.Monitor?.LogOnce(message, logLevel);
         }
         else
         {
-            Log.Monitor.Log(message, logLevel);
+            Log.Monitor?.Log(message, logLevel);
         }
     }
 }

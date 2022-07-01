@@ -1,4 +1,6 @@
-﻿namespace XSPlus.Models;
+#nullable disable
+
+namespace XSPlus.Models;
 
 using System.Collections.Generic;
 using StardewModdingAPI;

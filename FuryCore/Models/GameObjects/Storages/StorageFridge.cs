@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Models.GameObjects.Storages;
+#nullable disable
+
+namespace StardewMods.FuryCore.Models.GameObjects.Storages;
 
 using System;
 using System.Collections.Generic;

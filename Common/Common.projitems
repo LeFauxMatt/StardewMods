@@ -9,7 +9,13 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOptionRange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\GroupBy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\SortBy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemMatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\IPatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
@@ -18,8 +24,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\SearchableItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\AutomateIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomateApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomationFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\BetterCraftingIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\IBetterCraftingApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\EasyAccessIntegration.cs" />
@@ -34,6 +46,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\MoreChests\IMoreChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\IProducerFrameworkModApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\ProducerFrameworkModIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\IToolbarIconsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
   </ItemGroup>

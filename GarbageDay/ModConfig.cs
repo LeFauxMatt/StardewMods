@@ -1,4 +1,6 @@
-﻿namespace GarbageDay;
+#nullable disable
+
+namespace GarbageDay;
 
 public class ModConfig
 {

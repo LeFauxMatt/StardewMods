@@ -1,24 +1,19 @@
 {
-  // Alerts
-  "alert.collect-outputs.no-eligible": "No eligible producers found to collect items from",
-  "alert.dispense-inputs.no-eligible": "No eligible producers found to dispense items into",
-  // Commands
-  "command.info.documentation": "Prints information to the logs about all producers managed by easy access.",
   // Feature Config
-  "config.collect-outputs.name": "Collect Outputs",
-  "config.collect-outputs.tooltip": "The default range that producers can be collected from.",
-  "config.collect-outputs-distance.name": "Collect Output Distance",
+  "config.collect-outputs-distance.name": "Collect Distance",
   "config.collect-outputs-distance.tooltip": "The tiles away from the player that producers can be collected from.",
-  "config.dispense-inputs.name": "Dispense Inputs",
-  "config.dispense-inputs.tooltip": "The default range that producers can be dispensed into.",
-  "config.dispense-inputs-distance.name": "Dispense Input Distance",
+  "config.dispense-inputs-distance.name": "Dispense Distance",
   "config.dispense-inputs-distance.tooltip": "The tiles away from the player that producers can be dispensed into.",
   "config.dispense-inputs-priority.name": "Dispense Input Priority",
   "config.dispense-inputs-priority.tooltip": "Producers with a higher priority will be dispensed into first.",
-  // Feature Option Formatting
-  "config.range-distance.value-unlimited": "Unlimited",
-  "config.range-distance.value-one": "1 tile",
-  "config.range-distance.value-many": "{0} tiles",
+  "config.do-dig-spots.name": "Do Dig Spots",
+  "config.do-dig-spots.tooltip": "Collect will grab from dig spots.",
+  "config.do-forage.name": "Do Forage",
+  "config.do-forage.tooltip": "Collect will have foraging drop as item debris.",
+  "config.do-machines.name": "Do Machines",
+  "config.do-machines.tooltip": "Collect will grab outputs from machines.",
+  "config.do-terrain.name": "Do Terrain",
+  "config.do-terrain.tooltip": "Collect will shake terrain such as bushes and trees.",
   // Config Controls
   "config.collect-items.name": "Collect Items Button",
   "config.collect-items.tooltip": "Key to collect items from accessible producers.",
@@ -27,18 +22,8 @@
   // Config Pages
   "section.general.name": "General",
   "section.general.description": "General customization options for features.",
-  "section.features.name": "Features",
-  "section.features.description": "Default options that applies to any chest.",
   "section.controls.name": "Controls",
   "section.controls.description": "Controller/keyboard configurations.",
-  "section.producers.name": "Producers",
-  "section.producers.description": "Configure each producer type individually.",
-  // Config Options
-  "option.default.name": "Default",
-  "option.enabled.name": "Enabled",
-  "option.disabled.name": "Disabled",
-  "option.location.name": "Location",
-  "option.world.name": "World",
   // UI - Button
   "button.collect-outputs.name": "Collect Outputs",
   "button.dispense-inputs.name": "Dispense Inputs"

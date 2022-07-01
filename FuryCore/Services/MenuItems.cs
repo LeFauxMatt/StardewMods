@@ -1,14 +1,13 @@
-﻿namespace StardewMods.FuryCore.Services;
+#nullable disable
+
+namespace StardewMods.FuryCore.Services;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection.Emit;
-using Common.Extensions;
 using Common.Helpers;
-using Common.Helpers.PatternPatcher;
-using Common.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -17,7 +16,9 @@ using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Events;
+using StardewMods.FuryCore.Extensions;
 using StardewMods.FuryCore.Helpers;
+using StardewMods.FuryCore.Helpers.PatternPatcher;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.ClickableComponents;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
@@ -59,7 +60,8 @@ internal class MenuItems : IMenuItems, IModService
     /// <param name="config">The data for player configured mod options.</param>
     /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public MenuItems(ConfigData config, IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public MenuItems(ConfigData config, IModHelper helper, IModServices services, HarmonyHelper harmony)
     {
         MenuItems.Instance = this;
         this.Config = config;
@@ -76,24 +78,20 @@ internal class MenuItems : IMenuItems, IModService
             menuComponents.MenuComponentPressed += this.OnMenuComponentPressed;
         });
 
-        services.Lazy<IHarmonyHelper>(
-            harmonyHelper =>
-            {
-                var id = $"{FuryCore.ModUniqueId}.{nameof(MenuItems)}";
-                harmonyHelper.AddPatch(
-                    id,
-                    AccessTools.Method(
-                        typeof(InventoryMenu),
-                        nameof(InventoryMenu.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch), typeof(int), typeof(int), typeof(int),
-                        }),
-                    typeof(MenuItems),
-                    nameof(MenuItems.InventoryMenu_draw_transpiler),
-                    PatchType.Transpiler);
-                harmonyHelper.ApplyPatches(id);
-            });
+        var id = $"{FuryCore.ModUniqueId}.{nameof(MenuItems)}";
+        harmony.AddPatch(
+            id,
+            AccessTools.Method(
+                typeof(InventoryMenu),
+                nameof(InventoryMenu.draw),
+                new[]
+                {
+                    typeof(SpriteBatch), typeof(int), typeof(int), typeof(int),
+                }),
+            typeof(MenuItems),
+            nameof(MenuItems.InventoryMenu_draw_transpiler),
+            PatchType.Transpiler);
+        harmony.ApplyPatches(id);
     }
 
     /// <inheritdoc />

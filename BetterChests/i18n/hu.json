@@ -1,4 +1,8 @@
 {
+  // Feature Config
+  "config.configure.name": "Objektum konfigurálás",
+  "config.configure.tooltip": "A szemben lévő vagy a kézben tartott aktuális objektum konfigurálása.",
+  // UI - Tabs
   "tabs.Clothing.name": "Ruházat",
   "tabs.Cooking.name": "Főzés",
   "tabs.Crops.name": "Növények",
@@ -6,5 +10,8 @@
   "tabs.Fishing.name": "Horgászat",
   "tabs.Materials.name": "Anyagok",
   "tabs.Misc.name": "Egyéb",
-  "tabs.Seeds.name": "Magvak"
+  "tabs.Seeds.name": "Magvak",
+  // Objects
+  "tool.config-tool.name": "Konfigurációs eszköz",
+  "tool.config-tool.description": "Ez az eszköz a játékobjektumok konfigurálására használható."
 }

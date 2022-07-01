@@ -1,4 +1,4 @@
-﻿namespace Common.Helpers.PatternPatcher;
+namespace StardewMods.Common.Helpers.PatternPatcher;
 
 using System;
 using System.Collections.Generic;

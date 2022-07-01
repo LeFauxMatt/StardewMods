@@ -1,4 +1,4 @@
-﻿namespace Common.Integrations.EvenBetterRng;
+namespace StardewMods.Common.Integrations.EvenBetterRng;
 
 using System;
 

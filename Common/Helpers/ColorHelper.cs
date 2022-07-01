@@ -1,4 +1,4 @@
-﻿namespace Common.Helpers;
+namespace StardewMods.Common.Helpers;
 
 using Microsoft.Xna.Framework;
 

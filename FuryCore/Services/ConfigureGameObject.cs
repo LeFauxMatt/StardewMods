@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Services;
+#nullable disable
+
+namespace StardewMods.FuryCore.Services;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -11,6 +13,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Enums;
 using StardewMods.FuryCore.Events;
+using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 using StardewMods.FuryCore.Interfaces.GameObjects;
@@ -36,7 +39,8 @@ internal class ConfigureGameObject : IConfigureGameObject, IModService
     /// <param name="helper">SMAPI helper to read/save config data and for events.</param>
     /// <param name="manifest">The mod manifest to subscribe to GMCM with.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public ConfigureGameObject(ConfigData config, IModHelper helper, IManifest manifest, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public ConfigureGameObject(ConfigData config, IModHelper helper, IManifest manifest, IModServices services, HarmonyHelper harmony)
     {
         ConfigureGameObject.Instance = this;
         this.Helper = helper;
@@ -44,37 +48,33 @@ internal class ConfigureGameObject : IConfigureGameObject, IModService
         this._configuringGameObject = new(config, this.Helper, manifest, services);
         this._resettingConfig = new(services);
         this._savingConfig = new(services);
-        services.Lazy<IHarmonyHelper>(
-            harmonyHelper =>
+        var id = $"{FuryCore.ModUniqueId}.{nameof(ConfigureGameObject)}";
+        harmony.AddPatches(
+            id,
+            new SavedPatch[]
             {
-                var id = $"{FuryCore.ModUniqueId}.{nameof(ConfigureGameObject)}";
-                harmonyHelper.AddPatches(
-                    id,
-                    new SavedPatch[]
-                    {
-                        new(
-                            AccessTools.Method(typeof(Tool), nameof(Tool.beginUsing)),
-                            typeof(ConfigureGameObject),
-                            nameof(ConfigureGameObject.Tool_beginUsing_prefix),
-                            PatchType.Prefix),
-                        new(
-                            AccessTools.Method(typeof(Tool), nameof(Tool.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
-                            typeof(ConfigureGameObject),
-                            nameof(ConfigureGameObject.Tool_drawInMenu_prefix),
-                            PatchType.Prefix),
-                        new(
-                            AccessTools.PropertyGetter(typeof(Tool), nameof(Tool.DisplayName)),
-                            typeof(ConfigureGameObject),
-                            nameof(ConfigureGameObject.Tool_getDisplayName_postfix),
-                            PatchType.Postfix),
-                        new(
-                            AccessTools.PropertyGetter(typeof(Tool), nameof(Tool.Description)),
-                            typeof(ConfigureGameObject),
-                            nameof(ConfigureGameObject.Tool_getDescription_postfix),
-                            PatchType.Postfix),
-                    });
-                harmonyHelper.ApplyPatches(id);
+                new(
+                    AccessTools.Method(typeof(Tool), nameof(Tool.beginUsing)),
+                    typeof(ConfigureGameObject),
+                    nameof(ConfigureGameObject.Tool_beginUsing_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(Tool), nameof(Tool.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
+                    typeof(ConfigureGameObject),
+                    nameof(ConfigureGameObject.Tool_drawInMenu_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.PropertyGetter(typeof(Tool), nameof(Tool.DisplayName)),
+                    typeof(ConfigureGameObject),
+                    nameof(ConfigureGameObject.Tool_getDisplayName_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.PropertyGetter(typeof(Tool), nameof(Tool.Description)),
+                    typeof(ConfigureGameObject),
+                    nameof(ConfigureGameObject.Tool_getDescription_postfix),
+                    PatchType.Postfix),
             });
+        harmony.ApplyPatches(id);
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
     }
 

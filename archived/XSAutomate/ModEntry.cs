@@ -1,4 +1,6 @@
-﻿namespace XSAutomate
+#nullable disable
+
+namespace XSAutomate
 {
     using Microsoft.Xna.Framework;
     using Pathoschild.Stardew.Automate;

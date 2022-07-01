@@ -1,4 +1,4 @@
-﻿namespace Common.Models;
+namespace StardewMods.Common.Models;
 
 using System;
 
@@ -32,12 +32,12 @@ internal class Range<T>
     /// <summary>
     ///     Gets or sets the maximum value of the range.
     /// </summary>
-    public T Maximum { get; set; }
+    public T? Maximum { get; set; }
 
     /// <summary>
     ///     Gets or sets the minimum value of the range.
     /// </summary>
-    public T Minimum { get; set; }
+    public T? Minimum { get; set; }
 
     /// <summary>
     ///     Clamps a value based on the range.

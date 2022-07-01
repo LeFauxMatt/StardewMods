@@ -1,4 +1,4 @@
-﻿namespace Common.Integrations.BetterChests;
+namespace StardewMods.Common.Integrations.BetterChests;
 
 using StardewModdingAPI;
 

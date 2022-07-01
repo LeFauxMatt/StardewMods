@@ -1,4 +1,6 @@
-﻿namespace StardewMods.MoreChests;
+#nullable disable
+
+namespace StardewMods.MoreChests;
 
 using System.Collections.Generic;
 using Common.Integrations.MoreChests;

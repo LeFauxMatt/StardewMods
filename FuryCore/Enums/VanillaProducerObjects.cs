@@ -1,8 +1,11 @@
 ﻿namespace StardewMods.FuryCore.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>
 ///     Vanilla Producers with their ParentSheetIndex.
 /// </summary>
+[EnumExtensions]
 public enum VanillaProducerObjects
 {
     /// <summary>Lightning Rod.</summary>

@@ -1,9 +1,9 @@
-﻿namespace Common.Extensions;
+namespace StardewMods.Common.Extensions;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Models;
+using StardewMods.Common.Models;
 
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions

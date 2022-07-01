@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Interfaces.GameObjects;
+#nullable disable
+
+namespace StardewMods.FuryCore.Interfaces.GameObjects;
 
 using System.Collections.Generic;
 using StardewValley;

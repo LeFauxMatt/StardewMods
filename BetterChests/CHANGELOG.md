@@ -1,6 +1,23 @@
 ﻿# Better Chests Change Log
 
-## 1.7.3 (Unreleased)
+## 2.0.0 (July 1, 2022)
+
+* Added LabelChest feature.
+* Fixed integration with BetterCrafting.
+* Fixed crash when installed with BetterShippingBin.
+* Updated to SMAPI 3.15.0.
+* Removed dependency on FuryCore.
+
+### Changed
+
+* Added Chinese Translation
+* Added support for ModManifestBuilder.
+
+### Fixed
+
+* Updated BetterCrafting integration for v1.1.0+.
+
+## 1.7.3 (March 25, 2022)
 
 ### Changed
 

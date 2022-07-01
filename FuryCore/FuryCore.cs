@@ -1,7 +1,10 @@
-﻿namespace StardewMods.FuryCore;
+#nullable disable
+
+namespace StardewMods.FuryCore;
 
 using Common.Helpers;
 using StardewModdingAPI;
+using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Models;
 using StardewMods.FuryCore.Services;
 
@@ -25,23 +28,22 @@ public class FuryCore : Mod
         I18n.Init(this.Helper.Translation);
         this.Config = this.Helper.ReadConfig<ConfigData>();
 
+        var harmony = new HarmonyHelper();
         this.Services.Add(
             new AssetHandler(this.Helper),
             new CommandHandler(this.Helper, this.Services),
-            new ConfigureGameObject(this.Config, this.Helper, this.ModManifest, this.Services),
-            new CustomEvents(this.Helper, this.Services),
-            new CustomTags(this.Config, this.Services),
+            new ConfigureGameObject(this.Config, this.Helper, this.ModManifest, this.Services, harmony),
+            new CustomEvents(this.Helper, this.Services, harmony),
+            new CustomTags(this.Config, harmony),
             new GameObjects(this.Helper, this.Services),
-            new HarmonyHelper(),
-            new MenuComponents(this.Helper, this.Services),
-            new MenuItems(this.Config, this.Helper, this.Services),
-            new ModConfigMenu(this.Config, this.Helper, this.ModManifest),
-            new HudComponents(this.Config, this.Helper, this.Services));
+            new MenuComponents(this.Helper, this.Services, harmony),
+            new MenuItems(this.Config, this.Helper, this.Services, harmony),
+            new ModConfigMenu(this.Config, this.Helper, this.ModManifest));
     }
 
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new FuryCoreApi(this.Services);
+        return new FuryCoreApi(this.Helper, this.Services);
     }
 }

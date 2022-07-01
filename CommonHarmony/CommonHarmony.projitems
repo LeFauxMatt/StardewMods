@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>F93AD1C6-6829-4E3F-8BBD-8D34950B54D3</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>CommonHarmony</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\PatchType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\SavedPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\HarmonyHelper.cs" />
+  </ItemGroup>
+</Project>

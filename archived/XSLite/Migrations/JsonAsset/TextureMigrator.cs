@@ -1,4 +1,6 @@
-﻿namespace XSLite.Migrations.JsonAsset;
+#nullable disable
+
+namespace XSLite.Migrations.JsonAsset;
 
 using System.Collections.Generic;
 using System.IO;

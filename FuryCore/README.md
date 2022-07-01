@@ -7,14 +7,12 @@ Provides additional APIs for my other mods.
 * [Mod Integration](#mod-integration)
     * [Direct Integration](#direct-integration)
     * [API](#api)
-    * [Data](#data)
 * [Helpers](#helpers)
     * [Item Matcher](#item-matcher)
 * [Events](#events)
     * [ClickableMenu Changed](#clickablemenu-changed)
     * [Configuring GameObject](#configuring-gameobject)
     * [GameObjects Removed](#gameobjects-removed)
-    * [HudComponent Pressed](#hudcomponent-pressed)
     * [MenuComponent Pressed](#menucomponent-pressed)
     * [MenuComponents Loading](#menucomponents-loading)
     * [MenuItems Changed](#menuitems-changed)
@@ -27,8 +25,6 @@ Provides additional APIs for my other mods.
     * [Custom Events](#custom-events)
     * [Custom Tags](#custom-tags)
     * [Game Objects](#game-objects)
-    * [Harmony Helper](#harmony-helper)
-    * [HUD Components](#hud-components)
     * [Menu Components](#menu-components)
     * [Menu Items](#menu-items)
     * [Mod Services](#mod-services)
@@ -94,42 +90,6 @@ public class ModEntry : Mod
 
 Get basic access to FuryCore services using the [Fury Core API](../Common/Integrations/FuryCore/IFuryCoreApi.cs).
 
-#### Data
-
-Some integration is possible via data paths using
-[SMAPI](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Content#Edit_a_game_asset) or
-[Content Patcher](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide.md).
-
-`furyx639.FuryCore\\Toolbar`
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    // Load Texture Icons
-    {
-      "Action": "Load",
-      "Target": "example.ModId/Icons",
-      "FromFile": "assets/icon.png"
-    },
-
-    // Add Icon to launch Chests Anywhere
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Chests Anywhere": "{{i18n: icon.chests-anywhere.name}}/example.ModId\\Icons/0/Left/keybind: B",
-      },
-      "When": {
-        "HasMod": "Pathoschild.ChestsAnywhere"
-      }
-    },
-  ]
-}
-```
-
 ### Helpers
 
 #### Item Matcher
@@ -161,12 +121,6 @@ Raised before a Mod Config Menu will be shown for the current game object.
 Raised after inaccessible game objects are purged from the cache.
 
 [ [Source](Events/GameObjectsRemoved.cs) | [EventArgs](Interfaces/CustomEvents/IGameObjectsRemovedEventArgs.cs) ]
-
-#### HudComponent Pressed
-
-Raised after a custom toolbar icon is pressed.
-
-[ [Source](Events/HudComponentPressed.cs) | [EventArgs](Interfaces/CustomEvents/IClickableComponentPressedEventArgs.cs) ]
 
 #### MenuComponent Pressed
 
@@ -237,18 +191,6 @@ Allows adding dynamic custom context tags to items that can use realtime conditi
 Provides a common interface to most objects in the game including items, buildings, and locations.
 
 [ [Interface](Interfaces/IGameObjects.cs) | [Source](Services/GameObjects.cs) ]
-
-#### Harmony Helper
-
-Saves a list of Harmony Patches, and allows them to be applied or reversed at any time.
-
-[ [Interface](Interfaces/IHarmonyHelper.cs) | [Source](Services/HarmonyHelper.cs) ]
-
-#### Hud Components
-
-Add icons to the left or right of the player items toolbar.
-
-[ [Interface](Interfaces/IHudComponents.cs) | [Source](Services/HudComponents.cs) ]
 
 #### Menu Components
 

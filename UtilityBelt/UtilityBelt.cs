@@ -1,4 +1,6 @@
-﻿namespace UtilityBelt;
+#nullable disable
+
+namespace UtilityBelt;
 
 using System.Linq;
 using StardewValley.Objects;

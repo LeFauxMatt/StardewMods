@@ -1,4 +1,4 @@
-﻿namespace Common.Models;
+namespace StardewMods.Common.Models;
 
 using System;
 using Microsoft.Xna.Framework;

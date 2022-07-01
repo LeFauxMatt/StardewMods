@@ -1,4 +1,6 @@
-﻿namespace StardewMods.MoreChests;
+#nullable disable
+
+namespace StardewMods.MoreChests;
 
 using Common.Helpers;
 using StardewModdingAPI;

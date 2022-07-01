@@ -1,0 +1,19 @@
+{
+  "Name": "[CP] Toolbar Icons",
+  "Author": "furyx639",
+  "Version": "2.0.0",
+  "Description": "Adds toolbar icons as shortcuts to other popular mods.",
+  "UniqueID": "furyx639.ToolbarIconsCP",
+  "UpdateKeys": [
+    "Nexus:11026@CP"
+  ],
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  },
+  "Dependencies": [
+    {
+      "UniqueID": "furyx639.ToolbarIcons",
+      "IsRequired": true
+    }
+  ]
+}

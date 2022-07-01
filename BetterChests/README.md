@@ -6,13 +6,16 @@ Adds enhanced chest features to the game.
 
 * [Features](#features)
     * [Auto Organize](#auto-organize)
+    * [Better Color Picker](#better-color-picker)
+    * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
     * [Categorize Chest](#categorize-chest)
     * [Chest Menu Tabs](#chest-menu-tabs)
     * [Collect Items](#collect-items)
+    * [Configurator](#configurator)
     * [Craft From Chest](#craft-from-chest)
-    * [Custom Color Picker](#custom-color-picker)
     * [Filter Items](#filter-items)
+    * [Label Chest](#label-chest)
     * [Open Held Chest](#open-held-chest)
     * [Organize Chest](#organize-chest)
     * [Resize Chest](#resize-chest)
@@ -31,9 +34,9 @@ Adds enhanced chest features to the game.
     * [Sort By Values](#sort-by-values)
 * [Mod Integrations](#mod-integrations)
     * [Automate](#automate)
+    * [Better Crafting](#better-crafting)
     * [Horse Overhaul](#horse-overhaul)
 * [Customization](#customization)
-    * [Custom Chests](#custom-chests)
     * [Customized Tabs](#customized-tabs)
     * [Other Assets](#other-assets)
 * [Translations](#translations)
@@ -51,6 +54,26 @@ It also applies your [Organize Chest](#organize-chest) rules at the end.
 | Config          | Description                         | Default Value | Other Value(s)                                                       |
 |:----------------|:------------------------------------|:--------------|:---------------------------------------------------------------------|
 | AutoOrganize    | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+
+### Better Color Picker
+
+Replaces the Chest Color Picker with a more precise version that lets you pick a color with sliders for hue, saturation,
+and lightness.
+
+| Config                | Description                                   | Default Value | Other Value(s)                        |
+|:----------------------|:----------------------------------------------|:--------------|:--------------------------------------|
+| CustomColorPicker     | Enables the Custom Color Picker feature.      | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| CustomColorPickerArea | Which side will the Color Picker be added to. | `"Right"`     | `"Left"`                              |
+
+1. See [Option Values](#option-values).
+
+### Better Shipping Bin
+
+Relaunches the Shipping Bin menu as a regular Chest inventory menu so that items can be retrieved.
+
+| Config            | Description                              | Default Value | Other Value(s)      |
+|:------------------|:-----------------------------------------|:--------------|:--------------------|
+| BetterShippingBin | Enables the Better Shipping Bin feature. | `"true"`      | `"true"`, `"false"` |
 
 ### Carry Chest
 
@@ -103,6 +126,17 @@ bypassing your inventory.<sup>1</sup>
 1. Only items assigned from [Categorize Chest](#categorize-chest) will be collected.
 2. See [Option Values](#option-values).
 
+### Configurator
+
+Configure chests individually using a hotkey, configuration tool, or toolbar icon.
+
+| Config                         | Description                                               | Default Value | Other Value(s)                            |
+|:-------------------------------|:----------------------------------------------------------|:--------------|:------------------------------------------|
+| Configurator                   | Enables the Configurator feature.                         | `true`        | `true`, `false`                           |
+| Configure                      | Assigns the keybind for configuring a chest.              | `"End"`       | Any valid button code.<sup>1</sup>        |
+
+1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
 ### Craft From Chest
 
 Hit a configurable key to bring up a crafting menu that uses items stored in nearby chests.
@@ -119,18 +153,6 @@ Hit a configurable key to bring up a crafting menu that uses items stored in nea
 3. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
 4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
-### Custom Color Picker
-
-Replaces the Chest Color Picker with a more precise version that lets you pick a color with sliders for hue, saturation,
-and lightness.
-
-| Config                | Description                                   | Default Value | Other Value(s)                        |
-|:----------------------|:----------------------------------------------|:--------------|:--------------------------------------|
-| CustomColorPicker     | Enables the Custom Color Picker feature.      | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| CustomColorPickerArea | Which side will the Color Picker be added to. | `"Right"`     | `"Left"`                              |
-
-1. See [Option Values](#option-values).
-
 ### Filter Items
 
 Impose restrictions on what types of items are allowed to go into a chest. With this enabled, items that are not part of
@@ -143,6 +165,14 @@ the allowed list will be blocked.
 
 1. See [Option Values](#option-values).
 2. See [Item Tags](#item-tags).
+
+### Label Chest
+
+Add a label to a chest and have it appear in the menu and in-game while holding shift.
+
+| Config     | Description                      | Default Value | Other Value(s)  |
+|:-----------|:---------------------------------|:--------------|:----------------|
+| LabelChest | Enables the Label Chest feature. | `true`        | `true', 'false' |
 
 ### Open Held Chest
 
@@ -375,49 +405,9 @@ The SaddleBag can have its own Better Chest config by adding an entry for a ches
 
 ## Customization
 
-### Custom Chests
-
-The config for chest types are stored in the `chests.json` in the `assets`
-folder.
-
-If `chests.json` is not found, a default one for vanilla chests is automatically generated with all default settings.
-
-For mods adding custom chests, there are two ways to register them with Better Chests:
-
 #### API
 
 Register your chest using the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
-
-#### Data Path
-
-`furyx639.BetterChests\\Chests`  
-Add/replace chest settings by editing entries<sup>1</sup>.
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    {
-      "Action": "EditData",
-      "Target": "furyx639.BetterChests\\Chests",
-      "Entries": {
-        "example.ModId_Chest": {
-          "CarryChest": "Enabled",
-          "FilterItems": "Enabled",
-          "ResizeChest": "Enabled",
-          "ResizeChestCapacity": "48"
-        }
-      }
-    }
-  ]
-}
-```
-
-1. See
-   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
-   docs for Content Patcher.
 
 ### Customized Tabs
 
@@ -436,47 +426,7 @@ If `tabs.json` is not found, a default one is automatically generated:
 | Misc            | Misc         | `furyx639.BetterChests\\Tabs\\Texture` | 6          | Big Craftable, Furniture, Junk                                                                               | 
 | Seeds           | Seeds        | `furyx639.BetterChests\\Tabs\\Texture` | 7          | Fertilizer, Seeds                                                                                            |
 
-You can edit these files directly for personal usage, or they may be targeted externally for edits from other mods at
-the following paths<sup>3</sup>:
-
-`furyx639.BetterChests\\Tabs`
-
-Sample `content.json`:
-
-```jsonc
-{
-  "Format": "1.24.0",
-  "Changes": [
-    // Customize Tabs
-    {
-      "Action": "EditData",
-      "Target": "furyx639.BetterChests\\Tabs",
-      "Entries": {
-        // Edit an existing tab
-        "Misc": "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk forage_item"
-        
-        // Add a new tab
-        "Community Center": "{{i18n: tab.community-center.name}}/example.ModId\\TabTexture/0/category_donate"
-      }
-    },
-    
-    // Load texture for new tab
-    {
-      "Action": "Load",
-      "Target": "example.ModId/TabTexture",
-      "FromFile": "assets/{{TargetWithoutPath}}j.png",
-    },
-    
-
-  ]
-}
-```
-
-1. The key value is used in the [ChestMenuTabSet](#chest-menu-tabs) config option.
-2. See [Item Tags](#item-tags)
-3. See
-   the [Edit Data](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide/action-editdata.md)
-   docs for Content Patcher.
+You can edit these files directly for personal usage.
 
 ### Other Assets
 
@@ -540,16 +490,16 @@ Sample `content.json`:
 
 See [here](i18n/default.json) for the base translation file.
 
-| Language                   | Status            | Credits     |
-|:---------------------------|:------------------|:------------|
-| [Chinese](i18n/zh.json)    | ✔️ Complete       | JingGongGi  |
-| [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus      |
-| [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever   |
-| [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789 |
-| [Italian](i18n/it.json)    | ✔️ Complete       | zomboide    |
-| Japanese                   | ❌️ Not Translated |             |
-| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232    |
-| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon    |
-| [Russian](i18n/ru.json)    | ❔ Incomplete      | Newrotd     |
-| [Spanish](i18n/es.json)    | ❔ Incomplete      | Soraien     |
-| Turkish                    | ❌️ Not Translated |             |
+| Language                   | Status            | Credits              |
+|:---------------------------|:------------------|:---------------------|
+| [Chinese](i18n/zh.json)    | ✔️ Complete       | Andyc66              |
+| [French](i18n/fr.json)     | ❔ Incomplete      | Ayatus               |
+| [German](i18n/de.json)     | ❔ Incomplete      | Loni4ever            |
+| [Hungarian](i18n/hu.json)  | ❔ Incomplete      | martin66789          |
+| [Italian](i18n/it.json)    | ✔️ Complete       | zomboide             |
+| Japanese                   | ❌️ Not Translated |                      |
+| [Korean](i18n/ko.json)     | ✔️ Complete       | wally232             |
+| [Portuguese](i18n/pt.json) | ✔️ Complete       | Aulberon             |
+| [Russian](i18n/ru.json)    | ❔ Incomplete      | Newrotd              |
+| [Spanish](i18n/es.json)    | ✔️ Complete       | Querbis              |
+| [Turkish](i18n/tr.json)    | ✔️ Complete       | KawaiFoxHappyClaws76 |

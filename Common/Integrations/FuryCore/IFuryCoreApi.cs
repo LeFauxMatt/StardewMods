@@ -1,4 +1,4 @@
-﻿namespace Common.Integrations.FuryCore;
+namespace StardewMods.Common.Integrations.FuryCore;
 
 using System;
 using System.Collections.Generic;
@@ -11,16 +11,6 @@ using StardewValley.Menus;
 /// </summary>
 public interface IFuryCoreApi
 {
-    /// <summary>
-    ///     Event triggered when a menu component is pressed.
-    /// </summary>
-    public event EventHandler<(string ComponentName, bool IsSuppressed)> MenuComponentPressed;
-
-    /// <summary>
-    ///     Event triggered when a toolbar icon is pressed.
-    /// </summary>
-    public event EventHandler<(string ComponentName, bool IsSuppressed)> ToolbarIconPressed;
-
     /// <summary>
     ///     Adds a context tag to any item that currently meets the predicate.
     /// </summary>
@@ -52,13 +42,6 @@ public interface IFuryCoreApi
     /// <param name="clickableTextureComponent">The <see cref="ClickableTextureComponent" />.</param>
     /// <param name="area">The area of the screen to orient the component to.</param>
     public void AddMenuComponent(ClickableTextureComponent clickableTextureComponent, string area = "");
-
-    /// <summary>
-    ///     Adds a menu component next to the <see cref="Toolbar" />.
-    /// </summary>
-    /// <param name="clickableTextureComponent">The <see cref="ClickableTextureComponent" />.</param>
-    /// <param name="area">The area of the screen to orient the component to.</param>
-    public void AddToolbarIcon(ClickableTextureComponent clickableTextureComponent, string area = "");
 
     /// <summary>
     ///     Sets a search phrase to filter the currently displayed items by.

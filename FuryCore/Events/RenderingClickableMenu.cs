@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Events;
+#nullable disable
+
+namespace StardewMods.FuryCore.Events;
 
 using System;
 using Microsoft.Xna.Framework;

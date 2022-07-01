@@ -1,4 +1,6 @@
-﻿namespace MoreChests.Services;
+#nullable disable
+
+namespace MoreChests.Services;
 
 using System.Collections.Generic;
 using Common.Integrations.BetterChests;

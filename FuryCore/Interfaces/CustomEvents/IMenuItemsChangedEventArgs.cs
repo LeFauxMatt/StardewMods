@@ -1,6 +1,9 @@
-﻿namespace StardewMods.FuryCore.Interfaces.CustomEvents;
+#nullable disable
+
+namespace StardewMods.FuryCore.Interfaces.CustomEvents;
 
 using System;
+using Common.Helpers;
 using StardewMods.FuryCore.Events;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces.GameObjects;

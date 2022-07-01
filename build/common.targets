@@ -7,15 +7,16 @@
         <TargetFramework>net5.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <GamePath>G:\Steam\steamapps\common\Stardew Valley 1.5.6</GamePath>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1"/>
         <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="1.0.3"/>
+        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376">
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

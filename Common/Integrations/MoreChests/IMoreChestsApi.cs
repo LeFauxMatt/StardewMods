@@ -1,4 +1,4 @@
-﻿namespace Common.Integrations.MoreChests;
+namespace StardewMods.Common.Integrations.MoreChests;
 
 public interface IMoreChestsApi
 {

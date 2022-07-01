@@ -1,39 +1,46 @@
-﻿# Toolbar Icons for FuryCore
+# Toolbar Icons
 
-Adds shortcut icons to activate hotkeys/commands from other mods.
+Framework for adding icons to the toolbar.
 
-## Contents
+* [API](#api)
+* [Assets](#assets)
 
-* [Supported Mods](#supported-mods)
-* [Translations](#translations)
+#### API
 
-### Supported Mods
+Add toolbar icons using the [Toolbar Icons API](../Common/Integrations/ToolbarIcons/IToolbarIconsApi.cs).
 
-* [Always Scroll Map](https://www.nexusmods.com/stardewvalley/mods/2733)
-* [Chests Anywhere](https://www.nexusmods.com/stardewvalley/mods/518)
-* [CJB Cheats Menu](https://www.nexusmods.com/stardewvalley/mods/4)
-* [CJB Item Spawner](https://www.nexusmods.com/stardewvalley/mods/93)
-* [Data Layers](https://www.nexusmods.com/stardewvalley/mods/1691)
-* [Debug Mode](https://www.nexusmods.com/stardewvalley/mods/679)
-* [Dynamic Game Assets](https://www.nexusmods.com/stardewvalley/mods/9365)
-* [Event Lookup](https://www.nexusmods.com/stardewvalley/mods/8505)
-* [Horse Flute Anywhere](https://www.nexusmods.com/stardewvalley/mods/7500)
-* [Instant Buildings From Farm](https://www.nexusmods.com/stardewvalley/mods/2070)
-* [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541)
-* [Reset Terrain Features for .NET 5](https://www.nexusmods.com/stardewvalley/mods/9350)
+#### Assets
 
-### Translations
+Integration is possible via data paths using
+[SMAPI](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Content#Edit_a_game_asset) or
+[Content Patcher](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide.md).
 
-| Language                                                           | Status            | Credits  |
-|:-------------------------------------------------------------------|:------------------|:---------|
-| Chinese                                                            | ❌️ Not Translated |          |
-| French                                                             | ❌️ Not Translated |          |
-| German                                                             | ❌️ Not Translated |          |
-| Hungarian                                                          | ❌️ Not Translated |          |
-| Italian                                                            | ❌️ Not Translated |          |
-| Japanese                                                           | ❌️ Not Translated |          |
-| [Korean](%5BCP%5D%20Toolbar%20Icons%20for%20FuryCore/i18n/ko.json) | ✔️ Complete       | wally232 |
-| Portuguese]                                                        | ❌️ Not Translated |          |
-| Russian                                                            | ❌️ Not Translated |          |
-| Spanish                                                            | ❌️ Not Translated |          |
-| Turkish                                                            | ❌️ Not Translated |          |
+`furyx639.FuryCore\\Toolbar`
+
+Sample `content.json`:
+
+```jsonc
+{
+  "Format": "1.24.0",
+  "Changes": [
+    // Load Texture Icons
+    {
+      "Action": "Load",
+      "Target": "example.ModId/Icons",
+      "FromFile": "assets/icon.png"
+    },
+
+    // Add Icon to launch Chests Anywhere
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "Chests Anywhere": "{{i18n: icon.chests-anywhere.name}}/example.ModId\\Icons/0/Left/keybind: B",
+      },
+      "When": {
+        "HasMod": "Pathoschild.ChestsAnywhere"
+      }
+    },
+  ]
+}
+```

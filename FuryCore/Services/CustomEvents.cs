@@ -1,10 +1,13 @@
-﻿namespace StardewMods.FuryCore.Services;
+#nullable disable
+
+namespace StardewMods.FuryCore.Services;
 
 using System;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Attributes;
 using StardewMods.FuryCore.Events;
+using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
 
@@ -21,9 +24,10 @@ internal class CustomEvents : ICustomEvents, IModService
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="services">Provides access to internal and external services.</param>
-    public CustomEvents(IModHelper helper, IModServices services)
+    /// <param name="harmony">Helper to apply/reverse harmony patches.</param>
+    public CustomEvents(IModHelper helper, IModServices services, HarmonyHelper harmony)
     {
-        this._clickableMenuChanged = new(helper.Events.GameLoop, services);
+        this._clickableMenuChanged = new(helper.Events.GameLoop, services, harmony);
         this._renderedClickableMenu = new(helper.Events.Display, services);
         this._renderingClickableMenu = new(helper.Events.Display, services);
     }

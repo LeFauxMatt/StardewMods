@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Events;
+#nullable disable
+
+namespace StardewMods.FuryCore.Events;
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ using System.Text;
 using Common.Helpers;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Attributes;
+using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Models;
 
 /// <summary>

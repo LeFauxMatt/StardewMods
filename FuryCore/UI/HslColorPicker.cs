@@ -1,14 +1,18 @@
-﻿namespace StardewMods.FuryCore.UI;
+#nullable disable
+
+namespace StardewMods.FuryCore.UI;
 
 using System;
 using System.Linq;
-using Common.Extensions;
-using Common.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Extensions;
+using StardewMods.Common.Models;
 using StardewMods.FuryCore.Enums;
+using StardewMods.FuryCore.Extensions;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;

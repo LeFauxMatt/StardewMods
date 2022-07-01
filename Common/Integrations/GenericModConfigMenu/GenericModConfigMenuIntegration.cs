@@ -1,4 +1,4 @@
-﻿namespace Common.Integrations.GenericModConfigMenu;
+namespace StardewMods.Common.Integrations.GenericModConfigMenu;
 
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,6 @@
-﻿namespace XSPlus.Features;
+#nullable disable
+
+namespace XSPlus.Features;
 
 using Common.UI;
 using Microsoft.Xna.Framework;

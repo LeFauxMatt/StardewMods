@@ -1,4 +1,6 @@
-﻿namespace StardewMods.FuryCore.Interfaces;
+#nullable disable
+
+namespace StardewMods.FuryCore.Interfaces;
 
 /// <summary>
 ///     An <see cref="IModService" /> which has not been instantiated yet.

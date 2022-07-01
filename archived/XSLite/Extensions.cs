@@ -1,4 +1,6 @@
-﻿namespace XSLite;
+#nullable disable
+
+namespace XSLite;
 
 using System.Linq;
 using Microsoft.Xna.Framework;

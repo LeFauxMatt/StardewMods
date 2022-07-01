@@ -1,4 +1,6 @@
-﻿namespace XSPlus.Services;
+#nullable disable
+
+namespace XSPlus.Services;
 
 using System.Linq;
 using System.Text;

@@ -1,4 +1,6 @@
-﻿namespace HelpForHire;
+#nullable disable
+
+namespace HelpForHire;
 
 using StardewModdingAPI;
 

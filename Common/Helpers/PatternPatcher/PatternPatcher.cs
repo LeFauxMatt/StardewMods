@@ -1,4 +1,4 @@
-﻿namespace Common.Helpers.PatternPatcher;
+namespace StardewMods.Common.Helpers.PatternPatcher;
 
 using System;
 using System.Collections.Generic;
@@ -22,22 +22,22 @@ internal class PatternPatcher<TItem> : IPatternPatcher<TItem>
     /// <inheritdoc />
     public int TotalPatches { get; private set; }
 
-    private IEnumerator<TItem> CodeEnum { get; set; }
+    private IEnumerator<TItem>? CodeEnum { get; set; }
 
     private Func<TItem, TItem, bool> Comparer { get; }
 
-    private PatternPatch CurrentPatch { get; set; }
+    private PatternPatch? CurrentPatch { get; set; }
 
     private bool Done { get; set; }
 
     private IList<TItem> ItemBuffer { get; } = new List<TItem>();
 
-    private PatternPatch LastPatch { get; set; }
+    private PatternPatch? LastPatch { get; set; }
 
     private Queue<PatternPatch> Patches { get; } = new();
 
     /// <inheritdoc />
-    public IPatternPatcher<TItem> AddPatch(Action<IList<TItem>> patch, params TItem[] patternBlock)
+    public IPatternPatcher<TItem> AddPatch(Action<IList<TItem>>? patch, params TItem[] patternBlock)
     {
         this.LastPatch = new(patternBlock, patch, false);
         this.Patches.Enqueue(this.LastPatch);
@@ -99,7 +99,7 @@ internal class PatternPatcher<TItem> : IPatternPatcher<TItem>
         }
 
         // Does not match current pattern
-        if (!this.Comparer(this.CodeEnum.Current, item))
+        if (!this.Comparer(this.CodeEnum!.Current, item))
         {
             this.CodeEnum.Reset();
             this.CodeEnum.MoveNext();
@@ -138,12 +138,12 @@ internal class PatternPatcher<TItem> : IPatternPatcher<TItem>
         // Add extra copies for repeat-N times patches
         while (--repeat >= 0)
         {
-            this.Patches.Enqueue(new(this.LastPatch.Pattern, this.LastPatch.Patch, false));
+            this.Patches.Enqueue(new(this.LastPatch!.Pattern, this.LastPatch.Patch, false));
             this.TotalPatches++;
         }
 
         return this;
     }
 
-    private record PatternPatch(IEnumerable<TItem> Pattern, Action<IList<TItem>> Patch, bool Loop);
+    private record PatternPatch(IEnumerable<TItem> Pattern, Action<IList<TItem>>? Patch, bool Loop);
 }

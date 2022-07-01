@@ -1,23 +1,25 @@
-﻿namespace StardewMods.FuryCore.UI;
+#nullable disable
+
+namespace StardewMods.FuryCore.UI;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Common.Helpers;
 using Common.Helpers.ItemRepository;
-using Common.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.FuryCore.Helpers;
 using StardewMods.FuryCore.Interfaces;
 using StardewMods.FuryCore.Interfaces.CustomEvents;
+using StardewMods.FuryCore.Models;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 // TODO: Add clear all button
-
 /// <summary>
 ///     A menu for selecting items.
 /// </summary>
