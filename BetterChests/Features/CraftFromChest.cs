@@ -41,7 +41,7 @@ internal class CraftFromChest : IFeature
                   && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
                   && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true && Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine"))
                   && storage.Parent is not null
-                  && RangeHelper.IsWithinRangeOfPlayer(storage.StashToChest, storage.StashToChestDistance, storage.Parent, storage.Position)
+                  && RangeHelper.IsWithinRangeOfPlayer(storage.CraftFromChest, storage.CraftFromChestDistance, storage.Parent, storage.Position)
             select storage;
     }
 

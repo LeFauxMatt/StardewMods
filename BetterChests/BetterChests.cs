@@ -2,6 +2,7 @@ namespace StardewMods.BetterChests;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -87,7 +88,7 @@ public class BetterChests : Mod
         this.Features.Add(nameof(AutoOrganize), new(AutoOrganize.Init(this.Helper), () => this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled));
         this.Features.Add(nameof(BetterColorPicker), new(BetterColorPicker.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled));
         this.Features.Add(nameof(BetterItemGrabMenu), new(BetterItemGrabMenu.Init(this.Helper, this.Config), () => true));
-        this.Features.Add(nameof(BetterShippingBin), new(BetterShippingBin.Init(this.Helper), () => true));
+        this.Features.Add(nameof(BetterShippingBin), new(BetterShippingBin.Init(this.Helper), () => this.Config.BetterShippingBin));
         this.Features.Add(nameof(CarryChest), new(CarryChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled));
         this.Features.Add(nameof(CategorizeChest), new(CategorizeChest.Init(this.Helper), () => this.Config.CategorizeChest));
         this.Features.Add(nameof(LabelChest), new(LabelChest.Init(this.Helper), () => this.Config.LabelChest));
@@ -134,9 +135,14 @@ public class BetterChests : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        foreach (var (feature, condition) in this.Features.Values)
+        foreach (var (featureName, (feature, condition)) in this.Features)
         {
-            if (condition())
+            if (IntegrationHelper.TestConflicts(featureName, out var mods))
+            {
+                var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
+                Log.Warn(string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{featureName}", modList));
+            }
+            else if (condition())
             {
                 feature.Activate();
             }

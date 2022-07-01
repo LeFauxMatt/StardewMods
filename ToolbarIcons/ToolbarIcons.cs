@@ -69,7 +69,7 @@ public class ToolbarIcons : Mod
     {
         if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
         {
-            e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
+            e.LoadFrom(() => new(), AssetLoadPriority.Exclusive);
         }
     }
 
@@ -178,7 +178,7 @@ public class ToolbarIcons : Mod
 
         var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
         var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < (Game1.viewport.Height / 2) + Game1.tileSize;
+        var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
         var y = alignBottom
             ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
             : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
@@ -215,10 +215,10 @@ public class ToolbarIcons : Mod
     {
         var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
         var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var x = (Game1.uiViewport.Width - (Game1.tileSize * 12)) / 2;
+        var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
         if (y == -1)
         {
-            alignBottom = Game1.options.pinToolbarToggle || playerLocalY < (Game1.viewport.Height / 2) + Game1.tileSize;
+            alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
             y = alignBottom
                 ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
                 : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;

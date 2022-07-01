@@ -16,6 +16,7 @@ using StardewValley.Menus;
 internal class DisplayedItems
 {
     private ClickableTextureComponent? _downArrow;
+    private EventHandler? _itemsRefreshed;
     private int _offset;
     private ClickableTextureComponent? _upArrow;
 
@@ -48,6 +49,15 @@ internal class DisplayedItems
         this.Menu.inventory[bottomSlot].rightNeighborID = this.DownArrow.myID;
         this.UpArrow.downNeighborID = this.DownArrow.myID;
         this.DownArrow.upNeighborID = this.UpArrow.myID;
+    }
+
+    /// <summary>
+    ///     Raised after the displayed items is refreshed.
+    /// </summary>
+    public event EventHandler ItemsRefreshed
+    {
+        add => this._itemsRefreshed += value;
+        remove => this._itemsRefreshed -= value;
     }
 
     /// <summary>
@@ -219,11 +229,33 @@ internal class DisplayedItems
                 ? this.Menu.actualInventory.IndexOf(this.Items[index])
                 : int.MaxValue).ToString();
         }
+
+        this.Invoke();
     }
 
     private bool Highlight(Item item)
     {
         return this.HighlightMethod(item) && (!this.Highlighters.Any() || this.Highlighters.All(matcher => matcher.Matches(item)));
+    }
+
+    private void Invoke()
+    {
+        if (this._itemsRefreshed is null)
+        {
+            return;
+        }
+
+        foreach (var handler in this._itemsRefreshed.GetInvocationList())
+        {
+            try
+            {
+                handler.DynamicInvoke(this, EventArgs.Empty);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
     }
 
     private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)

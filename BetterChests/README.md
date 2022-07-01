@@ -6,12 +6,14 @@ Adds enhanced chest features to the game.
 
 * [Features](#features)
     * [Auto Organize](#auto-organize)
+    * [Better Color Picker](#better-color-picker)
+    * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
     * [Categorize Chest](#categorize-chest)
     * [Chest Menu Tabs](#chest-menu-tabs)
     * [Collect Items](#collect-items)
+    * [Configurator](#configurator)
     * [Craft From Chest](#craft-from-chest)
-    * [Custom Color Picker](#custom-color-picker)
     * [Filter Items](#filter-items)
     * [Label Chest](#label-chest)
     * [Open Held Chest](#open-held-chest)
@@ -32,6 +34,7 @@ Adds enhanced chest features to the game.
     * [Sort By Values](#sort-by-values)
 * [Mod Integrations](#mod-integrations)
     * [Automate](#automate)
+    * [Better Crafting](#better-crafting)
     * [Horse Overhaul](#horse-overhaul)
 * [Customization](#customization)
     * [Custom Chests](#custom-chests)
@@ -52,6 +55,26 @@ It also applies your [Organize Chest](#organize-chest) rules at the end.
 | Config          | Description                         | Default Value | Other Value(s)                                                       |
 |:----------------|:------------------------------------|:--------------|:---------------------------------------------------------------------|
 | AutoOrganize    | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+
+### Better Color Picker
+
+Replaces the Chest Color Picker with a more precise version that lets you pick a color with sliders for hue, saturation,
+and lightness.
+
+| Config                | Description                                   | Default Value | Other Value(s)                        |
+|:----------------------|:----------------------------------------------|:--------------|:--------------------------------------|
+| CustomColorPicker     | Enables the Custom Color Picker feature.      | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| CustomColorPickerArea | Which side will the Color Picker be added to. | `"Right"`     | `"Left"`                              |
+
+1. See [Option Values](#option-values).
+
+### Better Shipping Bin
+
+Relaunches the Shipping Bin menu as a regular Chest inventory menu so that items can be retrieved.
+
+| Config            | Description                              | Default Value | Other Value(s)      |
+|:------------------|:-----------------------------------------|:--------------|:--------------------|
+| BetterShippingBin | Enables the Better Shipping Bin feature. | `"true"`      | `"true"`, `"false"` |
 
 ### Carry Chest
 
@@ -104,6 +127,17 @@ bypassing your inventory.<sup>1</sup>
 1. Only items assigned from [Categorize Chest](#categorize-chest) will be collected.
 2. See [Option Values](#option-values).
 
+### Configurator
+
+Configure chests individually using a hotkey, configuration tool, or toolbar icon.
+
+| Config                         | Description                                               | Default Value | Other Value(s)                            |
+|:-------------------------------|:----------------------------------------------------------|:--------------|:------------------------------------------|
+| Configurator                   | Enables the Configurator feature.                         | `true`        | `true`, `false`                           |
+| Configure                      | Assigns the keybind for configuring a chest.              | `"End"`       | Any valid button code.<sup>1</sup>        |
+
+1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
 ### Craft From Chest
 
 Hit a configurable key to bring up a crafting menu that uses items stored in nearby chests.
@@ -119,18 +153,6 @@ Hit a configurable key to bring up a crafting menu that uses items stored in nea
 2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 3. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
 4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
-
-### Custom Color Picker
-
-Replaces the Chest Color Picker with a more precise version that lets you pick a color with sliders for hue, saturation,
-and lightness.
-
-| Config                | Description                                   | Default Value | Other Value(s)                        |
-|:----------------------|:----------------------------------------------|:--------------|:--------------------------------------|
-| CustomColorPicker     | Enables the Custom Color Picker feature.      | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| CustomColorPickerArea | Which side will the Color Picker be added to. | `"Right"`     | `"Left"`                              |
-
-1. See [Option Values](#option-values).
 
 ### Filter Items
 

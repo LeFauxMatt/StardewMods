@@ -570,8 +570,13 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
-    public bool FilterMatches(Item item)
+    public bool FilterMatches(Item? item)
     {
+        if (item is null)
+        {
+            return false;
+        }
+
         if (this.FilterItems == FeatureOption.Disabled || !this.FilterItemsList.Any())
         {
             return true;

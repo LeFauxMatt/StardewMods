@@ -71,8 +71,7 @@ internal class AutoOrganize : IFeature
 
         foreach (var (item, fromStorage) in items.ToList())
         {
-            if (storages.Any(storage => storage.FilterMatches(item)
-                                        && storage.StashItem(item) is null))
+            if (storages.Any(storage => storage.FilterMatches(item) && storage.StashItem(item) is null))
             {
                 fromStorage.Items.Remove(item);
             }

@@ -1,8 +1,8 @@
 # Easy Access Change Log
 
-## 1.3.0 (Unreleased)
+## 1.3.0 (July 1, 2022)
 
-* Updated to SMAPI 3.14.0.
+* Updated to SMAPI 3.15.0.
 * Removed dependency on FuryCore.
 
 ### Changed

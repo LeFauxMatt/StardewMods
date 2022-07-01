@@ -119,7 +119,7 @@ internal class ResizeChestMenu : IFeature
     {
         switch (menu)
         {
-            case ItemGrabMenu { context: null }:
+            case ItemGrabMenu { context: null } or not ItemGrabMenu:
                 ResizeChestMenu.Instance!.Context = null;
                 ResizeChestMenu.Instance.Storage = null;
                 return 0;

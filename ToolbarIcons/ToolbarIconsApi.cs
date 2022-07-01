@@ -24,7 +24,9 @@ public class ToolbarIconsApi : IToolbarIconsApi
         this.Icons = icons;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Raised after a toolbar icon is pressed.
+    /// </summary>
     public event EventHandler<string> ToolbarIconPressed
     {
         add => this._toolbarIconPressed += value;

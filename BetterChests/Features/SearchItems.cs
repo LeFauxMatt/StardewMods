@@ -149,15 +149,15 @@ internal class SearchItems : IFeature
         }
     }
 
-    private static int GetExtraSpace(ItemGrabMenu itemGrabMenu)
+    private static int GetExtraSpace(MenuWithInventory menu)
     {
-        switch (itemGrabMenu)
+        switch (menu)
         {
-            case { context: null }:
+            case ItemGrabMenu { context: null } or not ItemGrabMenu:
                 SearchItems.Instance!.Context = null;
                 SearchItems.Instance.Storage = null;
                 return 0;
-            case { context: { } context } when !ReferenceEquals(SearchItems.Instance!.Context, context):
+            case ItemGrabMenu { context: { } context } when !ReferenceEquals(SearchItems.Instance!.Context, context):
                 SearchItems.Instance.Context = context;
                 SearchItems.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
                 break;

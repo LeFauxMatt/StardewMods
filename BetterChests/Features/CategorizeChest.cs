@@ -122,7 +122,7 @@ internal class CategorizeChest : IFeature
 
                 return;
 
-            case ItemGrabMenu { context: { } context } when StorageHelper.TryGetOne(context, out var storage):
+            case ItemGrabMenu { context: { } context, shippingBin: false } when StorageHelper.TryGetOne(context, out var storage):
                 (x, y) = Game1.getMousePosition(true);
                 if (this.ConfigureButton.containsPoint(x, y))
                 {
@@ -161,6 +161,11 @@ internal class CategorizeChest : IFeature
                 if (itemGrabMenu.fillStacksButton is not null)
                 {
                     buttons.Add(itemGrabMenu.fillStacksButton);
+                }
+
+                if (!buttons.Any())
+                {
+                    return;
                 }
 
                 buttons = buttons.OrderBy(button => button.bounds.Y).ToList();
@@ -208,7 +213,7 @@ internal class CategorizeChest : IFeature
                 itemSelectionMenu.drawMouse(e.SpriteBatch);
                 return;
 
-            case ItemGrabMenu { context: { } context } itemGrabMenu when StorageHelper.TryGetOne(context, out _):
+            case ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu when StorageHelper.TryGetOne(context, out _):
                 this.ConfigureButton.draw(e.SpriteBatch);
                 itemGrabMenu.drawMouse(e.SpriteBatch);
                 return;

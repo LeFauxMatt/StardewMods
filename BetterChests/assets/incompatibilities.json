@@ -1,0 +1,45 @@
+﻿{
+  "AutoOrganize": [
+    "AxesOfEvil.DeliveryService"
+  ],
+  "BetterColorPicker": [
+    "berkayylmao.ChestEx"
+  ],
+  "BetterItemGrabMenu": [
+    "berkayylmao.ChestEx"
+  ],
+  "BetterShippingBin": [
+    "Pathoschild.ChestsAnywhere",
+    "MindMeltMax.BetterShipping"
+  ],
+  "CarryChest": [
+    "spacechase0.CarryChest"
+  ],
+  "ChestMenuTabs": [
+    "berkayylmao.ChestEx"
+  ],
+  "CraftFromChest": [
+    "aEnigma.ConvenientChests"
+  ],
+  "LabelChest": [
+    "Pathoschild.ChestsAnywhere",
+    "SPDChestLabel"
+  ],
+  "OrganizeChest": [
+    "Jower.BetterSort"
+  ],
+  "ResizeChest": [
+    "berkayylmao.ChestEx"
+  ],
+  "ResizeChestMenu": [
+    "berkayylmao.ChestEx"
+  ],
+  "SearchItems": [
+    "berkayylmao.ChestEx"
+  ],
+  "StashToChest": [
+    "aEnigma.ConvenientChests",
+    "ZackHill.StashItems",
+    "gaussfire.ConvenientInventory"
+  ]
+}

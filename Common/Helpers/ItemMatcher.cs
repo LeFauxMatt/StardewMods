@@ -55,8 +55,13 @@ public class ItemMatcher : ObservableCollection<string>
     /// </summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if item matches any search phrase unless a NotMatch search phrase was matched.</returns>
-    public bool Matches(Item item)
+    public bool Matches(Item? item)
     {
+        if (item is null)
+        {
+            return false;
+        }
+
         if (this.Count == 0)
         {
             return true;

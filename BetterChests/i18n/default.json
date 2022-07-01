@@ -19,6 +19,8 @@
   // Feature Config
   "config.auto-organize.name": "Auto Organize",
   "config.auto-organize.tooltip": "Automatically stash items into higher priority chests each night.",
+  "config.better-shipping-bin.name": "Better Shipping Bin",
+  "config.better-shipping-bin.tooltip": "Relaunches the Shipping Bin as a regular Chest Menu so that items can be retrieved.",
   "config.carry-chest.name": "Carry Chest",
   "config.carry-chest.tooltip": "Allows chests placed in the world to be picked up with their items.",
   "config.carry-chest-limit.name": "Carry Chest Limit",
@@ -151,5 +153,7 @@
   "tabs.Seeds.name": "Seeds",
   // Objects
   "tool.config-tool.name": "Config Tool",
-  "tool.config-tool.description": "This tool can be used to configure game objects."
+  "tool.config-tool.description": "This tool can be used to configure game objects.",
+  // Warnings
+  "warn.incompatibility.disabled": "{0} is automatically disabled with the following mod(s): {1}"
 }

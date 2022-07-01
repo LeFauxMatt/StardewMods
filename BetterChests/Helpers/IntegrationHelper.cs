@@ -35,6 +35,7 @@ internal class IntegrationHelper
         this._betterCrafting = new(helper.ModRegistry);
         this._gmcm = new(helper.ModRegistry);
         this._toolbarIcons = new(helper.ModRegistry);
+        this.Incompatibilities = this.Helper.ModContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
     }
 
     /// <summary>
@@ -74,6 +75,8 @@ internal class IntegrationHelper
     private ModConfig Config { get; }
 
     private IModHelper Helper { get; }
+
+    private Dictionary<string, HashSet<string>> Incompatibilities { get; }
 
     /// <summary>
     ///     Gets all storages placed in a particular location.
@@ -123,6 +126,30 @@ internal class IntegrationHelper
     public static IntegrationHelper Init(IModHelper helper, ModConfig config)
     {
         return IntegrationHelper.Instance ??= new(helper, config);
+    }
+
+    /// <summary>
+    ///     Checks if any known incompatibilities.
+    /// </summary>
+    /// <param name="featureName">The feature to check.</param>
+    /// <param name="mods">The list of incompatible mods.</param>
+    /// <returns>Returns true if there is an incompatibility.</returns>
+    public static bool TestConflicts(
+        string featureName,
+        [NotNullWhen(true)] out List<IModInfo?>? mods)
+    {
+        if (!IntegrationHelper.Instance!.Incompatibilities.TryGetValue(featureName, out var modIds))
+        {
+            mods = null;
+            return false;
+        }
+
+        mods = (
+            from modId in modIds
+            where IntegrationHelper.Instance.Helper.ModRegistry.IsLoaded(modId)
+            select IntegrationHelper.Instance.Helper.ModRegistry.Get(modId)).ToList();
+
+        return mods.Any();
     }
 
     /// <summary>

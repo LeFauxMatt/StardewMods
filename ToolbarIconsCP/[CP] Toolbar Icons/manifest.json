@@ -1,11 +1,11 @@
 {
-  "Name": "Toolbar Icons for FuryCore",
+  "Name": "[CP] Toolbar Icons",
   "Author": "furyx639",
-  "Version": "1.1.0",
-  "Description": "Adds toolbar icons to access other mods.",
-  "UniqueID": "furyx639.ToolbarIconsForFuryCore",
+  "Version": "2.0.0",
+  "Description": "Adds toolbar icons as shortcuts to other popular mods.",
+  "UniqueID": "furyx639.ToolbarIconsCP",
   "UpdateKeys": [
-    "Nexus:11026"
+    "Nexus:11026@CP"
   ],
   "ContentPackFor": {
     "UniqueID": "Pathoschild.ContentPatcher"

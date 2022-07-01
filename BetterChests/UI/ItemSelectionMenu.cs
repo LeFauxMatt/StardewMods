@@ -42,13 +42,12 @@ internal class ItemSelectionMenu : ItemGrabMenu
     {
         this.Selected = new(matcher);
         this.Selection = matcher;
-        this.inventory.inventory = this.Tags.ToList();
-        this.RepositionTags();
 
         this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items.ToList();
         this.DisplayedItems = BetterItemGrabMenu.ItemsToGrabMenu!;
         this.DisplayedItems.AddHighlighter(this.Selection);
         this.DisplayedItems.AddTransformer(this.SortItems);
+        this.DisplayedItems.ItemsRefreshed += this.OnItemsRefreshed;
         this.DisplayedItems.RefreshItems();
     }
 
@@ -94,14 +93,24 @@ internal class ItemSelectionMenu : ItemGrabMenu
     {
         get
         {
+            var tags = (
+                from item in this.DisplayedItems.Items
+                from tag in item.GetContextTags()
+                select tag).ToList();
+
             if (!this.Selected.Any())
             {
-                return ItemSelectionMenu.AllTags;
+                return
+                    from tag in ItemSelectionMenu.AllTags
+                    where tags.Contains(tag.name)
+                    select tag;
             }
 
-            return ItemSelectionMenu.AllTags
-                                    .OrderBy(cc => this.Selected.Contains(cc.name) ? 0 : 1)
-                                    .ThenBy(cc => cc.name);
+            return
+                from tag in ItemSelectionMenu.AllTags
+                where this.Selected.Contains(tag.name) || tags.Contains(tag.name)
+                orderby this.Selected.Contains(tag.name) ? 0 : 1, tag.name
+                select tag;
         }
     }
 
@@ -282,7 +291,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
             }
 
             this.DisplayedItems.RefreshItems();
-            this.RepositionTags();
         }
     }
 
@@ -317,7 +325,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.DropDown = null;
     }
 
-    private void RepositionTags()
+    private void OnItemsRefreshed(object? sender, EventArgs e)
     {
         foreach (var tag in this.Selected.Where(tag => !ItemSelectionMenu.AllTags.Any(cc => cc.name.Equals(tag))))
         {

@@ -91,7 +91,7 @@ public interface IStorageObject : IStorageData
     /// </summary>
     /// <param name="item">The <see cref="Item" /> to test.</param>
     /// <returns>Returns true if the <see cref="Item" /> matches the filters.</returns>
-    public bool FilterMatches(Item item);
+    public bool FilterMatches(Item? item);
 
     /// <summary>
     ///     Grabs an item from a player into this storage container.
