@@ -30,16 +30,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomationFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\BetterCraftingIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\IBetterCraftingApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\EasyAccessIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\IEasyAccessApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\IEvenBetterRngApi.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\FuryCoreIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\IFuryCoreApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />
