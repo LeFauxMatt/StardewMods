@@ -34,6 +34,8 @@
   "config.carry-chest-slow.value": "-{0}x speed",
   "config.categorize-chest.name": "Categorize Chest",
   "config.categorize-chest.tooltip": "Organize chests by assigning categories of items (stashing will use these categories).",
+  "config.chest-finder.name": "Chest Finder",
+  "config.chest-finder.tooltip": "Search for chest(s) containing the item you're looking for.",
   "config.chest-label.name": "Chest Label",
   "config.chest-label.tooltip": "The label that is assigned to this chest.",
   "config.chest-menu-tabs.name": "Chest Menu Tabs",
@@ -101,6 +103,8 @@
   "config.range-distance.value-one": "1 tile",
   "config.range-distance.value-many": "{0} tiles",
   // Controls Config
+  "config.find-chest.name": "Find Chest",
+  "config.find-chest.tooltip": "Key to bring up the chest finder search bar.",
   "config.lock-slot.name": "Lock Item Slot",
   "config.lock-slot.tooltip": "Key to lock an item slot so that the item in it will not be stashed.",
   "config.open-crafting.name": "Open Crafting Button",

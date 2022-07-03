@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.1.0 (Unreleased)
+
+* Added Chest Finder.
+
 ## 2.0.3 (July 5, 2022)
 
 * Added alert if FuryCore is installed.

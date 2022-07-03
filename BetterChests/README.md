@@ -10,6 +10,7 @@ Adds enhanced chest features to the game.
     * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
     * [Categorize Chest](#categorize-chest)
+    * [Chest Finder](#chest-finder)
     * [Chest Menu Tabs](#chest-menu-tabs)
     * [Collect Items](#collect-items)
     * [Configurator](#configurator)
@@ -97,6 +98,17 @@ Categorize Chest allows you to assign item categories to chests so that only tho
 | CategorizeChest | Enables the Categorize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
 
 1. See [Option Values](#option-values).
+
+### Chest Finder
+
+Search for which chest(s) have the item you're looking for.
+
+| Config      | Description                        | Default Value                         | Other Value(s)                     |
+|:------------|:-----------------------------------|---------------------------------------|:-----------------------------------|
+| ChestFinder | Enables the Chest Finder feature.  | `true`                                | `true', 'false'                    |
+| FindChest   | Assigns a keybind to find a chest. | `"LeftControl + F, RightControl + F"` | Any valid button code.<sup>1</sup> |
+
+1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Chest Menu Tabs
 
