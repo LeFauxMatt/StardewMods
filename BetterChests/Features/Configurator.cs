@@ -230,7 +230,7 @@ internal class Configurator : IFeature
         }
 
         this.Helper.Input.Suppress(e.Button);
-        ConfigHelper.SetupSpecificConfig(storage);
+        ConfigHelper.SetupSpecificConfig(storage.Data);
         this.IsActive = true;
     }
 
@@ -245,7 +245,7 @@ internal class Configurator : IFeature
         }
 
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.Configure);
-        ConfigHelper.SetupSpecificConfig(storage);
+        ConfigHelper.SetupSpecificConfig(storage.Data);
         this.IsActive = true;
     }
 
@@ -269,7 +269,7 @@ internal class Configurator : IFeature
             && Game1.player.CurrentItem is SObject obj
             && StorageHelper.TryGetOne(obj, out var storage))
         {
-            ConfigHelper.SetupSpecificConfig(storage);
+            ConfigHelper.SetupSpecificConfig(storage.Data);
             this.IsActive = true;
         }
     }

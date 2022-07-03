@@ -46,7 +46,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items.ToList();
         this.DisplayedItems = BetterItemGrabMenu.ItemsToGrabMenu!;
         this.DisplayedItems.AddHighlighter(this.Selection);
-        this.DisplayedItems.AddTransformer(this.SortItems);
+        this.DisplayedItems.AddTransformer(this.SortBySelection);
         this.DisplayedItems.ItemsRefreshed += this.OnItemsRefreshed;
         this.DisplayedItems.RefreshItems();
     }
@@ -358,7 +358,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
     }
 
-    private IEnumerable<Item> SortItems(IEnumerable<Item> items)
+    private IEnumerable<Item> SortBySelection(IEnumerable<Item> items)
     {
         return items.OrderBy(item => this.Selection.Matches(item) ? 0 : 1);
     }

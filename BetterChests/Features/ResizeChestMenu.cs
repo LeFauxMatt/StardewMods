@@ -146,14 +146,16 @@ internal class ResizeChestMenu : IFeature
                 break;
         }
 
+        var menuCapacity = ResizeChestMenu.Instance?.Storage?.MenuCapacity ?? capacity;
+        var menuRows = ResizeChestMenu.Instance?.Storage?.MenuRows ?? rows;
         return new(
             x,
             y,
             playerInventory,
             actualInventory,
             highlightMethod,
-            ResizeChestMenu.Instance?.Storage?.MenuCapacity ?? capacity,
-            ResizeChestMenu.Instance?.Storage?.MenuRows ?? rows,
+            menuCapacity > 0 ? menuCapacity : capacity,
+            menuRows > 0 ? menuRows : rows,
             horizontalGap,
             verticalGap,
             drawSlots);

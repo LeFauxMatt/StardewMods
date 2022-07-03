@@ -34,6 +34,10 @@ internal class BetterItemGrabMenu : IFeature
 
     private readonly PerScreen<Stack<IClickableMenu>> _overlaidMenus = new(() => new());
 
+    private readonly PerScreen<bool> _refreshInventory = new();
+
+    private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
+
     private BetterItemGrabMenu(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
@@ -51,6 +55,11 @@ internal class BetterItemGrabMenu : IFeature
                     AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_organizeItemsInList_postfix),
                     PatchType.Postfix),
             });
     }
@@ -71,6 +80,24 @@ internal class BetterItemGrabMenu : IFeature
     {
         get => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value;
         set => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether to refresh inventory items on the next tick.
+    /// </summary>
+    public static bool RefreshInventory
+    {
+        get => BetterItemGrabMenu.Instance!._refreshInventory.Value;
+        set => BetterItemGrabMenu.Instance!._refreshInventory.Value = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether to refresh chest items on the next tick.
+    /// </summary>
+    public static bool RefreshItemsToGrabMenu
+    {
+        get => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value;
+        set => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value = value;
     }
 
     private static BetterItemGrabMenu? Instance { get; set; }
@@ -131,6 +158,7 @@ internal class BetterItemGrabMenu : IFeature
             this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
             this.Helper.Events.Display.RenderedActiveMenu += BetterItemGrabMenu.OnRenderedActiveMenu;
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
+            this.Helper.Events.GameLoop.UpdateTicked += BetterItemGrabMenu.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
             this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
@@ -150,6 +178,7 @@ internal class BetterItemGrabMenu : IFeature
             this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
             this.Helper.Events.Display.RenderedActiveMenu -= BetterItemGrabMenu.OnRenderedActiveMenu;
             this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
+            this.Helper.Events.GameLoop.UpdateTicked -= BetterItemGrabMenu.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
             this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
@@ -225,22 +254,43 @@ internal class BetterItemGrabMenu : IFeature
         {
             if (ReferenceEquals(context, BetterItemGrabMenu.Instance.Menu?.context))
             {
-                BetterItemGrabMenu.Inventory = new(inventory)
+                BetterItemGrabMenu.Inventory = new(inventory, false)
                 {
                     Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0,
                 };
-                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu)
+                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true)
                 {
                     Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0,
                 };
             }
             else
             {
-                BetterItemGrabMenu.Inventory = new(inventory);
-                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu);
+                BetterItemGrabMenu.Inventory = new(inventory, false);
+                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true);
             }
 
             BetterItemGrabMenu.Instance.Menu = itemGrabMenu;
+        }
+
+        __instance.setBackgroundTransparency(false);
+    }
+
+    private static void ItemGrabMenu_organizeItemsInList_postfix(IList<Item> items)
+    {
+        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(itemGrabMenu.inventory.actualInventory, items))
+        {
+            BetterItemGrabMenu.RefreshInventory = true;
+            return;
+        }
+
+        if (ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items))
+        {
+            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         }
     }
 
@@ -251,8 +301,7 @@ internal class BetterItemGrabMenu : IFeature
             return;
         }
 
-        BetterItemGrabMenu.Inventory?.RefreshItems();
-        BetterItemGrabMenu.ItemsToGrabMenu?.RefreshItems();
+        BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
     }
 
     private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
@@ -262,8 +311,7 @@ internal class BetterItemGrabMenu : IFeature
             return;
         }
 
-        BetterItemGrabMenu.Inventory?.RefreshItems();
-        BetterItemGrabMenu.ItemsToGrabMenu?.RefreshItems();
+        BetterItemGrabMenu.RefreshInventory = true;
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -275,6 +323,33 @@ internal class BetterItemGrabMenu : IFeature
 
         BetterItemGrabMenu.ItemsToGrabMenu?.Draw(e.SpriteBatch);
         BetterItemGrabMenu.Inventory?.Draw(e.SpriteBatch);
+    }
+
+    private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+    {
+        if (!BetterItemGrabMenu.RefreshInventory && !BetterItemGrabMenu.RefreshItemsToGrabMenu)
+        {
+            return;
+        }
+
+        var refreshInventory = BetterItemGrabMenu.RefreshInventory;
+        var refreshItemsToGrabMenu = BetterItemGrabMenu.RefreshItemsToGrabMenu;
+        BetterItemGrabMenu.RefreshInventory = false;
+        BetterItemGrabMenu.RefreshItemsToGrabMenu = false;
+        if (Game1.activeClickableMenu is not ItemGrabMenu)
+        {
+            return;
+        }
+
+        if (refreshInventory)
+        {
+            BetterItemGrabMenu.Inventory?.RefreshItems();
+        }
+
+        if (refreshItemsToGrabMenu)
+        {
+            BetterItemGrabMenu.ItemsToGrabMenu?.RefreshItems();
+        }
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -290,12 +365,12 @@ internal class BetterItemGrabMenu : IFeature
             case SButton.MouseLeft when this.OverlaidMenus.Any():
                 this.OverlaidMenus.Last().receiveLeftClick(x, y);
                 break;
+            case SButton.MouseRight when this.OverlaidMenus.Any():
+                this.OverlaidMenus.Last().receiveRightClick(x, y);
+                break;
             case SButton.MouseLeft when BetterItemGrabMenu.Inventory?.LeftClick(x, y) == true:
                 break;
             case SButton.MouseLeft when BetterItemGrabMenu.ItemsToGrabMenu?.LeftClick(x, y) == true:
-                break;
-            case SButton.MouseRight when this.OverlaidMenus.Any():
-                this.OverlaidMenus.Last().receiveRightClick(x, y);
                 break;
             default:
                 return;

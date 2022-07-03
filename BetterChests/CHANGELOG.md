@@ -1,6 +1,13 @@
 ﻿# Better Chests Change Log
 
-## 2.0.1 (Unreleased)
+## 2.0.2 (July 2, 2022)
+
+* Fixed CraftFromChest and StashToChest not working with Sheds/Fridges.
+* Fixed wall of red text occurring when leaving farm.
+* Fixed items not being in sync after organizing.
+* Fixed error when opening up chests from ChestsAnywhere hotkey.
+
+## 2.0.1 (July 1, 2022)
 
 * Fixed Configure button being placed over community center.
 

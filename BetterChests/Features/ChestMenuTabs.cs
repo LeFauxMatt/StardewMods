@@ -1,9 +1,7 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -12,9 +10,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -23,8 +18,6 @@ using StardewValley.Menus;
 /// </summary>
 internal class ChestMenuTabs : IFeature
 {
-    private const string Id = "furyx639.BetterChests/ChestMenuTabs";
-
     private static Dictionary<string, ClickableTextureComponent>? CachedTabs;
 
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
@@ -35,16 +28,6 @@ internal class ChestMenuTabs : IFeature
     {
         this.Helper = helper;
         this.Config = config;
-        HarmonyHelper.AddPatches(
-            ChestMenuTabs.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
-                    typeof(ChestMenuTabs),
-                    nameof(ChestMenuTabs.ItemGrabMenu_constructor_postfix),
-                    PatchType.Postfix),
-            });
     }
 
     private static ChestMenuTabs? Instance { get; set; }
@@ -128,6 +111,7 @@ internal class ChestMenuTabs : IFeature
             this.ItemMatcher.Clear();
             if (value == -1 || this.Tabs is null || !this.Tabs.Any())
             {
+                BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
                 return;
             }
 
@@ -137,6 +121,8 @@ internal class ChestMenuTabs : IFeature
             {
                 this.ItemMatcher.Add(tag);
             }
+
+            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         }
     }
 
@@ -170,7 +156,6 @@ internal class ChestMenuTabs : IFeature
         if (!this.IsActivated)
         {
             this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(ChestMenuTabs.Id);
             this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
             this.Helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
@@ -186,7 +171,6 @@ internal class ChestMenuTabs : IFeature
         if (this.IsActivated)
         {
             this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(ChestMenuTabs.Id);
             this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
             this.Helper.Events.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
@@ -196,11 +180,9 @@ internal class ChestMenuTabs : IFeature
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
+    private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
     {
-        __instance.setBackgroundTransparency(false);
+        return items.Where(this.ItemMatcher.Matches);
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -287,10 +269,7 @@ internal class ChestMenuTabs : IFeature
             prevTab = tab;
         }
 
-        if (BetterItemGrabMenu.ItemsToGrabMenu is not null)
-        {
-            BetterItemGrabMenu.ItemsToGrabMenu.AddFilter(this.ItemMatcher);
-        }
+        BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterByTab);
     }
 
     private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)

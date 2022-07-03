@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.BetterChests.Features;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Helpers;
 using StardewValley;
@@ -24,9 +25,11 @@ internal class DisplayedItems
     ///     Initializes a new instance of the <see cref="DisplayedItems" /> class.
     /// </summary>
     /// <param name="menu">The <see cref="InventoryMenu" /> to attach to.</param>
-    public DisplayedItems(InventoryMenu menu)
+    /// <param name="topMenu">Indicates if this is the top menu.</param>
+    public DisplayedItems(InventoryMenu menu, bool topMenu)
     {
         this.Menu = menu;
+        this.TopMenu = topMenu;
         this.Items = this.Menu.actualInventory
                          .Take(menu.capacity)
                          .ToList();
@@ -90,9 +93,7 @@ internal class DisplayedItems
 
     private IList<Item> ActualInventory
     {
-        get => this.Filters.Any()
-            ? this.Menu.actualInventory.Where(item => this.Filters.All(matcher => matcher.Matches(item))).ToList()
-            : this.Menu.actualInventory;
+        get => this.Menu.actualInventory;
     }
 
     private int Columns { get; }
@@ -109,11 +110,11 @@ internal class DisplayedItems
         };
     }
 
-    private List<ItemMatcher> Filters { get; } = new();
-
     private List<ItemMatcher> Highlighters { get; } = new();
 
     private InventoryMenu.highlightThisItem HighlightMethod { get; }
+
+    private bool TopMenu { get; }
 
     private List<Func<IEnumerable<Item>, IEnumerable<Item>>> Transformers { get; } = new();
 
@@ -127,16 +128,6 @@ internal class DisplayedItems
         {
             myID = 5318009,
         };
-    }
-
-    /// <summary>
-    ///     Adds a <see cref="ItemMatcher" /> to filter inventory.
-    /// </summary>
-    /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
-    public void AddFilter(ItemMatcher matcher)
-    {
-        this.Filters.Add(matcher);
-        matcher.CollectionChanged += this.OnCollectionChanged;
     }
 
     /// <summary>
@@ -156,6 +147,15 @@ internal class DisplayedItems
     public void AddTransformer(Func<IEnumerable<Item>, IEnumerable<Item>> transformer)
     {
         this.Transformers.Add(transformer);
+
+        if (this.TopMenu)
+        {
+            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
+        }
+        else
+        {
+            BetterItemGrabMenu.RefreshInventory = true;
+        }
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Features;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -325,6 +326,11 @@ internal class SearchItems : IFeature
         }
     }
 
+    private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
+    {
+        return items.Where(this.ItemMatcher.Matches);
+    }
+
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu || !this.SearchArea.visible)
@@ -380,10 +386,7 @@ internal class SearchItems : IFeature
         this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
         this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
 
-        if (BetterItemGrabMenu.ItemsToGrabMenu is not null)
-        {
-            BetterItemGrabMenu.ItemsToGrabMenu.AddFilter(this.ItemMatcher);
-        }
+        BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -411,5 +414,6 @@ internal class SearchItems : IFeature
 
         this.SearchText = this.SearchField.Text;
         this.ItemMatcher.StringValue = this.SearchText;
+        BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
     }
 }

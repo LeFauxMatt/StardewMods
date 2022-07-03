@@ -116,14 +116,7 @@ internal class CollectItems : IFeature
         {
             item.resetState();
             storage.ClearNulls();
-            item = storage.StashItem(item);
-
-            if (item is null)
-            {
-                break;
-            }
-
-            item = storage.StashItem(item, true);
+            item = storage.StashItem(item, storage.StashToChestStacks != FeatureOption.Disabled);
 
             if (item is null)
             {

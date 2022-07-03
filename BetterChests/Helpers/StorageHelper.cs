@@ -262,15 +262,15 @@ internal class StorageHelper
         // Special Locations
         switch (location)
         {
-            case FarmHouse { fridge.Value: { } } farmHouse when !excluded.Contains(farmHouse) && !farmHouse.fridgePosition.Equals(Point.Zero):
-                excluded.Add(farmHouse);
+            case FarmHouse { fridge.Value: { } fridge } farmHouse when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
+                excluded.Add(fridge);
                 yield return new FridgeStorage(farmHouse, this.Config.DefaultChest, farmHouse.fridgePosition.ToVector2());
                 break;
-            case IslandFarmHouse { fridge.Value: { } } islandFarmHouse when !excluded.Contains(islandFarmHouse) && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                excluded.Add(islandFarmHouse);
+            case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge) && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                excluded.Add(fridge);
                 yield return new FridgeStorage(islandFarmHouse, this.Config.DefaultChest, islandFarmHouse.fridgePosition.ToVector2());
                 break;
-            case IslandWest islandWest when !excluded.Contains(islandWest):
+            case IslandWest islandWest:
                 excluded.Add(islandWest);
                 yield return new ShippingBinStorage(islandWest, this.Config.DefaultChest, islandWest.shippingBinPosition.ToVector2());
                 break;
@@ -281,6 +281,16 @@ internal class StorageHelper
             // Buildings
             foreach (var building in buildableGameLocation.buildings)
             {
+                // Indoors
+                if (building.indoors.Value is not null)
+                {
+                    foreach (var subStorage in this.FromLocation(building.indoors.Value, excluded))
+                    {
+                        excluded.Add(subStorage.Context);
+                        yield return subStorage;
+                    }
+                }
+
                 // Special Buildings
                 switch (building)
                 {
@@ -292,16 +302,6 @@ internal class StorageHelper
                         excluded.Add(shippingBin);
                         yield return new ShippingBinStorage(shippingBin, location, this.Config.DefaultChest, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
                         break;
-                }
-
-                // Indoors
-                if (building.indoors.Value is not null)
-                {
-                    foreach (var subStorage in this.FromLocation(building.indoors.Value, excluded).Where(subStorage => !excluded.Contains(subStorage.Context)))
-                    {
-                        excluded.Add(subStorage.Context);
-                        yield return subStorage;
-                    }
                 }
             }
         }

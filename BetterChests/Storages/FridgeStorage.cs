@@ -38,7 +38,7 @@ internal class FridgeStorage : BaseStorage
     /// <inheritdoc />
     public override ModDataDictionary ModData
     {
-        get => this.Location.modData;
+        get => this.Chest.modData;
     }
 
     /// <inheritdoc />

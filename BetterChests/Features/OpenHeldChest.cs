@@ -12,6 +12,7 @@ using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
 /// <summary>
 ///     Allows a chest to be opened while in the farmer's inventory.
@@ -92,16 +93,21 @@ internal class OpenHeldChest : IFeature
 
     private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
     {
-        foreach (var item in Game1.player.Items.Take(12).OfType<Object>())
+        if (!Context.IsPlayerFree)
         {
-            item.updateWhenCurrentLocation(Game1.currentGameTime, Game1.currentLocation);
+            return;
+        }
+
+        foreach (var obj in Game1.player.Items.Take(12).OfType<SObject>())
+        {
+            obj.updateWhenCurrentLocation(Game1.currentGameTime, Game1.currentLocation);
         }
     }
 
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not Object obj)
+        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not SObject obj)
         {
             return;
         }

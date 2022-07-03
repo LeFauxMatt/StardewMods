@@ -207,9 +207,7 @@ internal abstract class BaseStorage : IStorageObject
         set => this.Data.CustomColorPicker = value;
     }
 
-    /// <summary>
-    ///     Gets data individually assigned to the storage object.
-    /// </summary>
+    /// <inheritdoc />
     public IStorageData Data { get; }
 
     /// <inheritdoc />
@@ -626,21 +624,25 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
-    public string OrderBy(Item item)
-    {
-        return this.OrganizeChestGroupBy switch
-        {
-            GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")) ?? string.Empty,
-            GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")) ?? string.Empty,
-            GroupBy.Name => item.DisplayName,
-            GroupBy.Default or _ => string.Empty,
-        };
-    }
-
-    /// <inheritdoc />
     public void OrganizeItems(bool descending = false)
     {
-        var items = this.Items.OfType<Item>().OrderBy(this.OrderBy).ThenBy(this.ThenBy).ToList();
+        var items = this.Items
+                        .OfType<Item>()
+                        .OrderBy(item => this.OrganizeChestGroupBy switch
+                        {
+                            GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")) ?? string.Empty,
+                            GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")) ?? string.Empty,
+                            GroupBy.Name => item.DisplayName,
+                            GroupBy.Default or _ => string.Empty,
+                        })
+                        .ThenBy(item => this.OrganizeChestSortBy switch
+                        {
+                            SortBy.Quality when item is SObject obj => obj.Quality,
+                            SortBy.Quantity => item.Stack,
+                            SortBy.Type => item.Category,
+                            SortBy.Default or _ => 0,
+                        })
+                        .ToList();
         if (descending)
         {
             items.Reverse();
@@ -678,38 +680,13 @@ internal abstract class BaseStorage : IStorageObject
     /// <inheritdoc />
     public Item? StashItem(Item item, bool existingStacks = false)
     {
-        if (existingStacks)
-        {
-            if (this.StashToChestStacks == FeatureOption.Disabled)
-            {
-                return item;
-            }
-
-            return this.Items.Any(otherItem => otherItem?.canStackWith(item) == true) ? this.AddItem(item) : item;
-        }
-
-        if (this.FilterItemsList.All(filter => filter.StartsWith("!")))
-        {
-            return item;
-        }
-
-        return this.FilterMatches(item) ? this.AddItem(item) : item;
-    }
-
-    /// <inheritdoc />
-    public int ThenBy(Item item)
-    {
-        return this.OrganizeChestSortBy switch
-        {
-            SortBy.Quality when item is SObject obj => obj.Quality,
-            SortBy.Quantity => item.Stack,
-            SortBy.Type => item.Category,
-            SortBy.Default or _ => 0,
-        };
+        var condition1 = existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true);
+        var condition2 = !this.FilterItemsList.All(filter => filter.StartsWith("!")) && this.FilterMatches(item);
+        return condition1 || condition2 ? this.AddItem(item) : item;
     }
 
     private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
     {
-        this.Data.FilterItemsList = new(this.FilterMatcher);
+        this.Data.FilterItemsList = new(this._filterMatcher);
     }
 }

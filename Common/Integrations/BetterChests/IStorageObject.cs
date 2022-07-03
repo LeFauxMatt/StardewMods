@@ -23,6 +23,11 @@ public interface IStorageObject : IStorageData
     public object Context { get; }
 
     /// <summary>
+    ///     Gets data individually assigned to the storage object.
+    /// </summary>
+    public IStorageData Data { get; }
+
+    /// <summary>
     ///     Gets an ItemMatcher to represent the currently selected filters.
     /// </summary>
     public ItemMatcher FilterMatcher { get; }
@@ -108,13 +113,6 @@ public interface IStorageObject : IStorageData
     public void GrabStorageItem(Item item, Farmer who);
 
     /// <summary>
-    ///     Gets the item tag that will be used to sort in <see cref="IStorageData.OrganizeChest" />.
-    /// </summary>
-    /// <param name="item">The <see cref="Item" />.</param>
-    /// <returns>Returns the <see cref="Item" /> tag based on the <see cref="IStorageData.OrganizeChestGroupBy" /> option.</returns>
-    public string OrderBy(Item item);
-
-    /// <summary>
     ///     Organizes items in a storage.
     /// </summary>
     /// <param name="descending">Sort in descending order.</param>
@@ -132,11 +130,4 @@ public interface IStorageObject : IStorageData
     /// <param name="existingStacks">Whether to stash into stackable items or based on categorization.</param>
     /// <returns>Returns the <see cref="Item" /> if not all could be stashed or null if successful.</returns>
     public Item? StashItem(Item item, bool existingStacks = false);
-
-    /// <summary>
-    ///     Gets the item tag that will be used to sub-sort in <see cref="IStorageData.OrganizeChest" />.
-    /// </summary>
-    /// <param name="item">The <see cref="Item" />.</param>
-    /// <returns>Returns the <see cref="Item" /> tag based on the <see cref="IStorageData.OrganizeChestSortBy" /> option.</returns>
-    public int ThenBy(Item item);
 }

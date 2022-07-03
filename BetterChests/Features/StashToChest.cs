@@ -145,24 +145,13 @@ internal class StashToChest : IFeature
             }
 
             var stack = Game1.player.Items[index].Stack;
-
-            // First pass to categorized storages
-            Game1.player.Items[index] = storage.StashItem(Game1.player.Items[index]);
-            if (!stashedAny && (Game1.player.Items[index] is null || stack != Game1.player.Items[index].Stack))
+            var tmp = storage.StashItem(Game1.player.Items[index], storage.StashToChestStacks != FeatureOption.Disabled);
+            if (tmp is null)
             {
-                stashedAny = true;
+                Game1.player.Items[index] = null;
             }
 
-            // Second pass to existing stacks
-            if (Game1.player.Items[index] is not null)
-            {
-                stack = Game1.player.Items[index].Stack;
-                Game1.player.Items[index] = storage.StashItem(Game1.player.Items[index], true);
-                if (!stashedAny && (Game1.player.Items[index] is null || stack != Game1.player.Items[index].Stack))
-                {
-                    stashedAny = true;
-                }
-            }
+            stashedAny = stashedAny || Game1.player.Items[index] is null || stack != Game1.player.Items[index].Stack;
         }
 
         return stashedAny;
