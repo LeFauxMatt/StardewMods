@@ -6,8 +6,9 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Models;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -110,7 +111,7 @@ internal class DisplayedItems
         };
     }
 
-    private List<ItemMatcher> Highlighters { get; } = new();
+    private List<IItemMatcher> Highlighters { get; } = new();
 
     private InventoryMenu.highlightThisItem HighlightMethod { get; }
 
@@ -134,7 +135,7 @@ internal class DisplayedItems
     ///     Adds a <see cref="ItemMatcher" /> to highlight inventory.
     /// </summary>
     /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
-    public void AddHighlighter(ItemMatcher matcher)
+    public void AddHighlighter(IItemMatcher matcher)
     {
         this.Highlighters.Add(matcher);
         matcher.CollectionChanged += this.OnCollectionChanged;
