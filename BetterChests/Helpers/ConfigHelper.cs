@@ -540,6 +540,17 @@ internal class ConfigHelper
                 nameof(ModConfig.LabelChest));
         }
 
+        if (main)
+        {
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                manifest,
+                () => this.Config.LockedChests,
+                value => this.Config.LockedChests = value,
+                I18n.Config_LockedChests_Name,
+                I18n.Config_LockedChests_Tooltip,
+                nameof(ModConfig.LockedChests));
+        }
+
         // Open Held Chest
         if (IntegrationHelper.TestConflicts(nameof(OpenHeldChest), out mods))
         {

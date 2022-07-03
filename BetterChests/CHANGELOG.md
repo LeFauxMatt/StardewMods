@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.1.0 (Unreleased)
+
+* Added Locked Chests.
+
 ## 2.0.2 (July 2, 2022)
 
 * Fixed CraftFromChest and StashToChest not working with Sheds/Fridges.

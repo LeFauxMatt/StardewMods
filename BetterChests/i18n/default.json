@@ -58,6 +58,8 @@
   "config.filter-items-block.tooltip": "Chests will reject items that do not meet the Filter Items condition.",
   "config.label-chest.name": "Label Chest",
   "config.label-chest.tooltip": "Assign a label to a chest that will appear in game.",
+  "config.locked-chests.name": "Locked Chests",
+  "config.locked-chests.tooltip": "Allows chests to be locked to protect it from other players.",
   "config.open-held-chest.name": "Open Held Chest",
   "config.open-held-chest.tooltip": "Open a currently held Chest and access its contents.",
   "config.organize-chest.name": "Organize Chest",

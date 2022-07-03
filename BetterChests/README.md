@@ -16,6 +16,7 @@ Adds enhanced chest features to the game.
     * [Craft From Chest](#craft-from-chest)
     * [Filter Items](#filter-items)
     * [Label Chest](#label-chest)
+    * [Locked Chests](#locked-chests)
     * [Open Held Chest](#open-held-chest)
     * [Organize Chest](#organize-chest)
     * [Resize Chest](#resize-chest)
@@ -173,6 +174,14 @@ Add a label to a chest and have it appear in the menu and in-game while holding 
 | Config     | Description                      | Default Value | Other Value(s)  |
 |:-----------|:---------------------------------|:--------------|:----------------|
 | LabelChest | Enables the Label Chest feature. | `true`        | `true', 'false' |
+
+### Locked Chests
+
+Lock chests to protect them from other players.
+
+| Config       | Description                        | Default Value | Other Value(s)  |
+|:-------------|:-----------------------------------|:--------------|:----------------|
+| LockedChests | Enables the Locked Chests feature. | `true`        | `true', 'false' |
 
 ### Open Held Chest
 

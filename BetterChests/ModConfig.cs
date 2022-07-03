@@ -72,6 +72,11 @@ internal class ModConfig
     public bool LabelChest { get; set; } = true;
 
     /// <summary>
+    ///     Gets or sets a value indicating whether chests can be locked.
+    /// </summary>
+    public bool LockedChests { get; set; } = true;
+
+    /// <summary>
     ///     Gets or sets the symbol used to denote context tags in searches.
     /// </summary>
     public char SearchTagSymbol { get; set; } = '#';
