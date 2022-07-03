@@ -126,7 +126,7 @@ internal class CategorizeChest : IFeature
                 (x, y) = Game1.getMousePosition(true);
                 if (this.ConfigureButton.containsPoint(x, y))
                 {
-                    Game1.activeClickableMenu = new ItemSelectionMenu(storage, storage.FilterMatcher);
+                    Game1.activeClickableMenu = new ItemSelectionMenu(storage, storage.FilterMatcher, this.Helper.Translation);
                     this.Helper.Input.Suppress(e.Button);
                     return;
                 }

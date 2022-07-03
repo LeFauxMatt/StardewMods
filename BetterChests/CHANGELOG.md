@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.1.0 (Unreleased)
+
+* Added localized tags for search and categorization.
+
 ## 2.0.3 (Unreleased)
 
 * Added alert if FuryCore is installed.

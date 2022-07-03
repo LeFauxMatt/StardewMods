@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
@@ -238,7 +237,7 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
-    public ItemMatcher FilterMatcher
+    public IItemMatcher FilterMatcher
     {
         get
         {
