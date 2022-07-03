@@ -246,6 +246,14 @@ internal class ConfigHelper
 
             IntegrationHelper.GMCM.API.AddKeybindList(
                 manifest,
+                () => this.Config.ControlScheme.FindChest,
+                value => this.Config.ControlScheme.FindChest = value,
+                I18n.Config_FindChest_Name,
+                I18n.Config_FindChest_Tooltip,
+                nameof(Controls.FindChest));
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
                 () => this.Config.ControlScheme.OpenCrafting,
                 value => this.Config.ControlScheme.OpenCrafting = value,
                 I18n.Config_OpenCrafting_Name,
@@ -379,6 +387,7 @@ internal class ConfigHelper
                 nameof(IStorageData.CarryChest));
         }
 
+        // Categorize Chest
         if (IntegrationHelper.TestConflicts(nameof(CategorizeChest), out mods))
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
@@ -386,7 +395,6 @@ internal class ConfigHelper
         }
         else if (main)
         {
-            // Categorize Chest
             IntegrationHelper.GMCM.API.AddBoolOption(
                 manifest,
                 () => this.Config.CategorizeChest,
@@ -394,6 +402,18 @@ internal class ConfigHelper
                 I18n.Config_CategorizeChest_Name,
                 I18n.Config_CategorizeChest_Tooltip,
                 nameof(ModConfig.CategorizeChest));
+        }
+
+        // Chest Finder
+        if (main)
+        {
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                manifest,
+                () => this.Config.ChestFinder,
+                value => this.Config.ChestFinder = value,
+                I18n.Config_ChestFinder_Name,
+                I18n.Config_ChestFinder_Tooltip,
+                nameof(ModConfig.ChestFinder));
         }
 
         // Chest Menu Tabs

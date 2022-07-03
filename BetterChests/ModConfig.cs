@@ -30,6 +30,11 @@ internal class ModConfig
     public bool CategorizeChest { get; set; } = true;
 
     /// <summary>
+    ///     Gets or sets a value indicating whether chests can be searched for.
+    /// </summary>
+    public bool ChestFinder { get; set; } = true;
+
+    /// <summary>
     ///     Gets or sets a value indicating whether Configurator will be enabled.
     /// </summary>
     public bool Configurator { get; set; } = true;
