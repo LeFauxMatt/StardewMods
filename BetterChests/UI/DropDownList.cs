@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -20,11 +21,15 @@ internal class DropDownList : IClickableMenu
     /// <param name="x">The x-coordinate of the dropdown.</param>
     /// <param name="y">The y-coordinate of the dropdown.</param>
     /// <param name="callback">The action to call when a value is selected.</param>
-    public DropDownList(IList<string> values, int x, int y, Action<string?> callback)
+    /// <param name="translation">Translations from the i18n folder.</param>
+    public DropDownList(IList<string> values, int x, int y, Action<string?> callback, ITranslationHelper translation)
         : base(x, y, 0, 0)
     {
         this.Callback = callback;
-        var textBounds = values.Select(value => Game1.smallFont.MeasureString(value).ToPoint()).ToList();
+        this.LocalValues = values.ToDictionary(
+            value => value,
+            value => translation.Get($"tag.{value}").Default(value).ToString());
+        var textBounds = this.LocalValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint()).ToList();
         var textHeight = textBounds.Max(textBound => textBound.Y);
         this.width = textBounds.Max(textBound => textBound.X) + 16;
         this.height = textBounds.Sum(textBound => textBound.Y) + 16;
@@ -35,6 +40,8 @@ internal class DropDownList : IClickableMenu
     private Rectangle Bounds { get; }
 
     private Action<string?> Callback { get; }
+
+    private Dictionary<string, string> LocalValues { get; }
 
     private List<ClickableComponent> Values { get; }
 
@@ -63,7 +70,7 @@ internal class DropDownList : IClickableMenu
                 b.Draw(Game1.staminaRect, new(value.bounds.X, value.bounds.Y, this.Bounds.Width - 16, value.bounds.Height), new Rectangle(0, 0, 1, 1), Color.Wheat, 0f, Vector2.Zero, SpriteEffects.None, 0.975f);
             }
 
-            b.DrawString(Game1.smallFont, value.name, new(value.bounds.X, value.bounds.Y), Game1.textColor);
+            b.DrawString(Game1.smallFont, this.LocalValues[value.name], new(value.bounds.X, value.bounds.Y), Game1.textColor);
         }
     }
 

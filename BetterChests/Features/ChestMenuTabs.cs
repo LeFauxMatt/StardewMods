@@ -8,8 +8,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -20,7 +20,7 @@ internal class ChestMenuTabs : IFeature
 {
     private static Dictionary<string, ClickableTextureComponent>? CachedTabs;
 
-    private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
+    private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly PerScreen<List<ClickableTextureComponent>?> _tabs = new();
 
@@ -130,7 +130,7 @@ internal class ChestMenuTabs : IFeature
 
     private ItemMatcher ItemMatcher
     {
-        get => this._itemMatcher.Value;
+        get => this._itemMatcher.Value ??= new(true);
     }
 
     private List<ClickableTextureComponent>? Tabs

@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Network;
@@ -30,7 +29,7 @@ public interface IStorageObject : IStorageData
     /// <summary>
     ///     Gets an ItemMatcher to represent the currently selected filters.
     /// </summary>
-    public ItemMatcher FilterMatcher { get; }
+    public IItemMatcher FilterMatcher { get; }
 
     /// <summary>
     ///     Gets the items in the object's storage.

@@ -15,6 +15,9 @@
   "CarryChest": [
     "spacechase0.CarryChest"
   ],
+  "CategorizeChest": [
+    "aEnigma.ConvenientChests"
+  ],
   "ChestMenuTabs": [
     "berkayylmao.ChestEx"
   ],
