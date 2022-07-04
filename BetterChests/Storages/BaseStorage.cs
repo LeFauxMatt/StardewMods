@@ -266,7 +266,7 @@ internal abstract class BaseStorage : IStorageObject
     /// <inheritdoc />
     public int MenuCapacity
     {
-        get => this.MenuRows * 12;
+        get => this._menuRows * 12;
     }
 
     /// <inheritdoc />
@@ -288,7 +288,8 @@ internal abstract class BaseStorage : IStorageObject
             this._capacity = this.ResizeChestCapacity;
             return this._menuRows = this.ResizeChestCapacity switch
             {
-                0 or Chest.capacity => 0,
+                0 or Chest.capacity => 3,
+                _ when this.ResizeChestMenuRows <= 0 => 3,
                 < 0 or >= 72 => this.ResizeChestMenuRows,
                 < 72 => (int)Math.Min(this.ResizeChestMenuRows, Math.Ceiling(this.ResizeChestCapacity / 12f)),
             };

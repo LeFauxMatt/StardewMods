@@ -1,13 +1,16 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.Common.Helpers;
+using StardewMods.BetterChests.Storages;
+using StardewMods.BetterChests.UI;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 
 /// <summary>
@@ -15,7 +18,7 @@ using StardewValley;
 /// </summary>
 internal class ChestFinder : IFeature
 {
-    private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
+    private readonly PerScreen<IStorageObject?> _fakeStorage = new();
 
     private ChestFinder(IModHelper helper, ModConfig config)
     {
@@ -27,15 +30,14 @@ internal class ChestFinder : IFeature
 
     private ModConfig Config { get; }
 
+    private IStorageObject FakeStorage
+    {
+        get => this._fakeStorage.Value ??= new ChestStorage(new(), Game1.getFarm(), this.Config.DefaultChest, Vector2.Zero);
+    }
+
     private IModHelper Helper { get; }
 
     private bool IsActivated { get; set; }
-
-    private ItemMatcher ItemMatcher
-    {
-        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
-        set => this._itemMatcher.Value = value;
-    }
 
     /// <summary>
     ///     Initializes <see cref="ChestFinder" />.
@@ -55,6 +57,17 @@ internal class ChestFinder : IFeature
         {
             this.IsActivated = true;
             this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
+            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+
+            if (IntegrationHelper.ToolbarIcons.IsLoaded)
+            {
+                IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
+                    "BetterChests.FindChest",
+                    "furyx639.BetterChests/Icons",
+                    new(48, 0, 16, 16),
+                    I18n.Button_FindChest_Name());
+                IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+            }
         }
     }
 
@@ -65,15 +78,43 @@ internal class ChestFinder : IFeature
         {
             this.IsActivated = false;
             this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
+            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+
+            if (IntegrationHelper.ToolbarIcons.IsLoaded)
+            {
+                IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.FindChest");
+                IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
+            }
         }
+    }
+
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    {
+        if (!Context.IsPlayerFree || !this.Config.ControlScheme.FindChest.JustPressed())
+        {
+            return;
+        }
+
+        this.OpenChestFinder();
+        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.FindChest);
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
+        if (!this.FakeStorage.FilterMatcher.Any())
+        {
+            return;
+        }
+
         var bounds = Game1.graphics.GraphicsDevice.Viewport.Bounds;
         var srcRect = new Rectangle(412, 495, 5, 4);
         foreach (var storage in StorageHelper.CurrentLocation)
         {
+            if (!storage.Items.Any(this.FakeStorage.FilterMatches))
+            {
+                continue;
+            }
+
             var pos = storage.Position * 64f + new Vector2(32, -48);
             var onScreenPos = default(Vector2);
             if (Utility.isOnScreen(pos, 64))
@@ -152,5 +193,18 @@ internal class ChestFinder : IFeature
                 SpriteEffects.None,
                 1f);
         }
+    }
+
+    private void OnToolbarIconPressed(object? sender, string id)
+    {
+        if (id == "BetterChests.FindChest")
+        {
+            this.OpenChestFinder();
+        }
+    }
+
+    private void OpenChestFinder()
+    {
+        Game1.activeClickableMenu = new ItemSelectionMenu(this.FakeStorage, this.FakeStorage.FilterMatcher);
     }
 }

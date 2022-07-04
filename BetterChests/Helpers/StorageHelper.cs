@@ -379,6 +379,9 @@ internal class StorageHelper
     {
         switch (context)
         {
+            case IStorageObject storageObject:
+                storage = storageObject;
+                return true;
             case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } shippingChest:
                 storage = new ShippingBinStorage(shippingChest, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
