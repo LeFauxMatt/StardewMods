@@ -12,6 +12,7 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>
@@ -19,6 +20,7 @@ using StardewValley.Objects;
 /// </summary>
 internal class IntegrationHelper
 {
+    private const string ExpandedFridgeId = "Uwazouri.ExpandedFridge";
     private const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";
     private const string WearMoreRingsId = "bcmpinc.WearMoreRings";
 
@@ -88,7 +90,12 @@ internal class IntegrationHelper
     {
         excluded ??= new HashSet<object>();
 
-        foreach (var storage in IntegrationHelper.Instance!.HorseOverhaul_FromLocation(location, excluded))
+        foreach (var storage in IntegrationHelper.Instance!.ExpandedFridge_FromLocation(location, excluded))
+        {
+            yield return storage;
+        }
+
+        foreach (var storage in IntegrationHelper.Instance.HorseOverhaul_FromLocation(location, excluded))
         {
             yield return storage;
         }
@@ -167,6 +174,22 @@ internal class IntegrationHelper
 
         storage = default;
         return false;
+    }
+
+    private IEnumerable<IStorageObject> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
+    {
+        if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.ExpandedFridgeId) || location is not FarmHouse { upgradeLevel: > 0 })
+        {
+            yield break;
+        }
+
+        foreach (var (pos, obj) in location.Objects.Pairs)
+        {
+            if ((int)pos.Y == -300 && obj is Chest { bigCraftable.Value: true, ParentSheetIndex: 216 } chest)
+            {
+                excluded.Add(chest);
+            }
+        }
     }
 
     private IEnumerable<IStorageObject> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)

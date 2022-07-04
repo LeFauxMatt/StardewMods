@@ -97,6 +97,30 @@ internal class StorageHelper
     }
 
     /// <summary>
+    ///     Gets all placed storages in the current location.
+    /// </summary>
+    public static IEnumerable<IStorageObject> CurrentLocation
+    {
+        get
+        {
+            var excluded = new HashSet<object>();
+            foreach (var storage in StorageHelper.Instance!.FromLocation(Game1.currentLocation, excluded))
+            {
+                foreach (var (kvp, type) in StorageHelper.Instance.StorageTypes)
+                {
+                    if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        storage.Type = type;
+                        break;
+                    }
+                }
+
+                yield return storage;
+            }
+        }
+    }
+
+    /// <summary>
     ///     Gets storages in the farmer's inventory.
     /// </summary>
     public static IEnumerable<IStorageObject> Inventory
