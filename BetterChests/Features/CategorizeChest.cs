@@ -19,6 +19,7 @@ using StardewValley.Menus;
 internal class CategorizeChest : IFeature
 {
     private readonly PerScreen<ClickableTextureComponent?> _configureButton = new();
+    private readonly PerScreen<ItemSelectionMenu?> _currentMenu = new();
     private readonly PerScreen<ClickableTextureComponent?> _minusButton = new();
     private readonly PerScreen<ClickableTextureComponent?> _plusButton = new();
 
@@ -40,6 +41,12 @@ internal class CategorizeChest : IFeature
             name = "Configure",
             hoverText = I18n.Button_Configure_Name(),
         };
+    }
+
+    private ItemSelectionMenu? CurrentMenu
+    {
+        get => this._currentMenu.Value;
+        set => this._currentMenu.Value = value;
     }
 
     private IModHelper Helper { get; }
@@ -126,7 +133,7 @@ internal class CategorizeChest : IFeature
                 (x, y) = Game1.getMousePosition(true);
                 if (this.ConfigureButton.containsPoint(x, y))
                 {
-                    Game1.activeClickableMenu = new ItemSelectionMenu(storage, storage.FilterMatcher);
+                    Game1.activeClickableMenu = this.CurrentMenu = new(storage, storage.FilterMatcher);
                     this.Helper.Input.Suppress(e.Button);
                     return;
                 }
@@ -171,7 +178,8 @@ internal class CategorizeChest : IFeature
 
                 return;
 
-            case null when e.OldMenu is ItemSelectionMenu { context: IStorageObject storage }:
+            case null when e.OldMenu is ItemSelectionMenu { context: IStorageObject storage } itemSelectionMenu && itemSelectionMenu == this.CurrentMenu:
+                this.CurrentMenu = null;
                 storage.ShowMenu();
                 break;
         }
