@@ -328,7 +328,7 @@ internal class SearchItems : IFeature
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
     {
-        return items.Where(this.ItemMatcher.Matches);
+        return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
