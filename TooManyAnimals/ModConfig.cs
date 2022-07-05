@@ -1,5 +1,8 @@
 ﻿namespace StardewMods.TooManyAnimals;
 
+using System.Globalization;
+using System.Text;
+
 /// <summary>
 ///     Mod config data.
 /// </summary>
@@ -14,4 +17,14 @@ internal class ModConfig
     ///     Gets or sets the control scheme.
     /// </summary>
     public Controls ControlScheme { get; set; } = new();
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"AnimalShopLimit: {this.AnimalShopLimit.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"NextPage: {this.ControlScheme.NextPage}");
+        sb.AppendLine($"PreviousPage: {this.ControlScheme.PreviousPage}");
+        return sb.ToString();
+    }
 }

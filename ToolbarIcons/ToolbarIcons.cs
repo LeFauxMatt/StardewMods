@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.Common.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -51,6 +52,14 @@ public class ToolbarIcons : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        Log.Monitor = this.Monitor;
+
+        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
+        {
+            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
+        }
+
+        // Events
         this.Helper.Events.Content.AssetRequested += ToolbarIcons.OnAssetRequested;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;

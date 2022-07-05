@@ -80,6 +80,11 @@ public class BetterChests : Mod
         IntegrationHelper.Init(this.Helper, this.Config);
         StorageHelper.Init(this.Helper.Multiplayer, this.Config, this.StorageTypes);
 
+        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
+        {
+            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
+        }
+
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;

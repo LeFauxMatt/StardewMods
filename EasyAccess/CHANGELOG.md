@@ -1,6 +1,11 @@
 # Easy Access Change Log
 
-## 1.3.0 (July 1, 2022)
+## 2.0.1 (Unreleased)
+
+* Added alert if FuryCore is installed.
+* Log config options for debugging.
+
+## 2.0.0 (July 1, 2022)
 
 * Added support for collecting foraging.
 * Added support for shaking trees and bushes.

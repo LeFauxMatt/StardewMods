@@ -1,5 +1,8 @@
 ﻿namespace StardewMods.EasyAccess;
 
+using System.Globalization;
+using System.Text;
+
 /// <summary>
 ///     Mod config data.
 /// </summary>
@@ -39,4 +42,19 @@ internal class ModConfig
     ///     Gets or sets a value indicating whether CollectItems will interact with Terrain features such as bushes and trees.
     /// </summary>
     public bool DoTerrain { get; set; } = true;
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"CollectOutputDistance: {this.CollectOutputDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"DispenseInputDistance: {this.DispenseInputDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"DoDigSpots: {this.DoDigSpots.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"DoForage: {this.DoForage.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"DoMachines: {this.DoMachines.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"DoTerrain: {this.DoTerrain.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CollectItems: {this.ControlScheme.CollectItems}");
+        sb.AppendLine($"DispenseItems: {this.ControlScheme.DispenseItems}");
+        return sb.ToString();
+    }
 }

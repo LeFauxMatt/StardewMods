@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.0.3 (Unreleased)
+
+* Added alert if FuryCore is installed.
+
 ## 2.0.2 (July 2, 2022)
 
 * Fixed CraftFromChest and StashToChest not working with Sheds/Fridges.

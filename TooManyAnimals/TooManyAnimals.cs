@@ -2,6 +2,7 @@ namespace StardewMods.TooManyAnimals;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using HarmonyLib;
 using StardewModdingAPI;
@@ -43,7 +44,9 @@ public class TooManyAnimals : Mod
                 // ignored
             }
 
-            return this._config = config ?? new ModConfig();
+            this._config = config ?? new ModConfig();
+            Log.Trace(this._config.ToString());
+            return this._config;
         }
     }
 
@@ -94,6 +97,11 @@ public class TooManyAnimals : Mod
         TooManyAnimals.Instance = this;
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
+
+        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
+        {
+            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
+        }
 
         // Patches
         HarmonyHelper.AddPatch(
