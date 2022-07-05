@@ -129,7 +129,7 @@ internal class ResizeChestMenu : IFeature
                 break;
         }
 
-        return ResizeChestMenu.Instance?.Storage?.MenuExtraSpace ?? 0;
+        return ResizeChestMenu.Instance.Storage?.MenuExtraSpace ?? 0;
     }
 
     private static InventoryMenu GetItemsToGrabMenu(int x, int y, bool playerInventory, IList<Item> actualInventory, InventoryMenu.highlightThisItem highlightMethod, int capacity, int rows, int horizontalGap, int verticalGap, bool drawSlots, ItemGrabMenu menu)

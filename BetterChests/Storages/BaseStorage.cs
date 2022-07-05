@@ -22,6 +22,7 @@ internal abstract class BaseStorage : IStorageObject
     private readonly ItemMatcher _filterMatcher = new(true);
     private int _capacity;
     private int _menuRows;
+    private int _rows;
     private IStorageData? _type;
 
     /// <summary>
@@ -266,7 +267,7 @@ internal abstract class BaseStorage : IStorageObject
     /// <inheritdoc />
     public int MenuCapacity
     {
-        get => this._menuRows * 12;
+        get => this.MenuRows * 12;
     }
 
     /// <inheritdoc />
@@ -280,12 +281,13 @@ internal abstract class BaseStorage : IStorageObject
     {
         get
         {
-            if (this._capacity == this.ResizeChestCapacity)
+            if (this._capacity == this.ResizeChestCapacity && this._rows == this.ResizeChestMenuRows)
             {
                 return this._menuRows;
             }
 
             this._capacity = this.ResizeChestCapacity;
+            this._rows = this.ResizeChestMenuRows;
             return this._menuRows = this.ResizeChestCapacity switch
             {
                 0 or Chest.capacity => 3,

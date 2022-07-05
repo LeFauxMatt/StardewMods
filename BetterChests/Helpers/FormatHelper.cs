@@ -84,8 +84,7 @@ internal static class FormatHelper
         {
             (int)FeatureOption.Default => I18n.Option_Default_Name(),
             (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
-            (int)FeatureOption.Enabled => I18n.Config_ResizeChestMenuRows_ValueOne(),
-            _ => string.Format(I18n.Config_ResizeChestMenuRows_ValueMany(), (value - 1).ToString()),
+            _ => string.Format(I18n.Config_ResizeChestMenuRows_ValueMany(), (value - (int)FeatureOption.Enabled + 3).ToString()),
         };
     }
 

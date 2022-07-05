@@ -635,7 +635,7 @@ internal class ConfigHelper
                 {
                     _ when storage.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
                     _ when storage.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
-                    _ => (int)FeatureOption.Enabled + storage.ResizeChestMenuRows - 1,
+                    _ => (int)FeatureOption.Enabled + storage.ResizeChestMenuRows - 3,
                 },
                 value =>
                 {
@@ -643,7 +643,7 @@ internal class ConfigHelper
                     {
                         (int)FeatureOption.Default => 0,
                         (int)FeatureOption.Disabled => 0,
-                        _ => 1 + value - (int)FeatureOption.Enabled,
+                        _ => 3 + value - (int)FeatureOption.Enabled,
                     };
                     storage.ResizeChestMenu = value switch
                     {
@@ -655,7 +655,7 @@ internal class ConfigHelper
                 I18n.Config_ResizeChestMenuRows_Name,
                 I18n.Config_ResizeChestMenuRows_Tooltip,
                 (int)FeatureOption.Default,
-                7,
+                5,
                 1,
                 FormatHelper.FormatChestMenuRows,
                 nameof(IStorageData.ResizeChestMenu));

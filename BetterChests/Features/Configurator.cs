@@ -265,12 +265,26 @@ internal class Configurator : IFeature
 
     private void OnToolbarIconPressed(object? sender, string id)
     {
-        if (id == "BetterChests.Configure"
-            && Game1.player.CurrentItem is SObject obj
+        if (id != "BetterChests.Configure")
+        {
+            return;
+        }
+
+        if (Game1.player.CurrentItem is SObject obj
             && StorageHelper.TryGetOne(obj, out var storage))
         {
             ConfigHelper.SetupSpecificConfig(storage.Data);
             this.IsActive = true;
+            return;
         }
+
+        var pos = Game1.player.GetGrabTile();
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out obj) || !StorageHelper.TryGetOne(obj, out storage))
+        {
+            return;
+        }
+
+        ConfigHelper.SetupSpecificConfig(storage.Data);
+        this.IsActive = true;
     }
 }
