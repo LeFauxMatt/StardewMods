@@ -4,12 +4,13 @@ Framework for adding icons to the toolbar.
 
 * [API](#api)
 * [Assets](#assets)
+* [Integrations](#integrations)
 
-#### API
+## API
 
 Add toolbar icons using the [Toolbar Icons API](../Common/Integrations/ToolbarIcons/IToolbarIconsApi.cs).
 
-#### Assets
+## Assets
 
 Integration is possible via data paths using
 [SMAPI](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Content#Edit_a_game_asset) or
@@ -44,3 +45,35 @@ Sample `content.json`:
   ]
 }
 ```
+
+## Integrations
+
+Some mods are directly integrated which means icons are automatically added for them.
+
+### Supported mods
+
+* [Always Scroll Map](https://www.nexusmods.com/stardewvalley/mods/2733)
+* [Chests Anywhere](https://www.nexusmods.com/stardewvalley/mods/518)
+* [CJB Cheats Menu](https://www.nexusmods.com/stardewvalley/mods/4)
+* [CJB Item Spawner](https://www.nexusmods.com/stardewvalley/mods/93)
+* [Dynamic Game Assets](https://www.nexusmods.com/stardewvalley/mods/9365)
+* [Instant Buildings From Farm](https://www.nexusmods.com/stardewvalley/mods/2070)
+* [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541)
+* [Reset Terrain Features for .NET 5](https://www.nexusmods.com/stardewvalley/mods/9350)
+* Stardew Aquarium
+
+## Translations
+
+| Language               | Status            | Credits  |
+|:-----------------------|:------------------|:---------|
+| Chinese                | ❌️ Not Translated |          |
+| French                 | ❌️ Not Translated |          |
+| German                 | ❌️ Not Translated |          |
+| Hungarian              | ❌️ Not Translated |          |
+| Italian                | ❌️ Not Translated |          |
+| Japanese               | ❌️ Not Translated |          |
+| [Korean](i18n/ko.json) | ✔️ Complete       | wally232 |
+| Portuguese]            | ❌️ Not Translated |          |
+| Russian                | ❌️ Not Translated |          |
+| Spanish                | ❌️ Not Translated |          |
+| Turkish                | ❌️ Not Translated |          |

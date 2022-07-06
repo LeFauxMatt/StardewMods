@@ -1,3 +1,11 @@
 ﻿{
-  "Cherry.StardewAquarium.Button": "Stardew Aquarium Collection"
+  "button.bcmpinc.AlwaysScrollMap": "Toggle Always Scroll Map",
+  "button.Pathoschild.ChestsAnywhere": "Toggle Chests Anywhere",
+  "button.CJBok.CheatsMenu": "Open CJB Cheats Menu",
+  "button.CJBok.ItemSpawner": "Show CJB Item Spawner",
+  "button.spacechase0.DynamicGameAssets": "Dynamic Game Assets Store",
+  "button.BitwiseJonMods.InstantBuildings.Build": "Show Instant Build Menu",
+  "button.BitwiseJonMods.InstantBuildings.Upgrade": "Perform Instant House Upgrade",
+  "button.Pathoschild.LookupAnything": "Toggle Lookup Anything Search",
+  "button.Cherry.StardewAquarium": "Stardew Aquarium Collection"
 }

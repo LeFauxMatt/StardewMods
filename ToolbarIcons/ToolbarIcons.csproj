@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets" />
-    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\build\common.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Toolbar Icons</Name>
         <Author>furyx639</Author>
@@ -13,6 +13,6 @@
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <Folder Include="assets" />
+        <Folder Include="assets"/>
     </ItemGroup>
 </Project>
