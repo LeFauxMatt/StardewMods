@@ -78,11 +78,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
             .ToList();
     }
 
-    private static List<Item> Items
-    {
-        get => ItemSelectionMenu.CachedItems ??= new(from item in new ItemRepository().GetAll() select item.Item);
-    }
-
     private DisplayedItems DisplayedItems { get; }
 
     private List<ClickableComponent> DisplayedTags { get; } = new();
@@ -270,7 +265,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         if (this.RefreshItems)
         {
             this.RefreshItems = false;
-            foreach (var tag in this.Selected.Where(tag => !ItemSelectionMenu.AllTags.Any(cc => cc.name.Equals(tag))))
+            foreach (var tag in this.Selected.Where(tag => !this.AllTags.Any(cc => cc.name.Equals(tag))))
             {
                 var localTag = this.Translation.Get($"tag.{tag}").Default(tag);
                 var (textWidth, textHeight) = Game1.smallFont.MeasureString(localTag).ToPoint();
@@ -280,12 +275,12 @@ internal class ItemSelectionMenu : ItemGrabMenu
             this.DisplayedTags.Clear();
             this.DisplayedTags.AddRange(this.Selected.Any()
                 ?
-                from tag in ItemSelectionMenu.AllTags
+                from tag in this.AllTags
                 where this.Selected.Contains(tag.name) || this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
                 orderby this.Selected.Contains(tag.name) ? 0 : 1, tag.name
                 select tag
                 :
-                from tag in ItemSelectionMenu.AllTags
+                from tag in this.AllTags
                 where this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
                 select tag);
             var x = this.inventory.xPositionOnScreen;
@@ -298,12 +293,12 @@ internal class ItemSelectionMenu : ItemGrabMenu
                 {
                     matched = false;
                     x = this.inventory.xPositionOnScreen;
-                    y += ItemSelectionMenu.LineHeight;
+                    y += this.LineHeight;
                 }
                 else if (x + tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing >= this.inventory.xPositionOnScreen + this.inventory.width)
                 {
                     x = this.inventory.xPositionOnScreen;
-                    y += ItemSelectionMenu.LineHeight;
+                    y += this.LineHeight;
                 }
 
                 tag.bounds.X = x;
