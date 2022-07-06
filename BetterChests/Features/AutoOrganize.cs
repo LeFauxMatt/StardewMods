@@ -7,6 +7,7 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewValley.Objects;
 
 /// <summary>
@@ -71,9 +72,11 @@ internal class AutoOrganize : IFeature
 
         foreach (var (item, fromStorage) in items.ToList())
         {
-            if (storages.Any(storage => storage.FilterMatches(item) && storage.StashItem(item) is null))
+            foreach (var storage in storages.Where(storage => !ReferenceEquals(storage, fromStorage) && storage.StashItem(item) is null))
             {
+                Log.Trace($"AutoOrganize: {{ Item: {item.Name}, From: {fromStorage}, To: {storage}");
                 fromStorage.Items.Remove(item);
+                break;
             }
         }
 

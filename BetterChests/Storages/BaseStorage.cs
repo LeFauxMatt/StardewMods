@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
@@ -684,8 +686,53 @@ internal abstract class BaseStorage : IStorageObject
     public Item? StashItem(Item item, bool existingStacks = false)
     {
         var condition1 = existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true);
-        var condition2 = !this.FilterItemsList.All(filter => filter.StartsWith("!")) && this.FilterMatches(item);
+        var condition2 = this.FilterItemsList.Any() && !this.FilterItemsList.All(filter => filter.StartsWith("!")) && this.FilterMatches(item);
         return condition1 || condition2 ? this.AddItem(item) : item;
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.Append("{ ");
+        switch (this)
+        {
+            case ChestStorage:
+                sb.Append("Type: Chest");
+                break;
+            case FridgeStorage:
+                sb.Append("Type: Fridge");
+                break;
+            case JunimoHutStorage:
+                sb.Append("Type: JunimoHut");
+                break;
+            case ObjectStorage:
+                sb.Append("Type: Object");
+                break;
+            case ShippingBinStorage:
+                sb.Append("Type: ShippingBin");
+                break;
+        }
+
+        if (!string.IsNullOrWhiteSpace(this.ChestLabel))
+        {
+            sb.Append($", Name: {this.ChestLabel}");
+        }
+
+        switch (this.Parent)
+        {
+            case GameLocation location:
+                sb.Append($", Location: {location.Name}");
+                sb.Append($", Position: ({this.Position.X.ToString(CultureInfo.InvariantCulture)}");
+                sb.Append($", {this.Position.Y.ToString(CultureInfo.InvariantCulture)})");
+                break;
+            case Farmer farmer:
+                sb.Append($", Inventory: {farmer.Name}");
+                break;
+        }
+
+        sb.Append(" }");
+        return sb.ToString();
     }
 
     private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)

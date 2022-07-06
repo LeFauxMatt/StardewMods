@@ -1,5 +1,7 @@
 ﻿namespace StardewMods.BetterChests;
 
+using System.Globalization;
+using System.Text;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
@@ -85,4 +87,45 @@ internal class ModConfig
     ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
     /// </summary>
     public bool SlotLockHold { get; set; } = true;
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"BetterShippingBin: {this.BetterShippingBin.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"Configurator: {this.Configurator.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
+        sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"AutoOrganize: {this.DefaultChest.AutoOrganize.ToStringFast()}");
+        sb.AppendLine($"CarryChest: {this.DefaultChest.CarryChest.ToStringFast()}");
+        sb.AppendLine($"CarryChestSlow: {this.DefaultChest.CarryChestSlow.ToStringFast()}");
+        sb.AppendLine($"CategorizeChest: {this.CategorizeChest.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"ChestMenuTabs: {this.DefaultChest.ChestMenuTabs.ToStringFast()}");
+        sb.AppendLine($"CollectItems: {this.DefaultChest.CollectItems.ToStringFast()}");
+        sb.AppendLine($"CraftFromChest: {this.DefaultChest.CraftFromChest.ToStringFast()}");
+        sb.AppendLine($"CraftFromChestDistance: {this.DefaultChest.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.DefaultChest.CraftFromChestDisableLocations)}");
+        sb.AppendLine($"CustomColorPicker: {this.DefaultChest.CustomColorPicker.ToStringFast()}");
+        sb.AppendLine($"FilterItems: {this.DefaultChest.FilterItems.ToStringFast()}");
+        sb.AppendLine($"LabelChest: {this.LabelChest.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"OpenHeldChest: {this.DefaultChest.OpenHeldChest.ToStringFast()}");
+        sb.AppendLine($"OrganizeChest: {this.DefaultChest.OrganizeChest.ToStringFast()}");
+        sb.AppendLine($"OrganizeChestGroupBy: {this.DefaultChest.OrganizeChestGroupBy.ToStringFast()}");
+        sb.AppendLine($"OrganizeChestSortBy: {this.DefaultChest.OrganizeChestSortBy.ToStringFast()}");
+        sb.AppendLine($"ResizeChest: {this.DefaultChest.ResizeChest.ToStringFast()}");
+        sb.AppendLine($"ResizeChestCapacity: {this.DefaultChest.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"ResizeChestMenu: {this.DefaultChest.ResizeChestMenu.ToStringFast()}");
+        sb.AppendLine($"ResizeChestMenuRows: {this.DefaultChest.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"SearchItems: {this.DefaultChest.SearchItems.ToStringFast()}");
+        sb.AppendLine($"SlotLock: {this.SlotLock.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"StashToChest: {this.DefaultChest.StashToChest.ToStringFast()}");
+        sb.AppendLine($"StashToChestDistance: {this.DefaultChest.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.DefaultChest.StashToChestDisableLocations)}");
+        sb.AppendLine($"StashToChestStacks: {this.DefaultChest.StashToChestStacks.ToStringFast()}");
+        sb.AppendLine($"UnloadChest: {this.DefaultChest.UnloadChest.ToStringFast()}");
+        return sb.ToString();
+    }
 }

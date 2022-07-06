@@ -219,10 +219,15 @@ internal class DisplayedItems
     public void RefreshItems()
     {
         var items = this.ActualInventory.AsEnumerable();
-        items = this.Transformers.Aggregate(items, (current, transformer) => transformer(current));
-        items = items.Skip(this.Offset * this.Columns)
-                     .Take(this.Menu.capacity);
-        this.Items = items.ToList();
+        items = this.Transformers.Aggregate(items, (current, transformer) => transformer(current)).ToList();
+        do
+        {
+            this.Items = items
+                         .Skip(this.Offset * this.Columns)
+                         .Take(this.Menu.capacity)
+                         .ToList();
+        } while (!this.Items.Any() && items.Any() && --this.Offset > 0);
+
         for (var index = 0; index < this.Menu.inventory.Count; index++)
         {
             this.Menu.inventory[index].name = (index < this.Items.Count

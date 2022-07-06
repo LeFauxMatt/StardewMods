@@ -18,7 +18,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
 {
     private const int HorizontalTagSpacing = 10;
     private const int VerticalTagSpacing = 5;
-    private static HashSet<Item>? CachedItems;
+    private static List<Item>? CachedItems;
     private static int? CachedLineHeight;
     private static List<ClickableComponent>? CachedTags;
 
@@ -43,7 +43,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.Selected = new(matcher);
         this.Selection = matcher;
 
-        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items.ToList();
+        this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items;
         this.DisplayedItems = BetterItemGrabMenu.ItemsToGrabMenu!;
         this.DisplayedItems.AddHighlighter(this.Selection);
         this.DisplayedItems.AddTransformer(this.SortBySelection);
@@ -51,7 +51,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.DisplayedItems.RefreshItems();
     }
 
-    private static List<ClickableComponent> AllTags
+    private static IEnumerable<ClickableComponent> AllTags
     {
         get => ItemSelectionMenu.CachedTags ??= (
                                                     from item in ItemSelectionMenu.Items
@@ -69,9 +69,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
                                                 .ToList();
     }
 
-    private static IEnumerable<Item> Items
+    private static List<Item> Items
     {
-        get => ItemSelectionMenu.CachedItems ??= new(new ItemRepository().GetAll().Select(item => item.Item));
+        get => ItemSelectionMenu.CachedItems ??= new(from item in new ItemRepository().GetAll() select item.Item);
     }
 
     private static int LineHeight
@@ -81,38 +81,17 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private DisplayedItems DisplayedItems { get; }
 
+    private List<ClickableComponent> DisplayedTags { get; } = new();
+
     private DropDownList? DropDown { get; set; }
 
     private int Offset { get; set; }
 
+    private bool RefreshItems { get; set; }
+
     private HashSet<string> Selected { get; }
 
     private ItemMatcher Selection { get; }
-
-    private IEnumerable<ClickableComponent> Tags
-    {
-        get
-        {
-            var tags = (
-                from item in this.DisplayedItems.Items
-                from tag in item.GetContextTags()
-                select tag).ToList();
-
-            if (!this.Selected.Any())
-            {
-                return
-                    from tag in ItemSelectionMenu.AllTags
-                    where tags.Contains(tag.name)
-                    select tag;
-            }
-
-            return
-                from tag in ItemSelectionMenu.AllTags
-                where this.Selected.Contains(tag.name) || tags.Contains(tag.name)
-                orderby this.Selected.Contains(tag.name) ? 0 : 1, tag.name
-                select tag;
-        }
-    }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
@@ -136,7 +115,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.ItemsToGrabMenu.draw(b);
         this.okButton.draw(b);
 
-        foreach (var tag in this.inventory.inventory.Where(cc => this.inventory.isWithinBounds(cc.bounds.X, cc.bounds.Bottom - this.Offset * ItemSelectionMenu.LineHeight)))
+        foreach (var tag in this.DisplayedTags.Where(cc => this.inventory.isWithinBounds(cc.bounds.X, cc.bounds.Bottom - this.Offset * ItemSelectionMenu.LineHeight)))
         {
             if (this.hoverText == tag.name)
             {
@@ -175,7 +154,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
             return;
         }
 
-        cc = this.inventory.inventory.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * ItemSelectionMenu.LineHeight));
+        cc = this.DisplayedTags.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * ItemSelectionMenu.LineHeight));
         if (cc is not null)
         {
             this.hoveredItem = null;
@@ -215,7 +194,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
 
         // Left click a tag on bottom menu
-        itemSlot = this.inventory.inventory.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * ItemSelectionMenu.LineHeight));
+        itemSlot = this.DisplayedTags.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * ItemSelectionMenu.LineHeight));
         if (itemSlot is not null && !string.IsNullOrWhiteSpace(itemSlot.name))
         {
             this.AddOrRemoveTag(itemSlot.name);
@@ -264,7 +243,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
             case > 0 when this.Offset >= 1:
                 this.Offset--;
                 return;
-            case < 0 when this.inventory.inventory.Last().bounds.Bottom - this.Offset * ItemSelectionMenu.LineHeight - this.inventory.yPositionOnScreen >= this.inventory.height:
+            case < 0 when this.DisplayedTags.Last().bounds.Bottom - this.Offset * ItemSelectionMenu.LineHeight - this.inventory.yPositionOnScreen >= this.inventory.height:
                 this.Offset++;
                 return;
             default:
@@ -276,6 +255,50 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void update(GameTime time)
     {
+        if (this.RefreshItems)
+        {
+            this.RefreshItems = false;
+            foreach (var tag in this.Selected.Where(tag => !ItemSelectionMenu.AllTags.Any(cc => cc.name.Equals(tag))))
+            {
+                var (textWidth, textHeight) = Game1.smallFont.MeasureString(tag).ToPoint();
+                ItemSelectionMenu.CachedTags?.Add(new(new(0, 0, textWidth, textHeight), tag));
+            }
+
+            this.DisplayedTags.Clear();
+            this.DisplayedTags.AddRange(this.Selected.Any()
+                ?
+                from tag in ItemSelectionMenu.AllTags
+                where this.Selected.Contains(tag.name) || this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                orderby this.Selected.Contains(tag.name) ? 0 : 1, tag.name
+                select tag
+                :
+                from tag in ItemSelectionMenu.AllTags
+                where this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                select tag);
+            var x = this.inventory.xPositionOnScreen;
+            var y = this.inventory.yPositionOnScreen;
+            var matched = this.Selection.Any();
+
+            foreach (var tag in this.DisplayedTags)
+            {
+                if (matched && !this.Selected.Contains(tag.name))
+                {
+                    matched = false;
+                    x = this.inventory.xPositionOnScreen;
+                    y += ItemSelectionMenu.LineHeight;
+                }
+                else if (x + tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing >= this.inventory.xPositionOnScreen + this.inventory.width)
+                {
+                    x = this.inventory.xPositionOnScreen;
+                    y += ItemSelectionMenu.LineHeight;
+                }
+
+                tag.bounds.X = x;
+                tag.bounds.Y = y;
+                x += tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing;
+            }
+        }
+
         if (!this.Selected.SetEquals(this.Selection))
         {
             var added = this.Selected.Except(this.Selection).ToList();
@@ -327,39 +350,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private void OnItemsRefreshed(object? sender, EventArgs e)
     {
-        foreach (var tag in this.Selected.Where(tag => !ItemSelectionMenu.AllTags.Any(cc => cc.name.Equals(tag))))
-        {
-            var (textWidth, textHeight) = Game1.smallFont.MeasureString(tag).ToPoint();
-            ItemSelectionMenu.AllTags.Add(new(new(0, 0, textWidth, textHeight), tag));
-        }
-
-        this.inventory.inventory = this.Tags.ToList();
-        var x = this.inventory.xPositionOnScreen;
-        var y = this.inventory.yPositionOnScreen;
-        var matched = this.Selection.Any();
-
-        foreach (var tag in this.inventory.inventory)
-        {
-            if (matched && !this.Selected.Contains(tag.name))
-            {
-                matched = false;
-                x = this.inventory.xPositionOnScreen;
-                y += ItemSelectionMenu.LineHeight;
-            }
-            else if (x + tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing >= this.inventory.xPositionOnScreen + this.inventory.width)
-            {
-                x = this.inventory.xPositionOnScreen;
-                y += ItemSelectionMenu.LineHeight;
-            }
-
-            tag.bounds.X = x;
-            tag.bounds.Y = y;
-            x += tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing;
-        }
+        this.RefreshItems = true;
     }
 
     private IEnumerable<Item> SortBySelection(IEnumerable<Item> items)
     {
-        return items.OrderBy(item => this.Selection.Matches(item) ? 0 : 1);
+        return this.Selection.Any() ? items.OrderBy(item => this.Selection.Matches(item) ? 0 : 1) : items;
     }
 }

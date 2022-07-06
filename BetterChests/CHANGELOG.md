@@ -1,8 +1,11 @@
 ﻿# Better Chests Change Log
 
-## 2.0.3 (Unreleased)
+## 2.0.3 (July 5, 2022)
 
 * Added alert if FuryCore is installed.
+* Added additional logging of config.
+* Added additional logging of AutoOrganize.
+* Fixed displayed items turning invisible in chests.
 
 ## 2.0.2 (July 2, 2022)
 

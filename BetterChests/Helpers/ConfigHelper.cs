@@ -8,6 +8,7 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <summary>
@@ -49,7 +50,9 @@ internal class ConfigHelper
                 // ignored
             }
 
-            return this._config = config ?? new ModConfig();
+            this._config = config ?? new ModConfig();
+            Log.Trace(this._config.ToString());
+            return this._config;
         }
     }
 
