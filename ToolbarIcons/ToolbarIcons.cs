@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
+using StardewMods.ToolbarIcons.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -19,6 +21,7 @@ public class ToolbarIcons : Mod
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<Dictionary<string, ClickableTextureComponent>> _icons = new(() => new());
+    private ClickableTextureComponent? _icon;
     private MethodInfo? _overrideButtonReflected;
 
     private Dictionary<string, string> Actions
@@ -37,12 +40,23 @@ public class ToolbarIcons : Mod
         set => this._hoverText.Value = value;
     }
 
+    private ClickableTextureComponent Icon
+    {
+        get => this._icon ??= new(
+            new(0, 0, 32, 32),
+            this.Helper.GameContent.Load<Texture2D>("furyx639.ToolbarIcons/Icons"),
+            new(0, 0, 16, 16),
+            2f);
+    }
+
     private Dictionary<string, ClickableTextureComponent> Icons
     {
         get => this._icons.Value;
     }
 
     private IDictionary<string, SButton[]> Keybinds { get; } = new Dictionary<string, SButton[]>();
+
+    private IntegrationHelper? ModIntegrations { get; set; }
 
     private MethodInfo OverrideButtonReflected
     {
@@ -53,6 +67,7 @@ public class ToolbarIcons : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
+        this.ModIntegrations = IntegrationHelper.Init(this.Helper, this.Api);
 
         if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
         {
@@ -76,7 +91,11 @@ public class ToolbarIcons : Mod
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
+        if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Icons"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+        }
+        else if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
         {
             e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
         }
@@ -199,6 +218,9 @@ public class ToolbarIcons : Mod
 
         foreach (var icon in this.Icons.Values)
         {
+            this.Icon.bounds.X = icon.bounds.X;
+            this.Icon.bounds.Y = icon.bounds.Y;
+            this.Icon.draw(e.SpriteBatch);
             icon.draw(e.SpriteBatch);
         }
     }
