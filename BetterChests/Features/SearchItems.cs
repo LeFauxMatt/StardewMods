@@ -384,7 +384,7 @@ internal class SearchItems : IFeature
         this.SearchField.Selected = false;
         this.SearchArea.visible = true;
         this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
-        this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
+        this.SearchIcon.bounds = new(this.SearchField.X + this.SearchField.Width - 38, this.SearchField.Y + 6, 32, 32);
 
         BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
     }

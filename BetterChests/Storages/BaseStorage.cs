@@ -269,7 +269,7 @@ internal abstract class BaseStorage : IStorageObject
     /// <inheritdoc />
     public int MenuCapacity
     {
-        get => this._menuRows * 12;
+        get => this.MenuRows * 12;
     }
 
     /// <inheritdoc />

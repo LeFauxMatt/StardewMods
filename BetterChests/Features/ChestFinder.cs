@@ -8,9 +8,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
 using StardewMods.BetterChests.UI;
-using StardewMods.Common.Integrations.BetterChests;
+using StardewMods.Common.Helpers;
 using StardewValley;
 
 /// <summary>
@@ -18,7 +17,7 @@ using StardewValley;
 /// </summary>
 internal class ChestFinder : IFeature
 {
-    private readonly PerScreen<IStorageObject?> _fakeStorage = new();
+    private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
 
     private ChestFinder(IModHelper helper, ModConfig config)
     {
@@ -30,14 +29,14 @@ internal class ChestFinder : IFeature
 
     private ModConfig Config { get; }
 
-    private IStorageObject FakeStorage
-    {
-        get => this._fakeStorage.Value ??= new ChestStorage(new(), Game1.getFarm(), this.Config.DefaultChest, Vector2.Zero);
-    }
-
     private IModHelper Helper { get; }
 
     private bool IsActivated { get; set; }
+
+    private ItemMatcher ItemMatcher
+    {
+        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
+    }
 
     /// <summary>
     ///     Initializes <see cref="ChestFinder" />.
@@ -101,7 +100,7 @@ internal class ChestFinder : IFeature
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!this.FakeStorage.FilterMatcher.Any())
+        if (!Context.IsPlayerFree || !this.ItemMatcher.Any())
         {
             return;
         }
@@ -110,7 +109,7 @@ internal class ChestFinder : IFeature
         var srcRect = new Rectangle(412, 495, 5, 4);
         foreach (var storage in StorageHelper.CurrentLocation)
         {
-            if (!storage.Items.Any(this.FakeStorage.FilterMatches))
+            if (!storage.Items.Any(this.ItemMatcher.Matches))
             {
                 continue;
             }
@@ -181,7 +180,7 @@ internal class ChestFinder : IFeature
                 rotation -= (float)Math.PI / 4f;
             }
 
-            onScreenPos = Utility.ModifyCoordinatesForUIScale(onScreenPos);
+            onScreenPos = Utility.makeSafe(onScreenPos, new((float)srcRect.Width * Game1.pixelZoom, (float)srcRect.Height * Game1.pixelZoom));
             e.SpriteBatch.Draw(
                 Game1.mouseCursors,
                 onScreenPos,
@@ -205,6 +204,6 @@ internal class ChestFinder : IFeature
 
     private void OpenChestFinder()
     {
-        Game1.activeClickableMenu = new ItemSelectionMenu(this.FakeStorage, this.FakeStorage.FilterMatcher);
+        Game1.activeClickableMenu = new SearchBar(this.Helper, this.ItemMatcher);
     }
 }
