@@ -4,7 +4,15 @@
 
 * Added a default background to all icons.
 * Added alert if FuryCore is installed.
-* Added support for Stardew Aquarium.
+* Added direct integration with some mods.
+    * Always Scroll Map
+    * Chests Anywhere
+    * CJB Cheats Menu
+    * CJB Item Spawner
+    * Dynamic Game Assets
+    * Instant Buildings
+    * Lookup Anything
+    * Stardew Aquarium
 
 ## 2.0.0 (July 2, 2022)
 

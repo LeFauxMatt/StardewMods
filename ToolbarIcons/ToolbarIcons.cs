@@ -56,8 +56,6 @@ public class ToolbarIcons : Mod
 
     private IDictionary<string, SButton[]> Keybinds { get; } = new Dictionary<string, SButton[]>();
 
-    private IntegrationHelper? ModIntegrations { get; set; }
-
     private MethodInfo OverrideButtonReflected
     {
         get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
@@ -67,7 +65,7 @@ public class ToolbarIcons : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
-        this.ModIntegrations = IntegrationHelper.Init(this.Helper, this.Api);
+        IntegrationHelper.Init(this.Helper, this.Api);
 
         if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
         {
@@ -127,11 +125,6 @@ public class ToolbarIcons : Mod
                     {
                         subIcon.visible = !subIcon.visible;
                     }
-                }
-                else if (action.StartsWith("command:"))
-                {
-                    var command = action[8..].Trim().Split(' ');
-                    this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
                 }
                 else if (action.StartsWith("keybind:"))
                 {
