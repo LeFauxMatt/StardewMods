@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.0.4 (Unreleased)
+
+* Fixed Shipping Bin not detected when launched by Chests Anywhere.
+
 ## 2.0.3 (July 5, 2022)
 
 * Added alert if FuryCore is installed.
