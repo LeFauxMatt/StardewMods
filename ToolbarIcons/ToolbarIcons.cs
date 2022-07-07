@@ -25,7 +25,6 @@ public class ToolbarIcons : Mod
     private const string DebugModeId = "Pathoschild.DebugMode";
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
     private const string HorseFluteAnywhereId = "Pathoschild.HorseFluteAnywhere";
-    private const string IconPath = "furyx639.ToolbarIcons/Icons";
     private const string InstantBuildingId = "BitwiseJonMods.InstantBuildings";
     private const string LookupAnythingId = "Pathoschild.LookupAnything";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
