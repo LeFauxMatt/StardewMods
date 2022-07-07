@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using StardewModdingAPI;
@@ -19,7 +20,10 @@ internal class IntegrationHelper
     private const string ChestsAnywhereId = "Pathoschild.ChestsAnywhere";
     private const string CJBCheatsMenuId = "CJBok.CheatsMenu";
     private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
+    private const string DataLayersId = "Pathoschild.DataLayers";
+    private const string DebugModeId = "Pathoschild.DebugMode";
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
+    private const string HorseFluteAnywhereId = "Pathoschild.HorseFluteAnywhere";
     private const string InstantBuildingId = "BitwiseJonMods.InstantBuildings";
     private const string LookupAnythingId = "Pathoschild.LookupAnything";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
@@ -29,7 +33,10 @@ internal class IntegrationHelper
     private IReflectedMethod? _chestsAnywhereOpenMenu;
     private IReflectedMethod? _cjbCheatsMenuOpenCheatsMenu;
     private IReflectedMethod? _cjbItemSpawnerBuildMenu;
+    private IReflectedMethod? _dataLayersToggleLayers;
+    private IReflectedMethod? _debugModeToggleDebugMenu;
     private IReflectedMethod? _dynamicGameAssetsStoreCommand;
+    private IReflectedMethod? _horseFluteAnywhereSummonHorse;
     private IReflectedMethod? _instantBuildingsInstantBuild;
     private IReflectedMethod? _instantBuildingsInstantUpgrade;
     private IReflectedMethod? _lookupAnythingTryToggleSearch;
@@ -148,6 +155,36 @@ internal class IntegrationHelper
         }
     }
 
+    private void DataLayers_ToggleLayers()
+    {
+        if (this._dataLayersToggleLayers is not null)
+        {
+            this._dataLayersToggleLayers.Invoke();
+            return;
+        }
+
+        if (this.TryGetMod(IntegrationHelper.DataLayersId, out var mod))
+        {
+            this._dataLayersToggleLayers = this.Helper.Reflection.GetMethod(mod, "ToggleLayers");
+            this._dataLayersToggleLayers.Invoke();
+        }
+    }
+
+    private void DebugMode_ToggleDebugMenu()
+    {
+        if (this._debugModeToggleDebugMenu is not null)
+        {
+            this._debugModeToggleDebugMenu.Invoke();
+            return;
+        }
+
+        if (this.TryGetMod(IntegrationHelper.DebugModeId, out var mod))
+        {
+            this._debugModeToggleDebugMenu = this.Helper.Reflection.GetMethod(mod, "ToggleDebugMenu");
+            this._debugModeToggleDebugMenu.Invoke();
+        }
+    }
+
     private void DynamicGameAssets_StoreCommand()
     {
         if (this._dynamicGameAssetsStoreCommand is not null)
@@ -160,6 +197,21 @@ internal class IntegrationHelper
         {
             this._dynamicGameAssetsStoreCommand = this.Helper.Reflection.GetMethod(mod, "OnStoreCommand");
             this._dynamicGameAssetsStoreCommand.Invoke("dga_store", Array.Empty<string>());
+        }
+    }
+
+    private void HorseFluteAnywhere_SummonHorse()
+    {
+        if (this._horseFluteAnywhereSummonHorse is not null)
+        {
+            this._horseFluteAnywhereSummonHorse.Invoke();
+            return;
+        }
+
+        if (this.TryGetMod(IntegrationHelper.HorseFluteAnywhereId, out var mod))
+        {
+            this._horseFluteAnywhereSummonHorse = this.Helper.Reflection.GetMethod(mod, "SummonHorse");
+            this._horseFluteAnywhereSummonHorse.Invoke();
         }
     }
 
@@ -214,7 +266,10 @@ internal class IntegrationHelper
         this.TryAdd(IntegrationHelper.ChestsAnywhereId, 3, this.ChestsAnywhere_OpenMenu);
         this.TryAdd(IntegrationHelper.CJBCheatsMenuId, 4, this.CJBCheatsMenu_OpenCheatsMenu);
         this.TryAdd(IntegrationHelper.CJBItemSpawnerId, 5, this.CJBItemSpawner_ShowMenu);
+        this.TryAdd(IntegrationHelper.DataLayersId, 10, this.DataLayers_ToggleLayers);
+        this.TryAdd(IntegrationHelper.DebugModeId, 11, this.DebugMode_ToggleDebugMenu);
         this.TryAdd(IntegrationHelper.DynamicGameAssetsId, 6, this.DynamicGameAssets_StoreCommand);
+        this.TryAdd(IntegrationHelper.HorseFluteAnywhereId, 12, this.HorseFluteAnywhere_SummonHorse);
         this.TryAdd(IntegrationHelper.InstantBuildingId, 7, this.InstantBuildings_InstantBuild, this.Helper.Translation.Get($"button.{IntegrationHelper.InstantBuildingId}.Build"));
         this.TryAdd(IntegrationHelper.InstantBuildingId, 8, this.InstantBuildings_InstantUpgrade, this.Helper.Translation.Get($"button.{IntegrationHelper.InstantBuildingId}.Upgrade"));
         this.TryAdd(IntegrationHelper.LookupAnythingId, 9, this.LookupAnything_TryToggleSearch);
