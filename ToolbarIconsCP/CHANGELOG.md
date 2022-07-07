@@ -7,7 +7,10 @@
   * Chests Anywhere
   * CJB Cheats Menu
   * CJB Item Spawner
+  * Data Layers
+  * Debug Mode
   * Dynamic Game Assets
+  * Horse Flute Anywhere
   * Instant Buildings
   * Lookup Anything
   * Stardew Aquarium

@@ -1,22 +1,6 @@
 {
   "Format": "1.24.0",
   "ConfigSchema": {
-    "EnableDataLayers": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "DataLayersHotkey": {
-      "AllowBlank": true,
-      "Default": "F2"
-    },
-    "EnableDebugMode": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "DebugModeHotkey": {
-      "AllowBlank": true,
-      "Default": "OemTilde"
-    },
     "EnableEventLookup": {
       "AllowValues": "true, false",
       "Default": true
@@ -24,14 +8,6 @@
     "EventLookupHotkey": {
       "AllowBlank": true,
       "Default": "N"
-    },
-    "EnableHorseFluteAnywhere": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "HorseFluteAnywhereHotkey": {
-      "AllowBlank": true,
-      "Default": "H"
     },
     "EnableResetTerrainFeatures": {
       "AllowValues": "true, false",
@@ -49,30 +25,6 @@
       "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
       "FromFile": "assets/icons.png"
     },
-    // Add Data Layers Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Data Layers": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left/keybind: {{DataLayersHotkey}}"
-      },
-      "When": {
-        "EnableDataLayers": true,
-        "HasMod": "Pathoschild.DataLayers"
-      }
-    },
-    // Add Debug Mode Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Debug Mode": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left/keybind: {{DebugModeHotkey}}"
-      },
-      "When": {
-        "EnableDebugMode": true,
-        "HasMod": "Pathoschild.DebugMode"
-      }
-    },
     // Add Event Lookup Icon
     {
       "Action": "EditData",
@@ -83,18 +35,6 @@
       "When": {
         "EnableEventLookup": true,
         "HasMod": "shekurika.EventLookup"
-      }
-    },
-    // Add Horse Flute Anywhere Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Horse Flute Anywhere": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left/keybind: {{HorseFluteAnywhereHotkey}}"
-      },
-      "When": {
-        "EnableHorseFluteAnywhere": true,
-        "HasMod": "Pathoschild.HorseFluteAnywhere"
       }
     },
     // Add Reset Terrain Features Icon
