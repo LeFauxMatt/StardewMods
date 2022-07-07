@@ -1,11 +1,14 @@
 ﻿{
-  "button.bcmpinc.AlwaysScrollMap": "Toggle Always Scroll Map",
-  "button.Pathoschild.ChestsAnywhere": "Toggle Chests Anywhere",
-  "button.CJBok.CheatsMenu": "Open CJB Cheats Menu",
-  "button.CJBok.ItemSpawner": "Show CJB Item Spawner",
-  "button.spacechase0.DynamicGameAssets": "Dynamic Game Assets Store",
-  "button.BitwiseJonMods.InstantBuildings.Build": "Show Instant Build Menu",
-  "button.BitwiseJonMods.InstantBuildings.Upgrade": "Perform Instant House Upgrade",
-  "button.Pathoschild.LookupAnything": "Toggle Lookup Anything Search",
-  "button.Cherry.StardewAquarium": "Stardew Aquarium Collection"
+  "button.AlwaysScrollMap": "Toggle Always Scroll Map",
+  "button.ChestsAnywhere": "Toggle Chests Anywhere",
+  "button.CheatsMenu": "Open CJB Cheats Menu",
+  "button.DataLayers": "Toggle Data Layers",
+  "button.DebugMode": "Toggle Debug Mode",
+  "button.ItemSpawner": "Show CJB Item Spawner",
+  "button.DynamicGameAssets": "Dynamic Game Assets Store",
+  "button.HorseFluteAnywhere": "Summon Horse",
+  "button.InstantBuildings.Build": "Show Instant Build Menu",
+  "button.InstantBuildings.Upgrade": "Perform Instant House Upgrade",
+  "button.LookupAnything": "Toggle Lookup Anything Search",
+  "button.StardewAquarium": "Stardew Aquarium Collection"
 }
