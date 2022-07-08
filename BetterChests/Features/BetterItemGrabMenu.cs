@@ -65,21 +65,21 @@ internal class BetterItemGrabMenu : IFeature
     }
 
     /// <summary>
-    ///     Gets or sets the bottom inventory menu.
+    ///     Gets the bottom inventory menu.
     /// </summary>
     public static DisplayedItems? Inventory
     {
         get => BetterItemGrabMenu.Instance!._inventory.Value;
-        set => BetterItemGrabMenu.Instance!._inventory.Value = value;
+        private set => BetterItemGrabMenu.Instance!._inventory.Value = value;
     }
 
     /// <summary>
-    ///     Gets or sets the top inventory menu.
+    ///     Gets the top inventory menu.
     /// </summary>
     public static DisplayedItems? ItemsToGrabMenu
     {
         get => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value;
-        set => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value = value;
+        private set => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value = value;
     }
 
     /// <summary>
@@ -242,16 +242,17 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu
-            || !StorageHelper.TryGetOne(context, out _))
+        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu || !StorageHelper.TryGetOne(context, out _))
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
             return;
         }
 
+        __instance.setBackgroundTransparency(false);
         if (!ReferenceEquals(itemGrabMenu, BetterItemGrabMenu.Instance!.Menu))
         {
+            BetterItemGrabMenu.Instance.Menu = itemGrabMenu;
             if (ReferenceEquals(context, BetterItemGrabMenu.Instance.Menu?.context))
             {
                 BetterItemGrabMenu.Inventory = new(inventory, false)
@@ -268,11 +269,7 @@ internal class BetterItemGrabMenu : IFeature
                 BetterItemGrabMenu.Inventory = new(inventory, false);
                 BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true);
             }
-
-            BetterItemGrabMenu.Instance.Menu = itemGrabMenu;
         }
-
-        __instance.setBackgroundTransparency(false);
     }
 
     private static void ItemGrabMenu_organizeItemsInList_postfix(IList<Item> items)
@@ -282,36 +279,20 @@ internal class BetterItemGrabMenu : IFeature
             return;
         }
 
-        if (ReferenceEquals(itemGrabMenu.inventory.actualInventory, items))
-        {
-            BetterItemGrabMenu.RefreshInventory = true;
-            return;
-        }
-
-        if (ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items))
-        {
-            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
-        }
+        BetterItemGrabMenu.RefreshInventory |= ReferenceEquals(itemGrabMenu.inventory.actualInventory, items);
+        BetterItemGrabMenu.RefreshItemsToGrabMenu |= ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items);
     }
 
     private static void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu)
-        {
-            return;
-        }
-
-        BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
+        BetterItemGrabMenu.RefreshItemsToGrabMenu |= Game1.activeClickableMenu is ItemGrabMenu;
+        BetterItemGrabMenu.RefreshInventory |= Game1.activeClickableMenu is ItemGrabMenu;
     }
 
     private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu || !e.IsLocalPlayer)
-        {
-            return;
-        }
-
-        BetterItemGrabMenu.RefreshInventory = true;
+        BetterItemGrabMenu.RefreshItemsToGrabMenu |= Game1.activeClickableMenu is ItemGrabMenu;
+        BetterItemGrabMenu.RefreshInventory |= Game1.activeClickableMenu is ItemGrabMenu && e.IsLocalPlayer;
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
