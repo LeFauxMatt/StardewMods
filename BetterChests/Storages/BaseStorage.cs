@@ -631,6 +631,12 @@ internal abstract class BaseStorage : IStorageObject
     /// <inheritdoc />
     public void OrganizeItems(bool descending = false)
     {
+        if (this.OrganizeChestGroupBy == GroupBy.Default && this.OrganizeChestSortBy == SortBy.Default)
+        {
+            ItemGrabMenu.organizeItemsInList(this.Items);
+            return;
+        }
+
         var items = this.Items
                         .OfType<Item>()
                         .OrderBy(item => this.OrganizeChestGroupBy switch
