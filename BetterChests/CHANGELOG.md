@@ -3,6 +3,8 @@
 ## 2.0.4 (Unreleased)
 
 * Fixed Shipping Bin not detected when launched by Chests Anywhere.
+* Fixed items not updating when you add or remove items from a chest.
+* Fixed AutoOrganize ignoring priority when moving items.
 
 ## 2.0.3 (July 5, 2022)
 
