@@ -12,6 +12,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.PatternPatcher;
@@ -87,7 +88,7 @@ internal class SearchItems : IFeature
 
     private ItemMatcher ItemMatcher
     {
-        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
+        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString(), this.Helper.Translation);
         set => this._itemMatcher.Value = value;
     }
 
@@ -169,7 +170,7 @@ internal class SearchItems : IFeature
                 break;
         }
 
-        return SearchItems.Instance?.Storage?.SearchItems switch
+        return SearchItems.Instance.Storage?.SearchItems switch
         {
             null or FeatureOption.Disabled => 0,
             _ => SearchItems.ExtraSpace,
@@ -403,7 +404,7 @@ internal class SearchItems : IFeature
                 return;
             }
 
-            this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString());
+            this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString(), this.Helper.Translation);
             this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
             this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
             this.SearchField.Width = itemsToGrabMenu.width;

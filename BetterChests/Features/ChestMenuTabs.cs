@@ -8,8 +8,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewValley;
 using StardewValley.Menus;
 

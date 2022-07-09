@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Helpers;
+﻿namespace StardewMods.BetterChests.Models;
 
 using System;
 using System.Collections.Generic;
@@ -7,12 +7,12 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using StardewModdingAPI;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 
-/// <summary>
-///     Matches item name/tags against a set of search phrases.
-/// </summary>
-public class ItemMatcher : ObservableCollection<string>
+/// <inheritdoc cref="StardewMods.Common.Integrations.BetterChests.IItemMatcher" />
+internal class ItemMatcher : ObservableCollection<string>, IItemMatcher
 {
     private readonly IDictionary<string, SearchPhrase> _clean = new Dictionary<string, SearchPhrase>();
 
@@ -21,15 +21,15 @@ public class ItemMatcher : ObservableCollection<string>
     /// </summary>
     /// <param name="exactMatch">Set to true to disallow partial matches.</param>
     /// <param name="searchTagSymbol">Prefix to denote search is based on an item's context tags.</param>
-    public ItemMatcher(bool exactMatch = false, string? searchTagSymbol = null)
+    /// <param name="translation">Translations from the i18n folder.</param>
+    public ItemMatcher(bool exactMatch = false, string? searchTagSymbol = null, ITranslationHelper? translation = null)
     {
+        this.Translation = translation;
         this.ExactMatch = exactMatch;
         this.SearchTagSymbol = searchTagSymbol ?? string.Empty;
     }
 
-    /// <summary>
-    ///     Gets or sets a string representation of all registered search texts.
-    /// </summary>
+    /// <inheritdoc />
     public string StringValue
     {
         get => string.Join(" ", this);
@@ -50,11 +50,9 @@ public class ItemMatcher : ObservableCollection<string>
 
     private string SearchTagSymbol { get; }
 
-    /// <summary>
-    ///     Checks if an item matches the search phrases.
-    /// </summary>
-    /// <param name="item">The item to check.</param>
-    /// <returns>Returns true if item matches any search phrase unless a NotMatch search phrase was matched.</returns>
+    private ITranslationHelper? Translation { get; }
+
+    /// <inheritdoc />
     public bool Matches(Item? item)
     {
         if (item is null)
@@ -137,17 +135,18 @@ public class ItemMatcher : ObservableCollection<string>
         }
 
         var newValue = stringBuilder.ToString();
-        return string.IsNullOrWhiteSpace(newValue) ? null : new(newValue, tagMatch, this.ExactMatch);
+        return string.IsNullOrWhiteSpace(newValue) ? null : new(newValue, tagMatch, this.ExactMatch, this.Translation);
     }
 
     private record SearchPhrase
     {
-        public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false)
+        public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false, ITranslationHelper? translation = null)
         {
             this.NotMatch = value[..1] == "!";
-            this.ExactMatch = exactMatch;
             this.TagMatch = tagMatch;
+            this.ExactMatch = exactMatch;
             this.Value = this.NotMatch ? value[1..] : value;
+            this.Translation = translation;
         }
 
         public bool NotMatch { get; }
@@ -155,6 +154,8 @@ public class ItemMatcher : ObservableCollection<string>
         private bool ExactMatch { get; }
 
         private bool TagMatch { get; }
+
+        private ITranslationHelper? Translation { get; }
 
         private string Value { get; }
 
@@ -170,6 +171,15 @@ public class ItemMatcher : ObservableCollection<string>
 
         private bool Matches(string match)
         {
+            if (this.Translation is not null && !this.ExactMatch)
+            {
+                var localMatch = this.Translation.Get($"tag.{match}").Default(string.Empty).ToString();
+                if (!string.IsNullOrWhiteSpace(localMatch) && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return true;
+                }
+            }
+
             return this.ExactMatch
                 ? this.Value.Equals(match, StringComparison.OrdinalIgnoreCase)
                 : match.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1;

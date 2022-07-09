@@ -2,6 +2,7 @@
 
 ## 2.1.0 (Unreleased)
 
+* Added localized tags for search and categorization.
 * Configure chest now happens from the chest inventory menu.
 * Fixed Shipping Bin not detected when launched by Chests Anywhere.
 * Fixed items not updating when you add or remove items from a chest.
