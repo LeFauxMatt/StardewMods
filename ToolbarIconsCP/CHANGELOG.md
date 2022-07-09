@@ -1,6 +1,6 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
-## 2.1.0 (Unreleased)
+## 2.1.0 (July 9, 2022)
 
 * Removed icons for mods that are directly integrated into ToolbarIcons.
   * Always Scroll Map

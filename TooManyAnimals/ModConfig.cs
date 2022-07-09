@@ -23,8 +23,6 @@ internal class ModConfig
     {
         var sb = new StringBuilder();
         sb.AppendLine($"AnimalShopLimit: {this.AnimalShopLimit.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"NextPage: {this.ControlScheme.NextPage}");
-        sb.AppendLine($"PreviousPage: {this.ControlScheme.PreviousPage}");
         return sb.ToString();
     }
 }

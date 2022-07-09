@@ -53,8 +53,6 @@ internal class ModConfig
         sb.AppendLine($"DoForage: {this.DoForage.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"DoMachines: {this.DoMachines.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"DoTerrain: {this.DoTerrain.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CollectItems: {this.ControlScheme.CollectItems}");
-        sb.AppendLine($"DispenseItems: {this.ControlScheme.DispenseItems}");
         return sb.ToString();
     }
 }
