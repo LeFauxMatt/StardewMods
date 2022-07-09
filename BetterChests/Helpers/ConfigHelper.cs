@@ -101,7 +101,15 @@ internal class ConfigHelper
         ConfigHelper.Instance!.SetupConfig(ConfigHelper.Instance.ModManifest, storage, false);
     }
 
-    private static Action<SpriteBatch, Vector2> DrawButton(IStorageObject storage, string label)
+    private static void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+    {
+        if (IntegrationHelper.GMCM.IsLoaded)
+        {
+            ConfigHelper.SetupMainConfig();
+        }
+    }
+
+    private Action<SpriteBatch, Vector2> DrawButton(IStorageObject storage, string label)
     {
         var dims = Game1.dialogueFont.MeasureString(label);
         return (b, pos) =>
@@ -112,7 +120,7 @@ internal class ConfigHelper
                 var point = Game1.getMousePosition();
                 if (Game1.oldMouseState.LeftButton == ButtonState.Released && Mouse.GetState().LeftButton == ButtonState.Pressed && bounds.Contains(point))
                 {
-                    Game1.activeClickableMenu.SetChildMenu(new ItemSelectionMenu(storage, storage.FilterMatcher));
+                    Game1.activeClickableMenu.SetChildMenu(new ItemSelectionMenu(storage, storage.FilterMatcher, this.Helper.Translation));
                     return;
                 }
             }
@@ -141,14 +149,6 @@ internal class ConfigHelper
                 -1,
                 0f);
         };
-    }
-
-    private static void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
-    {
-        if (IntegrationHelper.GMCM.IsLoaded)
-        {
-            ConfigHelper.SetupMainConfig();
-        }
     }
 
     private void SaveConfig()
@@ -442,7 +442,7 @@ internal class ConfigHelper
             IntegrationHelper.GMCM.API.AddComplexOption(
                 manifest,
                 I18n.Config_FilterItemsList_Name,
-                ConfigHelper.DrawButton(storageObject, I18n.Button_Configure_Name()),
+                this.DrawButton(storageObject, I18n.Button_Configure_Name()),
                 I18n.Config_FilterItemsList_Tooltip,
                 height: () => Game1.tileSize,
                 fieldId: nameof(IStorageData.FilterItemsList));
