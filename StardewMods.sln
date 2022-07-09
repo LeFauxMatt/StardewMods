@@ -44,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JasonShuffle", "JasonShuffl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolbarIcons", "ToolbarIcons\ToolbarIcons.csproj", "{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryCore", "archived\FuryCore\FuryCore.csproj", "{47179C1D-65BE-4D2D-A52C-F2F3F3E88C2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuryCore", "archived\FuryCore\FuryCore.csproj", "{47179C1D-65BE-4D2D-A52C-F2F3F3E88C2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,8 +131,6 @@ Global
 		CommonHarmony\CommonHarmony.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
-		CommonHarmony\CommonHarmony.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
-		Common\Common.projitems*{88ab327c-d567-41c5-a02b-26f4821a8e98}*SharedItemsImports = 5
 		CommonHarmony\CommonHarmony.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{a13ea40a-a388-44c0-8241-283ce90e1dc4}*SharedItemsImports = 5

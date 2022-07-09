@@ -5,20 +5,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
+using StardewMods.ToolbarIcons.ModIntegrations;
 using StardewValley;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 public class ToolbarIcons : Mod
 {
+    private const string AlwaysScrollMapId = "bcmpinc.AlwaysScrollMap";
+    private const string ChestsAnywhereId = "Pathoschild.ChestsAnywhere";
+    private const string CJBCheatsMenuId = "CJBok.CheatsMenu";
+    private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
+    private const string DataLayersId = "Pathoschild.DataLayers";
+    private const string DebugModeId = "Pathoschild.DebugMode";
+    private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
+    private const string HorseFluteAnywhereId = "Pathoschild.HorseFluteAnywhere";
+    private const string InstantBuildingId = "BitwiseJonMods.InstantBuildings";
+    private const string LookupAnythingId = "Pathoschild.LookupAnything";
+    private const string StardewAquariumId = "Cherry.StardewAquarium";
+
     private readonly PerScreen<Dictionary<string, string>> _actions = new(() => new());
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
     private readonly PerScreen<string> _hoverText = new();
     private readonly PerScreen<Dictionary<string, ClickableTextureComponent>> _icons = new(() => new());
+    private ClickableTextureComponent? _icon;
     private MethodInfo? _overrideButtonReflected;
 
     private Dictionary<string, string> Actions
@@ -37,6 +52,15 @@ public class ToolbarIcons : Mod
         set => this._hoverText.Value = value;
     }
 
+    private ClickableTextureComponent Icon
+    {
+        get => this._icon ??= new(
+            new(0, 0, 32, 32),
+            this.Helper.GameContent.Load<Texture2D>("furyx639.ToolbarIcons/Icons"),
+            new(0, 0, 16, 16),
+            2f);
+    }
+
     private Dictionary<string, ClickableTextureComponent> Icons
     {
         get => this._icons.Value;
@@ -53,6 +77,7 @@ public class ToolbarIcons : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
+        I18n.Init(helper.Translation);
 
         if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
         {
@@ -61,6 +86,7 @@ public class ToolbarIcons : Mod
 
         // Events
         this.Helper.Events.Content.AssetRequested += ToolbarIcons.OnAssetRequested;
+        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
@@ -76,7 +102,11 @@ public class ToolbarIcons : Mod
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
+        if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Icons"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+        }
+        else if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
         {
             e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
         }
@@ -108,11 +138,6 @@ public class ToolbarIcons : Mod
                     {
                         subIcon.visible = !subIcon.visible;
                     }
-                }
-                else if (action.StartsWith("command:"))
-                {
-                    var command = action[8..].Trim().Split(' ');
-                    this.Helper.ConsoleCommands.Trigger(command[0], command[1..]);
                 }
                 else if (action.StartsWith("keybind:"))
                 {
@@ -165,6 +190,66 @@ public class ToolbarIcons : Mod
         }
     }
 
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+    {
+        var simple = SimpleIntegration.Init(this.Helper, this.Api);
+        var complex = ComplexIntegration.Init(this.Helper, this.Api);
+
+        // Integrations
+        complex.AddIntegration(
+            ToolbarIcons.AlwaysScrollMapId,
+            2,
+            I18n.Button_AlwaysScrollMap(),
+            mod =>
+            {
+                var config = mod.GetType().GetField("config")?.GetValue(mod);
+                if (config is null)
+                {
+                    return null;
+                }
+
+                var enabledIndoors = this.Helper.Reflection.GetField<bool>(config, "EnabledIndoors");
+                var enabledOutdoors = this.Helper.Reflection.GetField<bool>(config, "EnabledOutdoors");
+                if (enabledIndoors is null || enabledOutdoors is null)
+                {
+                    return null;
+                }
+
+                return () =>
+                {
+                    if (Game1.currentLocation.IsOutdoors)
+                    {
+                        enabledOutdoors.SetValue(!enabledOutdoors.GetValue());
+                    }
+                    else
+                    {
+                        enabledIndoors.SetValue(!enabledIndoors.GetValue());
+                    }
+                };
+            });
+        simple.AddIntegration(ToolbarIcons.ChestsAnywhereId, 3, I18n.Button_ChestsAnywhere(), "OpenMenu");
+        simple.AddIntegration(ToolbarIcons.CJBCheatsMenuId, 4, I18n.Button_CheatsMenu(), "OpenCheatsMenu", 0, true);
+        complex.AddIntegration(
+            ToolbarIcons.CJBItemSpawnerId,
+            5,
+            I18n.Button_ItemSpawner(),
+            mod =>
+            {
+                var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu");
+                return buildMenu is not null
+                    ? () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); }
+                    : null;
+            });
+        simple.AddIntegration(ToolbarIcons.DataLayersId, 10, I18n.Button_DataLayers(), "ToggleLayers");
+        simple.AddIntegration(ToolbarIcons.DebugModeId, 11, I18n.Button_DebugMode(), "ToggleDebugMenu");
+        simple.AddIntegration(ToolbarIcons.DynamicGameAssetsId, 6, I18n.Button_DynamicGameAssets(), "OnStoreCommand", "dga_store", Array.Empty<string>());
+        simple.AddIntegration(ToolbarIcons.HorseFluteAnywhereId, 12, I18n.Button_HorseFluteAnywhere(), "SummonHorse");
+        simple.AddIntegration(ToolbarIcons.InstantBuildingId, 7, I18n.Button_InstantBuildings_Build(), "HandleInstantBuildButtonClick");
+        simple.AddIntegration(ToolbarIcons.InstantBuildingId, 8, I18n.Button_InstantBuildings_Upgrade(), "HandleInstantUpgradeButtonClick");
+        simple.AddIntegration(ToolbarIcons.LookupAnythingId, 9, I18n.Button_LookupAnything(), "TryToggleSearch");
+        simple.AddIntegration(ToolbarIcons.StardewAquariumId, 1, I18n.Button_StardewAquarium(), "OpenAquariumCollectionMenu", "aquariumprogress", Array.Empty<string>());
+    }
+
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
         if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !Game1.onScreenMenus.OfType<Toolbar>().Any())
@@ -199,6 +284,9 @@ public class ToolbarIcons : Mod
 
         foreach (var icon in this.Icons.Values)
         {
+            this.Icon.bounds.X = icon.bounds.X;
+            this.Icon.bounds.Y = icon.bounds.Y;
+            this.Icon.draw(e.SpriteBatch);
             icon.draw(e.SpriteBatch);
         }
     }

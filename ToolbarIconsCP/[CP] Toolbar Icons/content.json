@@ -1,58 +1,6 @@
 {
   "Format": "1.24.0",
   "ConfigSchema": {
-    "EnableAlwaysScrollMap": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "AlwaysScrollMapHotkey": {
-      "AllowBlank": true,
-      "Default": "OemSemicolon"
-    },
-    "EnableChestsAnywhere": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "ChestsAnywhereHotkey": {
-      "AllowBlank": true,
-      "Default": "B"
-    },
-    "EnableCJBCheatsMenu": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "CJBCheatsMenuHotkey": {
-      "AllowBlank": true,
-      "Default": "P"
-    },
-    "EnableCJBItemSpawner": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "CJBItemSpawnerHotkey": {
-      "AllowBlank": true,
-      "Default": "I"
-    },
-    "EnableDataLayers": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "DataLayersHotkey": {
-      "AllowBlank": true,
-      "Default": "F2"
-    },
-    "EnableDebugMode": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "DebugModeHotkey": {
-      "AllowBlank": true,
-      "Default": "OemTilde"
-    },
-    "EnableDynamicGameAssets": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
     "EnableEventLookup": {
       "AllowValues": "true, false",
       "Default": true
@@ -60,38 +8,6 @@
     "EventLookupHotkey": {
       "AllowBlank": true,
       "Default": "N"
-    },
-    "EnableHorseFluteAnywhere": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "HorseFluteAnywhereHotkey": {
-      "AllowBlank": true,
-      "Default": "H"
-    },
-    "EnableInstantBuildingsMenu": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "InstantBuildingsMenuHotkey": {
-      "AllowBlank": true,
-      "Default": "K"
-    },
-    "EnableInstantBuildingsUpgrade": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "InstantBuildingsUpgradeHotkey": {
-      "AllowBlank": true,
-      "Default": "U"
-    },
-    "EnableLookupAnything": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
-    "LookupAnythingHotkey": {
-      "AllowBlank": true,
-      "Default": "LeftShift + F1"
     },
     "EnableResetTerrainFeatures": {
       "AllowValues": "true, false",
@@ -109,90 +25,6 @@
       "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
       "FromFile": "assets/icons.png"
     },
-    // Add Always Scroll Map Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Always Scroll Map": "{{i18n: icon.always-scroll-map.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/8/Left/keybind: {{AlwaysScrollMapHotkey}}"
-      },
-      "When": {
-        "EnableAlwaysScrollMap": true,
-        "HasMod": "bcmpinc.AlwaysScrollMap"
-      }
-    },
-    // Add Chests Anywhere Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Chests Anywhere": "{{i18n: icon.chests-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/0/Left/keybind: {{ChestsAnywhereHotkey}}"
-      },
-      "When": {
-        "EnableChestsAnywhere": true,
-        "HasMod": "Pathoschild.ChestsAnywhere"
-      }
-    },
-    // Add CJB Cheats Menu Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "CJB Cheats Menu": "{{i18n: icon.cjb-cheats-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/1/Left/keybind: {{CJBCheatsMenuHotkey}}"
-      },
-      "When": {
-        "EnableCJBCheatsMenu": true,
-        "HasMod": "CJBok.CheatsMenu"
-      }
-    },
-    // Add CJB Item Spawner Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "CJB Item Spawner": "{{i18n: icon.cjb-item-spawner.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/2/Left/keybind: {{CJBItemSpawnerHotkey}}"
-      },
-      "When": {
-        "EnableCJBItemSpawner": true,
-        "HasMod": "CJBok.ItemSpawner"
-      }
-    },
-    // Add Data Layers Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Data Layers": "{{i18n: icon.data-layers.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/Left/keybind: {{DataLayersHotkey}}"
-      },
-      "When": {
-        "EnableDataLayers": true,
-        "HasMod": "Pathoschild.DataLayers"
-      }
-    },
-    // Add Debug Mode Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Debug Mode": "{{i18n: icon.debug-mode.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/Left/keybind: {{DebugModeHotkey}}"
-      },
-      "When": {
-        "EnableDebugMode": true,
-        "HasMod": "Pathoschild.DebugMode"
-      }
-    },
-    // Add Dynamic Game Assets Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Dynamic Game Assets": "{{i18n: icon.dynamic-game-assets.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/10/Left/command: dga_store"
-      },
-      "When": {
-        "EnableDynamicGameAssets": true,
-        "HasMod": "spacechase0.DynamicGameAssets"
-      }
-    },
     // Add Event Lookup Icon
     {
       "Action": "EditData",
@@ -203,54 +35,6 @@
       "When": {
         "EnableEventLookup": true,
         "HasMod": "shekurika.EventLookup"
-      }
-    },
-    // Add Horse Flute Anywhere Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Horse Flute Anywhere": "{{i18n: icon.horse-flute-anywhere.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/Left/keybind: {{HorseFluteAnywhereHotkey}}"
-      },
-      "When": {
-        "EnableHorseFluteAnywhere": true,
-        "HasMod": "Pathoschild.HorseFluteAnywhere"
-      }
-    },
-    // Add Instant Buildings Menu Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Instant Build Menu": "{{i18n: icon.instant-buildings-menu.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/Left/keybind: {{InstantBuildingsMenuHotkey}}"
-      },
-      "When": {
-        "EnableInstantBuildingsMenu": true,
-        "HasMod": "BitwiseJonMods.InstantBuildings"
-      }
-    },
-    // Add Instant Buildings Upgrade Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Instant Build Upgrade": "{{i18n: icon.instant-buildings-upgrade.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/9/Left/keybind: {{InstantBuildingsUpgradeHotkey}}"
-      },
-      "When": {
-        "EnableInstantBuildingsUpgrade": true,
-        "HasMod": "BitwiseJonMods.InstantBuildings"
-      }
-    },
-    // Add Lookup Anything Icon
-    {
-      "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
-      "Entries": {
-        "Lookup Anything": "{{i18n: icon.lookup-anything.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/7/Left/keybind: {{LookupAnythingHotkey}}"
-      },
-      "When": {
-        "EnableLookupAnything": true,
-        "HasMod": "Pathoschild.LookupAnything"
       }
     },
     // Add Reset Terrain Features Icon
