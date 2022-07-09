@@ -579,12 +579,7 @@ internal abstract class BaseStorage : IStorageObject
             return false;
         }
 
-        if (this.FilterItems == FeatureOption.Disabled || !this.FilterItemsList.Any())
-        {
-            return true;
-        }
-
-        return this.FilterMatcher.Matches(item);
+        return !this.FilterItemsList.Any() || this.FilterMatcher.Matches(item);
     }
 
     /// <inheritdoc />
