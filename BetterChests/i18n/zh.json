@@ -48,8 +48,6 @@
   "config.custom-color-picker-area.tooltip": "自定义箱子颜色的菜单位置.",
   "config.filter-items.name": "物品过滤",
   "config.filter-items.tooltip": "过滤可以添加到箱子里的物品.",
-  "config.filter-items-block.name": "排出过滤物品",
-  "config.filter-items-block.tooltip": "箱子会排出过滤掉的物品.",
   "config.open-held-chest.name": "开启手上的箱子",
   "config.open-held-chest.tooltip": "开启玩家手上正在拿的箱子.",
   "config.organize-chest.name": "分组/排序箱子内物品",

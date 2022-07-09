@@ -3,13 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley;
+using StardewValley.Menus;
 
 /// <summary>
 ///     Handles config options.
@@ -95,6 +101,48 @@ internal class ConfigHelper
         ConfigHelper.Instance!.SetupConfig(ConfigHelper.Instance.ModManifest, storage, false);
     }
 
+    private static Action<SpriteBatch, Vector2> DrawButton(IStorageObject storage, string label)
+    {
+        var dims = Game1.dialogueFont.MeasureString(label);
+        return (b, pos) =>
+        {
+            var bounds = new Rectangle((int)pos.X, (int)pos.Y, (int)dims.X + Game1.tileSize, Game1.tileSize);
+            if (Game1.activeClickableMenu.GetChildMenu() is null)
+            {
+                var point = Game1.getMousePosition();
+                if (Game1.oldMouseState.LeftButton == ButtonState.Released && Mouse.GetState().LeftButton == ButtonState.Pressed && bounds.Contains(point))
+                {
+                    Game1.activeClickableMenu.SetChildMenu(new ItemSelectionMenu(storage, storage.FilterMatcher));
+                    return;
+                }
+            }
+
+            IClickableMenu.drawTextureBox(
+                b,
+                Game1.mouseCursors,
+                new(432, 439, 9, 9),
+                bounds.X,
+                bounds.Y,
+                bounds.Width,
+                bounds.Height,
+                Color.White,
+                Game1.pixelZoom,
+                false,
+                1f);
+            Utility.drawTextWithShadow(
+                b,
+                label,
+                Game1.dialogueFont,
+                new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f,
+                Game1.textColor,
+                1f,
+                1f,
+                -1,
+                -1,
+                0f);
+        };
+    }
+
     private static void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         if (IntegrationHelper.GMCM.IsLoaded)
@@ -125,6 +173,13 @@ internal class ConfigHelper
             return;
         }
 
+        var data = storage switch
+        {
+            StorageData storageData => storageData,
+            IStorageObject { Data: { } storageData } => storageData,
+            _ => storage,
+        };
+
         if (IntegrationHelper.GMCM.IsRegistered(manifest))
         {
             IntegrationHelper.GMCM.Unregister(manifest);
@@ -154,8 +209,8 @@ internal class ConfigHelper
                 manifest,
                 () => this.Config.CarryChestLimit switch
                 {
-                    _ when storage.CarryChestSlow is FeatureOption.Default => (int)FeatureOption.Default,
-                    _ when storage.CarryChestSlow is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+                    _ when data.CarryChestSlow is FeatureOption.Default => (int)FeatureOption.Default,
+                    _ when data.CarryChestSlow is FeatureOption.Disabled => (int)FeatureOption.Disabled,
                     _ => (int)FeatureOption.Enabled + this.Config.CarryChestLimit - 1,
                 },
                 value =>
@@ -167,7 +222,7 @@ internal class ConfigHelper
                         >= (int)FeatureOption.Enabled => 1 + value - (int)FeatureOption.Enabled,
                         _ => 0,
                     };
-                    storage.CarryChestSlow = value switch
+                    data.CarryChestSlow = value switch
                     {
                         (int)FeatureOption.Default => FeatureOption.Default,
                         (int)FeatureOption.Disabled => FeatureOption.Disabled,
@@ -206,8 +261,8 @@ internal class ConfigHelper
 
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.OrganizeChestGroupBy.ToStringFast(),
-                value => storage.OrganizeChestGroupBy = GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : GroupBy.Default,
+                () => data.OrganizeChestGroupBy.ToStringFast(),
+                value => data.OrganizeChestGroupBy = GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : GroupBy.Default,
                 I18n.Config_OrganizeChestGroupBy_Name,
                 I18n.Config_OrganizeChestGroupBy_Tooltip,
                 GroupByExtensions.GetNames(),
@@ -216,8 +271,8 @@ internal class ConfigHelper
 
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.OrganizeChestSortBy.ToStringFast(),
-                value => storage.OrganizeChestSortBy = SortByExtensions.TryParse(value, out var sortBy) ? sortBy : SortBy.Default,
+                () => data.OrganizeChestSortBy.ToStringFast(),
+                value => data.OrganizeChestSortBy = SortByExtensions.TryParse(value, out var sortBy) ? sortBy : SortBy.Default,
                 I18n.Config_OrganizeChestSortBy_Name,
                 I18n.Config_OrganizeChestSortBy_Tooltip,
                 SortByExtensions.GetNames(),
@@ -315,24 +370,24 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.ChestLabel,
-                value => storage.ChestLabel = value,
+                () => data.ChestLabel,
+                value => data.ChestLabel = value,
                 I18n.Config_ChestLabel_Name,
                 I18n.Config_ChestLabel_Tooltip,
                 fieldId: nameof(IStorageData.ChestLabel));
 
             IntegrationHelper.GMCM.API.AddNumberOption(
                 manifest,
-                () => storage.StashToChestPriority,
-                value => storage.StashToChestPriority = value,
+                () => data.StashToChestPriority,
+                value => data.StashToChestPriority = value,
                 I18n.Config_StashToChestPriority_Name,
                 I18n.Config_StashToChestPriority_Tooltip,
                 fieldId: nameof(IStorageData.StashToChestPriority));
 
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.StashToChestStacks.ToStringFast(),
-                value => storage.StashToChestStacks = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.StashToChestStacks.ToStringFast(),
+                value => data.StashToChestStacks = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_StashToChestStacks_Name,
                 I18n.Config_StashToChestStacks_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -354,8 +409,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.AutoOrganize.ToStringFast(),
-                value => storage.AutoOrganize = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.AutoOrganize.ToStringFast(),
+                value => data.AutoOrganize = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_AutoOrganize_Name,
                 I18n.Config_AutoOrganize_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -373,8 +428,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.CarryChest.ToStringFast(),
-                value => storage.CarryChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.CarryChest.ToStringFast(),
+                value => data.CarryChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_CarryChest_Name,
                 I18n.Config_CarryChest_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -382,21 +437,15 @@ internal class ConfigHelper
                 nameof(IStorageData.CarryChest));
         }
 
-        if (IntegrationHelper.TestConflicts(nameof(CategorizeChest), out mods))
+        if (!main && storage is IStorageObject storageObject)
         {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(manifest, () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(CategorizeChest)}", modList));
-        }
-        else if (main)
-        {
-            // Categorize Chest
-            IntegrationHelper.GMCM.API.AddBoolOption(
+            IntegrationHelper.GMCM.API.AddComplexOption(
                 manifest,
-                () => this.Config.CategorizeChest,
-                value => this.Config.CategorizeChest = value,
-                I18n.Config_CategorizeChest_Name,
-                I18n.Config_CategorizeChest_Tooltip,
-                nameof(ModConfig.CategorizeChest));
+                I18n.Config_FilterItemsList_Name,
+                ConfigHelper.DrawButton(storageObject, I18n.Button_Configure_Name()),
+                I18n.Config_FilterItemsList_Tooltip,
+                height: () => Game1.tileSize,
+                fieldId: nameof(IStorageData.FilterItemsList));
         }
 
         // Chest Menu Tabs
@@ -409,8 +458,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.ChestMenuTabs.ToStringFast(),
-                value => storage.ChestMenuTabs = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.ChestMenuTabs.ToStringFast(),
+                value => data.ChestMenuTabs = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_ChestMenuTabs_Name,
                 I18n.Config_ChestMenuTabs_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -428,8 +477,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.CollectItems.ToStringFast(),
-                value => storage.CollectItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.CollectItems.ToStringFast(),
+                value => data.CollectItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_CollectItems_Name,
                 I18n.Config_CollectItems_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -447,19 +496,19 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddNumberOption(
                 manifest,
-                () => storage.CraftFromChestDistance switch
+                () => data.CraftFromChestDistance switch
                 {
-                    _ when storage.CraftFromChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
-                    _ when storage.CraftFromChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
-                    _ when storage.CraftFromChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
-                    _ when storage.CraftFromChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
-                    >= 2 when storage.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location + (int)Math.Ceiling(Math.Log2(storage.CraftFromChestDistance)) - 1,
-                    _ when storage.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
+                    _ when data.CraftFromChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
+                    _ when data.CraftFromChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
+                    _ when data.CraftFromChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
+                    _ when data.CraftFromChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
+                    >= 2 when data.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location + (int)Math.Ceiling(Math.Log2(data.CraftFromChestDistance)) - 1,
+                    _ when data.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
                     _ => (int)FeatureOptionRange.Default,
                 },
                 value =>
                 {
-                    storage.CraftFromChestDistance = value switch
+                    data.CraftFromChestDistance = value switch
                     {
                         (int)FeatureOptionRange.Default => 0,
                         (int)FeatureOptionRange.Disabled => 0,
@@ -469,7 +518,7 @@ internal class ConfigHelper
                         >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location),
                         _ => 0,
                     };
-                    storage.CraftFromChest = value switch
+                    data.CraftFromChest = value switch
                     {
                         (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
                         (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
@@ -498,8 +547,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.CustomColorPicker.ToStringFast(),
-                value => storage.CustomColorPicker = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.CustomColorPicker.ToStringFast(),
+                value => data.CustomColorPicker = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_CustomColorPicker_Name,
                 I18n.Config_CustomColorPicker_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -517,8 +566,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.FilterItems.ToStringFast(),
-                value => storage.FilterItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.FilterItems.ToStringFast(),
+                value => data.FilterItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_FilterItems_Name,
                 I18n.Config_FilterItems_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -553,8 +602,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.OpenHeldChest.ToStringFast(),
-                value => storage.OpenHeldChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.OpenHeldChest.ToStringFast(),
+                value => data.OpenHeldChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_OpenHeldChest_Name,
                 I18n.Config_OpenHeldChest_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -572,8 +621,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.OrganizeChest.ToStringFast(),
-                value => storage.OrganizeChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.OrganizeChest.ToStringFast(),
+                value => data.OrganizeChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_OrganizeChest_Name,
                 I18n.Config_OrganizeChest_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -591,16 +640,16 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddNumberOption(
                 manifest,
-                () => storage.ResizeChestCapacity switch
+                () => data.ResizeChestCapacity switch
                 {
-                    _ when storage.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
-                    _ when storage.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+                    _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
+                    _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
                     -1 => 8,
-                    _ => (int)FeatureOption.Enabled + storage.ResizeChestCapacity / 12 - 1,
+                    _ => (int)FeatureOption.Enabled + data.ResizeChestCapacity / 12 - 1,
                 },
                 value =>
                 {
-                    storage.ResizeChestCapacity = value switch
+                    data.ResizeChestCapacity = value switch
                     {
                         (int)FeatureOption.Default => 0,
                         (int)FeatureOption.Disabled => 0,
@@ -608,7 +657,7 @@ internal class ConfigHelper
                         >= (int)FeatureOption.Enabled => 12 * (1 + value - (int)FeatureOption.Enabled),
                         _ => 0,
                     };
-                    storage.ResizeChest = value switch
+                    data.ResizeChest = value switch
                     {
                         (int)FeatureOption.Default => FeatureOption.Default,
                         (int)FeatureOption.Disabled => FeatureOption.Disabled,
@@ -634,21 +683,21 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddNumberOption(
                 manifest,
-                () => storage.ResizeChestMenuRows switch
+                () => data.ResizeChestMenuRows switch
                 {
-                    _ when storage.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
-                    _ when storage.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
-                    _ => (int)FeatureOption.Enabled + storage.ResizeChestMenuRows - 3,
+                    _ when data.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
+                    _ when data.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+                    _ => (int)FeatureOption.Enabled + data.ResizeChestMenuRows - 3,
                 },
                 value =>
                 {
-                    storage.ResizeChestMenuRows = value switch
+                    data.ResizeChestMenuRows = value switch
                     {
                         (int)FeatureOption.Default => 0,
                         (int)FeatureOption.Disabled => 0,
                         _ => 3 + value - (int)FeatureOption.Enabled,
                     };
-                    storage.ResizeChestMenu = value switch
+                    data.ResizeChestMenu = value switch
                     {
                         (int)FeatureOption.Default => FeatureOption.Default,
                         (int)FeatureOption.Disabled => FeatureOption.Disabled,
@@ -674,8 +723,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.SearchItems.ToStringFast(),
-                value => storage.SearchItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.SearchItems.ToStringFast(),
+                value => data.SearchItems = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_SearchItems_Name,
                 I18n.Config_SearchItems_Tooltip,
                 FeatureOptionExtensions.GetNames(),
@@ -710,19 +759,19 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddNumberOption(
                 manifest,
-                () => storage.StashToChestDistance switch
+                () => data.StashToChestDistance switch
                 {
-                    _ when storage.StashToChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
-                    _ when storage.StashToChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
-                    _ when storage.StashToChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
-                    _ when storage.StashToChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
-                    >= 2 when storage.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location + (int)Math.Ceiling(Math.Log2(storage.StashToChestDistance)) - 1,
-                    _ when storage.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
+                    _ when data.StashToChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
+                    _ when data.StashToChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
+                    _ when data.StashToChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
+                    _ when data.StashToChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
+                    >= 2 when data.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location + (int)Math.Ceiling(Math.Log2(data.StashToChestDistance)) - 1,
+                    _ when data.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
                     _ => (int)FeatureOptionRange.Default,
                 },
                 value =>
                 {
-                    storage.StashToChestDistance = value switch
+                    data.StashToChestDistance = value switch
                     {
                         (int)FeatureOptionRange.Default => 0,
                         (int)FeatureOptionRange.Disabled => 0,
@@ -732,7 +781,7 @@ internal class ConfigHelper
                         >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location),
                         _ => 0,
                     };
-                    storage.StashToChest = value switch
+                    data.StashToChest = value switch
                     {
                         (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
                         (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
@@ -761,8 +810,8 @@ internal class ConfigHelper
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
-                () => storage.UnloadChest.ToStringFast(),
-                value => storage.UnloadChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                () => data.UnloadChest.ToStringFast(),
+                value => data.UnloadChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
                 I18n.Config_UnloadChest_Name,
                 I18n.Config_UnloadChest_Tooltip,
                 FeatureOptionExtensions.GetNames(),
