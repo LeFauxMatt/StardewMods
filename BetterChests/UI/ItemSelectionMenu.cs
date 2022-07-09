@@ -96,6 +96,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
+        b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
+
         Game1.drawDialogueBox(
             this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
             this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
@@ -137,6 +139,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
                     this.Selected.Contains(tag.name) ? Game1.textColor : Game1.unselectedOptionColor);
             }
         }
+
+        this.drawMouse(b);
     }
 
     /// <inheritdoc />
@@ -146,20 +150,26 @@ internal class ItemSelectionMenu : ItemGrabMenu
             ? Math.Min(1.1f, this.okButton.scale + 0.05f)
             : Math.Max(1f, this.okButton.scale - 0.05f);
 
-        var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
-        if (cc is not null && int.TryParse(cc.name, out var slotNumber))
+        if (this.ItemsToGrabMenu.isWithinBounds(x, y))
         {
-            this.hoveredItem = this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber);
-            this.hoverText = string.Empty;
-            return;
+            var cc = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+            if (cc is not null && int.TryParse(cc.name, out var slotNumber))
+            {
+                this.hoveredItem = this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber);
+                this.hoverText = string.Empty;
+                return;
+            }
         }
 
-        cc = this.DisplayedTags.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * ItemSelectionMenu.LineHeight));
-        if (cc is not null)
+        if (this.inventory.isWithinBounds(x, y))
         {
-            this.hoveredItem = null;
-            this.hoverText = cc.name ?? string.Empty;
-            return;
+            var cc = this.DisplayedTags.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * ItemSelectionMenu.LineHeight));
+            if (cc is not null)
+            {
+                this.hoveredItem = null;
+                this.hoverText = cc.name ?? string.Empty;
+                return;
+            }
         }
 
         this.hoveredItem = null;

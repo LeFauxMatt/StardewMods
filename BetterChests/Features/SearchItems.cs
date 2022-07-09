@@ -31,6 +31,7 @@ internal class SearchItems : IFeature
     private const string Id = "furyx639.BetterChests/SearchItems";
 
     private readonly PerScreen<object?> _context = new();
+    private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
     private readonly PerScreen<ClickableComponent?> _searchArea = new();
     private readonly PerScreen<TextBox?> _searchField = new();
@@ -72,6 +73,12 @@ internal class SearchItems : IFeature
     {
         get => this._context.Value;
         set => this._context.Value = value;
+    }
+
+    private ItemGrabMenu? CurrentMenu
+    {
+        get => this._currentMenu.Value;
+        set => this._currentMenu.Value = value;
     }
 
     private IModHelper Helper { get; }
@@ -129,7 +136,6 @@ internal class SearchItems : IFeature
         {
             this.IsActivated = true;
             HarmonyHelper.ApplyPatches(SearchItems.Id);
-            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
             this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -143,7 +149,6 @@ internal class SearchItems : IFeature
         {
             this.IsActivated = false;
             HarmonyHelper.UnapplyPatches(SearchItems.Id);
-            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
             this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
             this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -333,7 +338,7 @@ internal class SearchItems : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu || !this.SearchArea.visible)
+        if (this.CurrentMenu is null || !this.SearchArea.visible)
         {
             return;
         }
@@ -352,9 +357,9 @@ internal class SearchItems : IFeature
             case SButton.MouseRight:
                 this.SearchField.Selected = false;
                 break;
-            case SButton.Escape when itemGrabMenu.readyToClose():
+            case SButton.Escape when this.CurrentMenu.readyToClose():
                 Game1.playSound("bigDeSelect");
-                itemGrabMenu.exitThisMenu();
+                this.CurrentMenu.exitThisMenu();
                 this.Helper.Input.Suppress(e.Button);
                 return;
             case SButton.Escape:
@@ -367,31 +372,9 @@ internal class SearchItems : IFeature
         }
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
-    {
-        if (e.NewMenu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu }
-            || !StorageHelper.TryGetOne(context, out var storage)
-            || storage.SearchItems == FeatureOption.Disabled)
-        {
-            this.SearchArea.visible = false;
-            return;
-        }
-
-        this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString());
-        this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
-        this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-        this.SearchField.Width = itemsToGrabMenu.width;
-        this.SearchField.Selected = false;
-        this.SearchArea.visible = true;
-        this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
-        this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
-
-        BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
-    }
-
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu || !this.SearchArea.visible)
+        if (this.CurrentMenu is null || !this.SearchArea.visible)
         {
             return;
         }
@@ -402,7 +385,37 @@ internal class SearchItems : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu || !this.SearchArea.visible)
+        var menu = Game1.activeClickableMenu switch
+        {
+            ItemGrabMenu itemGrabMenu => itemGrabMenu,
+            { } clickableMenu when clickableMenu.GetChildMenu() is ItemGrabMenu itemGrabMenu => itemGrabMenu,
+            _ => null,
+        };
+
+        if (!ReferenceEquals(menu, this.CurrentMenu))
+        {
+            this.CurrentMenu = menu;
+            if (this.CurrentMenu is not { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu }
+                || !StorageHelper.TryGetOne(context, out var storage)
+                || storage.SearchItems == FeatureOption.Disabled)
+            {
+                this.SearchArea.visible = false;
+                return;
+            }
+
+            this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString());
+            this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
+            this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
+            this.SearchField.Width = itemsToGrabMenu.width;
+            this.SearchField.Selected = false;
+            this.SearchArea.visible = true;
+            this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
+            this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
+
+            BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
+        }
+
+        if (this.CurrentMenu is null || !this.SearchArea.visible)
         {
             return;
         }

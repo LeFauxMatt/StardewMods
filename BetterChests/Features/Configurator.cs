@@ -1,17 +1,15 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
-using System.Diagnostics.CodeAnalysis;
-using HarmonyLib;
-using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley;
-using StardewValley.Tools;
+using StardewValley.Menus;
 using SObject = StardewValley.Object;
 
 /// <summary>
@@ -20,56 +18,44 @@ using SObject = StardewValley.Object;
 internal class Configurator : IFeature
 {
     private const string Id = "furyx639.BetterChests/Configurator";
-    private const string ToolKey = "furyx639.FuryCore/Tool";
-    private const string ToolName = "ConfigTool";
 
-    private Texture2D? _cachedTool;
+    private readonly PerScreen<ClickableTextureComponent?> _configureButton = new();
+    private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
 
     private Configurator(IModHelper helper, ModConfig config)
     {
         this.Helper = helper;
         this.Config = config;
-        HarmonyHelper.AddPatches(
-            Configurator.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Tool), nameof(StardewValley.Tool.beginUsing)),
-                    typeof(Configurator),
-                    nameof(Configurator.Tool_beginUsing_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(Tool), nameof(StardewValley.Tool.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
-                    typeof(Configurator),
-                    nameof(Configurator.Tool_drawInMenu_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.PropertyGetter(typeof(Tool), nameof(StardewValley.Tool.DisplayName)),
-                    typeof(Configurator),
-                    nameof(Configurator.Tool_getDisplayName_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.PropertyGetter(typeof(Tool), nameof(StardewValley.Tool.Description)),
-                    typeof(Configurator),
-                    nameof(Configurator.Tool_getDescription_postfix),
-                    PatchType.Postfix),
-            });
     }
 
     private static Configurator? Instance { get; set; }
 
     private ModConfig Config { get; }
 
+    private ClickableTextureComponent ConfigureButton
+    {
+        get => this._configureButton.Value ??= new(
+            new(0, 0, Game1.tileSize, Game1.tileSize),
+            this.Helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+            new(0, 0, 16, 16),
+            Game1.pixelZoom)
+        {
+            name = "Configure",
+            hoverText = I18n.Button_Configure_Name(),
+        };
+    }
+
+    private ItemGrabMenu? CurrentMenu
+    {
+        get => this._currentMenu.Value;
+        set => this._currentMenu.Value = value;
+    }
+
     private IModHelper Helper { get; }
 
     private bool IsActivated { get; set; }
 
     private bool IsActive { get; set; }
-
-    private Texture2D Tool
-    {
-        get => this._cachedTool ??= this.Helper.GameContent.Load<Texture2D>("furyx639.FuryCore/ConfigTool");
-    }
 
     /// <summary>
     ///     Initializes <see cref="Configurator" />.
@@ -90,6 +76,7 @@ internal class Configurator : IFeature
             this.IsActivated = true;
             HarmonyHelper.ApplyPatches(Configurator.Id);
             this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
@@ -112,7 +99,8 @@ internal class Configurator : IFeature
         {
             this.IsActivated = false;
             HarmonyHelper.UnapplyPatches(Configurator.Id);
-            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
@@ -124,114 +112,20 @@ internal class Configurator : IFeature
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static bool Tool_beginUsing_prefix(Tool __instance, Farmer who, ref bool __result)
-    {
-        if (!__instance.modData.TryGetValue(Configurator.ToolKey, out var toolName))
-        {
-            return true;
-        }
-
-        switch (toolName)
-        {
-            case Configurator.ToolName:
-                Game1.toolAnimationDone(who);
-                who.CanMove = true;
-                who.UsingTool = false;
-                __result = true;
-                return false;
-        }
-
-        return true;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static bool Tool_drawInMenu_prefix(Tool __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, Color color)
-    {
-        if (!__instance.modData.TryGetValue(Configurator.ToolKey, out var toolName))
-        {
-            return true;
-        }
-
-        switch (toolName)
-        {
-            case Configurator.ToolName:
-                spriteBatch.Draw(Configurator.Instance!.Tool, location + new Vector2(32f, 32f), new Rectangle(0, 0, 16, 16), color * transparency, 0f, new(8f, 8f), 4f * scaleSize, SpriteEffects.None, layerDepth);
-                return false;
-        }
-
-        return true;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void Tool_getDescription_postfix(Tool __instance, ref string __result)
-    {
-        if (!__instance.modData.TryGetValue(Configurator.ToolKey, out var toolName))
-        {
-            return;
-        }
-
-        switch (toolName)
-        {
-            case Configurator.ToolName:
-                __result = I18n.Tool_ConfigTool_Description();
-                return;
-        }
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void Tool_getDisplayName_postfix(Tool __instance, ref string __result)
-    {
-        if (!__instance.modData.TryGetValue(Configurator.ToolKey, out var toolName))
-        {
-            return;
-        }
-
-        switch (toolName)
-        {
-            case Configurator.ToolName:
-                __result = I18n.Tool_ConfigTool_Name();
-                return;
-        }
-    }
-
-    [EventPriority(EventPriority.Normal + 100)]
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree
-            || !e.Button.IsUseToolButton()
-            || this.Helper.Input.IsSuppressed(e.Button)
-            || Game1.player.CurrentItem is not GenericTool genericTool
-            || !genericTool.modData.TryGetValue(Configurator.ToolKey, out var toolName)
-            || toolName != Configurator.ToolName)
+        if (this.CurrentMenu is null)
         {
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame || Game1.mouseCursorTransparency == 0f || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
+        var (x, y) = Game1.getMousePosition(true);
+        if (this.ConfigureButton.containsPoint(x, y) && StorageHelper.TryGetOne(this.CurrentMenu.context, out var storage))
         {
-            pos = Game1.player.GetGrabTile();
+            ConfigHelper.SetupSpecificConfig(storage);
+            this.IsActive = true;
+            this.Helper.Input.Suppress(e.Button);
         }
-
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var storage))
-        {
-            return;
-        }
-
-        this.Helper.Input.Suppress(e.Button);
-        ConfigHelper.SetupSpecificConfig(storage.Data);
-        this.IsActive = true;
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -245,12 +139,42 @@ internal class Configurator : IFeature
         }
 
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.Configure);
-        ConfigHelper.SetupSpecificConfig(storage.Data);
+        ConfigHelper.SetupSpecificConfig(storage);
         this.IsActive = true;
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
+        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu && StorageHelper.TryGetOne(context, out _))
+        {
+            this.CurrentMenu = itemGrabMenu;
+
+            var buttons = new List<ClickableComponent>(
+                new[]
+                {
+                    this.CurrentMenu.junimoNoteIcon,
+                    this.CurrentMenu.specialButton,
+                    this.CurrentMenu.colorPickerToggleButton,
+                    this.CurrentMenu.organizeButton,
+                    this.CurrentMenu.fillStacksButton,
+                }.OfType<ClickableComponent>().OrderByDescending(button => button.bounds.Y));
+
+            if (!buttons.Any())
+            {
+                return;
+            }
+
+            this.ConfigureButton.bounds.X = buttons[0].bounds.X;
+            this.ConfigureButton.bounds.Y = buttons[0].bounds.Bottom;
+            if (buttons.Count >= 2)
+            {
+                this.ConfigureButton.bounds.Y += buttons[0].bounds.Top - buttons[1].bounds.Bottom;
+            }
+
+            return;
+        }
+
+        this.CurrentMenu = null;
         if (this.IsActive && e.OldMenu?.GetType().Name == "SpecificModConfigMenu")
         {
             this.IsActive = false;
@@ -260,6 +184,22 @@ internal class Configurator : IFeature
             {
                 Game1.activeClickableMenu = null;
             }
+        }
+    }
+
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        this.ConfigureButton.tryHover(x, y);
+        this.ConfigureButton.draw(e.SpriteBatch);
+        if (this.ConfigureButton.containsPoint(x, y))
+        {
+            this.CurrentMenu.hoverText = this.ConfigureButton.hoverText;
         }
     }
 
@@ -273,7 +213,7 @@ internal class Configurator : IFeature
         if (Game1.player.CurrentItem is SObject obj
             && StorageHelper.TryGetOne(obj, out var storage))
         {
-            ConfigHelper.SetupSpecificConfig(storage.Data);
+            ConfigHelper.SetupSpecificConfig(storage);
             this.IsActive = true;
             return;
         }
@@ -284,7 +224,7 @@ internal class Configurator : IFeature
             return;
         }
 
-        ConfigHelper.SetupSpecificConfig(storage.Data);
+        ConfigHelper.SetupSpecificConfig(storage);
         this.IsActive = true;
     }
 }

@@ -176,6 +176,11 @@ internal class CraftFromChest : IFeature
         // Chest locking timed out
         if (this.CachedEligible.Count == 0 || --this.TimeOut == 0)
         {
+            for (var index = this.CachedEligible.Count - 1; index >= 0; index--)
+            {
+                this.CachedEligible[index].Mutex?.ReleaseLock();
+            }
+
             this.CachedEligible.Clear();
             this.TimeOut = 0;
             var width = 800 + IClickableMenu.borderWidth * 2;

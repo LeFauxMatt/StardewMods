@@ -48,8 +48,6 @@
   "config.custom-color-picker-area.tooltip": "Renk seçicinin olacağı envanter menüsünün yanındaki alan.",
   "config.filter-items.name": "Öğe Filtresi",
   "config.filter-items.tooltip": "Bir Sandık'a hangi eşyaların eklenebileceğini kısıtlayın.",
-  "config.filter-items-block.name": "Öğe Bloğu Filtresi",
-  "config.filter-items-block.tooltip": "Sandıklar, Öğeleri Filtrele koşulunu karşılamayan öğeleri reddedecektir.",
   "config.open-held-chest.name": "Açık Tutulan Sandık",
   "config.open-held-chest.tooltip": "Halihazırda tutulan bir Sandığı açın ve içeriğine erişin.",
   "config.organize-chest.name": "Sandığı düzenle",
