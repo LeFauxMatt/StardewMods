@@ -33,7 +33,7 @@ internal class SearchItems : IFeature
 
     private readonly PerScreen<object?> _context = new();
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-    private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
+    private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
     private readonly PerScreen<ClickableComponent?> _searchArea = new();
     private readonly PerScreen<TextBox?> _searchField = new();
     private readonly PerScreen<ClickableTextureComponent?> _searchIcon = new();
@@ -86,9 +86,9 @@ internal class SearchItems : IFeature
 
     private bool IsActivated { get; set; }
 
-    private ItemMatcher ItemMatcher
+    private IItemMatcher ItemMatcher
     {
-        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString(), this.Helper.Translation);
+        get => this._itemMatcher.Value ??= new ItemMatcher(false, this.Config.SearchTagSymbol.ToString(), this.Helper.Translation);
         set => this._itemMatcher.Value = value;
     }
 
@@ -404,14 +404,14 @@ internal class SearchItems : IFeature
                 return;
             }
 
-            this.ItemMatcher = new(false, this.Config.SearchTagSymbol.ToString(), this.Helper.Translation);
+            this.ItemMatcher = new ItemMatcher(false, this.Config.SearchTagSymbol.ToString(), this.Helper.Translation);
             this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
             this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
             this.SearchField.Width = itemsToGrabMenu.width;
             this.SearchField.Selected = false;
             this.SearchArea.visible = true;
             this.SearchArea.bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height);
-            this.SearchIcon.bounds = new(itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 38, itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom + 6, 32, 32);
+            this.SearchIcon.bounds = new(this.SearchField.X + this.SearchField.Width - 38, this.SearchField.Y + 6, 32, 32);
 
             BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
         }

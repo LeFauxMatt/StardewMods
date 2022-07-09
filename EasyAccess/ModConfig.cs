@@ -43,7 +43,7 @@ internal class ModConfig
     /// </summary>
     public bool DoTerrain { get; set; } = true;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override string ToString()
     {
         var sb = new StringBuilder();

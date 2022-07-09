@@ -304,6 +304,14 @@ internal class ConfigHelper
 
             IntegrationHelper.GMCM.API.AddKeybindList(
                 manifest,
+                () => this.Config.ControlScheme.FindChest,
+                value => this.Config.ControlScheme.FindChest = value,
+                I18n.Config_FindChest_Name,
+                I18n.Config_FindChest_Tooltip,
+                nameof(Controls.FindChest));
+
+            IntegrationHelper.GMCM.API.AddKeybindList(
+                manifest,
                 () => this.Config.ControlScheme.OpenCrafting,
                 value => this.Config.ControlScheme.OpenCrafting = value,
                 I18n.Config_OpenCrafting_Name,
@@ -446,6 +454,18 @@ internal class ConfigHelper
                 I18n.Config_FilterItemsList_Tooltip,
                 height: () => Game1.tileSize,
                 fieldId: nameof(IStorageData.FilterItemsList));
+        }
+
+        // Chest Finder
+        if (main)
+        {
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                manifest,
+                () => this.Config.ChestFinder,
+                value => this.Config.ChestFinder = value,
+                I18n.Config_ChestFinder_Name,
+                I18n.Config_ChestFinder_Tooltip,
+                nameof(ModConfig.ChestFinder));
         }
 
         // Chest Menu Tabs

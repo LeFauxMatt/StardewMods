@@ -27,6 +27,11 @@ internal class ModConfig
     public int CarryChestSlowAmount { get; set; } = 1;
 
     /// <summary>
+    ///     Gets or sets a value indicating whether chests can be searched for.
+    /// </summary>
+    public bool ChestFinder { get; set; } = true;
+
+    /// <summary>
     ///     Gets or sets a value indicating whether Configurator will be enabled.
     /// </summary>
     public bool Configurator { get; set; } = true;
@@ -93,6 +98,7 @@ internal class ModConfig
         sb.AppendLine($"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CarryChestSlow: {this.DefaultChest.CarryChestSlow.ToStringFast()}");
         sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"ChestFinder: {this.ChestFinder.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"ChestMenuTabs: {this.DefaultChest.ChestMenuTabs.ToStringFast()}");
         sb.AppendLine($"CollectItems: {this.DefaultChest.CollectItems.ToStringFast()}");
         sb.AppendLine($"Configurator: {this.Configurator.ToString(CultureInfo.InvariantCulture)}");

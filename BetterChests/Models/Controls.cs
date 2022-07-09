@@ -14,6 +14,13 @@ internal class Controls
     public KeybindList Configure { get; set; } = new(SButton.End);
 
     /// <summary>
+    ///     Gets or sets controls to find a chest.
+    /// </summary>
+    public KeybindList FindChest { get; set; } = new(
+        new Keybind(SButton.LeftControl, SButton.F),
+        new Keybind(SButton.RightControl, SButton.F));
+
+    /// <summary>
     ///     Gets or sets controls to lock an item slot.
     /// </summary>
     public SButton LockSlot { get; set; } = SButton.LeftAlt;
