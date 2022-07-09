@@ -8,8 +8,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.UI;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 
 /// <summary>
@@ -17,7 +18,7 @@ using StardewValley;
 /// </summary>
 internal class ChestFinder : IFeature
 {
-    private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
+    private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
 
     private ChestFinder(IModHelper helper, ModConfig config)
     {
@@ -33,9 +34,9 @@ internal class ChestFinder : IFeature
 
     private bool IsActivated { get; set; }
 
-    private ItemMatcher ItemMatcher
+    private IItemMatcher ItemMatcher
     {
-        get => this._itemMatcher.Value ??= new(false, this.Config.SearchTagSymbol.ToString());
+        get => this._itemMatcher.Value ??= new ItemMatcher(false, this.Config.SearchTagSymbol.ToString());
     }
 
     /// <summary>

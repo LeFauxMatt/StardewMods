@@ -18,7 +18,7 @@ internal class ModConfig
     /// </summary>
     public Controls ControlScheme { get; set; } = new();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override string ToString()
     {
         var sb = new StringBuilder();

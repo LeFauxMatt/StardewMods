@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -19,7 +19,7 @@ internal class SearchBar : IClickableMenu
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="matcher">ItemMatcher for holding the selected item tags.</param>
-    public SearchBar(IModHelper helper, ItemMatcher matcher)
+    public SearchBar(IModHelper helper, IItemMatcher matcher)
     {
         this.Helper = helper;
         this.ItemMatcher = matcher;
@@ -55,7 +55,7 @@ internal class SearchBar : IClickableMenu
 
     private IModHelper Helper { get; }
 
-    private ItemMatcher ItemMatcher { get; }
+    private IItemMatcher ItemMatcher { get; }
 
     private ClickableComponent SearchArea { get; }
 

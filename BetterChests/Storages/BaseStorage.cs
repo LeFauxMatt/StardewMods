@@ -20,7 +20,7 @@ using SObject = StardewValley.Object;
 internal abstract class BaseStorage : IStorageObject
 {
     private readonly HashSet<string> _cachedFilterList = new();
-    private readonly ItemMatcher _filterMatcher = new(true);
+    private readonly IItemMatcher _filterMatcher = new ItemMatcher(true);
     private int _capacity;
     private int _menuRows;
     private int _rows;
