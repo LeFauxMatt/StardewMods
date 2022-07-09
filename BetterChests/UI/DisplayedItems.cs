@@ -74,12 +74,6 @@ internal class DisplayedItems
                 return Array.Empty<Item>();
             }
 
-            if (this._items.Any())
-            {
-                return this._items;
-            }
-
-            this.RefreshItems();
             return this._items;
         }
     }
@@ -235,13 +229,23 @@ internal class DisplayedItems
     {
         var items = this.ActualInventory.AsEnumerable();
         items = this.Transformers.Aggregate(items, (current, transformer) => transformer(current)).ToList();
-        do
+        if (!items.Any())
         {
             this._items.Clear();
             this._items.AddRange(items
                                  .Skip(this.Offset * this.Columns)
                                  .Take(this.Menu.capacity));
-        } while (!this._items.Any() && items.Any() && --this.Offset > 0);
+        }
+        else
+        {
+            do
+            {
+                this._items.Clear();
+                this._items.AddRange(items
+                                     .Skip(this.Offset * this.Columns)
+                                     .Take(this.Menu.capacity));
+            } while (!this._items.Any() && --this.Offset > 0);
+        }
 
         for (var index = 0; index < this.Menu.inventory.Count; index++)
         {

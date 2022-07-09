@@ -1,10 +1,12 @@
 ﻿# Better Chests Change Log
 
-## 2.0.4 (Unreleased)
+## 2.1.0 (Unreleased)
 
+* Configure chest now happens from the chest inventory menu.
 * Fixed Shipping Bin not detected when launched by Chests Anywhere.
 * Fixed items not updating when you add or remove items from a chest.
 * Fixed AutoOrganize ignoring priority when moving items.
+* Improved integration with BetterCrafting for multiplayer.
 
 ## 2.0.3 (July 5, 2022)
 
