@@ -9,7 +9,6 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
@@ -241,7 +240,7 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
-    public ItemMatcher FilterMatcher
+    public IItemMatcher FilterMatcher
     {
         get
         {
@@ -631,6 +630,12 @@ internal abstract class BaseStorage : IStorageObject
     /// <inheritdoc />
     public void OrganizeItems(bool descending = false)
     {
+        if (this.OrganizeChestGroupBy == GroupBy.Default && this.OrganizeChestSortBy == SortBy.Default)
+        {
+            ItemGrabMenu.organizeItemsInList(this.Items);
+            return;
+        }
+
         var items = this.Items
                         .OfType<Item>()
                         .OrderBy(item => this.OrganizeChestGroupBy switch

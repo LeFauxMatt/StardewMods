@@ -2,12 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Models;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -16,6 +16,7 @@ using StardewValley.Menus;
 /// </summary>
 internal class DisplayedItems
 {
+    private readonly List<Item> _items = new();
     private ClickableTextureComponent? _downArrow;
     private EventHandler? _itemsRefreshed;
     private int _offset;
@@ -30,9 +31,6 @@ internal class DisplayedItems
     {
         this.Menu = menu;
         this.TopMenu = topMenu;
-        this.Items = this.Menu.actualInventory
-                         .Take(menu.capacity)
-                         .ToList();
         this.Columns = this.Menu.capacity / this.Menu.rows;
         this.HighlightMethod = this.Menu.highlightMethod;
         this.Menu.highlightMethod = this.Highlight;
@@ -52,6 +50,8 @@ internal class DisplayedItems
         this.Menu.inventory[bottomSlot].rightNeighborID = this.DownArrow.myID;
         this.UpArrow.downNeighborID = this.DownArrow.myID;
         this.DownArrow.upNeighborID = this.UpArrow.myID;
+
+        this.RefreshItems();
     }
 
     /// <summary>
@@ -66,7 +66,18 @@ internal class DisplayedItems
     /// <summary>
     ///     Gets the items displayed in the inventory menu.
     /// </summary>
-    public IList<Item> Items { get; private set; }
+    public IList<Item> Items
+    {
+        get
+        {
+            if (!this.ActualInventory.Any())
+            {
+                return Array.Empty<Item>();
+            }
+
+            return this._items;
+        }
+    }
 
     /// <summary>
     ///     Gets the inventory menu.
@@ -110,7 +121,7 @@ internal class DisplayedItems
         };
     }
 
-    private List<ItemMatcher> Highlighters { get; } = new();
+    private List<IItemMatcher> Highlighters { get; } = new();
 
     private InventoryMenu.highlightThisItem HighlightMethod { get; }
 
@@ -134,10 +145,9 @@ internal class DisplayedItems
     ///     Adds a <see cref="ItemMatcher" /> to highlight inventory.
     /// </summary>
     /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
-    public void AddHighlighter(ItemMatcher matcher)
+    public void AddHighlighter(IItemMatcher matcher)
     {
         this.Highlighters.Add(matcher);
-        matcher.CollectionChanged += this.OnCollectionChanged;
     }
 
     /// <summary>
@@ -220,18 +230,28 @@ internal class DisplayedItems
     {
         var items = this.ActualInventory.AsEnumerable();
         items = this.Transformers.Aggregate(items, (current, transformer) => transformer(current)).ToList();
-        do
+        if (!items.Any())
         {
-            this.Items = items
-                         .Skip(this.Offset * this.Columns)
-                         .Take(this.Menu.capacity)
-                         .ToList();
-        } while (!this.Items.Any() && items.Any() && --this.Offset > 0);
+            this._items.Clear();
+            this._items.AddRange(items
+                                 .Skip(this.Offset * this.Columns)
+                                 .Take(this.Menu.capacity));
+        }
+        else
+        {
+            do
+            {
+                this._items.Clear();
+                this._items.AddRange(items
+                                     .Skip(this.Offset * this.Columns)
+                                     .Take(this.Menu.capacity));
+            } while (!this._items.Any() && --this.Offset > 0);
+        }
 
         for (var index = 0; index < this.Menu.inventory.Count; index++)
         {
-            this.Menu.inventory[index].name = (index < this.Items.Count
-                ? this.Menu.actualInventory.IndexOf(this.Items[index])
+            this.Menu.inventory[index].name = (index < this._items.Count
+                ? this.Menu.actualInventory.IndexOf(this._items[index])
                 : int.MaxValue).ToString();
         }
 
@@ -261,11 +281,5 @@ internal class DisplayedItems
                 // ignored
             }
         }
-    }
-
-    private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
-    {
-        this.Offset = 0;
-        this.RefreshItems();
     }
 }

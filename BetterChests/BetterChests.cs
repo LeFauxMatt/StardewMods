@@ -95,7 +95,6 @@ public class BetterChests : Mod
         this.Features.Add(nameof(BetterItemGrabMenu), new(BetterItemGrabMenu.Init(this.Helper, this.Config), () => true));
         this.Features.Add(nameof(BetterShippingBin), new(BetterShippingBin.Init(this.Helper), () => this.Config.BetterShippingBin));
         this.Features.Add(nameof(CarryChest), new(CarryChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled));
-        this.Features.Add(nameof(CategorizeChest), new(CategorizeChest.Init(this.Helper), () => this.Config.CategorizeChest));
         this.Features.Add(nameof(LabelChest), new(LabelChest.Init(this.Helper), () => this.Config.LabelChest));
         this.Features.Add(nameof(ChestFinder), new(ChestFinder.Init(this.Helper, this.Config), () => this.Config.ChestFinder));
         this.Features.Add(nameof(ChestMenuTabs), new(ChestMenuTabs.Init(this.Helper, this.Config), () => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled));

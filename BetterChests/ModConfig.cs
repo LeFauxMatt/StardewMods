@@ -27,11 +27,6 @@ internal class ModConfig
     public int CarryChestSlowAmount { get; set; } = 1;
 
     /// <summary>
-    ///     Gets or sets a value indicating whether chests can be categorized.
-    /// </summary>
-    public bool CategorizeChest { get; set; } = true;
-
-    /// <summary>
     ///     Gets or sets a value indicating whether chests can be searched for.
     /// </summary>
     public bool ChestFinder { get; set; } = true;
@@ -97,23 +92,21 @@ internal class ModConfig
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"BetterShippingBin: {this.BetterShippingBin.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"Configurator: {this.Configurator.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
-        sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"AutoOrganize: {this.DefaultChest.AutoOrganize.ToStringFast()}");
+        sb.AppendLine($"BetterShippingBin: {this.BetterShippingBin.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CarryChest: {this.DefaultChest.CarryChest.ToStringFast()}");
+        sb.AppendLine($"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CarryChestSlow: {this.DefaultChest.CarryChestSlow.ToStringFast()}");
-        sb.AppendLine($"CategorizeChest: {this.CategorizeChest.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"ChestFinder: {this.ChestFinder.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"ChestMenuTabs: {this.DefaultChest.ChestMenuTabs.ToStringFast()}");
         sb.AppendLine($"CollectItems: {this.DefaultChest.CollectItems.ToStringFast()}");
+        sb.AppendLine($"Configurator: {this.Configurator.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromChest: {this.DefaultChest.CraftFromChest.ToStringFast()}");
         sb.AppendLine($"CraftFromChestDistance: {this.DefaultChest.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.DefaultChest.CraftFromChestDisableLocations)}");
         sb.AppendLine($"CustomColorPicker: {this.DefaultChest.CustomColorPicker.ToStringFast()}");
+        sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
         sb.AppendLine($"FilterItems: {this.DefaultChest.FilterItems.ToStringFast()}");
         sb.AppendLine($"LabelChest: {this.LabelChest.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"OpenHeldChest: {this.DefaultChest.OpenHeldChest.ToStringFast()}");
@@ -125,7 +118,9 @@ internal class ModConfig
         sb.AppendLine($"ResizeChestMenu: {this.DefaultChest.ResizeChestMenu.ToStringFast()}");
         sb.AppendLine($"ResizeChestMenuRows: {this.DefaultChest.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SearchItems: {this.DefaultChest.SearchItems.ToStringFast()}");
+        sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLock: {this.SlotLock.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChest: {this.DefaultChest.StashToChest.ToStringFast()}");
         sb.AppendLine($"StashToChestDistance: {this.DefaultChest.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.DefaultChest.StashToChestDisableLocations)}");

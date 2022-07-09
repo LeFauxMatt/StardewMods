@@ -44,8 +44,6 @@
   "config.custom-color-picker-area.tooltip": "A área perto do menu de inventário onde o seletor de cores irá ficar.",
   "config.filter-items.name": "Filtro de Itens",
   "config.filter-items.tooltip": "Restringe quais itens podem ser adicionados a um baú.",
-  "config.filter-items-block.name": "Bloqueio do Filtro de Itens",
-  "config.filter-items-block.tooltip": "Baús irão rejeitar itens que não condizem com o Filtro de Itens.",
   "config.open-held-chest.name": "Abrir Baú em Mãos",
   "config.open-held-chest.tooltip": "Abre o baú que está sendo segurado no momento.",
   "config.resize-chest.name": "Redimensionar Baú",

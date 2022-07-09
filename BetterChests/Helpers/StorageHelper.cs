@@ -406,6 +406,10 @@ internal class StorageHelper
             case IslandWest islandWest:
                 storage = new ShippingBinStorage(islandWest, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
+            case Farm farm:
+                var building = farm.buildings.OfType<ShippingBin>().First();
+                storage = new ShippingBinStorage(building, farm, StorageHelper.Instance!.Config.DefaultChest, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
+                return true;
             default:
                 storage = default;
                 return false;

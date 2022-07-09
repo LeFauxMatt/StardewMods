@@ -50,8 +50,6 @@
   "config.custom-color-picker-area.tooltip": "색상 선택기 위치를 지정 할 수 있습니다.",
   "config.filter-items.name": "아이템 필터링",
   "config.filter-items.tooltip": "상자에 보관할 수 있는 아이템을 제한합니다.",
-  "config.filter-items-block.name": "아이템 필터링 차단",
-  "config.filter-items-block.tooltip": "필터링 조건을 충족하지 않는 아이템을 차단합니다.",
   "config.open-held-chest.name": "보유 상자 열기",
   "config.open-held-chest.tooltip": "현재 보유하고 있는 상자를 열고 내용물에 액세스합니다.",
   "config.organize-chest.name": "상자 정리",

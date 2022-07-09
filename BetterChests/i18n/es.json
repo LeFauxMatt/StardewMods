@@ -48,8 +48,6 @@
   "config.custom-color-picker-area.tooltip": "El área al lado del menú de inventario donde estará el selector de color.",
   "config.filter-items.name": "Filtrar Objetos",
   "config.filter-items.tooltip": "Restrinja qué elementos se pueden agregar a un cofre.",
-  "config.filter-items-block.name": "Bloqueo de objetos filtrados",
-  "config.filter-items-block.tooltip": "Los cofres rechazarán los artículos que no cumplan con la condición de 'Filtrar artículos'.",
   "config.open-held-chest.name": "Abrir Cofre en Inventario",
   "config.open-held-chest.tooltip": "Abre un cofre que tengas actualmente en tu inventario y accede a su contenido.",
   "config.organize-chest.name": "Organizar Cofre",

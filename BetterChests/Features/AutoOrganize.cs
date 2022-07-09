@@ -1,6 +1,7 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -8,6 +9,7 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
+using StardewValley;
 using StardewValley.Objects;
 
 /// <summary>
@@ -59,24 +61,32 @@ internal class AutoOrganize : IFeature
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages = (
-            from storage in StorageHelper.All
-            where storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            orderby storage.StashToChestPriority descending
-            select storage).ToList();
+        var storages =
+            StorageHelper.All
+                         .Where(storage => storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
+                         .OrderByDescending(storage => storage.StashToChestPriority)
+                         .ToList();
 
-        var items =
-            from storage in storages
-            from item in storage.Items
-            select (item, storage);
-
-        foreach (var (item, fromStorage) in items.ToList())
+        foreach (var fromStorage in storages)
         {
-            foreach (var storage in storages.Where(storage => !ReferenceEquals(storage, fromStorage) && storage.StashItem(item) is null))
+            foreach (var item in fromStorage.Items.OfType<Item>())
             {
-                Log.Trace($"AutoOrganize: {{ Item: {item.Name}, From: {fromStorage}, To: {storage}");
-                fromStorage.Items.Remove(item);
-                break;
+                var stack = item.Stack;
+                foreach (var toStorage in storages.Where(storage => !ReferenceEquals(fromStorage, storage) && storage.StashToChestPriority > fromStorage.StashToChestPriority))
+                {
+                    var tmp = toStorage.StashItem(item);
+                    if (tmp is null)
+                    {
+                        Log.Trace($"AutoOrganize: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+                        fromStorage.Items.Remove(item);
+                        break;
+                    }
+
+                    if (stack != item.Stack)
+                    {
+                        Log.Trace($"AutoOrganize: {{ Item: {item.Name}, Quantity: {(stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+                    }
+                }
             }
         }
 
