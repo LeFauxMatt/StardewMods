@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.2.0 (Unreleased)
+
+* Added Chest Network.
+
 ## 2.1.1 (July 11, 2022)
 
 * Fixed ChestMenuTabs appearing over some hover elements.

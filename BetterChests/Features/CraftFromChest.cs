@@ -33,7 +33,10 @@ internal class CraftFromChest : IFeature
         this.Config = config;
     }
 
-    private static IEnumerable<IStorageObject> Eligible
+    /// <summary>
+    ///     Gets the eligible storages for CraftFromChest.
+    /// </summary>
+    public static IEnumerable<IStorageObject> Eligible
     {
         get =>
             from storage in StorageHelper.All
