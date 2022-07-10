@@ -1,6 +1,10 @@
 ﻿# Better Chests Change Log
 
-## 2.1.0 (Unreleased)
+## 2.2.0 (Unreleased)
+
+* Added Chest Network.
+
+## 2.1.0 (July 9, 2022)
 
 * Added Chest Finder.
 * Added localized tags for search and categorization.

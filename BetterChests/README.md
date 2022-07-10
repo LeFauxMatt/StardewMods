@@ -12,6 +12,7 @@ Adds enhanced chest features to the game.
     * [Categorize Chest](#categorize-chest)
     * [Chest Finder](#chest-finder)
     * [Chest Menu Tabs](#chest-menu-tabs)
+    * [Chest Network](#chest-network)
     * [Collect Items](#collect-items)
     * [Configurator](#configurator)
     * [Craft From Chest](#craft-from-chest)
@@ -125,6 +126,17 @@ Tabs are added to the Chest Menu to allow you to quickly toggle between categori
 2. See [Option Values](#option-values).
 3. An empty string array shows all available tabs.
 4. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
+### Chest Network
+
+Tabs are added to the Chest Menu to allow you to quickly toggle between categories of items.<sup>1</sup>
+
+| Config           | Description                                  | Default Value | Other Value(s)                     |
+|:-----------------|:---------------------------------------------|---------------|:-----------------------------------|
+| ChestNetwork     | Enables the Chest Network feature.           | `"true"`      | `"true"`, `"false"`                |
+| OpenChestNetwork | Assigns a keybind to open the chest network. | not set       | Any valid button code.<sup>1</sup> |
+
+1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Collect Items
 
