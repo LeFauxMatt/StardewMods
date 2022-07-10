@@ -31,6 +31,11 @@ internal class Controls
     public KeybindList NextTab { get; set; } = new(SButton.DPadRight);
 
     /// <summary>
+    ///     Gets or sets controls to open the chest network menu.
+    /// </summary>
+    public KeybindList OpenChestNetwork { get; set; } = new();
+
+    /// <summary>
     ///     Gets or sets controls to open <see cref="StardewValley.Menus.CraftingPage" />.
     /// </summary>
     public KeybindList OpenCrafting { get; set; } = new(SButton.K);

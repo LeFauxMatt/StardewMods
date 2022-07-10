@@ -37,7 +37,12 @@ internal class ModConfig
     public bool ChestFinder { get; set; } = true;
 
     /// <summary>
-    ///     Gets or sets a value indicating whether Configurator will be enabled.
+    ///     Gets or sets a value indicating whether chest networking is enabled.
+    /// </summary>
+    public bool ChestNetwork { get; set; } = true;
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether chests can be configured individually.
     /// </summary>
     public bool Configurator { get; set; } = true;
 
