@@ -262,6 +262,7 @@ internal class ChestMenuTabs : IFeature
         }
     }
 
+    [EventPriority(EventPriority.High)]
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         if (this.CurrentMenu is null || this.Tabs is null)
