@@ -6,11 +6,14 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.ModIntegrations;
+using StardewMods.ToolbarIcons.UI;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -32,8 +35,8 @@ public class ToolbarIcons : Mod
     private readonly PerScreen<Dictionary<string, string>> _actions = new(() => new());
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
     private readonly PerScreen<string> _hoverText = new();
-    private readonly PerScreen<Dictionary<string, ClickableTextureComponent>> _icons = new(() => new());
-    private ClickableTextureComponent? _icon;
+
+    private ModConfig? _config;
     private MethodInfo? _overrideButtonReflected;
 
     private Dictionary<string, string> Actions
@@ -43,27 +46,40 @@ public class ToolbarIcons : Mod
 
     private ToolbarIconsApi Api
     {
-        get => this._api.Value ??= new(this.Helper.GameContent, this.Icons);
+        get => this._api.Value ??= new(this.Helper, this.Config.Icons, this.Components);
+    }
+
+    private Dictionary<string, ClickableTextureComponent> Components { get; } = new();
+
+    private ModConfig Config
+    {
+        get
+        {
+            if (this._config is not null)
+            {
+                return this._config;
+            }
+
+            ModConfig? config = null;
+            try
+            {
+                config = this.Helper.ReadConfig<ModConfig>();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            this._config = config ?? new ModConfig();
+            Log.Trace(this._config.ToString());
+            return this._config;
+        }
     }
 
     private string HoverText
     {
         get => this._hoverText.Value;
         set => this._hoverText.Value = value;
-    }
-
-    private ClickableTextureComponent Icon
-    {
-        get => this._icon ??= new(
-            new(0, 0, 32, 32),
-            this.Helper.GameContent.Load<Texture2D>("furyx639.ToolbarIcons/Icons"),
-            new(0, 0, 16, 16),
-            2f);
-    }
-
-    private Dictionary<string, ClickableTextureComponent> Icons
-    {
-        get => this._icons.Value;
     }
 
     private IDictionary<string, SButton[]> Keybinds { get; } = new Dictionary<string, SButton[]>();
@@ -105,11 +121,59 @@ public class ToolbarIcons : Mod
         if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Icons"))
         {
             e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+            return;
         }
-        else if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
+
+        if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Arrows"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/arrows.png", AssetLoadPriority.Exclusive);
+            return;
+        }
+
+        if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
         {
             e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
         }
+    }
+
+    private void DrawButton(SpriteBatch b, Vector2 pos)
+    {
+        var label = I18n.Config_OpenMenu_Name();
+        var dims = Game1.dialogueFont.MeasureString(I18n.Config_OpenMenu_Name());
+        var bounds = new Rectangle((int)pos.X, (int)pos.Y, (int)dims.X + Game1.tileSize, Game1.tileSize);
+        if (Game1.activeClickableMenu.GetChildMenu() is null)
+        {
+            var point = Game1.getMousePosition();
+            if (Game1.oldMouseState.LeftButton == ButtonState.Released && Mouse.GetState().LeftButton == ButtonState.Pressed && bounds.Contains(point))
+            {
+                Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this.Config.Icons, this.Components));
+                return;
+            }
+        }
+
+        IClickableMenu.drawTextureBox(
+            b,
+            Game1.mouseCursors,
+            new(432, 439, 9, 9),
+            bounds.X,
+            bounds.Y,
+            bounds.Width,
+            bounds.Height,
+            Color.White,
+            Game1.pixelZoom,
+            false,
+            1f);
+        Utility.drawTextWithShadow(
+            b,
+            label,
+            Game1.dialogueFont,
+            new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f,
+            Game1.textColor,
+            1f,
+            1f,
+            -1,
+            -1,
+            0f);
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -125,18 +189,18 @@ public class ToolbarIcons : Mod
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var icon = this.Icons.Values.FirstOrDefault(icon => icon.containsPoint(x, y));
-        if (icon is not null)
+        var component = this.Components.Values.FirstOrDefault(component => component.visible && component.containsPoint(x, y));
+        if (component is not null)
         {
             Game1.playSound("drumkit6");
-            if (this.Actions.TryGetValue(icon.name, out var action))
+            if (this.Actions.TryGetValue(component.name, out var action))
             {
                 if (action.StartsWith("toggle:"))
                 {
                     var command = action[7..].Trim();
-                    foreach (var subIcon in this.Icons.Values.Where(subIcon => icon != subIcon && subIcon.name.StartsWith(command)))
+                    foreach (var subComponent in this.Components.Values.Where(subComponent => component != subComponent && subComponent.name.StartsWith(command)))
                     {
-                        subIcon.visible = !subIcon.visible;
+                        subComponent.visible = !subComponent.visible;
                     }
                 }
                 else if (action.StartsWith("keybind:"))
@@ -166,7 +230,7 @@ public class ToolbarIcons : Mod
                 this.Helper.Input.Suppress(e.Button);
             }
 
-            this.Api.Invoke(icon.name);
+            this.Api.Invoke(component.name);
             this.Helper.Input.Suppress(e.Button);
         }
     }
@@ -180,18 +244,19 @@ public class ToolbarIcons : Mod
 
         var (x, y) = Game1.getMousePosition(true);
         this.HoverText = string.Empty;
-        foreach (var icon in this.Icons.Values.Where(icon => icon.visible))
+        foreach (var component in this.Components.Values.Where(component => component.visible))
         {
-            icon.tryHover(x, y);
-            if (icon.bounds.Contains(x, y))
+            component.tryHover(x, y);
+            if (component.bounds.Contains(x, y))
             {
-                this.HoverText = icon.hoverText;
+                this.HoverText = component.hoverText;
             }
         }
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
+        var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
         var simple = SimpleIntegration.Init(this.Helper, this.Api);
         var complex = ComplexIntegration.Init(this.Helper, this.Api);
 
@@ -208,8 +273,8 @@ public class ToolbarIcons : Mod
                     return null;
                 }
 
-                var enabledIndoors = this.Helper.Reflection.GetField<bool>(config, "EnabledIndoors");
-                var enabledOutdoors = this.Helper.Reflection.GetField<bool>(config, "EnabledOutdoors");
+                var enabledIndoors = this.Helper.Reflection.GetField<bool>(config, "EnabledIndoors", false);
+                var enabledOutdoors = this.Helper.Reflection.GetField<bool>(config, "EnabledOutdoors", false);
                 if (enabledIndoors is null || enabledOutdoors is null)
                 {
                     return null;
@@ -248,6 +313,22 @@ public class ToolbarIcons : Mod
         simple.AddIntegration(ToolbarIcons.InstantBuildingId, 8, I18n.Button_InstantBuildings_Upgrade(), "HandleInstantUpgradeButtonClick");
         simple.AddIntegration(ToolbarIcons.LookupAnythingId, 9, I18n.Button_LookupAnything(), "TryToggleSearch");
         simple.AddIntegration(ToolbarIcons.StardewAquariumId, 1, I18n.Button_StardewAquarium(), "OpenAquariumCollectionMenu", "aquariumprogress", Array.Empty<string>());
+
+        if (gmcm.IsLoaded)
+        {
+            // Register mod configuration
+            gmcm.Register(
+                this.ModManifest,
+                () => this._config = new(),
+                () => this.Helper.WriteConfig(this.Config));
+
+            gmcm.API.AddComplexOption(
+                this.ModManifest,
+                I18n.Config_CustomizeToolbar_Name,
+                this.DrawButton,
+                I18n.Config_CustomizeToolbar_Tooltip,
+                height: () => Game1.tileSize);
+        }
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
@@ -276,18 +357,26 @@ public class ToolbarIcons : Mod
         var y = alignBottom
             ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
             : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
-        if (this.Icons.Values.Any(icon => icon.bounds.Y != y)
-            || this.Icons.Values.Where(icon => icon.visible).Select(icon => icon.bounds.X).Distinct().Count() != this.Icons.Values.Count(icon => icon.visible))
+        if (this.Components.Values.Any(component => component.bounds.Y != y)
+            || this.Components.Values.Where(component => component.visible).Select(icon => icon.bounds.X).Distinct().Count() != this.Components.Values.Count(icon => icon.visible))
         {
             this.ReorientComponents(y, alignBottom);
         }
 
-        foreach (var icon in this.Icons.Values)
+        foreach (var component in this.Components.Values)
         {
-            this.Icon.bounds.X = icon.bounds.X;
-            this.Icon.bounds.Y = icon.bounds.Y;
-            this.Icon.draw(e.SpriteBatch);
-            icon.draw(e.SpriteBatch);
+            var icons = this.Helper.GameContent.Load<Texture2D>("furyx639.ToolbarIcons/Icons");
+            e.SpriteBatch.Draw(
+                icons,
+                new(component.bounds.X, component.bounds.Y),
+                new(0, 0, 16, 16),
+                Color.White,
+                0f,
+                Vector2.Zero,
+                2f,
+                SpriteEffects.None,
+                1f);
+            component.draw(e.SpriteBatch);
         }
     }
 
@@ -321,13 +410,20 @@ public class ToolbarIcons : Mod
                 : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
         }
 
-        foreach (var icon in this.Icons.OrderBy(icon => icon.Key).Select(icon => icon.Value))
+        foreach (var icon in this.Config.Icons)
         {
-            icon.bounds.X = x;
-            icon.bounds.Y = y - (alignBottom ? icon.bounds.Height : 0);
-            if (icon.visible)
+            if (this.Components.TryGetValue(icon.Id, out var component))
             {
-                x += icon.bounds.Width + 4;
+                if (!icon.Enabled)
+                {
+                    component.visible = false;
+                    continue;
+                }
+
+                component.visible = true;
+                component.bounds.X = x;
+                component.bounds.Y = y - (alignBottom ? component.bounds.Height : 0);
+                x += component.bounds.Width + 4;
             }
         }
     }

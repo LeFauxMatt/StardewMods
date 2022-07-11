@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.ToolbarIcons.Models;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -18,10 +20,12 @@ public class ToolbarIconsApi : IToolbarIconsApi
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="icons">List containing toolbar icons.</param>
-    public ToolbarIconsApi(IGameContentHelper helper, Dictionary<string, ClickableTextureComponent> icons)
+    /// <param name="components">Dictionary containing the textures.</param>
+    public ToolbarIconsApi(IModHelper helper, List<ToolbarIcon> icons, Dictionary<string, ClickableTextureComponent> components)
     {
         this.Helper = helper;
         this.Icons = icons;
+        this.Components = components;
     }
 
     /// <summary>
@@ -33,30 +37,40 @@ public class ToolbarIconsApi : IToolbarIconsApi
         remove => this._toolbarIconPressed -= value;
     }
 
-    private IGameContentHelper Helper { get; }
+    private Dictionary<string, ClickableTextureComponent> Components { get; }
 
-    private Dictionary<string, ClickableTextureComponent> Icons { get; }
+    private IModHelper Helper { get; }
+
+    private List<ToolbarIcon> Icons { get; }
 
     /// <inheritdoc />
     public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText)
     {
-        var icon = new ClickableTextureComponent(
-            new(0, 0, 32, 32),
-            this.Helper.Load<Texture2D>(texturePath),
-            sourceRect ?? new(0, 0, 16, 16),
-            2f)
+        if (!this.Icons.Any(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase)))
         {
-            hoverText = hoverText,
-            name = id,
-        };
-
-        this.Icons.Add(id, icon);
+            this.Icons.Add(new(id));
+            this.Components.Add(id,
+                new(
+                    new(0, 0, 32, 32),
+                    this.Helper.GameContent.Load<Texture2D>(texturePath),
+                    sourceRect ?? new(0, 0, 16, 16),
+                    2f)
+                {
+                    hoverText = hoverText,
+                    name = id,
+                });
+        }
     }
 
     /// <inheritdoc />
     public void RemoveToolbarIcon(string id)
     {
-        this.Icons.Remove(id);
+        var toolbarIcon = this.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        if (toolbarIcon is not null)
+        {
+            this.Icons.Remove(toolbarIcon);
+            this.Components.Remove(id);
+        }
     }
 
     /// <summary>
