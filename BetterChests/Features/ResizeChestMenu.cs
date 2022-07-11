@@ -1,6 +1,7 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
@@ -352,14 +353,15 @@ internal class ResizeChestMenu : IFeature
         }
 
         // Set upNeighborId for first row of player inventory
-        topRow = topRow.Take(12).ToList();
         bottomRow = bottomRow.TakeLast(12).ToList();
+        topRow = topRow.Take(12).ToList();
         for (var index = 0; index < 12; index++)
         {
-            var topSlot = topRow.ElementAtOrDefault(index);
             var bottomSlot = bottomRow.ElementAtOrDefault(index);
+            var topSlot = topRow.ElementAtOrDefault(index);
             if (topSlot is not null && bottomSlot is not null)
             {
+                bottomSlot.downNeighborID = topSlot.myID;
                 topSlot.upNeighborID = bottomSlot.myID;
             }
         }

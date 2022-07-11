@@ -316,21 +316,42 @@ internal class BetterItemGrabMenu : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.CurrentMenu is null || BetterItemGrabMenu.ItemsToGrabMenu is null || this.OverlaidMenus.Any())
+        if (this.CurrentMenu is null || this.OverlaidMenus.Any())
         {
             return;
         }
 
-        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        var displayedItems = BetterItemGrabMenu.Inventory is not null
+                             && this.CurrentMenu.currentlySnappedComponent is not null
+                             && BetterItemGrabMenu.Inventory.Menu.inventory.Contains(this.CurrentMenu.currentlySnappedComponent)
+            ? BetterItemGrabMenu.Inventory
+            : BetterItemGrabMenu.ItemsToGrabMenu;
+        if (displayedItems is null)
         {
-            BetterItemGrabMenu.ItemsToGrabMenu.Offset--;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+            return;
         }
 
-        if (this.Config.ControlScheme.ScrollDown.JustPressed())
+        var offset = displayedItems.Offset;
+        if (this.Config.ControlScheme.ScrollUp.JustPressed()
+            && (this.CurrentMenu.currentlySnappedComponent is null
+                || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
-            BetterItemGrabMenu.ItemsToGrabMenu.Offset++;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
+            displayedItems.Offset--;
+            if (offset != displayedItems.Offset)
+            {
+                this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+            }
+        }
+
+        if (this.Config.ControlScheme.ScrollDown.JustPressed()
+            && (this.CurrentMenu.currentlySnappedComponent is null
+                || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
+        {
+            displayedItems.Offset++;
+            if (offset != displayedItems.Offset)
+            {
+                this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
+            }
         }
     }
 
