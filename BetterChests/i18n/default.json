@@ -32,6 +32,8 @@
   "config.carry-chest-slow.tooltip": "Carrying a chest that has items will apply a slowness effect.",
   "config.carry-chest-slow.value-zero": "Normal speed",
   "config.carry-chest-slow.value": "-{0}x speed",
+  "config.carry-chest-slow-amount.name": "Carry Chest Slow Amount",
+  "config.carry-chest-slow-amount.tooltip": "The amount to slow down when carrying a chest.",
   "config.categorize-chest.name": "Categorize Chest",
   "config.categorize-chest.tooltip": "Organize chests by assigning categories of items (stashing will use these categories).",
   "config.chest-finder.name": "Chest Finder",

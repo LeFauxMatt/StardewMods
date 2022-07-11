@@ -12,6 +12,11 @@ using StardewMods.Common.Enums;
 internal class ModConfig
 {
     /// <summary>
+    ///     Gets or sets a value indicating whether advanced config options will be shown.
+    /// </summary>
+    public bool AdvancedConfig { get; set; } = false;
+
+    /// <summary>
     ///     Gets or sets a value indicating whether shipping bin will be relaunched as a regular chest inventory menu.
     /// </summary>
     public bool BetterShippingBin { get; set; } = true;

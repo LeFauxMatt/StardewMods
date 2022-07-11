@@ -205,49 +205,70 @@ internal class ConfigHelper
                 I18n.Config_BetterShippingBin_Tooltip,
                 nameof(ModConfig.BetterShippingBin));
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => this.Config.CarryChestLimit switch
-                {
-                    _ when data.CarryChestSlow is FeatureOption.Default => (int)FeatureOption.Default,
-                    _ when data.CarryChestSlow is FeatureOption.Disabled => (int)FeatureOption.Disabled,
-                    _ => (int)FeatureOption.Enabled + this.Config.CarryChestLimit - 1,
-                },
-                value =>
-                {
-                    this.Config.CarryChestLimit = value switch
-                    {
-                        (int)FeatureOption.Default => 0,
-                        (int)FeatureOption.Disabled => 0,
-                        >= (int)FeatureOption.Enabled => 1 + value - (int)FeatureOption.Enabled,
-                        _ => 0,
-                    };
-                    data.CarryChestSlow = value switch
-                    {
-                        (int)FeatureOption.Default => FeatureOption.Default,
-                        (int)FeatureOption.Disabled => FeatureOption.Disabled,
-                        _ => FeatureOption.Enabled,
-                    };
-                },
-                I18n.Config_CarryChestLimit_Name,
-                I18n.Config_CarryChestLimit_Tooltip,
-                (int)FeatureOption.Default,
-                7,
-                1,
-                FormatHelper.FormatCarryChestLimit,
-                nameof(ModConfig.CarryChestLimit));
+            if (this.Config.AdvancedConfig)
+            {
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => this.Config.CarryChestLimit,
+                    value => this.Config.CarryChestLimit = value,
+                    I18n.Config_CarryChestLimit_Name,
+                    I18n.Config_CarryChestLimit_Tooltip,
+                    fieldId: nameof(ModConfig.CarryChestLimit));
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => this.Config.CarryChestSlowAmount,
-                value => this.Config.CarryChestSlowAmount = value,
-                I18n.Config_CarryChestSlow_Name,
-                I18n.Config_CarryChestSlow_Tooltip,
-                0,
-                4,
-                1,
-                FormatHelper.FormatCarryChestSlow,
-                nameof(ModConfig.CarryChestSlowAmount));
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => this.Config.CarryChestSlowAmount,
+                    value => this.Config.CarryChestSlowAmount = value,
+                    I18n.Config_CarryChestSlowAmount_Name,
+                    I18n.Config_CarryChestSlowAmount_Tooltip,
+                    fieldId: nameof(ModConfig.CarryChestSlowAmount));
+            }
+            else
+            {
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => this.Config.CarryChestLimit switch
+                    {
+                        _ when data.CarryChestSlow is FeatureOption.Default => (int)FeatureOption.Default,
+                        _ when data.CarryChestSlow is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+                        _ => (int)FeatureOption.Enabled + this.Config.CarryChestLimit - 1,
+                    },
+                    value =>
+                    {
+                        this.Config.CarryChestLimit = value switch
+                        {
+                            (int)FeatureOption.Default => 0,
+                            (int)FeatureOption.Disabled => 0,
+                            >= (int)FeatureOption.Enabled => 1 + value - (int)FeatureOption.Enabled,
+                            _ => 0,
+                        };
+                        data.CarryChestSlow = value switch
+                        {
+                            (int)FeatureOption.Default => FeatureOption.Default,
+                            (int)FeatureOption.Disabled => FeatureOption.Disabled,
+                            _ => FeatureOption.Enabled,
+                        };
+                    },
+                    I18n.Config_CarryChestLimit_Name,
+                    I18n.Config_CarryChestLimit_Tooltip,
+                    (int)FeatureOption.Default,
+                    7,
+                    1,
+                    FormatHelper.FormatCarryChestLimit,
+                    nameof(ModConfig.CarryChestLimit));
+
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => this.Config.CarryChestSlowAmount,
+                    value => this.Config.CarryChestSlowAmount = value,
+                    I18n.Config_CarryChestSlow_Name,
+                    I18n.Config_CarryChestSlow_Tooltip,
+                    0,
+                    4,
+                    1,
+                    FormatHelper.FormatCarryChestSlow,
+                    nameof(ModConfig.CarryChestSlowAmount));
+            }
 
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -443,6 +464,19 @@ internal class ConfigHelper
                 FeatureOptionExtensions.GetNames(),
                 FormatHelper.FormatOption,
                 nameof(IStorageData.CarryChest));
+
+            if (this.Config.AdvancedConfig)
+            {
+                IntegrationHelper.GMCM.API.AddTextOption(
+                    manifest,
+                    () => data.CarryChestSlow.ToStringFast(),
+                    value => data.CarryChestSlow = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                    I18n.Config_CarryChestSlow_Name,
+                    I18n.Config_CarryChestSlow_Tooltip,
+                    FeatureOptionExtensions.GetNames(),
+                    FormatHelper.FormatOption,
+                    nameof(IStorageData.CarryChestSlow));
+            }
         }
 
         if (!main && storage is IStorageObject storageObject)
@@ -511,6 +545,26 @@ internal class ConfigHelper
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             IntegrationHelper.GMCM.API.AddParagraph(manifest, () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(CraftFromChest)}", modList));
+        }
+        else if (this.Config.AdvancedConfig)
+        {
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => data.CraftFromChest.ToStringFast(),
+                value => data.CraftFromChest = FeatureOptionRangeExtensions.TryParse(value, out var range) ? range : FeatureOptionRange.Default,
+                I18n.Config_CraftFromChest_Name,
+                I18n.Config_CraftFromChest_Tooltip,
+                FeatureOptionRangeExtensions.GetNames(),
+                FormatHelper.FormatRange,
+                nameof(IStorageData.CraftFromChest));
+
+            IntegrationHelper.GMCM.API.AddNumberOption(
+                manifest,
+                () => data.CraftFromChestDistance,
+                value => data.CraftFromChestDistance = value,
+                I18n.Config_CraftFromChestDistance_Name,
+                I18n.Config_CraftFromChestDistance_Tooltip,
+                fieldId: nameof(IStorageData.CraftFromChest));
         }
         else
         {
@@ -656,6 +710,26 @@ internal class ConfigHelper
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             IntegrationHelper.GMCM.API.AddParagraph(manifest, () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(ResizeChest)}", modList));
         }
+        else if (this.Config.AdvancedConfig)
+        {
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => data.ResizeChest.ToStringFast(),
+                value => data.ResizeChest = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                I18n.Config_ResizeChest_Name,
+                I18n.Config_ResizeChest_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                FormatHelper.FormatOption,
+                nameof(IStorageData.ResizeChest));
+
+            IntegrationHelper.GMCM.API.AddNumberOption(
+                manifest,
+                () => data.ResizeChestCapacity,
+                value => data.ResizeChestCapacity = value,
+                I18n.Config_ResizeChestCapacity_Name,
+                I18n.Config_ResizeChestCapacity_Tooltip,
+                fieldId: nameof(IStorageData.ResizeChestCapacity));
+        }
         else
         {
             IntegrationHelper.GMCM.API.AddNumberOption(
@@ -690,7 +764,7 @@ internal class ConfigHelper
                 8,
                 1,
                 FormatHelper.FormatChestCapacity,
-                nameof(IStorageData.ResizeChest));
+                nameof(IStorageData.ResizeChestCapacity));
         }
 
         // Resize Chest Menu
@@ -698,6 +772,26 @@ internal class ConfigHelper
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             IntegrationHelper.GMCM.API.AddParagraph(manifest, () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(ResizeChestMenu)}", modList));
+        }
+        else if (this.Config.AdvancedConfig)
+        {
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => data.ResizeChestMenu.ToStringFast(),
+                value => data.ResizeChestMenu = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
+                I18n.Config_ResizeChestMenu_Name,
+                I18n.Config_ResizeChestMenu_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                FormatHelper.FormatOption,
+                nameof(IStorageData.ResizeChestMenu));
+
+            IntegrationHelper.GMCM.API.AddNumberOption(
+                manifest,
+                () => data.ResizeChestMenuRows,
+                value => data.ResizeChestMenuRows = value,
+                I18n.Config_ResizeChestMenuRows_Name,
+                I18n.Config_ResizeChestMenuRows_Tooltip,
+                fieldId: nameof(IStorageData.ResizeChestMenuRows));
         }
         else
         {
@@ -730,7 +824,7 @@ internal class ConfigHelper
                 5,
                 1,
                 FormatHelper.FormatChestMenuRows,
-                nameof(IStorageData.ResizeChestMenu));
+                nameof(IStorageData.ResizeChestMenuRows));
         }
 
         // Search Items
@@ -774,6 +868,26 @@ internal class ConfigHelper
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             IntegrationHelper.GMCM.API.AddParagraph(manifest, () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(StashToChest)}", modList));
+        }
+        else if (this.Config.AdvancedConfig)
+        {
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => data.StashToChest.ToStringFast(),
+                value => data.StashToChest = FeatureOptionRangeExtensions.TryParse(value, out var range) ? range : FeatureOptionRange.Default,
+                I18n.Config_StashToChest_Name,
+                I18n.Config_StashToChest_Tooltip,
+                FeatureOptionRangeExtensions.GetNames(),
+                FormatHelper.FormatRange,
+                nameof(IStorageData.StashToChest));
+
+            IntegrationHelper.GMCM.API.AddNumberOption(
+                manifest,
+                () => data.StashToChestDistance,
+                value => data.StashToChestDistance = value,
+                I18n.Config_StashToChestDistance_Name,
+                I18n.Config_StashToChestDistance_Tooltip,
+                fieldId: nameof(IStorageData.StashToChest));
         }
         else
         {
