@@ -52,6 +52,19 @@ internal class ToolbarIconsMenu : IClickableMenu
 
         this.Arrows = Game1.content.Load<Texture2D>("furyx639.ToolbarIcons/Arrows");
 
+        this.OkButton = new(
+            "OK",
+            new(
+                this.xPositionOnScreen + this.width + Game1.tileSize - 8,
+                this.yPositionOnScreen + this.height - Game1.tileSize,
+                Game1.tileSize,
+                Game1.tileSize),
+            null,
+            null,
+            Game1.mouseCursors,
+            Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 46),
+            1f);
+
         this.UpArrow = new(
             new(this.xPositionOnScreen + this.width + Game1.tileSize, this.yPositionOnScreen + 16, 44, 48),
             Game1.mouseCursors,
@@ -63,7 +76,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             leftNeighborID = 3546,
         };
         this.DownArrow = new(
-            new(this.UpArrow.bounds.X, this.yPositionOnScreen + this.height - Game1.tileSize, 44, 48),
+            new(this.UpArrow.bounds.X, this.yPositionOnScreen + this.height - Game1.tileSize * 2, 44, 48),
             Game1.mouseCursors,
             new(421, 472, 11, 12),
             Game1.pixelZoom)
@@ -77,7 +90,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             Game1.mouseCursors,
             new(435, 463, 6, 10),
             Game1.pixelZoom);
-        this.ScrollBarRunner = new(this.ScrollBar.bounds.X, this.UpArrow.bounds.Y + this.UpArrow.bounds.Height + 4, this.ScrollBar.bounds.Width, this.height - 64 - this.UpArrow.bounds.Height - 28);
+        this.ScrollBarRunner = new(this.ScrollBar.bounds.X, this.UpArrow.bounds.Y + this.UpArrow.bounds.Height + 4, this.ScrollBar.bounds.Width, this.height - this.UpArrow.bounds.Height - Game1.tileSize * 2 - 28);
     }
 
     private Texture2D Arrows { get; }
@@ -110,6 +123,8 @@ internal class ToolbarIconsMenu : IClickableMenu
 
     private int MaxItems { get; }
 
+    private ClickableTextureComponent OkButton { get; }
+
     private ClickableTextureComponent ScrollBar { get; }
 
     private Rectangle ScrollBarRunner { get; }
@@ -133,6 +148,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             false,
             true);
 
+        this.OkButton.draw(b);
         this.DownArrow.draw(b);
         this.UpArrow.draw(b);
         ToolbarIconsMenu.drawTextureBox(b, Game1.mouseCursors, new(403, 383, 6, 6), this.ScrollBarRunner.X, this.ScrollBarRunner.Y, this.ScrollBarRunner.Width, this.ScrollBarRunner.Height, Color.White, 4f);
@@ -229,6 +245,7 @@ internal class ToolbarIconsMenu : IClickableMenu
     {
         base.performHoverAction(x, y);
 
+        this.OkButton.scale = this.OkButton.containsPoint(x, y) ? Math.Min(1.1f, this.OkButton.scale + 0.05f) : Math.Max(1f, this.OkButton.scale - 0.05f);
         this.DownArrow.tryHover(x, y);
         this.UpArrow.tryHover(x, y);
         this.ScrollBar.tryHover(x, y);
@@ -268,7 +285,13 @@ internal class ToolbarIconsMenu : IClickableMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        base.receiveLeftClick(x, y);
+        base.receiveLeftClick(x, y, playSound);
+        if (this.OkButton.containsPoint(x, y))
+        {
+            this.exitThisMenu();
+            Game1.playSound("bigDeSelect");
+        }
+
         if (this.DownArrow.containsPoint(x, y))
         {
             this.DownArrow.scale = this.DownArrow.baseScale;

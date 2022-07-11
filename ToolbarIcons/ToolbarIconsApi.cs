@@ -49,7 +49,12 @@ public class ToolbarIconsApi : IToolbarIconsApi
         if (!this.Icons.Any(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase)))
         {
             this.Icons.Add(new(id));
-            this.Components.Add(id,
+        }
+
+        if (!this.Components.ContainsKey(id))
+        {
+            this.Components.Add(
+                id,
                 new(
                     new(0, 0, 32, 32),
                     this.Helper.GameContent.Load<Texture2D>(texturePath),

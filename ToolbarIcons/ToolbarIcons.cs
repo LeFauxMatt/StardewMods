@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
@@ -10,6 +11,7 @@ using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.ModIntegrations;
@@ -34,7 +36,10 @@ public class ToolbarIcons : Mod
 
     private readonly PerScreen<Dictionary<string, string>> _actions = new(() => new());
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
+    private readonly PerScreen<ComponentArea> _area = new(() => ComponentArea.Custom);
+    private readonly PerScreen<ClickableComponent?> _button = new();
     private readonly PerScreen<string> _hoverText = new();
+    private readonly PerScreen<Toolbar?> _toolbar = new();
 
     private ModConfig? _config;
     private MethodInfo? _overrideButtonReflected;
@@ -47,6 +52,35 @@ public class ToolbarIcons : Mod
     private ToolbarIconsApi Api
     {
         get => this._api.Value ??= new(this.Helper, this.Config.Icons, this.Components);
+    }
+
+    private ComponentArea Area
+    {
+        get => this._area.Value;
+        set => this._area.Value = value;
+    }
+
+    [MemberNotNull(nameof(ToolbarIcons.Toolbar))]
+    private ClickableComponent? Button
+    {
+        get
+        {
+            var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
+            if (this.Toolbar is not null && ReferenceEquals(toolbar, this.Toolbar))
+            {
+                return this._button.Value;
+            }
+
+            if (toolbar is not null)
+            {
+                this.Toolbar = toolbar;
+                var buttons = this.Helper.Reflection.GetField<List<ClickableComponent>>(toolbar, "buttons").GetValue();
+                this._button.Value = buttons.First();
+                return this._button.Value;
+            }
+
+            return null;
+        }
     }
 
     private Dictionary<string, ClickableTextureComponent> Components { get; } = new();
@@ -87,6 +121,12 @@ public class ToolbarIcons : Mod
     private MethodInfo OverrideButtonReflected
     {
         get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
+    }
+
+    private Toolbar? Toolbar
+    {
+        get => this._toolbar.Value;
+        set => this._toolbar.Value = value;
     }
 
     /// <inheritdoc />
@@ -346,22 +386,12 @@ public class ToolbarIcons : Mod
 
     private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
     {
-        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !Game1.onScreenMenus.OfType<Toolbar>().Any())
+        if (!Game1.displayHUD || Game1.activeClickableMenu is not null)
         {
             return;
         }
 
-        var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
-        var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
-        var y = alignBottom
-            ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
-            : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
-        if (this.Components.Values.Any(component => component.bounds.Y != y)
-            || this.Components.Values.Where(component => component.visible).Select(icon => icon.bounds.X).Distinct().Count() != this.Components.Values.Count(icon => icon.visible))
-        {
-            this.ReorientComponents(y, alignBottom);
-        }
+        this.ReorientComponents();
 
         foreach (var component in this.Components.Values)
         {
@@ -397,18 +427,59 @@ public class ToolbarIcons : Mod
         this.OverrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
     }
 
-    private void ReorientComponents(int y = -1, bool alignBottom = false)
+    private void ReorientComponents()
     {
-        var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
-        var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
-        if (y == -1)
+        if (this.Button is null || !this.Components.Values.Any(component => component.visible))
         {
-            alignBottom = Game1.options.pinToolbarToggle || playerLocalY < Game1.viewport.Height / 2 + Game1.tileSize;
-            y = alignBottom
-                ? Game1.uiViewport.Height - Utility.makeSafeMarginY(8) - Game1.tileSize - IClickableMenu.borderWidth
-                : Utility.makeSafeMarginY(8) + Game1.tileSize + IClickableMenu.borderWidth;
+            return;
         }
+
+        var xAlign = this.Button.bounds.X < Game1.viewport.Width / 2;
+        var yAlign = this.Button.bounds.Y < Game1.viewport.Height / 2;
+        ComponentArea area;
+        int x;
+        int y;
+        if (this.Toolbar.width > this.Toolbar.height)
+        {
+            x = this.Button.bounds.Left;
+            if (yAlign)
+            {
+                area = ComponentArea.Top;
+                y = this.Button.bounds.Bottom + 20;
+            }
+            else
+            {
+                area = ComponentArea.Bottom;
+                y = this.Button.bounds.Top - 52;
+            }
+        }
+        else
+        {
+            y = this.Button.bounds.Top;
+            if (xAlign)
+            {
+                area = ComponentArea.Left;
+                x = this.Button.bounds.Right + 20;
+            }
+            else
+            {
+                area = ComponentArea.Right;
+                x = this.Button.bounds.Left - 52;
+            }
+        }
+
+        var firstComponent = this.Components.Values.First(component => component.visible);
+        if (area != this.Area || firstComponent.bounds.X != x || firstComponent.bounds.Y != y)
+        {
+            this.ReorientComponents(area, x, y);
+        }
+    }
+
+    private void ReorientComponents(ComponentArea area, int x, int y)
+    {
+        //var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
+        //var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
+        //var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
 
         foreach (var icon in this.Config.Icons)
         {
@@ -422,8 +493,21 @@ public class ToolbarIcons : Mod
 
                 component.visible = true;
                 component.bounds.X = x;
-                component.bounds.Y = y - (alignBottom ? component.bounds.Height : 0);
-                x += component.bounds.Width + 4;
+                component.bounds.Y = y;
+                switch (area)
+                {
+                    case ComponentArea.Top:
+                    case ComponentArea.Bottom:
+                        x += component.bounds.Width + 4;
+                        break;
+                    case ComponentArea.Right:
+                    case ComponentArea.Left:
+                        y += component.bounds.Height + 4;
+                        break;
+                    case ComponentArea.Custom:
+                    default:
+                        break;
+                }
             }
         }
     }
