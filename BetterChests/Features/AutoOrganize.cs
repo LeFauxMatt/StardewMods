@@ -69,8 +69,14 @@ internal class AutoOrganize : IFeature
 
         foreach (var fromStorage in storages)
         {
-            foreach (var item in fromStorage.Items.OfType<Item>())
+            for (var index = fromStorage.Items.Count - 1; index >= 0; index--)
             {
+                var item = fromStorage.Items[index];
+                if (item is null)
+                {
+                    continue;
+                }
+
                 var stack = item.Stack;
                 foreach (var toStorage in storages.Where(storage => !ReferenceEquals(fromStorage, storage) && storage.StashToChestPriority > fromStorage.StashToChestPriority))
                 {

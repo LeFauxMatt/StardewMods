@@ -1,5 +1,13 @@
 ﻿# Better Chests Change Log
 
+## 2.1.1 (Unreleased)
+
+* Fixed ChestMenuTabs appearing over some hover elements.
+* Fixed Configure button not having background.
+* Fixed Island Shipping Bin not launching correctly.
+* Fixed cursor moving around on the Shipping Bin.
+* Fixed AutoOrganize crash before saving.
+
 ## 2.1.0 (July 9, 2022)
 
 * Added Chest Finder.

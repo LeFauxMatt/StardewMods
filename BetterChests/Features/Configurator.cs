@@ -79,16 +79,6 @@ internal class Configurator : IFeature
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-
-            if (IntegrationHelper.ToolbarIcons.IsLoaded)
-            {
-                IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
-                    "BetterChests.Configure",
-                    "furyx639.BetterChests/Icons",
-                    new(0, 0, 16, 16),
-                    I18n.Button_Configure_Name());
-                IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
-            }
         }
     }
 
@@ -103,12 +93,6 @@ internal class Configurator : IFeature
             this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-
-            if (IntegrationHelper.ToolbarIcons.IsLoaded)
-            {
-                IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
-                IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
-            }
         }
     }
 
@@ -201,30 +185,5 @@ internal class Configurator : IFeature
         {
             this.CurrentMenu.hoverText = this.ConfigureButton.hoverText;
         }
-    }
-
-    private void OnToolbarIconPressed(object? sender, string id)
-    {
-        if (id != "BetterChests.Configure")
-        {
-            return;
-        }
-
-        if (Game1.player.CurrentItem is SObject obj
-            && StorageHelper.TryGetOne(obj, out var storage))
-        {
-            ConfigHelper.SetupSpecificConfig(storage);
-            this.IsActive = true;
-            return;
-        }
-
-        var pos = Game1.player.GetGrabTile();
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out obj) || !StorageHelper.TryGetOne(obj, out storage))
-        {
-            return;
-        }
-
-        ConfigHelper.SetupSpecificConfig(storage);
-        this.IsActive = true;
     }
 }

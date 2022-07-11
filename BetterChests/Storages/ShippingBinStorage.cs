@@ -111,7 +111,7 @@ internal class ShippingBinStorage : BaseStorage
     /// <inheritdoc />
     public override void ShowMenu()
     {
-        Game1.activeClickableMenu = new ItemGrabMenu(
+        var menu = new ItemGrabMenu(
             this.Items,
             false,
             true,
@@ -128,5 +128,15 @@ internal class ShippingBinStorage : BaseStorage
             null,
             -1,
             this.Context);
+        if (Game1.activeClickableMenu is ItemGrabMenu { } itemGrabMenu)
+        {
+            if (Game1.options.SnappyMenus && itemGrabMenu.currentlySnappedComponent is not null)
+            {
+                menu.setCurrentlySnappedComponentTo(itemGrabMenu.currentlySnappedComponent.myID);
+                menu.snapCursorToCurrentSnappedComponent();
+            }
+        }
+
+        Game1.activeClickableMenu = menu;
     }
 }
