@@ -327,10 +327,10 @@ internal class BetterItemGrabMenu : IFeature
             this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
         }
 
-        if (this.Config.ControlScheme.ScrollUp.JustPressed())
+        if (this.Config.ControlScheme.ScrollDown.JustPressed())
         {
             BetterItemGrabMenu.ItemsToGrabMenu.Offset++;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
         }
     }
 
