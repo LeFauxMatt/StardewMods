@@ -1,5 +1,10 @@
 # Toolbar Icons Change Log
 
+## 2.2.1 (July 12, 2022)
+
+* Fixed disabled toolbar icons not taking effect.
+* Fixed toolbar icons not moving with the toolbar.
+
 ## 2.2.0 (July 11, 2022)
 
 * Added config menu for toolbar icons.
