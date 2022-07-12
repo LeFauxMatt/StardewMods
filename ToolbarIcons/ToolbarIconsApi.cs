@@ -46,9 +46,11 @@ public class ToolbarIconsApi : IToolbarIconsApi
     /// <inheritdoc />
     public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText)
     {
-        if (!this.Icons.Any(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase)))
+        var icon = this.Icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        if (icon is null)
         {
-            this.Icons.Add(new(id));
+            icon = new(id);
+            this.Icons.Add(icon);
         }
 
         if (!this.Components.ContainsKey(id))
@@ -63,6 +65,7 @@ public class ToolbarIconsApi : IToolbarIconsApi
                 {
                     hoverText = hoverText,
                     name = id,
+                    visible = icon.Enabled,
                 });
         }
     }

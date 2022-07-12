@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
@@ -60,7 +59,6 @@ public class ToolbarIcons : Mod
         set => this._area.Value = value;
     }
 
-    [MemberNotNull(nameof(ToolbarIcons.Toolbar))]
     private ClickableComponent? Button
     {
         get
@@ -340,7 +338,7 @@ public class ToolbarIcons : Mod
             I18n.Button_ItemSpawner(),
             mod =>
             {
-                var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu");
+                var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu", false);
                 return buildMenu is not null
                     ? () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); }
                     : null;
@@ -360,7 +358,7 @@ public class ToolbarIcons : Mod
             gmcm.Register(
                 this.ModManifest,
                 () => this._config = new(),
-                () => this.Helper.WriteConfig(this.Config));
+                this.SaveConfig);
 
             gmcm.API.AddComplexOption(
                 this.ModManifest,
@@ -393,7 +391,7 @@ public class ToolbarIcons : Mod
 
         this.ReorientComponents();
 
-        foreach (var component in this.Components.Values)
+        foreach (var component in this.Components.Values.Where(component => component.visible))
         {
             var icons = this.Helper.GameContent.Load<Texture2D>("furyx639.ToolbarIcons/Icons");
             e.SpriteBatch.Draw(
@@ -429,7 +427,7 @@ public class ToolbarIcons : Mod
 
     private void ReorientComponents()
     {
-        if (this.Button is null || !this.Components.Values.Any(component => component.visible))
+        if (this.Button is null || this.Toolbar is null || !this.Components.Values.Any(component => component.visible))
         {
             return;
         }
@@ -477,10 +475,7 @@ public class ToolbarIcons : Mod
 
     private void ReorientComponents(ComponentArea area, int x, int y)
     {
-        //var (_, playerGlobalY) = Game1.player.GetBoundingBox().Center;
-        //var (_, playerLocalY) = Game1.GlobalToLocal(globalPosition: new Vector2(0, playerGlobalY), viewport: Game1.viewport);
-        //var x = (Game1.uiViewport.Width - Game1.tileSize * 12) / 2;
-
+        this.Area = area;
         foreach (var icon in this.Config.Icons)
         {
             if (this.Components.TryGetValue(icon.Id, out var component))
@@ -510,5 +505,19 @@ public class ToolbarIcons : Mod
                 }
             }
         }
+    }
+
+    private void SaveConfig()
+    {
+        foreach (var icon in this.Config.Icons)
+        {
+            if (this.Components.TryGetValue(icon.Id, out var component))
+            {
+                component.visible = icon.Enabled;
+            }
+        }
+
+        this.Helper.WriteConfig(this.Config);
+        this.ReorientComponents();
     }
 }
