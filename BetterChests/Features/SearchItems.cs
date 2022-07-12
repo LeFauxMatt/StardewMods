@@ -334,7 +334,7 @@ internal class SearchItems : IFeature
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
     {
-        return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
+        return this.ItemMatcher.Any() ? items.OrderBy(item => this.ItemMatcher.Matches(item) ? 0 : 1) : items;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -414,6 +414,7 @@ internal class SearchItems : IFeature
             this.SearchIcon.bounds = new(this.SearchField.X + this.SearchField.Width - 38, this.SearchField.Y + 6, 32, 32);
 
             BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
+            BetterItemGrabMenu.ItemsToGrabMenu?.AddHighlighter(this.ItemMatcher);
         }
 
         if (this.CurrentMenu is null || !this.SearchArea.visible)

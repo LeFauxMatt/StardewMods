@@ -10,6 +10,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
@@ -119,6 +120,7 @@ internal class ChestMenuTabs : IFeature
             this.ItemMatcher.Clear();
             if (value == -1 || this.Tabs is null || !this.Tabs.Any())
             {
+                Log.Trace("Switching tab to None");
                 BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
                 return;
             }
@@ -130,6 +132,7 @@ internal class ChestMenuTabs : IFeature
                 this.ItemMatcher.Add(tag);
             }
 
+            Log.Trace($"Switching tab to {tab.hoverText}");
             BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         }
     }
@@ -188,7 +191,7 @@ internal class ChestMenuTabs : IFeature
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
     {
-        return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
+        return this.ItemMatcher.Any() ? items.OrderBy(item => this.ItemMatcher.Matches(item) ? 0 : 1) : items;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -281,6 +284,26 @@ internal class ChestMenuTabs : IFeature
                 tab.sourceRect.Y = 3;
                 tab.sourceRect.Height = 13;
                 tab.draw(e.SpriteBatch, Color.White, 0.86f + tab.bounds.Y / 20000f);
+
+                // draw texture
+                var bounds = Game1.smallFont.MeasureString(tab.hoverText).ToPoint();
+                IClickableMenu.drawTextureBox(
+                    e.SpriteBatch,
+                    Game1.menuTexture,
+                    new(0, 256, 60, 60),
+                    this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize - 8,
+                    tab.bounds.Y - 16,
+                    bounds.X + 32,
+                    bounds.Y + Game1.tileSize / 3,
+                    Color.White,
+                    drawShadow: false);
+
+                Utility.drawTextWithShadow(
+                    e.SpriteBatch,
+                    tab.hoverText,
+                    Game1.smallFont,
+                    new(this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize + 8, tab.bounds.Y - 4),
+                    Game1.textColor);
                 continue;
             }
 
@@ -347,6 +370,7 @@ internal class ChestMenuTabs : IFeature
             }
 
             BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterByTab);
+            BetterItemGrabMenu.ItemsToGrabMenu?.AddHighlighter(this.ItemMatcher);
         }
     }
 }
