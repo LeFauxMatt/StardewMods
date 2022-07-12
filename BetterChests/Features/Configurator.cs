@@ -7,6 +7,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Helpers;
 using StardewValley;
 using StardewValley.Menus;
@@ -21,6 +22,7 @@ internal class Configurator : IFeature
 
     private readonly PerScreen<ClickableTextureComponent?> _configureButton = new();
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
+    private readonly PerScreen<IStorageObject?> _currentStorage = new();
 
     private Configurator(IModHelper helper, ModConfig config)
     {
@@ -49,6 +51,12 @@ internal class Configurator : IFeature
     {
         get => this._currentMenu.Value;
         set => this._currentMenu.Value = value;
+    }
+
+    private IStorageObject? CurrentStorage
+    {
+        get => this._currentStorage.Value;
+        set => this._currentStorage.Value = value;
     }
 
     private IModHelper Helper { get; }
@@ -129,9 +137,10 @@ internal class Configurator : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu && StorageHelper.TryGetOne(context, out _))
+        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu && StorageHelper.TryGetOne(context, out var storage))
         {
             this.CurrentMenu = itemGrabMenu;
+            this.CurrentStorage = storage;
 
             var buttons = new List<ClickableComponent>(
                 new[]
@@ -166,6 +175,13 @@ internal class Configurator : IFeature
 
             if (e.NewMenu?.GetType().Name == "ModConfigMenu")
             {
+                if (this.CurrentStorage is not null)
+                {
+                    this.CurrentStorage.ShowMenu();
+                    this.CurrentStorage = null;
+                    return;
+                }
+
                 Game1.activeClickableMenu = null;
             }
         }
