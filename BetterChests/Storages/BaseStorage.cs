@@ -43,6 +43,19 @@ internal abstract class BaseStorage : IStorageObject
         this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="BaseStorage" /> class.
+    /// </summary>
+    /// <param name="context">The source object.</param>
+    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    protected BaseStorage(object context, IStorageData defaultChest)
+    {
+        this.Context = context;
+        this.DefaultChest = defaultChest;
+        this.Data = new StorageModData(this);
+        this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
+    }
+
     /// <inheritdoc />
     public virtual int ActualCapacity
     {
@@ -371,10 +384,10 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
-    public object? Parent { get; }
+    public virtual object? Parent { get; }
 
     /// <inheritdoc />
-    public Vector2 Position { get; }
+    public virtual Vector2 Position { get; }
 
     /// <inheritdoc />
     public FeatureOption ResizeChest
