@@ -9,7 +9,6 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewValley;
 using StardewValley.Objects;
 
 /// <summary>

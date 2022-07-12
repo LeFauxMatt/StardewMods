@@ -1,7 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;

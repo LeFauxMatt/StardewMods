@@ -4,8 +4,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Storages;
-using StardewValley;
-using StardewValley.Buildings;
 using StardewValley.Menus;
 
 /// <summary>

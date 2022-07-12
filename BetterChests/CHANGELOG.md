@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 2.1.1 (Unreleased)
+## 2.1.1 (July 11, 2022)
 
 * Fixed ChestMenuTabs appearing over some hover elements.
 * Fixed Configure button not having background.
