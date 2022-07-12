@@ -385,7 +385,7 @@ internal class StorageHelper
             case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } shippingChest:
                 storage = new ShippingBinStorage(shippingChest, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
-            case Chest chest:
+            case Chest { playerChest.Value: true } chest:
                 storage = new ChestStorage(chest, parent, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
             case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
