@@ -1,5 +1,14 @@
 # Toolbar Icons Change Log
 
+## 2.2.0 (July 11, 2022)
+
+* Added config menu for toolbar icons.
+* Added support for Custom Toolbar vertical toolbar.
+* Fixed errors from some mod integrations.
+    * Data Layers
+    * Debug Mode
+    * Horse Flute Anywhere
+
 ## 2.1.0 (July 9, 2022)
 
 * Added a default background to all icons.
