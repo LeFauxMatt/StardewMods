@@ -46,11 +46,11 @@ internal abstract class BaseIntegration
     protected bool AddIntegration(string modId, int index, string hoverText, Action action)
     {
         this.API.AddToolbarIcon(
-            $"{modId}-{index.ToString(CultureInfo.InvariantCulture)}",
+            $"{modId}.{index.ToString(CultureInfo.InvariantCulture)}",
             BaseIntegration.IconPath,
             new(16 * index, 0, 16, 16),
             hoverText);
-        this.Icons.Add($"{modId}-{index.ToString(CultureInfo.InvariantCulture)}", action);
+        this.Icons.Add($"{modId}.{index.ToString(CultureInfo.InvariantCulture)}", action);
         return true;
     }
 

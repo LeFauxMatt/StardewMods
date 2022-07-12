@@ -40,7 +40,7 @@ internal class SimpleIntegration : BaseIntegration
             return false;
         }
 
-        var action = this.Helper.Reflection.GetMethod(mod, method);
+        var action = this.Helper.Reflection.GetMethod(mod, method, false);
         if (action is not null)
         {
             this.AddIntegration(

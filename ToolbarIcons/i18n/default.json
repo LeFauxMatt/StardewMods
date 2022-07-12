@@ -10,5 +10,11 @@
   "button.InstantBuildings.Build": "Show Instant Build Menu",
   "button.InstantBuildings.Upgrade": "Perform Instant House Upgrade",
   "button.LookupAnything": "Toggle Lookup Anything Search",
-  "button.StardewAquarium": "Stardew Aquarium Collection"
+  "button.StardewAquarium": "Stardew Aquarium Collection",
+  "config.customize-toolbar.name": "Customize Toolbar",
+  "config.customize-toolbar.tooltip": "Turn icons on/off and change their order.",
+  "config.open-menu.name": "Open Menu",
+  "config.move-up.tooltip": "Move icon up",
+  "config.move-down.tooltip": "Move icon down",
+  "config.check-box.tooltip": "Toggle icon on/off"
 }
