@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Enums;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -57,33 +58,19 @@ internal class LabelChest : IFeature
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context }
+        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu
             || !StorageHelper.TryGetOne(context, out var storage)
             || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
             return;
         }
 
-        var bounds = Game1.smallFont.MeasureString(storage.ChestLabel).ToPoint();
-
-        // draw texture
-        IClickableMenu.drawTextureBox(
-            e.SpriteBatch,
-            Game1.menuTexture,
-            new(0, 256, 60, 60),
-            5,
-            5,
-            bounds.X + 32,
-            bounds.Y + Game1.tileSize / 3 + Game1.tileSize / 16,
-            Color.White,
-            drawShadow: true);
-
-        Utility.drawTextWithShadow(
+        IClickableMenu.drawHoverText(
             e.SpriteBatch,
             storage.ChestLabel,
             Game1.smallFont,
-            new(21, 21),
-            Game1.textColor);
+            overrideX: itemGrabMenu.xPositionOnScreen,
+            overrideY: itemGrabMenu.yPositionOnScreen - IClickableMenu.spaceToClearSideBorder - Game1.tileSize - (storage.SearchItems is not FeatureOption.Disabled ? 14 * Game1.pixelZoom : 0));
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
