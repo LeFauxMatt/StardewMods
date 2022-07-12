@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewMods.BetterChests.Features;
 using StardewMods.Common.Helpers.ItemRepository;
@@ -97,6 +98,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private IItemMatcher Selection { get; }
 
+    private bool SuppressInput { get; set; } = true;
+
     private ITranslationHelper Translation { get; }
 
     /// <inheritdoc />
@@ -153,6 +156,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void performHoverAction(int x, int y)
     {
+        if (this.SuppressInput)
+        {
+            return;
+        }
+
         this.okButton.scale = this.okButton.containsPoint(x, y)
             ? Math.Min(1.1f, this.okButton.scale + 0.05f)
             : Math.Max(1f, this.okButton.scale - 0.05f);
@@ -186,6 +194,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
+        if (this.SuppressInput)
+        {
+            return;
+        }
+
         if (this.okButton.containsPoint(x, y) && this.readyToClose())
         {
             this.exitThisMenu();
@@ -221,6 +234,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void receiveRightClick(int x, int y, bool playSound = true)
     {
+        if (this.SuppressInput)
+        {
+            return;
+        }
+
         // Right click an item slot to display dropdown with item's context tags
         if (this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y)) is { } itemSlot
             && int.TryParse(itemSlot.name, out var slotNumber)
@@ -249,6 +267,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void receiveScrollWheelAction(int direction)
     {
+        if (this.SuppressInput)
+        {
+            return;
+        }
+
         var (x, y) = Game1.getMousePosition(true);
         if (!this.inventory.isWithinBounds(x, y))
         {
@@ -272,6 +295,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void update(GameTime time)
     {
+        if (this.SuppressInput && Game1.oldMouseState.LeftButton == ButtonState.Pressed && Mouse.GetState().LeftButton == ButtonState.Released)
+        {
+            this.SuppressInput = false;
+        }
+
         if (this.RefreshItems)
         {
             this.RefreshItems = false;
