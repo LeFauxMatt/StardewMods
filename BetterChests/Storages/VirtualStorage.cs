@@ -93,10 +93,10 @@ internal class VirtualStorage : BaseStorage
                     break;
                 }
             }
-
-            this.RefreshItems();
-            this.ShowMenu();
         }
+
+        this.RefreshItems();
+        this.ShowMenu();
     }
 
     public void RefreshItems()

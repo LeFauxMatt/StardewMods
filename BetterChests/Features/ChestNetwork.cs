@@ -11,8 +11,6 @@ using StardewMods.BetterChests.Storages;
 /// </summary>
 internal class ChestNetwork : IFeature
 {
-    private const string Id = "furyx639.BetterChests/ChestNetwork";
-
     private readonly PerScreen<VirtualStorage> _virtualStorage = new();
 
     private ChestNetwork(IModHelper helper, ModConfig config)

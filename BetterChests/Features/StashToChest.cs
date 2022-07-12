@@ -96,7 +96,7 @@ internal class StashToChest : IFeature
 
     private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (e.Button is not SButton.MouseLeft || Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu)
+        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight) || Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu)
         {
             return;
         }
@@ -106,7 +106,25 @@ internal class StashToChest : IFeature
             && StorageHelper.TryGetOne(context, out var storage)
             && storage.StashToChest != FeatureOptionRange.Disabled)
         {
-            StashToChest.StashIntoStorage(storage);
+            if (e.Button is SButton.MouseLeft)
+            {
+                StashToChest.StashIntoStorage(storage);
+                return;
+            }
+
+            for (var index = storage.Items.Count - 1; index >= 0; index--)
+            {
+                var item = storage.Items[index];
+                if (item is null)
+                {
+                    continue;
+                }
+
+                if (Game1.player.addItemToInventoryBool(item))
+                {
+                    storage.Items.Remove(item);
+                }
+            }
         }
     }
 
