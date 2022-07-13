@@ -177,7 +177,6 @@ internal class BetterColorPicker : IFeature
             BetterColorPicker.Instance.Helper,
             BetterColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
             menu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2,
-            chest.playerChoiceColor.Value,
             chestToDraw);
 
         return BetterColorPicker.Instance.ColorPicker;

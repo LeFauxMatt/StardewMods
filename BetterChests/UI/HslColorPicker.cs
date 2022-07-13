@@ -41,9 +41,8 @@ internal class HslColorPicker : DiscreteColorPicker
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="x">The X coordinate to draw the HslColorPicker at.</param>
     /// <param name="y">The Y coordinate to draw the HslColorPicker at.</param>
-    /// <param name="color">The initial color to set the color picker to.</param>
     /// <param name="item">The item to draw next to the color picker.</param>
-    public HslColorPicker(IModHelper helper, int x, int y, Color color = default, Item? item = default)
+    public HslColorPicker(IModHelper helper, int x, int y, Item? item = default)
         : base(x, y, 0, item)
     {
         this.Helper = helper;
@@ -70,18 +69,6 @@ internal class HslColorPicker : DiscreteColorPicker
 
         this.NoColorButton = new(new(this.xPositionOnScreen - 2, this.yPositionOnScreen, 7, 7), Game1.mouseCursors, new(295, 503, 7, 7), Game1.pixelZoom);
         this.NoColorButtonArea = new(this.xPositionOnScreen - 6, this.yPositionOnScreen - 4, 36, 36);
-
-        this.IsBlack = color.Equals(Color.Black);
-        if (!this.IsBlack)
-        {
-            var initHsl = HslColor.FromColor(color);
-            var hueIndex = this.ColorsHsl.Select((hsl, i) => (h: Math.Abs(hsl.H - initHsl.H), i)).OrderBy(i => i.h).First().i;
-            this.HueCoord = hueIndex.Remap(this.HslTrack, HslColorPicker.UnitRange).Remap(HslColorPicker.UnitRange, this.HueTrack);
-            this.SaturationCoord = initHsl.S.Remap(HslColorPicker.UnitRange, this.SaturationTrack);
-            this.LightnessCoord = initHsl.L.Remap(HslColorPicker.UnitRange, this.LightnessTrack);
-        }
-
-        this.colorSelection = HslColorPicker.GetSelectionFromColor(this.getCurrentColor());
     }
 
     private enum TrackThumb
@@ -93,9 +80,11 @@ internal class HslColorPicker : DiscreteColorPicker
         Transparent,
     }
 
+    private int ColorSelection { get; set; } = -1;
+
     private HslColor[] ColorsHsl
     {
-        get => HslColorPicker.CachedColorsHsl ??= this.ColorsRgb.Select(HslColor.FromColor).ToArray();
+        get => HslColorPicker.CachedColorsHsl ??= this.ColorsRgb.Select(HslColor.FromColor).Distinct().ToArray();
     }
 
     private Color[] ColorsRgb
@@ -366,6 +355,35 @@ internal class HslColorPicker : DiscreteColorPicker
             return;
         }
 
+        if (this.ColorSelection != this.colorSelection)
+        {
+            this.ColorSelection = this.colorSelection;
+            if (this.colorSelection != 0)
+            {
+                var initHsl = HslColor.FromColor(HslColorPicker.GetColorFromSelection(this.colorSelection));
+                for (var coord = this.HueBarArea.Top; coord <= this.HueBarArea.Bottom; coord++)
+                {
+                    if (Math.Abs(initHsl.H - this.ColorsHsl[this.HslTrack.Clamp(coord.Remap(this.HueTrack, HslColorPicker.UnitRange).Remap(HslColorPicker.UnitRange, this.HslTrack))].H) < 0.001)
+                    {
+                        this.HueCoord = coord;
+                        break;
+                    }
+                }
+
+                this.SaturationCoord = initHsl.S.Remap(HslColorPicker.UnitRange, this.SaturationTrack);
+                this.LightnessCoord = initHsl.L.Remap(HslColorPicker.UnitRange, this.LightnessTrack);
+            }
+            else
+            {
+                this.HueCoord = 0;
+                this.SaturationCoord = 0;
+                this.LightnessCoord = 0;
+                this.IsBlack = true;
+            }
+
+            return;
+        }
+
         var (x, y) = Game1.getMousePosition(true);
         switch (this.HeldThumb)
         {
@@ -413,7 +431,7 @@ internal class HslColorPicker : DiscreteColorPicker
         }
 
         var color = this.GetCurrentColor();
-        this.colorSelection = HslColorPicker.GetSelectionFromColor(color);
+        this.ColorSelection = this.colorSelection = HslColorPicker.GetSelectionFromColor(color);
         if (this.itemToDrawColored is Chest chest)
         {
             chest.playerChoiceColor.Value = color;

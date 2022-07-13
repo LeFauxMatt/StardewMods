@@ -1,5 +1,12 @@
 ﻿# Better Chests Change Log
 
+## 2.1.2 (Unreleased)
+
+* Added an extra indicator for when you're in a tab.
+* Updated tabs/search so they only fade items instead of hide them.
+* Moved config icon back to top of side buttons.
+* Fixed color changing everytime items are moved to/from a chest.
+
 ## 2.1.1 (July 11, 2022)
 
 * Fixed ChestMenuTabs appearing over some hover elements.
