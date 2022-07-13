@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 2.1.2 (Unreleased)
+## 2.1.2 (July 12, 2022)
 
 * Added an extra indicator for when you're in a tab.
 * Updated tabs/search so they only fade items instead of hide them.

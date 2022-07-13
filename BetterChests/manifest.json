@@ -1,7 +1,7 @@
 {
   "Name": "Better Chests",
   "Author": "furyx639",
-  "Version": "2.1.1",
+  "Version": "2.1.2",
   "Description": "Framework that adds new features to chests.",
   "UniqueID": "furyx639.BetterChests",
   "EntryDll": "BetterChests.dll",
