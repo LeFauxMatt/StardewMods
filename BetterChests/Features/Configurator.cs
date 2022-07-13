@@ -1,14 +1,18 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
+using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 using SObject = StardewValley.Object;
@@ -28,6 +32,16 @@ internal class Configurator : IFeature
     {
         this.Helper = helper;
         this.Config = config;
+        HarmonyHelper.AddPatches(
+            Configurator.Id,
+            new SavedPatch[]
+            {
+                new(
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
+                    typeof(Configurator),
+                    nameof(Configurator.ItemGrabMenu_RepositionSideButtons_postfix),
+                    PatchType.Postfix),
+            });
     }
 
     private static Configurator? Instance { get; set; }
@@ -104,6 +118,53 @@ internal class Configurator : IFeature
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    private static void ItemGrabMenu_RepositionSideButtons_postfix(ItemGrabMenu __instance)
+    {
+        Configurator.Instance!.ConfigureButton.bounds.Y = 0;
+        var buttons = new List<ClickableComponent>(
+            new[]
+            {
+                __instance.organizeButton,
+                __instance.fillStacksButton,
+                __instance.colorPickerToggleButton,
+                __instance.specialButton,
+                Configurator.Instance.ConfigureButton,
+                __instance.junimoNoteIcon,
+            }.Where(component => component is not null));
+
+        var yOffset = buttons.Count switch
+        {
+            <= 3 => __instance.yPositionOnScreen + __instance.height / 3,
+            _ => __instance.ItemsToGrabMenu.yPositionOnScreen + __instance.ItemsToGrabMenu.height,
+        };
+
+        var stepSize = Game1.tileSize + buttons.Count switch
+        {
+            >= 4 => 8,
+            _ => 16,
+        };
+
+        for (var index = 0; index < buttons.Count; index++)
+        {
+            var button = buttons[index];
+            if (index > 0 && buttons.Count > 1)
+            {
+                button.downNeighborID = buttons[index - 1].myID;
+            }
+
+            if (index < buttons.Count - 1 && buttons.Count > 1)
+            {
+                button.upNeighborID = buttons[index + 1].myID;
+            }
+
+            button.bounds.X = __instance.xPositionOnScreen + __instance.width;
+            button.bounds.Y = yOffset - Game1.tileSize - stepSize * index;
+        }
+    }
+
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (this.CurrentMenu is null)
@@ -141,29 +202,7 @@ internal class Configurator : IFeature
         {
             this.CurrentMenu = itemGrabMenu;
             this.CurrentStorage = storage;
-
-            var buttons = new List<ClickableComponent>(
-                new[]
-                {
-                    this.CurrentMenu.junimoNoteIcon,
-                    this.CurrentMenu.specialButton,
-                    this.CurrentMenu.colorPickerToggleButton,
-                    this.CurrentMenu.organizeButton,
-                    this.CurrentMenu.fillStacksButton,
-                }.OfType<ClickableComponent>().OrderByDescending(button => button.bounds.Y));
-
-            if (!buttons.Any())
-            {
-                return;
-            }
-
-            this.ConfigureButton.bounds.X = buttons[0].bounds.X;
-            this.ConfigureButton.bounds.Y = buttons[0].bounds.Bottom;
-            if (buttons.Count >= 2)
-            {
-                this.ConfigureButton.bounds.Y += buttons[0].bounds.Top - buttons[1].bounds.Bottom;
-            }
-
+            this.CurrentMenu.RepositionSideButtons();
             return;
         }
 
