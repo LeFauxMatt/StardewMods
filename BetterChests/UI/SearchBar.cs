@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
@@ -63,8 +64,6 @@ internal class SearchBar : IClickableMenu
 
     private ClickableTextureComponent SearchIcon { get; }
 
-    private string SearchText { get; set; } = string.Empty;
-
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
@@ -82,7 +81,7 @@ internal class SearchBar : IClickableMenu
                 this.exitThisMenuNoSound();
                 return;
             case Keys.Escape:
-                this.ItemMatcher.Clear();
+                this.SearchField.Text = string.Empty;
                 this.exitThisMenuNoSound();
                 return;
             default:
@@ -118,14 +117,16 @@ internal class SearchBar : IClickableMenu
     }
 
     /// <inheritdoc />
-    public override void update(GameTime time)
+    protected override void cleanupBeforeExit()
     {
-        if (this.SearchText.Equals(this.SearchField.Text, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(this.SearchField.Text))
         {
-            return;
+            Log.Trace($"ChestFinder: {this.SearchField.Text}");
+            this.ItemMatcher.StringValue = this.SearchField.Text;
         }
-
-        this.SearchText = this.SearchField.Text;
-        this.ItemMatcher.StringValue = this.SearchText;
+        else
+        {
+            this.ItemMatcher.Clear();
+        }
     }
 }

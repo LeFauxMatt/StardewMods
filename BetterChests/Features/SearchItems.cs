@@ -30,6 +30,7 @@ internal class SearchItems : IFeature
 {
     private const int ExtraSpace = 24;
     private const string Id = "furyx639.BetterChests/SearchItems";
+    private const int MaxTimeOut = 20;
 
     private readonly PerScreen<object?> _context = new();
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
@@ -39,6 +40,7 @@ internal class SearchItems : IFeature
     private readonly PerScreen<ClickableTextureComponent?> _searchIcon = new();
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
     private readonly PerScreen<IStorageObject?> _storage = new();
+    private readonly PerScreen<int> _timeOut = new();
 
     private SearchItems(IModHelper helper, ModConfig config)
     {
@@ -117,6 +119,12 @@ internal class SearchItems : IFeature
     {
         get => this._storage.Value;
         set => this._storage.Value = value;
+    }
+
+    private int TimeOut
+    {
+        get => this._timeOut.Value;
+        set => this._timeOut.Value = value;
     }
 
     /// <summary>
@@ -422,13 +430,22 @@ internal class SearchItems : IFeature
             return;
         }
 
+        if (this.TimeOut > 0)
+        {
+            if (--this.TimeOut == 0)
+            {
+                Log.Trace($"SearchItems: {this.SearchText}");
+                this.ItemMatcher.StringValue = this.SearchText;
+                BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
+            }
+        }
+
         if (this.SearchText.Equals(this.SearchField.Text, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
+        this.TimeOut = SearchItems.MaxTimeOut;
         this.SearchText = this.SearchField.Text;
-        this.ItemMatcher.StringValue = this.SearchText;
-        BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
     }
 }
