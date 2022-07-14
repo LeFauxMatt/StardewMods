@@ -1,5 +1,16 @@
 # Toolbar Icons Change Log
 
+## 2.3.0 (Unreleased)
+
+* Added support for method integration in content packs
+* Moved some direct integration back into the content pack
+    * Chests Anywhere
+    * Data Layers
+    * Debug Mode
+    * Horse Flute Anywhere
+    * Instant Buildings
+    * Lookup Anything
+
 ## 2.2.2 (July 13, 2022)
 
 * Added support for matching modded interface colors.

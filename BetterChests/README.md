@@ -267,13 +267,13 @@ being stashed into a chest.
 
 Hit a configurable key to instantly stash items from your inventory into nearby chests.<sup>1</sup>
 
-| Config Option                | Description                                               | Default Value | Other Value(s)                                                                 |
-|:-----------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
-| StashToChest                 | Enables the Stash To Chest feature.                       | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>2</sup> |
-| StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                             |
-| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                            |
-| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                      |
-| StashToChestPriority         | Prioritize certain chests over others.                    | 0             | Any integer value.                                                             |
+| Config Option                | Description                                               | Default Value | Other Value(s)                                                                |
+|:-----------------------------|:----------------------------------------------------------|:--------------|:------------------------------------------------------------------------------|
+| StashToChest                 | Enables the Stash To Chest feature.                       | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"`<sup>2</sup> |
+| StashItems                   | Assigns the keybind for stashing items.                   | `"Z"`         | Any valid button code.<sup>3</sup>                                            |
+| StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                           |
+| StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                     |
+| StashToChestPriority         | Prioritize certain chests over others.                    | 0             | Any integer value.                                                            |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).

@@ -1,17 +1,9 @@
 {
   "Format": "1.24.0",
   "ConfigSchema": {
-    "EnableEventLookup": {
-      "AllowValues": "true, false",
-      "Default": true
-    },
     "EventLookupHotkey": {
       "AllowBlank": true,
       "Default": "N"
-    },
-    "EnableResetTerrainFeatures": {
-      "AllowValues": "true, false",
-      "Default": true
     },
     "ResetTerrainFeaturesHotkey": {
       "AllowBlank": true,
@@ -25,16 +17,82 @@
       "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
       "FromFile": "assets/icons.png"
     },
+    // Add Chests Anywhere Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "ChestsAnywhere": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/method/Pathoschild.ChestsAnywhere.OpenMenu"
+      },
+      "When": {
+        "HasMod": "Pathoschild.ChestsAnywhere"
+      }
+    },
+    // Add Data Layers Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "DataLayers": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/method/Pathoschild.DataLayers.ToggleLayers"
+      },
+      "When": {
+        "HasMod": "Pathoschild.DataLayers"
+      }
+    },
+    // Add Debug Mode Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "DebugMode": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/method/Pathoschild.DebugMode.ToggleDebugMode"
+      },
+      "When": {
+        "HasMod": "Pathoschild.DebugMode"
+      }
+    },
     // Add Event Lookup Icon
     {
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "Event Lookup": "{{i18n: icon.event-lookup.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/13/Left/keybind: {{EventLookupHotkey}}"
+        "EventLookup": "{{i18n: button.EventLookup}}/furyx639.ToolbarIconsForFuryCore\\Icons/13/keybind/{{EventLookupHotkey}}"
       },
       "When": {
-        "EnableEventLookup": true,
         "HasMod": "shekurika.EventLookup"
+      }
+    },
+    // Add Horse Flute Anywhere Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "HorseFluteAnywhere": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/method/Pathoschild.HorseFluteAnywhere.SummonHorse"
+      },
+      "When": {
+        "HasMod": "Pathoschild.HorseFluteAnywhere"
+      }
+    },
+    // Add Instant Building Build Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "InstantBuildings.Build": "{{i18n: button.InstantBuildings.Build}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/method/BitwiseJonMods.InstantBuildings.HandleInstantBuildButtonClick",
+        "InstantBuildings.Upgrade": "{{i18n: button.InstantBuildings.Upgrade}}/furyx639.ToolbarIconsForFuryCore\\Icons/9/method/BitwiseJonMods.InstantBuildings.HandleInstantUpgradeButtonClick"
+      },
+      "When": {
+        "HasMod": "BitwiseJonMods.InstantBuildings"
+      }
+    },
+    // Add Lookup Anything Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "LookupAnything": "{{i18n: button.LookupAnything}/furyx639.ToolbarIconsForFuryCore\\Icons/7/method/Pathoschild.LookupAnything.TryToggleSearch"
+      },
+      "When": {
+        "HasMod": "Pathoschild.LookupAnything"
       }
     },
     // Add Reset Terrain Features Icon
@@ -42,10 +100,9 @@
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "Reset Terrain Features": "{{i18n: icon.reset-terrain-features.name}}/furyx639.ToolbarIconsForFuryCore\\Icons/12/Left/keybind: {{ResetTerrainFeaturesHotkey}}"
+        "ResetTerrainFeatures": "{{i18n: button.ResetTerrainFeatures}}/furyx639.ToolbarIconsForFuryCore\\Icons/12/keybind/{{ResetTerrainFeaturesHotkey}}"
       },
       "When": {
-        "EnableResetTerrainFeatures": true,
         "HasMod": "MabelSyrup.ResetTerrainFeatures"
       }
     }

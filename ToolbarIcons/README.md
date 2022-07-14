@@ -23,6 +23,12 @@ Sample `content.json`:
 ```jsonc
 {
   "Format": "1.24.0",
+  "ConfigSchema": {
+    "EventLookupHotkey": {
+      "AllowBlank": true,
+      "Default": "N"
+    }
+  },
   "Changes": [
     // Load Texture Icons
     {
@@ -31,39 +37,63 @@ Sample `content.json`:
       "FromFile": "assets/icon.png"
     },
 
-    // Add Icon to launch Chests Anywhere
+    // Add Event Lookup Icon using Keybind
     {
       "Action": "EditData",
       "Target": "furyx639.FuryCore/Toolbar",
       "Entries": {
-        "Chests Anywhere": "{{i18n: icon.chests-anywhere.name}}/example.ModId\\Icons/0/Left/keybind: B",
+        "EventLookup": "{{i18n: button.EventLookup}}/example.ModId\\Icons/0/keybind/{{EventLookupHotkey}}"
       },
       "When": {
-        "HasMod": "Pathoschild.ChestsAnywhere"
+        "HasMod": "shekurika.EventLookup"
+      }
+    },
+
+    // Add Lookup Anything Icon using method
+    {
+      "Action": "EditData",
+      "Target": "furyx639.FuryCore/Toolbar",
+      "Entries": {
+        "LookupAnything": "{{i18n: button.LookupAnything}/example.ModId\\Icons/1/method/Pathoschild.LookupAnything.TryToggleSearch"
+      },
+      "When": {
+        "HasMod": "Pathoschild.LookupAnything"
       }
     },
   ]
 }
 ```
 
+The data entry is as follows:
+
+
+| Entry                  | Description                                                     |
+|:-----------------------|:----------------------------------------------------------------|
+| Hover Text             | The text to display when hovering over an icon.<sup>1</sup>     |
+| Texture Path           | Path to the icon texture.<sup>2</sup>                           |
+| Texture Index          | The position of the texture for this icon.<sup>3</sup>          |
+| Integration Type       | The type of action for this icon.<sup>4</sup>                   |
+| Integration Params     | Additional parameters depending on the action type.<sup>5</sup> |                                                                           |
+
+1. Preferably localized text describing the icon's action.
+2. Path must be to a loaded texture asset.
+3. Index goes from left to right for each 16x16 icon.
+4. Supported actions are `method` or `keybind`.
+5. Parameters depend on the action type:
+   * `method` must include the modId and method, such as `Pathoschild.LookupAnything.TryToggleSearch`
+   * `keybind` must include one or more buttons, such as `B`
+
 ## Integrations
 
-Some mods are directly integrated which means icons are automatically added for them.
+Some integrations are handled directly by the Toolbar Icons mod which means icons are automatically added for them.
 
 ### Supported mods
 
 * [Always Scroll Map](https://www.nexusmods.com/stardewvalley/mods/2733)
-* [Chests Anywhere](https://www.nexusmods.com/stardewvalley/mods/518)
 * [CJB Cheats Menu](https://www.nexusmods.com/stardewvalley/mods/4)
 * [CJB Item Spawner](https://www.nexusmods.com/stardewvalley/mods/93)
-* [Data Layers](https://www.nexusmods.com/stardewvalley/mods/1691)
-* [Debug Mode](https://www.nexusmods.com/stardewvalley/mods/679)
 * [Dynamic Game Assets](https://www.nexusmods.com/stardewvalley/mods/9365)
-* [Horse Flute Anywhere](https://www.nexusmods.com/stardewvalley/mods/7500)
-* [Instant Buildings From Farm](https://www.nexusmods.com/stardewvalley/mods/2070)
-* [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541)
-* [Reset Terrain Features for .NET 5](https://www.nexusmods.com/stardewvalley/mods/9350)
-* Stardew Aquarium
+* [Stardew Aquarium](https://www.nexusmods.com/stardewvalley/mods/6372)
 
 ## Translations
 
@@ -75,7 +105,7 @@ Some mods are directly integrated which means icons are automatically added for 
 | Hungarian              | ❌️ Not Translated |          |
 | Italian                | ❌️ Not Translated |          |
 | Japanese               | ❌️ Not Translated |          |
-| [Korean](i18n/ko.json) | ✔️ Complete       | wally232 |
+| [Korean](i18n/ko.json) | ❔ Incomplete      | wally232 |
 | Portuguese]            | ❌️ Not Translated |          |
 | Russian                | ❌️ Not Translated |          |
 | Spanish                | ❌️ Not Translated |          |

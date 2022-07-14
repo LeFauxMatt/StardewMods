@@ -33,7 +33,7 @@ internal class ComplexIntegration : BaseIntegration
     /// <param name="hoverText">The text to display.</param>
     /// <param name="getAction">Function which returns the action to perform.</param>
     /// <returns>Returns true if the icon was added.</returns>
-    public bool AddIntegration(string modId, int index, string hoverText, Func<IMod, Action?> getAction)
+    public bool AddCustomAction(string modId, int index, string hoverText, Func<IMod, Action?> getAction)
     {
         if (!this.TryGetMod(modId, out var mod))
         {
@@ -44,6 +44,36 @@ internal class ComplexIntegration : BaseIntegration
         if (action is not null)
         {
             this.AddIntegration(modId, index, hoverText, () => action.Invoke());
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Adds a simple mod integration for a method with parameters.
+    /// </summary>
+    /// <param name="modId">The id of the mod.</param>
+    /// <param name="index">The index of the mod icon.</param>
+    /// <param name="hoverText">The text to display.</param>
+    /// <param name="method">The method to run.</param>
+    /// <param name="arguments">The arguments to pass to the method.</param>
+    /// <returns>Returns true if the icon was added.</returns>
+    public bool AddMethodWithParams(string modId, int index, string hoverText, string method, params object?[] arguments)
+    {
+        if (!this.TryGetMod(modId, out var mod))
+        {
+            return false;
+        }
+
+        var action = this.Helper.Reflection.GetMethod(mod, method, false);
+        if (action is not null)
+        {
+            this.AddIntegration(
+                modId,
+                index,
+                hoverText,
+                () => action.Invoke(arguments));
             return true;
         }
 

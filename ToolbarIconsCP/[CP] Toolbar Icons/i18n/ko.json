@@ -1,19 +1,9 @@
 {
-  // Config
-  "config.EnableDataLayers.name": "데이터 레이어",
-  "config.EnableDataLayers.description": "Data Layers 모드 아이콘 On/Off.",
-  "config.DataLayersHotkey.name": "데이터 레이어 단축키",
-  "config.DataLayersHotkey.description": "Data Layers 모드를 사용하기 위한 단축키.",
-  "config.EnableDebugMode.name": "디버그 모드",
-  "config.EnableDebugMode.description": "Debug Mode 모드 아이콘 On/Off.",
-  "config.DebugModeHotkey.name": "디버그 모드 단축키",
-  "config.DebugModeHotkey.description": "Debug Mode 모드를 사용하기 위한 단축키.",
-  "config.EnableHorseFluteAnywhere.name": "어디서든 말 피리",
-  "config.EnableHorseFluteAnywhere.description": "Horse Flute Anywhere 모드 아이콘 On/Off.",
-  "config.HorseFluteAnywhereHotkey.name": "어디서든 말 피리 단축키",
-  "config.HorseFluteAnywhereHotkey.description": "Flute Anywhere 모드를 사용하기 위한 단축키.",
   // Icons
-  "icon.data-layers.name": "데이터 레이어 활성화",
-  "icon.debug-mode.name": "디버그 모드 활성화",
-  "icon.horse-flute-anywhere.name": "말 소환 버튼"
+  "button.DataLayers": "데이터 레이어 활성화",
+  "button.DebugMode": "디버그 모드 활성화",
+  "button.HorseFluteAnywhere": "말 소환 버튼",
+  "button.InstantBuildings.Build": "즉시 농장 건물 건설 오픈",
+  "button.InstantBuildings.Upgrade": "즉시 집 업그레이드 메뉴 오픈",
+  "button.LookupAnything": "무엇이든 조회 버튼"
 }

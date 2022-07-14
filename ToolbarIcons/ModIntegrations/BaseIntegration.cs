@@ -42,12 +42,13 @@ internal abstract class BaseIntegration
     /// <param name="index">The index of the mod icon.</param>
     /// <param name="hoverText">The text to display.</param>
     /// <param name="action">The action to perform for this icon.</param>
+    /// <param name="texturePath">The texture path of the icon.</param>
     /// <returns>Returns true if the icon was added.</returns>
-    protected bool AddIntegration(string modId, int index, string hoverText, Action action)
+    protected bool AddIntegration(string modId, int index, string hoverText, Action action, string? texturePath = null)
     {
         this.API.AddToolbarIcon(
             $"{modId}.{index.ToString(CultureInfo.InvariantCulture)}",
-            BaseIntegration.IconPath,
+            texturePath ?? BaseIntegration.IconPath,
             new(16 * index, 0, 16, 16),
             hoverText);
         this.Icons.Add($"{modId}.{index.ToString(CultureInfo.InvariantCulture)}", action);

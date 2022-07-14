@@ -1,17 +1,28 @@
 ﻿namespace StardewMods.ToolbarIcons.ModIntegrations;
 
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using StardewModdingAPI;
 using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewValley;
 
 /// <inheritdoc />
 internal class SimpleIntegration : BaseIntegration
 {
+    private MethodInfo? _overrideButtonReflected;
+
     private SimpleIntegration(IModHelper helper, IToolbarIconsApi api)
         : base(helper, api)
     {
     }
 
     private static SimpleIntegration? Instance { get; set; }
+
+    private MethodInfo OverrideButtonReflected
+    {
+        get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
+    }
 
     /// <summary>
     ///     Initializes <see cref="SimpleIntegration" />.
@@ -25,15 +36,56 @@ internal class SimpleIntegration : BaseIntegration
     }
 
     /// <summary>
-    ///     Adds a simple mod integration.
+    ///     Adds a simple mod integration for a keybind.
+    /// </summary>
+    /// <param name="modId">The id of the mod.</param>
+    /// <param name="index">The index of the mod icon.</param>
+    /// <param name="hoverText">The text to display.</param>
+    /// <param name="keybinds">The method to run.</param>
+    /// <param name="texturePath">The texture path of the icon.</param>
+    /// <returns>Returns true if the icon was added.</returns>
+    public bool AddKeybind(string modId, int index, string hoverText, string keybinds, string? texturePath = null)
+    {
+        if (!this.Helper.ModRegistry.IsLoaded(modId))
+        {
+            return false;
+        }
+
+        var keys = keybinds.Trim().Split(' ');
+        IList<SButton> buttons = new List<SButton>();
+        foreach (var key in keys)
+        {
+            if (Enum.TryParse(key, out SButton button))
+            {
+                buttons.Add(button);
+            }
+        }
+
+        this.AddIntegration(
+            modId,
+            index,
+            hoverText,
+            () =>
+            {
+                foreach (var button in buttons)
+                {
+                    this.OverrideButton(button, true);
+                }
+            },
+            texturePath);
+        return true;
+    }
+
+    /// <summary>
+    ///     Adds a simple mod integration for a method with out parameters.
     /// </summary>
     /// <param name="modId">The id of the mod.</param>
     /// <param name="index">The index of the mod icon.</param>
     /// <param name="hoverText">The text to display.</param>
     /// <param name="method">The method to run.</param>
-    /// <param name="arguments">The arguments to pass to the method.</param>
+    /// <param name="texturePath">The texture path of the icon.</param>
     /// <returns>Returns true if the icon was added.</returns>
-    public bool AddIntegration(string modId, int index, string hoverText, string method, params object?[] arguments)
+    public bool AddMethod(string modId, int index, string hoverText, string method, string? texturePath = null)
     {
         if (!this.TryGetMod(modId, out var mod))
         {
@@ -47,10 +99,16 @@ internal class SimpleIntegration : BaseIntegration
                 modId,
                 index,
                 hoverText,
-                () => action.Invoke(arguments));
+                () => action.Invoke(),
+                texturePath);
             return true;
         }
 
         return false;
+    }
+
+    private void OverrideButton(SButton button, bool inputState)
+    {
+        this.OverrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
     }
 }

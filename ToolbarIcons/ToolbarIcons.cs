@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,18 +21,11 @@ using StardewValley.Menus;
 public class ToolbarIcons : Mod
 {
     private const string AlwaysScrollMapId = "bcmpinc.AlwaysScrollMap";
-    private const string ChestsAnywhereId = "Pathoschild.ChestsAnywhere";
     private const string CJBCheatsMenuId = "CJBok.CheatsMenu";
     private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
-    private const string DataLayersId = "Pathoschild.DataLayers";
-    private const string DebugModeId = "Pathoschild.DebugMode";
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
-    private const string HorseFluteAnywhereId = "Pathoschild.HorseFluteAnywhere";
-    private const string InstantBuildingId = "BitwiseJonMods.InstantBuildings";
-    private const string LookupAnythingId = "Pathoschild.LookupAnything";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
 
-    private readonly PerScreen<Dictionary<string, string>> _actions = new(() => new());
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
     private readonly PerScreen<ComponentArea> _area = new(() => ComponentArea.Custom);
     private readonly PerScreen<ClickableComponent?> _button = new();
@@ -41,12 +33,6 @@ public class ToolbarIcons : Mod
     private readonly PerScreen<Toolbar?> _toolbar = new();
 
     private ModConfig? _config;
-    private MethodInfo? _overrideButtonReflected;
-
-    private Dictionary<string, string> Actions
-    {
-        get => this._actions.Value;
-    }
 
     private ToolbarIconsApi Api
     {
@@ -81,6 +67,8 @@ public class ToolbarIcons : Mod
         }
     }
 
+    private ComplexIntegration? ComplexIntegration { get; set; }
+
     private Dictionary<string, ClickableTextureComponent> Components { get; } = new();
 
     private ModConfig Config
@@ -114,12 +102,9 @@ public class ToolbarIcons : Mod
         set => this._hoverText.Value = value;
     }
 
-    private IDictionary<string, SButton[]> Keybinds { get; } = new Dictionary<string, SButton[]>();
+    private bool Loaded { get; set; }
 
-    private MethodInfo OverrideButtonReflected
-    {
-        get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
-    }
+    private SimpleIntegration? SimpleIntegration { get; set; }
 
     private Toolbar? Toolbar
     {
@@ -232,43 +217,6 @@ public class ToolbarIcons : Mod
         if (component is not null)
         {
             Game1.playSound("drumkit6");
-            if (this.Actions.TryGetValue(component.name, out var action))
-            {
-                if (action.StartsWith("toggle:"))
-                {
-                    var command = action[7..].Trim();
-                    foreach (var subComponent in this.Components.Values.Where(subComponent => component != subComponent && subComponent.name.StartsWith(command)))
-                    {
-                        subComponent.visible = !subComponent.visible;
-                    }
-                }
-                else if (action.StartsWith("keybind:"))
-                {
-                    if (!this.Keybinds.TryGetValue(action, out var keybind))
-                    {
-                        var keys = action[8..].Trim().Split(' ');
-                        IList<SButton> buttons = new List<SButton>();
-                        foreach (var key in keys)
-                        {
-                            if (Enum.TryParse(key, out SButton button))
-                            {
-                                buttons.Add(button);
-                            }
-                        }
-
-                        keybind = buttons.ToArray();
-                        this.Keybinds.Add(action, keybind);
-                    }
-
-                    foreach (var button in keybind)
-                    {
-                        this.OverrideButton(button, true);
-                    }
-                }
-
-                this.Helper.Input.Suppress(e.Button);
-            }
-
             this.Api.Invoke(component.name);
             this.Helper.Input.Suppress(e.Button);
         }
@@ -296,11 +244,11 @@ public class ToolbarIcons : Mod
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
-        var simple = SimpleIntegration.Init(this.Helper, this.Api);
-        var complex = ComplexIntegration.Init(this.Helper, this.Api);
+        this.SimpleIntegration = SimpleIntegration.Init(this.Helper, this.Api);
+        this.ComplexIntegration = ComplexIntegration.Init(this.Helper, this.Api);
 
         // Integrations
-        complex.AddIntegration(
+        this.ComplexIntegration.AddCustomAction(
             ToolbarIcons.AlwaysScrollMapId,
             2,
             I18n.Button_AlwaysScrollMap(),
@@ -331,9 +279,8 @@ public class ToolbarIcons : Mod
                     }
                 };
             });
-        simple.AddIntegration(ToolbarIcons.ChestsAnywhereId, 3, I18n.Button_ChestsAnywhere(), "OpenMenu");
-        simple.AddIntegration(ToolbarIcons.CJBCheatsMenuId, 4, I18n.Button_CheatsMenu(), "OpenCheatsMenu", 0, true);
-        complex.AddIntegration(
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.CJBCheatsMenuId, 4, I18n.Button_CheatsMenu(), "OpenCheatsMenu", 0, true);
+        this.ComplexIntegration.AddCustomAction(
             ToolbarIcons.CJBItemSpawnerId,
             5,
             I18n.Button_ItemSpawner(),
@@ -344,14 +291,8 @@ public class ToolbarIcons : Mod
                     ? () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); }
                     : null;
             });
-        simple.AddIntegration(ToolbarIcons.DataLayersId, 10, I18n.Button_DataLayers(), "ToggleLayers");
-        simple.AddIntegration(ToolbarIcons.DebugModeId, 11, I18n.Button_DebugMode(), "ToggleDebugMenu");
-        simple.AddIntegration(ToolbarIcons.DynamicGameAssetsId, 6, I18n.Button_DynamicGameAssets(), "OnStoreCommand", "dga_store", Array.Empty<string>());
-        simple.AddIntegration(ToolbarIcons.HorseFluteAnywhereId, 12, I18n.Button_HorseFluteAnywhere(), "SummonHorse");
-        simple.AddIntegration(ToolbarIcons.InstantBuildingId, 7, I18n.Button_InstantBuildings_Build(), "HandleInstantBuildButtonClick");
-        simple.AddIntegration(ToolbarIcons.InstantBuildingId, 8, I18n.Button_InstantBuildings_Upgrade(), "HandleInstantUpgradeButtonClick");
-        simple.AddIntegration(ToolbarIcons.LookupAnythingId, 9, I18n.Button_LookupAnything(), "TryToggleSearch");
-        simple.AddIntegration(ToolbarIcons.StardewAquariumId, 1, I18n.Button_StardewAquarium(), "OpenAquariumCollectionMenu", "aquariumprogress", Array.Empty<string>());
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.DynamicGameAssetsId, 6, I18n.Button_DynamicGameAssets(), "OnStoreCommand", "dga_store", Array.Empty<string>());
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.StardewAquariumId, 1, I18n.Button_StardewAquarium(), "OpenAquariumCollectionMenu", "aquariumprogress", Array.Empty<string>());
 
         if (gmcm.IsLoaded)
         {
@@ -411,19 +352,27 @@ public class ToolbarIcons : Mod
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        foreach (var (key, data) in this.Helper.GameContent.Load<IDictionary<string, string>>("furyx639.FuryCore/Toolbar"))
+        if (!this.Loaded)
         {
-            var info = data.Split('/');
-            this.Api.AddToolbarIcon(key, info[1], new(16 * int.Parse(info[2]), 0, 16, 16), info[0]);
-            this.Actions.Add(key, info[4]);
+            this.Loaded = true;
+            foreach (var (_, data) in this.Helper.GameContent.Load<IDictionary<string, string>>("furyx639.FuryCore/Toolbar"))
+            {
+                var info = data.Split('/');
+                var modId = string.Join(".", info[4].Split('.')[..^1]);
+                var index = int.Parse(info[2]);
+                switch (info[3])
+                {
+                    case "method":
+                        this.SimpleIntegration?.AddMethod(modId, index, info[0], info[4].Split('.')[^1], info[1]);
+                        break;
+                    case "keybind":
+                        this.SimpleIntegration?.AddKeybind(modId, index, info[0], info[4], info[1]);
+                        break;
+                }
+            }
         }
 
         this.ReorientComponents();
-    }
-
-    private void OverrideButton(SButton button, bool inputState)
-    {
-        this.OverrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
     }
 
     private void ReorientComponents()

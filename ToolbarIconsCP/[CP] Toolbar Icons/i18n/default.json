@@ -1,29 +1,16 @@
 {
+  // Icons
+  "button.DataLayers": "Toggle Data Layers",
+  "button.DebugMode": "Toggle Debug Mode",
+  "button.EventLookup": "Lookup Heart Events",
+  "button.HorseFluteAnywhere": "Summon Horse",
+  "button.InstantBuildings.Build": "Show Instant Build Menu",
+  "button.InstantBuildings.Upgrade": "Perform Instant House Upgrade",
+  "button.LookupAnything": "Toggle Lookup Anything Search",
+  "button.ResetTerrainFeatures": "Reset Terrain Features",
   // Config
-  "config.EnableDataLayers.name": "Enable Data Layers",
-  "config.EnableDataLayers.description": "Toggle whether to show or hide the Data Layers icon.",
-  "config.DataLayersHotkey.name": "Data Layers Hotkey",
-  "config.DataLayersHotkey.description": "The hotkey to press to activate Data Layers.",
-  "config.EnableDebugMode.name": "Enable Debug Mode",
-  "config.EnableDebugMode.description": "Toggle whether to show or hide the Debug Mode icon.",
-  "config.DebugModeHotkey.name": "Debug Mode Hotkey",
-  "config.DebugModeHotkey.description": "The hotkey to press to activate Debug Mode.",
-  "config.EnableEventLookup.name": "Enable Event Lookup",
-  "config.EnableEventLookup.description": "Toggle whether to show or hide the Event Lookup icon.",
   "config.EventLookupHotkey.name": "Event Lookup Hotkey",
   "config.EventLookupHotkey.description": "The hotkey to press to activate the Event Lookup menu.",
-  "config.EnableHorseFluteAnywhere.name": "Enable Horse Flute Anywhere",
-  "config.EnableHorseFluteAnywhere.description": "Toggle whether to show or hide the Horse Flute Anywhere icon.",
-  "config.HorseFluteAnywhereHotkey.name": "Horse Flute Anywhere Hotkey",
-  "config.HorseFluteAnywhereHotkey.description": "The hotkey to press to activate Horse Flute Anywhere.",
-  "config.EnableResetTerrainFeatures.name": "Enable Reset Terrain Features",
-  "config.EnableResetTerrainFeatures.description": "Toggle whether to show or hide the Reset Terrain Features icon.",
   "config.ResetTerrainFeaturesHotkey.name": "Reset Terrain Features Hotkey",
-  "config.ResetTerrainFeaturesHotkey.description": "The hotkey to press to activate the Reset Terrain Features menu.",
-  // Icons
-  "icon.data-layers.name": "Toggle Data Layers",
-  "icon.debug-mode.name": "Toggle Debug Mode",
-  "icon.event-lookup.name": "Lookup Heart Events",
-  "icon.horse-flute-anywhere.name": "Summon Horse",
-  "icon.reset-terrain-features.name": "Reset Terrain Features"
+  "config.ResetTerrainFeaturesHotkey.description": "The hotkey to press to activate the Reset Terrain Features menu."
 }
