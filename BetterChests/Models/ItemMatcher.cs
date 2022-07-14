@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -136,53 +135,5 @@ internal class ItemMatcher : ObservableCollection<string>, IItemMatcher
 
         var newValue = stringBuilder.ToString();
         return string.IsNullOrWhiteSpace(newValue) ? null : new(newValue, tagMatch, this.ExactMatch, this.Translation);
-    }
-
-    private record SearchPhrase
-    {
-        public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false, ITranslationHelper? translation = null)
-        {
-            this.NotMatch = value[..1] == "!";
-            this.TagMatch = tagMatch;
-            this.ExactMatch = exactMatch;
-            this.Value = this.NotMatch ? value[1..] : value;
-            this.Translation = translation;
-        }
-
-        public bool NotMatch { get; }
-
-        private bool ExactMatch { get; }
-
-        private bool TagMatch { get; }
-
-        private ITranslationHelper? Translation { get; }
-
-        private string Value { get; }
-
-        /// <summary>
-        ///     Checks if item matches this search phrase.
-        /// </summary>
-        /// <param name="item">The item to check.</param>
-        /// <returns>Returns true if item matches the search phrase.</returns>
-        public bool Matches(Item item)
-        {
-            return (this.TagMatch ? item.GetContextTags().Any(this.Matches) : this.Matches(item.DisplayName) || this.Matches(item.Name)) != this.NotMatch;
-        }
-
-        private bool Matches(string match)
-        {
-            if (this.Translation is not null && !this.ExactMatch)
-            {
-                var localMatch = this.Translation.Get($"tag.{match}").Default(string.Empty).ToString();
-                if (!string.IsNullOrWhiteSpace(localMatch) && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return true;
-                }
-            }
-
-            return this.ExactMatch
-                ? this.Value.Equals(match, StringComparison.OrdinalIgnoreCase)
-                : match.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1;
-        }
     }
 }
