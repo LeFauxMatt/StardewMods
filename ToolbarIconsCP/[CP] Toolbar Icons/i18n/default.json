@@ -8,9 +8,12 @@
   "button.InstantBuildings.Upgrade": "Perform Instant House Upgrade",
   "button.LookupAnything": "Toggle Lookup Anything Search",
   "button.ResetTerrainFeatures": "Reset Terrain Features",
+  "button.Screenshot": "Take Screenshot",
   // Config
   "config.EventLookupHotkey.name": "Event Lookup Hotkey",
   "config.EventLookupHotkey.description": "The hotkey to press to activate the Event Lookup menu.",
   "config.ResetTerrainFeaturesHotkey.name": "Reset Terrain Features Hotkey",
-  "config.ResetTerrainFeaturesHotkey.description": "The hotkey to press to activate the Reset Terrain Features menu."
+  "config.ResetTerrainFeaturesHotkey.description": "The hotkey to press to activate the Reset Terrain Features menu.",
+  "config.ScreenshotHotkey.name": "Screenshot Hotkey",
+  "config.ScreenshotHotkey.description": "The hotkey to press to take a screenshot."
 }

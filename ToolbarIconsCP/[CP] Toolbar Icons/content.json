@@ -8,21 +8,25 @@
     "ResetTerrainFeaturesHotkey": {
       "AllowBlank": true,
       "Default": "L"
+    },
+    "ScreenshotHotkey": {
+      "AllowBlank": true,
+      "Default": "F9"
     }
   },
   "Changes": [
     // Load Texture Icons
     {
       "Action": "Load",
-      "Target": "furyx639.ToolbarIconsForFuryCore/Icons",
+      "Target": "furyx639.ToolbarIconsCP/Icons",
       "FromFile": "assets/icons.png"
     },
     // Add Chests Anywhere Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "ChestsAnywhere": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/method/Pathoschild.ChestsAnywhere.OpenMenu"
+        "Pathoschild.ChestsAnywhere/OpenMenu": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsCP\\Icons/3/method/OpenMenu"
       },
       "When": {
         "HasMod": "Pathoschild.ChestsAnywhere"
@@ -31,9 +35,9 @@
     // Add Data Layers Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "DataLayers": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsForFuryCore\\Icons/3/method/Pathoschild.DataLayers.ToggleLayers"
+        "Pathoschild.DataLayers/Toggle": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsCP\\Icons/3/method/ToggleLayers"
       },
       "When": {
         "HasMod": "Pathoschild.DataLayers"
@@ -42,9 +46,9 @@
     // Add Debug Mode Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "DebugMode": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsForFuryCore\\Icons/4/method/Pathoschild.DebugMode.ToggleDebugMode"
+        "Pathoschild.DebugMode/Toggle": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsCP\\Icons/4/method/ToggleDebugMode"
       },
       "When": {
         "HasMod": "Pathoschild.DebugMode"
@@ -53,9 +57,9 @@
     // Add Event Lookup Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "EventLookup": "{{i18n: button.EventLookup}}/furyx639.ToolbarIconsForFuryCore\\Icons/13/keybind/{{EventLookupHotkey}}"
+        "shekurika.EventLookup/Lookup": "{{i18n: button.EventLookup}}/furyx639.ToolbarIconsCP\\Icons/13/keybind/{{EventLookupHotkey}}"
       },
       "When": {
         "HasMod": "shekurika.EventLookup"
@@ -64,9 +68,9 @@
     // Add Horse Flute Anywhere Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "HorseFluteAnywhere": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsForFuryCore\\Icons/6/method/Pathoschild.HorseFluteAnywhere.SummonHorse"
+        "Pathoschild.HorseFluteAnywhere/SummonHorse": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsCP\\Icons/6/method/SummonHorse"
       },
       "When": {
         "HasMod": "Pathoschild.HorseFluteAnywhere"
@@ -75,10 +79,10 @@
     // Add Instant Building Build Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "InstantBuildings.Build": "{{i18n: button.InstantBuildings.Build}}/furyx639.ToolbarIconsForFuryCore\\Icons/5/method/BitwiseJonMods.InstantBuildings.HandleInstantBuildButtonClick",
-        "InstantBuildings.Upgrade": "{{i18n: button.InstantBuildings.Upgrade}}/furyx639.ToolbarIconsForFuryCore\\Icons/9/method/BitwiseJonMods.InstantBuildings.HandleInstantUpgradeButtonClick"
+        "BitwiseJonMods.InstantBuildings/Build": "{{i18n: button.InstantBuildings.Build}}/furyx639.ToolbarIconsCP\\Icons/5/method/HandleInstantBuildButtonClick",
+        "BitwiseJonMods.InstantBuildings/Upgrade": "{{i18n: button.InstantBuildings.Upgrade}}/furyx639.ToolbarIconsCP\\Icons/9/method/HandleInstantUpgradeButtonClick"
       },
       "When": {
         "HasMod": "BitwiseJonMods.InstantBuildings"
@@ -87,9 +91,9 @@
     // Add Lookup Anything Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "LookupAnything": "{{i18n: button.LookupAnything}/furyx639.ToolbarIconsForFuryCore\\Icons/7/method/Pathoschild.LookupAnything.TryToggleSearch"
+        "Pathoschild.LookupAnything/Search": "{{i18n: button.LookupAnything}/furyx639.ToolbarIconsCP\\Icons/7/method/TryToggleSearch"
       },
       "When": {
         "HasMod": "Pathoschild.LookupAnything"
@@ -98,12 +102,23 @@
     // Add Reset Terrain Features Icon
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "ResetTerrainFeatures": "{{i18n: button.ResetTerrainFeatures}}/furyx639.ToolbarIconsForFuryCore\\Icons/12/keybind/{{ResetTerrainFeaturesHotkey}}"
+        "MabelSyrup.ResetTerrainFeatures/Reset": "{{i18n: button.ResetTerrainFeatures}}/furyx639.ToolbarIconsCP\\Icons/12/keybind/{{ResetTerrainFeaturesHotkey}}"
       },
       "When": {
         "HasMod": "MabelSyrup.ResetTerrainFeatures"
+      }
+    },
+    // Add Screenshot Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
+      "Entries": {
+        "aedenthorn.Screenshot/Take": "{{i18n: button.Screenshot}}/furyx639.ToolbarIconsCP\\Icons/14/keybind/{{ScreenshotHotkey}}"
+      },
+      "When": {
+        "HasMod": "aedenthorn.Screenshot"
       }
     }
   ]

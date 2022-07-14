@@ -1,7 +1,9 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
 ## 2.2.0 (Unreleased)
-* Added back some icons using method-based integration
+* 
+* Added support for Simple Screenshots. 
+* Added back some icons using method-based integration.
   * Chests Anywhere
   * Data Layers
   * Debug Mode
@@ -20,14 +22,14 @@
 
 ## 2.0.0 (July 1, 2022)
 
-* Changed dependency to ToolbarIcons
+* Changed dependency to ToolbarIcons.
 
 ## 1.1.0 (March 25, 2022)
 
 ### Added
 
-* Added Event Lookup
-* Added Reset Terrain Features
+* Added Event Lookup.
+* Added Reset Terrain Features.
 
 ## 1.0.0 (February 15, 2022)
 

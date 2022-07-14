@@ -17,6 +17,7 @@ Adds shortcut icons to activate hotkeys/commands from other mods.
 * [Instant Buildings From Farm](https://www.nexusmods.com/stardewvalley/mods/2070)
 * [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541)
 * [Reset Terrain Features for .NET 5](https://www.nexusmods.com/stardewvalley/mods/9350)
+* [Simple Screenshots](https://www.nexusmods.com/stardewvalley/mods/10178)
 
 ### Translations
 
