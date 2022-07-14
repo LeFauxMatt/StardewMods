@@ -351,7 +351,7 @@ precedence.
     * Custom chests added by other mods.<sup>1</sup>
 * **Individual Chest** - A single instance of a chest can be configured individually.
 
-1. External mod must "opt-in" by [registering custom chest](#custom-chests) with Better Chests.
+1. External mod must "opt-in" by [registering custom chest](#api) with Better Chests.
 
 ### Group By Values
 
