@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Menus;
@@ -572,6 +573,27 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
+    public bool Equals(IStorageObject? x, IStorageObject? y)
+    {
+        if (ReferenceEquals(x, y))
+        {
+            return true;
+        }
+
+        if (ReferenceEquals(x, null))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(y, null))
+        {
+            return false;
+        }
+
+        return x.GetType() == y.GetType() && x.Context.Equals(y.Context);
+    }
+
+    /// <inheritdoc />
     public bool FilterMatches(Item? item)
     {
         if (item is null)
@@ -580,6 +602,12 @@ internal abstract class BaseStorage : IStorageObject
         }
 
         return !this.FilterItemsList.Any() || this.FilterMatcher.Matches(item);
+    }
+
+    /// <inheritdoc />
+    public int GetHashCode(IStorageObject obj)
+    {
+        return obj.Context.GetHashCode();
     }
 
     /// <inheritdoc />
@@ -697,7 +725,14 @@ internal abstract class BaseStorage : IStorageObject
     {
         var condition1 = existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true);
         var condition2 = this.FilterItemsList.Any() && !this.FilterItemsList.All(filter => filter.StartsWith("!")) && this.FilterMatches(item);
-        return condition1 || condition2 ? this.AddItem(item) : item;
+        var stack = item.Stack;
+        var tmp = condition1 || condition2 ? this.AddItem(item) : item;
+        if (tmp is null || stack != item.Stack)
+        {
+            Log.Trace($"StashItem: {{ Item: {item.Name}, Quantity: {Math.Max(1, stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, To: {this}");
+        }
+
+        return tmp;
     }
 
     /// <inheritdoc />

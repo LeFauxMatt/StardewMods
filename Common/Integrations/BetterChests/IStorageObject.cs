@@ -9,7 +9,7 @@ using StardewValley.Network;
 /// <summary>
 ///     Provides access to storage data and functions.
 /// </summary>
-public interface IStorageObject : IStorageData
+public interface IStorageObject : IStorageData, IEqualityComparer<IStorageObject>
 {
     /// <summary>
     ///     Gets the actual capacity of the object's storage.
