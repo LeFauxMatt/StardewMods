@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.1.3 (Unreleased)
+
+* Added support for some interface recolors.
+
 ## 2.1.2 (July 12, 2022)
 
 * Added an extra indicator for when you're in a tab.

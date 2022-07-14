@@ -2,6 +2,7 @@ namespace StardewMods.BetterChests;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -15,61 +16,24 @@ using StardewMods.Common.Integrations.BetterChests;
 /// <inheritdoc />
 public class BetterChests : Mod
 {
+    private const string DarkInterfaceId = "Acerbicon.ADarkInterface";
+    private const string StarrySkyId = "BeneathThePlass.StarrySkyInterfaceCP";
+    private const string VintageInterfaceId = "ManaKirel.VintageInterface2";
+    private const string OvergrownFloweryId = "Maraluna.OvergrownFloweryInterface";
+
+    private static readonly List<string> CompatibilityTextures = new()
+    {
+        BetterChests.DarkInterfaceId,
+        BetterChests.StarrySkyId,
+        BetterChests.VintageInterfaceId,
+        BetterChests.OvergrownFloweryId,
+    };
+
     private ModConfig? Config { get; set; }
 
     private Dictionary<string, (IFeature Feature, Func<bool> Condition)> Features { get; } = new();
 
     private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; } = new();
-
-    private Dictionary<string, string> Tabs
-    {
-        get
-        {
-            var tabs = this.Helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
-            if (tabs is null)
-            {
-                tabs = new()
-                {
-                    {
-                        "Clothing",
-                        "/furyx639.BetterChests\\Tabs\\Texture/0/category_clothing category_boots category_hat"
-                    },
-                    {
-                        "Cooking",
-                        "/furyx639.BetterChests\\Tabs\\Texture/1/category_syrup category_artisan_goods category_ingredients category_sell_at_pierres_and_marnies category_sell_at_pierres category_meat category_cooking category_milk category_egg"
-                    },
-                    {
-                        "Crops",
-                        "/furyx639.BetterChests\\Tabs\\Texture/2/category_greens category_flowers category_fruits category_vegetable"
-                    },
-                    {
-                        "Equipment",
-                        "/furyx639.BetterChests\\Tabs\\Texture/3/category_equipment category_ring category_tool category_weapon"
-                    },
-                    {
-                        "Fishing",
-                        "/furyx639.BetterChests\\Tabs\\Texture/4/category_bait category_fish category_tackle category_sell_at_fish_shop"
-                    },
-                    {
-                        "Materials",
-                        "/furyx639.BetterChests\\Tabs\\Texture/5/category_monster_loot category_metal_resources category_building_resources category_minerals category_crafting category_gem"
-                    },
-                    {
-                        "Misc",
-                        "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk"
-                    },
-                    {
-                        "Seeds",
-                        "/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer"
-                    },
-                };
-
-                this.Helper.Data.WriteJsonFile("assets/tabs.json", tabs);
-            }
-
-            return tabs;
-        }
-    }
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -118,23 +82,27 @@ public class BetterChests : Mod
         return new BetterChestsApi(this.StorageTypes);
     }
 
+    private string GetThemedAsset(string filename)
+    {
+        foreach (var id in BetterChests.CompatibilityTextures.Where(id => this.Helper.ModRegistry.IsLoaded(id) && File.Exists(Path.Join("assets", id, filename))))
+        {
+            return $"assets/{id}/{filename}";
+        }
+
+        return $"assets/{filename}";
+    }
+
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo("furyx639.BetterChests/Icons"))
         {
-            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+            e.LoadFromModFile<Texture2D>(this.GetThemedAsset("icons.png"), AssetLoadPriority.Exclusive);
+            return;
         }
-        else if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs"))
+
+        if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs/Texture"))
         {
-            e.LoadFrom(() => this.Tabs, AssetLoadPriority.Exclusive);
-        }
-        else if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs/Texture"))
-        {
-            e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
-        }
-        else if (e.Name.IsEquivalentTo("furyx639.FuryCore/ConfigTool"))
-        {
-            e.LoadFromModFile<Texture2D>("assets/wrench.png", AssetLoadPriority.Exclusive);
+            e.LoadFromModFile<Texture2D>(this.GetThemedAsset("tabs.png"), AssetLoadPriority.Exclusive);
         }
     }
 

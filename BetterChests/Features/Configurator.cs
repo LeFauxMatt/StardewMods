@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -235,6 +236,16 @@ internal class Configurator : IFeature
 
         var (x, y) = Game1.getMousePosition(true);
         this.ConfigureButton.tryHover(x, y);
+        e.SpriteBatch.Draw(
+            this.ConfigureButton.texture,
+            new(this.ConfigureButton.bounds.X + 8 * Game1.pixelZoom, this.ConfigureButton.bounds.Y + 8 * Game1.pixelZoom),
+            new(64, 0, 16, 16),
+            Color.White,
+            0f,
+            new(8, 8),
+            this.ConfigureButton.scale,
+            SpriteEffects.None,
+            0.86f);
         this.ConfigureButton.draw(e.SpriteBatch);
         if (this.ConfigureButton.containsPoint(x, y))
         {

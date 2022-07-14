@@ -45,7 +45,77 @@ internal class ChestMenuTabs : IFeature
             }
 
             var tabs = this.Helper.GameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
-            if (!tabs.Any())
+            return ChestMenuTabs.CachedTabs ??= (
+                    from tab in
+                        from tab in tabs
+                        select (tab.Key, Value: tab.Value.Split('/'))
+                    select (tab.Key, Value: new ClickableTextureComponent(
+                        tab.Value[3],
+                        new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                        string.Empty,
+                        tab.Value[0],
+                        this.Helper.GameContent.Load<Texture2D>(tab.Value[1]),
+                        new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
+                        Game1.pixelZoom)))
+                .ToDictionary(tab => tab.Key, tab => tab.Value);
+        }
+    }
+
+    private List<ClickableTextureComponent>? Components
+    {
+        get => this._tabs.Value;
+        set => this._tabs.Value = value;
+    }
+
+    private ModConfig Config { get; }
+
+    private ItemGrabMenu? CurrentMenu
+    {
+        get => this._currentMenu.Value;
+        set => this._currentMenu.Value = value;
+    }
+
+    private IModHelper Helper { get; }
+
+    private int Index
+    {
+        get => this._tabIndex.Value;
+        set
+        {
+            this._tabIndex.Value = value;
+            this.ItemMatcher.Clear();
+            if (value == -1 || this.Components is null || !this.Components.Any())
+            {
+                Log.Trace("Switching tab to None");
+                BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
+                return;
+            }
+
+            var tab = this.Components[value];
+            var tags = tab.name.Split(' ');
+            foreach (var tag in tags)
+            {
+                this.ItemMatcher.Add(tag);
+            }
+
+            Log.Trace($"Switching tab to {tab.hoverText}");
+            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
+        }
+    }
+
+    private bool IsActivated { get; set; }
+
+    private IItemMatcher ItemMatcher
+    {
+        get => this._itemMatcher.Value;
+    }
+
+    private Dictionary<string, string> Tabs
+    {
+        get
+        {
+            var tabs = this.Helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
+            if (tabs is null || !tabs.Any())
             {
                 tabs = new()
                 {
@@ -82,72 +152,12 @@ internal class ChestMenuTabs : IFeature
                         "/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer"
                     },
                 };
+
                 this.Helper.Data.WriteJsonFile("assets/tabs.json", tabs);
             }
 
-            return ChestMenuTabs.CachedTabs ??= (
-                    from tab in
-                        from tab in tabs
-                        select (tab.Key, Value: tab.Value.Split('/'))
-                    select (tab.Key, Value: new ClickableTextureComponent(
-                        tab.Value[3],
-                        new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                        string.Empty,
-                        tab.Value[0],
-                        this.Helper.GameContent.Load<Texture2D>(tab.Value[1]),
-                        new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
-                        Game1.pixelZoom)))
-                .ToDictionary(tab => tab.Key, tab => tab.Value);
+            return tabs;
         }
-    }
-
-    private ModConfig Config { get; }
-
-    private ItemGrabMenu? CurrentMenu
-    {
-        get => this._currentMenu.Value;
-        set => this._currentMenu.Value = value;
-    }
-
-    private IModHelper Helper { get; }
-
-    private int Index
-    {
-        get => this._tabIndex.Value;
-        set
-        {
-            this._tabIndex.Value = value;
-            this.ItemMatcher.Clear();
-            if (value == -1 || this.Tabs is null || !this.Tabs.Any())
-            {
-                Log.Trace("Switching tab to None");
-                BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
-                return;
-            }
-
-            var tab = this.Tabs[value];
-            var tags = tab.name.Split(' ');
-            foreach (var tag in tags)
-            {
-                this.ItemMatcher.Add(tag);
-            }
-
-            Log.Trace($"Switching tab to {tab.hoverText}");
-            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
-        }
-    }
-
-    private bool IsActivated { get; set; }
-
-    private IItemMatcher ItemMatcher
-    {
-        get => this._itemMatcher.Value;
-    }
-
-    private List<ClickableTextureComponent>? Tabs
-    {
-        get => this._tabs.Value;
-        set => this._tabs.Value = value;
     }
 
     /// <summary>
@@ -167,6 +177,7 @@ internal class ChestMenuTabs : IFeature
         if (!this.IsActivated)
         {
             this.IsActivated = true;
+            this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
             this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -181,6 +192,7 @@ internal class ChestMenuTabs : IFeature
         if (this.IsActivated)
         {
             this.IsActivated = false;
+            this.Helper.Events.Content.AssetRequested -= this.OnAssetRequested;
             this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
             this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
             this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -194,16 +206,24 @@ internal class ChestMenuTabs : IFeature
         return this.ItemMatcher.Any() ? items.OrderBy(item => this.ItemMatcher.Matches(item) ? 0 : 1) : items;
     }
 
+    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    {
+        if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs"))
+        {
+            e.LoadFrom(() => this.Tabs, AssetLoadPriority.Exclusive);
+        }
+    }
+
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Tabs is null)
+        if (this.CurrentMenu is null || this.Components is null)
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var tab = this.Tabs.FirstOrDefault(tab => tab.containsPoint(x, y));
-        var index = tab is not null ? this.Tabs.IndexOf(tab) : -1;
+        var tab = this.Components.FirstOrDefault(tab => tab.containsPoint(x, y));
+        var index = tab is not null ? this.Components.IndexOf(tab) : -1;
         switch (e.Button)
         {
             case SButton.MouseLeft when index != -1:
@@ -221,33 +241,33 @@ internal class ChestMenuTabs : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Tabs is null)
+        if (this.CurrentMenu is null || this.Components is null)
         {
             return;
         }
 
         if (this.Config.ControlScheme.PreviousTab.JustPressed())
         {
-            this.Index = this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1;
+            this.Index = this.Index == -1 ? this.Components.Count - 1 : this.Index - 1;
             this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.PreviousTab);
         }
 
         if (this.Config.ControlScheme.NextTab.JustPressed())
         {
-            this.Index = this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1;
+            this.Index = this.Index == this.Components.Count - 1 ? -1 : this.Index + 1;
             this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.NextTab);
         }
     }
 
     private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Tabs is null)
+        if (this.CurrentMenu is null || this.Components is null)
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (!this.Tabs.Any(tab => tab.containsPoint(x, y)))
+        if (!this.Components.Any(tab => tab.containsPoint(x, y)))
         {
             return;
         }
@@ -255,10 +275,10 @@ internal class ChestMenuTabs : IFeature
         switch (e.Delta)
         {
             case > 0:
-                this.Index = this.Index == -1 ? this.Tabs.Count - 1 : this.Index - 1;
+                this.Index = this.Index == -1 ? this.Components.Count - 1 : this.Index - 1;
                 break;
             case < 0:
-                this.Index = this.Index == this.Tabs.Count - 1 ? -1 : this.Index + 1;
+                this.Index = this.Index == this.Components.Count - 1 ? -1 : this.Index + 1;
                 break;
             default:
                 return;
@@ -268,21 +288,31 @@ internal class ChestMenuTabs : IFeature
     [EventPriority(EventPriority.High)]
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Tabs is null)
+        if (this.CurrentMenu is null || this.Components is null)
         {
             return;
         }
 
         ClickableTextureComponent? tab;
-        for (var index = 0; index < this.Tabs.Count; index++)
+        for (var index = 0; index < this.Components.Count; index++)
         {
-            tab = this.Tabs[index];
+            tab = this.Components[index];
             tab.sourceRect.Y = 4;
             tab.sourceRect.Height = 12;
             if (index == this.Index)
             {
                 tab.sourceRect.Y = 3;
                 tab.sourceRect.Height = 13;
+                e.SpriteBatch.Draw(
+                    tab.texture,
+                    new(tab.bounds.X, tab.bounds.Y),
+                    new(128, tab.sourceRect.Y, 16, tab.sourceRect.Height),
+                    Color.White,
+                    0f,
+                    Vector2.Zero,
+                    Game1.pixelZoom,
+                    SpriteEffects.None,
+                    0.86f);
                 tab.draw(e.SpriteBatch, Color.White, 0.86f + tab.bounds.Y / 20000f);
 
                 // draw texture
@@ -307,11 +337,21 @@ internal class ChestMenuTabs : IFeature
                 continue;
             }
 
+            e.SpriteBatch.Draw(
+                tab.texture,
+                new(tab.bounds.X, tab.bounds.Y),
+                new(128, tab.sourceRect.Y, 16, tab.sourceRect.Height),
+                Color.Gray,
+                0f,
+                Vector2.Zero,
+                Game1.pixelZoom,
+                SpriteEffects.None,
+                0.86f);
             tab.draw(e.SpriteBatch, Color.Gray, 0.86f + tab.bounds.Y / 20000f);
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        tab = this.Tabs.FirstOrDefault(t => t.containsPoint(x, y));
+        tab = this.Components.FirstOrDefault(t => t.containsPoint(x, y));
         if (tab is not null && !string.IsNullOrWhiteSpace(tab.hoverText))
         {
             IClickableMenu.drawHoverText(e.SpriteBatch, tab.hoverText, Game1.smallFont);
@@ -334,7 +374,7 @@ internal class ChestMenuTabs : IFeature
                 || !StorageHelper.TryGetOne(context, out var storage)
                 || storage.ChestMenuTabs == FeatureOption.Disabled)
             {
-                this.Tabs = null;
+                this.Components = null;
                 return;
             }
 
@@ -342,21 +382,21 @@ internal class ChestMenuTabs : IFeature
                 ? this.AllTabs.Where(tab => storage.ChestMenuTabSet.Contains(tab.Key))
                 : this.AllTabs;
 
-            this.Tabs = tabs
-                        .Select(tab =>
-                        {
-                            if (string.IsNullOrWhiteSpace(tab.Value.hoverText))
-                            {
-                                tab.Value.hoverText = this.Helper.Translation.Get($"tab.{tab.Key}.Name").Default(tab.Key);
-                            }
+            this.Components = tabs
+                              .Select(tab =>
+                              {
+                                  if (string.IsNullOrWhiteSpace(tab.Value.hoverText))
+                                  {
+                                      tab.Value.hoverText = this.Helper.Translation.Get($"tab.{tab.Key}.Name").Default(tab.Key);
+                                  }
 
-                            return tab.Value;
-                        })
-                        .OrderBy(tab => tab.hoverText)
-                        .ToList();
+                                  return tab.Value;
+                              })
+                              .OrderBy(tab => tab.hoverText)
+                              .ToList();
 
             ClickableTextureComponent? prevTab = null;
-            foreach (var tab in this.Tabs)
+            foreach (var tab in this.Components)
             {
                 if (prevTab is not null)
                 {
