@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,6 +19,7 @@ using StardewValley;
 /// </summary>
 internal class ChestFinder : IFeature
 {
+    private readonly PerScreen<HashSet<IStorageObject>> _cachedStorages = new(() => new());
     private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
 
     private ChestFinder(IModHelper helper, ModConfig config)
@@ -27,6 +29,11 @@ internal class ChestFinder : IFeature
     }
 
     private static ChestFinder? Instance { get; set; }
+
+    private HashSet<IStorageObject> CachedStorages
+    {
+        get => this._cachedStorages.Value;
+    }
 
     private ModConfig Config { get; }
 
@@ -56,8 +63,10 @@ internal class ChestFinder : IFeature
         if (!this.IsActivated)
         {
             this.IsActivated = true;
+            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
             this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
             this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this.Helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
 
             if (IntegrationHelper.ToolbarIcons.IsLoaded)
             {
@@ -77,8 +86,10 @@ internal class ChestFinder : IFeature
         if (this.IsActivated)
         {
             this.IsActivated = false;
+            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
             this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
             this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            this.Helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
 
             if (IntegrationHelper.ToolbarIcons.IsLoaded)
             {
@@ -99,22 +110,43 @@ internal class ChestFinder : IFeature
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.FindChest);
     }
 
+    private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
+    {
+        if (!e.Location.Equals(Game1.currentLocation) || !this.ItemMatcher.Any())
+        {
+            return;
+        }
+
+        var storage = StorageHelper.CurrentLocation.FirstOrDefault(storage => ReferenceEquals(storage.Context, e.Chest));
+        if (storage is null)
+        {
+            return;
+        }
+
+        if (storage.Items.Any(this.ItemMatcher.Matches))
+        {
+            if (!this.CachedStorages.Contains(storage))
+            {
+                this.CachedStorages.Add(storage);
+            }
+
+            return;
+        }
+
+        this.CachedStorages.RemoveWhere(cachedStorage => ReferenceEquals(cachedStorage.Context, e.Chest));
+    }
+
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.ItemMatcher.Any())
+        if (!Context.IsPlayerFree || !this.CachedStorages.Any())
         {
             return;
         }
 
         var bounds = Game1.graphics.GraphicsDevice.Viewport.Bounds;
         var srcRect = new Rectangle(412, 495, 5, 4);
-        foreach (var storage in StorageHelper.CurrentLocation)
+        foreach (var storage in this.CachedStorages)
         {
-            if (!storage.Items.Any(this.ItemMatcher.Matches))
-            {
-                continue;
-            }
-
             var pos = storage.Position * 64f + new Vector2(32, -48);
             var onScreenPos = default(Vector2);
             if (Utility.isOnScreen(pos, 64))
@@ -192,6 +224,18 @@ internal class ChestFinder : IFeature
                 Game1.pixelZoom,
                 SpriteEffects.None,
                 1f);
+        }
+    }
+
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (e.OldMenu is SearchBar && e.NewMenu is null)
+        {
+            this.CachedStorages.Clear();
+            if (this.ItemMatcher.Any())
+            {
+                this.CachedStorages.UnionWith(StorageHelper.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
+            }
         }
     }
 
