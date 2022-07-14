@@ -175,15 +175,14 @@ internal class CarryChest : IFeature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void InventoryMenu_rightClick_postfix(InventoryMenu __instance, ref Item? __result, ref ItemSlot? __state)
+    private static void InventoryMenu_rightClick_postfix(InventoryMenu __instance, ref Item? __result, ref (Item?, int)? __state)
     {
         if (__state is null)
         {
             return;
         }
 
-        var (item, slotNumber) = __state;
-
+        var (item, slotNumber) = __state.Value;
         if (item is null || __result is null)
         {
             return;
@@ -204,7 +203,7 @@ internal class CarryChest : IFeature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref ItemSlot? __state)
+    private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref (Item?, int)? __state)
     {
         var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (slot is null)
@@ -356,7 +355,7 @@ internal class CarryChest : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+        if (!Context.IsPlayerFree || Game1.player.CurrentItem is Tool || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
@@ -404,6 +403,4 @@ internal class CarryChest : IFeature
         this.Helper.Input.Suppress(e.Button);
         CarryChest.CheckForOverburdened();
     }
-
-    private record ItemSlot(Item? Item, int SlotNumber);
 }
