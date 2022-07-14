@@ -136,6 +136,18 @@ internal class ChestFinder : IFeature
         this.CachedStorages.RemoveWhere(cachedStorage => ReferenceEquals(cachedStorage.Context, e.Chest));
     }
 
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (e.OldMenu is SearchBar && e.NewMenu is null)
+        {
+            this.CachedStorages.Clear();
+            if (this.ItemMatcher.Any())
+            {
+                this.CachedStorages.UnionWith(StorageHelper.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
+            }
+        }
+    }
+
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
         if (!Context.IsPlayerFree || !this.CachedStorages.Any())
@@ -224,18 +236,6 @@ internal class ChestFinder : IFeature
                 Game1.pixelZoom,
                 SpriteEffects.None,
                 1f);
-        }
-    }
-
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
-    {
-        if (e.OldMenu is SearchBar && e.NewMenu is null)
-        {
-            this.CachedStorages.Clear();
-            if (this.ItemMatcher.Any())
-            {
-                this.CachedStorages.UnionWith(StorageHelper.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
-            }
         }
     }
 

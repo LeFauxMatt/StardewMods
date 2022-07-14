@@ -17,9 +17,9 @@ using StardewMods.Common.Integrations.BetterChests;
 public class BetterChests : Mod
 {
     private const string DarkInterfaceId = "Acerbicon.ADarkInterface";
+    private const string OvergrownFloweryId = "Maraluna.OvergrownFloweryInterface";
     private const string StarrySkyId = "BeneathThePlass.StarrySkyInterfaceCP";
     private const string VintageInterfaceId = "ManaKirel.VintageInterface2";
-    private const string OvergrownFloweryId = "Maraluna.OvergrownFloweryInterface";
 
     private static readonly List<string> CompatibilityTextures = new()
     {
@@ -43,6 +43,7 @@ public class BetterChests : Mod
         this.Config = ConfigHelper.Init(this.Helper, this.ModManifest, this.Features);
         IntegrationHelper.Init(this.Helper, this.Config);
         StorageHelper.Init(this.Helper.Multiplayer, this.Config, this.StorageTypes);
+        ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
 
         if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
         {
@@ -50,7 +51,7 @@ public class BetterChests : Mod
         }
 
         // Events
-        this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this.Helper.Events.Content.AssetRequested += BetterChests.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
         // Features
@@ -82,6 +83,20 @@ public class BetterChests : Mod
         return new BetterChestsApi(this.StorageTypes);
     }
 
+    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    {
+        if (e.Name.IsEquivalentTo("furyx639.BetterChests/Icons"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+            return;
+        }
+
+        if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs/Texture"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
+        }
+    }
+
     private string GetThemedAsset(string filename)
     {
         foreach (var id in BetterChests.CompatibilityTextures.Where(id => this.Helper.ModRegistry.IsLoaded(id) && File.Exists(Path.Join("assets", id, filename))))
@@ -90,20 +105,6 @@ public class BetterChests : Mod
         }
 
         return $"assets/{filename}";
-    }
-
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
-    {
-        if (e.Name.IsEquivalentTo("furyx639.BetterChests/Icons"))
-        {
-            e.LoadFromModFile<Texture2D>(this.GetThemedAsset("icons.png"), AssetLoadPriority.Exclusive);
-            return;
-        }
-
-        if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs/Texture"))
-        {
-            e.LoadFromModFile<Texture2D>(this.GetThemedAsset("tabs.png"), AssetLoadPriority.Exclusive);
-        }
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)

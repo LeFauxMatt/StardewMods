@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
@@ -26,25 +25,13 @@ public class ToolbarIcons : Mod
     private const string ChestsAnywhereId = "Pathoschild.ChestsAnywhere";
     private const string CJBCheatsMenuId = "CJBok.CheatsMenu";
     private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
-    private const string DarkInterfaceId = "Acerbicon.ADarkInterface";
     private const string DataLayersId = "Pathoschild.DataLayers";
     private const string DebugModeId = "Pathoschild.DebugMode";
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
     private const string HorseFluteAnywhereId = "Pathoschild.HorseFluteAnywhere";
     private const string InstantBuildingId = "BitwiseJonMods.InstantBuildings";
     private const string LookupAnythingId = "Pathoschild.LookupAnything";
-    private const string OvergrownFloweryId = "Maraluna.OvergrownFloweryInterface";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
-    private const string StarrySkyId = "BeneathThePlass.StarrySkyInterfaceCP";
-    private const string VintageInterfaceId = "ManaKirel.VintageInterface2";
-
-    private static readonly List<string> CompatibilityTextures = new()
-    {
-        ToolbarIcons.DarkInterfaceId,
-        ToolbarIcons.StarrySkyId,
-        ToolbarIcons.VintageInterfaceId,
-        ToolbarIcons.OvergrownFloweryId,
-    };
 
     private readonly PerScreen<Dictionary<string, string>> _actions = new(() => new());
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
@@ -145,6 +132,7 @@ public class ToolbarIcons : Mod
     {
         Log.Monitor = this.Monitor;
         I18n.Init(helper.Translation);
+        ThemeHelper.Init(this.Helper, "furyx639.ToolbarIcons/Icons", "furyx639.ToolbarIcons/Arrows");
 
         if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
         {
@@ -152,7 +140,7 @@ public class ToolbarIcons : Mod
         }
 
         // Events
-        this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this.Helper.Events.Content.AssetRequested += ToolbarIcons.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
@@ -167,17 +155,17 @@ public class ToolbarIcons : Mod
         return this.Api;
     }
 
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Icons"))
         {
-            e.LoadFromModFile<Texture2D>(this.GetThemedAsset("icon.png"), AssetLoadPriority.Exclusive);
+            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
             return;
         }
 
         if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Arrows"))
         {
-            e.LoadFromModFile<Texture2D>(this.GetThemedAsset("arrows.png"), AssetLoadPriority.Exclusive);
+            e.LoadFromModFile<Texture2D>("assets/arrows.png", AssetLoadPriority.Exclusive);
             return;
         }
 
@@ -225,16 +213,6 @@ public class ToolbarIcons : Mod
             -1,
             -1,
             0f);
-    }
-
-    private string GetThemedAsset(string filename)
-    {
-        foreach (var id in ToolbarIcons.CompatibilityTextures.Where(id => this.Helper.ModRegistry.IsLoaded(id) && File.Exists(Path.Join("assets", id, filename))))
-        {
-            return $"assets/{id}/{filename}";
-        }
-
-        return $"assets/{filename}";
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

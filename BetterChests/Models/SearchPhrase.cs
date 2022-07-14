@@ -11,7 +11,7 @@ using StardewValley;
 internal class SearchPhrase
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SearchPhrase"/> class.
+    ///     Initializes a new instance of the <see cref="SearchPhrase" /> class.
     /// </summary>
     /// <param name="value">The search text value.</param>
     /// <param name="tagMatch">Indicates whether to match by context tag.</param>

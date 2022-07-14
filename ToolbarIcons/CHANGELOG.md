@@ -1,8 +1,8 @@
 # Toolbar Icons Change Log
 
-## 2.2.2 (Unreleased)
+## 2.2.2 (July 13, 2022)
 
-* Added support for some interface recolors.
+* Added support for matching modded interface colors.
 
 ## 2.2.1 (July 12, 2022)
 
