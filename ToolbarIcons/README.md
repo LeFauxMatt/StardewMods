@@ -40,9 +40,9 @@ Sample `content.json`:
     // Add Event Lookup Icon using Keybind
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "EventLookup": "{{i18n: button.EventLookup}}/example.ModId\\Icons/0/keybind/{{EventLookupHotkey}}"
+        "shekurika.EventLookup/LookupEvents": "{{i18n: button.EventLookup}}/example.ModId\\Icons/0/keybind/{{EventLookupHotkey}}"
       },
       "When": {
         "HasMod": "shekurika.EventLookup"
@@ -52,9 +52,9 @@ Sample `content.json`:
     // Add Lookup Anything Icon using method
     {
       "Action": "EditData",
-      "Target": "furyx639.FuryCore/Toolbar",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "LookupAnything": "{{i18n: button.LookupAnything}/example.ModId\\Icons/1/method/Pathoschild.LookupAnything.TryToggleSearch"
+        "Pathoschild.LookupAnything/ToggleSearch": "{{i18n: button.LookupAnything}/example.ModId\\Icons/1/method/TryToggleSearch"
       },
       "When": {
         "HasMod": "Pathoschild.LookupAnything"
@@ -80,7 +80,7 @@ The data entry is as follows:
 3. Index goes from left to right for each 16x16 icon.
 4. Supported actions are `method` or `keybind`.
 5. Parameters depend on the action type:
-   * `method` must include the modId and method, such as `Pathoschild.LookupAnything.TryToggleSearch`
+   * `method` the method name, such as `TryToggleSearch`
    * `keybind` must include one or more buttons, such as `B`
 
 ## Integrations

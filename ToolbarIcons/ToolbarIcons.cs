@@ -24,6 +24,7 @@ public class ToolbarIcons : Mod
     private const string CJBCheatsMenuId = "CJBok.CheatsMenu";
     private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
+    private const string GenericModConfigMenuId = "spacechase0.GenericModConfigMenu";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
 
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
@@ -154,7 +155,7 @@ public class ToolbarIcons : Mod
             return;
         }
 
-        if (e.Name.IsEquivalentTo("furyx639.FuryCore/Toolbar"))
+        if (e.Name.IsEquivalentTo("furyx639.ToolbarIcons/Toolbar"))
         {
             e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
         }
@@ -248,6 +249,21 @@ public class ToolbarIcons : Mod
         this.ComplexIntegration = ComplexIntegration.Init(this.Helper, this.Api);
 
         // Integrations
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.StardewAquariumId, 1, I18n.Button_StardewAquarium(), "OpenAquariumCollectionMenu", "aquariumprogress", Array.Empty<string>());
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.CJBCheatsMenuId, 4, I18n.Button_CheatsMenu(), "OpenCheatsMenu", 0, true);
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.DynamicGameAssetsId, 6, I18n.Button_DynamicGameAssets(), "OnStoreCommand", "dga_store", Array.Empty<string>());
+        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.GenericModConfigMenuId, 13, I18n.Button_GenericModConfigMenu(), "OpenListMenu", 0);
+        this.ComplexIntegration.AddCustomAction(
+            ToolbarIcons.CJBItemSpawnerId,
+            5,
+            I18n.Button_ItemSpawner(),
+            mod =>
+            {
+                var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu", false);
+                return buildMenu is not null
+                    ? () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); }
+                    : null;
+            });
         this.ComplexIntegration.AddCustomAction(
             ToolbarIcons.AlwaysScrollMapId,
             2,
@@ -279,20 +295,6 @@ public class ToolbarIcons : Mod
                     }
                 };
             });
-        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.CJBCheatsMenuId, 4, I18n.Button_CheatsMenu(), "OpenCheatsMenu", 0, true);
-        this.ComplexIntegration.AddCustomAction(
-            ToolbarIcons.CJBItemSpawnerId,
-            5,
-            I18n.Button_ItemSpawner(),
-            mod =>
-            {
-                var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu", false);
-                return buildMenu is not null
-                    ? () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); }
-                    : null;
-            });
-        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.DynamicGameAssetsId, 6, I18n.Button_DynamicGameAssets(), "OnStoreCommand", "dga_store", Array.Empty<string>());
-        this.ComplexIntegration.AddMethodWithParams(ToolbarIcons.StardewAquariumId, 1, I18n.Button_StardewAquarium(), "OpenAquariumCollectionMenu", "aquariumprogress", Array.Empty<string>());
 
         if (gmcm.IsLoaded)
         {
@@ -313,7 +315,7 @@ public class ToolbarIcons : Mod
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !Game1.onScreenMenus.OfType<Toolbar>().Any())
+        if (!this.Loaded || !Game1.displayHUD || Game1.activeClickableMenu is not null || !Game1.onScreenMenus.OfType<Toolbar>().Any())
         {
             return;
         }
@@ -355,15 +357,15 @@ public class ToolbarIcons : Mod
         if (!this.Loaded)
         {
             this.Loaded = true;
-            foreach (var (_, data) in this.Helper.GameContent.Load<IDictionary<string, string>>("furyx639.FuryCore/Toolbar"))
+            foreach (var (key, data) in this.Helper.GameContent.Load<IDictionary<string, string>>("furyx639.ToolbarIcons/Toolbar"))
             {
                 var info = data.Split('/');
-                var modId = string.Join(".", info[4].Split('.')[..^1]);
+                var modId = key.Split('/')[0];
                 var index = int.Parse(info[2]);
                 switch (info[3])
                 {
                     case "method":
-                        this.SimpleIntegration?.AddMethod(modId, index, info[0], info[4].Split('.')[^1], info[1]);
+                        this.SimpleIntegration?.AddMethod(modId, index, info[0], info[4], info[1]);
                         break;
                     case "keybind":
                         this.SimpleIntegration?.AddKeybind(modId, index, info[0], info[4], info[1]);

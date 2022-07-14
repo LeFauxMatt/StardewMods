@@ -2,14 +2,16 @@
 
 ## 2.3.0 (Unreleased)
 
-* Added support for method integration in content packs
-* Moved some direct integration back into the content pack
+* Added support for method integration in content packs.
+* Added support for Generic Mod Config Menu.
+* Moved some direct integration back into the content pack.
     * Chests Anywhere
     * Data Layers
     * Debug Mode
     * Horse Flute Anywhere
     * Instant Buildings
     * Lookup Anything
+* Hide Toolbar Icons until they're all loaded.
 
 ## 2.2.2 (July 13, 2022)
 
