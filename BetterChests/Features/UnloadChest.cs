@@ -1,10 +1,12 @@
 namespace StardewMods.BetterChests.Features;
 
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -71,33 +73,36 @@ internal class UnloadChest : IFeature
 
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var target))
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var toStorage))
         {
             return;
         }
 
         // Disabled for held object
-        if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var storage) || storage.UnloadChest == FeatureOption.Disabled)
+        if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var fromStorage) || fromStorage.UnloadChest == FeatureOption.Disabled)
         {
             return;
         }
 
         // Stash items into target chest
-        for (var index = storage.Items.Count - 1; index >= 0; index--)
+        for (var index = fromStorage.Items.Count - 1; index >= 0; index--)
         {
-            if (storage.Items[index] is null)
+            var item = fromStorage.Items[index];
+            if (item is null)
             {
                 continue;
             }
 
-            var tmp = target.AddItem(storage.Items[index]!);
+            var stack = item.Stack;
+            var tmp = toStorage.AddItem(item);
             if (tmp is null)
             {
-                storage.Items[index] = null;
+                Log.Trace($"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+                fromStorage.Items[index] = null;
             }
         }
 
-        storage.ClearNulls();
+        fromStorage.ClearNulls();
         CarryChest.CheckForOverburdened();
         this.Helper.Input.Suppress(e.Button);
     }
