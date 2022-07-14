@@ -3,6 +3,7 @@
 ## 2.1.3 (Unreleased)
 
 * Added support for some interface recolors.
+* CarryChest will not activate if holding a tool.
 
 ## 2.1.2 (July 12, 2022)
 
