@@ -1,5 +1,9 @@
 # Toolbar Icons Change Log
 
+## 2.2.2 (Unreleased)
+
+* Added support for some interface recolors.
+
 ## 2.2.1 (July 12, 2022)
 
 * Fixed disabled toolbar icons not taking effect.
