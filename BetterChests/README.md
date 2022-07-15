@@ -447,7 +447,7 @@ You can edit these files directly for personal usage.
 Replace any or all of the icons for the Configure, Craft from Chest, and Stash to Chest buttons by editing the
 image<sup>1</sup>:
 
-`furyx639.BetterChests\\Icons`.
+`furyx639.BetterChests/Icons`.
 
 Sample `content.json`:
 
@@ -457,7 +457,7 @@ Sample `content.json`:
   "Changes": [
     {
       "Action": "EditImage",
-      "Target": "furyx639.BetterChests\\Icons",
+      "Target": "furyx639.BetterChests/Icons",
       "FromFile": "assets/MyConfigureButton.png",
       "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
       "ToArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16}
