@@ -16,7 +16,7 @@ Integration is possible via data paths using
 [SMAPI](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Content#Edit_a_game_asset) or
 [Content Patcher](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide.md).
 
-`furyx639.FuryCore\\Toolbar`
+`furyx639.ToolbarIcons/Toolbar`
 
 Sample `content.json`:
 
