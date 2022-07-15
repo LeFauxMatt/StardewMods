@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewMods.ToolbarIcons.Models;
 using StardewValley.Menus;
@@ -55,6 +56,7 @@ public class ToolbarIconsApi : IToolbarIconsApi
 
         if (!this.Components.ContainsKey(id))
         {
+            Log.Trace($"Adding icon: {id}");
             this.Components.Add(
                 id,
                 new(
@@ -76,6 +78,7 @@ public class ToolbarIconsApi : IToolbarIconsApi
         var toolbarIcon = this.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (toolbarIcon is not null)
         {
+            Log.Trace($"Removing icon: {id}");
             this.Icons.Remove(toolbarIcon);
             this.Components.Remove(id);
         }

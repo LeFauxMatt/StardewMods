@@ -26,7 +26,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.ChestsAnywhere/OpenMenu": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsCP\\Icons/3/method/OpenMenu"
+        "Pathoschild.ChestsAnywhere/OpenMenu": "{{i18n: button.ChestsAnywhere}}/furyx639.ToolbarIconsCP\\Icons/0/method/OpenMenu"
       },
       "When": {
         "HasMod": "Pathoschild.ChestsAnywhere"
@@ -93,7 +93,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.LookupAnything/Search": "{{i18n: button.LookupAnything}/furyx639.ToolbarIconsCP\\Icons/7/method/TryToggleSearch"
+        "Pathoschild.LookupAnything/Search": "{{i18n: button.LookupAnything}}/furyx639.ToolbarIconsCP\\Icons/7/method/TryToggleSearch"
       },
       "When": {
         "HasMod": "Pathoschild.LookupAnything"

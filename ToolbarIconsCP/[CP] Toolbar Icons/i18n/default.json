@@ -1,5 +1,6 @@
 {
   // Icons
+  "button.ChestsAnywhere": "Open Menu",
   "button.DataLayers": "Toggle Data Layers",
   "button.DebugMode": "Toggle Debug Mode",
   "button.EventLookup": "Lookup Heart Events",

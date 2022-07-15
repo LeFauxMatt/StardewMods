@@ -1,24 +1,29 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
-## 2.2.0 (Unreleased)
-* 
-* Added support for Simple Screenshots. 
+## 2.2.1 (Unreleased)
+
+* Fixed Lookup Anything icon not loading.
+
+## 2.2.0 (July 14, 2022)
+
+*
+* Added support for Simple Screenshots.
 * Added back some icons using method-based integration.
-  * Chests Anywhere
-  * Data Layers
-  * Debug Mode
-  * Horse Flute Anywhere
-  * Instant Buildings
-  * Lookup Anything
+    * Chests Anywhere
+    * Data Layers
+    * Debug Mode
+    * Horse Flute Anywhere
+    * Instant Buildings
+    * Lookup Anything
 
 ## 2.1.0 (July 9, 2022)
 
 * Removed icons for mods that are directly integrated into ToolbarIcons.
-  * Always Scroll Map
-  * CJB Cheats Menu
-  * CJB Item Spawner
-  * Dynamic Game Assets
-  * Stardew Aquarium
+    * Always Scroll Map
+    * CJB Cheats Menu
+    * CJB Item Spawner
+    * Dynamic Game Assets
+    * Stardew Aquarium
 
 ## 2.0.0 (July 1, 2022)
 
