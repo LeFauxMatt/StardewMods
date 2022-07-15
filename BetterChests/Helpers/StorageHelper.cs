@@ -23,11 +23,12 @@ internal class StorageHelper
     private StorageHelper(
         IMultiplayerHelper multiplayer,
         ModConfig config,
-        Dictionary<KeyValuePair<string, string>, IStorageData> storageTypes)
+        Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
         this.Multiplayer = multiplayer;
         this.Config = config;
         this.StorageTypes = storageTypes;
+        this.InitStorageTypes();
     }
 
     /// <summary>
@@ -82,9 +83,9 @@ internal class StorageHelper
 
             foreach (var storage in GetAll())
             {
-                foreach (var (kvp, type) in StorageHelper.Instance!.StorageTypes)
+                foreach (var (predicate, type) in StorageHelper.Instance!.StorageTypes)
                 {
-                    if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    if (predicate(storage.Context))
                     {
                         storage.Type = type;
                         break;
@@ -106,9 +107,9 @@ internal class StorageHelper
             var excluded = new HashSet<object>();
             foreach (var storage in StorageHelper.Instance!.FromLocation(Game1.currentLocation, excluded))
             {
-                foreach (var (kvp, type) in StorageHelper.Instance.StorageTypes)
+                foreach (var (predicate, type) in StorageHelper.Instance.StorageTypes)
                 {
-                    if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    if (predicate(storage.Context))
                     {
                         storage.Type = type;
                         break;
@@ -130,9 +131,9 @@ internal class StorageHelper
             var excluded = new HashSet<object>();
             foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
             {
-                foreach (var (kvp, type) in StorageHelper.Instance!.StorageTypes)
+                foreach (var (predicate, type) in StorageHelper.Instance!.StorageTypes)
                 {
-                    if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    if (predicate(storage.Context))
                     {
                         storage.Type = type;
                         break;
@@ -161,9 +162,9 @@ internal class StorageHelper
             {
                 foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
                 {
-                    foreach (var (kvp, type) in StorageHelper.Instance.StorageTypes)
+                    foreach (var (predicate, type) in StorageHelper.Instance.StorageTypes)
                     {
-                        if (storage.ModData.TryGetValue(kvp.Key, out var value) && value.Equals(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                        if (predicate(storage.Context))
                         {
                             storage.Type = type;
                             break;
@@ -187,7 +188,7 @@ internal class StorageHelper
 
     private IMultiplayerHelper Multiplayer { get; }
 
-    private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; }
+    private Dictionary<Func<object, bool>, IStorageData> StorageTypes { get; }
 
     /// <summary>
     ///     Gets all storages placed in a particular farmer's inventory.
@@ -235,7 +236,7 @@ internal class StorageHelper
     public static StorageHelper Init(
         IMultiplayerHelper multiplayer,
         ModConfig config,
-        Dictionary<KeyValuePair<string, string>, IStorageData> storageTypes)
+        Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
         return StorageHelper.Instance ??= new(multiplayer, config, storageTypes);
     }
@@ -414,5 +415,80 @@ internal class StorageHelper
                 storage = default;
                 return false;
         }
+    }
+
+    private void InitStorageTypes()
+    {
+        // Chest
+        if (!this.Config.VanillaStorages.TryGetValue("Chest", out var storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Chest", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130 }, storageData);
+
+        // Fridge
+        if (!this.Config.VanillaStorages.TryGetValue("Fridge", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Fridge", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is FarmHouse or IslandFarmHouse, storageData);
+
+        // Junimo Chest
+        if (!this.Config.VanillaStorages.TryGetValue("Junimo Chest", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Junimo Chest", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest }, storageData);
+
+        // Junimo Hut
+        if (!this.Config.VanillaStorages.TryGetValue("Junimo Hut", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Junimo Hut", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is JunimoHut, storageData);
+
+        // Mini-Fridge
+        if (!this.Config.VanillaStorages.TryGetValue("Mini-Fridge", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Mini-Fridge", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { fridge.Value: true }, storageData);
+
+        // Mini-Shipping Bin
+        if (!this.Config.VanillaStorages.TryGetValue("Mini-Shipping Bin", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Mini-Shipping Bin", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }, storageData);
+
+        // Shipping Bin
+        if (!this.Config.VanillaStorages.TryGetValue("Shipping Bin", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Shipping Bin", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is ShippingBin or Farm or IslandWest, storageData);
+
+        // Stone Chest
+        if (!this.Config.VanillaStorages.TryGetValue("Stone Chest", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Stone Chest", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232 }, storageData);
     }
 }

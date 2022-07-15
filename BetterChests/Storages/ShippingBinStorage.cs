@@ -128,7 +128,7 @@ internal class ShippingBinStorage : BaseStorage
             null,
             -1,
             this.Context);
-        if (Game1.activeClickableMenu is ItemGrabMenu { } itemGrabMenu)
+        if (Game1.activeClickableMenu is ItemGrabMenu itemGrabMenu)
         {
             if (Game1.options.SnappyMenus && itemGrabMenu.currentlySnappedComponent is not null)
             {

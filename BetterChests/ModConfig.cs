@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests;
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using StardewMods.BetterChests.Features;
@@ -92,6 +93,11 @@ internal class ModConfig
     ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
     /// </summary>
     public bool SlotLockHold { get; set; } = true;
+
+    /// <summary>
+    ///     Gets or sets storage data for vanilla storage types.
+    /// </summary>
+    public Dictionary<string, StorageData> VanillaStorages { get; set; } = new();
 
     /// <inheritdoc />
     public override string ToString()

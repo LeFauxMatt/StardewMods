@@ -29,10 +29,11 @@ internal class Configurator : IFeature
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly PerScreen<IStorageObject?> _currentStorage = new();
 
-    private Configurator(IModHelper helper, ModConfig config)
+    private Configurator(IModHelper helper, ModConfig config, IManifest manifest)
     {
         this.Helper = helper;
         this.Config = config;
+        this.ModManifest = manifest;
         HarmonyHelper.AddPatches(
             Configurator.Id,
             new SavedPatch[]
@@ -80,15 +81,18 @@ internal class Configurator : IFeature
 
     private bool IsActive { get; set; }
 
+    private IManifest ModManifest { get; }
+
     /// <summary>
     ///     Initializes <see cref="Configurator" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
+    /// <param name="manifest">A manifest to describe the mod.</param>
     /// <returns>Returns an instance of the <see cref="Configurator" /> class.</returns>
-    public static Configurator Init(IModHelper helper, ModConfig config)
+    public static Configurator Init(IModHelper helper, ModConfig config, IManifest manifest)
     {
-        return Configurator.Instance ??= new(helper, config);
+        return Configurator.Instance ??= new(helper, config, manifest);
     }
 
     /// <inheritdoc />
@@ -176,7 +180,8 @@ internal class Configurator : IFeature
         var (x, y) = Game1.getMousePosition(true);
         if (this.ConfigureButton.containsPoint(x, y) && StorageHelper.TryGetOne(this.CurrentMenu.context, out var storage))
         {
-            ConfigHelper.SetupSpecificConfig(storage);
+            ConfigHelper.SetupSpecificConfig(this.ModManifest, storage, true);
+            IntegrationHelper.GMCM.API!.OpenModMenu(this.ModManifest);
             this.IsActive = true;
             this.Helper.Input.Suppress(e.Button);
         }
@@ -193,7 +198,8 @@ internal class Configurator : IFeature
         }
 
         this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.Configure);
-        ConfigHelper.SetupSpecificConfig(storage);
+        ConfigHelper.SetupSpecificConfig(this.ModManifest, storage, true);
+        IntegrationHelper.GMCM.API!.OpenModMenu(this.ModManifest);
         this.IsActive = true;
     }
 

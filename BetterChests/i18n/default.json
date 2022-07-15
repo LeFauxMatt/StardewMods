@@ -3,6 +3,16 @@
   "alert.carry-chest-limit.hit-limit": "Cannot carry any more chests",
   "alert.craft-from-chest.no-eligible": "No eligible chests found to craft items from",
   "alert.stash-to-chest.no-eligible": "No eligible chests found to stash items into",
+  // Storage Types
+  "storage.Default.name": "Default Storage",
+  "storage.Chest.name": "Chest",
+  "storage.Fridge.name": "Fridge",
+  "storage.Junimo Chest.name": "Junimo Chest",
+  "storage.Junimo Hut.name": "Junimo Hut",
+  "storage.Mini-Fridge.name": "Mini-Fridge",
+  "storage.Mini-Shipping Bin.name": "Mini-Shipping Bin",
+  "storage.Shipping Bin.name": "Shipping Bin",
+  "storage.Stone Chest.name": "Stone Chest",
   // Effects
   "effect.carry-chest-slow.description": "Overburdened -{0} Speed",
   // Config Pages
@@ -14,8 +24,6 @@
   "section.controls.description": "Controller/keyboard configurations.",
   "section.chests.name": "Chests",
   "section.chests.description": "Configure each chest type individually.",
-  // Commands
-  "command.info.documentation": "Prints information to the logs about all storages managed by better chests.",
   // Feature Config
   "config.auto-organize.name": "Auto Organize",
   "config.auto-organize.tooltip": "Automatically stash items into higher priority chests each night.",
@@ -147,8 +155,6 @@
   "button.find-chest.name": "Search for Chest",
   "button.stash-to-chest.name": "Stash to Chest",
   "button.craft-from-chest.name": "Craft from Chest",
-  "button.minus-priority.name": "Decrease Priority",
-  "button.plus-priority.name": "Increase Priority",
   // UI - Tabs
   "tabs.Clothing.name": "Clothing",
   "tabs.Cooking.name": "Cooking",
@@ -292,9 +298,6 @@
   "tag.tree_seed_item": "tree_seed_item",
   "tag.wine_item": "wine_item",
   "tag.wood_item": "wood_item",
-  // Objects
-  "tool.config-tool.name": "Config Tool",
-  "tool.config-tool.description": "This tool can be used to configure game objects.",
   // Warnings
   "warn.incompatibility.disabled": "{0} is automatically disabled with the following mod(s): {1}"
 }

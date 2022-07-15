@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests;
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -16,24 +15,11 @@ using StardewMods.Common.Integrations.BetterChests;
 /// <inheritdoc />
 public class BetterChests : Mod
 {
-    private const string DarkInterfaceId = "Acerbicon.ADarkInterface";
-    private const string OvergrownFloweryId = "Maraluna.OvergrownFloweryInterface";
-    private const string StarrySkyId = "BeneathThePlass.StarrySkyInterfaceCP";
-    private const string VintageInterfaceId = "ManaKirel.VintageInterface2";
-
-    private static readonly List<string> CompatibilityTextures = new()
-    {
-        BetterChests.DarkInterfaceId,
-        BetterChests.StarrySkyId,
-        BetterChests.VintageInterfaceId,
-        BetterChests.OvergrownFloweryId,
-    };
-
     private ModConfig? Config { get; set; }
 
     private Dictionary<string, (IFeature Feature, Func<bool> Condition)> Features { get; } = new();
 
-    private Dictionary<KeyValuePair<string, string>, IStorageData> StorageTypes { get; } = new();
+    private Dictionary<Func<object, bool>, IStorageData> StorageTypes { get; } = new();
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -64,7 +50,7 @@ public class BetterChests : Mod
         this.Features.Add(nameof(ChestFinder), new(ChestFinder.Init(this.Helper, this.Config), () => this.Config.ChestFinder));
         this.Features.Add(nameof(ChestMenuTabs), new(ChestMenuTabs.Init(this.Helper, this.Config), () => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled));
         this.Features.Add(nameof(CollectItems), new(CollectItems.Init(this.Helper), () => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled));
-        this.Features.Add(nameof(Configurator), new(Configurator.Init(this.Helper, this.Config), () => this.Config.Configurator));
+        this.Features.Add(nameof(Configurator), new(Configurator.Init(this.Helper, this.Config, this.ModManifest), () => this.Config.Configurator));
         this.Features.Add(nameof(CraftFromChest), new(CraftFromChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled));
         this.Features.Add(nameof(FilterItems), new(FilterItems.Init(this.Helper), () => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled));
         this.Features.Add(nameof(OpenHeldChest), new(OpenHeldChest.Init(this.Helper), () => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled));
@@ -95,16 +81,6 @@ public class BetterChests : Mod
         {
             e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
         }
-    }
-
-    private string GetThemedAsset(string filename)
-    {
-        foreach (var id in BetterChests.CompatibilityTextures.Where(id => this.Helper.ModRegistry.IsLoaded(id) && File.Exists(Path.Join("assets", id, filename))))
-        {
-            return $"assets/{id}/{filename}";
-        }
-
-        return $"assets/{filename}";
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
