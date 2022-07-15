@@ -39,7 +39,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             if (components.TryGetValue(icon.Id, out var component))
             {
                 this.Components.Add(new(
-                    new(this.xPositionOnScreen + Game1.tileSize * 2, (int)(this.yPositionOnScreen + index * this.TextHeight), 32, 32),
+                    new(this.xPositionOnScreen + Game1.tileSize * 2, (int)(this.yPositionOnScreen + this.Components.Count * this.TextHeight), 32, 32),
                     component.texture,
                     component.sourceRect,
                     component.scale)
