@@ -66,7 +66,6 @@ Sample `content.json`:
 
 The data entry is as follows:
 
-
 | Entry                  | Description                                                     |
 |:-----------------------|:----------------------------------------------------------------|
 | Hover Text             | The text to display when hovering over an icon.<sup>1</sup>     |
@@ -80,8 +79,8 @@ The data entry is as follows:
 3. Index goes from left to right for each 16x16 icon.
 4. Supported actions are `method` or `keybind`.
 5. Parameters depend on the action type:
-   * `method` the method name, such as `TryToggleSearch`
-   * `keybind` must include one or more buttons, such as `B`
+    * `method` the method name, such as `TryToggleSearch`
+    * `keybind` must include one or more buttons, such as `B`
 
 ## Integrations
 
