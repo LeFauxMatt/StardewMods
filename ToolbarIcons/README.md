@@ -60,6 +60,15 @@ Sample `content.json`:
         "HasMod": "Pathoschild.LookupAnything"
       }
     },
+
+    // Replace texture for Stardew Aquarium icon
+    {
+      "Action": "EditImage",
+      "Target": "furyx639.ToolbarIcons/Icons",
+      "FromFile": "assets/aquarium-icon.png",
+      "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
+      "ToArea" {"X": 16, "Y": 0, "Width": 16, "Height": 16}
+    }
   ]
 }
 ```
