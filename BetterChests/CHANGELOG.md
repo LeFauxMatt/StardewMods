@@ -1,5 +1,10 @@
 ﻿# Better Chests Change Log
 
+## 2.2.1 (Unreleased)
+
+* Added localization support for storage names/tooltips.
+* Require GMCM for Configurator feature.
+
 ## 2.2.0 (July 15, 2022)
 
 * Added config options for each vanilla chest type.
