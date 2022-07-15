@@ -25,10 +25,11 @@ public class BetterChests : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
+        LocationHelper.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(helper.Translation);
         this.Config = ConfigHelper.Init(this.Helper, this.ModManifest, this.Features);
         IntegrationHelper.Init(this.Helper, this.Config);
-        StorageHelper.Init(this.Helper.Multiplayer, this.Config, this.StorageTypes);
+        StorageHelper.Init(this.Config, this.StorageTypes);
         ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
 
         if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))

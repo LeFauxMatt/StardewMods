@@ -2,7 +2,7 @@
   "EntryDll": "ToolbarIcons.dll",
   "Name": "Toolbar Icons",
   "Author": "furyx639",
-  "Version": "2.3.0",
+  "Version": "2.3.1",
   "Description": "Adds icons above or below the toolbar.",
   "UniqueID": "furyx639.ToolbarIcons",
   "MinimumApiVersion": "3.15.0",

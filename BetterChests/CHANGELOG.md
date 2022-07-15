@@ -1,5 +1,9 @@
 ﻿# Better Chests Change Log
 
+## 2.2.0 (July 15, 2022)
+
+* Added config options for each vanilla chest type.
+
 ## 2.1.3 (July 13, 2022)
 
 * Added support for matching modded interface colors.

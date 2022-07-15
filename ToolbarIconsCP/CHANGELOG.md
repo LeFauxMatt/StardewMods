@@ -1,12 +1,11 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
-## 2.2.1 (Unreleased)
+## 2.2.1 (July 15, 2022)
 
 * Fixed Lookup Anything icon not loading.
 
 ## 2.2.0 (July 14, 2022)
 
-*
 * Added support for Simple Screenshots.
 * Added back some icons using method-based integration.
     * Chests Anywhere

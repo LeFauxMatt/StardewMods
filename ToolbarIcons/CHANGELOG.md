@@ -1,6 +1,12 @@
 # Toolbar Icons Change Log
 
-## 2.3.0 (Unreleased)
+## 2.3.1 (July 15, 2022)
+
+* Added additional logging.
+* Fixed component misalignment.
+* Register config after all icons are loaded.
+
+## 2.3.0 (July 14, 2022)
 
 * Added support for method integration in content packs.
 * Added support for Generic Mod Config Menu.
