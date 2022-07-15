@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using StardewModdingAPI;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Storages;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
 using StardewValley.Buildings;
@@ -20,15 +20,86 @@ using SObject = StardewValley.Object;
 /// </summary>
 internal class StorageHelper
 {
+    private Dictionary<object, IStorageObject>? _referenceContext;
+
     private StorageHelper(
-        IMultiplayerHelper multiplayer,
         ModConfig config,
         Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
-        this.Multiplayer = multiplayer;
         this.Config = config;
         this.StorageTypes = storageTypes;
-        this.InitStorageTypes();
+
+        // Chest
+        if (!this.Config.VanillaStorages.TryGetValue("Chest", out var storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Chest", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130 }, storageData);
+
+        // Fridge
+        if (!this.Config.VanillaStorages.TryGetValue("Fridge", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Fridge", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is FarmHouse or IslandFarmHouse, storageData);
+
+        // Junimo Chest
+        if (!this.Config.VanillaStorages.TryGetValue("Junimo Chest", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Junimo Chest", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest }, storageData);
+
+        // Junimo Hut
+        if (!this.Config.VanillaStorages.TryGetValue("Junimo Hut", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Junimo Hut", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is JunimoHut, storageData);
+
+        // Mini-Fridge
+        if (!this.Config.VanillaStorages.TryGetValue("Mini-Fridge", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Mini-Fridge", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { fridge.Value: true }, storageData);
+
+        // Mini-Shipping Bin
+        if (!this.Config.VanillaStorages.TryGetValue("Mini-Shipping Bin", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Mini-Shipping Bin", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }, storageData);
+
+        // Shipping Bin
+        if (!this.Config.VanillaStorages.TryGetValue("Shipping Bin", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Shipping Bin", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is ShippingBin or Farm or IslandWest, storageData);
+
+        // Stone Chest
+        if (!this.Config.VanillaStorages.TryGetValue("Stone Chest", out storageData))
+        {
+            storageData = new();
+            this.Config.VanillaStorages.Add("Stone Chest", storageData);
+        }
+
+        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232 }, storageData);
     }
 
     /// <summary>
@@ -58,7 +129,7 @@ internal class StorageHelper
                 }
 
                 // Iterate Locations
-                foreach (var location in StorageHelper.Instance!.Locations)
+                foreach (var location in LocationHelper.AllLocations)
                 {
                     // Mod Integrations
                     foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
@@ -67,7 +138,7 @@ internal class StorageHelper
                         yield return storage;
                     }
 
-                    foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
+                    foreach (var storage in StorageHelper.Instance!.FromLocation(location, excluded))
                     {
                         storages.Add(storage);
                         yield return storage;
@@ -158,9 +229,9 @@ internal class StorageHelper
         get
         {
             var excluded = new HashSet<object>();
-            foreach (var location in StorageHelper.Instance!.Locations)
+            foreach (var location in LocationHelper.AllLocations)
             {
-                foreach (var storage in StorageHelper.Instance.FromLocation(location, excluded))
+                foreach (var storage in StorageHelper.Instance!.FromLocation(location, excluded))
                 {
                     foreach (var (predicate, type) in StorageHelper.Instance.StorageTypes)
                     {
@@ -181,12 +252,45 @@ internal class StorageHelper
 
     private ModConfig Config { get; }
 
-    private IEnumerable<GameLocation> Locations
+    private Dictionary<object, IStorageObject> ReferenceContext
     {
-        get => Context.IsMainPlayer ? Game1.locations : this.Multiplayer.GetActiveLocations();
-    }
+        get
+        {
+            if (this._referenceContext is not null)
+            {
+                return this._referenceContext;
+            }
 
-    private IMultiplayerHelper Multiplayer { get; }
+            this._referenceContext = new();
+            foreach (var location in LocationHelper.AllLocations)
+            {
+                switch (location)
+                {
+                    // Shipping Bin for Chests Anywhere
+                    case Farm farm when !this.ReferenceContext.ContainsKey(farm):
+                        var shippingBin = farm.buildings.OfType<ShippingBin>().FirstOrDefault();
+                        if (shippingBin is not null)
+                        {
+                            this.ReferenceContext.Add(farm, new ShippingBinStorage(farm, this.Config.DefaultChest, new(shippingBin.tileX.Value + shippingBin.tilesWide.Value / 2, shippingBin.tileY.Value + shippingBin.tilesHigh.Value / 2)));
+                        }
+
+                        break;
+
+                    // Fridge
+                    case FarmHouse { fridge.Value: { } fridge, fridgePosition: var fridgePosition } farmHouse when !this.ReferenceContext.ContainsKey(fridge) && !fridgePosition.Equals(Point.Zero):
+                        this.ReferenceContext.Add(fridge, new FridgeStorage(farmHouse, this.Config.DefaultChest, fridgePosition.ToVector2()));
+                        break;
+
+                    // Island Fridge
+                    case IslandFarmHouse { fridge.Value: { } islandFridge, fridgePosition: var islandFridgePosition } islandFarmHouse when !this.ReferenceContext.ContainsKey(islandFridge) && !islandFridgePosition.Equals(Point.Zero):
+                        this.ReferenceContext.Add(islandFridge, new FridgeStorage(islandFarmHouse, this.Config.DefaultChest, islandFridgePosition.ToVector2()));
+                        break;
+                }
+            }
+
+            return this._referenceContext;
+        }
+    }
 
     private Dictionary<Func<object, bool>, IStorageData> StorageTypes { get; }
 
@@ -229,16 +333,14 @@ internal class StorageHelper
     /// <summary>
     ///     Initialized <see cref="StorageHelper" />.
     /// </summary>
-    /// <param name="multiplayer">API for multiplayer utilities.</param>
     /// <param name="config">Mod config data.</param>
     /// <param name="storageTypes">A dictionary of all registered storage types.</param>
     /// <returns>Returns an instance of the <see cref="StorageHelper" /> class.</returns>
     public static StorageHelper Init(
-        IMultiplayerHelper multiplayer,
         ModConfig config,
         Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
-        return StorageHelper.Instance ??= new(multiplayer, config, storageTypes);
+        return StorageHelper.Instance ??= new(config, storageTypes);
     }
 
     /// <summary>
@@ -257,7 +359,21 @@ internal class StorageHelper
             return true;
         }
 
-        return IntegrationHelper.TryGetOne(context, out storage) || StorageHelper.TryGetOne(context, default, default, out storage);
+        if (!IntegrationHelper.TryGetOne(context, out storage) && !StorageHelper.TryGetOne(context, default, default, out storage))
+        {
+            return false;
+        }
+
+        foreach (var (predicate, storageType) in StorageHelper.Instance!.StorageTypes)
+        {
+            if (predicate(storage.Context))
+            {
+                storage.Type = storageType;
+                return true;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -306,16 +422,6 @@ internal class StorageHelper
             // Buildings
             foreach (var building in buildableGameLocation.buildings)
             {
-                // Indoors
-                if (building.indoors.Value is not null)
-                {
-                    foreach (var subStorage in this.FromLocation(building.indoors.Value, excluded))
-                    {
-                        excluded.Add(subStorage.Context);
-                        yield return subStorage;
-                    }
-                }
-
                 // Special Buildings
                 switch (building)
                 {
@@ -378,6 +484,11 @@ internal class StorageHelper
         Vector2 position,
         [NotNullWhen(true)] out IStorageObject? storage)
     {
+        if (context is not null && StorageHelper.Instance!.ReferenceContext.TryGetValue(context, out storage))
+        {
+            return true;
+        }
+
         switch (context)
         {
             case IStorageObject storageObject:
@@ -407,88 +518,9 @@ internal class StorageHelper
             case IslandWest islandWest:
                 storage = new ShippingBinStorage(islandWest, StorageHelper.Instance!.Config.DefaultChest, position);
                 return true;
-            case Farm farm:
-                var building = farm.buildings.OfType<ShippingBin>().First();
-                storage = new ShippingBinStorage(building, farm, StorageHelper.Instance!.Config.DefaultChest, new(building.tileX.Value + building.tilesWide.Value / 2, building.tileY.Value + building.tilesHigh.Value / 2));
-                return true;
             default:
                 storage = default;
                 return false;
         }
-    }
-
-    private void InitStorageTypes()
-    {
-        // Chest
-        if (!this.Config.VanillaStorages.TryGetValue("Chest", out var storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Chest", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130 }, storageData);
-
-        // Fridge
-        if (!this.Config.VanillaStorages.TryGetValue("Fridge", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Fridge", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is FarmHouse or IslandFarmHouse, storageData);
-
-        // Junimo Chest
-        if (!this.Config.VanillaStorages.TryGetValue("Junimo Chest", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Junimo Chest", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest }, storageData);
-
-        // Junimo Hut
-        if (!this.Config.VanillaStorages.TryGetValue("Junimo Hut", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Junimo Hut", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is JunimoHut, storageData);
-
-        // Mini-Fridge
-        if (!this.Config.VanillaStorages.TryGetValue("Mini-Fridge", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Mini-Fridge", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is Chest { fridge.Value: true }, storageData);
-
-        // Mini-Shipping Bin
-        if (!this.Config.VanillaStorages.TryGetValue("Mini-Shipping Bin", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Mini-Shipping Bin", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }, storageData);
-
-        // Shipping Bin
-        if (!this.Config.VanillaStorages.TryGetValue("Shipping Bin", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Shipping Bin", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is ShippingBin or Farm or IslandWest, storageData);
-
-        // Stone Chest
-        if (!this.Config.VanillaStorages.TryGetValue("Stone Chest", out storageData))
-        {
-            storageData = new();
-            this.Config.VanillaStorages.Add("Stone Chest", storageData);
-        }
-
-        this.StorageTypes.Add(context => context is Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232 }, storageData);
     }
 }

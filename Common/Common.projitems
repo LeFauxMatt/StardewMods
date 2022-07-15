@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\GroupBy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SortBy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\LocationHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\IPatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
