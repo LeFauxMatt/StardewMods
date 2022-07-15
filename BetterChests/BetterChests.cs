@@ -51,7 +51,7 @@ public class BetterChests : Mod
         this.Features.Add(nameof(ChestFinder), new(ChestFinder.Init(this.Helper, this.Config), () => this.Config.ChestFinder));
         this.Features.Add(nameof(ChestMenuTabs), new(ChestMenuTabs.Init(this.Helper, this.Config), () => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled));
         this.Features.Add(nameof(CollectItems), new(CollectItems.Init(this.Helper), () => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled));
-        this.Features.Add(nameof(Configurator), new(Configurator.Init(this.Helper, this.Config, this.ModManifest), () => this.Config.Configurator));
+        this.Features.Add(nameof(Configurator), new(Configurator.Init(this.Helper, this.Config, this.ModManifest), () => this.Config.Configurator && IntegrationHelper.GMCM.IsLoaded));
         this.Features.Add(nameof(CraftFromChest), new(CraftFromChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled));
         this.Features.Add(nameof(FilterItems), new(FilterItems.Init(this.Helper), () => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled));
         this.Features.Add(nameof(OpenHeldChest), new(OpenHeldChest.Init(this.Helper), () => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled));
