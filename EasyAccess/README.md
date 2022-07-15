@@ -47,7 +47,7 @@ Hit a configurable key to instantly dispense input items into nearby producers.<
 
 Replace any or all of the icons for the Collect Output or Dispense Input buttons by editing the image<sup>1</sup>:
 
-`furyx639.EasyAccess\\Icons`.
+`furyx639.EasyAccess/Icons`.
 
 Sample `content.json`:
 
@@ -57,7 +57,7 @@ Sample `content.json`:
   "Changes": [
     {
       "Action": "EditImage",
-      "Target": "furyx639.EasyAccess\\Icons",
+      "Target": "furyx639.EasyAccess/Icons",
       "FromFile": "assets/MyDispenseItemsButton.png",
       "FromArea": {"X": 0, "Y": 0, "Width": 16, "Height": 16},
       "ToArea": {"X": 16, "Y": 0, "Width": 16, "Height": 16}
