@@ -1,8 +1,10 @@
 namespace StardewMods.BetterChests.Helpers;
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using StardewMods.Common.Enums;
+using StardewValley;
 
 /// <summary>
 ///     Helper methods to convert between different text formats.
@@ -24,22 +26,6 @@ internal static class FormatHelper
             nameof(ComponentArea.Left) => I18n.Area_Left_Name(),
             nameof(ComponentArea.Custom) => I18n.Area_Custom_Name(),
             _ => value,
-        };
-    }
-
-    /// <summary>
-    ///     Formats carry chest limit using localized text when available.
-    /// </summary>
-    /// <param name="value">The value for carry chest limit to format.</param>
-    /// <returns>Localized text for the carry chest limit value.</returns>
-    public static string FormatCarryChestLimit(int value)
-    {
-        return value switch
-        {
-            (int)FeatureOption.Default => I18n.Option_Default_Name(),
-            (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
-            (int)FeatureOption.Enabled => I18n.Config_CarryChestLimit_ValueOne(),
-            _ => string.Format(I18n.Config_CarryChestLimit_ValueMany(), (1 + value - (int)FeatureOption.Enabled).ToString()),
         };
     }
 
@@ -176,93 +162,51 @@ internal static class FormatHelper
     }
 
     /// <summary>
-    ///     Gets a string representation of an area value.
+    ///     Formats a storage name using localized text when available.
     /// </summary>
-    /// <param name="area">The area value to get the string representation for.</param>
-    /// <returns>The string representation of the area value.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for area.</exception>
-    public static string GetAreaString(ComponentArea area)
+    /// <param name="value">The storage to format.</param>
+    /// <returns>Localized text for the storage name.</returns>
+    public static string FormatStorageName(string value)
     {
-        return area switch
+        return value switch
         {
-            ComponentArea.Top => "Top",
-            ComponentArea.Right => "Right",
-            ComponentArea.Bottom => "Bottom",
-            ComponentArea.Left => "Left",
-            ComponentArea.Custom => "Custom",
-            _ => throw new ArgumentOutOfRangeException(nameof(area), area, null),
+            "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out var info) => info.Split('/')[8],
+            "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out var info) => info.Split('/')[8],
+            "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out var info) => info.Split('/')[8],
+            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')[8],
+            "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out var info) => info.Split('/')[8],
+            "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out var info) => info.Split('/')[8],
+            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')[8],
+            "Fridge" => I18n.Storage_Fridge_Name(),
+            _ => value,
         };
     }
 
     /// <summary>
-    ///     Gets a string representation of a group by value.
+    ///     Formats a storage tooltip using localized text when available.
     /// </summary>
-    /// <param name="groupBy">The group by value to get the string representation for.</param>
-    /// <returns>The string representation of the group by value.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for group by.</exception>
-    public static string GetGroupByString(GroupBy groupBy)
+    /// <param name="value">The storage to format.</param>
+    /// <returns>Localized text for the storage tooltip.</returns>
+    public static string FormatStorageTooltip(string value)
     {
-        return groupBy switch
+        return value switch
         {
-            GroupBy.Default => "Default",
-            GroupBy.Category => "Category",
-            GroupBy.Color => "Color",
-            GroupBy.Name => "Name",
-            _ => throw new ArgumentOutOfRangeException(nameof(groupBy), groupBy, null),
+            "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out var info) => info.Split('/')[4],
+            "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out var info) => info.Split('/')[4],
+            "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out var info) => info.Split('/')[4],
+            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')[4],
+            "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out var info) => info.Split('/')[4],
+            "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out var info) => info.Split('/')[9],
+            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')[9],
+            "Fridge" => I18n.Storage_Fridge_Tooltip(),
+            _ => value,
         };
     }
 
-    /// <summary>
-    ///     Gets a string representation of an option value.
-    /// </summary>
-    /// <param name="option">The option value to get the string representation for.</param>
-    /// <returns>The string representation of the option value.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for option.</exception>
-    public static string GetOptionString(FeatureOption option)
-    {
-        return option switch
-        {
-            FeatureOption.Default => "Default",
-            FeatureOption.Disabled => "Disabled",
-            FeatureOption.Enabled => "Enabled",
-            _ => throw new ArgumentOutOfRangeException(nameof(option), option, null),
-        };
-    }
+    private static Dictionary<string, string>? _blueprintsData;
 
-    /// <summary>
-    ///     Gets a string representation of a range value.
-    /// </summary>
-    /// <param name="range">The range value to get the string representation for.</param>
-    /// <returns>The string representation of the range value.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for range.</exception>
-    public static string GetRangeString(FeatureOptionRange range)
+    private static Dictionary<string, string> BlueprintsData
     {
-        return range switch
-        {
-            FeatureOptionRange.Default => "Default",
-            FeatureOptionRange.Disabled => "Disabled",
-            FeatureOptionRange.Inventory => "Inventory",
-            FeatureOptionRange.Location => "Location",
-            FeatureOptionRange.World => "World",
-            _ => throw new ArgumentOutOfRangeException(nameof(range), range, null),
-        };
-    }
-
-    /// <summary>
-    ///     Gets a string representation of a sort by value.
-    /// </summary>
-    /// <param name="sortBy">The sort by value to get the string representation for.</param>
-    /// <returns>The string representation of the sort by value.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">An invalid value provided for sort by.</exception>
-    public static string GetSortByString(SortBy sortBy)
-    {
-        return sortBy switch
-        {
-            SortBy.Default => "Default",
-            SortBy.Type => "Type",
-            SortBy.Quality => "Quality",
-            SortBy.Quantity => "Quantity",
-            _ => throw new ArgumentOutOfRangeException(nameof(sortBy), sortBy, null),
-        };
+        get => FormatHelper._blueprintsData ??= Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints");
     }
 }

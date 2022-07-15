@@ -279,14 +279,15 @@ internal class ConfigHelper
             IntegrationHelper.GMCM.API.AddSectionTitle(ConfigHelper.Instance.ModManifest, I18n.Section_Chests_Name);
             IntegrationHelper.GMCM.API.AddParagraph(ConfigHelper.Instance.ModManifest, I18n.Section_Chests_Description);
 
-            IntegrationHelper.GMCM.API.AddPageLink(ConfigHelper.Instance.ModManifest, "Default", I18n.Storage_Default_Name);
+            IntegrationHelper.GMCM.API.AddPageLink(ConfigHelper.Instance.ModManifest, "Default", I18n.Storage_Default_Name, I18n.Storage_Default_Tooltip);
 
             foreach (var (key, _) in ConfigHelper.Instance.Config.VanillaStorages)
             {
                 IntegrationHelper.GMCM.API.AddPageLink(
                     ConfigHelper.Instance.ModManifest,
                     key,
-                    () => ConfigHelper.Instance.Helper.Translation.Get($"storage.{key}.name").Default(key));
+                    () => FormatHelper.FormatStorageName(key),
+                    () => FormatHelper.FormatStorageTooltip(key));
             }
 
             // Default Chest
@@ -299,7 +300,7 @@ internal class ConfigHelper
                 IntegrationHelper.GMCM.API.AddPage(
                     ConfigHelper.Instance.ModManifest,
                     key,
-                    () => ConfigHelper.Instance.Helper.Translation.Get($"storage.{key}.name").Default(key));
+                    () => FormatHelper.FormatStorageName(key));
                 ConfigHelper.Instance.SetupConfig(ConfigHelper.Instance.ModManifest, value);
             }
         }
