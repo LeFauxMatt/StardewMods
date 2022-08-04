@@ -11,9 +11,6 @@ using StardewValley.Locations;
 /// </summary>
 internal static class LocationHelper
 {
-    /// <inheritdoc cref="IMultiplayerHelper" />
-    public static IMultiplayerHelper? Multiplayer { get; set; }
-
     /// <summary>
     ///     Gets all accessible game locations and sub-locations
     /// </summary>
@@ -21,7 +18,8 @@ internal static class LocationHelper
     {
         get
         {
-            IEnumerable<GameLocation> IterateLocations(IEnumerable<GameLocation>? locations = null, HashSet<GameLocation>? excluded = null)
+            IEnumerable<GameLocation> IterateLocations(
+                IEnumerable<GameLocation>? locations = null, HashSet<GameLocation>? excluded = null)
             {
                 locations ??= Context.IsMainPlayer ? Game1.locations : LocationHelper.Multiplayer!.GetActiveLocations();
                 excluded ??= new();
@@ -38,8 +36,7 @@ internal static class LocationHelper
 
                     if (location is BuildableGameLocation buildableGameLocation)
                     {
-                        var indoors = buildableGameLocation.buildings
-                                                           .Select(building => building.indoors.Value)
+                        var indoors = buildableGameLocation.buildings.Select(building => building.indoors.Value)
                                                            .Where(indoors => indoors is not null);
                         foreach (var indoor in IterateLocations(indoors, excluded))
                         {
@@ -55,4 +52,7 @@ internal static class LocationHelper
             }
         }
     }
+
+    /// <inheritdoc cref="IMultiplayerHelper" />
+    public static IMultiplayerHelper? Multiplayer { get; set; }
 }

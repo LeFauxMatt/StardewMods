@@ -25,10 +25,7 @@ internal class FridgeStorage : BaseStorage
     }
 
     /// <inheritdoc />
-    public override IList<Item?> Items
-    {
-        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-    }
+    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <summary>
     ///     Gets the location of the fridge.
@@ -36,24 +33,16 @@ internal class FridgeStorage : BaseStorage
     public GameLocation Location { get; }
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.Chest.modData;
-    }
+    public override ModDataDictionary ModData => this.Chest.modData;
 
     /// <inheritdoc />
-    public override NetMutex? Mutex
-    {
-        get => this.Chest.GetMutex();
-    }
+    public override NetMutex? Mutex => this.Chest.GetMutex();
 
-    private Chest Chest
-    {
-        get => this.Location switch
+    private Chest Chest =>
+        this.Location switch
         {
             FarmHouse farmHouse => farmHouse.fridge.Value,
             IslandFarmHouse islandFarmHouse => islandFarmHouse.fridge.Value,
             _ => throw new ArgumentOutOfRangeException(),
         };
-    }
 }

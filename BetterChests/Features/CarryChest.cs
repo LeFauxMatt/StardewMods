@@ -38,7 +38,14 @@ internal class CarryChest : IFeature
             new SavedPatch[]
             {
                 new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.drawInMenu), new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) }),
+                    AccessTools.Method(
+                        typeof(Chest),
+                        nameof(Chest.drawInMenu),
+                        new[]
+                        {
+                            typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float),
+                            typeof(StackDrawType), typeof(Color), typeof(bool),
+                        }),
                     typeof(CarryChest),
                     nameof(CarryChest.Chest_drawInMenu_postfix),
                     PatchType.Postfix),
@@ -107,7 +114,8 @@ internal class CarryChest : IFeature
 
         if (Game1.player.Items.OfType<Chest>().Any(chest => !excludeCurrent || Game1.player.CurrentItem != chest))
         {
-            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(CarryChest.Instance.Config.CarryChestSlowAmount));
+            Game1.buffsDisplay.addOtherBuff(
+                CarryChest.GetOverburdened(CarryChest.Instance.Config.CarryChestSlowAmount));
             return;
         }
 
@@ -128,39 +136,53 @@ internal class CarryChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(CarryChest.Id);
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this.Helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-            this.Helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(CarryChest.Id);
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+        this.Helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(CarryChest.Id);
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-            this.Helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
-            this.Helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(CarryChest.Id);
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
+        this.Helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void Chest_drawInMenu_postfix(Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, Color color)
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Chest_drawInMenu_postfix(
+        Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, Color color)
     {
         // Draw Items count
         var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
         if (items > 0)
         {
-            Utility.drawTinyDigits(items, spriteBatch, location + new Vector2(Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize, 2f * scaleSize), 3f * scaleSize, 1f, color);
+            Utility.drawTinyDigits(
+                items,
+                spriteBatch,
+                location
+              + new Vector2(
+                    Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize,
+                    2f * scaleSize),
+                3f * scaleSize,
+                1f,
+                color);
         }
     }
 
@@ -173,9 +195,10 @@ internal class CarryChest : IFeature
         };
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void InventoryMenu_rightClick_postfix(InventoryMenu __instance, ref Item? __result, ref (Item?, int)? __state)
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void InventoryMenu_rightClick_postfix(
+        InventoryMenu __instance, ref Item? __result, ref (Item?, int)? __state)
     {
         if (__state is null)
         {
@@ -201,9 +224,10 @@ internal class CarryChest : IFeature
         __result = item;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void InventoryMenu_rightClick_prefix(InventoryMenu __instance, int x, int y, ref (Item?, int)? __state)
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void InventoryMenu_rightClick_prefix(
+        InventoryMenu __instance, int x, int y, ref (Item?, int)? __state)
     {
         var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (slot is null)
@@ -219,8 +243,8 @@ internal class CarryChest : IFeature
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canBeDropped_postfix(Item __instance, ref bool __result)
     {
         if (!__result || __instance is not Chest chest)
@@ -229,14 +253,14 @@ internal class CarryChest : IFeature
         }
 
         if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+         && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canBeTrashed_postfix(Item __instance, ref bool __result)
     {
         if (!__result || __instance is not Chest chest)
@@ -245,14 +269,14 @@ internal class CarryChest : IFeature
         }
 
         if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-            && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+         && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (__instance is Chest || other is Chest)
@@ -261,9 +285,9 @@ internal class CarryChest : IFeature
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
     {
         if (__instance is not Chest chest)
@@ -276,22 +300,28 @@ internal class CarryChest : IFeature
         return false;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
-    private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y, ref bool __result)
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_placementAction_postfix(
+        SObject __instance, GameLocation location, int x, int y, ref bool __result)
     {
-        if (!__result || __instance is not Chest held || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj) || obj is not Chest placed)
+        if (!__result
+         || __instance is not Chest held
+         || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
+         || obj is not Chest placed)
         {
             return;
         }
 
         // Only copy items from regular chest types
-        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+         && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
-            placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+            placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
+                  .CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
         // Copy modData
@@ -323,20 +353,22 @@ internal class CarryChest : IFeature
     private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ISet<Chest> exclude)
     {
         var items = chest.GetItemsForPlayer(player.UniqueMultiplayerID);
-        if (!exclude.Contains(chest) && chest.SpecialChestType is not Chest.SpecialChestTypes.JunimoChest)
+        if (exclude.Contains(chest) || chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest)
         {
-            exclude.Add(chest);
-            foreach (var item in items)
-            {
-                if (item is Chest otherChest)
-                {
-                    CarryChest.RecursiveIterate(player, otherChest, action, exclude);
-                }
+            return;
+        }
 
-                if (item is not null)
-                {
-                    action(item);
-                }
+        exclude.Add(chest);
+        foreach (var item in items)
+        {
+            if (item is Chest otherChest)
+            {
+                CarryChest.RecursiveIterate(player, otherChest, action, exclude);
+            }
+
+            if (item is not null)
+            {
+                action(item);
             }
         }
     }
@@ -355,20 +387,29 @@ internal class CarryChest : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || Game1.player.CurrentItem is Tool || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+        if (!Context.IsPlayerFree
+         || Game1.player.CurrentItem is Tool
+         || !e.Button.IsUseToolButton()
+         || this.Helper.Input.IsSuppressed(e.Button)
+         || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame || Game1.mouseCursorTransparency == 0f || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
+        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
+                / Game1.tileSize;
+        if (!Game1.wasMouseVisibleThisFrame
+         || Game1.mouseCursorTransparency == 0f
+         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
         {
             pos = Game1.player.GetGrabTile();
         }
 
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var storage) || storage.CarryChest == FeatureOption.Disabled)
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+         || !StorageHelper.TryGetOne(obj, out var storage)
+         || storage.CarryChest == FeatureOption.Disabled)
         {
             return;
         }
@@ -384,12 +425,14 @@ internal class CarryChest : IFeature
                     limit--;
                 }
 
-                if (limit <= 0)
+                if (limit > 0)
                 {
-                    Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
-                    this.Helper.Input.Suppress(e.Button);
-                    return;
+                    continue;
                 }
+
+                Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
+                this.Helper.Input.Suppress(e.Button);
+                return;
             }
         }
 

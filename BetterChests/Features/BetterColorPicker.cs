@@ -42,17 +42,30 @@ internal class BetterColorPicker : IFeature
                     nameof(BetterColorPicker.DiscreteColorPicker_GetCurrentColor_postfix),
                     PatchType.Postfix),
                 new(
-                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
+                    AccessTools.Method(
+                        typeof(DiscreteColorPicker),
+                        nameof(DiscreteColorPicker.getColorFromSelection)),
                     typeof(BetterColorPicker),
                     nameof(BetterColorPicker.DiscreteColorPicker_GetColorFromSelection_postfix),
                     PatchType.Postfix),
                 new(
-                    AccessTools.Method(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
+                    AccessTools.Method(
+                        typeof(DiscreteColorPicker),
+                        nameof(DiscreteColorPicker.getSelectionFromColor)),
                     typeof(BetterColorPicker),
                     nameof(BetterColorPicker.DiscreteColorPicker_GetSelectionFromColor_postfix),
                     PatchType.Postfix),
                 new(
-                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>), typeof(bool), typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
+                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
+                            typeof(int), typeof(object),
+                        }),
                     typeof(BetterColorPicker),
                     nameof(BetterColorPicker.ItemGrabMenu_DiscreteColorPicker_Transpiler),
                     PatchType.Transpiler),
@@ -102,38 +115,43 @@ internal class BetterColorPicker : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(BetterColorPicker.Id);
-            this.Helper.Events.Display.MenuChanged += BetterColorPicker.OnMenuChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(BetterColorPicker.Id);
+        this.Helper.Events.Display.MenuChanged += BetterColorPicker.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(BetterColorPicker.Id);
-            this.Helper.Events.Display.MenuChanged -= BetterColorPicker.OnMenuChanged;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(BetterColorPicker.Id);
+        this.Helper.Events.Display.MenuChanged -= BetterColorPicker.OnMenuChanged;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void DiscreteColorPicker_GetColorFromSelection_postfix(int selection, ref Color __result)
     {
         __result = HslColorPicker.GetColorFromSelection(selection);
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void DiscreteColorPicker_GetCurrentColor_postfix(DiscreteColorPicker __instance, ref Color __result)
     {
-        if (__instance is not HslColorPicker colorPicker || !ReferenceEquals(colorPicker, BetterColorPicker.Instance!.ColorPicker))
+        if (__instance is not HslColorPicker colorPicker
+         || !ReferenceEquals(colorPicker, BetterColorPicker.Instance!.ColorPicker))
         {
             return;
         }
@@ -141,16 +159,17 @@ internal class BetterColorPicker : IFeature
         __result = colorPicker.GetCurrentColor();
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Parameter is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void DiscreteColorPicker_GetSelectionFromColor_postfix(Color c, ref int __result)
     {
         __result = HslColorPicker.GetSelectionFromColor(c);
     }
 
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    private static DiscreteColorPicker GetColorPicker(int xPosition, int yPosition, int startingColor, Item itemToDrawColored, ItemGrabMenu menu)
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    private static DiscreteColorPicker GetColorPicker(
+        int xPosition, int yPosition, int startingColor, Item itemToDrawColored, ItemGrabMenu menu)
     {
         var item = BetterColorPicker.Instance!.Helper.Reflection.GetField<Item>(menu, "sourceItem").GetValue();
         if (item is not Chest chest)
@@ -175,23 +194,31 @@ internal class BetterColorPicker : IFeature
         Log.Verbose("Adding CustomColorPicker to ItemGrabMenu");
         BetterColorPicker.Instance.ColorPicker = new(
             BetterColorPicker.Instance.Helper,
-            BetterColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2 : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
+            BetterColorPicker.Instance.Config.CustomColorPickerArea == ComponentArea.Left
+                ? menu.xPositionOnScreen - 2 * Game1.tileSize - IClickableMenu.borderWidth / 2
+                : menu.xPositionOnScreen + menu.width + 96 + IClickableMenu.borderWidth / 2,
             menu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2,
             chestToDraw);
 
         return BetterColorPicker.Instance.ColorPicker;
     }
 
-    private static IEnumerable<CodeInstruction> ItemGrabMenu_DiscreteColorPicker_Transpiler(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> ItemGrabMenu_DiscreteColorPicker_Transpiler(
+        IEnumerable<CodeInstruction> instructions)
     {
         foreach (var instruction in instructions)
         {
             if (instruction.opcode == OpCodes.Newobj)
             {
-                if (instruction.operand.Equals(AccessTools.Constructor(typeof(DiscreteColorPicker), new[] { typeof(int), typeof(int), typeof(int), typeof(Item) })))
+                if (instruction.operand.Equals(
+                        AccessTools.Constructor(
+                            typeof(DiscreteColorPicker),
+                            new[] { typeof(int), typeof(int), typeof(int), typeof(Item) })))
                 {
                     yield return new(OpCodes.Ldarg_0);
-                    yield return new(OpCodes.Call, AccessTools.Method(typeof(BetterColorPicker), nameof(BetterColorPicker.GetColorPicker)));
+                    yield return new(
+                        OpCodes.Call,
+                        AccessTools.Method(typeof(BetterColorPicker), nameof(BetterColorPicker.GetColorPicker)));
                 }
                 else
                 {
@@ -205,11 +232,13 @@ internal class BetterColorPicker : IFeature
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance.context is null || !StorageHelper.TryGetOne(__instance.context, out var storage) || storage.CustomColorPicker != FeatureOption.Disabled)
+        if (__instance.context is null
+         || !StorageHelper.TryGetOne(__instance.context, out var storage)
+         || storage.CustomColorPicker != FeatureOption.Disabled)
         {
             return;
         }
@@ -223,7 +252,9 @@ internal class BetterColorPicker : IFeature
         {
             case ItemSelectionMenu:
                 return;
-            case ItemGrabMenu { context: { } context } itemGrabMenu when StorageHelper.TryGetOne(context, out var storage) && storage.CustomColorPicker != FeatureOption.Disabled:
+            case ItemGrabMenu { context: { } context } itemGrabMenu
+                when StorageHelper.TryGetOne(context, out var storage)
+                  && storage.CustomColorPicker != FeatureOption.Disabled:
                 itemGrabMenu.discreteColorPickerCC = null;
                 return;
         }

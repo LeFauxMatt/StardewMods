@@ -50,18 +50,12 @@ internal class Configurator : IFeature
 
     private ModConfig Config { get; }
 
-    private ClickableTextureComponent ConfigureButton
-    {
-        get => this._configureButton.Value ??= new(
+    private ClickableTextureComponent ConfigureButton =>
+        this._configureButton.Value ??= new(
             new(0, 0, Game1.tileSize, Game1.tileSize),
             this.Helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
             new(0, 0, 16, 16),
-            Game1.pixelZoom)
-        {
-            name = "Configure",
-            hoverText = I18n.Button_Configure_Name(),
-        };
-    }
+            Game1.pixelZoom) { name = "Configure", hoverText = I18n.Button_Configure_Name() };
 
     private ItemGrabMenu? CurrentMenu
     {
@@ -98,46 +92,46 @@ internal class Configurator : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(Configurator.Id);
-            this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(Configurator.Id);
+        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(Configurator.Id);
-            this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(Configurator.Id);
+        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_RepositionSideButtons_postfix(ItemGrabMenu __instance)
     {
         Configurator.Instance!.ConfigureButton.bounds.Y = 0;
         var buttons = new List<ClickableComponent>(
             new[]
             {
-                __instance.organizeButton,
-                __instance.fillStacksButton,
-                __instance.colorPickerToggleButton,
-                __instance.specialButton,
-                Configurator.Instance.ConfigureButton,
-                __instance.junimoNoteIcon,
+                __instance.organizeButton, __instance.fillStacksButton, __instance.colorPickerToggleButton,
+                __instance.specialButton, Configurator.Instance.ConfigureButton, __instance.junimoNoteIcon,
             }.Where(component => component is not null));
 
         var yOffset = buttons.Count switch
@@ -146,11 +140,12 @@ internal class Configurator : IFeature
             _ => __instance.ItemsToGrabMenu.yPositionOnScreen + __instance.ItemsToGrabMenu.height,
         };
 
-        var stepSize = Game1.tileSize + buttons.Count switch
-        {
-            >= 4 => 8,
-            _ => 16,
-        };
+        var stepSize = Game1.tileSize
+                     + buttons.Count switch
+                       {
+                           >= 4 => 8,
+                           _ => 16,
+                       };
 
         for (var index = 0; index < buttons.Count; index++)
         {
@@ -178,21 +173,24 @@ internal class Configurator : IFeature
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (this.ConfigureButton.containsPoint(x, y) && StorageHelper.TryGetOne(this.CurrentMenu.context, out var storage))
+        if (!this.ConfigureButton.containsPoint(x, y)
+         || !StorageHelper.TryGetOne(this.CurrentMenu.context, out var storage))
         {
-            ConfigHelper.SetupSpecificConfig(this.ModManifest, storage, true);
-            IntegrationHelper.GMCM.API!.OpenModMenu(this.ModManifest);
-            this.IsActive = true;
-            this.Helper.Input.Suppress(e.Button);
+            return;
         }
+
+        ConfigHelper.SetupSpecificConfig(this.ModManifest, storage, true);
+        IntegrationHelper.GMCM.API!.OpenModMenu(this.ModManifest);
+        this.IsActive = true;
+        this.Helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (!Context.IsPlayerFree
-            || !this.Config.ControlScheme.Configure.JustPressed()
-            || Game1.player.CurrentItem is not SObject obj
-            || !StorageHelper.TryGetOne(obj, out var storage))
+         || !this.Config.ControlScheme.Configure.JustPressed()
+         || Game1.player.CurrentItem is not SObject obj
+         || !StorageHelper.TryGetOne(obj, out var storage))
         {
             return;
         }
@@ -205,7 +203,8 @@ internal class Configurator : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu && StorageHelper.TryGetOne(context, out var storage))
+        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu
+         && StorageHelper.TryGetOne(context, out var storage))
         {
             this.CurrentMenu = itemGrabMenu;
             this.CurrentStorage = storage;
@@ -214,23 +213,27 @@ internal class Configurator : IFeature
         }
 
         this.CurrentMenu = null;
-        if (this.IsActive && e.OldMenu?.GetType().Name == "SpecificModConfigMenu")
+        if (!this.IsActive || e.OldMenu?.GetType().Name != "SpecificModConfigMenu")
         {
-            this.IsActive = false;
-            ConfigHelper.SetupMainConfig();
-
-            if (e.NewMenu?.GetType().Name == "ModConfigMenu")
-            {
-                if (this.CurrentStorage is not null)
-                {
-                    this.CurrentStorage.ShowMenu();
-                    this.CurrentStorage = null;
-                    return;
-                }
-
-                Game1.activeClickableMenu = null;
-            }
+            return;
         }
+
+        this.IsActive = false;
+        ConfigHelper.SetupMainConfig();
+
+        if (e.NewMenu?.GetType().Name != "ModConfigMenu")
+        {
+            return;
+        }
+
+        if (this.CurrentStorage is not null)
+        {
+            this.CurrentStorage.ShowMenu();
+            this.CurrentStorage = null;
+            return;
+        }
+
+        Game1.activeClickableMenu = null;
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -244,7 +247,9 @@ internal class Configurator : IFeature
         this.ConfigureButton.tryHover(x, y);
         e.SpriteBatch.Draw(
             this.ConfigureButton.texture,
-            new(this.ConfigureButton.bounds.X + 8 * Game1.pixelZoom, this.ConfigureButton.bounds.Y + 8 * Game1.pixelZoom),
+            new(
+                this.ConfigureButton.bounds.X + 8 * Game1.pixelZoom,
+                this.ConfigureButton.bounds.Y + 8 * Game1.pixelZoom),
             new(64, 0, 16, 16),
             Color.White,
             0f,

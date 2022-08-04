@@ -17,7 +17,7 @@ public class BetterChests : Mod
 {
     private ModConfig? Config { get; set; }
 
-    private Dictionary<string, (IFeature Feature, Func<bool> Condition)> Features { get; } = new();
+    private Dictionary<IFeature, Func<bool>> Features { get; } = new();
 
     private Dictionary<Func<object, bool>, IStorageData> StorageTypes { get; } = new();
 
@@ -42,26 +42,54 @@ public class BetterChests : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
         // Features
-        this.Features.Add(nameof(AutoOrganize), new(AutoOrganize.Init(this.Helper), () => this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled));
-        this.Features.Add(nameof(BetterColorPicker), new(BetterColorPicker.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled));
-        this.Features.Add(nameof(BetterItemGrabMenu), new(BetterItemGrabMenu.Init(this.Helper, this.Config), () => true));
-        this.Features.Add(nameof(BetterShippingBin), new(BetterShippingBin.Init(this.Helper), () => this.Config.BetterShippingBin));
-        this.Features.Add(nameof(CarryChest), new(CarryChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled));
-        this.Features.Add(nameof(LabelChest), new(LabelChest.Init(this.Helper), () => this.Config.LabelChest));
-        this.Features.Add(nameof(ChestFinder), new(ChestFinder.Init(this.Helper, this.Config), () => this.Config.ChestFinder));
-        this.Features.Add(nameof(ChestMenuTabs), new(ChestMenuTabs.Init(this.Helper, this.Config), () => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled));
-        this.Features.Add(nameof(CollectItems), new(CollectItems.Init(this.Helper), () => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled));
-        this.Features.Add(nameof(Configurator), new(Configurator.Init(this.Helper, this.Config, this.ModManifest), () => this.Config.Configurator && IntegrationHelper.GMCM.IsLoaded));
-        this.Features.Add(nameof(CraftFromChest), new(CraftFromChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled));
-        this.Features.Add(nameof(FilterItems), new(FilterItems.Init(this.Helper), () => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled));
-        this.Features.Add(nameof(OpenHeldChest), new(OpenHeldChest.Init(this.Helper), () => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled));
-        this.Features.Add(nameof(OrganizeChest), new(OrganizeChest.Init(this.Helper), () => this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled));
-        this.Features.Add(nameof(ResizeChest), new(ResizeChest.Init(), () => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled));
-        this.Features.Add(nameof(ResizeChestMenu), new(ResizeChestMenu.Init(this.Helper), () => this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled));
-        this.Features.Add(nameof(SearchItems), new(SearchItems.Init(this.Helper, this.Config), () => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled));
-        this.Features.Add(nameof(SlotLock), new(SlotLock.Init(this.Helper, this.Config), () => this.Config.SlotLock));
-        this.Features.Add(nameof(StashToChest), new(StashToChest.Init(this.Helper, this.Config), () => this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled));
-        this.Features.Add(nameof(UnloadChest), new(UnloadChest.Init(this.Helper), () => this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled));
+        this.Features.Add(
+            AutoOrganize.Init(this.Helper),
+            () => this.Config.DefaultChest.AutoOrganize != FeatureOption.Disabled);
+        this.Features.Add(
+            BetterColorPicker.Init(this.Helper, this.Config),
+            () => this.Config.DefaultChest.CustomColorPicker != FeatureOption.Disabled);
+        this.Features.Add(BetterItemGrabMenu.Init(this.Helper, this.Config), () => true);
+        this.Features.Add(BetterShippingBin.Init(this.Helper), () => this.Config.BetterShippingBin);
+        this.Features.Add(
+            CarryChest.Init(this.Helper, this.Config),
+            () => this.Config.DefaultChest.CarryChest != FeatureOption.Disabled);
+        this.Features.Add(LabelChest.Init(this.Helper), () => this.Config.LabelChest);
+        this.Features.Add(ChestFinder.Init(this.Helper, this.Config), () => this.Config.ChestFinder);
+        this.Features.Add(
+            ChestMenuTabs.Init(this.Helper, this.Config),
+            () => this.Config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled);
+        this.Features.Add(
+            CollectItems.Init(this.Helper),
+            () => this.Config.DefaultChest.CollectItems != FeatureOption.Disabled);
+        this.Features.Add(
+            Configurator.Init(this.Helper, this.Config, this.ModManifest),
+            () => this.Config.Configurator && IntegrationHelper.GMCM.IsLoaded);
+        this.Features.Add(
+            CraftFromChest.Init(this.Helper, this.Config),
+            () => this.Config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled);
+        this.Features.Add(
+            FilterItems.Init(this.Helper),
+            () => this.Config.DefaultChest.FilterItems != FeatureOption.Disabled);
+        this.Features.Add(
+            OpenHeldChest.Init(this.Helper),
+            () => this.Config.DefaultChest.OpenHeldChest != FeatureOption.Disabled);
+        this.Features.Add(
+            OrganizeChest.Init(this.Helper),
+            () => this.Config.DefaultChest.OrganizeChest != FeatureOption.Disabled);
+        this.Features.Add(ResizeChest.Init(), () => this.Config.DefaultChest.ResizeChest != FeatureOption.Disabled);
+        this.Features.Add(
+            ResizeChestMenu.Init(this.Helper),
+            () => this.Config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled);
+        this.Features.Add(
+            SearchItems.Init(this.Helper, this.Config),
+            () => this.Config.DefaultChest.SearchItems != FeatureOption.Disabled);
+        this.Features.Add(SlotLock.Init(this.Helper, this.Config), () => this.Config.SlotLock);
+        this.Features.Add(
+            StashToChest.Init(this.Helper, this.Config),
+            () => this.Config.DefaultChest.StashToChest != FeatureOptionRange.Disabled);
+        this.Features.Add(
+            UnloadChest.Init(this.Helper),
+            () => this.Config.DefaultChest.UnloadChest != FeatureOption.Disabled);
     }
 
     /// <inheritdoc />
@@ -86,8 +114,9 @@ public class BetterChests : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        foreach (var (featureName, (feature, condition)) in this.Features)
+        foreach (var (feature, condition) in this.Features)
         {
+            var featureName = feature.GetType().Name;
             if (IntegrationHelper.TestConflicts(featureName, out var mods))
             {
                 var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));

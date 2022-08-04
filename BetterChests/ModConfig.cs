@@ -114,8 +114,10 @@ internal class ModConfig
         sb.AppendLine($"CollectItems: {this.DefaultChest.CollectItems.ToStringFast()}");
         sb.AppendLine($"Configurator: {this.Configurator.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromChest: {this.DefaultChest.CraftFromChest.ToStringFast()}");
-        sb.AppendLine($"CraftFromChestDistance: {this.DefaultChest.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.DefaultChest.CraftFromChestDisableLocations)}");
+        sb.AppendLine(
+            $"CraftFromChestDistance: {this.DefaultChest.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            $"CraftFromChestDisableLocations: {string.Join(',', this.DefaultChest.CraftFromChestDisableLocations)}");
         sb.AppendLine($"CustomColorPicker: {this.DefaultChest.CustomColorPicker.ToStringFast()}");
         sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
         sb.AppendLine($"FilterItems: {this.DefaultChest.FilterItems.ToStringFast()}");
@@ -125,16 +127,20 @@ internal class ModConfig
         sb.AppendLine($"OrganizeChestGroupBy: {this.DefaultChest.OrganizeChestGroupBy.ToStringFast()}");
         sb.AppendLine($"OrganizeChestSortBy: {this.DefaultChest.OrganizeChestSortBy.ToStringFast()}");
         sb.AppendLine($"ResizeChest: {this.DefaultChest.ResizeChest.ToStringFast()}");
-        sb.AppendLine($"ResizeChestCapacity: {this.DefaultChest.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            $"ResizeChestCapacity: {this.DefaultChest.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"ResizeChestMenu: {this.DefaultChest.ResizeChestMenu.ToStringFast()}");
-        sb.AppendLine($"ResizeChestMenuRows: {this.DefaultChest.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            $"ResizeChestMenuRows: {this.DefaultChest.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SearchItems: {this.DefaultChest.SearchItems.ToStringFast()}");
         sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLock: {this.SlotLock.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChest: {this.DefaultChest.StashToChest.ToStringFast()}");
-        sb.AppendLine($"StashToChestDistance: {this.DefaultChest.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.DefaultChest.StashToChestDisableLocations)}");
+        sb.AppendLine(
+            $"StashToChestDistance: {this.DefaultChest.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            $"StashToChestDisableLocations: {string.Join(',', this.DefaultChest.StashToChestDisableLocations)}");
         sb.AppendLine($"StashToChestStacks: {this.DefaultChest.StashToChestStacks.ToStringFast()}");
         sb.AppendLine($"UnloadChest: {this.DefaultChest.UnloadChest.ToStringFast()}");
         return sb.ToString();

@@ -17,7 +17,8 @@ internal class SearchPhrase
     /// <param name="tagMatch">Indicates whether to match by context tag.</param>
     /// <param name="exactMatch">Indicates whether to accept exact matches only.</param>
     /// <param name="translation">Allows for matching against translated tags.</param>
-    public SearchPhrase(string value, bool tagMatch = true, bool exactMatch = false, ITranslationHelper? translation = null)
+    public SearchPhrase(
+        string value, bool tagMatch = true, bool exactMatch = false, ITranslationHelper? translation = null)
     {
         this.NotMatch = value[..1] == "!";
         this.TagMatch = tagMatch;
@@ -46,7 +47,10 @@ internal class SearchPhrase
     /// <returns>Returns true if item matches the search phrase.</returns>
     public bool Matches(Item item)
     {
-        return (this.TagMatch ? item.GetContextTags().Any(this.Matches) : this.Matches(item.DisplayName) || this.Matches(item.Name)) != this.NotMatch;
+        return (this.TagMatch
+                   ? item.GetContextTags().Any(this.Matches)
+                   : this.Matches(item.DisplayName) || this.Matches(item.Name))
+            != this.NotMatch;
     }
 
     private bool Matches(string match)
@@ -54,7 +58,8 @@ internal class SearchPhrase
         if (this.Translation is not null && !this.ExactMatch)
         {
             var localMatch = this.Translation.Get($"tag.{match}").Default(string.Empty).ToString();
-            if (!string.IsNullOrWhiteSpace(localMatch) && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
+            if (!string.IsNullOrWhiteSpace(localMatch)
+             && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return true;
             }

@@ -55,31 +55,35 @@ internal class OpenHeldChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this.Helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-            this.Helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
     [HarmonyPriority(Priority.High)]
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
         if (!ReferenceEquals(__instance, item))

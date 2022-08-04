@@ -79,23 +79,27 @@ internal class CollectItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(CollectItems.Id);
-            this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(CollectItems.Id);
+        this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(CollectItems.Id);
-            this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(CollectItems.Id);
+        this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item? item, bool makeActiveObject)
@@ -131,9 +135,12 @@ internal class CollectItems : IFeature
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.opcode == OpCodes.Callvirt && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
+            if (instruction.opcode == OpCodes.Callvirt
+             && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
             {
-                yield return new(OpCodes.Call, AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
+                yield return new(
+                    OpCodes.Call,
+                    AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
             }
             else
             {

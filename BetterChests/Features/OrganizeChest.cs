@@ -53,29 +53,33 @@ internal class OrganizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            return;
         }
+
+        this.IsActivated = true;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            return;
         }
+
+        this.IsActivated = false;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static bool ItemGrabMenu_organizeItemsInList_prefix(IList<Item> items)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
-            || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items)
-            || !StorageHelper.TryGetOne(context, out var storage)
-            || storage.OrganizeChest == FeatureOption.Disabled)
+         || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items)
+         || !StorageHelper.TryGetOne(context, out var storage)
+         || storage.OrganizeChest == FeatureOption.Disabled)
         {
             return true;
         }
@@ -88,9 +92,9 @@ internal class OrganizeChest : IFeature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseRight
-            || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
-            || !StorageHelper.TryGetOne(context, out var storage)
-            || storage.OrganizeChest == FeatureOption.Disabled)
+         || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
+         || !StorageHelper.TryGetOne(context, out var storage)
+         || storage.OrganizeChest == FeatureOption.Disabled)
         {
             return;
         }

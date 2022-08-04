@@ -55,29 +55,23 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.DisplayedItems.RefreshItems();
     }
 
-    private static List<Item> Items
-    {
-        get => ItemSelectionMenu.CachedItems ??= new(from item in new ItemRepository().GetAll() select item.Item);
-    }
+    private static List<Item> Items => ItemSelectionMenu.CachedItems ??=
+        new(from item in new ItemRepository().GetAll() select item.Item);
 
-    private IEnumerable<ClickableComponent> AllTags
-    {
-        get => ItemSelectionMenu.CachedTags ??=
-            (
-                from item in ItemSelectionMenu.Items
-                from tag in item.GetContextTags()
-                where !tag.StartsWith("id_") && !tag.StartsWith("item_") && !tag.StartsWith("preserve_")
-                orderby tag
-                select tag)
-            .Distinct()
-            .Select(tag =>
+    private IEnumerable<ClickableComponent> AllTags =>
+        ItemSelectionMenu.CachedTags ??=
+        (
+            from item in ItemSelectionMenu.Items
+            from tag in item.GetContextTags()
+            where !tag.StartsWith("id_") && !tag.StartsWith("item_") && !tag.StartsWith("preserve_")
+            orderby tag
+            select tag).Distinct().Select(
+            tag =>
             {
                 var localTag = this.Translation.Get($"tag.{tag}").Default(tag);
                 var (tagWidth, tagHeight) = Game1.smallFont.MeasureString(localTag).ToPoint();
                 return new ClickableComponent(new(0, 0, tagWidth, tagHeight), tag);
-            })
-            .ToList();
-    }
+            }).ToList();
 
     private DisplayedItems DisplayedItems { get; }
 
@@ -85,10 +79,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private DropDownList? DropDown { get; set; }
 
-    private int LineHeight
-    {
-        get => ItemSelectionMenu.CachedLineHeight ??= this.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing;
-    }
+    private int LineHeight => ItemSelectionMenu.CachedLineHeight ??=
+        this.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing;
 
     private int Offset { get; set; }
 
@@ -105,19 +97,35 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
+        b.Draw(
+            Game1.fadeToBlackRect,
+            new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
+            Color.Black * 0.5f);
 
         Game1.drawDialogueBox(
-            this.ItemsToGrabMenu.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
-            this.ItemsToGrabMenu.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder - 24,
-            this.ItemsToGrabMenu.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
-            this.ItemsToGrabMenu.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 + 24,
+            this.ItemsToGrabMenu.xPositionOnScreen
+          - ItemSelectionMenu.borderWidth
+          - ItemSelectionMenu.spaceToClearSideBorder,
+            this.ItemsToGrabMenu.yPositionOnScreen
+          - ItemSelectionMenu.borderWidth
+          - ItemSelectionMenu.spaceToClearTopBorder
+          - 24,
+            this.ItemsToGrabMenu.width
+          + ItemSelectionMenu.borderWidth * 2
+          + ItemSelectionMenu.spaceToClearSideBorder * 2,
+            this.ItemsToGrabMenu.height
+          + ItemSelectionMenu.spaceToClearTopBorder
+          + ItemSelectionMenu.borderWidth * 2
+          + 24,
             false,
             true);
 
         Game1.drawDialogueBox(
             this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
-            this.inventory.yPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearTopBorder + 24,
+            this.inventory.yPositionOnScreen
+          - ItemSelectionMenu.borderWidth
+          - ItemSelectionMenu.spaceToClearTopBorder
+          + 24,
             this.inventory.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
             this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 - 24,
             false,
@@ -126,7 +134,10 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this.ItemsToGrabMenu.draw(b);
         this.okButton.draw(b);
 
-        foreach (var tag in this.DisplayedTags.Where(cc => this.inventory.isWithinBounds(cc.bounds.X, cc.bounds.Bottom - this.Offset * this.LineHeight)))
+        foreach (var tag in this.DisplayedTags.Where(
+                     cc => this.inventory.isWithinBounds(
+                         cc.bounds.X,
+                         cc.bounds.Bottom - this.Offset * this.LineHeight)))
         {
             var localTag = this.Translation.Get($"tag.{tag.name}").Default(tag.name);
             if (this.hoverText == tag.name)
@@ -178,7 +189,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
         if (this.inventory.isWithinBounds(x, y))
         {
-            var cc = this.DisplayedTags.FirstOrDefault(slot => slot.containsPoint(x, y + this.Offset * this.LineHeight));
+            var cc = this.DisplayedTags.FirstOrDefault(
+                slot => slot.containsPoint(x, y + this.Offset * this.LineHeight));
             if (cc is not null)
             {
                 this.hoveredItem = null;
@@ -214,10 +226,10 @@ internal class ItemSelectionMenu : ItemGrabMenu
         // Left click an item slot to add individual item tag to filters
         var itemSlot = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (itemSlot is not null
-            && int.TryParse(itemSlot.name, out var slotNumber)
-            && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item
-            && item.GetContextTags().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
-            && !string.IsNullOrWhiteSpace(tag))
+         && int.TryParse(itemSlot.name, out var slotNumber)
+         && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item
+         && item.GetContextTags().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
+         && !string.IsNullOrWhiteSpace(tag))
         {
             this.AddTag(tag);
             return;
@@ -241,10 +253,11 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
         // Right click an item slot to display dropdown with item's context tags
         if (this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y)) is { } itemSlot
-            && int.TryParse(itemSlot.name, out var slotNumber)
-            && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item)
+         && int.TryParse(itemSlot.name, out var slotNumber)
+         && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item)
         {
-            var tags = new HashSet<string>(item.GetContextTags().Where(tag => !(tag.StartsWith("id_") || tag.StartsWith("preserve_"))));
+            var tags = new HashSet<string>(
+                item.GetContextTags().Where(tag => !(tag.StartsWith("id_") || tag.StartsWith("preserve_"))));
 
             // Add extra quality levels
             if (tags.Contains("quality_none"))
@@ -283,7 +296,10 @@ internal class ItemSelectionMenu : ItemGrabMenu
             case > 0 when this.Offset >= 1:
                 this.Offset--;
                 return;
-            case < 0 when this.DisplayedTags.Last().bounds.Bottom - this.Offset * this.LineHeight - this.inventory.yPositionOnScreen >= this.inventory.height:
+            case < 0 when this.DisplayedTags.Last().bounds.Bottom
+                        - this.Offset * this.LineHeight
+                        - this.inventory.yPositionOnScreen
+                       >= this.inventory.height:
                 this.Offset++;
                 return;
             default:
@@ -295,7 +311,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void update(GameTime time)
     {
-        if (this.SuppressInput && Game1.oldMouseState.LeftButton == ButtonState.Pressed && Mouse.GetState().LeftButton == ButtonState.Released)
+        if (this.SuppressInput
+         && Game1.oldMouseState.LeftButton == ButtonState.Pressed
+         && Mouse.GetState().LeftButton == ButtonState.Released)
         {
             this.SuppressInput = false;
         }
@@ -311,16 +329,18 @@ internal class ItemSelectionMenu : ItemGrabMenu
             }
 
             this.DisplayedTags.Clear();
-            this.DisplayedTags.AddRange(this.Selected.Any()
-                ?
-                from tag in this.AllTags
-                where this.Selected.Contains(tag.name) || this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
-                orderby this.Selected.Contains(tag.name) ? 0 : 1, tag.name
-                select tag
-                :
-                from tag in this.AllTags
-                where this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
-                select tag);
+            this.DisplayedTags.AddRange(
+                this.Selected.Any()
+                    ?
+                    from tag in this.AllTags
+                    where this.Selected.Contains(tag.name)
+                       || this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                    orderby this.Selected.Contains(tag.name) ? 0 : 1, tag.name
+                    select tag
+                    :
+                    from tag in this.AllTags
+                    where this.DisplayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                    select tag);
             var x = this.inventory.xPositionOnScreen;
             var y = this.inventory.yPositionOnScreen;
             var matched = this.Selection.Any();
@@ -333,7 +353,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
                     x = this.inventory.xPositionOnScreen;
                     y += this.LineHeight;
                 }
-                else if (x + tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing >= this.inventory.xPositionOnScreen + this.inventory.width)
+                else if (x + tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing
+                      >= this.inventory.xPositionOnScreen + this.inventory.width)
                 {
                     x = this.inventory.xPositionOnScreen;
                     y += this.LineHeight;

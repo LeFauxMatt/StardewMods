@@ -18,7 +18,11 @@ internal class ChestStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ChestStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest, parent, defaultChest, position)
+        : base(
+            chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest,
+            parent,
+            defaultChest,
+            position)
     {
         this.Chest = chest;
     }
@@ -29,22 +33,13 @@ internal class ChestStorage : BaseStorage
     public Chest Chest { get; }
 
     /// <inheritdoc />
-    public override IList<Item?> Items
-    {
-        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-    }
+    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.Chest.modData;
-    }
+    public override ModDataDictionary ModData => this.Chest.modData;
 
     /// <inheritdoc />
-    public override NetMutex? Mutex
-    {
-        get => this.Chest.GetMutex();
-    }
+    public override NetMutex? Mutex => this.Chest.GetMutex();
 
     /// <inheritdoc />
     public override void ShowMenu()
