@@ -41,30 +41,37 @@ internal class AutoOrganize : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            this.Helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
+            return;
         }
+
+        this.IsActivated = true;
+        this.Helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            this.Helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
+            return;
         }
+
+        this.IsActivated = false;
+        this.Helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
     }
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages =
-            StorageHelper.All
-                         .Where(storage => storage.AutoOrganize == FeatureOption.Enabled && storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest })
-                         .OrderByDescending(storage => storage.StashToChestPriority)
-                         .ToList();
+        var storages = StorageHelper.All
+                                    .Where(
+                                        storage => storage.AutoOrganize == FeatureOption.Enabled
+                                                && storage is not ChestStorage
+                                                   {
+                                                       Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+                                                   }).OrderByDescending(storage => storage.StashToChestPriority)
+                                    .ToList();
 
         foreach (var fromStorage in storages)
         {
@@ -77,19 +84,23 @@ internal class AutoOrganize : IFeature
                 }
 
                 var stack = item.Stack;
-                foreach (var toStorage in storages.Where(storage => !ReferenceEquals(fromStorage, storage) && storage.StashToChestPriority > fromStorage.StashToChestPriority))
+                foreach (var toStorage in storages.Where(
+                             storage => !ReferenceEquals(fromStorage, storage)
+                                     && storage.StashToChestPriority > fromStorage.StashToChestPriority))
                 {
                     var tmp = toStorage.StashItem(item);
                     if (tmp is null)
                     {
-                        Log.Trace($"AutoOrganize: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+                        Log.Trace(
+                            $"AutoOrganize: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
                         fromStorage.Items.Remove(item);
                         break;
                     }
 
                     if (stack != item.Stack)
                     {
-                        Log.Trace($"AutoOrganize: {{ Item: {item.Name}, Quantity: {(stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+                        Log.Trace(
+                            $"AutoOrganize: {{ Item: {item.Name}, Quantity: {(stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
                     }
                 }
             }

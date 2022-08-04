@@ -1,10 +1,12 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -27,11 +29,17 @@ internal class BetterItemGrabMenu : IFeature
     private const string Id = "furyx639.BetterChests/BetterItemGrabMenu";
 
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
+
     private readonly PerScreen<DisplayedItems?> _inventory = new();
+
     private readonly PerScreen<DisplayedItems?> _itemsToGrabMenu = new();
+
     private readonly PerScreen<Stack<IClickableMenu>> _overlaidMenus = new(() => new());
+
     private readonly PerScreen<bool> _refreshInventory = new();
     private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
+
+    private EventHandler<SpriteBatch>? _beforeDraw;
 
     private BetterItemGrabMenu(IModHelper helper, ModConfig config)
     {
@@ -42,21 +50,50 @@ internal class BetterItemGrabMenu : IFeature
             new SavedPatch[]
             {
                 new(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                    AccessTools.Method(
+                        typeof(InventoryMenu),
+                        nameof(InventoryMenu.draw),
+                        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
                 new(
-                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>), typeof(bool), typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
+                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
+                            typeof(int), typeof(object),
+                        }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix),
+                new(
+                    AccessTools.Method(
+                        typeof(ItemGrabMenu),
+                        nameof(ItemGrabMenu.draw),
+                        new[] { typeof(SpriteBatch) }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_draw_prefix),
+                    PatchType.Prefix),
                 new(
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_organizeItemsInList_postfix),
                     PatchType.Postfix),
             });
+    }
+
+    /// <summary>
+    ///     Raised before <see cref="StardewValley.Menus.ItemGrabMenu" /> is drawn.
+    /// </summary>
+    public static event EventHandler<SpriteBatch> BeforeDraw
+    {
+        add => BetterItemGrabMenu.Instance!._beforeDraw += value;
+        remove => BetterItemGrabMenu.Instance!._beforeDraw -= value;
     }
 
     /// <summary>
@@ -109,15 +146,13 @@ internal class BetterItemGrabMenu : IFeature
 
     private bool IsActivated { get; set; }
 
-    private Stack<IClickableMenu> OverlaidMenus
-    {
-        get => this._overlaidMenus.Value;
-    }
+    private Stack<IClickableMenu> OverlaidMenus =>
+        this._overlaidMenus.Value;
 
     /// <summary>
-    ///     Adds an overlay to the current <see cref="ItemGrabMenu" />.
+    ///     Adds an overlay to the current <see cref="StardewValley.Menus.ItemGrabMenu" />.
     /// </summary>
-    /// <param name="menu">The <see cref="IClickableMenu" /> to add.</param>
+    /// <param name="menu">The <see cref="StardewValley.Menus.IClickableMenu" /> to add.</param>
     public static void AddOverlay(IClickableMenu menu)
     {
         BetterItemGrabMenu.Instance!.OverlaidMenus.Push(menu);
@@ -135,7 +170,7 @@ internal class BetterItemGrabMenu : IFeature
     }
 
     /// <summary>
-    ///     Removes an overlay from the current <see cref="ItemGrabMenu" />.
+    ///     Removes an overlay from the current <see cref="StardewValley.Menus.ItemGrabMenu" />.
     /// </summary>
     /// <returns>Returns the removed overlay.</returns>
     public static IClickableMenu RemoveOverlay()
@@ -146,38 +181,66 @@ internal class BetterItemGrabMenu : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(BetterItemGrabMenu.Id);
-            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-            this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
-            this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
-            this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-            this.Helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
-            this.Helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(BetterItemGrabMenu.Id);
+        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
+        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
+        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this.Helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
+        this.Helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(BetterItemGrabMenu.Id);
-            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-            this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
-            this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-            this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-            this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
-            this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-            this.Helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
-            this.Helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
+            return;
+        }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(BetterItemGrabMenu.Id);
+        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
+        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
+        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this.Helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
+        this.Helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
+    }
+
+    /// <summary>
+    ///     Invokes all BeforeDraw event handlers.
+    /// </summary>
+    /// <param name="b">The SpriteBatch to draw to.</param>
+    internal void Invoke(SpriteBatch b)
+    {
+        if (this._beforeDraw is null)
+        {
+            return;
+        }
+
+        foreach (var handler in this._beforeDraw.GetInvocationList())
+        {
+            try
+            {
+                handler.DynamicInvoke(this, b);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
     }
 
@@ -192,8 +255,10 @@ internal class BetterItemGrabMenu : IFeature
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(BetterItemGrabMenu)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        Log.Trace(
+            $"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(BetterItemGrabMenu)}");
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
+            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Actual Inventory Patch
@@ -203,7 +268,10 @@ internal class BetterItemGrabMenu : IFeature
             code =>
             {
                 code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ActualInventory))));
+                code.Add(
+                    new(
+                        OpCodes.Call,
+                        AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ActualInventory))));
             },
             new(OpCodes.Ldarg_0),
             new(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))));
@@ -231,37 +299,51 @@ internal class BetterItemGrabMenu : IFeature
         }
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu } itemGrabMenu || !StorageHelper.TryGetOne(context, out _))
+        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu }
+         || !StorageHelper.TryGetOne(context, out _))
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
             return;
         }
 
-        if (!ReferenceEquals(itemGrabMenu, BetterItemGrabMenu.Instance!.CurrentMenu))
+        if (ReferenceEquals(__instance, BetterItemGrabMenu.Instance!.CurrentMenu))
         {
-            BetterItemGrabMenu.Instance.CurrentMenu = itemGrabMenu;
-            if (ReferenceEquals(context, BetterItemGrabMenu.Instance.CurrentMenu?.context))
-            {
-                BetterItemGrabMenu.Inventory = new(inventory, false)
-                {
-                    Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0,
-                };
-                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true)
-                {
-                    Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0,
-                };
-            }
-            else
-            {
-                BetterItemGrabMenu.Inventory = new(inventory, false);
-                BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true);
-            }
+            return;
         }
+
+        BetterItemGrabMenu.Instance.CurrentMenu = __instance;
+        if (ReferenceEquals(context, BetterItemGrabMenu.Instance.CurrentMenu?.context))
+        {
+            BetterItemGrabMenu.Inventory = new(inventory, false) { Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0 };
+            BetterItemGrabMenu.ItemsToGrabMenu =
+                new(itemsToGrabMenu, true) { Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0 };
+        }
+        else
+        {
+            BetterItemGrabMenu.Inventory = new(inventory, false);
+            BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true);
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void ItemGrabMenu_draw_prefix(ItemGrabMenu __instance, SpriteBatch b)
+    {
+        if (__instance.drawBG)
+        {
+            __instance.drawBG = false;
+            b.Draw(
+                Game1.fadeToBlackRect,
+                new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
+                Color.Black * 0.5f);
+        }
+
+        BetterItemGrabMenu.Instance!.Invoke(b);
     }
 
     private static void ItemGrabMenu_organizeItemsInList_postfix(IList<Item> items)
@@ -271,8 +353,12 @@ internal class BetterItemGrabMenu : IFeature
             return;
         }
 
-        BetterItemGrabMenu.RefreshInventory |= ReferenceEquals(BetterItemGrabMenu.Instance.CurrentMenu.inventory.actualInventory, items);
-        BetterItemGrabMenu.RefreshItemsToGrabMenu |= ReferenceEquals(BetterItemGrabMenu.Instance.CurrentMenu.ItemsToGrabMenu.actualInventory, items);
+        BetterItemGrabMenu.RefreshInventory |= ReferenceEquals(
+            BetterItemGrabMenu.Instance.CurrentMenu.inventory.actualInventory,
+            items);
+        BetterItemGrabMenu.RefreshItemsToGrabMenu |= ReferenceEquals(
+            BetterItemGrabMenu.Instance.CurrentMenu.ItemsToGrabMenu.actualInventory,
+            items);
     }
 
     private static void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
@@ -321,11 +407,12 @@ internal class BetterItemGrabMenu : IFeature
             return;
         }
 
-        var displayedItems = BetterItemGrabMenu.Inventory is not null
-                             && this.CurrentMenu.currentlySnappedComponent is not null
-                             && BetterItemGrabMenu.Inventory.Menu.inventory.Contains(this.CurrentMenu.currentlySnappedComponent)
-            ? BetterItemGrabMenu.Inventory
-            : BetterItemGrabMenu.ItemsToGrabMenu;
+        var displayedItems =
+            BetterItemGrabMenu.Inventory is not null
+         && this.CurrentMenu.currentlySnappedComponent is not null
+         && BetterItemGrabMenu.Inventory.Menu.inventory.Contains(this.CurrentMenu.currentlySnappedComponent)
+                ? BetterItemGrabMenu.Inventory
+                : BetterItemGrabMenu.ItemsToGrabMenu;
         if (displayedItems is null)
         {
             return;
@@ -333,8 +420,8 @@ internal class BetterItemGrabMenu : IFeature
 
         var offset = displayedItems.Offset;
         if (this.Config.ControlScheme.ScrollUp.JustPressed()
-            && (this.CurrentMenu.currentlySnappedComponent is null
-                || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
+         && (this.CurrentMenu.currentlySnappedComponent is null
+          || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
             displayedItems.Offset--;
             if (offset != displayedItems.Offset)
@@ -344,8 +431,8 @@ internal class BetterItemGrabMenu : IFeature
         }
 
         if (this.Config.ControlScheme.ScrollDown.JustPressed()
-            && (this.CurrentMenu.currentlySnappedComponent is null
-                || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
+         && (this.CurrentMenu.currentlySnappedComponent is null
+          || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
             displayedItems.Offset++;
             if (offset != displayedItems.Offset)
@@ -435,13 +522,29 @@ internal class BetterItemGrabMenu : IFeature
 
         if (this.CurrentMenu.hoveredItem is not null)
         {
-            IClickableMenu.drawToolTip(e.SpriteBatch, this.CurrentMenu.hoveredItem.getDescription(), this.CurrentMenu.hoveredItem.DisplayName, this.CurrentMenu.hoveredItem, this.CurrentMenu.heldItem != null);
+            IClickableMenu.drawToolTip(
+                e.SpriteBatch,
+                this.CurrentMenu.hoveredItem.getDescription(),
+                this.CurrentMenu.hoveredItem.DisplayName,
+                this.CurrentMenu.hoveredItem,
+                this.CurrentMenu.heldItem != null);
         }
         else if (!string.IsNullOrWhiteSpace(this.CurrentMenu.hoverText))
         {
             if (this.CurrentMenu.hoverAmount > 0)
             {
-                IClickableMenu.drawToolTip(e.SpriteBatch, this.CurrentMenu.hoverText, string.Empty, null, true, -1, 0, -1, -1, null, this.CurrentMenu.hoverAmount);
+                IClickableMenu.drawToolTip(
+                    e.SpriteBatch,
+                    this.CurrentMenu.hoverText,
+                    string.Empty,
+                    null,
+                    true,
+                    -1,
+                    0,
+                    -1,
+                    -1,
+                    null,
+                    this.CurrentMenu.hoverAmount);
             }
             else
             {

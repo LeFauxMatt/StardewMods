@@ -28,10 +28,7 @@ internal class SavedPatch
     /// <summary>
     ///     Gets the original method to patch.
     /// </summary>
-    public MethodInfo Method
-    {
-        get => AccessTools.Method(this.Type, this.Name);
-    }
+    public MethodInfo Method => AccessTools.Method(this.Type, this.Name);
 
     /// <summary>
     ///     Gets the patch method name.
@@ -46,10 +43,7 @@ internal class SavedPatch
     /// <summary>
     ///     Gets the HarmonyMethod to patch with.
     /// </summary>
-    public HarmonyMethod Patch
-    {
-        get => new(this.Type, this.Name);
-    }
+    public HarmonyMethod Patch => new(this.Type, this.Name);
 
     /// <summary>
     ///     Gets whether is patch is a postfix, prefix, or transpiler.

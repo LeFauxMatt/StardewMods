@@ -35,29 +35,33 @@ internal class BetterShippingBin : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            this.Helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        this.Helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            this.Helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
+            return;
         }
+
+        this.IsActivated = false;
+        this.Helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
     }
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
         if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: true }
-            && StorageHelper.TryGetOne(context, out var storage)
-            && storage is ShippingBinStorage)
+         && StorageHelper.TryGetOne(context, out var storage)
+         && storage is ShippingBinStorage)
         {
             storage.ShowMenu();
         }

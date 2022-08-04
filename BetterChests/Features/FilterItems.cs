@@ -36,19 +36,21 @@ internal class FilterItems : IFeature
                     PatchType.Prefix),
             });
 
-        if (IntegrationHelper.Automate.IsLoaded)
+        if (!IntegrationHelper.Automate.IsLoaded)
         {
-            var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")?
-                .GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")?
-                .GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-            if (storeMethod is not null)
-            {
-                HarmonyHelper.AddPatch(
-                    FilterItems.Id,
-                    storeMethod,
-                    typeof(FilterItems),
-                    nameof(FilterItems.Automate_Store_prefix));
-            }
+            return;
+        }
+
+        var storeMethod = ReflectionHelper.GetAssemblyByName("Automate")
+                                          ?.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
+                                          ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+        if (storeMethod is not null)
+        {
+            HarmonyHelper.AddPatch(
+                FilterItems.Id,
+                storeMethod,
+                typeof(FilterItems),
+                nameof(FilterItems.Automate_Store_prefix));
         }
     }
 
@@ -71,37 +73,41 @@ internal class FilterItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(FilterItems.Id);
-            this.Helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(FilterItems.Id);
+        this.Helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(FilterItems.Id);
-            this.Helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(FilterItems.Id);
+        this.Helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
         var item = FilterItems.Instance!.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
         return !StorageHelper.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
@@ -117,8 +123,8 @@ internal class FilterItems : IFeature
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.NewMenu is not ItemGrabMenu { context: { } context }
-            || !StorageHelper.TryGetOne(context, out var storage)
-            || storage.FilterItems == FeatureOption.Disabled)
+         || !StorageHelper.TryGetOne(context, out var storage)
+         || storage.FilterItems == FeatureOption.Disabled)
         {
             return;
         }

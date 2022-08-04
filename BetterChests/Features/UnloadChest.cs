@@ -40,46 +40,61 @@ internal class UnloadChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            return;
         }
+
+        this.IsActivated = true;
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            return;
         }
+
+        this.IsActivated = false;
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     [EventPriority(EventPriority.Normal + 10)]
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsUseToolButton() || this.Helper.Input.IsSuppressed(e.Button) || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } or not Chest or null || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+        if (!Context.IsPlayerFree
+         || !e.Button.IsUseToolButton()
+         || this.Helper.Input.IsSuppressed(e.Button)
+         || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+                                        or not Chest
+                                        or null
+         || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame || Game1.mouseCursorTransparency == 0f || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
+        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
+                / Game1.tileSize;
+        if (!Game1.wasMouseVisibleThisFrame
+         || Game1.mouseCursorTransparency == 0f
+         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
         {
             pos = Game1.player.GetGrabTile();
         }
 
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var toStorage))
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+         || !StorageHelper.TryGetOne(obj, out var toStorage))
         {
             return;
         }
 
         // Disabled for held object
-        if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var fromStorage) || fromStorage.UnloadChest == FeatureOption.Disabled)
+        if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var fromStorage)
+         || fromStorage.UnloadChest == FeatureOption.Disabled)
         {
             return;
         }
@@ -95,11 +110,14 @@ internal class UnloadChest : IFeature
 
             var stack = item.Stack;
             var tmp = toStorage.AddItem(item);
-            if (tmp is null)
+            if (tmp is not null)
             {
-                Log.Trace($"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
-                fromStorage.Items[index] = null;
+                continue;
             }
+
+            Log.Trace(
+                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+            fromStorage.Items[index] = null;
         }
 
         fromStorage.ClearNulls();

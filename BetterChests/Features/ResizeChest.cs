@@ -34,7 +34,16 @@ internal class ResizeChest : IFeature
                     nameof(ResizeChest.Chest_GetActualCapacity_postfix),
                     PatchType.Postfix),
                 new(
-                    AccessTools.Constructor(typeof(ItemGrabMenu), new[] { typeof(IList<Item>), typeof(bool), typeof(bool), typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item), typeof(int), typeof(object) }),
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>), typeof(bool), typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
+                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
+                            typeof(int), typeof(object),
+                        }),
                     typeof(ResizeChest),
                     nameof(ResizeChest.ItemGrabMenu_constructor_transpiler),
                     PatchType.Transpiler),
@@ -57,29 +66,35 @@ internal class ResizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(ResizeChest.Id);
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(ResizeChest.Id);
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(ResizeChest.Id);
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(ResizeChest.Id);
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Naming is determined by Harmony.")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Type is determined by Harmony.")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Naming is determined by Harmony.")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (!StorageHelper.TryGetOne(__instance, out var storage) || storage.ResizeChest == FeatureOption.Disabled || storage.ResizeChestCapacity == 0)
+        if (!StorageHelper.TryGetOne(__instance, out var storage)
+         || storage.ResizeChest == FeatureOption.Disabled
+         || storage.ResizeChestCapacity == 0)
         {
             return;
         }
@@ -88,11 +103,16 @@ internal class ResizeChest : IFeature
     }
 
     /// <summary>Generate additional slots/rows for top inventory menu.</summary>
-    [SuppressMessage("ReSharper", "HeapView.BoxingAllocation", Justification = "Boxing allocation is required for Harmony.")]
-    private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(IEnumerable<CodeInstruction> instructions)
+    [SuppressMessage(
+        "ReSharper",
+        "HeapView.BoxingAllocation",
+        Justification = "Boxing allocation is required for Harmony.")]
+    private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(
+        IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.ctor from {nameof(ResizeChest)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
+            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Jump Condition Patch

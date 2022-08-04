@@ -11,6 +11,11 @@ using StardewValley;
 /// </summary>
 internal static class FormatHelper
 {
+    private static Dictionary<string, string>? _blueprintsData;
+
+    private static Dictionary<string, string> BlueprintsData => FormatHelper._blueprintsData ??=
+        Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints");
+
     /// <summary>
     ///     Formats an area value using localized text when available.
     /// </summary>
@@ -55,7 +60,9 @@ internal static class FormatHelper
             (int)FeatureOption.Default => I18n.Option_Default_Name(),
             (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
             8 => I18n.Config_ResizeChestCapacity_ValueUnlimited(),
-            _ => string.Format(I18n.Config_ResizeChestCapacity_ValueMany(), (12 * (value - (int)FeatureOption.Enabled + 1)).ToString()),
+            _ => string.Format(
+                I18n.Config_ResizeChestCapacity_ValueMany(),
+                (12 * (value - (int)FeatureOption.Enabled + 1)).ToString()),
         };
     }
 
@@ -70,7 +77,9 @@ internal static class FormatHelper
         {
             (int)FeatureOption.Default => I18n.Option_Default_Name(),
             (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
-            _ => string.Format(I18n.Config_ResizeChestMenuRows_ValueMany(), (value - (int)FeatureOption.Enabled + 3).ToString()),
+            _ => string.Format(
+                I18n.Config_ResizeChestMenuRows_ValueMany(),
+                (value - (int)FeatureOption.Enabled + 3).ToString()),
         };
     }
 
@@ -139,7 +148,9 @@ internal static class FormatHelper
             (int)FeatureOptionRange.Inventory => I18n.Option_Inventory_Name(),
             (int)FeatureOptionRange.World - 1 => I18n.Config_RangeDistance_ValueUnlimited(),
             (int)FeatureOptionRange.World => I18n.Option_World_Name(),
-            >= (int)FeatureOptionRange.Location => string.Format(I18n.Config_RangeDistance_ValueMany(), Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location).ToString(CultureInfo.InvariantCulture)),
+            >= (int)FeatureOptionRange.Location => string.Format(
+                I18n.Config_RangeDistance_ValueMany(),
+                Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location).ToString(CultureInfo.InvariantCulture)),
             _ => I18n.Option_Default_Name(),
         };
     }
@@ -173,10 +184,12 @@ internal static class FormatHelper
             "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out var info) => info.Split('/')[8],
             "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out var info) => info.Split('/')[8],
             "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out var info) => info.Split('/')[8],
-            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')[8],
+            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')
+                [8],
             "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out var info) => info.Split('/')[8],
             "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out var info) => info.Split('/')[8],
-            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')[8],
+            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')
+                [8],
             "Fridge" => I18n.Storage_Fridge_Name(),
             _ => value,
         };
@@ -194,19 +207,14 @@ internal static class FormatHelper
             "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out var info) => info.Split('/')[4],
             "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out var info) => info.Split('/')[4],
             "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out var info) => info.Split('/')[4],
-            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')[4],
+            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')
+                [4],
             "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out var info) => info.Split('/')[4],
             "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out var info) => info.Split('/')[9],
-            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')[9],
+            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')
+                [9],
             "Fridge" => I18n.Storage_Fridge_Tooltip(),
             _ => value,
         };
-    }
-
-    private static Dictionary<string, string>? _blueprintsData;
-
-    private static Dictionary<string, string> BlueprintsData
-    {
-        get => FormatHelper._blueprintsData ??= Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints");
     }
 }

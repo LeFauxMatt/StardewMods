@@ -26,13 +26,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilityBelt", "UtilityBelt\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "archived", "archived", "{5A0DE782-3A1A-411F-948C-7C96DC9FDF95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSAlternativeTextures", "archived\XSAlternativeTextures\XSAlternativeTextures.csproj", "{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSAlternativeTextures", "archived\XSAlternativeTextures\XSAlternativeTextures.csproj", "{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSAutomate", "archived\XSAutomate\XSAutomate.csproj", "{D591B042-7360-4FA1-9D17-064C6929ECD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSAutomate", "archived\XSAutomate\XSAutomate.csproj", "{D591B042-7360-4FA1-9D17-064C6929ECD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSLite", "archived\XSLite\XSLite.csproj", "{E6085D20-0427-4196-954A-8958DE22ACC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSLite", "archived\XSLite\XSLite.csproj", "{E6085D20-0427-4196-954A-8958DE22ACC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSPlus", "archived\XSPlus\XSPlus.csproj", "{98F22749-5C13-4CBD-85D3-9F4BB89EB016}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSPlus", "archived\XSPlus\XSPlus.csproj", "{98F22749-5C13-4CBD-85D3-9F4BB89EB016}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\EasyAccess.csproj", "{774ACD31-6138-4707-A747-8C8E35519FC3}"
 EndProject
@@ -128,8 +128,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		CommonHarmony\CommonHarmony.projitems*{0c60294e-c98c-481e-b2d0-fc7953fec7c2}*SharedItemsImports = 13
+		Common\Common.projitems*{155f13a9-e725-4634-b72c-615fa0e0a8b0}*SharedItemsImports = 5
 		CommonHarmony\CommonHarmony.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
+		Common\Common.projitems*{528e219b-d7ac-4e37-b9d0-c1fabea33ddd}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		CommonHarmony\CommonHarmony.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5

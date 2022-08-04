@@ -29,12 +29,16 @@ internal class DropDownList : IClickableMenu
         this.LocalValues = values.ToDictionary(
             value => value,
             value => translation.Get($"tag.{value}").Default(value).ToString());
-        var textBounds = this.LocalValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint()).ToList();
+        var textBounds = this.LocalValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint())
+                             .ToList();
         var textHeight = textBounds.Max(textBound => textBound.Y);
         this.width = textBounds.Max(textBound => textBound.X) + 16;
         this.height = textBounds.Sum(textBound => textBound.Y) + 16;
         this.Bounds = new(x, y, this.width, this.height);
-        this.Values = values.Select((value, index) => new ClickableComponent(new(this.Bounds.X + 8, this.Bounds.Y + 8 + textHeight * index, this.Bounds.Width, textBounds[index].Y), value)).ToList();
+        this.Values = values.Select(
+            (value, index) => new ClickableComponent(
+                new(this.Bounds.X + 8, this.Bounds.Y + 8 + textHeight * index, this.Bounds.Width, textBounds[index].Y),
+                value)).ToList();
     }
 
     private Rectangle Bounds { get; }
@@ -67,10 +71,22 @@ internal class DropDownList : IClickableMenu
         {
             if (value.bounds.Contains(x, y))
             {
-                b.Draw(Game1.staminaRect, new(value.bounds.X, value.bounds.Y, this.Bounds.Width - 16, value.bounds.Height), new Rectangle(0, 0, 1, 1), Color.Wheat, 0f, Vector2.Zero, SpriteEffects.None, 0.975f);
+                b.Draw(
+                    Game1.staminaRect,
+                    new(value.bounds.X, value.bounds.Y, this.Bounds.Width - 16, value.bounds.Height),
+                    new Rectangle(0, 0, 1, 1),
+                    Color.Wheat,
+                    0f,
+                    Vector2.Zero,
+                    SpriteEffects.None,
+                    0.975f);
             }
 
-            b.DrawString(Game1.smallFont, this.LocalValues[value.name], new(value.bounds.X, value.bounds.Y), Game1.textColor);
+            b.DrawString(
+                Game1.smallFont,
+                this.LocalValues[value.name],
+                new(value.bounds.X, value.bounds.Y),
+                Game1.textColor);
         }
     }
 

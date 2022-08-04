@@ -102,24 +102,16 @@ internal class DisplayedItems
         }
     }
 
-    private IList<Item> ActualInventory
-    {
-        get => this.Menu.actualInventory;
-    }
+    private IList<Item> ActualInventory => this.Menu.actualInventory;
 
     private int Columns { get; }
 
-    private ClickableTextureComponent DownArrow
-    {
-        get => this._downArrow ??= new(
+    private ClickableTextureComponent DownArrow =>
+        this._downArrow ??= new(
             new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(421, 472, 11, 12),
-            Game1.pixelZoom)
-        {
-            myID = 5318008,
-        };
-    }
+            Game1.pixelZoom) { myID = 5318008 };
 
     private List<IItemMatcher> Highlighters { get; } = new();
 
@@ -129,17 +121,12 @@ internal class DisplayedItems
 
     private List<Func<IEnumerable<Item>, IEnumerable<Item>>> Transformers { get; } = new();
 
-    private ClickableTextureComponent UpArrow
-    {
-        get => this._upArrow ??= new(
+    private ClickableTextureComponent UpArrow =>
+        this._upArrow ??= new(
             new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(421, 459, 11, 12),
-            Game1.pixelZoom)
-        {
-            myID = 5318009,
-        };
-    }
+            Game1.pixelZoom) { myID = 5318009 };
 
     /// <summary>
     ///     Adds a <see cref="ItemMatcher" /> to highlight inventory.
@@ -233,19 +220,16 @@ internal class DisplayedItems
         if (!items.Any())
         {
             this._items.Clear();
-            this._items.AddRange(items
-                                 .Skip(this.Offset * this.Columns)
-                                 .Take(this.Menu.capacity));
+            this._items.AddRange(items.Skip(this.Offset * this.Columns).Take(this.Menu.capacity));
         }
         else
         {
             do
             {
                 this._items.Clear();
-                this._items.AddRange(items
-                                     .Skip(this.Offset * this.Columns)
-                                     .Take(this.Menu.capacity));
-            } while (!this._items.Any() && --this.Offset > 0);
+                this._items.AddRange(items.Skip(this.Offset * this.Columns).Take(this.Menu.capacity));
+            }
+            while (!this._items.Any() && --this.Offset > 0);
         }
 
         for (var index = 0; index < this.Menu.inventory.Count; index++)
@@ -260,7 +244,8 @@ internal class DisplayedItems
 
     private bool Highlight(Item item)
     {
-        return this.HighlightMethod(item) && (!this.Highlighters.Any() || this.Highlighters.All(matcher => matcher.Matches(item)));
+        return this.HighlightMethod(item)
+            && (!this.Highlighters.Any() || this.Highlighters.All(matcher => matcher.Matches(item)));
     }
 
     private void Invoke()

@@ -32,7 +32,10 @@ internal class SlotLock : IFeature
             new SavedPatch[]
             {
                 new(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                    AccessTools.Method(
+                        typeof(InventoryMenu),
+                        nameof(InventoryMenu.draw),
+                        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
                     typeof(SlotLock),
                     nameof(SlotLock.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
@@ -61,29 +64,34 @@ internal class SlotLock : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            HarmonyHelper.ApplyPatches(SlotLock.Id);
-            this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            return;
         }
+
+        this.IsActivated = true;
+        HarmonyHelper.ApplyPatches(SlotLock.Id);
+        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            HarmonyHelper.UnapplyPatches(SlotLock.Id);
-            this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+            return;
         }
+
+        this.IsActivated = false;
+        HarmonyHelper.UnapplyPatches(SlotLock.Id);
+        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(SlotLock)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>((c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
+            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
 
         // ****************************************************************************************
         // Item Tint Patch
@@ -130,8 +138,12 @@ internal class SlotLock : IFeature
         switch (Game1.activeClickableMenu)
         {
             case ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu):
-            case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage } && ReferenceEquals(inventoryPage, menu):
-                return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true
+            case GameMenu gameMenu
+                when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+                  && ReferenceEquals(inventoryPage, menu):
+                return menu.actualInventory.ElementAtOrDefault(index)?.modData
+                           .ContainsKey("furyx639.BetterChests/LockedSlot")
+                    == true
                     ? Color.Red
                     : tint;
             default:
@@ -144,7 +156,8 @@ internal class SlotLock : IFeature
         var menu = Game1.activeClickableMenu switch
         {
             ItemGrabMenu { inventory: { } itemGrabMenu } => itemGrabMenu,
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage } => inventoryPage,
+            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+                => inventoryPage,
             _ => null,
         };
 
@@ -154,7 +167,7 @@ internal class SlotLock : IFeature
         }
 
         if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
-            && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
+         && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
         {
             return;
         }

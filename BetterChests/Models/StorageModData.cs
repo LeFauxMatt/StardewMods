@@ -22,7 +22,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption AutoOrganize
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/AutoOrganize", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/AutoOrganize", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/AutoOrganize"] = value.ToStringFast();
@@ -31,7 +32,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption CarryChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CarryChest", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CarryChest", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/CarryChest"] = value.ToStringFast();
@@ -40,7 +42,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption CarryChestSlow
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CarryChestSlow", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CarryChestSlow", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/CarryChestSlow"] = value.ToStringFast();
@@ -49,9 +52,7 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public string ChestLabel
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestLabel", out var label)
-            ? label
-            : string.Empty;
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestLabel", out var label) ? label : string.Empty;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -67,7 +68,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption ChestMenuTabs
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabs", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabs", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/ChestMenuTabs"] = value.ToStringFast();
@@ -76,7 +78,11 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public HashSet<string> ChestMenuTabSet
     {
-        get => new(this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabSet", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
+        get => new(
+            this.ModData.TryGetValue("furyx639.BetterChests/ChestMenuTabSet", out var value)
+         && !string.IsNullOrWhiteSpace(value)
+                ? value.Split(',')
+                : Array.Empty<string>());
         set
         {
             if (!value.Any())
@@ -91,7 +97,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption CollectItems
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CollectItems", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CollectItems", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/CollectItems"] = value.ToStringFast();
@@ -100,7 +107,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChest", out var value) && FeatureOptionRangeExtensions.TryParse(value, true, out var range)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChest", out var value)
+            && FeatureOptionRangeExtensions.TryParse(value, true, out var range)
             ? range
             : FeatureOptionRange.Default;
         set => this.ModData["furyx639.BetterChests/CraftFromChest"] = value.ToStringFast();
@@ -109,7 +117,11 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public HashSet<string> CraftFromChestDisableLocations
     {
-        get => new(this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
+        get => new(
+            this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChestDisableLocations", out var value)
+         && !string.IsNullOrWhiteSpace(value)
+                ? value.Split(',')
+                : Array.Empty<string>());
         set
         {
             if (!value.Any())
@@ -124,7 +136,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public int CraftFromChestDistance
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChestDistance", out var value) && int.TryParse(value, out var distance)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CraftFromChestDistance", out var value)
+            && int.TryParse(value, out var distance)
             ? distance
             : 0;
         set => this.ModData["furyx639.BetterChests/CraftFromChestDistance"] = value.ToString();
@@ -133,7 +146,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption CustomColorPicker
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/CustomColorPicker", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/CustomColorPicker", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/CustomColorPicker"] = value.ToStringFast();
@@ -142,7 +156,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption FilterItems
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/FilterItems", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/FilterItems", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/FilterItems"] = value.ToStringFast();
@@ -151,7 +166,11 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public HashSet<string> FilterItemsList
     {
-        get => new(this.ModData.TryGetValue("furyx639.BetterChests/FilterItemsList", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
+        get => new(
+            this.ModData.TryGetValue("furyx639.BetterChests/FilterItemsList", out var value)
+         && !string.IsNullOrWhiteSpace(value)
+                ? value.Split(',')
+                : Array.Empty<string>());
         set
         {
             if (!value.Any())
@@ -166,7 +185,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/OpenHeldChest", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/OpenHeldChest", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/OpenHeldChest"] = value.ToStringFast();
@@ -175,7 +195,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption OrganizeChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/OrganizeChest", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/OrganizeChest", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/OrganizeChest"] = value.ToStringFast();
@@ -184,7 +205,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public GroupBy OrganizeChestGroupBy
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/OrganizeChestGroupBy", out var value) && GroupByExtensions.TryParse(value, true, out var groupBy)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/OrganizeChestGroupBy", out var value)
+            && GroupByExtensions.TryParse(value, true, out var groupBy)
             ? groupBy
             : GroupBy.Default;
         set => this.ModData["furyx639.BetterChests/OrganizeChestGroupBy"] = value.ToStringFast();
@@ -193,7 +215,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public SortBy OrganizeChestSortBy
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/OrganizeChestSortBy", out var value) && SortByExtensions.TryParse(value, true, out var sortBy)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/OrganizeChestSortBy", out var value)
+            && SortByExtensions.TryParse(value, true, out var sortBy)
             ? sortBy
             : SortBy.Default;
         set => this.ModData["furyx639.BetterChests/OrganizeChestSortBy"] = value.ToStringFast();
@@ -202,7 +225,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption ResizeChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChest", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChest", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/ResizeChest"] = value.ToStringFast();
@@ -211,7 +235,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public int ResizeChestCapacity
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestCapacity", out var value) && int.TryParse(value, out var capacity)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestCapacity", out var value)
+            && int.TryParse(value, out var capacity)
             ? capacity
             : 0;
         set => this.ModData["furyx639.BetterChests/ResizeChestCapacity"] = value.ToString();
@@ -220,7 +245,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption ResizeChestMenu
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestMenu", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestMenu", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/ResizeChestMenu"] = value.ToStringFast();
@@ -229,7 +255,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public int ResizeChestMenuRows
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestMenuRows", out var value) && int.TryParse(value, out var rows)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestMenuRows", out var value)
+            && int.TryParse(value, out var rows)
             ? rows
             : 0;
         set => this.ModData["furyx639.BetterChests/ResizeChestMenuRows"] = value.ToString();
@@ -238,7 +265,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption SearchItems
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/SearchItems", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/SearchItems", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/SearchItems"] = value.ToStringFast();
@@ -247,7 +275,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOptionRange StashToChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChest", out var value) && FeatureOptionRangeExtensions.TryParse(value, true, out var range)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChest", out var value)
+            && FeatureOptionRangeExtensions.TryParse(value, true, out var range)
             ? range
             : FeatureOptionRange.Default;
         set => this.ModData["furyx639.BetterChests/StashToChest"] = value.ToStringFast();
@@ -256,7 +285,11 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public HashSet<string> StashToChestDisableLocations
     {
-        get => new(this.ModData.TryGetValue("furyx639.BetterChests/StashToChestDisableLocations", out var value) && !string.IsNullOrWhiteSpace(value) ? value.Split(',') : Array.Empty<string>());
+        get => new(
+            this.ModData.TryGetValue("furyx639.BetterChests/StashToChestDisableLocations", out var value)
+         && !string.IsNullOrWhiteSpace(value)
+                ? value.Split(',')
+                : Array.Empty<string>());
         set
         {
             if (!value.Any())
@@ -271,7 +304,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public int StashToChestDistance
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestDistance", out var value) && int.TryParse(value, out var distance)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestDistance", out var value)
+            && int.TryParse(value, out var distance)
             ? distance
             : 0;
         set => this.ModData["furyx639.BetterChests/StashToChestDistance"] = value.ToString();
@@ -280,7 +314,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public int StashToChestPriority
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestPriority", out var value) && int.TryParse(value, out var priority)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestPriority", out var value)
+            && int.TryParse(value, out var priority)
             ? priority
             : 0;
         set => this.ModData["furyx639.BetterChests/StashToChestPriority"] = value.ToString();
@@ -289,7 +324,8 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption StashToChestStacks
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestStacks", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/StashToChestStacks", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/StashToChestStacks"] = value.ToStringFast();
@@ -298,16 +334,14 @@ internal class StorageModData : IStorageData
     /// <inheritdoc />
     public FeatureOption UnloadChest
     {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/UnloadChest", out var value) && FeatureOptionExtensions.TryParse(value, true, out var option)
+        get => this.ModData.TryGetValue("furyx639.BetterChests/UnloadChest", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
             ? option
             : FeatureOption.Default;
         set => this.ModData["furyx639.BetterChests/UnloadChest"] = value.ToStringFast();
     }
 
-    private ModDataDictionary ModData
-    {
-        get => this.Storage.ModData;
-    }
+    private ModDataDictionary ModData => this.Storage.ModData;
 
     private IStorageObject Storage { get; }
 }

@@ -49,36 +49,30 @@ internal class ShippingBinStorage : BaseStorage
     }
 
     /// <inheritdoc />
-    public override int ActualCapacity
-    {
-        get => this.Context switch
+    public override int ActualCapacity =>
+        this.Context switch
         {
             GameLocation or ShippingBin => int.MaxValue,
             _ => base.ActualCapacity,
         };
-    }
 
     /// <inheritdoc />
-    public override IList<Item?> Items
-    {
-        get => this.Context switch
+    public override IList<Item?> Items =>
+        this.Context switch
         {
             Chest chest => chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID),
             _ => Game1.getFarm().getShippingBin(Game1.player),
         };
-    }
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.Context switch
+    public override ModDataDictionary ModData =>
+        this.Context switch
         {
             Building building => building.modData,
             GameLocation location => location.modData,
             Chest chest => chest.modData,
             _ => throw new ArgumentOutOfRangeException(),
         };
-    }
 
     /// <inheritdoc />
     public override Item? AddItem(Item item)
@@ -90,7 +84,8 @@ internal class ShippingBinStorage : BaseStorage
 
         item.resetState();
         this.ClearNulls();
-        foreach (var existingItem in this.Items.Where(existingItem => existingItem is not null && existingItem.canStackWith(item)))
+        foreach (var existingItem in this.Items.Where(
+                     existingItem => existingItem is not null && existingItem.canStackWith(item)))
         {
             item.Stack = existingItem!.addToStack(item);
             if (item.Stack <= 0)

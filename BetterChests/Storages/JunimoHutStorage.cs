@@ -25,10 +25,7 @@ internal class JunimoHutStorage : BaseStorage
     }
 
     /// <inheritdoc />
-    public override IList<Item?> Items
-    {
-        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-    }
+    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <summary>
     ///     Gets the Junimo Hut building.
@@ -36,19 +33,10 @@ internal class JunimoHutStorage : BaseStorage
     public JunimoHut JunimoHut { get; }
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.JunimoHut.modData;
-    }
+    public override ModDataDictionary ModData => this.JunimoHut.modData;
 
     /// <inheritdoc />
-    public override NetMutex? Mutex
-    {
-        get => this.JunimoHut.output.Value.GetMutex();
-    }
+    public override NetMutex? Mutex => this.JunimoHut.output.Value.GetMutex();
 
-    private Chest Chest
-    {
-        get => this.JunimoHut.output.Value;
-    }
+    private Chest Chest => this.JunimoHut.output.Value;
 }

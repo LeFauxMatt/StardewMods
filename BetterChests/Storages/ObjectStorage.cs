@@ -25,30 +25,18 @@ internal class ObjectStorage : BaseStorage
     }
 
     /// <inheritdoc />
-    public override IList<Item?> Items
-    {
-        get => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
-    }
+    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <inheritdoc />
-    public override ModDataDictionary ModData
-    {
-        get => this.Object.modData;
-    }
+    public override ModDataDictionary ModData => this.Object.modData;
 
     /// <inheritdoc />
-    public override NetMutex? Mutex
-    {
-        get => this.Chest.GetMutex();
-    }
+    public override NetMutex? Mutex => this.Chest.GetMutex();
 
     /// <summary>
     ///     Gets the source object.
     /// </summary>
     public SObject Object { get; }
 
-    private Chest Chest
-    {
-        get => (Chest)this.Object.heldObject.Value;
-    }
+    private Chest Chest => (Chest)this.Object.heldObject.Value;
 }

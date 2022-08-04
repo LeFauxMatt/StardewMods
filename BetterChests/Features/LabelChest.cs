@@ -37,30 +37,34 @@ internal class LabelChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (!this.IsActivated)
+        if (this.IsActivated)
         {
-            this.IsActivated = true;
-            this.Helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
-            this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
+            return;
         }
+
+        this.IsActivated = true;
+        this.Helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
+        this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (this.IsActivated)
+        if (!this.IsActivated)
         {
-            this.IsActivated = false;
-            this.Helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
-            this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
+            return;
         }
+
+        this.IsActivated = false;
+        this.Helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
+        this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu
-            || !StorageHelper.TryGetOne(context, out var storage)
-            || string.IsNullOrWhiteSpace(storage.ChestLabel))
+         || !StorageHelper.TryGetOne(context, out var storage)
+         || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
             return;
         }
@@ -70,22 +74,29 @@ internal class LabelChest : IFeature
             storage.ChestLabel,
             Game1.smallFont,
             overrideX: itemGrabMenu.xPositionOnScreen,
-            overrideY: itemGrabMenu.yPositionOnScreen - IClickableMenu.spaceToClearSideBorder - Game1.tileSize - (storage.SearchItems is not FeatureOption.Disabled ? 14 * Game1.pixelZoom : 0));
+            overrideY: itemGrabMenu.yPositionOnScreen
+                     - IClickableMenu.spaceToClearSideBorder
+                     - Game1.tileSize
+                     - (storage.SearchItems is not FeatureOption.Disabled ? 14 * Game1.pixelZoom : 0));
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsPlayerFree || !(this.Helper.Input.IsDown(SButton.LeftShift) || this.Helper.Input.IsDown(SButton.RightShift)))
+        if (!Context.IsPlayerFree
+         || !(this.Helper.Input.IsDown(SButton.LeftShift) || this.Helper.Input.IsDown(SButton.RightShift)))
         {
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y) / Game1.tileSize;
+        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
+                / Game1.tileSize;
 
         // Object exists at pos, is within reach of player, and is a Chest
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj) || !StorageHelper.TryGetOne(obj, out var storage) || string.IsNullOrWhiteSpace(storage.ChestLabel))
+        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+         || !StorageHelper.TryGetOne(obj, out var storage)
+         || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
             return;
         }

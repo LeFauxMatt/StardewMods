@@ -7,6 +7,7 @@
         <TargetFramework>net5.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
         <Nullable>enable</Nullable>
     </PropertyGroup>

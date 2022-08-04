@@ -45,15 +45,13 @@ internal abstract class BaseStorage : IStorageObject
     }
 
     /// <inheritdoc />
-    public virtual int ActualCapacity
-    {
-        get => this.ResizeChestCapacity switch
+    public virtual int ActualCapacity =>
+        this.ResizeChestCapacity switch
         {
             < 0 => int.MaxValue,
             > 0 => this.ResizeChestCapacity,
             0 => Chest.capacity,
         };
-    }
 
     /// <inheritdoc />
     public FeatureOption AutoOrganize
@@ -267,16 +265,10 @@ internal abstract class BaseStorage : IStorageObject
     public abstract IList<Item?> Items { get; }
 
     /// <inheritdoc />
-    public int MenuCapacity
-    {
-        get => this.MenuRows * 12;
-    }
+    public int MenuCapacity => this.MenuRows * 12;
 
     /// <inheritdoc />
-    public int MenuExtraSpace
-    {
-        get => (this.MenuRows - 3) * Game1.tileSize;
-    }
+    public int MenuExtraSpace => (this.MenuRows - 3) * Game1.tileSize;
 
     /// <inheritdoc />
     public int MenuRows
@@ -304,10 +296,7 @@ internal abstract class BaseStorage : IStorageObject
     public abstract ModDataDictionary ModData { get; }
 
     /// <inheritdoc />
-    public virtual NetMutex? Mutex
-    {
-        get => default;
-    }
+    public virtual NetMutex? Mutex => default;
 
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
@@ -542,7 +531,8 @@ internal abstract class BaseStorage : IStorageObject
     {
         item.resetState();
         this.ClearNulls();
-        foreach (var existingItem in this.Items.Where(existingItem => existingItem is not null && existingItem.canStackWith(item)))
+        foreach (var existingItem in this.Items.Where(
+                     existingItem => existingItem is not null && existingItem.canStackWith(item)))
         {
             item.Stack = existingItem!.addToStack(item);
             if (item.Stack <= 0)
@@ -629,7 +619,9 @@ internal abstract class BaseStorage : IStorageObject
         }
 
         this.ClearNulls();
-        var oldId = Game1.activeClickableMenu.currentlySnappedComponent != null ? Game1.activeClickableMenu.currentlySnappedComponent.myID : -1;
+        var oldId = Game1.activeClickableMenu.currentlySnappedComponent != null
+            ? Game1.activeClickableMenu.currentlySnappedComponent.myID
+            : -1;
         this.ShowMenu();
         ((ItemGrabMenu)Game1.activeClickableMenu).heldItem = tmp;
         if (oldId != -1)
@@ -659,23 +651,22 @@ internal abstract class BaseStorage : IStorageObject
             return;
         }
 
-        var items = this.Items
-                        .OfType<Item>()
-                        .OrderBy(item => this.OrganizeChestGroupBy switch
-                        {
-                            GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_")) ?? string.Empty,
-                            GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")) ?? string.Empty,
-                            GroupBy.Name => item.DisplayName,
-                            GroupBy.Default or _ => string.Empty,
-                        })
-                        .ThenBy(item => this.OrganizeChestSortBy switch
-                        {
-                            SortBy.Quality when item is SObject obj => obj.Quality,
-                            SortBy.Quantity => item.Stack,
-                            SortBy.Type => item.Category,
-                            SortBy.Default or _ => 0,
-                        })
-                        .ToList();
+        var items = this.Items.OfType<Item>().OrderBy(
+            item => this.OrganizeChestGroupBy switch
+            {
+                GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_"))
+                                 ?? string.Empty,
+                GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")) ?? string.Empty,
+                GroupBy.Name => item.DisplayName,
+                GroupBy.Default or _ => string.Empty,
+            }).ThenBy(
+            item => this.OrganizeChestSortBy switch
+            {
+                SortBy.Quality when item is SObject obj => obj.Quality,
+                SortBy.Quantity => item.Stack,
+                SortBy.Type => item.Category,
+                SortBy.Default or _ => 0,
+            }).ToList();
         if (descending)
         {
             items.Reverse();
@@ -724,12 +715,15 @@ internal abstract class BaseStorage : IStorageObject
     public Item? StashItem(Item item, bool existingStacks = false)
     {
         var condition1 = existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true);
-        var condition2 = this.FilterItemsList.Any() && !this.FilterItemsList.All(filter => filter.StartsWith("!")) && this.FilterMatches(item);
+        var condition2 = this.FilterItemsList.Any()
+                      && !this.FilterItemsList.All(filter => filter.StartsWith("!"))
+                      && this.FilterMatches(item);
         var stack = item.Stack;
         var tmp = condition1 || condition2 ? this.AddItem(item) : item;
         if (tmp is null || stack != item.Stack)
         {
-            Log.Trace($"StashItem: {{ Item: {item.Name}, Quantity: {Math.Max(1, stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, To: {this}");
+            Log.Trace(
+                $"StashItem: {{ Item: {item.Name}, Quantity: {Math.Max(1, stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, To: {this}");
         }
 
         return tmp;
