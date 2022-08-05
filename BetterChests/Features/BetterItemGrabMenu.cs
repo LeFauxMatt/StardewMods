@@ -484,7 +484,7 @@ internal class BetterItemGrabMenu : IFeature
             BetterItemGrabMenu.ItemsToGrabMenu.Offset += e.Delta > 0 ? -1 : 1;
         }
 
-        if (this.CurrentMenu is { chestColorPicker: HslColorPicker colorPicker })
+        if (this.CurrentMenu is { chestColorPicker: HslColorPickerOld colorPicker })
         {
             colorPicker.receiveScrollWheelAction(e.Delta > 0 ? -10 : 10);
         }

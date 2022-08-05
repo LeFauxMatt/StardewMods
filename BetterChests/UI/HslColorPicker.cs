@@ -1,7 +1,6 @@
 ﻿namespace StardewMods.BetterChests.UI;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,257 +9,142 @@ using StardewMods.Common.Extensions;
 using StardewMods.Common.Models;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>
 ///     A component for picking a color using HSL sliders.
 /// </summary>
-internal class HslColorPicker : DiscreteColorPicker
+internal class HslColorPicker
 {
+    private const int BarHeight = (HslColorPicker.Height - HslColorPicker.Gap - 36) / 2;
+    private const int BarWidth = HslColorPicker.Width / 2 - HslColorPicker.Gap;
     private const int Cells = 16;
+    private const int CellSize = HslColorPicker.BarHeight / HslColorPicker.Cells;
     private const int Gap = 6;
     private const int Height = 558;
     private const int Width = 58;
 
+    private static readonly Lazy<HslColor[]> ColorsLazy = new(HslColorPicker.GetColorsHsl);
+    private static readonly Range<int> HslTrack = new();
+
+    private static readonly Lazy<Texture2D> HueBarLazy = new(
+        () => Game1.content.Load<Texture2D>("furyx639.BetterChests/HueBar"));
+
     private static readonly Rectangle SelectRect = new(412, 495, 5, 4);
     private static readonly Range<float> UnitRange = new(0, 1);
-    private static HslColor[]? CachedColorsHsl;
 
-    private static Color[]? CachedColorsRgb;
-    private static Range<int>? CachedHslTrack;
-    private static Texture2D? CachedHueBar;
+    private readonly Range<int> _hueTrack = new();
+    private readonly Rectangle[] _lightnessBar = new Rectangle[HslColorPicker.Cells];
+    private readonly Color[] _lightnessShade = new Color[HslColorPicker.Cells];
+    private readonly Range<int> _lightnessTrack = new();
 
+    private readonly ClickableTextureComponent _noColor = new(
+        new(0, 0, 7, 7),
+        Game1.mouseCursors,
+        new(295, 503, 7, 7),
+        Game1.pixelZoom);
+
+    private readonly Rectangle[] _saturationBar = new Rectangle[HslColorPicker.Cells];
+    private readonly Color[] _saturationShade = new Color[HslColorPicker.Cells];
+    private readonly Range<int> _saturationTrack = new();
+
+    private Thumb _held = Thumb.None;
     private HslColor _hslColor;
+    private Rectangle _hueBarArea = new(0, 0, HslColorPicker.BarWidth, HslColorPicker.Height - 36);
     private int _hueCoord;
+    private bool _lastDown;
     private int _lightnessCoord;
+    private Rectangle _noColorArea = new(0, 0, 36, 36);
     private int _saturationCoord;
+    private int _x;
+    private int _y;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="HslColorPicker" /> class.
-    /// </summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="x">The X coordinate to draw the HslColorPicker at.</param>
-    /// <param name="y">The Y coordinate to draw the HslColorPicker at.</param>
-    /// <param name="item">The item to draw next to the color picker.</param>
-    public HslColorPicker(IModHelper helper, int x, int y, Item? item = default)
-        : base(x, y, 0, item)
-    {
-        this.Helper = helper;
-        this.width = HslColorPicker.Width;
-        this.height = HslColorPicker.Height;
-
-        var barWidth = this.width / 2 - HslColorPicker.Gap;
-        var barHeight = (this.height - HslColorPicker.Gap - 36) / 2;
-        var cellSize = barHeight / HslColorPicker.Cells;
-        var centerX = this.xPositionOnScreen + this.width / 2;
-        var top = this.yPositionOnScreen + 36;
-
-        this.HueBarArea = new(this.xPositionOnScreen, this.yPositionOnScreen + 36, barWidth, this.height - 36);
-        this.LightnessBar = Enumerable.Range(0, HslColorPicker.Cells).Select(
-            i => new Rectangle(centerX + HslColorPicker.Gap / 2, top + i * cellSize, barWidth, cellSize)).ToList();
-        this.SaturationBar = Enumerable.Range(0, HslColorPicker.Cells).Select(
-            i => new Rectangle(
-                centerX + HslColorPicker.Gap / 2,
-                top + barHeight + HslColorPicker.Gap + i * cellSize,
-                barWidth,
-                cellSize)).ToList();
-
-        this.HueTrack = new(this.HueBarArea.Top, this.HueBarArea.Bottom);
-        this.LightnessTrack = new(this.LightnessBar.First().Top, this.LightnessBar.Last().Bottom);
-        this.SaturationTrack = new(this.SaturationBar.First().Top, this.SaturationBar.Last().Bottom);
-
-        this.NoColorButton = new(
-            new(this.xPositionOnScreen - 2, this.yPositionOnScreen, 7, 7),
-            Game1.mouseCursors,
-            new(295, 503, 7, 7),
-            Game1.pixelZoom);
-        this.NoColorButtonArea = new(this.xPositionOnScreen - 6, this.yPositionOnScreen - 4, 36, 36);
-    }
-
-    private enum TrackThumb
+    private enum Thumb
     {
         None,
         Hue,
         Saturation,
-        Luminance,
-        Transparent,
+        Lightness,
+        NoColor,
     }
 
-    private int ColorSelection { get; set; } = -1;
+    /// <summary>
+    ///     Gets the current <see cref="Color" />.
+    /// </summary>
+    public Color Color { get; private set; }
 
-    private HslColor[] ColorsHsl => HslColorPicker.CachedColorsHsl ??=
-        this.ColorsRgb.Select(HslColor.FromColor).Distinct().ToArray();
+    private static HslColor[] Colors => HslColorPicker.ColorsLazy.Value;
 
-    private Color[] ColorsRgb
+    private static Texture2D HueBar => HslColorPicker.HueBarLazy.Value;
+
+    /// <summary>
+    ///     Draws the <see cref="HslColorPicker" /> to the screen.
+    /// </summary>
+    /// <param name="b">The <see cref="SpriteBatch" /> to draw to.</param>
+    public void Draw(SpriteBatch b)
     {
-        get
-        {
-            if (HslColorPicker.CachedColorsRgb is not null)
-            {
-                return HslColorPicker.CachedColorsRgb;
-            }
-
-            HslColorPicker.CachedColorsRgb = new Color[this.HueBar.Width * this.HueBar.Height];
-            this.HueBar.GetData(HslColorPicker.CachedColorsRgb);
-            return HslColorPicker.CachedColorsRgb;
-        }
-    }
-
-    private TrackThumb HeldThumb { get; set; } = TrackThumb.None;
-
-    private IModHelper Helper { get; }
-
-    private Range<int> HslTrack => HslColorPicker.CachedHslTrack ??= new(0, this.ColorsHsl.Length - 1);
-
-    private Texture2D HueBar =>
-        HslColorPicker.CachedHueBar ??= this.Helper.ModContent.Load<Texture2D>("assets/hue.png");
-
-    private Rectangle HueBarArea { get; }
-
-    private int HueCoord
-    {
-        get => this._hueCoord;
-        set
-        {
-            this._hueCoord = this.HueTrack.Clamp(value);
-            var hueIndex = this.HslTrack.Clamp(
-                this._hueCoord.Remap(this.HueTrack, HslColorPicker.UnitRange)
-                    .Remap(HslColorPicker.UnitRange, this.HslTrack));
-            var hslColor = this.ColorsHsl[hueIndex];
-            this._hslColor.H = hslColor.H;
-            if (this.IsBlack)
-            {
-                this.SaturationCoord = hslColor.S.Remap(HslColorPicker.UnitRange, this.SaturationTrack);
-                this.LightnessCoord = hslColor.L.Remap(HslColorPicker.UnitRange, this.LightnessTrack);
-            }
-
-            this.IsBlack = false;
-        }
-    }
-
-    private Range<int> HueTrack { get; }
-
-    private bool IsBlack { get; set; }
-
-    private List<Rectangle> LightnessBar { get; }
-
-    private int LightnessCoord
-    {
-        get => this._lightnessCoord;
-        set
-        {
-            this._lightnessCoord = this.LightnessTrack.Clamp(value);
-            this._hslColor.L =
-                HslColorPicker.UnitRange.Clamp(value.Remap(this.LightnessTrack, HslColorPicker.UnitRange));
-            this.IsBlack = false;
-        }
-    }
-
-    private Range<int> LightnessTrack { get; }
-
-    private ClickableTextureComponent NoColorButton { get; }
-
-    private Rectangle NoColorButtonArea { get; }
-
-    private List<Rectangle> SaturationBar { get; }
-
-    private int SaturationCoord
-    {
-        get => this._saturationCoord;
-        set
-        {
-            this._saturationCoord = this.SaturationTrack.Clamp(value);
-            this._hslColor.S =
-                HslColorPicker.UnitRange.Clamp(value.Remap(this.SaturationTrack, HslColorPicker.UnitRange));
-            this.IsBlack = false;
-        }
-    }
-
-    private Range<int> SaturationTrack { get; }
-
-    /// <summary>Converts an int value to a <see cref="Microsoft.Xna.Framework.Color" /> object.</summary>
-    /// <param name="selection">The int value to convert.</param>
-    /// <returns>A Color object from the int value.</returns>
-    public static Color GetColorFromSelection(int selection)
-    {
-        if (selection == 0)
-        {
-            return Color.Black;
-        }
-
-        var rgb = BitConverter.GetBytes(selection);
-        return new(rgb[0], rgb[1], rgb[2]);
-    }
-
-    /// <summary>Converts a <see cref="Microsoft.Xna.Framework.Color" /> to an int value.</summary>
-    /// <param name="c">The Color to convert.</param>
-    /// <returns>An int value representing the color object.</returns>
-    public static int GetSelectionFromColor(Color c)
-    {
-        if (c == Color.Black)
-        {
-            return 0;
-        }
-
-        return (c.R << 0) | (c.G << 8) | (c.B << 16);
-    }
-
-    /// <inheritdoc />
-    public override void draw(SpriteBatch b)
-    {
-        if (!this.visible)
+        if (!Game1.player.showChestColorPicker)
         {
             return;
         }
 
-        // Menu Background
-        HslColorPicker.drawTextureBox(
+        // Background
+        IClickableMenu.drawTextureBox(
             b,
-            this.xPositionOnScreen - HslColorPicker.borderWidth / 2,
-            this.yPositionOnScreen - HslColorPicker.borderWidth / 2,
-            this.width + HslColorPicker.borderWidth,
-            this.height + HslColorPicker.borderWidth,
+            this._x - IClickableMenu.borderWidth / 2,
+            this._y - IClickableMenu.borderWidth / 2,
+            HslColorPicker.Width + IClickableMenu.borderWidth,
+            HslColorPicker.Height + IClickableMenu.borderWidth,
             Color.LightGray);
 
-        // Transparent Selection Icon
-        this.NoColorButton.draw(b);
+        // No Color Button
+        this._noColor.draw(b);
 
         // Hue Bar
-        b.Draw(this.HueBar, this.HueBarArea, Color.White);
+        b.Draw(HslColorPicker.HueBar, this._hueBarArea, Color.White);
 
-        // Saturation Bar
-        foreach (var (bar, color) in this.SaturationBar.Select(
-                     (bar, index) => (bar, this.GetSaturationShade((float)index / HslColorPicker.Cells))))
+        for (var i = 0; i < HslColorPicker.Cells; i++)
         {
-            b.Draw(Game1.staminaRect, bar, color);
+            // Lightness Bar
+            b.Draw(Game1.staminaRect, this._lightnessBar[i], this._lightnessShade[i]);
+
+            // Saturation Bar
+            b.Draw(Game1.staminaRect, this._saturationBar[i], this._saturationShade[i]);
         }
 
-        // Lightness Bar
-        foreach (var (bar, color) in this.LightnessBar.Select(
-                     (bar, index) => (bar, this.GetLightnessShade((float)index / HslColorPicker.Cells))))
-        {
-            b.Draw(Game1.staminaRect, bar, color);
-        }
+        // Item
 
-        if (this.IsBlack)
+        // No Color selected
+        if (this.Color == Color.Black)
         {
-            HslColorPicker.drawTextureBox(
+            IClickableMenu.drawTextureBox(
                 b,
                 Game1.mouseCursors,
                 new(375, 357, 3, 3),
-                this.NoColorButtonArea.Left,
-                this.NoColorButtonArea.Top,
-                this.NoColorButtonArea.Width,
-                this.NoColorButtonArea.Height,
+                this._noColorArea.Left,
+                this._noColorArea.Top,
+                this._noColorArea.Width,
+                this._noColorArea.Height,
                 Color.Black,
-                4f,
+                Game1.pixelZoom,
                 false);
+            return;
         }
 
         // Hue Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this.HueBarArea.Left - 8, this.HueCoord, 20, 16),
+            new(this._hueBarArea.Left - 8, this._hueCoord, 20, 16),
+            HslColorPicker.SelectRect,
+            Color.White,
+            MathHelper.PiOver2,
+            new(2.5f, 4f),
+            SpriteEffects.None,
+            1);
+
+        // Lightness Selection
+        b.Draw(
+            Game1.mouseCursors,
+            new(this._lightnessBar[0].Left - 8, this._lightnessCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
@@ -271,195 +155,221 @@ internal class HslColorPicker : DiscreteColorPicker
         // Saturation Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this.SaturationBar.First().Left - 8, this.SaturationCoord, 20, 16),
+            new(this._saturationBar[0].Left - 8, this._saturationCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
             new(2.5f, 4f),
             SpriteEffects.None,
             1);
-
-        // Luminance Selection
-        b.Draw(
-            Game1.mouseCursors,
-            new(this.LightnessBar.First().Left - 8, this.LightnessCoord, 20, 16),
-            HslColorPicker.SelectRect,
-            Color.White,
-            MathHelper.PiOver2,
-            new(2.5f, 4f),
-            SpriteEffects.None,
-            1);
-
-        // Colored Item if Chest
-        if (this.itemToDrawColored is Chest chest)
-        {
-            chest.draw(
-                b,
-                this.xPositionOnScreen,
-                this.yPositionOnScreen - HslColorPicker.borderWidth / 2 - Game1.tileSize,
-                1f,
-                true);
-        }
     }
 
-    /// <summary>Gets the currently selected color.</summary>
-    /// <returns>The currently selected color.</returns>
-    public Color GetCurrentColor()
+    /// <summary>
+    ///     Displays the <see cref="HslColorPicker" />.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <param name="color">The color to initialize.</param>
+    public void Init(int x, int y, Color? color = default)
     {
-        return this.IsBlack ? Color.Black : this._hslColor.ToRgbColor();
-    }
+        this._x = x;
+        this._y = y;
+        var centerX = this._x + HslColorPicker.Width / 2;
+        var top = this._y + 36;
 
-    /// <inheritdoc />
-    public override void receiveLeftClick(int x, int y, bool playSound = true)
-    {
-    }
-
-    /// <inheritdoc />
-    public override void receiveRightClick(int x, int y, bool playSound = true)
-    {
-    }
-
-    /// <inheritdoc />
-    public override void receiveScrollWheelAction(int direction)
-    {
-        if (this.HeldThumb is not TrackThumb.None)
+        this._hueBarArea.X = this._x;
+        this._hueBarArea.Y = top;
+        this._noColor.bounds.X = this._x - 2;
+        this._noColor.bounds.Y = this._y;
+        this._noColorArea.X = this._x - 6;
+        this._noColorArea.Y = this._y - 4;
+        this._hueTrack.Minimum = this._hueBarArea.Top;
+        this._hueTrack.Maximum = this._hueBarArea.Bottom;
+        for (var cell = 0; cell < HslColorPicker.Cells; cell++)
         {
-            return;
+            this._lightnessBar[cell] = new(
+                centerX + HslColorPicker.Gap / 2,
+                top + cell * HslColorPicker.CellSize,
+                HslColorPicker.BarWidth,
+                HslColorPicker.CellSize);
+            this._saturationBar[cell] = new(
+                this._lightnessBar[cell].X,
+                this._lightnessBar[cell].Y + HslColorPicker.BarHeight + HslColorPicker.Gap,
+                HslColorPicker.BarWidth,
+                HslColorPicker.CellSize);
         }
 
-        var (x, y) = Game1.getMousePosition(true);
-        if (this.HueBarArea.Contains(x, y))
+        this._lightnessTrack.Minimum = this._lightnessBar[0].Top;
+        this._lightnessTrack.Maximum = this._lightnessBar[HslColorPicker.Cells - 1].Bottom;
+        this._saturationTrack.Minimum = this._saturationBar[0].Top;
+        this._saturationTrack.Maximum = this._saturationBar[HslColorPicker.Cells - 1].Bottom;
+
+        this.Color = color ?? Color.Black;
+        this._hslColor = HslColor.FromColor(this.Color);
+        if (this.Color == Color.Black)
         {
-            this.HueCoord += direction;
-        }
-        else if (this.SaturationBar.Any(bar => bar.Contains(x, y)))
-        {
-            this.SaturationCoord += direction;
-        }
-        else if (this.LightnessBar.Any(bar => bar.Contains(x, y)))
-        {
-            this.LightnessCoord += direction;
+            this._hueCoord = this._hueTrack.Minimum;
+            this._lightnessCoord = this._lightnessTrack.Minimum;
+            this._saturationCoord = this._saturationTrack.Minimum;
         }
         else
         {
+            this._hueCoord = HslColorPicker.Colors.Select((hsl, i) => (Hsl: hsl, Index: i))
+                                           .OrderBy(item => Math.Abs(item.Hsl.H - this._hslColor.H))
+                                           .First()
+                                           .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
+                                           .Remap(HslColorPicker.UnitRange, this._hueTrack);
+            this._lightnessCoord = this._hslColor.L.Remap(HslColorPicker.UnitRange, this._lightnessTrack);
+            this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
+        }
+
+        for (var i = 0; i < HslColorPicker.Cells; i++)
+        {
+            var value = (float)i / HslColorPicker.Cells;
+            this._lightnessShade[i] = new HslColor
+            {
+                H = this._hslColor.H, S = this.Color == Color.Black ? 0 : this._hslColor.S, L = value,
+            }.ToRgbColor();
+            this._saturationShade[i] = new HslColor
+            {
+                H = this._hslColor.H,
+                S = this.Color == Color.Black ? 0 : value,
+                L = this.Color == Color.Black ? value : Math.Max(0.01f, this._hslColor.L),
+            }.ToRgbColor();
+        }
+
+        this._held = Thumb.None;
+    }
+
+    /// <summary>
+    ///     Updates the <see cref="HslColorPicker" />.
+    /// </summary>
+    /// <param name="input">SMAPI helper for input.</param>
+    public void Update(IInputHelper input)
+    {
+        if (!Game1.player.showChestColorPicker)
+        {
             return;
         }
 
-        var color = this.GetCurrentColor();
-        this.colorSelection = HslColorPicker.GetSelectionFromColor(color);
-        if (this.itemToDrawColored is Chest chest)
+        var isDown = input.IsDown(SButton.MouseLeft);
+        switch (this._lastDown)
         {
-            chest.playerChoiceColor.Value = color;
-            chest.resetLidFrame();
+            case true when !isDown:
+                this._held = Thumb.None;
+                this._lastDown = false;
+                return;
+            case false when isDown:
+                this.MouseDown();
+                this._lastDown = true;
+                return;
+            default:
+                this.MouseMove();
+                return;
         }
     }
 
-    /// <inheritdoc />
-    public override void update(GameTime time)
+    private static HslColor[] GetColorsHsl()
     {
-        base.update(time);
-        if (!this.visible)
+        var colorsRgb = new Color[HslColorPicker.HueBar.Width * HslColorPicker.HueBar.Height];
+        HslColorPicker.HueBar.GetData(colorsRgb);
+        var colorsHsl = colorsRgb.Select(HslColor.FromColor).Distinct().ToArray();
+        HslColorPicker.HslTrack.Minimum = 0;
+        HslColorPicker.HslTrack.Maximum = colorsHsl.Length - 1;
+        return colorsHsl;
+    }
+
+    private void MouseDown()
+    {
+        var (x, y) = Game1.getMousePosition(true);
+        if (this._noColorArea.Contains(x, y))
         {
+            this._held = Thumb.NoColor;
+            this._hslColor = new(0, 0, 0);
+            this.Color = Color.Black;
+            this._hueCoord = this._hueTrack.Minimum;
+            this._lightnessCoord = this._lightnessTrack.Minimum;
+            this._saturationCoord = this._saturationTrack.Minimum;
+            Game1.playSound("coin");
             return;
         }
 
-        if (this.ColorSelection != this.colorSelection)
+        if (this._hueBarArea.Contains(x, y))
         {
-            this.ColorSelection = this.colorSelection;
-            if (this.colorSelection != 0)
-            {
-                var initHsl = HslColor.FromColor(HslColorPicker.GetColorFromSelection(this.colorSelection));
-                for (var coord = this.HueBarArea.Top; coord <= this.HueBarArea.Bottom; coord++)
+            this._held = Thumb.Hue;
+            Game1.playSound("coin");
+            this.MouseMove();
+            return;
+        }
+
+        if (this._lightnessBar.Any(area => area.Contains(x, y)))
+        {
+            this._held = Thumb.Lightness;
+            Game1.playSound("coin");
+            this.MouseMove();
+            return;
+        }
+
+        if (this._saturationBar.Any(area => area.Contains(x, y)))
+        {
+            this._held = Thumb.Saturation;
+            Game1.playSound("coin");
+            this.MouseMove();
+            return;
+        }
+
+        this._held = Thumb.None;
+    }
+
+    private void MouseMove()
+    {
+        var (_, y) = Game1.getMousePosition(true);
+        switch (this._held)
+        {
+            case Thumb.Hue:
+                this._hueCoord = this._hueTrack.Clamp(y);
+                var index = this._hueCoord.Remap(this._hueTrack, HslColorPicker.UnitRange)
+                                .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack);
+                var hslColor = HslColorPicker.Colors[index];
+                this._hslColor.H = hslColor.H;
+                if (this.Color == Color.Black)
                 {
-                    if (Math.Abs(
-                            initHsl.H
-                          - this.ColorsHsl[this.HslTrack.Clamp(
-                                               coord.Remap(this.HueTrack, HslColorPicker.UnitRange).Remap(
-                                                   HslColorPicker.UnitRange,
-                                                   this.HslTrack))].H)
-                      < 0.001)
-                    {
-                        this.HueCoord = coord;
-                        break;
-                    }
+                    this._hslColor.L = hslColor.L;
+                    this._hslColor.S = hslColor.S;
+                    this._lightnessCoord = this._hslColor.L.Remap(HslColorPicker.UnitRange, this._lightnessTrack);
+                    this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
                 }
 
-                this.SaturationCoord = initHsl.S.Remap(HslColorPicker.UnitRange, this.SaturationTrack);
-                this.LightnessCoord = initHsl.L.Remap(HslColorPicker.UnitRange, this.LightnessTrack);
-            }
-            else
-            {
-                this.HueCoord = 0;
-                this.SaturationCoord = 0;
-                this.LightnessCoord = 0;
-                this.IsBlack = true;
-            }
-
-            return;
-        }
-
-        var (x, y) = Game1.getMousePosition(true);
-        switch (this.HeldThumb)
-        {
-            case TrackThumb.None when !this.Helper.Input.IsDown(SButton.MouseLeft):
-                return;
-            case TrackThumb.None when this.NoColorButtonArea.Contains(x, y):
-                this.HeldThumb = TrackThumb.Transparent;
-                this.HueCoord = 0;
-                this.SaturationCoord = 0;
-                this.LightnessCoord = 0;
-                this.colorSelection = 0;
-                this.IsBlack = true;
-                Game1.playSound("coin");
                 break;
-            case TrackThumb.None when this.HueBarArea.Contains(x, y):
-                this.HeldThumb = TrackThumb.Hue;
-                Game1.playSound("coin");
+            case Thumb.Lightness:
+                this._lightnessCoord = this._lightnessTrack.Clamp(y);
+                this._hslColor.L = this._lightnessCoord.Remap(this._lightnessTrack, HslColorPicker.UnitRange);
                 break;
-            case TrackThumb.None when this.SaturationBar.Any(bar => bar.Contains(x, y)):
-                this.HeldThumb = TrackThumb.Saturation;
-                Game1.playSound("coin");
+            case Thumb.Saturation:
+                this._saturationCoord = this._saturationTrack.Clamp(y);
+                this._hslColor.S = this._saturationCoord.Remap(this._saturationTrack, HslColorPicker.UnitRange);
                 break;
-            case TrackThumb.None when this.LightnessBar.Any(bar => bar.Contains(x, y)):
-                this.HeldThumb = TrackThumb.Luminance;
-                Game1.playSound("coin");
+            case Thumb.NoColor:
                 break;
-            case TrackThumb.Hue when this.Helper.Input.IsDown(SButton.MouseLeft):
-                this.HueCoord = y;
-                break;
-            case TrackThumb.Saturation when this.Helper.Input.IsDown(SButton.MouseLeft):
-                this.SaturationCoord = y;
-                break;
-            case TrackThumb.Luminance when this.Helper.Input.IsDown(SButton.MouseLeft):
-                this.LightnessCoord = y;
-                break;
-            case TrackThumb.Transparent when this.Helper.Input.IsDown(SButton.MouseLeft):
-                return;
-            case TrackThumb.Hue:
-            case TrackThumb.Saturation:
-            case TrackThumb.Luminance:
-            case TrackThumb.Transparent:
+            case Thumb.None:
             default:
-                this.HeldThumb = TrackThumb.None;
-                break;
+                return;
         }
 
-        var color = this.GetCurrentColor();
-        this.ColorSelection = this.colorSelection = HslColorPicker.GetSelectionFromColor(color);
-        if (this.itemToDrawColored is Chest chest)
+        this.Color = this._hslColor.ToRgbColor();
+        for (var i = 0; i < HslColorPicker.Cells; i++)
         {
-            chest.playerChoiceColor.Value = color;
-            chest.resetLidFrame();
+            var value = (float)i / HslColorPicker.Cells;
+            this._lightnessShade[i] = new HslColor
+            {
+                H = this._hslColor.H, S = this.Color == Color.Black ? 0 : this._hslColor.S, L = value,
+            }.ToRgbColor();
+            this._saturationShade[i] = new HslColor
+            {
+                H = this._hslColor.H,
+                S = this.Color == Color.Black ? 0 : value,
+                L = this.Color == Color.Black ? value : Math.Max(0.01f, this._hslColor.L),
+            }.ToRgbColor();
         }
-    }
-
-    private Color GetLightnessShade(float value)
-    {
-        return new HslColor { H = this._hslColor.H, S = this._hslColor.S, L = value }.ToRgbColor();
-    }
-
-    private Color GetSaturationShade(float value)
-    {
-        return new HslColor { H = this._hslColor.H, S = value, L = Math.Max(0.01f, this._hslColor.L) }.ToRgbColor();
     }
 }

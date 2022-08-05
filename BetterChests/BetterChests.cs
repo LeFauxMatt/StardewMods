@@ -100,6 +100,12 @@ public class BetterChests : Mod
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
+        if (e.Name.IsEquivalentTo("furyx639.BetterChests/HueBar"))
+        {
+            e.LoadFromModFile<Texture2D>("assets/hue.png", AssetLoadPriority.Exclusive);
+            return;
+        }
+
         if (e.Name.IsEquivalentTo("furyx639.BetterChests/Icons"))
         {
             e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
