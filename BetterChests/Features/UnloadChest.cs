@@ -67,10 +67,7 @@ internal class UnloadChest : IFeature
         if (!Context.IsPlayerFree
          || !e.Button.IsUseToolButton()
          || this._helper.Input.IsSuppressed(e.Button)
-         || Game1.player.CurrentItem is Chest
-                                        {
-                                            SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-                                        }
+         || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
                                         or not Chest
                                         or null
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))

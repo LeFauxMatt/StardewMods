@@ -296,15 +296,7 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not
-            {
-                context:
-                { } context,
-                inventory:
-                { } inventory,
-                ItemsToGrabMenu:
-                { } itemsToGrabMenu,
-            }
+        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu }
          || !StorageHelper.TryGetOne(context, out _))
         {
             BetterItemGrabMenu.Inventory = null;
@@ -582,11 +574,7 @@ internal class BetterItemGrabMenu : IFeature
 
         if (!ReferenceEquals(menu, this.CurrentMenu))
         {
-            if (menu is null
-                        or
-                        {
-                            context: null,
-                        })
+            if (menu is null or { context: null })
             {
                 this.CurrentMenu = null;
                 this.OverlaidMenus.Clear();

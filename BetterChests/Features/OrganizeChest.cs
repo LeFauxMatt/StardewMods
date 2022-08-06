@@ -76,10 +76,7 @@ internal class OrganizeChest : IFeature
 
     private static bool ItemGrabMenu_organizeItemsInList_prefix(IList<Item> items)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Item context,
-            } itemGrabMenu
+        if (Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
          || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items)
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.OrganizeChest == FeatureOption.Disabled)
@@ -95,10 +92,7 @@ internal class OrganizeChest : IFeature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseRight
-         || Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Item context,
-            } itemGrabMenu
+         || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.OrganizeChest == FeatureOption.Disabled)
         {

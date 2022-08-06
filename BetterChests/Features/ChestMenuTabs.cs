@@ -365,11 +365,7 @@ internal class ChestMenuTabs : IFeature
 
         this.CurrentMenu = menu;
         this.Components.Clear();
-        if (this.CurrentMenu is not
-            {
-                context:
-                { } context,
-            }
+        if (this.CurrentMenu is not { context: { } context }
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.ChestMenuTabs == FeatureOption.Disabled)
         {

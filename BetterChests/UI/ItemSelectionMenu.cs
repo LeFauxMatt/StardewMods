@@ -48,6 +48,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private readonly DisplayedItems _displayedItems;
     private readonly List<ClickableComponent> _displayedTags = new();
+    private readonly IInputHelper _input;
     private readonly HashSet<string> _selected;
     private readonly IItemMatcher _selection;
     private DropDownList? _dropDown;
@@ -60,8 +61,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
     /// </summary>
     /// <param name="context">The source object.</param>
     /// <param name="matcher">ItemMatcher for holding the selected item tags.</param>
+    /// <param name="input">SMAPI helper for input.</param>
     /// <param name="translation">Translations from the i18n folder.</param>
-    public ItemSelectionMenu(object? context, IItemMatcher matcher, ITranslationHelper translation)
+    public ItemSelectionMenu(object? context, IItemMatcher matcher, IInputHelper input, ITranslationHelper translation)
         : base(
             new List<Item>(),
             false,
@@ -75,6 +77,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
             context: context)
     {
         ItemSelectionMenu.Translation ??= translation;
+        this._input = input;
         this._selected = new(matcher);
         this._selection = matcher;
         this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items;
@@ -211,10 +214,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         if (this.okButton.containsPoint(x, y) && this.readyToClose())
         {
             this.exitThisMenu();
-            if (Game1.currentLocation.currentEvent is
-                {
-                    CurrentCommand: > 0,
-                })
+            if (Game1.currentLocation.currentEvent is { CurrentCommand: > 0 })
             {
                 Game1.currentLocation.currentEvent.CurrentCommand++;
             }
@@ -227,10 +227,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
         var itemSlot = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (itemSlot is not null
          && int.TryParse(itemSlot.name, out var slotNumber)
-         && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is
-                { } item
-         && item.GetContextTags().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is
-                { } tag
+         && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item
+         && item.GetContextTags().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
          && !string.IsNullOrWhiteSpace(tag))
         {
             this.AddTag(tag);
@@ -255,11 +253,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
 
         // Right click an item slot to display dropdown with item's context tags
-        if (this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y)) is not
-                { } itemSlot
+        if (this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y)) is not { } itemSlot
          || !int.TryParse(itemSlot.name, out var slotNumber)
-         || this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is not
-                { } item)
+         || this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is not { } item)
         {
             return;
         }
@@ -341,12 +337,12 @@ internal class ItemSelectionMenu : ItemGrabMenu
                     ?
                     from tag in ItemSelectionMenu.AllTags
                     where this._selected.Contains(tag.name)
-                       || this._displayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                       || (tag.name[..1] != "!" && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name)))
                     orderby this._selected.Contains(tag.name) ? 0 : 1, tag.name
                     select tag
                     :
                     from tag in ItemSelectionMenu.AllTags
-                    where this._displayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                    where tag.name[..1] != "!" && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name))
                     select tag);
             var x = this.inventory.xPositionOnScreen;
             var y = this.inventory.yPositionOnScreen;
@@ -395,6 +391,17 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private void AddOrRemoveTag(string tag)
     {
+        var oppositeTag = tag[..1] == "!" ? tag[1..] : $"!{tag}";
+        if (this._input.IsDown(SButton.LeftShift) || this._input.IsDown(SButton.RightShift))
+        {
+            (tag, oppositeTag) = (oppositeTag, tag);
+        }
+
+        if (this._selected.Contains(oppositeTag))
+        {
+            this._selected.Remove(oppositeTag);
+        }
+
         if (this._selected.Contains(tag))
         {
             this._selected.Remove(tag);
@@ -407,6 +414,17 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private void AddTag(string tag)
     {
+        var oppositeTag = tag[..1] == "!" ? tag[1..] : $"!{tag}";
+        if (this._input.IsDown(SButton.LeftShift) || this._input.IsDown(SButton.RightShift))
+        {
+            (tag, oppositeTag) = (oppositeTag, tag);
+        }
+
+        if (this._selected.Contains(oppositeTag))
+        {
+            this._selected.Remove(oppositeTag);
+        }
+
         if (!this._selected.Contains(tag))
         {
             this._selected.Add(tag);

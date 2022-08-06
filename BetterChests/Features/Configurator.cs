@@ -240,12 +240,7 @@ internal class Configurator : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ItemGrabMenu
-            {
-                context:
-                { } context,
-                shippingBin: false,
-            } itemGrabMenu
+        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu
          && StorageHelper.TryGetOne(context, out var storage))
         {
             this.CurrentMenu = itemGrabMenu;

@@ -42,9 +42,7 @@ internal class StorageHelper
         this.StorageTypes.Add(
             context => context is Chest
             {
-                playerChest.Value: true,
-                SpecialChestType: Chest.SpecialChestTypes.None,
-                ParentSheetIndex: 130,
+                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130,
             },
             storageData);
 
@@ -67,8 +65,7 @@ internal class StorageHelper
         this.StorageTypes.Add(
             context => context is Chest
             {
-                playerChest.Value: true,
-                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
             },
             storageData);
 
@@ -88,12 +85,7 @@ internal class StorageHelper
             this._config.VanillaStorages.Add("Mini-Fridge", storageData);
         }
 
-        this.StorageTypes.Add(
-            context => context is Chest
-            {
-                fridge.Value: true,
-            },
-            storageData);
+        this.StorageTypes.Add(context => context is Chest { fridge.Value: true }, storageData);
 
         // Mini-Shipping Bin
         if (!this._config.VanillaStorages.TryGetValue("Mini-Shipping Bin", out storageData))
@@ -105,8 +97,7 @@ internal class StorageHelper
         this.StorageTypes.Add(
             context => context is Chest
             {
-                playerChest.Value: true,
-                SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
+                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
             },
             storageData);
 
@@ -129,9 +120,7 @@ internal class StorageHelper
         this.StorageTypes.Add(
             context => context is Chest
             {
-                playerChest.Value: true,
-                SpecialChestType: Chest.SpecialChestTypes.None,
-                ParentSheetIndex: 232,
+                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232,
             },
             storageData);
     }
@@ -401,22 +390,16 @@ internal class StorageHelper
         // Special Locations
         switch (location)
         {
-            case FarmHouse
-            {
-                fridge.Value:
-                { } fridge,
-            } farmHouse when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
+            case FarmHouse { fridge.Value: { } fridge } farmHouse
+                when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
                 excluded.Add(fridge);
                 yield return new FridgeStorage(
                     farmHouse,
                     this._config.DefaultChest,
                     farmHouse.fridgePosition.ToVector2());
                 break;
-            case IslandFarmHouse
-            {
-                fridge.Value:
-                { } fridge,
-            } islandFarmHouse when !excluded.Contains(fridge) && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+            case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
+                                                                                && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
                 excluded.Add(fridge);
                 yield return new FridgeStorage(
                     islandFarmHouse,
@@ -535,12 +518,8 @@ internal class StorageHelper
                     break;
 
                 // Fridge
-                case FarmHouse
-                {
-                    fridge.Value:
-                    { } fridge,
-                    fridgePosition: var fridgePosition,
-                } farmHouse when !referenceContext.ContainsKey(fridge) && !fridgePosition.Equals(Point.Zero):
+                case FarmHouse { fridge.Value: { } fridge, fridgePosition: var fridgePosition } farmHouse
+                    when !referenceContext.ContainsKey(fridge) && !fridgePosition.Equals(Point.Zero):
                     referenceContext.Add(
                         fridge,
                         new FridgeStorage(
@@ -552,9 +531,7 @@ internal class StorageHelper
                 // Island Fridge
                 case IslandFarmHouse
                     {
-                        fridge.Value:
-                        { } islandFridge,
-                        fridgePosition: var islandFridgePosition,
+                        fridge.Value: { } islandFridge, fridgePosition: var islandFridgePosition,
                     } islandFarmHouse when !referenceContext.ContainsKey(islandFridge)
                                         && !islandFridgePosition.Equals(Point.Zero):
                     referenceContext.Add(
@@ -586,27 +563,17 @@ internal class StorageHelper
             case IStorageObject storageObject:
                 storage = storageObject;
                 return true;
-            case Chest
-            {
-                SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
-            } shippingChest:
+            case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } shippingChest:
                 storage = new ShippingBinStorage(
                     shippingChest,
                     parent,
                     StorageHelper.Instance!._config.DefaultChest,
                     position);
                 return true;
-            case Chest
-            {
-                playerChest.Value: true,
-            } chest:
+            case Chest { playerChest.Value: true } chest:
                 storage = new ChestStorage(chest, parent, StorageHelper.Instance!._config.DefaultChest, position);
                 return true;
-            case SObject
-            {
-                ParentSheetIndex: 165,
-                heldObject.Value: Chest,
-            } heldObj:
+            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
                 storage = new ObjectStorage(heldObj, parent, StorageHelper.Instance!._config.DefaultChest, position);
                 return true;
             case ShippingBin shippingBin:
@@ -623,18 +590,11 @@ internal class StorageHelper
                     StorageHelper.Instance!._config.DefaultChest,
                     position);
                 return true;
-            case FarmHouse
-            {
-                fridge.Value:
-                { },
-            } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
+            case FarmHouse { fridge.Value: { } } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(farmHouse, StorageHelper.Instance!._config.DefaultChest, position);
                 return true;
-            case IslandFarmHouse
-            {
-                fridge.Value:
-                { },
-            } islandFarmHouse when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+            case IslandFarmHouse { fridge.Value: { } } islandFarmHouse
+                when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(islandFarmHouse, StorageHelper.Instance!._config.DefaultChest, position);
                 return true;
             case IslandWest islandWest:

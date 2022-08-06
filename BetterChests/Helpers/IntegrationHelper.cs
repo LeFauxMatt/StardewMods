@@ -163,22 +163,14 @@ internal class IntegrationHelper
     private IEnumerable<IStorageObject> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
     {
         if (!this._helper.ModRegistry.IsLoaded(IntegrationHelper.ExpandedFridgeId)
-         || location is not FarmHouse
-            {
-                upgradeLevel: > 0,
-            })
+         || location is not FarmHouse { upgradeLevel: > 0 })
         {
             yield break;
         }
 
         foreach (var (pos, obj) in location.Objects.Pairs)
         {
-            if ((int)pos.Y == -300
-             && obj is Chest
-                {
-                    bigCraftable.Value: true,
-                    ParentSheetIndex: 216,
-                } chest)
+            if ((int)pos.Y == -300 && obj is Chest { bigCraftable.Value: true, ParentSheetIndex: 216 } chest)
             {
                 excluded.Add(chest);
             }

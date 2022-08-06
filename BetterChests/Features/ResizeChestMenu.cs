@@ -167,19 +167,12 @@ internal class ResizeChestMenu : IFeature
     {
         switch (menu)
         {
-            case ItemGrabMenu
-                 {
-                     context: null,
-                 }
-                 or not ItemGrabMenu:
+            case ItemGrabMenu { context: null } or not ItemGrabMenu:
                 ResizeChestMenu.Instance!.Context = null;
                 ResizeChestMenu.Instance.Storage = null;
                 return 0;
-            case ItemGrabMenu
-            {
-                context:
-                { } context,
-            } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
+            case ItemGrabMenu { context: { } context }
+                when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
                 ResizeChestMenu.Instance.Context = context;
                 ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
                 break;
@@ -203,18 +196,11 @@ internal class ResizeChestMenu : IFeature
     {
         switch (menu)
         {
-            case
-            {
-                context: null,
-            }:
+            case { context: null }:
                 ResizeChestMenu.Instance!.Context = null;
                 ResizeChestMenu.Instance.Storage = null;
                 break;
-            case
-            {
-                context:
-                { } context,
-            } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
+            case { context: { } context } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
                 ResizeChestMenu.Instance.Context = context;
                 ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
                 break;
@@ -474,10 +460,7 @@ internal class ResizeChestMenu : IFeature
     {
         if (e.NewMenu is not ItemGrabMenu
             {
-                ItemsToGrabMenu.inventory:
-                { } topRow,
-                inventory.inventory:
-                { } bottomRow,
+                ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow,
             })
         {
             return;

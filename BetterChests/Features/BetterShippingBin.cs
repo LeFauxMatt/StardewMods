@@ -59,12 +59,7 @@ internal class BetterShippingBin : IFeature
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
-        if (e.NewMenu is ItemGrabMenu
-            {
-                context:
-                { } context,
-                shippingBin: true,
-            }
+        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: true }
          && StorageHelper.TryGetOne(context, out var storage)
          && storage is ShippingBinStorage)
         {
