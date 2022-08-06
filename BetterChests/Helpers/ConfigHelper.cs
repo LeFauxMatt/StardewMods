@@ -151,6 +151,14 @@ internal class ConfigHelper
             FormatHelper.FormatArea,
             nameof(ModConfig.CustomColorPickerArea));
 
+        IntegrationHelper.GMCM.API.AddBoolOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.HideItems,
+            value => ConfigHelper.Instance.Config.HideItems = value,
+            I18n.Config_HideItems_Name,
+            I18n.Config_HideItems_Tooltip,
+            nameof(ModConfig.HideItems));
+
         if (IntegrationHelper.TestConflicts(nameof(LabelChest), out var mods))
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));

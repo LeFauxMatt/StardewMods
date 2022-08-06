@@ -63,6 +63,8 @@
   "config.filter-items.tooltip": "Restrict what items can be added to a Chest.",
   "config.filter-items-list.name": "Chest Categories",
   "config.filter-items-list.tooltip": "The list of categories that the chest will accept.",
+  "config.hide-items.name": "Hide Items",
+  "config.hide-items.tooltip": "Hide deselected items completely instead of graying them out.",
   "config.label-chest.name": "Label Chest",
   "config.label-chest.tooltip": "Assign a label to a chest that will appear in game.",
   "config.open-held-chest.name": "Open Held Chest",

@@ -192,6 +192,11 @@ internal class ChestMenuTabs : IFeature
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
     {
+        if (this._config.HideItems)
+        {
+            return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
+        }
+
         return this.ItemMatcher.Any() ? items.OrderBy(item => this.ItemMatcher.Matches(item) ? 0 : 1) : items;
     }
 
