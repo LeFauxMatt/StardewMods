@@ -215,6 +215,24 @@ internal class ConfigHelper
                 nameof(ModConfig.SlotLockHold));
         }
 
+        if (IntegrationHelper.TestConflicts(nameof(TransferItems), out mods))
+        {
+            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
+            IntegrationHelper.GMCM.API.AddParagraph(
+                ConfigHelper.Instance._modManifest,
+                () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(TransferItems)}", modList));
+        }
+        else
+        {
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                ConfigHelper.Instance._modManifest,
+                () => ConfigHelper.Instance.Config.TransferItems,
+                value => ConfigHelper.Instance.Config.TransferItems = value,
+                I18n.Config_TransferItems_Name,
+                I18n.Config_TransferItems_Tooltip,
+                nameof(ModConfig.TransferItems));
+        }
+
         // Controls
         IntegrationHelper.GMCM.API.AddSectionTitle(ConfigHelper.Instance._modManifest, I18n.Section_Controls_Name);
         IntegrationHelper.GMCM.API.AddParagraph(ConfigHelper.Instance._modManifest, I18n.Section_Controls_Description);
