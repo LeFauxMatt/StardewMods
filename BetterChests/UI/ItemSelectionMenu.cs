@@ -338,11 +338,12 @@ internal class ItemSelectionMenu : ItemGrabMenu
                     from tag in ItemSelectionMenu.AllTags
                     where this._selected.Contains(tag.name)
                        || (tag.name[..1] != "!" && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name)))
-                    orderby this._selected.Contains(tag.name) ? 0 : 1, tag.name
+                    orderby this._selected.Contains(tag.name) ? 0 : 1, tag.name[..1] == "!" ? tag.name[1..] : tag.name
                     select tag
                     :
                     from tag in ItemSelectionMenu.AllTags
                     where tag.name[..1] != "!" && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name))
+                    orderby tag.name
                     select tag);
             var x = this.inventory.xPositionOnScreen;
             var y = this.inventory.yPositionOnScreen;
