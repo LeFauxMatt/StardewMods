@@ -22,6 +22,10 @@ internal class ResizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChest";
 
+    private static ResizeChest? Instance;
+
+    private bool _isActivated;
+
     private ResizeChest()
     {
         HarmonyHelper.AddPatches(
@@ -38,21 +42,28 @@ internal class ResizeChest : IFeature
                         typeof(ItemGrabMenu),
                         new[]
                         {
-                            typeof(IList<Item>), typeof(bool), typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
-                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
-                            typeof(int), typeof(object),
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object),
                         }),
                     typeof(ResizeChest),
                     nameof(ResizeChest.ItemGrabMenu_constructor_transpiler),
                     PatchType.Transpiler),
             });
     }
-
-    private static ResizeChest? Instance { get; set; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="ResizeChest" />.
@@ -66,24 +77,24 @@ internal class ResizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(ResizeChest.Id);
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(ResizeChest.Id);
     }
 
@@ -93,7 +104,7 @@ internal class ResizeChest : IFeature
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
         if (!StorageHelper.TryGetOne(__instance, out var storage)
-         || storage.ResizeChest == FeatureOption.Disabled
+         || storage.ResizeChest is FeatureOption.Disabled
          || storage.ResizeChestCapacity == 0)
         {
             return;

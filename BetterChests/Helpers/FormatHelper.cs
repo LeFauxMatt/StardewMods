@@ -2,6 +2,7 @@ namespace StardewMods.BetterChests.Helpers;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using StardewMods.Common.Enums;
 using StardewValley;
@@ -11,10 +12,10 @@ using StardewValley;
 /// </summary>
 internal static class FormatHelper
 {
-    private static Dictionary<string, string>? _blueprintsData;
+    private static readonly Lazy<Dictionary<string, string>> BlueprintsDataLazy =
+        new(() => Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints"));
 
-    private static Dictionary<string, string> BlueprintsData => FormatHelper._blueprintsData ??=
-        Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints");
+    private static Dictionary<string, string> BlueprintsData => FormatHelper.BlueprintsDataLazy.Value;
 
     /// <summary>
     ///     Formats an area value using localized text when available.
@@ -179,20 +180,32 @@ internal static class FormatHelper
     /// <returns>Localized text for the storage name.</returns>
     public static string FormatStorageName(string value)
     {
-        return value switch
+        switch (value)
         {
-            "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out var info) => info.Split('/')[8],
-            "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out var info) => info.Split('/')[8],
-            "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out var info) => info.Split('/')[8],
-            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')
-                [8],
-            "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out var info) => info.Split('/')[8],
-            "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out var info) => info.Split('/')[8],
-            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')
-                [8],
-            "Fridge" => I18n.Storage_Fridge_Name(),
-            _ => value,
-        };
+            case "Chest":
+            case "Mini-Fridge":
+            case "Stone Chest":
+            case "Mini-Shipping Bin":
+            case "Junimo Chest":
+                if (FormatHelper.TryGetInfo(value, out var bigCraftableInformation))
+                {
+                    return bigCraftableInformation.Split('/')[8];
+                }
+
+                break;
+            case "Junimo Hut":
+            case "Shipping Bin":
+                if (FormatHelper.TryGetInfo(value, out var blueprintsData))
+                {
+                    return blueprintsData.Split('/')[8];
+                }
+
+                break;
+            case "Fridge":
+                return I18n.Storage_Fridge_Name();
+        }
+
+        return value;
     }
 
     /// <summary>
@@ -202,19 +215,47 @@ internal static class FormatHelper
     /// <returns>Localized text for the storage tooltip.</returns>
     public static string FormatStorageTooltip(string value)
     {
+        switch (value)
+        {
+            case "Chest":
+            case "Mini-Fridge":
+            case "Stone Chest":
+            case "Mini-Shipping Bin":
+            case "Junimo Chest":
+                if (FormatHelper.TryGetInfo(value, out var bigCraftableInformation))
+                {
+                    return bigCraftableInformation.Split('/')[4];
+                }
+
+                break;
+            case "Junimo Hut":
+            case "Shipping Bin":
+                if (FormatHelper.TryGetInfo(value, out var blueprintsData))
+                {
+                    return blueprintsData.Split('/')[9];
+                }
+
+                break;
+            case "Fridge":
+                return I18n.Storage_Fridge_Tooltip();
+        }
+
+        return value;
+    }
+
+    private static bool TryGetInfo(string value, [NotNullWhen(true)] out string? info)
+    {
+        info = null;
         return value switch
         {
-            "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out var info) => info.Split('/')[4],
-            "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out var info) => info.Split('/')[4],
-            "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out var info) => info.Split('/')[4],
-            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out var info) => info.Split('/')
-                [4],
-            "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out var info) => info.Split('/')[4],
-            "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out var info) => info.Split('/')[9],
-            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out var info) => info.Split('/')
-                [9],
-            "Fridge" => I18n.Storage_Fridge_Tooltip(),
-            _ => value,
+            "Chest" when Game1.bigCraftablesInformation.TryGetValue(130, out info) => true,
+            "Mini-Fridge" when Game1.bigCraftablesInformation.TryGetValue(215, out info) => true,
+            "Stone Chest" when Game1.bigCraftablesInformation.TryGetValue(232, out info) => true,
+            "Mini-Shipping Bin" when Game1.bigCraftablesInformation.TryGetValue(248, out info) => true,
+            "Junimo Chest" when Game1.bigCraftablesInformation.TryGetValue(256, out info) => true,
+            "Junimo Hut" when FormatHelper.BlueprintsData.TryGetValue("Junimo Hut", out info) => true,
+            "Shipping Bin" when FormatHelper.BlueprintsData.TryGetValue("Shipping Bin", out info) => true,
+            _ => false,
         };
     }
 }

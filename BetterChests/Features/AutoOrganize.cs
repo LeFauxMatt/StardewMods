@@ -16,16 +16,16 @@ using StardewValley.Objects;
 /// </summary>
 internal class AutoOrganize : IFeature
 {
+    private static AutoOrganize? Instance;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private AutoOrganize(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
     }
-
-    private static AutoOrganize? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="AutoOrganize" />.
@@ -41,36 +41,36 @@ internal class AutoOrganize : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
+        this._isActivated = true;
+        this._helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
+        this._isActivated = false;
+        this._helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
     }
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages = StorageHelper.All
-                                    .Where(
+        var storages = StorageHelper.All.Where(
                                         storage => storage.AutoOrganize == FeatureOption.Enabled
                                                 && storage is not ChestStorage
                                                    {
                                                        Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-                                                   }).OrderByDescending(storage => storage.StashToChestPriority)
+                                                   })
+                                    .OrderByDescending(storage => storage.StashToChestPriority)
                                     .ToList();
 
         foreach (var fromStorage in storages)

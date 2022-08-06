@@ -20,9 +20,7 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2 position)
-        : base(location, location, defaultChest, position)
-    {
-    }
+        : base(location, location, defaultChest, position) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
@@ -32,9 +30,7 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(ShippingBin shippingBin, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(shippingBin, parent, defaultChest, position)
-    {
-    }
+        : base(shippingBin, parent, defaultChest, position) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
@@ -44,9 +40,7 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(chest, parent, defaultChest, position)
-    {
-    }
+        : base(chest, parent, defaultChest, position) { }
 
     /// <inheritdoc />
     public override int ActualCapacity =>
@@ -94,13 +88,13 @@ internal class ShippingBinStorage : BaseStorage
             }
         }
 
-        if (this.Items.Count < this.ActualCapacity)
+        if (this.Items.Count >= this.ActualCapacity)
         {
-            this.Items.Add(item);
-            return null;
+            return item;
         }
 
-        return item;
+        this.Items.Add(item);
+        return null;
     }
 
     /// <inheritdoc />

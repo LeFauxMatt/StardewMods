@@ -13,16 +13,16 @@ using StardewValley.Menus;
 /// </summary>
 internal class LabelChest : IFeature
 {
+    private static LabelChest? Instance;
+
+    private readonly IModHelper Helper;
+
+    private bool _isActivated;
+
     private LabelChest(IModHelper helper)
     {
         this.Helper = helper;
     }
-
-    private static LabelChest? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="LabelChest" />.
@@ -37,12 +37,12 @@ internal class LabelChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         this.Helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
     }
@@ -50,19 +50,23 @@ internal class LabelChest : IFeature
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         this.Helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
         this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                context:
+                { } context,
+            } itemGrabMenu
          || !StorageHelper.TryGetOne(context, out var storage)
          || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {

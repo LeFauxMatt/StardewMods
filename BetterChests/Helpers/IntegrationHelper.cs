@@ -24,21 +24,26 @@ internal class IntegrationHelper
     private const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";
     private const string WearMoreRingsId = "bcmpinc.WearMoreRings";
 
+    private static IntegrationHelper? Instance;
+
     private readonly AutomateIntegration _automate;
     private readonly BetterCraftingIntegration _betterCrafting;
+    private readonly ModConfig _config;
     private readonly GenericModConfigMenuIntegration _gmcm;
+    private readonly IModHelper _helper;
+    private readonly Dictionary<string, HashSet<string>> _incompatibilities;
     private readonly ToolbarIconsIntegration _toolbarIcons;
 
     private IntegrationHelper(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
         this._automate = new(helper.ModRegistry);
         this._betterCrafting = new(helper.ModRegistry);
         this._gmcm = new(helper.ModRegistry);
         this._toolbarIcons = new(helper.ModRegistry);
-        this.Incompatibilities =
-            this.Helper.ModContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
+        this._incompatibilities =
+            this._helper.ModContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
     }
 
     /// <summary>
@@ -61,14 +66,6 @@ internal class IntegrationHelper
     /// </summary>
     public static ToolbarIconsIntegration ToolbarIcons => IntegrationHelper.Instance!._toolbarIcons;
 
-    private static IntegrationHelper? Instance { get; set; }
-
-    private ModConfig Config { get; }
-
-    private IModHelper Helper { get; }
-
-    private Dictionary<string, HashSet<string>> Incompatibilities { get; }
-
     /// <summary>
     ///     Gets all storages placed in a particular location.
     /// </summary>
@@ -89,7 +86,7 @@ internal class IntegrationHelper
             yield return storage;
         }
 
-        if (IntegrationHelper.Instance.Helper.ModRegistry.IsLoaded(IntegrationHelper.WearMoreRingsId)
+        if (IntegrationHelper.Instance._helper.ModRegistry.IsLoaded(IntegrationHelper.WearMoreRingsId)
          && location is Farm
          && location.Objects.TryGetValue(new(0, -50), out var obj))
         {
@@ -132,7 +129,7 @@ internal class IntegrationHelper
     /// <returns>Returns true if there is an incompatibility.</returns>
     public static bool TestConflicts(string featureName, [NotNullWhen(true)] out List<IModInfo?>? mods)
     {
-        if (!IntegrationHelper.Instance!.Incompatibilities.TryGetValue(featureName, out var modIds))
+        if (!IntegrationHelper.Instance!._incompatibilities.TryGetValue(featureName, out var modIds))
         {
             mods = null;
             return false;
@@ -140,8 +137,8 @@ internal class IntegrationHelper
 
         mods = (
             from modId in modIds
-            where IntegrationHelper.Instance.Helper.ModRegistry.IsLoaded(modId)
-            select IntegrationHelper.Instance.Helper.ModRegistry.Get(modId)).ToList();
+            where IntegrationHelper.Instance._helper.ModRegistry.IsLoaded(modId)
+            select IntegrationHelper.Instance._helper.ModRegistry.Get(modId)).ToList();
 
         return mods.Any();
     }
@@ -165,15 +162,23 @@ internal class IntegrationHelper
 
     private IEnumerable<IStorageObject> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
     {
-        if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.ExpandedFridgeId)
-         || location is not FarmHouse { upgradeLevel: > 0 })
+        if (!this._helper.ModRegistry.IsLoaded(IntegrationHelper.ExpandedFridgeId)
+         || location is not FarmHouse
+            {
+                upgradeLevel: > 0,
+            })
         {
             yield break;
         }
 
         foreach (var (pos, obj) in location.Objects.Pairs)
         {
-            if ((int)pos.Y == -300 && obj is Chest { bigCraftable.Value: true, ParentSheetIndex: 216 } chest)
+            if ((int)pos.Y == -300
+             && obj is Chest
+                {
+                    bigCraftable.Value: true,
+                    ParentSheetIndex: 216,
+                } chest)
             {
                 excluded.Add(chest);
             }
@@ -182,7 +187,7 @@ internal class IntegrationHelper
 
     private IEnumerable<IStorageObject> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
     {
-        if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
+        if (!this._helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
         {
             yield break;
         }
@@ -203,48 +208,51 @@ internal class IntegrationHelper
             if (horse?.HorseId == stable.HorseId && Game1.player.currentLocation.Equals(location))
             {
                 excluded.Add(chest);
-                yield return new ChestStorage(chest, horse, this.Config.DefaultChest, Game1.player.getTileLocation());
+                yield return new ChestStorage(chest, horse, this._config.DefaultChest, Game1.player.getTileLocation());
             }
 
             horse = stable.getStableHorse();
-            if (horse?.getOwner() == Game1.player && horse.currentLocation.Equals(location))
+            if (horse?.getOwner() != Game1.player || !horse.currentLocation.Equals(location))
             {
-                excluded.Add(chest);
-                yield return new ChestStorage(chest, horse, this.Config.DefaultChest, horse.getTileLocation());
+                continue;
             }
+
+            excluded.Add(chest);
+            yield return new ChestStorage(chest, horse, this._config.DefaultChest, horse.getTileLocation());
         }
     }
 
     private IEnumerable<IStorageObject> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
     {
-        if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
+        if (!this._helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
         {
             yield break;
         }
 
-        if (player.mount is not null)
+        if (player.mount is null)
         {
-            var farm = Game1.getFarm();
-            var stable = farm.buildings.OfType<Stable>()
-                             .FirstOrDefault(stable => stable.HorseId == player.mount.HorseId);
-            if (stable is null
-             || !stable.modData.TryGetValue($"{IntegrationHelper.HorseOverhaulId}/stableID", out var stableId)
-             || !int.TryParse(stableId, out var x)
-             || !farm.Objects.TryGetValue(new(x, 0), out var obj)
-             || obj is not Chest chest
-             || !chest.modData.ContainsKey($"{IntegrationHelper.HorseOverhaulId}/isSaddleBag"))
-            {
-                yield break;
-            }
-
-            excluded.Add(chest);
-            yield return new ChestStorage(chest, Game1.player, this.Config.DefaultChest, player.getTileLocation());
+            yield break;
         }
+
+        var farm = Game1.getFarm();
+        var stable = farm.buildings.OfType<Stable>().FirstOrDefault(stable => stable.HorseId == player.mount.HorseId);
+        if (stable is null
+         || !stable.modData.TryGetValue($"{IntegrationHelper.HorseOverhaulId}/stableID", out var stableId)
+         || !int.TryParse(stableId, out var x)
+         || !farm.Objects.TryGetValue(new(x, 0), out var obj)
+         || obj is not Chest chest
+         || !chest.modData.ContainsKey($"{IntegrationHelper.HorseOverhaulId}/isSaddleBag"))
+        {
+            yield break;
+        }
+
+        excluded.Add(chest);
+        yield return new ChestStorage(chest, Game1.player, this._config.DefaultChest, player.getTileLocation());
     }
 
     private bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out IStorageObject? storage)
     {
-        if (!this.Helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId)
+        if (!this._helper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId)
          || context is not Chest chest
          || !chest.modData.ContainsKey($"{IntegrationHelper.HorseOverhaulId}/isSaddleBag"))
         {
@@ -266,16 +274,18 @@ internal class IntegrationHelper
             var horse = Game1.player.mount;
             if (horse?.HorseId == stable.HorseId)
             {
-                storage = new ChestStorage(chest, Game1.player, this.Config.DefaultChest, horse.getTileLocation());
+                storage = new ChestStorage(chest, Game1.player, this._config.DefaultChest, horse.getTileLocation());
                 return true;
             }
 
             horse = stable.getStableHorse();
-            if (horse?.getOwner() == Game1.player)
+            if (horse?.getOwner() != Game1.player)
             {
-                storage = new ChestStorage(chest, horse, this.Config.DefaultChest, horse.getTileLocation());
-                return true;
+                continue;
             }
+
+            storage = new ChestStorage(chest, horse, this._config.DefaultChest, horse.getTileLocation());
+            return true;
         }
 
         storage = default;

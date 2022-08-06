@@ -1,5 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -20,62 +21,35 @@ using StardewValley.Menus;
 /// </summary>
 internal class ChestMenuTabs : IFeature
 {
-    private static Dictionary<string, ClickableTextureComponent>? CachedTabs;
+    private static readonly Lazy<Dictionary<string, ClickableTextureComponent>>
+        AllTabsLazy = new(ChestMenuTabs.GetTabs);
 
+    private static ChestMenuTabs? Instance;
+
+    private readonly ModConfig _config;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
+    private readonly IModHelper _helper;
     private readonly PerScreen<IItemMatcher> _itemMatcher = new(() => new ItemMatcher(true));
     private readonly PerScreen<int> _tabIndex = new(() => -1);
-    private readonly PerScreen<List<ClickableTextureComponent>?> _tabs = new();
+    private readonly PerScreen<List<ClickableTextureComponent>> _tabs = new(() => new());
+
+    private bool _isActivated;
 
     private ChestMenuTabs(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
     }
 
-    private static ChestMenuTabs? Instance { get; set; }
+    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.AllTabsLazy.Value;
 
-    private Dictionary<string, ClickableTextureComponent> AllTabs
-    {
-        get
-        {
-            if (ChestMenuTabs.CachedTabs is not null)
-            {
-                return ChestMenuTabs.CachedTabs;
-            }
-
-            var tabs = this.Helper.GameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
-            return ChestMenuTabs.CachedTabs ??=
-            (
-                from tab in from tab in tabs select (tab.Key, Value: tab.Value.Split('/'))
-                select (
-                    tab.Key,
-                    Value: new ClickableTextureComponent(
-                        tab.Value[3],
-                        new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                        string.Empty,
-                        tab.Value[0],
-                        this.Helper.GameContent.Load<Texture2D>(tab.Value[1]),
-                        new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
-                        Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value);
-        }
-    }
-
-    private List<ClickableTextureComponent>? Components
-    {
-        get => this._tabs.Value;
-        set => this._tabs.Value = value;
-    }
-
-    private ModConfig Config { get; }
+    private List<ClickableTextureComponent> Components => this._tabs.Value;
 
     private ItemGrabMenu? CurrentMenu
     {
         get => this._currentMenu.Value;
         set => this._currentMenu.Value = value;
     }
-
-    private IModHelper Helper { get; }
 
     private int Index
     {
@@ -84,7 +58,7 @@ internal class ChestMenuTabs : IFeature
         {
             this._tabIndex.Value = value;
             this.ItemMatcher.Clear();
-            if (value == -1 || this.Components is null || !this.Components.Any())
+            if (value == -1 || !this.Components.Any())
             {
                 Log.Trace("Switching tab to None");
                 BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
@@ -103,15 +77,13 @@ internal class ChestMenuTabs : IFeature
         }
     }
 
-    private bool IsActivated { get; set; }
-
     private IItemMatcher ItemMatcher => this._itemMatcher.Value;
 
     private Dictionary<string, string> Tabs
     {
         get
         {
-            var tabs = this.Helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
+            var tabs = this._helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
             if (tabs is not null && tabs.Any())
             {
                 return tabs;
@@ -149,7 +121,7 @@ internal class ChestMenuTabs : IFeature
                 { "Seeds", "/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer" },
             };
 
-            this.Helper.Data.WriteJsonFile("assets/tabs.json", tabs);
+            this._helper.Data.WriteJsonFile("assets/tabs.json", tabs);
 
             return tabs;
         }
@@ -169,35 +141,53 @@ internal class ChestMenuTabs : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         BetterItemGrabMenu.BeforeDraw += this.OnBeforeDraw;
-        this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         BetterItemGrabMenu.BeforeDraw -= this.OnBeforeDraw;
-        this.Helper.Events.Content.AssetRequested -= this.OnAssetRequested;
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this._helper.Events.Content.AssetRequested -= this.OnAssetRequested;
+        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this._helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+    }
+
+    private static Dictionary<string, ClickableTextureComponent> GetTabs()
+    {
+        return (
+            from tab in
+                from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
+                select (tab.Key, Value: tab.Value.Split('/'))
+            select (
+                tab.Key,
+                Value: new ClickableTextureComponent(
+                    tab.Value[3],
+                    new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
+                    string.Empty,
+                    tab.Value[0],
+                    Game1.content.Load<Texture2D>(tab.Value[1]),
+                    new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
+                    Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value);
     }
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
@@ -216,7 +206,7 @@ internal class ChestMenuTabs : IFeature
     [EventPriority(EventPriority.High)]
     private void OnBeforeDraw(object? sender, SpriteBatch b)
     {
-        if (this.CurrentMenu is null || this.Components is null)
+        if (this.CurrentMenu is null || !this.Components.Any())
         {
             return;
         }
@@ -290,7 +280,7 @@ internal class ChestMenuTabs : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Components is null)
+        if (this.CurrentMenu is null || !this.Components.Any())
         {
             return;
         }
@@ -310,32 +300,32 @@ internal class ChestMenuTabs : IFeature
                 return;
         }
 
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Components is null)
+        if (this.CurrentMenu is null || !this.Components.Any())
         {
             return;
         }
 
-        if (this.Config.ControlScheme.PreviousTab.JustPressed())
+        if (this._config.ControlScheme.PreviousTab.JustPressed())
         {
             this.Index = this.Index == -1 ? this.Components.Count - 1 : this.Index - 1;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.PreviousTab);
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.PreviousTab);
         }
 
-        if (this.Config.ControlScheme.NextTab.JustPressed())
+        if (this._config.ControlScheme.NextTab.JustPressed())
         {
             this.Index = this.Index == this.Components.Count - 1 ? -1 : this.Index + 1;
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.NextTab);
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.NextTab);
         }
     }
 
     private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
     {
-        if (this.CurrentMenu is null || this.Components is null)
+        if (this.CurrentMenu is null || !this.Components.Any())
         {
             return;
         }
@@ -374,28 +364,34 @@ internal class ChestMenuTabs : IFeature
         }
 
         this.CurrentMenu = menu;
-        if (this.CurrentMenu is not { context: { } context }
+        this.Components.Clear();
+        if (this.CurrentMenu is not
+            {
+                context:
+                { } context,
+            }
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.ChestMenuTabs == FeatureOption.Disabled)
         {
-            this.Components = null;
             return;
         }
 
         var tabs = storage.ChestMenuTabSet.Any()
-            ? this.AllTabs.Where(tab => storage.ChestMenuTabSet.Contains(tab.Key))
-            : this.AllTabs;
+            ? ChestMenuTabs.AllTabs.Where(tab => storage.ChestMenuTabSet.Contains(tab.Key))
+            : ChestMenuTabs.AllTabs;
 
-        this.Components = tabs.Select(
-            tab =>
-            {
-                if (string.IsNullOrWhiteSpace(tab.Value.hoverText))
-                {
-                    tab.Value.hoverText = this.Helper.Translation.Get($"tab.{tab.Key}.Name").Default(tab.Key);
-                }
+        this.Components.AddRange(
+            tabs.Select(
+                    tab =>
+                    {
+                        if (string.IsNullOrWhiteSpace(tab.Value.hoverText))
+                        {
+                            tab.Value.hoverText = this._helper.Translation.Get($"tab.{tab.Key}.Name").Default(tab.Key);
+                        }
 
-                return tab.Value;
-            }).OrderBy(tab => tab.hoverText).ToList();
+                        return tab.Value;
+                    })
+                .OrderBy(tab => tab.hoverText));
 
         ClickableTextureComponent? prevTab = null;
         foreach (var tab in this.Components)

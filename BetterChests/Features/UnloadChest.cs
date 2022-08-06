@@ -16,16 +16,16 @@ using StardewValley.Objects;
 /// </summary>
 internal class UnloadChest : IFeature
 {
+    private static UnloadChest? Instance;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private UnloadChest(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
     }
-
-    private static UnloadChest? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="UnloadChest" />.
@@ -40,25 +40,25 @@ internal class UnloadChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._isActivated = true;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._isActivated = false;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     [EventPriority(EventPriority.Normal + 10)]
@@ -66,8 +66,11 @@ internal class UnloadChest : IFeature
     {
         if (!Context.IsPlayerFree
          || !e.Button.IsUseToolButton()
-         || this.Helper.Input.IsSuppressed(e.Button)
-         || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+         || this._helper.Input.IsSuppressed(e.Button)
+         || Game1.player.CurrentItem is Chest
+                                        {
+                                            SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+                                        }
                                         or not Chest
                                         or null
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
@@ -122,6 +125,6 @@ internal class UnloadChest : IFeature
 
         fromStorage.ClearNulls();
         CarryChest.CheckForOverburdened();
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
     }
 }

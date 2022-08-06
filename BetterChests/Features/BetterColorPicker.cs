@@ -14,23 +14,23 @@ using StardewValley.Objects;
 /// </summary>
 internal class BetterColorPicker : IFeature
 {
+    private static BetterColorPicker? Instance;
+
+    private readonly ModConfig _config;
+
+    private readonly IModHelper _helper;
+
     private readonly PerScreen<HslColorPicker> _perScreenColorPicker = new(() => new());
+
+    private bool _isActivated;
 
     private BetterColorPicker(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
     }
 
-    private static BetterColorPicker? Instance { get; set; }
-
     private HslColorPicker ColorPicker => this._perScreenColorPicker.Value;
-
-    private ModConfig Config { get; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="BetterColorPicker" />.
@@ -46,29 +46,29 @@ internal class BetterColorPicker : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._isActivated = true;
+        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._isActivated = false;
+        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -91,7 +91,7 @@ internal class BetterColorPicker : IFeature
 
         Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
         Game1.playSound("drumkit6");
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -122,7 +122,7 @@ internal class BetterColorPicker : IFeature
         {
             itemGrabMenu.chestColorPicker.visible = false;
             itemGrabMenu.discreteColorPickerCC = null;
-            var x = this.Config.CustomColorPickerArea switch
+            var x = this._config.CustomColorPickerArea switch
             {
                 ComponentArea.Left => itemGrabMenu.xPositionOnScreen
                                     - 2 * Game1.tileSize
@@ -136,7 +136,7 @@ internal class BetterColorPicker : IFeature
             this.ColorPicker.Init(x, y, chest.playerChoiceColor.Value);
         }
 
-        this.ColorPicker.Update(this.Helper.Input);
+        this.ColorPicker.Update(this._helper.Input);
         chest.playerChoiceColor.Value = this.ColorPicker.Color;
     }
 }

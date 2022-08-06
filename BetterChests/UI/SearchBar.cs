@@ -4,7 +4,6 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewModdingAPI;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley;
@@ -15,17 +14,23 @@ using StardewValley.Menus;
 /// </summary>
 internal class SearchBar : IClickableMenu
 {
+    private readonly IItemMatcher _itemMatcher;
+
+    private readonly ClickableComponent _searchArea;
+
+    private readonly TextBox _searchField;
+
+    private readonly ClickableTextureComponent _searchIcon;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchBar" /> class.
     /// </summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="matcher">ItemMatcher for holding the selected item tags.</param>
-    public SearchBar(IModHelper helper, IItemMatcher matcher)
+    public SearchBar(IItemMatcher matcher)
     {
-        this.Helper = helper;
-        this.ItemMatcher = matcher;
+        this._itemMatcher = matcher;
 
-        var texture = this.Helper.GameContent.Load<Texture2D>("LooseSprites\\textBox");
+        var texture = Game1.content.Load<Texture2D>("LooseSprites\\textBox");
         this.width = Math.Min(12 * Game1.tileSize, Game1.uiViewport.Width);
         this.height = texture.Height;
 
@@ -33,42 +38,32 @@ internal class SearchBar : IClickableMenu
         this.xPositionOnScreen = (int)origin.X;
         this.yPositionOnScreen = Game1.tileSize;
 
-        this.SearchField = new(texture, null, Game1.smallFont, Game1.textColor)
+        this._searchField = new(texture, null, Game1.smallFont, Game1.textColor)
         {
             X = this.xPositionOnScreen,
             Y = this.yPositionOnScreen,
             Width = this.width,
             Selected = true,
-            Text = this.ItemMatcher.StringValue,
+            Text = this._itemMatcher.StringValue,
         };
 
-        this.SearchArea = new(Rectangle.Empty, string.Empty)
+        this._searchArea = new(Rectangle.Empty, string.Empty)
         {
             visible = true,
-            bounds = new(this.SearchField.X, this.SearchField.Y, this.SearchField.Width, this.SearchField.Height),
+            bounds = new(this._searchField.X, this._searchField.Y, this._searchField.Width, this._searchField.Height),
         };
 
-        this.SearchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
+        this._searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
         {
-            bounds = new(this.SearchField.X + this.SearchField.Width - 38, this.SearchField.Y + 6, 32, 32),
+            bounds = new(this._searchField.X + this._searchField.Width - 38, this._searchField.Y + 6, 32, 32),
         };
     }
-
-    private IModHelper Helper { get; }
-
-    private IItemMatcher ItemMatcher { get; }
-
-    private ClickableComponent SearchArea { get; }
-
-    private TextBox SearchField { get; }
-
-    private ClickableTextureComponent SearchIcon { get; }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        this.SearchField.Draw(b);
-        this.SearchIcon.draw(b);
+        this._searchField.Draw(b);
+        this._searchIcon.draw(b);
         this.drawMouse(b);
     }
 
@@ -81,7 +76,7 @@ internal class SearchBar : IClickableMenu
                 this.exitThisMenuNoSound();
                 return;
             case Keys.Escape:
-                this.SearchField.Text = string.Empty;
+                this._searchField.Text = string.Empty;
                 this.exitThisMenuNoSound();
                 return;
             default:
@@ -92,41 +87,41 @@ internal class SearchBar : IClickableMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        if (this.SearchArea.containsPoint(x, y))
+        if (this._searchArea.containsPoint(x, y))
         {
-            this.SearchField.Selected = true;
+            this._searchField.Selected = true;
             return;
         }
 
-        this.SearchField.Selected = false;
+        this._searchField.Selected = false;
         this.exitThisMenuNoSound();
     }
 
     /// <inheritdoc />
     public override void receiveRightClick(int x, int y, bool playSound = true)
     {
-        if (this.SearchArea.containsPoint(x, y))
+        if (this._searchArea.containsPoint(x, y))
         {
-            this.SearchField.Selected = true;
-            this.SearchField.Text = string.Empty;
+            this._searchField.Selected = true;
+            this._searchField.Text = string.Empty;
             return;
         }
 
-        this.SearchField.Selected = false;
+        this._searchField.Selected = false;
         this.exitThisMenuNoSound();
     }
 
     /// <inheritdoc />
     protected override void cleanupBeforeExit()
     {
-        if (!string.IsNullOrWhiteSpace(this.SearchField.Text))
+        if (!string.IsNullOrWhiteSpace(this._searchField.Text))
         {
-            Log.Trace($"ChestFinder: {this.SearchField.Text}");
-            this.ItemMatcher.StringValue = this.SearchField.Text;
+            Log.Trace($"ChestFinder: {this._searchField.Text}");
+            this._itemMatcher.StringValue = this._searchField.Text;
         }
         else
         {
-            this.ItemMatcher.Clear();
+            this._itemMatcher.Clear();
         }
     }
 }

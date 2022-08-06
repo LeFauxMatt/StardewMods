@@ -22,20 +22,31 @@ using StardewValley.Objects;
 internal class CraftFromChest : IFeature
 {
     private const int MaxTimeOut = 60;
+
+    private static CraftFromChest? Instance;
+
     private readonly PerScreen<List<IStorageObject>> _cachedEligible = new(() => new());
+
+    private readonly ModConfig _config;
     private readonly PerScreen<int> _currentTab = new();
+    private readonly IModHelper _helper;
     private readonly PerScreen<List<IStorageObject>> _lockedEligible = new(() => new());
     private readonly PerScreen<int> _timeOut = new();
 
+    private bool _isActivated;
+
     private CraftFromChest(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
     }
 
     private static IEnumerable<IStorageObject> Eligible =>
         from storage in StorageHelper.All
-        where storage is not ChestStorage { Chest: { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } }
+        where storage is not ChestStorage
+              {
+                  Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+              }
            && storage.CraftFromChest != FeatureOptionRange.Disabled
            && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
            && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
@@ -49,21 +60,13 @@ internal class CraftFromChest : IFeature
                   storage.Position)
         select storage;
 
-    private static CraftFromChest? Instance { get; set; }
-
     private List<IStorageObject> CachedEligible => this._cachedEligible.Value;
-
-    private ModConfig Config { get; }
 
     private int CurrentTab
     {
         get => this._currentTab.Value;
         set => this._currentTab.Value = value;
     }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     private List<IStorageObject> LockedEligible => this._lockedEligible.Value;
 
@@ -87,15 +90,15 @@ internal class CraftFromChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.Helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._isActivated = true;
+        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this._helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         if (IntegrationHelper.ToolbarIcons.IsLoaded)
         {
@@ -118,15 +121,15 @@ internal class CraftFromChest : IFeature
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.Helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this._isActivated = false;
+        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this._helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
+        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         if (IntegrationHelper.ToolbarIcons.IsLoaded)
         {
@@ -152,12 +155,12 @@ internal class CraftFromChest : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.Config.ControlScheme.OpenCrafting.JustPressed())
+        if (!Context.IsPlayerFree || !this._config.ControlScheme.OpenCrafting.JustPressed())
         {
             return;
         }
 
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.OpenCrafting);
+        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.OpenCrafting);
         this.OpenCrafting();
     }
 
@@ -213,7 +216,10 @@ internal class CraftFromChest : IFeature
             storage.Mutex?.Update(storage.Parent as GameLocation ?? Game1.currentLocation);
         }
 
-        if (Game1.activeClickableMenu is not GameMenu { currentTab: var currentTab } gameMenu
+        if (Game1.activeClickableMenu is not GameMenu
+            {
+                currentTab: var currentTab,
+            } gameMenu
          || currentTab == this.CurrentTab)
         {
             return;
@@ -251,9 +257,10 @@ internal class CraftFromChest : IFeature
                 null,
                 false,
                 this.CachedEligible.Select(
-                    storage => new Tuple<object, GameLocation>(
-                        new StorageWrapper(storage),
-                        storage.Parent as GameLocation ?? Game1.currentLocation)).ToList());
+                        storage => new Tuple<object, GameLocation>(
+                            new StorageWrapper(storage),
+                            storage.Parent as GameLocation ?? Game1.currentLocation))
+                    .ToList());
             return;
         }
 

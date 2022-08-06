@@ -14,6 +14,11 @@ using StardewValley.Menus;
 /// </summary>
 internal class DropDownList : IClickableMenu
 {
+    private readonly Rectangle _bounds;
+    private readonly Action<string?> _callback;
+    private readonly Dictionary<string, string> _localValues;
+    private readonly List<ClickableComponent> _values;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="DropDownList" /> class.
     /// </summary>
@@ -25,29 +30,26 @@ internal class DropDownList : IClickableMenu
     public DropDownList(IList<string> values, int x, int y, Action<string?> callback, ITranslationHelper translation)
         : base(x, y, 0, 0)
     {
-        this.Callback = callback;
-        this.LocalValues = values.ToDictionary(
+        this._callback = callback;
+        this._localValues = values.ToDictionary(
             value => value,
             value => translation.Get($"tag.{value}").Default(value).ToString());
-        var textBounds = this.LocalValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint())
+        var textBounds = this._localValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint())
                              .ToList();
         var textHeight = textBounds.Max(textBound => textBound.Y);
         this.width = textBounds.Max(textBound => textBound.X) + 16;
         this.height = textBounds.Sum(textBound => textBound.Y) + 16;
-        this.Bounds = new(x, y, this.width, this.height);
-        this.Values = values.Select(
-            (value, index) => new ClickableComponent(
-                new(this.Bounds.X + 8, this.Bounds.Y + 8 + textHeight * index, this.Bounds.Width, textBounds[index].Y),
-                value)).ToList();
+        this._bounds = new(x, y, this.width, this.height);
+        this._values = values.Select(
+                                 (value, index) => new ClickableComponent(
+                                     new(
+                                         this._bounds.X + 8,
+                                         this._bounds.Y + 8 + textHeight * index,
+                                         this._bounds.Width,
+                                         textBounds[index].Y),
+                                     value))
+                             .ToList();
     }
-
-    private Rectangle Bounds { get; }
-
-    private Action<string?> Callback { get; }
-
-    private Dictionary<string, string> LocalValues { get; }
-
-    private List<ClickableComponent> Values { get; }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
@@ -56,10 +58,10 @@ internal class DropDownList : IClickableMenu
             b,
             Game1.mouseCursors,
             OptionsDropDown.dropDownBGSource,
-            this.Bounds.X,
-            this.Bounds.Y,
-            this.Bounds.Width,
-            this.Bounds.Height,
+            this._bounds.X,
+            this._bounds.Y,
+            this._bounds.Width,
+            this._bounds.Height,
             Color.White,
             Game1.pixelZoom,
             false,
@@ -67,13 +69,13 @@ internal class DropDownList : IClickableMenu
 
         // Draw Values
         var (x, y) = Game1.getMousePosition(true);
-        foreach (var value in this.Values)
+        foreach (var value in this._values)
         {
             if (value.bounds.Contains(x, y))
             {
                 b.Draw(
                     Game1.staminaRect,
-                    new(value.bounds.X, value.bounds.Y, this.Bounds.Width - 16, value.bounds.Height),
+                    new(value.bounds.X, value.bounds.Y, this._bounds.Width - 16, value.bounds.Height),
                     new Rectangle(0, 0, 1, 1),
                     Color.Wheat,
                     0f,
@@ -84,7 +86,7 @@ internal class DropDownList : IClickableMenu
 
             b.DrawString(
                 Game1.smallFont,
-                this.LocalValues[value.name],
+                this._localValues[value.name],
                 new(value.bounds.X, value.bounds.Y),
                 Game1.textColor);
         }
@@ -93,7 +95,7 @@ internal class DropDownList : IClickableMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        var value = this.Values.FirstOrDefault(value => value.bounds.Contains(x, y));
-        this.Callback(value?.name);
+        var value = this._values.FirstOrDefault(value => value.bounds.Contains(x, y));
+        this._callback(value?.name);
     }
 }
