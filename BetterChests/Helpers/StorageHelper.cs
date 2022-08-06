@@ -399,7 +399,7 @@ internal class StorageHelper
                     farmHouse.fridgePosition.ToVector2());
                 break;
             case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
-                                                                                && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+             && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
                 excluded.Add(fridge);
                 yield return new FridgeStorage(
                     islandFarmHouse,

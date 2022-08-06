@@ -2,10 +2,7 @@ namespace StardewMods.BetterChests.Features;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection.Emit;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -15,11 +12,7 @@ using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Helpers.PatternPatcher;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -29,7 +22,6 @@ using StardewValley.Menus;
 internal class SearchItems : IFeature
 {
     private const int ExtraSpace = 24;
-    private const string Id = "furyx639.BetterChests/SearchItems";
     private const int MaxTimeOut = 20;
 
     private static SearchItems? Instance;
@@ -63,57 +55,6 @@ internal class SearchItems : IFeature
     {
         this._helper = helper;
         this._config = config;
-        HarmonyHelper.AddPatches(
-            SearchItems.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Constructor(
-                        typeof(ItemGrabMenu),
-                        new[]
-                        {
-                            typeof(IList<Item>),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(Item),
-                            typeof(int),
-                            typeof(object),
-                        }),
-                    typeof(SearchItems),
-                    nameof(SearchItems.ItemGrabMenu_constructor_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
-                    typeof(SearchItems),
-                    nameof(SearchItems.ItemGrabMenu_draw_transpiler),
-                    PatchType.Transpiler),
-                new(
-                    AccessTools.Method(
-                        typeof(MenuWithInventory),
-                        nameof(MenuWithInventory.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(int),
-                            typeof(int),
-                        }),
-                    typeof(SearchItems),
-                    nameof(SearchItems.MenuWithInventory_draw_transpiler),
-                    PatchType.Transpiler),
-            });
     }
 
     private object? Context
@@ -174,7 +115,7 @@ internal class SearchItems : IFeature
         }
 
         this._isActivated = true;
-        HarmonyHelper.ApplyPatches(SearchItems.Id);
+        BetterItemGrabMenu.ConstructMenu += this.OnConstructMenu;
         this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -189,207 +130,10 @@ internal class SearchItems : IFeature
         }
 
         this._isActivated = false;
-        HarmonyHelper.UnapplyPatches(SearchItems.Id);
+        BetterItemGrabMenu.ConstructMenu -= this.OnConstructMenu;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-    }
-
-    private static int GetExtraSpace(MenuWithInventory menu)
-    {
-        switch (menu)
-        {
-            case ItemGrabMenu { context: null } or not ItemGrabMenu:
-                SearchItems.Instance!.Context = null;
-                SearchItems.Instance.Storage = null;
-                return 0;
-            case ItemGrabMenu { context: { } context } when !ReferenceEquals(SearchItems.Instance!.Context, context):
-                SearchItems.Instance.Context = context;
-                SearchItems.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
-                break;
-        }
-
-        return SearchItems.Instance.Storage?.SearchItems switch
-        {
-            null or FeatureOption.Disabled => 0,
-            _ => SearchItems.ExtraSpace,
-        };
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
-    {
-        __instance.yPositionOnScreen -= SearchItems.ExtraSpace;
-        __instance.height += SearchItems.ExtraSpace;
-    }
-
-    private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        Log.Trace($"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)} from {nameof(SearchItems)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
-            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
-
-        // ****************************************************************************************
-        // Draw Backpack Patch
-        // This adds SearchItems.GetExtraSpace() to the y-coordinate of the backpack sprite
-        patcher.AddSeek(
-            new CodeInstruction(
-                OpCodes.Ldfld,
-                AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
-        patcher.AddPatch(
-                   code =>
-                   {
-                       Log.Trace("Moving backpack icon down by search bar height.", true);
-                       code.Add(new(OpCodes.Ldarg_0));
-                       code.Add(
-                           new(
-                               OpCodes.Call,
-                               AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
-                       code.Add(new(OpCodes.Add));
-                   },
-                   new CodeInstruction(
-                       OpCodes.Ldfld,
-                       AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
-               .Repeat(2);
-
-        // ****************************************************************************************
-        // Move Dialogue Patch
-        // This subtracts SearchItems.GetExtraSpace() from the y-coordinate of the ItemsToGrabMenu
-        // dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                Log.Trace("Moving top dialogue box up by search bar height.", true);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
-                code.Add(new(OpCodes.Sub));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(OpCodes.Sub),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Sub));
-
-        // ****************************************************************************************
-        // Expand Dialogue Patch
-        // This adds SearchItems.GetExtraSpace() to the height of the ItemsToGrabMenu dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                Log.Trace("Expanding top dialogue box by search bar height.", true);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
-                code.Add(new(OpCodes.Add));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Add),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(OpCodes.Ldc_I4_2),
-            new(OpCodes.Mul),
-            new(OpCodes.Add));
-
-        // Fill code buffer
-        foreach (var inCode in instructions)
-        {
-            // Return patched code segments
-            foreach (var outCode in patcher.From(inCode))
-            {
-                yield return outCode;
-            }
-        }
-
-        // Return remaining code
-        foreach (var outCode in patcher.FlushBuffer())
-        {
-            yield return outCode;
-        }
-
-        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
-        if (patcher.AppliedPatches < patcher.TotalPatches)
-        {
-            Log.Warn("Failed to applied all patches!");
-        }
-    }
-
-    private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        Log.Trace(
-            $"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)} from {nameof(SearchItems)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
-            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
-
-        // ****************************************************************************************
-        // Move Dialogue Patch
-        // This adds SearchItems.GetExtraSpace() to the y-coordinate of the inventory dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                Log.Trace("Moving bottom dialogue box down by search bar height.", true);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
-                code.Add(new(OpCodes.Add));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(OpCodes.Add),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Add),
-            new(OpCodes.Ldc_I4_S, (sbyte)64),
-            new(OpCodes.Add));
-
-        // ****************************************************************************************
-        // Shrink Dialogue Patch
-        // This adds SearchItems.GetExtraSpace() to the height of the inventory dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                Log.Trace("Shrinking bottom dialogue box height by search bar height.", true);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SearchItems), nameof(SearchItems.GetExtraSpace))));
-                code.Add(new(OpCodes.Add));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Add),
-            new(OpCodes.Ldc_I4, 192),
-            new(OpCodes.Add));
-
-        // Fill code buffer
-        foreach (var inCode in instructions)
-        {
-            // Return patched code segments
-            foreach (var outCode in patcher.From(inCode))
-            {
-                yield return outCode;
-            }
-        }
-
-        // Return remaining code
-        foreach (var outCode in patcher.FlushBuffer())
-        {
-            yield return outCode;
-        }
-
-        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
-        if (patcher.AppliedPatches < patcher.TotalPatches)
-        {
-            Log.Warn("Failed to applied all patches!");
-        }
     }
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
@@ -438,6 +182,29 @@ internal class SearchItems : IFeature
         }
     }
 
+    private void OnConstructMenu(object? sender, ItemGrabMenu itemGrabMenu)
+    {
+        if (BetterItemGrabMenu.TopPadding != 0)
+        {
+            return;
+        }
+
+        if (itemGrabMenu.context is null || ReferenceEquals(this.Context, itemGrabMenu.context))
+        {
+            this.Context = null;
+            this.Storage = null;
+            return;
+        }
+
+        this.Context = itemGrabMenu.context;
+        this.Storage = StorageHelper.TryGetOne(this.Context, out var storage) ? storage : null;
+        BetterItemGrabMenu.TopPadding = this.Storage?.SearchItems switch
+        {
+            null or FeatureOption.Disabled => 0,
+            _ => SearchItems.ExtraSpace,
+        };
+    }
+
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         if (this.CurrentMenu is null || !this.SearchArea.visible)
@@ -453,8 +220,8 @@ internal class SearchItems : IFeature
     {
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu itemGrabMenu => itemGrabMenu,
             { } clickableMenu when clickableMenu.GetChildMenu() is ItemGrabMenu itemGrabMenu => itemGrabMenu,
+            ItemGrabMenu itemGrabMenu => itemGrabMenu,
             _ => null,
         };
 
@@ -472,7 +239,9 @@ internal class SearchItems : IFeature
             this.ItemMatcher.Clear();
             this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
             this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-            this.SearchField.Width = itemsToGrabMenu.width;
+            this.SearchField.Width = this._config.TransferItems
+                ? itemsToGrabMenu.width - Game1.tileSize - 4
+                : itemsToGrabMenu.width;
             this.SearchField.Selected = false;
             this.SearchArea.visible = true;
             this.SearchArea.bounds = new(

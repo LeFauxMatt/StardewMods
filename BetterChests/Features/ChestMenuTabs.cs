@@ -147,7 +147,7 @@ internal class ChestMenuTabs : IFeature
         }
 
         this._isActivated = true;
-        BetterItemGrabMenu.BeforeDraw += this.OnBeforeDraw;
+        BetterItemGrabMenu.DrawMenu += this.OnDrawMenu;
         this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -164,7 +164,7 @@ internal class ChestMenuTabs : IFeature
         }
 
         this._isActivated = false;
-        BetterItemGrabMenu.BeforeDraw -= this.OnBeforeDraw;
+        BetterItemGrabMenu.DrawMenu -= this.OnDrawMenu;
         this._helper.Events.Content.AssetRequested -= this.OnAssetRequested;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -205,81 +205,6 @@ internal class ChestMenuTabs : IFeature
         if (e.Name.IsEquivalentTo("furyx639.BetterChests/Tabs"))
         {
             e.LoadFrom(() => this.Tabs, AssetLoadPriority.Exclusive);
-        }
-    }
-
-    [EventPriority(EventPriority.High)]
-    private void OnBeforeDraw(object? sender, SpriteBatch b)
-    {
-        if (this.CurrentMenu is null || !this.Components.Any())
-        {
-            return;
-        }
-
-        ClickableTextureComponent? tab;
-        for (var index = 0; index < this.Components.Count; index++)
-        {
-            tab = this.Components[index];
-            tab.sourceRect.Y = 4;
-            tab.sourceRect.Height = 12;
-            if (index == this.Index)
-            {
-                tab.sourceRect.Y = 3;
-                tab.sourceRect.Height = 13;
-                b.Draw(
-                    tab.texture,
-                    new(tab.bounds.X, tab.bounds.Y),
-                    new(128, tab.sourceRect.Y, 16, tab.sourceRect.Height),
-                    Color.White,
-                    0f,
-                    Vector2.Zero,
-                    Game1.pixelZoom,
-                    SpriteEffects.None,
-                    0.86f);
-                tab.draw(b, Color.White, 0.86f + tab.bounds.Y / 20000f);
-
-                // draw texture
-                var bounds = Game1.smallFont.MeasureString(tab.hoverText).ToPoint();
-                IClickableMenu.drawTextureBox(
-                    b,
-                    Game1.menuTexture,
-                    new(0, 256, 60, 60),
-                    this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize - 8,
-                    tab.bounds.Y - 16,
-                    bounds.X + 32,
-                    bounds.Y + Game1.tileSize / 3,
-                    Color.White,
-                    drawShadow: false);
-
-                Utility.drawTextWithShadow(
-                    b,
-                    tab.hoverText,
-                    Game1.smallFont,
-                    new(
-                        this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize + 8,
-                        tab.bounds.Y - 4),
-                    Game1.textColor);
-                continue;
-            }
-
-            b.Draw(
-                tab.texture,
-                new(tab.bounds.X, tab.bounds.Y),
-                new(128, tab.sourceRect.Y, 16, tab.sourceRect.Height),
-                Color.Gray,
-                0f,
-                Vector2.Zero,
-                Game1.pixelZoom,
-                SpriteEffects.None,
-                0.86f);
-            tab.draw(b, Color.Gray, 0.86f + tab.bounds.Y / 20000f);
-        }
-
-        var (x, y) = Game1.getMousePosition(true);
-        tab = this.Components.FirstOrDefault(t => t.containsPoint(x, y));
-        if (tab is not null && !string.IsNullOrWhiteSpace(tab.hoverText))
-        {
-            IClickableMenu.drawHoverText(b, tab.hoverText, Game1.smallFont);
         }
     }
 
@@ -328,6 +253,81 @@ internal class ChestMenuTabs : IFeature
         }
     }
 
+    [EventPriority(EventPriority.High)]
+    private void OnDrawMenu(object? sender, SpriteBatch b)
+    {
+        if (this.CurrentMenu is null || !this.Components.Any())
+        {
+            return;
+        }
+
+        ClickableTextureComponent? tab;
+        for (var index = 0; index < this.Components.Count; index++)
+        {
+            tab = this.Components[index];
+            tab.sourceRect.Y = 4;
+            tab.sourceRect.Height = 12;
+            if (index == this.Index)
+            {
+                tab.sourceRect.Y = 3;
+                tab.sourceRect.Height = 13;
+                b.Draw(
+                    tab.texture,
+                    new(tab.bounds.X, tab.bounds.Y),
+                    new(128, tab.sourceRect.Y, 16, tab.sourceRect.Height),
+                    Color.White,
+                    0f,
+                    Vector2.Zero,
+                    Game1.pixelZoom,
+                    SpriteEffects.None,
+                    0.86f);
+                tab.draw(b, Color.White, 0.86f + tab.bounds.Y / 20000f);
+
+                // draw texture
+                var bounds = Game1.smallFont.MeasureString(tab.hoverText).ToPoint();
+                IClickableMenu.drawTextureBox(
+                    b,
+                    Game1.menuTexture,
+                    new(0, 256, 60, 60),
+                    this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize - 8,
+                    tab.bounds.Y - 12,
+                    bounds.X + 32,
+                    bounds.Y + Game1.tileSize / 3,
+                    Color.White,
+                    drawShadow: false);
+
+                Utility.drawTextWithShadow(
+                    b,
+                    tab.hoverText,
+                    Game1.smallFont,
+                    new(
+                        this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize + 8,
+                        tab.bounds.Y),
+                    Game1.textColor);
+                continue;
+            }
+
+            b.Draw(
+                tab.texture,
+                new(tab.bounds.X, tab.bounds.Y),
+                new(128, tab.sourceRect.Y, 16, tab.sourceRect.Height),
+                Color.Gray,
+                0f,
+                Vector2.Zero,
+                Game1.pixelZoom,
+                SpriteEffects.None,
+                0.86f);
+            tab.draw(b, Color.Gray, 0.86f + tab.bounds.Y / 20000f);
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        tab = this.Components.FirstOrDefault(t => t.containsPoint(x, y));
+        if (tab is not null && !string.IsNullOrWhiteSpace(tab.hoverText))
+        {
+            IClickableMenu.drawHoverText(b, tab.hoverText, Game1.smallFont);
+        }
+    }
+
     private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
     {
         if (this.CurrentMenu is null || !this.Components.Any())
@@ -358,8 +358,8 @@ internal class ChestMenuTabs : IFeature
     {
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu itemGrabMenu => itemGrabMenu,
             { } clickableMenu when clickableMenu.GetChildMenu() is ItemGrabMenu itemGrabMenu => itemGrabMenu,
+            ItemGrabMenu itemGrabMenu => itemGrabMenu,
             _ => null,
         };
 

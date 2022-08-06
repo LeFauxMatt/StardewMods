@@ -100,6 +100,11 @@ internal class ModConfig
     public bool SlotLockHold { get; set; } = true;
 
     /// <summary>
+    ///     Gets or sets a value indicating whether to add button for transferring items to/from a chest.
+    /// </summary>
+    public bool TransferItems { get; set; } = true;
+
+    /// <summary>
     ///     Gets or sets storage data for vanilla storage types.
     /// </summary>
     public Dictionary<string, StorageData> VanillaStorages { get; set; } = new();
@@ -126,6 +131,7 @@ internal class ModConfig
         sb.AppendLine($"CustomColorPicker: {this.DefaultChest.CustomColorPicker.ToStringFast()}");
         sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
         sb.AppendLine($"FilterItems: {this.DefaultChest.FilterItems.ToStringFast()}");
+        sb.AppendLine($"HideItems: {this.HideItems.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"LabelChest: {this.LabelChest.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"OpenHeldChest: {this.DefaultChest.OpenHeldChest.ToStringFast()}");
         sb.AppendLine($"OrganizeChest: {this.DefaultChest.OrganizeChest.ToStringFast()}");
@@ -147,6 +153,7 @@ internal class ModConfig
         sb.AppendLine(
             $"StashToChestDisableLocations: {string.Join(',', this.DefaultChest.StashToChestDisableLocations)}");
         sb.AppendLine($"StashToChestStacks: {this.DefaultChest.StashToChestStacks.ToStringFast()}");
+        sb.AppendLine($"TransferItems: {this.TransferItems.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"UnloadChest: {this.DefaultChest.UnloadChest.ToStringFast()}");
         return sb.ToString();
     }

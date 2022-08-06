@@ -103,6 +103,8 @@
   "config.stash-to-chest-priority.tooltip": "Chests with a higher priority will be stashed into first.",
   "config.stash-to-chest-stacks.name": "Stash to Existing Stacks",
   "config.stash-to-chest-stacks.tooltip": "Stashing will fill existing stacks of items in a Chest.",
+  "config.transfer-items.name": "Transfer Items",
+  "config.transfer-items.tooltip": "Transfer items into or out of a Chest.",
   "config.unload-chest.name": "Unload Chest",
   "config.unload-chest.tooltip": "Using a held chest on a placed chest will transfer items into the placed one.",
   // Feature Option Formatting
@@ -152,6 +154,8 @@
   "button.find-chest.name": "Search for Chest",
   "button.stash-to-chest.name": "Stash to Chest",
   "button.craft-from-chest.name": "Craft from Chest",
+  "button.transfer-up.name": "Transfer Items into Chest",
+  "button.transfer-down.name": "Transfer Items into Inventory",
   // UI - Tabs
   "tabs.Clothing.name": "Clothing",
   "tabs.Cooking.name": "Cooking",

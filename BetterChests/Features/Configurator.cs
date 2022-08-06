@@ -11,6 +11,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
@@ -182,26 +183,6 @@ internal class Configurator : IFeature
         }
     }
 
-    private void Invoke(IStorageObject storage)
-    {
-        if (this._storageEdited is null)
-        {
-            return;
-        }
-
-        foreach (var handler in this._storageEdited.GetInvocationList())
-        {
-            try
-            {
-                handler.DynamicInvoke(this, storage);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-    }
-
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (this.CurrentMenu is null)
@@ -265,7 +246,7 @@ internal class Configurator : IFeature
 
         if (this.CurrentStorage is not null)
         {
-            this.Invoke(this.CurrentStorage);
+            this._storageEdited.InvokeAll(this, this.CurrentStorage);
             this.CurrentStorage.ShowMenu();
             this.CurrentStorage = null;
             return;

@@ -86,6 +86,7 @@ public class BetterChests : Mod
         this._features.Add(
             StashToChest.Init(this.Helper, this._config),
             () => this._config.DefaultChest.StashToChest != FeatureOptionRange.Disabled);
+        this._features.Add(TransferItems.Init(this.Helper, this._config), () => this._config.TransferItems);
         this._features.Add(
             UnloadChest.Init(this.Helper),
             () => this._config.DefaultChest.UnloadChest != FeatureOption.Disabled);

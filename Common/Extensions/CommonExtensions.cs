@@ -8,6 +8,26 @@ using StardewMods.Common.Models;
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions
 {
+    public static void InvokeAll<T>(this EventHandler<T>? eventHandler, object source, T param)
+    {
+        if (eventHandler is null)
+        {
+            return;
+        }
+
+        foreach (var handler in eventHandler.GetInvocationList())
+        {
+            try
+            {
+                handler.DynamicInvoke(source, param);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+    }
+
     /// <summary>
     ///     Maps a float value from one range to the same proportional value in another integer range.
     /// </summary>

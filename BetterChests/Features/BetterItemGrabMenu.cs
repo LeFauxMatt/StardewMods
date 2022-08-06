@@ -13,6 +13,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.UI;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.PatternPatcher;
 using StardewMods.CommonHarmony.Enums;
@@ -31,22 +32,17 @@ internal class BetterItemGrabMenu : IFeature
     private static BetterItemGrabMenu? Instance;
 
     private readonly ModConfig _config;
-
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-
     private readonly IModHelper _helper;
-
     private readonly PerScreen<DisplayedItems?> _inventory = new();
-
     private readonly PerScreen<DisplayedItems?> _itemsToGrabMenu = new();
-
     private readonly PerScreen<Stack<IClickableMenu>> _overlaidMenus = new(() => new());
-
     private readonly PerScreen<bool> _refreshInventory = new();
-
     private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
+    private readonly PerScreen<int> _topPadding = new();
+    private EventHandler<ItemGrabMenu>? _constructMenu;
 
-    private EventHandler<SpriteBatch>? _beforeDraw;
+    private EventHandler<SpriteBatch>? _drawMenu;
 
     private bool _isActivated;
 
@@ -98,6 +94,31 @@ internal class BetterItemGrabMenu : IFeature
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix),
                 new(
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object),
+                        }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix),
+                    PatchType.Prefix),
+                new(
                     AccessTools.Method(
                         typeof(ItemGrabMenu),
                         nameof(ItemGrabMenu.draw),
@@ -106,20 +127,53 @@ internal class BetterItemGrabMenu : IFeature
                     nameof(BetterItemGrabMenu.ItemGrabMenu_draw_prefix),
                     PatchType.Prefix),
                 new(
+                    AccessTools.Method(
+                        typeof(ItemGrabMenu),
+                        nameof(ItemGrabMenu.draw),
+                        new[] { typeof(SpriteBatch) }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_draw_transpiler),
+                    PatchType.Transpiler),
+                new(
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_organizeItemsInList_postfix),
                     PatchType.Postfix),
+                new(
+                    AccessTools.Method(
+                        typeof(MenuWithInventory),
+                        nameof(MenuWithInventory.draw),
+                        new[]
+                        {
+                            typeof(SpriteBatch),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                        }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.MenuWithInventory_draw_transpiler),
+                    PatchType.Transpiler),
             });
     }
 
     /// <summary>
-    ///     Raised before <see cref="StardewValley.Menus.ItemGrabMenu" /> is drawn.
+    ///     Raised during <see cref="ItemGrabMenu" /> constructor.
     /// </summary>
-    public static event EventHandler<SpriteBatch> BeforeDraw
+    public static event EventHandler<ItemGrabMenu> ConstructMenu
     {
-        add => BetterItemGrabMenu.Instance!._beforeDraw += value;
-        remove => BetterItemGrabMenu.Instance!._beforeDraw -= value;
+        add => BetterItemGrabMenu.Instance!._constructMenu += value;
+        remove => BetterItemGrabMenu.Instance!._constructMenu -= value;
+    }
+
+    /// <summary>
+    ///     Raised before <see cref="ItemGrabMenu" /> is drawn.
+    /// </summary>
+    public static event EventHandler<SpriteBatch> DrawMenu
+    {
+        add => BetterItemGrabMenu.Instance!._drawMenu += value;
+        remove => BetterItemGrabMenu.Instance!._drawMenu -= value;
     }
 
     /// <summary>
@@ -156,6 +210,15 @@ internal class BetterItemGrabMenu : IFeature
     {
         get => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value;
         set => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets the padding for the top of the ItemsToGrabMenu.
+    /// </summary>
+    public static int TopPadding
+    {
+        get => BetterItemGrabMenu.Instance!._topPadding.Value;
+        set => BetterItemGrabMenu.Instance!._topPadding.Value = value;
     }
 
     private ItemGrabMenu? CurrentMenu
@@ -296,47 +359,149 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu }
-         || !StorageHelper.TryGetOne(context, out _))
+        __instance.drawBG = false;
+        __instance.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
+        __instance.height += BetterItemGrabMenu.TopPadding;
+
+        if (!StorageHelper.TryGetOne(__instance.context, out _))
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
             return;
         }
 
-        if (ReferenceEquals(__instance, BetterItemGrabMenu.Instance!.CurrentMenu))
+        if (BetterItemGrabMenu.Instance!.CurrentMenu is not null
+         && ReferenceEquals(__instance.context, BetterItemGrabMenu.Instance.CurrentMenu.context))
         {
+            BetterItemGrabMenu.Instance.CurrentMenu = __instance;
+            BetterItemGrabMenu.Inventory =
+                new(__instance.inventory, false) { Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0 };
+            BetterItemGrabMenu.ItemsToGrabMenu =
+                new(__instance.ItemsToGrabMenu, true) { Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0 };
             return;
         }
 
         BetterItemGrabMenu.Instance.CurrentMenu = __instance;
-        if (ReferenceEquals(context, BetterItemGrabMenu.Instance.CurrentMenu?.context))
-        {
-            BetterItemGrabMenu.Inventory = new(inventory, false) { Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0 };
-            BetterItemGrabMenu.ItemsToGrabMenu =
-                new(itemsToGrabMenu, true) { Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0 };
-        }
-        else
-        {
-            BetterItemGrabMenu.Inventory = new(inventory, false);
-            BetterItemGrabMenu.ItemsToGrabMenu = new(itemsToGrabMenu, true);
-        }
+        BetterItemGrabMenu.Inventory = new(__instance.inventory, false);
+        BetterItemGrabMenu.ItemsToGrabMenu = new(__instance.ItemsToGrabMenu, true);
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void ItemGrabMenu_constructor_prefix(ItemGrabMenu __instance, object context)
+    {
+        __instance.context = context;
+        BetterItemGrabMenu.TopPadding = 0;
+        BetterItemGrabMenu.Instance!._constructMenu.InvokeAll(BetterItemGrabMenu.Instance, __instance);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_draw_prefix(ItemGrabMenu __instance, SpriteBatch b)
     {
-        if (__instance.drawBG)
+        b.Draw(
+            Game1.fadeToBlackRect,
+            new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
+            Color.Black * 0.5f);
+        BetterItemGrabMenu.Instance!._drawMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
+    }
+
+    private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        Log.Trace(
+            $"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)} from {nameof(BetterItemGrabMenu)}");
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
+            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+
+        // ****************************************************************************************
+        // Draw Backpack Patch
+        // This adds BetterItemGrabMenu.TopPadding to the y-coordinate of the backpack sprite
+        patcher.AddSeek(
+            new CodeInstruction(
+                OpCodes.Ldfld,
+                AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
+        patcher.AddPatch(
+                   code =>
+                   {
+                       code.Add(
+                           new(
+                               OpCodes.Call,
+                               AccessTools.PropertyGetter(
+                                   typeof(BetterItemGrabMenu),
+                                   nameof(BetterItemGrabMenu.TopPadding))));
+                       code.Add(new(OpCodes.Add));
+                   },
+                   new CodeInstruction(
+                       OpCodes.Ldfld,
+                       AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
+               .Repeat(2);
+
+        // ****************************************************************************************
+        // Move Dialogue Patch
+        // This subtracts BetterItemGrabMenu.TopPadding from the y-coordinate of the ItemsToGrabMenu
+        // dialogue box
+        patcher.AddPatch(
+            code =>
+            {
+                code.Add(
+                    new(
+                        OpCodes.Call,
+                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
+                code.Add(new(OpCodes.Sub));
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Sub),
+            new(
+                OpCodes.Ldsfld,
+                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Sub));
+
+        // ****************************************************************************************
+        // Expand Dialogue Patch
+        // This adds BetterItemGrabMenu.TopPadding to the height of the ItemsToGrabMenu dialogue box
+        patcher.AddPatch(
+            code =>
+            {
+                code.Add(
+                    new(
+                        OpCodes.Call,
+                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
+                code.Add(new(OpCodes.Add));
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
+            new(
+                OpCodes.Ldsfld,
+                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Ldc_I4_2),
+            new(OpCodes.Mul),
+            new(OpCodes.Add));
+
+        // Fill code buffer
+        foreach (var inCode in instructions)
         {
-            __instance.drawBG = false;
-            b.Draw(
-                Game1.fadeToBlackRect,
-                new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
-                Color.Black * 0.5f);
+            // Return patched code segments
+            foreach (var outCode in patcher.From(inCode))
+            {
+                yield return outCode;
+            }
         }
 
-        BetterItemGrabMenu.Instance!.Invoke(b);
+        // Return remaining code
+        foreach (var outCode in patcher.FlushBuffer())
+        {
+            yield return outCode;
+        }
+
+        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
+        if (patcher.AppliedPatches < patcher.TotalPatches)
+        {
+            Log.Warn("Failed to applied all patches!");
+        }
     }
 
     private static void ItemGrabMenu_organizeItemsInList_postfix(IList<Item> items)
@@ -354,6 +519,80 @@ internal class BetterItemGrabMenu : IFeature
             items);
     }
 
+    private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        Log.Trace(
+            $"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)} from {nameof(SearchItems)}");
+        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
+            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+
+        // ****************************************************************************************
+        // Move Dialogue Patch
+        // This adds BetterItemGrabMenu.TopPadding to the y-coordinate of the inventory dialogue box
+        patcher.AddPatch(
+            code =>
+            {
+                code.Add(
+                    new(
+                        OpCodes.Call,
+                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
+                code.Add(new(OpCodes.Add));
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(OpCodes.Add),
+            new(
+                OpCodes.Ldsfld,
+                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldc_I4_S, (sbyte)64),
+            new(OpCodes.Add));
+
+        // ****************************************************************************************
+        // Shrink Dialogue Patch
+        // This adds BetterItemGrabMenu.TopPadding to the height of the inventory dialogue box
+        patcher.AddPatch(
+            code =>
+            {
+                code.Add(
+                    new(
+                        OpCodes.Call,
+                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
+                code.Add(new(OpCodes.Add));
+            },
+            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
+            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
+            new(
+                OpCodes.Ldsfld,
+                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
+            new(OpCodes.Add),
+            new(OpCodes.Ldc_I4, 192),
+            new(OpCodes.Add));
+
+        // Fill code buffer
+        foreach (var inCode in instructions)
+        {
+            // Return patched code segments
+            foreach (var outCode in patcher.From(inCode))
+            {
+                yield return outCode;
+            }
+        }
+
+        // Return remaining code
+        foreach (var outCode in patcher.FlushBuffer())
+        {
+            yield return outCode;
+        }
+
+        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
+        if (patcher.AppliedPatches < patcher.TotalPatches)
+        {
+            Log.Warn("Failed to applied all patches!");
+        }
+    }
+
     private static void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
     {
         BetterItemGrabMenu.RefreshItemsToGrabMenu |= Game1.activeClickableMenu is ItemGrabMenu;
@@ -364,26 +603,6 @@ internal class BetterItemGrabMenu : IFeature
     {
         BetterItemGrabMenu.RefreshItemsToGrabMenu |= Game1.activeClickableMenu is ItemGrabMenu;
         BetterItemGrabMenu.RefreshInventory |= Game1.activeClickableMenu is ItemGrabMenu && e.IsLocalPlayer;
-    }
-
-    private void Invoke(SpriteBatch b)
-    {
-        if (this._beforeDraw is null)
-        {
-            return;
-        }
-
-        foreach (var handler in this._beforeDraw.GetInvocationList())
-        {
-            try
-            {
-                handler.DynamicInvoke(this, b);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -567,8 +786,8 @@ internal class BetterItemGrabMenu : IFeature
     {
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu itemGrabMenu => itemGrabMenu,
             { } clickableMenu when clickableMenu.GetChildMenu() is ItemGrabMenu itemGrabMenu => itemGrabMenu,
+            ItemGrabMenu itemGrabMenu => itemGrabMenu,
             _ => null,
         };
 

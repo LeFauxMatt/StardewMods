@@ -140,31 +140,22 @@ internal class SlotLock : IFeature
 
     private static Color Tint(InventoryMenu menu, Color tint, int index)
     {
-        switch (Game1.activeClickableMenu)
-        {
-            case ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu):
-            case GameMenu gameMenu
-                when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
-                  && ReferenceEquals(inventoryPage, menu):
-                return menu.actualInventory.ElementAtOrDefault(index)
-                           ?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
-                    == true
-                    ? Color.Red
-                    : tint;
-            default:
-                return tint;
-        }
+        return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
+            == true
+            ? Color.Red
+            : tint;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
+        var (x, y) = Game1.getMousePosition(true);
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu { inventory: { } itemGrabMenu } => itemGrabMenu,
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage
-            {
-                inventory: { } inventoryPage,
-            } => inventoryPage,
+            ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
+            ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
+                itemsToGrabMenu,
+            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+                => inventoryPage,
             _ => null,
         };
 
@@ -181,7 +172,6 @@ internal class SlotLock : IFeature
             return;
         }
 
-        var (x, y) = Game1.getMousePosition(true);
         var slot = menu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (slot is null || !int.TryParse(slot.name, out var index))
         {
