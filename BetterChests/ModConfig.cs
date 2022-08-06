@@ -75,6 +75,11 @@ internal class ModConfig
     };
 
     /// <summary>
+    ///     Gets or sets a value indicating whether items will be hidden or grayed out.
+    /// </summary>
+    public bool HideItems { get; set; } = false;
+
+    /// <summary>
     ///     Gets or sets a value indicating whether chests can be labeled.
     /// </summary>
     public bool LabelChest { get; set; } = true;
