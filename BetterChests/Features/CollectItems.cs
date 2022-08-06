@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -23,11 +22,17 @@ internal class CollectItems : IFeature
 {
     private const string Id = "furyx639.BetterChests/CollectItems";
 
-    private readonly PerScreen<List<IStorageObject>?> _cachedEligible = new();
+    private static CollectItems? Instance;
+
+    private readonly PerScreen<List<IStorageObject>> _eligiblePerScreen = new(() => new());
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
 
     private CollectItems(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
         HarmonyHelper.AddPatches(
             CollectItems.Id,
             new SavedPatch[]
@@ -40,31 +45,7 @@ internal class CollectItems : IFeature
             });
     }
 
-    private static IEnumerable<IStorageObject> Eligible
-    {
-        get
-        {
-            foreach (var item in Game1.player.Items.Take(12))
-            {
-                if (StorageHelper.TryGetOne(item, out var storage) && storage.CollectItems != FeatureOption.Disabled)
-                {
-                    yield return storage;
-                }
-            }
-        }
-    }
-
-    private static CollectItems? Instance { get; set; }
-
-    private List<IStorageObject>? CachedEligible
-    {
-        get => this._cachedEligible.Value;
-        set => this._cachedEligible.Value = value;
-    }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
+    private List<IStorageObject> CachedEligible => this._eligiblePerScreen.Value;
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
@@ -79,27 +60,31 @@ internal class CollectItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(CollectItems.Id);
-        this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        Configurator.StorageEdited += this.OnStorageEdited;
+        this._helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(CollectItems.Id);
-        this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+        Configurator.StorageEdited -= this.OnStorageEdited;
+        this._helper.Events.GameLoop.SaveLoaded -= this.OnSaveLoaded;
+        this._helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item? item, bool makeActiveObject)
@@ -109,9 +94,7 @@ internal class CollectItems : IFeature
             return true;
         }
 
-        CollectItems.Instance!.CachedEligible ??= CollectItems.Eligible.ToList();
-
-        if (!CollectItems.Instance.CachedEligible.Any())
+        if (!CollectItems.Instance!.CachedEligible.Any())
         {
             return farmer.addItemToInventoryBool(item, makeActiveObject);
         }
@@ -133,27 +116,39 @@ internal class CollectItems : IFeature
 
     private static IEnumerable<CodeInstruction> Debris_collect_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.opcode == OpCodes.Callvirt
-             && instruction.operand.Equals(AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool))))
-            {
-                yield return new(
-                    OpCodes.Call,
-                    AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
+        return instructions.MethodReplacer(
+            AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool)),
+            AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
     }
 
     private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
         if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any()))
         {
-            this.CachedEligible = null;
+            this.RefreshEligible();
         }
+    }
+
+    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    {
+        this.RefreshEligible();
+    }
+
+    private void OnStorageEdited(object? sender, IStorageObject storage)
+    {
+        this.RefreshEligible();
+    }
+
+    private void RefreshEligible()
+    {
+        this.CachedEligible.Clear();
+        this.CachedEligible.AddRange(
+            Game1.player.Items.Take(12)
+                 .Select(
+                     item => StorageHelper.TryGetOne(item, out var storage)
+                          && storage.CollectItems != FeatureOption.Disabled
+                         ? storage
+                         : null)
+                 .OfType<IStorageObject>());
     }
 }

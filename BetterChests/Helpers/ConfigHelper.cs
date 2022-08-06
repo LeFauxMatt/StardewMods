@@ -22,18 +22,21 @@ using StardewValley.Menus;
 /// </summary>
 internal class ConfigHelper
 {
+    private static ConfigHelper? Instance;
+
+    private readonly Dictionary<IFeature, Func<bool>> _features;
+    private readonly IModHelper _helper;
+    private readonly IManifest _modManifest;
+
     private ModConfig? _config;
 
-    private ConfigHelper(
-        IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
+    private ConfigHelper(IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
     {
-        this.Helper = helper;
-        this.ModManifest = manifest;
-        this.Features = features;
-        this.Helper.Events.GameLoop.GameLaunched += ConfigHelper.OnGameLaunched;
+        this._helper = helper;
+        this._modManifest = manifest;
+        this._features = features;
+        this._helper.Events.GameLoop.GameLaunched += ConfigHelper.OnGameLaunched;
     }
-
-    private static ConfigHelper? Instance { get; set; }
 
     private ModConfig Config
     {
@@ -47,7 +50,7 @@ internal class ConfigHelper
             ModConfig? config = null;
             try
             {
-                config = this.Helper.ReadConfig<ModConfig>();
+                config = this._helper.ReadConfig<ModConfig>();
             }
             catch (Exception)
             {
@@ -60,12 +63,6 @@ internal class ConfigHelper
         }
     }
 
-    private Dictionary<IFeature, Func<bool>> Features { get; }
-
-    private IModHelper Helper { get; }
-
-    private IManifest ModManifest { get; }
-
     /// <summary>
     ///     Initializes <see cref="ConfigHelper" />.
     /// </summary>
@@ -73,8 +70,7 @@ internal class ConfigHelper
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="features">Mod features.</param>
     /// <returns>Returns an instance of the <see cref="ConfigHelper" /> class.</returns>
-    public static ModConfig Init(
-        IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
+    public static ModConfig Init(IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
     {
         ConfigHelper.Instance ??= new(helper, manifest, features);
         return ConfigHelper.Instance.Config;
@@ -85,242 +81,241 @@ internal class ConfigHelper
     /// </summary>
     public static void SetupMainConfig()
     {
-        if (IntegrationHelper.GMCM.IsLoaded)
+        if (!IntegrationHelper.GMCM.IsLoaded)
         {
-            if (IntegrationHelper.GMCM.IsRegistered(ConfigHelper.Instance!.ModManifest))
+            return;
+        }
+
+        if (IntegrationHelper.GMCM.IsRegistered(ConfigHelper.Instance!._modManifest))
+        {
+            IntegrationHelper.GMCM.Unregister(ConfigHelper.Instance._modManifest);
+        }
+
+        IntegrationHelper.GMCM.Register(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance._config = new(),
+            ConfigHelper.Instance.SaveConfig);
+
+        // General
+        IntegrationHelper.GMCM.API!.AddSectionTitle(ConfigHelper.Instance._modManifest, I18n.Section_General_Name);
+        IntegrationHelper.GMCM.API.AddParagraph(ConfigHelper.Instance._modManifest, I18n.Section_General_Description);
+
+        IntegrationHelper.GMCM.API.AddBoolOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.BetterShippingBin,
+            value => ConfigHelper.Instance.Config.BetterShippingBin = value,
+            I18n.Config_BetterShippingBin_Name,
+            I18n.Config_BetterShippingBin_Tooltip,
+            nameof(ModConfig.BetterShippingBin));
+
+        IntegrationHelper.GMCM.API.AddNumberOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.CarryChestLimit,
+            value => ConfigHelper.Instance.Config.CarryChestLimit = value,
+            I18n.Config_CarryChestLimit_Name,
+            I18n.Config_CarryChestLimit_Tooltip,
+            fieldId: nameof(ModConfig.CarryChestLimit));
+
+        IntegrationHelper.GMCM.API.AddNumberOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.CarryChestSlowAmount,
+            value => ConfigHelper.Instance.Config.CarryChestSlowAmount = value,
+            I18n.Config_CarryChestSlow_Name,
+            I18n.Config_CarryChestSlow_Tooltip,
+            0,
+            4,
+            1,
+            FormatHelper.FormatCarryChestSlow,
+            nameof(ModConfig.CarryChestSlowAmount));
+
+        IntegrationHelper.GMCM.API.AddBoolOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ChestFinder,
+            value => ConfigHelper.Instance.Config.ChestFinder = value,
+            I18n.Config_ChestFinder_Name,
+            I18n.Config_ChestFinder_Tooltip,
+            nameof(ModConfig.ChestFinder));
+
+        IntegrationHelper.GMCM.API.AddTextOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.CustomColorPickerArea.ToStringFast(),
+            value => ConfigHelper.Instance.Config.CustomColorPickerArea =
+                ComponentAreaExtensions.TryParse(value, out var area) ? area : ComponentArea.Right,
+            I18n.Config_CustomColorPickerArea_Name,
+            I18n.Config_CustomColorPickerArea_Tooltip,
+            new[]
             {
-                IntegrationHelper.GMCM.Unregister(ConfigHelper.Instance.ModManifest);
-            }
+                ComponentArea.Left.ToStringFast(),
+                ComponentArea.Right.ToStringFast(),
+            },
+            FormatHelper.FormatArea,
+            nameof(ModConfig.CustomColorPickerArea));
 
-            IntegrationHelper.GMCM.Register(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance._config = new(),
-                ConfigHelper.Instance.SaveConfig);
-
-            // General
-            IntegrationHelper.GMCM.API!.AddSectionTitle(ConfigHelper.Instance.ModManifest, I18n.Section_General_Name);
+        if (IntegrationHelper.TestConflicts(nameof(LabelChest), out var mods))
+        {
+            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             IntegrationHelper.GMCM.API.AddParagraph(
-                ConfigHelper.Instance.ModManifest,
-                I18n.Section_General_Description);
+                ConfigHelper.Instance._modManifest,
+                () => string.Format(
+                    I18n.Warn_Incompatibility_Disabled(),
+                    $"BetterChests.{nameof(LabelChest)}",
+                    modList));
+        }
+        else
+        {
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                ConfigHelper.Instance._modManifest,
+                () => ConfigHelper.Instance.Config.LabelChest,
+                value => ConfigHelper.Instance.Config.LabelChest = value,
+                I18n.Config_LabelChest_Name,
+                I18n.Config_LabelChest_Tooltip,
+                nameof(ModConfig.LabelChest));
+        }
+
+        IntegrationHelper.GMCM.API.AddTextOption(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.SearchTagSymbol.ToString(),
+            value => ConfigHelper.Instance.Config.SearchTagSymbol =
+                string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
+            I18n.Config_SearchItemsSymbol_Name,
+            I18n.Config_SearchItemsSymbol_Tooltip,
+            fieldId: nameof(ModConfig.SearchTagSymbol));
+
+        if (IntegrationHelper.TestConflicts(nameof(SlotLock), out mods))
+        {
+            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
+            IntegrationHelper.GMCM.API.AddParagraph(
+                ConfigHelper.Instance._modManifest,
+                () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(SlotLock)}", modList));
+        }
+        else
+        {
+            IntegrationHelper.GMCM.API.AddBoolOption(
+                ConfigHelper.Instance._modManifest,
+                () => ConfigHelper.Instance.Config.SlotLock,
+                value => ConfigHelper.Instance.Config.SlotLock = value,
+                I18n.Config_SlotLock_Name,
+                I18n.Config_SlotLock_Tooltip,
+                nameof(ModConfig.SlotLock));
 
             IntegrationHelper.GMCM.API.AddBoolOption(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.BetterShippingBin,
-                value => ConfigHelper.Instance.Config.BetterShippingBin = value,
-                I18n.Config_BetterShippingBin_Name,
-                I18n.Config_BetterShippingBin_Tooltip,
-                nameof(ModConfig.BetterShippingBin));
+                ConfigHelper.Instance._modManifest,
+                () => ConfigHelper.Instance.Config.SlotLockHold,
+                value => ConfigHelper.Instance.Config.SlotLockHold = value,
+                I18n.Config_SlotLockHold_Name,
+                I18n.Config_SlotLockHold_Tooltip,
+                nameof(ModConfig.SlotLockHold));
+        }
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.CarryChestLimit,
-                value => ConfigHelper.Instance.Config.CarryChestLimit = value,
-                I18n.Config_CarryChestLimit_Name,
-                I18n.Config_CarryChestLimit_Tooltip,
-                fieldId: nameof(ModConfig.CarryChestLimit));
+        // Controls
+        IntegrationHelper.GMCM.API.AddSectionTitle(ConfigHelper.Instance._modManifest, I18n.Section_Controls_Name);
+        IntegrationHelper.GMCM.API.AddParagraph(ConfigHelper.Instance._modManifest, I18n.Section_Controls_Description);
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.CarryChestSlowAmount,
-                value => ConfigHelper.Instance.Config.CarryChestSlowAmount = value,
-                I18n.Config_CarryChestSlow_Name,
-                I18n.Config_CarryChestSlow_Tooltip,
-                0,
-                4,
-                1,
-                FormatHelper.FormatCarryChestSlow,
-                nameof(ModConfig.CarryChestSlowAmount));
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.FindChest,
+            value => ConfigHelper.Instance.Config.ControlScheme.FindChest = value,
+            I18n.Config_FindChest_Name,
+            I18n.Config_FindChest_Tooltip,
+            nameof(Controls.FindChest));
 
-            IntegrationHelper.GMCM.API.AddBoolOption(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ChestFinder,
-                value => ConfigHelper.Instance.Config.ChestFinder = value,
-                I18n.Config_ChestFinder_Name,
-                I18n.Config_ChestFinder_Tooltip,
-                nameof(ModConfig.ChestFinder));
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.OpenCrafting,
+            value => ConfigHelper.Instance.Config.ControlScheme.OpenCrafting = value,
+            I18n.Config_OpenCrafting_Name,
+            I18n.Config_OpenCrafting_Tooltip,
+            nameof(Controls.OpenCrafting));
 
-            IntegrationHelper.GMCM.API.AddTextOption(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.CustomColorPickerArea.ToStringFast(),
-                value => ConfigHelper.Instance.Config.CustomColorPickerArea =
-                    ComponentAreaExtensions.TryParse(value, out var area) ? area : ComponentArea.Right,
-                I18n.Config_CustomColorPickerArea_Name,
-                I18n.Config_CustomColorPickerArea_Tooltip,
-                new[] { ComponentArea.Left.ToStringFast(), ComponentArea.Right.ToStringFast() },
-                FormatHelper.FormatArea,
-                nameof(ModConfig.CustomColorPickerArea));
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.StashItems,
+            value => ConfigHelper.Instance.Config.ControlScheme.StashItems = value,
+            I18n.Config_StashItems_Name,
+            I18n.Config_StashItems_Tooltip,
+            nameof(Controls.StashItems));
 
-            if (IntegrationHelper.TestConflicts(nameof(LabelChest), out var mods))
-            {
-                var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-                IntegrationHelper.GMCM.API.AddParagraph(
-                    ConfigHelper.Instance.ModManifest,
-                    () => string.Format(
-                        I18n.Warn_Incompatibility_Disabled(),
-                        $"BetterChests.{nameof(LabelChest)}",
-                        modList));
-            }
-            else
-            {
-                IntegrationHelper.GMCM.API.AddBoolOption(
-                    ConfigHelper.Instance.ModManifest,
-                    () => ConfigHelper.Instance.Config.LabelChest,
-                    value => ConfigHelper.Instance.Config.LabelChest = value,
-                    I18n.Config_LabelChest_Name,
-                    I18n.Config_LabelChest_Tooltip,
-                    nameof(ModConfig.LabelChest));
-            }
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.Configure,
+            value => ConfigHelper.Instance.Config.ControlScheme.Configure = value,
+            I18n.Config_Configure_Name,
+            I18n.Config_Configure_Tooltip,
+            nameof(Controls.Configure));
 
-            IntegrationHelper.GMCM.API.AddTextOption(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.SearchTagSymbol.ToString(),
-                value => ConfigHelper.Instance.Config.SearchTagSymbol =
-                    string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
-                I18n.Config_SearchItemsSymbol_Name,
-                I18n.Config_SearchItemsSymbol_Tooltip,
-                fieldId: nameof(ModConfig.SearchTagSymbol));
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.PreviousTab,
+            value => ConfigHelper.Instance.Config.ControlScheme.PreviousTab = value,
+            I18n.Config_PreviousTab_Name,
+            I18n.Config_PreviousTab_Tooltip,
+            nameof(Controls.PreviousTab));
 
-            if (IntegrationHelper.TestConflicts(nameof(SlotLock), out mods))
-            {
-                var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-                IntegrationHelper.GMCM.API.AddParagraph(
-                    ConfigHelper.Instance.ModManifest,
-                    () => string.Format(
-                        I18n.Warn_Incompatibility_Disabled(),
-                        $"BetterChests.{nameof(SlotLock)}",
-                        modList));
-            }
-            else
-            {
-                IntegrationHelper.GMCM.API.AddBoolOption(
-                    ConfigHelper.Instance.ModManifest,
-                    () => ConfigHelper.Instance.Config.SlotLock,
-                    value => ConfigHelper.Instance.Config.SlotLock = value,
-                    I18n.Config_SlotLock_Name,
-                    I18n.Config_SlotLock_Tooltip,
-                    nameof(ModConfig.SlotLock));
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.NextTab,
+            value => ConfigHelper.Instance.Config.ControlScheme.NextTab = value,
+            I18n.Config_NextTab_Name,
+            I18n.Config_NextTab_Tooltip,
+            nameof(Controls.NextTab));
 
-                IntegrationHelper.GMCM.API.AddBoolOption(
-                    ConfigHelper.Instance.ModManifest,
-                    () => ConfigHelper.Instance.Config.SlotLockHold,
-                    value => ConfigHelper.Instance.Config.SlotLockHold = value,
-                    I18n.Config_SlotLockHold_Name,
-                    I18n.Config_SlotLockHold_Tooltip,
-                    nameof(ModConfig.SlotLockHold));
-            }
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.ScrollUp,
+            value => ConfigHelper.Instance.Config.ControlScheme.ScrollUp = value,
+            I18n.Config_ScrollUp_Name,
+            I18n.Config_ScrollUp_Tooltip,
+            nameof(Controls.ScrollUp));
 
-            // Controls
-            IntegrationHelper.GMCM.API.AddSectionTitle(ConfigHelper.Instance.ModManifest, I18n.Section_Controls_Name);
-            IntegrationHelper.GMCM.API.AddParagraph(
-                ConfigHelper.Instance.ModManifest,
-                I18n.Section_Controls_Description);
+        IntegrationHelper.GMCM.API.AddKeybindList(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.ScrollDown,
+            value => ConfigHelper.Instance.Config.ControlScheme.ScrollDown = value,
+            I18n.Config_ScrollDown_Name,
+            I18n.Config_ScrollDown_Tooltip,
+            nameof(Controls.ScrollDown));
 
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.FindChest,
-                value => ConfigHelper.Instance.Config.ControlScheme.FindChest = value,
-                I18n.Config_FindChest_Name,
-                I18n.Config_FindChest_Tooltip,
-                nameof(Controls.FindChest));
+        IntegrationHelper.GMCM.API.AddKeybind(
+            ConfigHelper.Instance._modManifest,
+            () => ConfigHelper.Instance.Config.ControlScheme.LockSlot,
+            value => ConfigHelper.Instance.Config.ControlScheme.LockSlot = value,
+            I18n.Config_LockSlot_Name,
+            I18n.Config_LockSlot_Tooltip,
+            nameof(Controls.LockSlot));
 
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.OpenCrafting,
-                value => ConfigHelper.Instance.Config.ControlScheme.OpenCrafting = value,
-                I18n.Config_OpenCrafting_Name,
-                I18n.Config_OpenCrafting_Tooltip,
-                nameof(Controls.OpenCrafting));
+        // Chest Types
+        IntegrationHelper.GMCM.API.AddSectionTitle(ConfigHelper.Instance._modManifest, I18n.Section_Chests_Name);
+        IntegrationHelper.GMCM.API.AddParagraph(ConfigHelper.Instance._modManifest, I18n.Section_Chests_Description);
 
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.StashItems,
-                value => ConfigHelper.Instance.Config.ControlScheme.StashItems = value,
-                I18n.Config_StashItems_Name,
-                I18n.Config_StashItems_Tooltip,
-                nameof(Controls.StashItems));
+        IntegrationHelper.GMCM.API.AddPageLink(
+            ConfigHelper.Instance._modManifest,
+            "Default",
+            I18n.Storage_Default_Name,
+            I18n.Storage_Default_Tooltip);
 
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.Configure,
-                value => ConfigHelper.Instance.Config.ControlScheme.Configure = value,
-                I18n.Config_Configure_Name,
-                I18n.Config_Configure_Tooltip,
-                nameof(Controls.Configure));
-
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.PreviousTab,
-                value => ConfigHelper.Instance.Config.ControlScheme.PreviousTab = value,
-                I18n.Config_PreviousTab_Name,
-                I18n.Config_PreviousTab_Tooltip,
-                nameof(Controls.PreviousTab));
-
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.NextTab,
-                value => ConfigHelper.Instance.Config.ControlScheme.NextTab = value,
-                I18n.Config_NextTab_Name,
-                I18n.Config_NextTab_Tooltip,
-                nameof(Controls.NextTab));
-
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.ScrollUp,
-                value => ConfigHelper.Instance.Config.ControlScheme.ScrollUp = value,
-                I18n.Config_ScrollUp_Name,
-                I18n.Config_ScrollUp_Tooltip,
-                nameof(Controls.ScrollUp));
-
-            IntegrationHelper.GMCM.API.AddKeybindList(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.ScrollDown,
-                value => ConfigHelper.Instance.Config.ControlScheme.ScrollDown = value,
-                I18n.Config_ScrollDown_Name,
-                I18n.Config_ScrollDown_Tooltip,
-                nameof(Controls.ScrollDown));
-
-            IntegrationHelper.GMCM.API.AddKeybind(
-                ConfigHelper.Instance.ModManifest,
-                () => ConfigHelper.Instance.Config.ControlScheme.LockSlot,
-                value => ConfigHelper.Instance.Config.ControlScheme.LockSlot = value,
-                I18n.Config_LockSlot_Name,
-                I18n.Config_LockSlot_Tooltip,
-                nameof(Controls.LockSlot));
-
-            // Chest Types
-            IntegrationHelper.GMCM.API.AddSectionTitle(ConfigHelper.Instance.ModManifest, I18n.Section_Chests_Name);
-            IntegrationHelper.GMCM.API.AddParagraph(ConfigHelper.Instance.ModManifest, I18n.Section_Chests_Description);
-
+        foreach (var (key, _) in ConfigHelper.Instance.Config.VanillaStorages)
+        {
             IntegrationHelper.GMCM.API.AddPageLink(
-                ConfigHelper.Instance.ModManifest,
-                "Default",
-                I18n.Storage_Default_Name,
-                I18n.Storage_Default_Tooltip);
+                ConfigHelper.Instance._modManifest,
+                key,
+                () => FormatHelper.FormatStorageName(key),
+                () => FormatHelper.FormatStorageTooltip(key));
+        }
 
-            foreach (var (key, _) in ConfigHelper.Instance.Config.VanillaStorages)
-            {
-                IntegrationHelper.GMCM.API.AddPageLink(
-                    ConfigHelper.Instance.ModManifest,
-                    key,
-                    () => FormatHelper.FormatStorageName(key),
-                    () => FormatHelper.FormatStorageTooltip(key));
-            }
+        // Default Chest
+        IntegrationHelper.GMCM.API.AddPage(ConfigHelper.Instance._modManifest, "Default", I18n.Storage_Default_Name);
+        ConfigHelper.Instance.SetupConfig(
+            ConfigHelper.Instance._modManifest,
+            ConfigHelper.Instance.Config.DefaultChest);
 
-            // Default Chest
-            IntegrationHelper.GMCM.API.AddPage(ConfigHelper.Instance.ModManifest, "Default", I18n.Storage_Default_Name);
-            ConfigHelper.Instance.SetupConfig(
-                ConfigHelper.Instance.ModManifest,
-                ConfigHelper.Instance.Config.DefaultChest);
-
-            // Other Chests
-            foreach (var (key, value) in ConfigHelper.Instance.Config.VanillaStorages)
-            {
-                IntegrationHelper.GMCM.API.AddPage(
-                    ConfigHelper.Instance.ModManifest,
-                    key,
-                    () => FormatHelper.FormatStorageName(key));
-                ConfigHelper.Instance.SetupConfig(ConfigHelper.Instance.ModManifest, value);
-            }
+        // Other Chests
+        foreach (var (key, value) in ConfigHelper.Instance.Config.VanillaStorages)
+        {
+            IntegrationHelper.GMCM.API.AddPage(
+                ConfigHelper.Instance._modManifest,
+                key,
+                () => FormatHelper.FormatStorageName(key));
+            ConfigHelper.Instance.SetupConfig(ConfigHelper.Instance._modManifest, value);
         }
     }
 
@@ -332,23 +327,25 @@ internal class ConfigHelper
     /// <param name="register">Indicates whether to register with GMCM.</param>
     public static void SetupSpecificConfig(IManifest manifest, IStorageData storage, bool register = false)
     {
-        if (IntegrationHelper.GMCM.IsLoaded)
+        if (!IntegrationHelper.GMCM.IsLoaded)
         {
-            if (register)
-            {
-                if (IntegrationHelper.GMCM.IsRegistered(manifest))
-                {
-                    IntegrationHelper.GMCM.Unregister(manifest);
-                }
+            return;
+        }
 
-                IntegrationHelper.GMCM.Register(
-                    manifest,
-                    () => ConfigHelper.Instance!._config = new(),
-                    ConfigHelper.Instance!.SaveConfig);
+        if (register)
+        {
+            if (IntegrationHelper.GMCM.IsRegistered(manifest))
+            {
+                IntegrationHelper.GMCM.Unregister(manifest);
             }
 
-            ConfigHelper.Instance!.SetupConfig(manifest, storage);
+            IntegrationHelper.GMCM.Register(
+                manifest,
+                () => ConfigHelper.Instance!._config = new(),
+                ConfigHelper.Instance!.SaveConfig);
         }
+
+        ConfigHelper.Instance!.SetupConfig(manifest, storage);
     }
 
     private static void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -373,7 +370,7 @@ internal class ConfigHelper
                  && bounds.Contains(point))
                 {
                     Game1.activeClickableMenu.SetChildMenu(
-                        new ItemSelectionMenu(storage, storage.FilterMatcher, this.Helper.Translation));
+                        new ItemSelectionMenu(storage, storage.FilterMatcher, this._helper.Translation));
                     return;
                 }
             }
@@ -406,8 +403,8 @@ internal class ConfigHelper
 
     private void SaveConfig()
     {
-        this.Helper.WriteConfig(this.Config);
-        foreach (var (feature, condition) in this.Features)
+        this._helper.WriteConfig(this.Config);
+        foreach (var (feature, condition) in this._features)
         {
             if (condition() && !IntegrationHelper.TestConflicts(feature.GetType().Name, out _))
             {
@@ -429,7 +426,11 @@ internal class ConfigHelper
         var data = storage switch
         {
             StorageData storageData => storageData,
-            IStorageObject { Data: { } storageData } => storageData,
+            IStorageObject
+            {
+                Data:
+                { } storageData,
+            } => storageData,
             _ => storage,
         };
 

@@ -22,9 +22,15 @@ internal class FilterItems : IFeature
 {
     private const string Id = "furyx639.BetterChests/FilterItems";
 
+    private static FilterItems? Instance;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private FilterItems(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
         HarmonyHelper.AddPatches(
             FilterItems.Id,
             new SavedPatch[]
@@ -54,12 +60,6 @@ internal class FilterItems : IFeature
         }
     }
 
-    private static FilterItems? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
-
     /// <summary>
     ///     Initializes <see cref="FilterItems" />.
     /// </summary>
@@ -73,27 +73,27 @@ internal class FilterItems : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(FilterItems.Id);
-        this.Helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
+        this._helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(FilterItems.Id);
-        this.Helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
+        this._helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -101,7 +101,7 @@ internal class FilterItems : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
-        var item = FilterItems.Instance!.Helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
+        var item = FilterItems.Instance!._helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
         return !StorageHelper.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
@@ -122,7 +122,11 @@ internal class FilterItems : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { context: { } context }
+        if (e.NewMenu is not ItemGrabMenu
+            {
+                context:
+                { } context,
+            }
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.FilterItems == FeatureOption.Disabled)
         {

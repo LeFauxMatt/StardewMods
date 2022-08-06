@@ -29,10 +29,18 @@ internal class CarryChest : IFeature
     private const string Id = "furyx639.BetterChests/CarryChest";
     private const int WhichBuff = 69420;
 
+    private static CarryChest? Instance;
+
+    private readonly ModConfig _config;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private CarryChest(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
         HarmonyHelper.AddPatches(
             CarryChest.Id,
             new SavedPatch[]
@@ -43,8 +51,14 @@ internal class CarryChest : IFeature
                         nameof(Chest.drawInMenu),
                         new[]
                         {
-                            typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float),
-                            typeof(StackDrawType), typeof(Color), typeof(bool),
+                            typeof(SpriteBatch),
+                            typeof(Vector2),
+                            typeof(float),
+                            typeof(float),
+                            typeof(float),
+                            typeof(StackDrawType),
+                            typeof(Color),
+                            typeof(bool),
                         }),
                     typeof(CarryChest),
                     nameof(CarryChest.Chest_drawInMenu_postfix),
@@ -92,21 +106,13 @@ internal class CarryChest : IFeature
             });
     }
 
-    private static CarryChest? Instance { get; set; }
-
-    private ModConfig Config { get; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
-
     /// <summary>
     ///     Checks if the player should be overburdened while carrying a chest.
     /// </summary>
     /// <param name="excludeCurrent">Whether to exclude the current item.</param>
     public static void CheckForOverburdened(bool excludeCurrent = false)
     {
-        if (CarryChest.Instance!.Config.CarryChestSlowAmount == 0)
+        if (CarryChest.Instance!._config.CarryChestSlowAmount == 0)
         {
             Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
             return;
@@ -115,7 +121,7 @@ internal class CarryChest : IFeature
         if (Game1.player.Items.OfType<Chest>().Any(chest => !excludeCurrent || Game1.player.CurrentItem != chest))
         {
             Game1.buffsDisplay.addOtherBuff(
-                CarryChest.GetOverburdened(CarryChest.Instance.Config.CarryChestSlowAmount));
+                CarryChest.GetOverburdened(CarryChest.Instance._config.CarryChestSlowAmount));
             return;
         }
 
@@ -136,38 +142,42 @@ internal class CarryChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(CarryChest.Id);
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-        this.Helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+        this._helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(CarryChest.Id);
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
-        this.Helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
+        this._helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_drawInMenu_postfix(
-        Chest __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, Color color)
+        Chest __instance,
+        SpriteBatch spriteBatch,
+        Vector2 location,
+        float scaleSize,
+        Color color)
     {
         // Draw Items count
         var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
@@ -198,7 +208,9 @@ internal class CarryChest : IFeature
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void InventoryMenu_rightClick_postfix(
-        InventoryMenu __instance, ref Item? __result, ref (Item?, int)? __state)
+        InventoryMenu __instance,
+        ref Item? __result,
+        ref (Item?, int)? __state)
     {
         if (__state is null)
         {
@@ -227,7 +239,10 @@ internal class CarryChest : IFeature
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void InventoryMenu_rightClick_prefix(
-        InventoryMenu __instance, int x, int y, ref (Item?, int)? __state)
+        InventoryMenu __instance,
+        int x,
+        int y,
+        ref (Item?, int)? __state)
     {
         var slot = __instance.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (slot is null)
@@ -252,7 +267,10 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+        if (chest is not
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }
          && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
@@ -268,7 +286,10 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+        if (chest is not
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }
          && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
@@ -306,7 +327,11 @@ internal class CarryChest : IFeature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_placementAction_postfix(
-        SObject __instance, GameLocation location, int x, int y, ref bool __result)
+        SObject __instance,
+        GameLocation location,
+        int x,
+        int y,
+        ref bool __result)
     {
         if (!__result
          || __instance is not Chest held
@@ -317,7 +342,10 @@ internal class CarryChest : IFeature
         }
 
         // Only copy items from regular chest types
-        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+        if (held is not
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }
          && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
@@ -390,7 +418,7 @@ internal class CarryChest : IFeature
         if (!Context.IsPlayerFree
          || Game1.player.CurrentItem is Tool
          || !e.Button.IsUseToolButton()
-         || this.Helper.Input.IsSuppressed(e.Button)
+         || this._helper.Input.IsSuppressed(e.Button)
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
@@ -415,7 +443,7 @@ internal class CarryChest : IFeature
         }
 
         // Already carrying the limit
-        var limit = this.Config.CarryChestLimit;
+        var limit = this._config.CarryChestLimit;
         if (limit > 0)
         {
             foreach (var item in Game1.player.Items.OfType<Chest>())
@@ -431,7 +459,7 @@ internal class CarryChest : IFeature
                 }
 
                 Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
-                this.Helper.Input.Suppress(e.Button);
+                this._helper.Input.Suppress(e.Button);
                 return;
             }
         }
@@ -443,7 +471,7 @@ internal class CarryChest : IFeature
         }
 
         Game1.currentLocation.Objects.Remove(pos);
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
         CarryChest.CheckForOverburdened();
     }
 }

@@ -25,9 +25,12 @@ internal static class RangeHelper
             FeatureOptionRange.World => true,
             FeatureOptionRange.Inventory when parent is Farmer farmer && farmer.Equals(Game1.player) => true,
             FeatureOptionRange.Default or FeatureOptionRange.Disabled or FeatureOptionRange.Inventory => false,
-            FeatureOptionRange.Location when parent is GameLocation location && !location.Equals(Game1.currentLocation) => false,
+            FeatureOptionRange.Location when parent is GameLocation location && !location.Equals(Game1.currentLocation)
+                => false,
             FeatureOptionRange.Location when distance == -1 => true,
-            FeatureOptionRange.Location when Math.Abs(position.X - Game1.player.getTileX()) + Math.Abs(position.Y - Game1.player.getTileY()) <= distance => true,
+            FeatureOptionRange.Location when Math.Abs(position.X - Game1.player.getTileX())
+                                           + Math.Abs(position.Y - Game1.player.getTileY())
+                                          <= distance => true,
             _ => false,
         };
     }

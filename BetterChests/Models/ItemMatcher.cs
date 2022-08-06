@@ -35,12 +35,14 @@ internal class ItemMatcher : ObservableCollection<string>, IItemMatcher
         set
         {
             this.Clear();
-            if (!string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
-                foreach (var item in Regex.Split(value, @"\s+"))
-                {
-                    this.Add(item);
-                }
+                return;
+            }
+
+            foreach (var item in Regex.Split(value, @"\s+"))
+            {
+                this.Add(item);
             }
         }
     }

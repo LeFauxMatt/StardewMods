@@ -28,7 +28,13 @@ internal class BetterItemGrabMenu : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterItemGrabMenu";
 
+    private static BetterItemGrabMenu? Instance;
+
+    private readonly ModConfig _config;
+
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
+
+    private readonly IModHelper _helper;
 
     private readonly PerScreen<DisplayedItems?> _inventory = new();
 
@@ -37,14 +43,17 @@ internal class BetterItemGrabMenu : IFeature
     private readonly PerScreen<Stack<IClickableMenu>> _overlaidMenus = new(() => new());
 
     private readonly PerScreen<bool> _refreshInventory = new();
+
     private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
 
     private EventHandler<SpriteBatch>? _beforeDraw;
 
+    private bool _isActivated;
+
     private BetterItemGrabMenu(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
         HarmonyHelper.AddPatches(
             BetterItemGrabMenu.Id,
             new SavedPatch[]
@@ -53,7 +62,13 @@ internal class BetterItemGrabMenu : IFeature
                     AccessTools.Method(
                         typeof(InventoryMenu),
                         nameof(InventoryMenu.draw),
-                        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                        new[]
+                        {
+                            typeof(SpriteBatch),
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                        }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
@@ -62,11 +77,22 @@ internal class BetterItemGrabMenu : IFeature
                         typeof(ItemGrabMenu),
                         new[]
                         {
-                            typeof(IList<Item>), typeof(bool), typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
-                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
-                            typeof(int), typeof(object),
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object),
                         }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
@@ -132,22 +158,13 @@ internal class BetterItemGrabMenu : IFeature
         set => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value = value;
     }
 
-    private static BetterItemGrabMenu? Instance { get; set; }
-
-    private ModConfig Config { get; }
-
     private ItemGrabMenu? CurrentMenu
     {
         get => this._currentMenu.Value;
         set => this._currentMenu.Value = value;
     }
 
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
-
-    private Stack<IClickableMenu> OverlaidMenus =>
-        this._overlaidMenus.Value;
+    private Stack<IClickableMenu> OverlaidMenus => this._overlaidMenus.Value;
 
     /// <summary>
     ///     Adds an overlay to the current <see cref="StardewValley.Menus.ItemGrabMenu" />.
@@ -181,67 +198,43 @@ internal class BetterItemGrabMenu : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(BetterItemGrabMenu.Id);
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
-        this.Helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-        this.Helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
-        this.Helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
+        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
+        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._helper.Events.Input.CursorMoved += this.OnCursorMoved;
+        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this._helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
+        this._helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(BetterItemGrabMenu.Id);
-        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.Helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.Helper.Events.Input.CursorMoved -= this.OnCursorMoved;
-        this.Helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-        this.Helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
-        this.Helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
-    }
-
-    /// <summary>
-    ///     Invokes all BeforeDraw event handlers.
-    /// </summary>
-    /// <param name="b">The SpriteBatch to draw to.</param>
-    internal void Invoke(SpriteBatch b)
-    {
-        if (this._beforeDraw is null)
-        {
-            return;
-        }
-
-        foreach (var handler in this._beforeDraw.GetInvocationList())
-        {
-            try
-            {
-                handler.DynamicInvoke(this, b);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
+        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
+        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this._helper.Events.Input.CursorMoved -= this.OnCursorMoved;
+        this._helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this._helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
+        this._helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
     }
 
     private static IList<Item> ActualInventory(IList<Item> actualInventory, InventoryMenu inventoryMenu)
@@ -303,7 +296,15 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { context: { } context, inventory: { } inventory, ItemsToGrabMenu: { } itemsToGrabMenu }
+        if (__instance is not
+            {
+                context:
+                { } context,
+                inventory:
+                { } inventory,
+                ItemsToGrabMenu:
+                { } itemsToGrabMenu,
+            }
          || !StorageHelper.TryGetOne(context, out _))
         {
             BetterItemGrabMenu.Inventory = null;
@@ -373,6 +374,26 @@ internal class BetterItemGrabMenu : IFeature
         BetterItemGrabMenu.RefreshInventory |= Game1.activeClickableMenu is ItemGrabMenu && e.IsLocalPlayer;
     }
 
+    private void Invoke(SpriteBatch b)
+    {
+        if (this._beforeDraw is null)
+        {
+            return;
+        }
+
+        foreach (var handler in this._beforeDraw.GetInvocationList())
+        {
+            try
+            {
+                handler.DynamicInvoke(this, b);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+    }
+
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (this.CurrentMenu is null)
@@ -397,7 +418,7 @@ internal class BetterItemGrabMenu : IFeature
                 return;
         }
 
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -419,25 +440,25 @@ internal class BetterItemGrabMenu : IFeature
         }
 
         var offset = displayedItems.Offset;
-        if (this.Config.ControlScheme.ScrollUp.JustPressed()
+        if (this._config.ControlScheme.ScrollUp.JustPressed()
          && (this.CurrentMenu.currentlySnappedComponent is null
           || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
             displayedItems.Offset--;
             if (offset != displayedItems.Offset)
             {
-                this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollUp);
+                this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ScrollUp);
             }
         }
 
-        if (this.Config.ControlScheme.ScrollDown.JustPressed()
+        if (this._config.ControlScheme.ScrollDown.JustPressed()
          && (this.CurrentMenu.currentlySnappedComponent is null
           || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
             displayedItems.Offset++;
             if (offset != displayedItems.Offset)
             {
-                this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.ScrollDown);
+                this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ScrollDown);
             }
         }
     }
@@ -482,11 +503,6 @@ internal class BetterItemGrabMenu : IFeature
         if (BetterItemGrabMenu.ItemsToGrabMenu?.Menu.isWithinBounds(x, y) == true)
         {
             BetterItemGrabMenu.ItemsToGrabMenu.Offset += e.Delta > 0 ? -1 : 1;
-        }
-
-        if (this.CurrentMenu is { chestColorPicker: HslColorPickerOld colorPicker })
-        {
-            colorPicker.receiveScrollWheelAction(e.Delta > 0 ? -10 : 10);
         }
     }
 
@@ -566,7 +582,11 @@ internal class BetterItemGrabMenu : IFeature
 
         if (!ReferenceEquals(menu, this.CurrentMenu))
         {
-            if (menu is null or { context: null })
+            if (menu is null
+                        or
+                        {
+                            context: null,
+                        })
             {
                 this.CurrentMenu = null;
                 this.OverlaidMenus.Clear();

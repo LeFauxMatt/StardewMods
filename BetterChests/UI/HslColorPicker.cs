@@ -228,7 +228,9 @@ internal class HslColorPicker
             var value = (float)i / HslColorPicker.Cells;
             this._lightnessShade[i] = new HslColor
             {
-                H = this._hslColor.H, S = this.Color == Color.Black ? 0 : this._hslColor.S, L = value,
+                H = this._hslColor.H,
+                S = this.Color == Color.Black ? 0 : this._hslColor.S,
+                L = value,
             }.ToRgbColor();
             this._saturationShade[i] = new HslColor
             {
@@ -362,7 +364,9 @@ internal class HslColorPicker
             var value = (float)i / HslColorPicker.Cells;
             this._lightnessShade[i] = new HslColor
             {
-                H = this._hslColor.H, S = this.Color == Color.Black ? 0 : this._hslColor.S, L = value,
+                H = this._hslColor.H,
+                S = this.Color == Color.Black ? 0 : this._hslColor.S,
+                L = value,
             }.ToRgbColor();
             this._saturationShade[i] = new HslColor
             {

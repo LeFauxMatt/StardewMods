@@ -26,12 +26,17 @@ internal class ResizeChestMenu : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChestMenu";
 
+    private static ResizeChestMenu? Instance;
+
     private readonly PerScreen<object?> _context = new();
+    private readonly IModHelper _helper;
     private readonly PerScreen<IStorageObject?> _storage = new();
+
+    private bool _isActivated;
 
     private ResizeChestMenu(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
         HarmonyHelper.AddPatches(
             ResizeChestMenu.Id,
             new SavedPatch[]
@@ -41,11 +46,22 @@ internal class ResizeChestMenu : IFeature
                         typeof(ItemGrabMenu),
                         new[]
                         {
-                            typeof(IList<Item>), typeof(bool), typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
-                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
-                            typeof(int), typeof(object),
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object),
                         }),
                     typeof(ResizeChestMenu),
                     nameof(ResizeChestMenu.ItemGrabMenu_constructor_postfix),
@@ -55,20 +71,28 @@ internal class ResizeChestMenu : IFeature
                         typeof(ItemGrabMenu),
                         new[]
                         {
-                            typeof(IList<Item>), typeof(bool), typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem), typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string), typeof(ItemGrabMenu.behaviorOnItemSelect), typeof(bool),
-                            typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(int), typeof(Item),
-                            typeof(int), typeof(object),
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object),
                         }),
                     typeof(ResizeChestMenu),
                     nameof(ResizeChestMenu.ItemGrabMenu_constructor_transpiler),
                     PatchType.Transpiler),
                 new(
-                    AccessTools.Method(
-                        typeof(ItemGrabMenu),
-                        nameof(ItemGrabMenu.draw),
-                        new[] { typeof(SpriteBatch) }),
+                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
                     typeof(ResizeChestMenu),
                     nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
                     PatchType.Transpiler),
@@ -78,7 +102,11 @@ internal class ResizeChestMenu : IFeature
                         nameof(MenuWithInventory.draw),
                         new[]
                         {
-                            typeof(SpriteBatch), typeof(bool), typeof(bool), typeof(int), typeof(int),
+                            typeof(SpriteBatch),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(int),
                             typeof(int),
                         }),
                     typeof(ResizeChestMenu),
@@ -87,17 +115,11 @@ internal class ResizeChestMenu : IFeature
             });
     }
 
-    private static ResizeChestMenu? Instance { get; set; }
-
     private object? Context
     {
         get => this._context.Value;
         set => this._context.Value = value;
     }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     private IStorageObject? Storage
     {
@@ -118,39 +140,46 @@ internal class ResizeChestMenu : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(ResizeChestMenu.Id);
-        this.Helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
+        this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(ResizeChestMenu.Id);
-        this.Helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
+        this._helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
     }
 
     private static int GetExtraSpace(MenuWithInventory menu)
     {
         switch (menu)
         {
-            case ItemGrabMenu { context: null } or not ItemGrabMenu:
+            case ItemGrabMenu
+                 {
+                     context: null,
+                 }
+                 or not ItemGrabMenu:
                 ResizeChestMenu.Instance!.Context = null;
                 ResizeChestMenu.Instance.Storage = null;
                 return 0;
-            case ItemGrabMenu { context: { } context }
-                when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
+            case ItemGrabMenu
+            {
+                context:
+                { } context,
+            } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
                 ResizeChestMenu.Instance.Context = context;
                 ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
                 break;
@@ -160,17 +189,32 @@ internal class ResizeChestMenu : IFeature
     }
 
     private static InventoryMenu GetItemsToGrabMenu(
-        int x, int y, bool playerInventory, IList<Item> actualInventory,
-        InventoryMenu.highlightThisItem highlightMethod, int capacity, int rows, int horizontalGap, int verticalGap,
-        bool drawSlots, ItemGrabMenu menu)
+        int x,
+        int y,
+        bool playerInventory,
+        IList<Item> actualInventory,
+        InventoryMenu.highlightThisItem highlightMethod,
+        int capacity,
+        int rows,
+        int horizontalGap,
+        int verticalGap,
+        bool drawSlots,
+        ItemGrabMenu menu)
     {
         switch (menu)
         {
-            case { context: null }:
+            case
+            {
+                context: null,
+            }:
                 ResizeChestMenu.Instance!.Context = null;
                 ResizeChestMenu.Instance.Storage = null;
                 break;
-            case { context: { } context } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
+            case
+            {
+                context:
+                { } context,
+            } when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
                 ResizeChestMenu.Instance.Context = context;
                 ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
                 break;
@@ -244,11 +288,20 @@ internal class ResizeChestMenu : IFeature
                     typeof(InventoryMenu),
                     new[]
                     {
-                        typeof(int), typeof(int), typeof(bool), typeof(IList<Item>),
-                        typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int),
+                        typeof(int),
+                        typeof(int),
+                        typeof(bool),
+                        typeof(IList<Item>),
+                        typeof(InventoryMenu.highlightThisItem),
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
                         typeof(bool),
                     })),
-            new(OpCodes.Stfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))));
+            new(
+                OpCodes.Stfld,
+                AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))));
 
         patcher.AddPatch(
             code =>
@@ -267,8 +320,15 @@ internal class ResizeChestMenu : IFeature
                     typeof(InventoryMenu),
                     new[]
                     {
-                        typeof(int), typeof(int), typeof(bool), typeof(IList<Item>),
-                        typeof(InventoryMenu.highlightThisItem), typeof(int), typeof(int), typeof(int), typeof(int),
+                        typeof(int),
+                        typeof(int),
+                        typeof(bool),
+                        typeof(IList<Item>),
+                        typeof(InventoryMenu.highlightThisItem),
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
                         typeof(bool),
                     })));
 
@@ -311,19 +371,20 @@ internal class ResizeChestMenu : IFeature
                 OpCodes.Ldfld,
                 AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
         patcher.AddPatch(
-            code =>
-            {
-                Log.Trace("Moving backpack icon down by expanded menu extra height.", true);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(
-                    new(
-                        OpCodes.Call,
-                        AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetExtraSpace))));
-                code.Add(new(OpCodes.Add));
-            },
-            new CodeInstruction(
-                OpCodes.Ldfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen)))).Repeat(2);
+                   code =>
+                   {
+                       Log.Trace("Moving backpack icon down by expanded menu extra height.", true);
+                       code.Add(new(OpCodes.Ldarg_0));
+                       code.Add(
+                           new(
+                               OpCodes.Call,
+                               AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.GetExtraSpace))));
+                       code.Add(new(OpCodes.Add));
+                   },
+                   new CodeInstruction(
+                       OpCodes.Ldfld,
+                       AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
+               .Repeat(2);
 
         // Fill code buffer
         foreach (var inCode in instructions)
@@ -411,7 +472,13 @@ internal class ResizeChestMenu : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow })
+        if (e.NewMenu is not ItemGrabMenu
+            {
+                ItemsToGrabMenu.inventory:
+                { } topRow,
+                inventory.inventory:
+                { } bottomRow,
+            })
         {
             return;
         }

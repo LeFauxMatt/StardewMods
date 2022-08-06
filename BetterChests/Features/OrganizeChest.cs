@@ -19,9 +19,15 @@ internal class OrganizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/OrganizeChest";
 
+    private static OrganizeChest? Instance;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private OrganizeChest(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
         HarmonyHelper.AddPatches(
             OrganizeChest.Id,
             new SavedPatch[]
@@ -33,12 +39,6 @@ internal class OrganizeChest : IFeature
                     PatchType.Prefix),
             });
     }
-
-    private static OrganizeChest? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="OrganizeChest" />.
@@ -53,30 +53,33 @@ internal class OrganizeChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._isActivated = true;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._isActivated = false;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static bool ItemGrabMenu_organizeItemsInList_prefix(IList<Item> items)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                context: Item context,
+            } itemGrabMenu
          || !ReferenceEquals(itemGrabMenu.ItemsToGrabMenu.actualInventory, items)
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.OrganizeChest == FeatureOption.Disabled)
@@ -92,7 +95,10 @@ internal class OrganizeChest : IFeature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseRight
-         || Game1.activeClickableMenu is not ItemGrabMenu { context: Item context } itemGrabMenu
+         || Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                context: Item context,
+            } itemGrabMenu
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.OrganizeChest == FeatureOption.Disabled)
         {
@@ -106,7 +112,7 @@ internal class OrganizeChest : IFeature
         }
 
         storage.OrganizeItems(true);
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
         BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         Game1.playSound("Ship");
     }

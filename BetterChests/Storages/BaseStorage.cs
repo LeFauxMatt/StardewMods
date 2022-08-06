@@ -651,22 +651,27 @@ internal abstract class BaseStorage : IStorageObject
             return;
         }
 
-        var items = this.Items.OfType<Item>().OrderBy(
-            item => this.OrganizeChestGroupBy switch
-            {
-                GroupBy.Category => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("category_"))
-                                 ?? string.Empty,
-                GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_")) ?? string.Empty,
-                GroupBy.Name => item.DisplayName,
-                GroupBy.Default or _ => string.Empty,
-            }).ThenBy(
-            item => this.OrganizeChestSortBy switch
-            {
-                SortBy.Quality when item is SObject obj => obj.Quality,
-                SortBy.Quantity => item.Stack,
-                SortBy.Type => item.Category,
-                SortBy.Default or _ => 0,
-            }).ToList();
+        var items = this.Items.OfType<Item>()
+                        .OrderBy(
+                            item => this.OrganizeChestGroupBy switch
+                            {
+                                GroupBy.Category => item.GetContextTags()
+                                                        .FirstOrDefault(tag => tag.StartsWith("category_"))
+                                                 ?? string.Empty,
+                                GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_"))
+                                              ?? string.Empty,
+                                GroupBy.Name => item.DisplayName,
+                                GroupBy.Default or _ => string.Empty,
+                            })
+                        .ThenBy(
+                            item => this.OrganizeChestSortBy switch
+                            {
+                                SortBy.Quality when item is SObject obj => obj.Quality,
+                                SortBy.Quantity => item.Stack,
+                                SortBy.Type => item.Category,
+                                SortBy.Default or _ => 0,
+                            })
+                        .ToList();
         if (descending)
         {
             items.Reverse();
@@ -699,7 +704,8 @@ internal abstract class BaseStorage : IStorageObject
             null,
             -1,
             this.Context);
-        if (Game1.activeClickableMenu is ItemGrabMenu { } itemGrabMenu)
+        if (Game1.activeClickableMenu is ItemGrabMenu
+                { } itemGrabMenu)
         {
             if (Game1.options.SnappyMenus && itemGrabMenu.currentlySnappedComponent is not null)
             {

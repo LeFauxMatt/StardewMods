@@ -16,10 +16,17 @@ using StardewValley.Menus;
 /// </summary>
 internal class StashToChest : IFeature
 {
+    private static StashToChest? Instance;
+
+    private readonly ModConfig _config;
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private StashToChest(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
     }
 
     private static IEnumerable<IStorageObject> Eligible =>
@@ -37,14 +44,6 @@ internal class StashToChest : IFeature
                   storage.Position)
         select storage;
 
-    private static StashToChest? Instance { get; set; }
-
-    private ModConfig Config { get; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
-
     /// <summary>
     ///     Initializes <see cref="StashToChest" />.
     /// </summary>
@@ -59,14 +58,14 @@ internal class StashToChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.Input.ButtonPressed += StashToChest.OnButtonPressed;
+        this._isActivated = true;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._helper.Events.Input.ButtonPressed += StashToChest.OnButtonPressed;
 
         if (!IntegrationHelper.ToolbarIcons.IsLoaded)
         {
@@ -84,14 +83,14 @@ internal class StashToChest : IFeature
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.Helper.Events.Input.ButtonPressed -= StashToChest.OnButtonPressed;
+        this._isActivated = false;
+        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this._helper.Events.Input.ButtonPressed -= StashToChest.OnButtonPressed;
 
         if (!IntegrationHelper.ToolbarIcons.IsLoaded)
         {
@@ -105,7 +104,11 @@ internal class StashToChest : IFeature
     private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
-         || Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu)
+         || Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                context:
+                { } context,
+            } itemGrabMenu)
         {
             return;
         }
@@ -174,13 +177,17 @@ internal class StashToChest : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!this.Config.ControlScheme.StashItems.JustPressed())
+        if (!this._config.ControlScheme.StashItems.JustPressed())
         {
             return;
         }
 
         // Stash to Current
-        if (Game1.activeClickableMenu is ItemGrabMenu { context: { } context }
+        if (Game1.activeClickableMenu is ItemGrabMenu
+            {
+                context:
+                { } context,
+            }
          && StorageHelper.TryGetOne(context, out var storage)
          && storage.StashToChest != FeatureOptionRange.Disabled)
         {
@@ -195,6 +202,6 @@ internal class StashToChest : IFeature
         }
 
         StashToChest.StashIntoAll();
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.StashItems);
+        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.StashItems);
     }
 }

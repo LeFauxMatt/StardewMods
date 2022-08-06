@@ -19,27 +19,28 @@ using StardewValley;
 /// </summary>
 internal class ChestFinder : IFeature
 {
+    private static ChestFinder? Instance;
+
     private readonly PerScreen<HashSet<IStorageObject>> _cachedStorages = new(() => new());
+
+    private readonly ModConfig _config;
+
+    private readonly IModHelper _helper;
+
     private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
+
+    private bool _isActivated;
 
     private ChestFinder(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
     }
-
-    private static ChestFinder? Instance { get; set; }
 
     private HashSet<IStorageObject> CachedStorages => this._cachedStorages.Value;
 
-    private ModConfig Config { get; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
-
     private IItemMatcher ItemMatcher =>
-        this._itemMatcher.Value ??= new ItemMatcher(false, this.Config.SearchTagSymbol.ToString());
+        this._itemMatcher.Value ??= new ItemMatcher(false, this._config.SearchTagSymbol.ToString());
 
     /// <summary>
     ///     Initializes <see cref="ChestFinder" />.
@@ -55,16 +56,16 @@ internal class ChestFinder : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
-        this.Helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.Helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
+        this._isActivated = true;
+        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this._helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
 
         if (!IntegrationHelper.ToolbarIcons.IsLoaded)
         {
@@ -82,16 +83,16 @@ internal class ChestFinder : IFeature
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
-        this.Helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.Helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
+        this._isActivated = false;
+        this._helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+        this._helper.Events.Display.RenderedHud -= this.OnRenderedHud;
+        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this._helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
 
         if (!IntegrationHelper.ToolbarIcons.IsLoaded)
         {
@@ -104,13 +105,13 @@ internal class ChestFinder : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.Config.ControlScheme.FindChest.JustPressed())
+        if (!Context.IsPlayerFree || !this._config.ControlScheme.FindChest.JustPressed())
         {
             return;
         }
 
         this.OpenChestFinder();
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.FindChest);
+        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.FindChest);
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
@@ -258,6 +259,6 @@ internal class ChestFinder : IFeature
 
     private void OpenChestFinder()
     {
-        Game1.activeClickableMenu = new SearchBar(this.Helper, this.ItemMatcher);
+        Game1.activeClickableMenu = new SearchBar(this.ItemMatcher);
     }
 }

@@ -11,16 +11,16 @@ using StardewValley.Menus;
 /// </summary>
 internal class BetterShippingBin : IFeature
 {
+    private static BetterShippingBin? Instance;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private BetterShippingBin(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
     }
-
-    private static BetterShippingBin? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="BetterShippingBin" />.
@@ -35,31 +35,36 @@ internal class BetterShippingBin : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
-        this.Helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
+        this._isActivated = true;
+        this._helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
-        this.Helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
+        this._isActivated = false;
+        this._helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
     }
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         // Relaunch as regular ItemGrabMenu
-        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: true }
+        if (e.NewMenu is ItemGrabMenu
+            {
+                context:
+                { } context,
+                shippingBin: true,
+            }
          && StorageHelper.TryGetOne(context, out var storage)
          && storage is ShippingBinStorage)
         {

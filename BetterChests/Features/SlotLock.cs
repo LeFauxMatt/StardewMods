@@ -23,10 +23,17 @@ internal class SlotLock : IFeature
 {
     private const string Id = "furyx639.BetterChests/SlotLock";
 
+    private static SlotLock? Instance;
+
+    private readonly ModConfig _config;
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private SlotLock(IModHelper helper, ModConfig config)
     {
-        this.Helper = helper;
-        this.Config = config;
+        this._helper = helper;
+        this._config = config;
         HarmonyHelper.AddPatches(
             SlotLock.Id,
             new SavedPatch[]
@@ -35,20 +42,18 @@ internal class SlotLock : IFeature
                     AccessTools.Method(
                         typeof(InventoryMenu),
                         nameof(InventoryMenu.draw),
-                        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                        new[]
+                        {
+                            typeof(SpriteBatch),
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                        }),
                     typeof(SlotLock),
                     nameof(SlotLock.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
             });
     }
-
-    private static SlotLock? Instance { get; set; }
-
-    private ModConfig Config { get; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="SlotLock" />.
@@ -64,27 +69,27 @@ internal class SlotLock : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(SlotLock.Id);
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(SlotLock.Id);
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -137,12 +142,19 @@ internal class SlotLock : IFeature
     {
         switch (Game1.activeClickableMenu)
         {
-            case ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu):
-            case GameMenu gameMenu
-                when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
-                  && ReferenceEquals(inventoryPage, menu):
-                return menu.actualInventory.ElementAtOrDefault(index)?.modData
-                           .ContainsKey("furyx639.BetterChests/LockedSlot")
+            case ItemGrabMenu
+            {
+                inventory:
+                { } itemGrabMenu,
+            } when ReferenceEquals(itemGrabMenu, menu):
+            case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage
+                                        {
+                                            inventory:
+                                            { } inventoryPage,
+                                        }
+                                     && ReferenceEquals(inventoryPage, menu):
+                return menu.actualInventory.ElementAtOrDefault(index)
+                           ?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
                     == true
                     ? Color.Red
                     : tint;
@@ -155,9 +167,16 @@ internal class SlotLock : IFeature
     {
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu { inventory: { } itemGrabMenu } => itemGrabMenu,
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
-                => inventoryPage,
+            ItemGrabMenu
+            {
+                inventory:
+                { } itemGrabMenu,
+            } => itemGrabMenu,
+            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage
+            {
+                inventory:
+                { } inventoryPage,
+            } => inventoryPage,
             _ => null,
         };
 
@@ -166,8 +185,10 @@ internal class SlotLock : IFeature
             return;
         }
 
-        if (!(this.Config.SlotLockHold && e.Button == SButton.MouseLeft && e.IsDown(this.Config.ControlScheme.LockSlot))
-         && !(!this.Config.SlotLockHold && e.Button == this.Config.ControlScheme.LockSlot))
+        if (!(this._config.SlotLockHold
+           && e.Button == SButton.MouseLeft
+           && e.IsDown(this._config.ControlScheme.LockSlot))
+         && !(!this._config.SlotLockHold && e.Button == this._config.ControlScheme.LockSlot))
         {
             return;
         }
@@ -194,6 +215,6 @@ internal class SlotLock : IFeature
             item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
         }
 
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
     }
 }

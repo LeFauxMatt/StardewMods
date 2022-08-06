@@ -21,9 +21,15 @@ internal class OpenHeldChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/OpenHeldChest";
 
+    private static OpenHeldChest? Instance;
+
+    private readonly IModHelper _helper;
+
+    private bool _isActivated;
+
     private OpenHeldChest(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
         HarmonyHelper.AddPatches(
             OpenHeldChest.Id,
             new SavedPatch[]
@@ -35,12 +41,6 @@ internal class OpenHeldChest : IFeature
                     PatchType.Prefix),
             });
     }
-
-    private static OpenHeldChest? Instance { get; set; }
-
-    private IModHelper Helper { get; }
-
-    private bool IsActivated { get; set; }
 
     /// <summary>
     ///     Initializes <see cref="OpenHeldChest" />.
@@ -55,29 +55,29 @@ internal class OpenHeldChest : IFeature
     /// <inheritdoc />
     public void Activate()
     {
-        if (this.IsActivated)
+        if (this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = true;
+        this._isActivated = true;
         HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
-        this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.Helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
     }
 
     /// <inheritdoc />
     public void Deactivate()
     {
-        if (!this.IsActivated)
+        if (!this._isActivated)
         {
             return;
         }
 
-        this.IsActivated = false;
+        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
-        this.Helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.Helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
@@ -117,7 +117,7 @@ internal class OpenHeldChest : IFeature
         }
 
         // Disabled for object
-        if (!StorageHelper.TryGetOne(obj, out var storage) || storage.OpenHeldChest == FeatureOption.Disabled)
+        if (!StorageHelper.TryGetOne(obj, out var storage) || storage.OpenHeldChest is FeatureOption.Disabled)
         {
             return;
         }
@@ -132,6 +132,6 @@ internal class OpenHeldChest : IFeature
             chest.ShowMenu();
         }
 
-        this.Helper.Input.Suppress(e.Button);
+        this._helper.Input.Suppress(e.Button);
     }
 }
