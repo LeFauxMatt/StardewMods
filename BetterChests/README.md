@@ -24,6 +24,7 @@ Adds enhanced chest features to the game.
     * [Search Items](#search-items)
     * [Slot Lock](#slot-lock)
     * [Stash To Chest](#stash-to-chest)
+    * [Transfer Items](#transfer-items)
     * [Unload Chest](#unload-chest)
 * [Usage](#usage)
     * [Item Tags](#item-tags)
@@ -280,6 +281,14 @@ Hit a configurable key to instantly stash items from your inventory into nearby 
 3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 4. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
 5. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
+
+### Transfer Items
+
+Adds buttons that transfer all items into or out of the currently opened chest.
+
+| Config        | Description                         | Default Value | Other Value(s)  |
+|:--------------|:------------------------------------|:--------------|:----------------|
+| TransferItems | Enables the Transfer Items feature. | `true`        | `true', 'false' |
 
 ### Unload Chest
 
