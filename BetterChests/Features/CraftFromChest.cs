@@ -43,10 +43,7 @@ internal class CraftFromChest : IFeature
 
     private static IEnumerable<IStorageObject> Eligible =>
         from storage in StorageHelper.All
-        where storage is not ChestStorage
-              {
-                  Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-              }
+        where storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
            && storage.CraftFromChest != FeatureOptionRange.Disabled
            && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
            && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
@@ -216,10 +213,7 @@ internal class CraftFromChest : IFeature
             storage.Mutex?.Update(storage.Parent as GameLocation ?? Game1.currentLocation);
         }
 
-        if (Game1.activeClickableMenu is not GameMenu
-            {
-                currentTab: var currentTab,
-            } gameMenu
+        if (Game1.activeClickableMenu is not GameMenu { currentTab: var currentTab } gameMenu
          || currentTab == this.CurrentTab)
         {
             return;

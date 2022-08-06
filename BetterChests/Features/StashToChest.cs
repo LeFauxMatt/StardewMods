@@ -104,11 +104,7 @@ internal class StashToChest : IFeature
     private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
-         || Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context:
-                { } context,
-            } itemGrabMenu)
+         || Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu)
         {
             return;
         }
@@ -183,11 +179,7 @@ internal class StashToChest : IFeature
         }
 
         // Stash to Current
-        if (Game1.activeClickableMenu is ItemGrabMenu
-            {
-                context:
-                { } context,
-            }
+        if (Game1.activeClickableMenu is ItemGrabMenu { context: { } context }
          && StorageHelper.TryGetOne(context, out var storage)
          && storage.StashToChest != FeatureOptionRange.Disabled)
         {

@@ -142,17 +142,10 @@ internal class SlotLock : IFeature
     {
         switch (Game1.activeClickableMenu)
         {
-            case ItemGrabMenu
-            {
-                inventory:
-                { } itemGrabMenu,
-            } when ReferenceEquals(itemGrabMenu, menu):
-            case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage
-                                        {
-                                            inventory:
-                                            { } inventoryPage,
-                                        }
-                                     && ReferenceEquals(inventoryPage, menu):
+            case ItemGrabMenu { inventory: { } itemGrabMenu } when ReferenceEquals(itemGrabMenu, menu):
+            case GameMenu gameMenu
+                when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+                  && ReferenceEquals(inventoryPage, menu):
                 return menu.actualInventory.ElementAtOrDefault(index)
                            ?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
                     == true
@@ -167,15 +160,10 @@ internal class SlotLock : IFeature
     {
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu
-            {
-                inventory:
-                { } itemGrabMenu,
-            } => itemGrabMenu,
+            ItemGrabMenu { inventory: { } itemGrabMenu } => itemGrabMenu,
             GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage
             {
-                inventory:
-                { } inventoryPage,
+                inventory: { } inventoryPage,
             } => inventoryPage,
             _ => null,
         };

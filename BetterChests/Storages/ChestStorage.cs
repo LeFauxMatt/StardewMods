@@ -19,12 +19,7 @@ internal class ChestStorage : BaseStorage
     /// <param name="position">The position of the source object.</param>
     public ChestStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2 position)
         : base(
-            chest is
-            {
-                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-            }
-                ? Game1.player.team
-                : chest,
+            chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest,
             parent,
             defaultChest,
             position)

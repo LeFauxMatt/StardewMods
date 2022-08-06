@@ -370,7 +370,11 @@ internal class ConfigHelper
                  && bounds.Contains(point))
                 {
                     Game1.activeClickableMenu.SetChildMenu(
-                        new ItemSelectionMenu(storage, storage.FilterMatcher, this._helper.Translation));
+                        new ItemSelectionMenu(
+                            storage,
+                            storage.FilterMatcher,
+                            this._helper.Input,
+                            this._helper.Translation));
                     return;
                 }
             }
@@ -426,11 +430,7 @@ internal class ConfigHelper
         var data = storage switch
         {
             StorageData storageData => storageData,
-            IStorageObject
-            {
-                Data:
-                { } storageData,
-            } => storageData,
+            IStorageObject { Data: { } storageData } => storageData,
             _ => storage,
         };
 

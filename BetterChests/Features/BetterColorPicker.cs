@@ -76,8 +76,7 @@ internal class BetterColorPicker : IFeature
         if (e.Button is not SButton.MouseLeft
          || Game1.activeClickableMenu is not ItemGrabMenu
             {
-                chestColorPicker: not null,
-                colorPickerToggleButton: var toggleButton,
+                chestColorPicker: not null, colorPickerToggleButton: var toggleButton,
             })
         {
             return;
@@ -96,10 +95,7 @@ internal class BetterColorPicker : IFeature
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                chestColorPicker: not null,
-            })
+        if (Game1.activeClickableMenu is not ItemGrabMenu { chestColorPicker: not null })
         {
             return;
         }
@@ -111,8 +107,7 @@ internal class BetterColorPicker : IFeature
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu
             {
-                chestColorPicker: not null,
-                context: Chest chest,
+                chestColorPicker: not null, context: Chest chest,
             } itemGrabMenu)
         {
             return;

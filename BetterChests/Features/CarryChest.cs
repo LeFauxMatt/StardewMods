@@ -267,10 +267,7 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (chest is not
-            {
-                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-            }
+        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
          && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
@@ -286,10 +283,7 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (chest is not
-            {
-                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-            }
+        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
          && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
@@ -342,10 +336,7 @@ internal class CarryChest : IFeature
         }
 
         // Only copy items from regular chest types
-        if (held is not
-            {
-                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-            }
+        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
          && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)

@@ -25,11 +25,7 @@ internal class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public void CleanInventory(object obj, GameLocation? location, Farmer? who)
     {
-        if (obj is StorageWrapper
-            {
-                Storage:
-                { } storage,
-            })
+        if (obj is StorageWrapper { Storage: { } storage })
         {
             storage.ClearNulls();
         }
@@ -38,25 +34,13 @@ internal class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public int GetActualCapacity(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper
-        {
-            Storage:
-            { } storage,
-        }
-            ? storage.ActualCapacity
-            : Chest.capacity;
+        return obj is StorageWrapper { Storage: { } storage } ? storage.ActualCapacity : Chest.capacity;
     }
 
     /// <inheritdoc />
     public IList<Item?>? GetItems(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper
-        {
-            Storage:
-            { } storage,
-        }
-            ? storage.Items
-            : default;
+        return obj is StorageWrapper { Storage: { } storage } ? storage.Items : default;
     }
 
     /// <inheritdoc />
@@ -68,36 +52,19 @@ internal class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public NetMutex? GetMutex(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper
-        {
-            Storage:
-            { } storage,
-        }
-            ? storage.Mutex
-            : default;
+        return obj is StorageWrapper { Storage: { } storage } ? storage.Mutex : default;
     }
 
     /// <inheritdoc />
     public Vector2? GetTilePosition(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper
-        {
-            Storage:
-            { } storage,
-        }
-            ? storage.Position
-            : default;
+        return obj is StorageWrapper { Storage: { } storage } ? storage.Position : default;
     }
 
     /// <inheritdoc />
     public bool IsItemValid(object obj, GameLocation? location, Farmer? who, Item item)
     {
-        return obj is StorageWrapper
-               {
-                   Storage:
-                   { } storage,
-               }
-            && storage.FilterMatches(item);
+        return obj is StorageWrapper { Storage: { } storage } && storage.FilterMatches(item);
     }
 
     /// <inheritdoc />

@@ -122,11 +122,7 @@ internal class FilterItems : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu
-            {
-                context:
-                { } context,
-            }
+        if (e.NewMenu is not ItemGrabMenu { context: { } context }
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.FilterItems == FeatureOption.Disabled)
         {

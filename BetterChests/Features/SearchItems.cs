@@ -199,19 +199,11 @@ internal class SearchItems : IFeature
     {
         switch (menu)
         {
-            case ItemGrabMenu
-                 {
-                     context: null,
-                 }
-                 or not ItemGrabMenu:
+            case ItemGrabMenu { context: null } or not ItemGrabMenu:
                 SearchItems.Instance!.Context = null;
                 SearchItems.Instance.Storage = null;
                 return 0;
-            case ItemGrabMenu
-            {
-                context:
-                { } context,
-            } when !ReferenceEquals(SearchItems.Instance!.Context, context):
+            case ItemGrabMenu { context: { } context } when !ReferenceEquals(SearchItems.Instance!.Context, context):
                 SearchItems.Instance.Context = context;
                 SearchItems.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
                 break;
@@ -464,13 +456,7 @@ internal class SearchItems : IFeature
         if (!ReferenceEquals(menu, this.CurrentMenu))
         {
             this.CurrentMenu = menu;
-            if (this.CurrentMenu is not
-                {
-                    context:
-                    { } context,
-                    ItemsToGrabMenu:
-                    { } itemsToGrabMenu,
-                }
+            if (this.CurrentMenu is not { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu }
              || !StorageHelper.TryGetOne(context, out var storage)
              || storage.SearchItems == FeatureOption.Disabled)
             {
