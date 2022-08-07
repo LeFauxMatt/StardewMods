@@ -10,7 +10,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -26,10 +25,8 @@ internal class ResizeChestMenu : IFeature
 
     private static ResizeChestMenu? Instance;
 
-    private readonly PerScreen<object?> _context = new();
     private readonly PerScreen<int> _extraSpace = new();
     private readonly IModHelper _helper;
-    private readonly PerScreen<IStorageObject?> _storage = new();
 
     private bool _isActivated;
 
@@ -95,18 +92,6 @@ internal class ResizeChestMenu : IFeature
         set => ResizeChestMenu.Instance!._extraSpace.Value = value;
     }
 
-    private object? Context
-    {
-        get => this._context.Value;
-        set => this._context.Value = value;
-    }
-
-    private IStorageObject? Storage
-    {
-        get => this._storage.Value;
-        set => this._storage.Value = value;
-    }
-
     /// <summary>
     ///     Initializes <see cref="ResizeChestMenu" />.
     /// </summary>
@@ -141,24 +126,6 @@ internal class ResizeChestMenu : IFeature
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(ResizeChestMenu.Id);
         this._helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
-    }
-
-    private static int GetExtraSpace(MenuWithInventory menu)
-    {
-        switch (menu)
-        {
-            case ItemGrabMenu { context: null } or not ItemGrabMenu:
-                ResizeChestMenu.Instance!.Context = null;
-                ResizeChestMenu.Instance.Storage = null;
-                return 0;
-            case ItemGrabMenu { context: { } context }
-                when !ReferenceEquals(ResizeChestMenu.Instance!.Context, context):
-                ResizeChestMenu.Instance.Context = context;
-                ResizeChestMenu.Instance.Storage = StorageHelper.TryGetOne(context, out var storage) ? storage : null;
-                break;
-        }
-
-        return ResizeChestMenu.Instance.Storage?.MenuExtraSpace ?? 0;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
