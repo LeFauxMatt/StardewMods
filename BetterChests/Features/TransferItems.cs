@@ -17,8 +17,6 @@ internal class TransferItems : IFeature
 {
     private static TransferItems? Instance;
 
-    private readonly ModConfig _config;
-
     private readonly PerScreen<ClickableTextureComponent> _downArrow = new(
         () => new(
             new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
@@ -45,10 +43,9 @@ internal class TransferItems : IFeature
 
     private bool _isActivated;
 
-    private TransferItems(IModHelper helper, ModConfig config)
+    private TransferItems(IModHelper helper)
     {
         this._helper = helper;
-        this._config = config;
     }
 
     private ClickableTextureComponent DownArrow => this._downArrow.Value;
@@ -59,11 +56,10 @@ internal class TransferItems : IFeature
     ///     Initializes <see cref="TransferItems" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
-    public static TransferItems Init(IModHelper helper, ModConfig config)
+    public static TransferItems Init(IModHelper helper)
     {
-        return TransferItems.Instance ??= new(helper, config);
+        return TransferItems.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
