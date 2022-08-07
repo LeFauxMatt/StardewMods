@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Helpers.PatternPatcher;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -94,55 +93,27 @@ internal class SlotLock : IFeature
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace($"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(SlotLock)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
-            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
-
-        // ****************************************************************************************
-        // Item Tint Patch
-        // Replaces all actualInventory with ItemsDisplayed.DisplayedItems(actualInventory)
-        // Replaces the tint value for the item slot with SlotLock.Tint to highlight locked slots.
-        patcher.AddPatchLoop(
-            code =>
-            {
-                code.RemoveAt(code.Count - 1);
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(new(OpCodes.Ldloc_0));
-                code.Add(new(OpCodes.Ldloc_S, (byte)4));
-                code.Add(new(OpCodes.Call, AccessTools.Method(typeof(SlotLock), nameof(SlotLock.Tint))));
-            },
-            new(OpCodes.Call, AccessTools.Method(typeof(Game1), nameof(Game1.getSourceRectForStandardTileSheet))),
-            new(OpCodes.Newobj),
-            new(OpCodes.Ldloc_0));
-
-        // Fill code buffer
-        foreach (var inCode in instructions)
+        foreach (var instruction in instructions)
         {
-            // Return patched code segments
-            foreach (var outCode in patcher.From(inCode))
+            if (instruction.opcode == OpCodes.Ldloc_0)
             {
-                yield return outCode;
+                yield return instruction;
+                yield return new(OpCodes.Ldarg_0);
+                yield return new(OpCodes.Ldloc_S, (byte)4);
+                yield return CodeInstruction.Call(typeof(SlotLock), nameof(SlotLock.Tint));
             }
-        }
-
-        // Return remaining code
-        foreach (var outCode in patcher.FlushBuffer())
-        {
-            yield return outCode;
-        }
-
-        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
-        if (patcher.AppliedPatches < patcher.TotalPatches)
-        {
-            Log.Warn("Failed to applied all patches!");
+            else
+            {
+                yield return instruction;
+            }
         }
     }
 
-    private static Color Tint(InventoryMenu menu, Color tint, int index)
+    private static Color Tint(Color tint, InventoryMenu menu, int index)
     {
         return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
             == true
-            ? Color.Red
+            ? SlotLock.Instance!._config.SlotLockColor.ToColor()
             : tint;
     }
 

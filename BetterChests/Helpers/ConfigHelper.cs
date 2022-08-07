@@ -206,6 +206,16 @@ internal class ConfigHelper
                 I18n.Config_SlotLock_Tooltip,
                 nameof(ModConfig.SlotLock));
 
+            IntegrationHelper.GMCM.API.AddTextOption(
+                ConfigHelper.Instance._modManifest,
+                () => ConfigHelper.Instance.Config.SlotLockColor.ToStringFast(),
+                value => ConfigHelper.Instance.Config.SlotLockColor =
+                    ColorsExtensions.TryParse(value, out var color) ? color : Colors.Gray,
+                I18n.Config_SlotLockColor_Name,
+                I18n.Config_SlotLockColor_Tooltip,
+                ColorsExtensions.GetNames(),
+                fieldId: nameof(ModConfig.SlotLockColor));
+
             IntegrationHelper.GMCM.API.AddBoolOption(
                 ConfigHelper.Instance._modManifest,
                 () => ConfigHelper.Instance.Config.SlotLockHold,
@@ -220,7 +230,10 @@ internal class ConfigHelper
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             IntegrationHelper.GMCM.API.AddParagraph(
                 ConfigHelper.Instance._modManifest,
-                () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(TransferItems)}", modList));
+                () => string.Format(
+                    I18n.Warn_Incompatibility_Disabled(),
+                    $"BetterChests.{nameof(TransferItems)}",
+                    modList));
         }
         else
         {
