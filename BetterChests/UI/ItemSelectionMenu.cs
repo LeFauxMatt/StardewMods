@@ -43,7 +43,6 @@ internal class ItemSelectionMenu : ItemGrabMenu
     private static readonly Lazy<int> LineHeightLazy = new(
         () => ItemSelectionMenu.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing);
 
-
     private static ITranslationHelper? Translation;
 
     private readonly DisplayedItems _displayedItems;
@@ -51,6 +50,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
     private readonly IInputHelper _input;
     private readonly HashSet<string> _selected;
     private readonly IItemMatcher _selection;
+
     private DropDownList? _dropDown;
     private int _offset;
     private bool _refreshItems;

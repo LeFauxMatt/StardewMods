@@ -20,7 +20,10 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2 position)
-        : base(location, location, defaultChest, position) { }
+        : base(location, location, defaultChest, position)
+    {
+        // Do nothing
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
@@ -30,7 +33,10 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(ShippingBin shippingBin, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(shippingBin, parent, defaultChest, position) { }
+        : base(shippingBin, parent, defaultChest, position)
+    {
+        // Do nothing
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
@@ -40,7 +46,10 @@ internal class ShippingBinStorage : BaseStorage
     /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(chest, parent, defaultChest, position) { }
+        : base(chest, parent, defaultChest, position)
+    {
+        // Do nothing
+    }
 
     /// <inheritdoc />
     public override int ActualCapacity =>

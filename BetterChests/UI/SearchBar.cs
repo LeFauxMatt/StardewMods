@@ -15,11 +15,8 @@ using StardewValley.Menus;
 internal class SearchBar : IClickableMenu
 {
     private readonly IItemMatcher _itemMatcher;
-
     private readonly ClickableComponent _searchArea;
-
     private readonly TextBox _searchField;
-
     private readonly ClickableTextureComponent _searchIcon;
 
     /// <summary>
