@@ -25,12 +25,11 @@ internal class CraftFromChest : IFeature
 
     private static CraftFromChest? Instance;
 
-    private readonly PerScreen<List<IStorageObject>> _cachedEligible = new(() => new());
-
     private readonly ModConfig _config;
     private readonly PerScreen<int> _currentTab = new();
+    private readonly PerScreen<List<IStorageObject>> _eligible = new(() => new());
     private readonly IModHelper _helper;
-    private readonly PerScreen<List<IStorageObject>> _lockedEligible = new(() => new());
+    private readonly PerScreen<List<IStorageObject>> _locked = new(() => new());
     private readonly PerScreen<int> _timeOut = new();
 
     private bool _isActivated;
@@ -57,7 +56,7 @@ internal class CraftFromChest : IFeature
                   storage.Position)
         select storage;
 
-    private List<IStorageObject> CachedEligible => this._cachedEligible.Value;
+    private List<IStorageObject> CurrentEligible => this._eligible.Value;
 
     private int CurrentTab
     {
@@ -65,7 +64,7 @@ internal class CraftFromChest : IFeature
         set => this._currentTab.Value = value;
     }
 
-    private List<IStorageObject> LockedEligible => this._lockedEligible.Value;
+    private List<IStorageObject> LockedEligible => this._locked.Value;
 
     private int TimeOut
     {
@@ -177,17 +176,17 @@ internal class CraftFromChest : IFeature
         }
 
         // Chest locking timed out
-        if (this.CachedEligible.Count != 0 && --this.TimeOut != 0)
+        if (this.CurrentEligible.Count != 0 && --this.TimeOut != 0)
         {
             return;
         }
 
-        for (var index = this.CachedEligible.Count - 1; index >= 0; index--)
+        for (var index = this.CurrentEligible.Count - 1; index >= 0; index--)
         {
-            this.CachedEligible[index].Mutex?.ReleaseLock();
+            this.CurrentEligible[index].Mutex?.ReleaseLock();
         }
 
-        this.CachedEligible.Clear();
+        this.CurrentEligible.Clear();
         this.TimeOut = 0;
         var width = 800 + IClickableMenu.borderWidth * 2;
         var height = 600 + IClickableMenu.borderWidth * 2;
@@ -207,9 +206,9 @@ internal class CraftFromChest : IFeature
 
     private void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
     {
-        for (var index = this.CachedEligible.Count - 1; index >= 0; index--)
+        for (var index = this.CurrentEligible.Count - 1; index >= 0; index--)
         {
-            var storage = this.CachedEligible[index];
+            var storage = this.CurrentEligible[index];
             storage.Mutex?.Update(storage.Parent as GameLocation ?? Game1.currentLocation);
         }
 
@@ -233,9 +232,9 @@ internal class CraftFromChest : IFeature
 
     private void OpenCrafting()
     {
-        this.CachedEligible.Clear();
-        this.CachedEligible.AddRange(CraftFromChest.Eligible);
-        if (!this.CachedEligible.Any())
+        this.CurrentEligible.Clear();
+        this.CurrentEligible.AddRange(CraftFromChest.Eligible);
+        if (!this.CurrentEligible.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
             return;
@@ -250,7 +249,7 @@ internal class CraftFromChest : IFeature
                 null,
                 null,
                 false,
-                this.CachedEligible.Select(
+                this.CurrentEligible.Select(
                         storage => new Tuple<object, GameLocation>(
                             new StorageWrapper(storage),
                             storage.Parent as GameLocation ?? Game1.currentLocation))
@@ -259,12 +258,12 @@ internal class CraftFromChest : IFeature
         }
 
         this.TimeOut = CraftFromChest.MaxTimeOut;
-        for (var index = this.CachedEligible.Count - 1; index >= 0; index--)
+        for (var index = this.CurrentEligible.Count - 1; index >= 0; index--)
         {
-            var storage = this.CachedEligible[index];
+            var storage = this.CurrentEligible[index];
             storage.Mutex?.RequestLock(
                 () => this.LockedEligible.Add(storage),
-                () => this.CachedEligible.Remove(storage));
+                () => this.CurrentEligible.Remove(storage));
         }
     }
 }

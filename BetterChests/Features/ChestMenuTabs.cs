@@ -21,8 +21,21 @@ using StardewValley.Menus;
 /// </summary>
 internal class ChestMenuTabs : IFeature
 {
-    private static readonly Lazy<Dictionary<string, ClickableTextureComponent>>
-        AllTabsLazy = new(ChestMenuTabs.GetTabs);
+    private static readonly Lazy<Dictionary<string, ClickableTextureComponent>> AllTabsLazy = new(
+        () => (
+            from tab in
+                from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
+                select (tab.Key, Value: tab.Value.Split('/'))
+            select (
+                tab.Key,
+                Value: new ClickableTextureComponent(
+                    tab.Value[3],
+                    new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
+                    string.Empty,
+                    tab.Value[0],
+                    Game1.content.Load<Texture2D>(tab.Value[1]),
+                    new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
+                    Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value));
 
     private static ChestMenuTabs? Instance;
 
@@ -147,7 +160,7 @@ internal class ChestMenuTabs : IFeature
         }
 
         this._isActivated = true;
-        BetterItemGrabMenu.DrawMenu += this.OnDrawMenu;
+        BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
         this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -164,30 +177,12 @@ internal class ChestMenuTabs : IFeature
         }
 
         this._isActivated = false;
-        BetterItemGrabMenu.DrawMenu -= this.OnDrawMenu;
+        BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
         this._helper.Events.Content.AssetRequested -= this.OnAssetRequested;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this._helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-    }
-
-    private static Dictionary<string, ClickableTextureComponent> GetTabs()
-    {
-        return (
-            from tab in
-                from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
-                select (tab.Key, Value: tab.Value.Split('/'))
-            select (
-                tab.Key,
-                Value: new ClickableTextureComponent(
-                    tab.Value[3],
-                    new(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
-                    string.Empty,
-                    tab.Value[0],
-                    Game1.content.Load<Texture2D>(tab.Value[1]),
-                    new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
-                    Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value);
     }
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
@@ -254,7 +249,7 @@ internal class ChestMenuTabs : IFeature
     }
 
     [EventPriority(EventPriority.High)]
-    private void OnDrawMenu(object? sender, SpriteBatch b)
+    private void OnDrawingMenu(object? sender, SpriteBatch b)
     {
         if (this.CurrentMenu is null || !this.Components.Any())
         {
@@ -324,7 +319,7 @@ internal class ChestMenuTabs : IFeature
         tab = this.Components.FirstOrDefault(t => t.containsPoint(x, y));
         if (tab is not null && !string.IsNullOrWhiteSpace(tab.hoverText))
         {
-            IClickableMenu.drawHoverText(b, tab.hoverText, Game1.smallFont);
+            this.CurrentMenu.hoverText = tab.hoverText;
         }
     }
 

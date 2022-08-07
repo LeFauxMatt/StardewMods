@@ -32,7 +32,6 @@ internal class CarryChest : IFeature
     private static CarryChest? Instance;
 
     private readonly ModConfig _config;
-
     private readonly IModHelper _helper;
 
     private bool _isActivated;

@@ -21,13 +21,10 @@ internal class ChestFinder : IFeature
 {
     private static ChestFinder? Instance;
 
-    private readonly PerScreen<HashSet<IStorageObject>> _cachedStorages = new(() => new());
-
     private readonly ModConfig _config;
-
     private readonly IModHelper _helper;
-
     private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
+    private readonly PerScreen<HashSet<IStorageObject>> _storages = new(() => new());
 
     private bool _isActivated;
 
@@ -37,10 +34,10 @@ internal class ChestFinder : IFeature
         this._config = config;
     }
 
-    private HashSet<IStorageObject> CachedStorages => this._cachedStorages.Value;
-
     private IItemMatcher ItemMatcher =>
         this._itemMatcher.Value ??= new ItemMatcher(false, this._config.SearchTagSymbol.ToString());
+
+    private HashSet<IStorageObject> Storages => this._storages.Value;
 
     /// <summary>
     ///     Initializes <see cref="ChestFinder" />.
@@ -130,15 +127,15 @@ internal class ChestFinder : IFeature
 
         if (storage.Items.Any(this.ItemMatcher.Matches))
         {
-            if (!this.CachedStorages.Contains(storage))
+            if (!this.Storages.Contains(storage))
             {
-                this.CachedStorages.Add(storage);
+                this.Storages.Add(storage);
             }
 
             return;
         }
 
-        this.CachedStorages.RemoveWhere(cachedStorage => ReferenceEquals(cachedStorage.Context, e.Chest));
+        this.Storages.RemoveWhere(cachedStorage => ReferenceEquals(cachedStorage.Context, e.Chest));
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
@@ -148,24 +145,24 @@ internal class ChestFinder : IFeature
             return;
         }
 
-        this.CachedStorages.Clear();
+        this.Storages.Clear();
         if (this.ItemMatcher.Any())
         {
-            this.CachedStorages.UnionWith(
+            this.Storages.UnionWith(
                 StorageHelper.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
         }
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.CachedStorages.Any())
+        if (!Context.IsPlayerFree || !this.Storages.Any())
         {
             return;
         }
 
         var bounds = Game1.graphics.GraphicsDevice.Viewport.Bounds;
         var srcRect = new Rectangle(412, 495, 5, 4);
-        foreach (var storage in this.CachedStorages)
+        foreach (var storage in this.Storages)
         {
             var pos = storage.Position * 64f + new Vector2(32, -48);
             var onScreenPos = default(Vector2);

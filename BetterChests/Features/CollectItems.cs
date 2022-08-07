@@ -24,8 +24,7 @@ internal class CollectItems : IFeature
 
     private static CollectItems? Instance;
 
-    private readonly PerScreen<List<IStorageObject>> _eligiblePerScreen = new(() => new());
-
+    private readonly PerScreen<List<IStorageObject>> _eligible = new(() => new());
     private readonly IModHelper _helper;
 
     private bool _isActivated;
@@ -45,7 +44,7 @@ internal class CollectItems : IFeature
             });
     }
 
-    private List<IStorageObject> CachedEligible => this._eligiblePerScreen.Value;
+    private List<IStorageObject> Eligible => this._eligible.Value;
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
@@ -94,12 +93,12 @@ internal class CollectItems : IFeature
             return true;
         }
 
-        if (!CollectItems.Instance!.CachedEligible.Any())
+        if (!CollectItems.Instance!.Eligible.Any())
         {
             return farmer.addItemToInventoryBool(item, makeActiveObject);
         }
 
-        foreach (var storage in CollectItems.Instance.CachedEligible)
+        foreach (var storage in CollectItems.Instance.Eligible)
         {
             item.resetState();
             storage.ClearNulls();
@@ -141,14 +140,8 @@ internal class CollectItems : IFeature
 
     private void RefreshEligible()
     {
-        this.CachedEligible.Clear();
-        this.CachedEligible.AddRange(
-            Game1.player.Items.Take(12)
-                 .Select(
-                     item => StorageHelper.TryGetOne(item, out var storage)
-                          && storage.CollectItems != FeatureOption.Disabled
-                         ? storage
-                         : null)
-                 .OfType<IStorageObject>());
+        var storages = StorageHelper.FromPlayer(Game1.player, limit: 12);
+        this.Eligible.Clear();
+        this.Eligible.AddRange(storages.Where(storage => storage.CollectItems != FeatureOption.Disabled));
     }
 }

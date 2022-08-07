@@ -15,13 +15,13 @@ internal class LabelChest : IFeature
 {
     private static LabelChest? Instance;
 
-    private readonly IModHelper Helper;
+    private readonly IModHelper _helper;
 
     private bool _isActivated;
 
     private LabelChest(IModHelper helper)
     {
-        this.Helper = helper;
+        this._helper = helper;
     }
 
     /// <summary>
@@ -43,8 +43,8 @@ internal class LabelChest : IFeature
         }
 
         this._isActivated = true;
-        this.Helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
-        this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        this._helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
+        this._helper.Events.Display.RenderedHud += LabelChest.OnRenderedHud;
     }
 
     /// <inheritdoc />
@@ -56,8 +56,8 @@ internal class LabelChest : IFeature
         }
 
         this._isActivated = false;
-        this.Helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
-        this.Helper.Events.Display.RenderedHud -= this.OnRenderedHud;
+        this._helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
+        this._helper.Events.Display.RenderedHud -= LabelChest.OnRenderedHud;
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -80,10 +80,9 @@ internal class LabelChest : IFeature
                      - (storage.SearchItems is not FeatureOption.Disabled ? 14 * Game1.pixelZoom : 0));
     }
 
-    private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
+    private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsPlayerFree
-         || !(this.Helper.Input.IsDown(SButton.LeftShift) || this.Helper.Input.IsDown(SButton.RightShift)))
+        if (!Context.IsPlayerFree)
         {
             return;
         }
@@ -91,7 +90,6 @@ internal class LabelChest : IFeature
         var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
                 / Game1.tileSize;
 
-        // Object exists at pos, is within reach of player, and is a Chest
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)

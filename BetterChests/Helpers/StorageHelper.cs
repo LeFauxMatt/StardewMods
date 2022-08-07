@@ -289,8 +289,12 @@ internal class StorageHelper
     /// </summary>
     /// <param name="player">The farmer to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
+    /// <param name="limit">Limit the number of items from the farmer's inventory.</param>
     /// <returns>An enumerable of all held storages in the farmer's inventory.</returns>
-    public static IEnumerable<IStorageObject> FromPlayer(Farmer player, ISet<object>? excluded = null)
+    public static IEnumerable<IStorageObject> FromPlayer(
+        Farmer player,
+        ISet<object>? excluded = null,
+        int? limit = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(player))
@@ -306,8 +310,9 @@ internal class StorageHelper
             yield return storage;
         }
 
+        limit ??= player.MaxItems;
         var position = player.getTileLocation();
-        for (var index = 0; index < player.MaxItems; index++)
+        for (var index = 0; index < limit; index++)
         {
             var item = player.Items[index];
             if (!StorageHelper.TryGetOne(item, player, position, out var storage) || excluded.Contains(storage.Context))

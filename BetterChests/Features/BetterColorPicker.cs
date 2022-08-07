@@ -16,11 +16,9 @@ internal class BetterColorPicker : IFeature
 {
     private static BetterColorPicker? Instance;
 
+    private readonly PerScreen<HslColorPicker> _colorPicker = new(() => new());
     private readonly ModConfig _config;
-
     private readonly IModHelper _helper;
-
-    private readonly PerScreen<HslColorPicker> _perScreenColorPicker = new(() => new());
 
     private bool _isActivated;
 
@@ -30,7 +28,7 @@ internal class BetterColorPicker : IFeature
         this._config = config;
     }
 
-    private HslColorPicker ColorPicker => this._perScreenColorPicker.Value;
+    private HslColorPicker ColorPicker => this._colorPicker.Value;
 
     /// <summary>
     ///     Initializes <see cref="BetterColorPicker" />.
@@ -122,10 +120,7 @@ internal class BetterColorPicker : IFeature
                 ComponentArea.Left => itemGrabMenu.xPositionOnScreen
                                     - 2 * Game1.tileSize
                                     - IClickableMenu.borderWidth / 2,
-                ComponentArea.Right => itemGrabMenu.xPositionOnScreen
-                                     + itemGrabMenu.width
-                                     + 96
-                                     + IClickableMenu.borderWidth / 2,
+                _ => itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2,
             };
             var y = itemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2;
             this.ColorPicker.Init(x, y, chest.playerChoiceColor.Value);

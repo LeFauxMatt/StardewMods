@@ -31,7 +31,7 @@ internal class Configurator : IFeature
 
     private readonly ModConfig _config;
 
-    private readonly PerScreen<ClickableTextureComponent> _configButtonPerScreen = new(
+    private readonly PerScreen<ClickableTextureComponent> _configButton = new(
         () => new(
             new(0, 0, Game1.tileSize, Game1.tileSize),
             Game1.content.Load<Texture2D>("furyx639.BetterChests/Icons"),
@@ -77,7 +77,7 @@ internal class Configurator : IFeature
         remove => Configurator.Instance!._storageEdited -= value;
     }
 
-    private ClickableTextureComponent ConfigButton => this._configButtonPerScreen.Value;
+    private ClickableTextureComponent ConfigButton => this._configButton.Value;
 
     private ItemGrabMenu? CurrentMenu
     {
