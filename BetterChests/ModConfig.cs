@@ -77,7 +77,7 @@ internal class ModConfig
     /// <summary>
     ///     Gets or sets a value indicating whether items will be hidden or grayed out.
     /// </summary>
-    public bool HideItems { get; set; } = false;
+    public bool HideItems { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be labeled.
@@ -151,6 +151,7 @@ internal class ModConfig
         sb.AppendLine($"SearchItems: {this.DefaultChest.SearchItems.ToStringFast()}");
         sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLock: {this.SlotLock.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"SlotLockColor: {this.SlotLockColor.ToStringFast()}");
         sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChest: {this.DefaultChest.StashToChest.ToStringFast()}");
         sb.AppendLine(
