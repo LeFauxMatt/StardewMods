@@ -1,9 +1,15 @@
 ﻿# Better Chests Change Log
 
-## 2.2.1 (Unreleased)
+## 2.3.0 (August 7, 2022)
 
+* Added TransferItems feature to transfer items in/out of a chest.
+* Added option to hide items instead of fading them out.
+* Added negate search for categorizing items (hold shift).
+* Improvements to the Color Picker for reliability.
+* Fixed tabs being drawn over hover text.
 * Added localization support for storage names/tooltips.
 * Require GMCM for Configurator feature.
+* Optimizations for performance.
 
 ## 2.2.0 (July 15, 2022)
 
