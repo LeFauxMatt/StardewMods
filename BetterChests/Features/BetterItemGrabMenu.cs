@@ -14,8 +14,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.UI;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
-using StardewMods.Common.Helpers.PatternPatcher;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -40,10 +38,9 @@ internal class BetterItemGrabMenu : IFeature
     private readonly PerScreen<bool> _refreshInventory = new();
     private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
     private readonly PerScreen<int> _topPadding = new();
+
     private EventHandler<ItemGrabMenu>? _constructMenu;
-
-    private EventHandler<SpriteBatch>? _drawMenu;
-
+    private EventHandler<SpriteBatch>? _drawingMenu;
     private bool _isActivated;
 
     private BetterItemGrabMenu(IModHelper helper, ModConfig config)
@@ -119,6 +116,31 @@ internal class BetterItemGrabMenu : IFeature
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix),
                     PatchType.Prefix),
                 new(
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(string),
+                            typeof(ItemGrabMenu.behaviorOnItemSelect),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(Item),
+                            typeof(int),
+                            typeof(object),
+                        }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_transpiler),
+                    PatchType.Transpiler),
+                new(
                     AccessTools.Method(
                         typeof(ItemGrabMenu),
                         nameof(ItemGrabMenu.draw),
@@ -170,10 +192,10 @@ internal class BetterItemGrabMenu : IFeature
     /// <summary>
     ///     Raised before <see cref="ItemGrabMenu" /> is drawn.
     /// </summary>
-    public static event EventHandler<SpriteBatch> DrawMenu
+    public static event EventHandler<SpriteBatch> DrawingMenu
     {
-        add => BetterItemGrabMenu.Instance!._drawMenu += value;
-        remove => BetterItemGrabMenu.Instance!._drawMenu -= value;
+        add => BetterItemGrabMenu.Instance!._drawingMenu += value;
+        remove => BetterItemGrabMenu.Instance!._drawingMenu -= value;
     }
 
     /// <summary>
@@ -309,49 +331,68 @@ internal class BetterItemGrabMenu : IFeature
                 : actualInventory;
     }
 
+    private static InventoryMenu GetItemsToGrabMenu(
+        int xPosition,
+        int yPosition,
+        bool playerInventory,
+        IList<Item> actualInventory,
+        InventoryMenu.highlightThisItem highlightMethod,
+        int capacity,
+        int rows,
+        int horizontalGap,
+        int verticalGap,
+        bool drawSlots,
+        ItemGrabMenu menu)
+    {
+        if (menu.context is null || !StorageHelper.TryGetOne(menu.context, out var storage))
+        {
+            return new(
+                xPosition,
+                yPosition,
+                playerInventory,
+                actualInventory,
+                highlightMethod,
+                capacity,
+                rows,
+                horizontalGap,
+                verticalGap,
+                drawSlots);
+        }
+
+        capacity = storage.MenuCapacity;
+        rows = storage.MenuRows;
+        xPosition = menu.xPositionOnScreen + Game1.tileSize / 2;
+        yPosition = menu.yPositionOnScreen;
+
+        return new(
+            xPosition,
+            yPosition,
+            playerInventory,
+            actualInventory,
+            highlightMethod,
+            capacity,
+            rows,
+            horizontalGap,
+            verticalGap,
+            drawSlots);
+    }
+
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace(
-            $"Applying patches to {nameof(InventoryMenu)}.{nameof(InventoryMenu.draw)} from {nameof(BetterItemGrabMenu)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
-            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
-
-        // ****************************************************************************************
-        // Actual Inventory Patch
-        // Replaces all actualInventory with ItemsDisplayed.DisplayedItems(actualInventory)
-        // which can filter/sort items separately from the actual inventory.
-        patcher.AddPatchLoop(
-            code =>
-            {
-                code.Add(new(OpCodes.Ldarg_0));
-                code.Add(
-                    new(
-                        OpCodes.Call,
-                        AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ActualInventory))));
-            },
-            new(OpCodes.Ldarg_0),
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))));
-
-        // Fill code buffer
-        foreach (var inCode in instructions)
+        foreach (var instruction in instructions)
         {
-            // Return patched code segments
-            foreach (var outCode in patcher.From(inCode))
+            if (instruction.LoadsField(AccessTools.Field(typeof(InventoryMenu), nameof(InventoryMenu.actualInventory))))
             {
-                yield return outCode;
+                yield return instruction;
+                yield return new(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ActualInventory));
             }
-        }
-
-        // Return remaining code
-        foreach (var outCode in patcher.FlushBuffer())
-        {
-            yield return outCode;
-        }
-
-        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
-        if (patcher.AppliedPatches < patcher.TotalPatches)
-        {
-            Log.Warn("Failed to applied all patches!");
+            else
+            {
+                yield return instruction;
+            }
         }
     }
 
@@ -395,112 +436,118 @@ internal class BetterItemGrabMenu : IFeature
         BetterItemGrabMenu.Instance!._constructMenu.InvokeAll(BetterItemGrabMenu.Instance, __instance);
     }
 
+    /// <summary>Replace assignments to ItemsToGrabMenu with method.</summary>
+    [SuppressMessage(
+        "ReSharper",
+        "HeapView.BoxingAllocation",
+        Justification = "Boxing allocation is required for Harmony.")]
+    private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        CodeInstruction? newObj = null;
+
+        foreach (var instruction in instructions)
+        {
+            if (newObj is not null)
+            {
+                if (instruction.StoresField(
+                        AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))))
+                {
+                    yield return new(OpCodes.Ldarg_0);
+                    yield return new(
+                        CodeInstruction.Call(
+                            typeof(BetterItemGrabMenu),
+                            nameof(BetterItemGrabMenu.GetItemsToGrabMenu)));
+                }
+                else
+                {
+                    yield return newObj;
+                }
+
+                yield return instruction;
+                newObj = null;
+            }
+            else if (instruction.Is(
+                         OpCodes.Newobj,
+                         AccessTools.Constructor(
+                             typeof(InventoryMenu),
+                             new[]
+                             {
+                                 typeof(int),
+                                 typeof(int),
+                                 typeof(bool),
+                                 typeof(IList<Item>),
+                                 typeof(InventoryMenu.highlightThisItem),
+                                 typeof(int),
+                                 typeof(int),
+                                 typeof(int),
+                                 typeof(int),
+                                 typeof(bool),
+                             })))
+            {
+                newObj = instruction;
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_draw_prefix(ItemGrabMenu __instance, SpriteBatch b)
+    private static void ItemGrabMenu_draw_prefix(SpriteBatch b)
     {
         b.Draw(
             Game1.fadeToBlackRect,
             new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
             Color.Black * 0.5f);
-        BetterItemGrabMenu.Instance!._drawMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
+        BetterItemGrabMenu.Instance!._drawingMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace(
-            $"Applying patches to {nameof(ItemGrabMenu)}.{nameof(ItemGrabMenu.draw)} from {nameof(BetterItemGrabMenu)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
-            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
+        var patchCount = -1;
+        var addPadding = false;
 
-        // ****************************************************************************************
-        // Draw Backpack Patch
-        // This adds BetterItemGrabMenu.TopPadding to the y-coordinate of the backpack sprite
-        patcher.AddSeek(
-            new CodeInstruction(
-                OpCodes.Ldfld,
-                AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))));
-        patcher.AddPatch(
-                   code =>
-                   {
-                       code.Add(
-                           new(
-                               OpCodes.Call,
-                               AccessTools.PropertyGetter(
-                                   typeof(BetterItemGrabMenu),
-                                   nameof(BetterItemGrabMenu.TopPadding))));
-                       code.Add(new(OpCodes.Add));
-                   },
-                   new CodeInstruction(
-                       OpCodes.Ldfld,
-                       AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
-               .Repeat(2);
-
-        // ****************************************************************************************
-        // Move Dialogue Patch
-        // This subtracts BetterItemGrabMenu.TopPadding from the y-coordinate of the ItemsToGrabMenu
-        // dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                code.Add(
-                    new(
-                        OpCodes.Call,
-                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
-                code.Add(new(OpCodes.Sub));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(OpCodes.Sub),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Sub));
-
-        // ****************************************************************************************
-        // Expand Dialogue Patch
-        // This adds BetterItemGrabMenu.TopPadding to the height of the ItemsToGrabMenu dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                code.Add(
-                    new(
-                        OpCodes.Call,
-                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
-                code.Add(new(OpCodes.Add));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))),
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Add),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(OpCodes.Ldc_I4_2),
-            new(OpCodes.Mul),
-            new(OpCodes.Add));
-
-        // Fill code buffer
-        foreach (var inCode in instructions)
+        foreach (var instruction in instructions)
         {
-            // Return patched code segments
-            foreach (var outCode in patcher.From(inCode))
+            if (patchCount == -1
+             && instruction.LoadsField(AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
             {
-                yield return outCode;
+                patchCount = 3;
+                yield return instruction;
             }
-        }
-
-        // Return remaining code
-        foreach (var outCode in patcher.FlushBuffer())
-        {
-            yield return outCode;
-        }
-
-        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
-        if (patcher.AppliedPatches < patcher.TotalPatches)
-        {
-            Log.Warn("Failed to applied all patches!");
+            else if (patchCount > 0
+                  && instruction.LoadsField(
+                         AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.yPositionOnScreen))))
+            {
+                patchCount--;
+                yield return instruction;
+                yield return new(
+                    OpCodes.Call,
+                    AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding)));
+                yield return new(OpCodes.Add);
+            }
+            else if (instruction.LoadsField(
+                         AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
+            {
+                addPadding = true;
+                yield return instruction;
+            }
+            else if (addPadding)
+            {
+                addPadding = false;
+                yield return instruction;
+                yield return new(
+                    OpCodes.Call,
+                    AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding)));
+                yield return new(instruction.opcode);
+            }
+            else
+            {
+                yield return instruction;
+            }
         }
     }
 
@@ -522,74 +569,21 @@ internal class BetterItemGrabMenu : IFeature
     private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(
         IEnumerable<CodeInstruction> instructions)
     {
-        Log.Trace(
-            $"Applying patches to {nameof(MenuWithInventory)}.{nameof(MenuWithInventory.draw)} from {nameof(SearchItems)}");
-        IPatternPatcher<CodeInstruction> patcher = new PatternPatcher<CodeInstruction>(
-            (c1, c2) => c1.opcode.Equals(c2.opcode) && (c1.operand is null || c1.OperandIs(c2.operand)));
-
-        // ****************************************************************************************
-        // Move Dialogue Patch
-        // This adds BetterItemGrabMenu.TopPadding to the y-coordinate of the inventory dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                code.Add(
-                    new(
-                        OpCodes.Call,
-                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
-                code.Add(new(OpCodes.Add));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(OpCodes.Add),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Add),
-            new(OpCodes.Ldc_I4_S, (sbyte)64),
-            new(OpCodes.Add));
-
-        // ****************************************************************************************
-        // Shrink Dialogue Patch
-        // This adds BetterItemGrabMenu.TopPadding to the height of the inventory dialogue box
-        patcher.AddPatch(
-            code =>
-            {
-                code.Add(
-                    new(
-                        OpCodes.Call,
-                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding))));
-                code.Add(new(OpCodes.Add));
-            },
-            new(OpCodes.Ldfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.height))),
-            new(OpCodes.Ldsfld, AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.borderWidth))),
-            new(
-                OpCodes.Ldsfld,
-                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))),
-            new(OpCodes.Add),
-            new(OpCodes.Ldc_I4, 192),
-            new(OpCodes.Add));
-
-        // Fill code buffer
-        foreach (var inCode in instructions)
+        foreach (var instruction in instructions)
         {
-            // Return patched code segments
-            foreach (var outCode in patcher.From(inCode))
+            if (instruction.LoadsField(
+                    AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
             {
-                yield return outCode;
+                yield return instruction;
+                yield return new(
+                    OpCodes.Call,
+                    AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding)));
+                yield return new(OpCodes.Add);
             }
-        }
-
-        // Return remaining code
-        foreach (var outCode in patcher.FlushBuffer())
-        {
-            yield return outCode;
-        }
-
-        Log.Trace($"{patcher.AppliedPatches.ToString()} / {patcher.TotalPatches.ToString()} patches applied.");
-        if (patcher.AppliedPatches < patcher.TotalPatches)
-        {
-            Log.Warn("Failed to applied all patches!");
+            else
+            {
+                yield return instruction;
+            }
         }
     }
 
