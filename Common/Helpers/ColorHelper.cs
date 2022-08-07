@@ -1,6 +1,7 @@
 namespace StardewMods.Common.Helpers;
 
 using Microsoft.Xna.Framework;
+using StardewMods.Common.Enums;
 
 /// <summary>
 ///     Helpers for conversions to/from <see cref="Color" />.
@@ -33,6 +34,36 @@ internal static class ColorHelper
             "color_cyan" => Color.Cyan,
             "color_pink" => Color.Pink,
             "color_orange" => Color.Orange,
+            _ => Color.Gray,
+        };
+    }
+
+    /// <summary>
+    ///     Returns a Color representation of the <see cref="Colors" /> enum..
+    /// </summary>
+    /// <param name="color">The color to return the Color from.</param>
+    /// <returns>The Color of the context tag or Gray.</returns>
+    public static Color ToColor(this Colors color)
+    {
+        return color switch
+        {
+            Colors.Red => Color.Red,
+            Colors.DarkRed => Color.DarkRed,
+            Colors.PaleVioletRed => Color.PaleVioletRed,
+            Colors.Blue => Color.Blue,
+            Colors.Green => Color.Green,
+            Colors.DarkGreen => Color.DarkGreen,
+            Colors.Jade => Color.Teal,
+            Colors.Brown => Color.Brown,
+            Colors.DarkBrown => Color.Maroon,
+            Colors.Yellow => Color.Yellow,
+            Colors.DarkYellow => Color.Goldenrod,
+            Colors.Aquamarine => Color.Aquamarine,
+            Colors.Purple => Color.Purple,
+            Colors.DarkPurple => Color.Indigo,
+            Colors.Cyan => Color.Cyan,
+            Colors.Pink => Color.Pink,
+            Colors.Orange => Color.Orange,
             _ => Color.Gray,
         };
     }
