@@ -71,7 +71,7 @@ internal class TransferItems : IFeature
         }
 
         this._isActivated = true;
-        BetterItemGrabMenu.ConstructMenu += TransferItems.OnConstructMenu;
+        BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -86,13 +86,13 @@ internal class TransferItems : IFeature
         }
 
         this._isActivated = false;
-        BetterItemGrabMenu.ConstructMenu -= TransferItems.OnConstructMenu;
+        BetterItemGrabMenu.Constructing -= TransferItems.OnConstructing;
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
-    private static void OnConstructMenu(object? sender, ItemGrabMenu itemGrabMenu)
+    private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
     {
         if (itemGrabMenu.context is null || !StorageHelper.TryGetOne(itemGrabMenu.context, out _))
         {

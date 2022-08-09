@@ -115,7 +115,7 @@ internal class SearchItems : IFeature
         }
 
         this._isActivated = true;
-        BetterItemGrabMenu.ConstructMenu += this.OnConstructMenu;
+        BetterItemGrabMenu.Constructing += this.OnConstructing;
         this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -130,7 +130,7 @@ internal class SearchItems : IFeature
         }
 
         this._isActivated = false;
-        BetterItemGrabMenu.ConstructMenu -= this.OnConstructMenu;
+        BetterItemGrabMenu.Constructing -= this.OnConstructing;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -182,7 +182,7 @@ internal class SearchItems : IFeature
         }
     }
 
-    private void OnConstructMenu(object? sender, ItemGrabMenu itemGrabMenu)
+    private void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
     {
         if (BetterItemGrabMenu.TopPadding != 0)
         {

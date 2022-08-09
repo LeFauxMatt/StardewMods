@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -27,6 +28,28 @@ internal class BetterItemGrabMenu : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterItemGrabMenu";
 
+    private static readonly ConstructorInfo ItemGrabMenuCtor = AccessTools.Constructor(
+        typeof(ItemGrabMenu),
+        new[]
+        {
+            typeof(IList<Item>),
+            typeof(bool),
+            typeof(bool),
+            typeof(InventoryMenu.highlightThisItem),
+            typeof(ItemGrabMenu.behaviorOnItemSelect),
+            typeof(string),
+            typeof(ItemGrabMenu.behaviorOnItemSelect),
+            typeof(bool),
+            typeof(bool),
+            typeof(bool),
+            typeof(bool),
+            typeof(bool),
+            typeof(int),
+            typeof(Item),
+            typeof(int),
+            typeof(object),
+        });
+
     private static BetterItemGrabMenu? Instance;
 
     private readonly ModConfig _config;
@@ -39,7 +62,8 @@ internal class BetterItemGrabMenu : IFeature
     private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
     private readonly PerScreen<int> _topPadding = new();
 
-    private EventHandler<ItemGrabMenu>? _constructMenu;
+    private EventHandler<ItemGrabMenu>? _constructed;
+    private EventHandler<ItemGrabMenu>? _constructing;
     private EventHandler<SpriteBatch>? _drawingMenu;
     private bool _isActivated;
 
@@ -66,77 +90,17 @@ internal class BetterItemGrabMenu : IFeature
                     nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler),
                     PatchType.Transpiler),
                 new(
-                    AccessTools.Constructor(
-                        typeof(ItemGrabMenu),
-                        new[]
-                        {
-                            typeof(IList<Item>),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(Item),
-                            typeof(int),
-                            typeof(object),
-                        }),
+                    BetterItemGrabMenu.ItemGrabMenuCtor,
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix),
                 new(
-                    AccessTools.Constructor(
-                        typeof(ItemGrabMenu),
-                        new[]
-                        {
-                            typeof(IList<Item>),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(Item),
-                            typeof(int),
-                            typeof(object),
-                        }),
+                    BetterItemGrabMenu.ItemGrabMenuCtor,
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix),
                     PatchType.Prefix),
                 new(
-                    AccessTools.Constructor(
-                        typeof(ItemGrabMenu),
-                        new[]
-                        {
-                            typeof(IList<Item>),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(Item),
-                            typeof(int),
-                            typeof(object),
-                        }),
+                    BetterItemGrabMenu.ItemGrabMenuCtor,
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_transpiler),
                     PatchType.Transpiler),
@@ -181,12 +145,21 @@ internal class BetterItemGrabMenu : IFeature
     }
 
     /// <summary>
-    ///     Raised during <see cref="ItemGrabMenu" /> constructor.
+    ///     Raised after <see cref="ItemGrabMenu" /> constructor.
     /// </summary>
-    public static event EventHandler<ItemGrabMenu> ConstructMenu
+    public static event EventHandler<ItemGrabMenu> Constructed
     {
-        add => BetterItemGrabMenu.Instance!._constructMenu += value;
-        remove => BetterItemGrabMenu.Instance!._constructMenu -= value;
+        add => BetterItemGrabMenu.Instance!._constructed += value;
+        remove => BetterItemGrabMenu.Instance!._constructed -= value;
+    }
+
+    /// <summary>
+    ///     Raised before <see cref="ItemGrabMenu" /> constructor.
+    /// </summary>
+    public static event EventHandler<ItemGrabMenu> Constructing
+    {
+        add => BetterItemGrabMenu.Instance!._constructing += value;
+        remove => BetterItemGrabMenu.Instance!._constructing -= value;
     }
 
     /// <summary>
@@ -344,7 +317,10 @@ internal class BetterItemGrabMenu : IFeature
         bool drawSlots,
         ItemGrabMenu menu)
     {
-        if (menu.context is null || !StorageHelper.TryGetOne(menu.context, out var storage))
+        if (menu.context is null
+         || !StorageHelper.TryGetOne(menu.context, out var storage)
+         || storage.MenuCapacity <= 0
+         || storage.MenuRows <= 0)
         {
             return new(
                 xPosition,
@@ -359,19 +335,14 @@ internal class BetterItemGrabMenu : IFeature
                 drawSlots);
         }
 
-        capacity = storage.MenuCapacity;
-        rows = storage.MenuRows;
-        xPosition = menu.xPositionOnScreen + Game1.tileSize / 2;
-        yPosition = menu.yPositionOnScreen;
-
         return new(
-            xPosition,
-            yPosition,
+            menu.xPositionOnScreen + Game1.tileSize / 2,
+            menu.yPositionOnScreen,
             playerInventory,
             actualInventory,
             highlightMethod,
-            capacity,
-            rows,
+            storage.MenuCapacity,
+            storage.MenuRows,
             horizontalGap,
             verticalGap,
             drawSlots);
@@ -411,20 +382,20 @@ internal class BetterItemGrabMenu : IFeature
             return;
         }
 
+        var inventory = new DisplayedItems(__instance.inventory, false);
+        var itemsToGrabMenu = new DisplayedItems(__instance.ItemsToGrabMenu, true);
+
         if (BetterItemGrabMenu.Instance!.CurrentMenu is not null
          && ReferenceEquals(__instance.context, BetterItemGrabMenu.Instance.CurrentMenu.context))
         {
-            BetterItemGrabMenu.Instance.CurrentMenu = __instance;
-            BetterItemGrabMenu.Inventory =
-                new(__instance.inventory, false) { Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0 };
-            BetterItemGrabMenu.ItemsToGrabMenu =
-                new(__instance.ItemsToGrabMenu, true) { Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0 };
-            return;
+            inventory.Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0;
+            itemsToGrabMenu.Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0;
         }
 
         BetterItemGrabMenu.Instance.CurrentMenu = __instance;
-        BetterItemGrabMenu.Inventory = new(__instance.inventory, false);
-        BetterItemGrabMenu.ItemsToGrabMenu = new(__instance.ItemsToGrabMenu, true);
+        BetterItemGrabMenu.Inventory = inventory;
+        BetterItemGrabMenu.ItemsToGrabMenu = itemsToGrabMenu;
+        BetterItemGrabMenu.Instance._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -433,7 +404,7 @@ internal class BetterItemGrabMenu : IFeature
     {
         __instance.context = context;
         BetterItemGrabMenu.TopPadding = 0;
-        BetterItemGrabMenu.Instance!._constructMenu.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+        BetterItemGrabMenu.Instance!._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
     }
 
     /// <summary>Replace assignments to ItemsToGrabMenu with method.</summary>
