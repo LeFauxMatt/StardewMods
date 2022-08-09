@@ -214,11 +214,11 @@ internal class HslColorPicker
         }
         else
         {
-            this._hueCoord = HslColorPicker.Colors.Select((hsl, i) => (Hsl: hsl, Index: i))
-                                           .OrderBy(item => Math.Abs(item.Hsl.H - this._hslColor.H))
-                                           .First()
-                                           .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
-                                           .Remap(HslColorPicker.UnitRange, this._hueTrack);
+            var hueValues = HslColorPicker.Colors.Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this._hslColor.H))).ToList();
+            var minDiff = hueValues.Min(item => item.Diff);
+            this._hueCoord = hueValues.First(item => Math.Abs(item.Diff - minDiff) == 0)
+                                      .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
+                                      .Remap(HslColorPicker.UnitRange, this._hueTrack);
             this._lightnessCoord = this._hslColor.L.Remap(HslColorPicker.UnitRange, this._lightnessTrack);
             this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
         }
