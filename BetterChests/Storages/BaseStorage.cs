@@ -541,13 +541,13 @@ internal abstract class BaseStorage : IStorageObject
             }
         }
 
-        if (this.Items.Count < this.ActualCapacity)
+        if (this.Items.Count >= this.ActualCapacity)
         {
-            this.Items.Add(item);
-            return null;
+            return item;
         }
 
-        return item;
+        this.Items.Add(item);
+        return null;
     }
 
     /// <inheritdoc />
