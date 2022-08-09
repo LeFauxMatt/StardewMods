@@ -6,7 +6,8 @@ using StardewModdingAPI;
 
 /// <summary>Provides an integration point for using external mods' APIs.</summary>
 /// <typeparam name="T">Interface for the external mod's API.</typeparam>
-internal abstract class ModIntegration<T> where T : class
+internal abstract class ModIntegration<T>
+    where T : class
 {
     private readonly Lazy<T?> _modAPI;
 
@@ -23,11 +24,11 @@ internal abstract class ModIntegration<T> where T : class
     }
 
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
-    internal protected T? API => this.IsLoaded ? this._modAPI.Value : default;
+    protected internal T? API => this.IsLoaded ? this._modAPI.Value : default;
 
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
     [MemberNotNullWhen(true, nameof(ModIntegration<T>.API))]
-    internal protected bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId)
+    protected internal bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId)
                                      && (this.Version is null
                                       || this.ModRegistry.Get(this.UniqueId)?.Manifest.Version.IsOlderThan(this.Version)
                                       == true);
@@ -35,12 +36,12 @@ internal abstract class ModIntegration<T> where T : class
     /// <summary>
     ///     Gets the Unique Id for this mod.
     /// </summary>
-    internal protected string UniqueId { get; }
+    protected internal string UniqueId { get; }
 
     /// <summary>
     ///     Gets the minimum supported version for this mod.
     /// </summary>
-    internal protected string? Version { get; }
+    protected internal string? Version { get; }
 
     private IModRegistry ModRegistry { get; }
 }
