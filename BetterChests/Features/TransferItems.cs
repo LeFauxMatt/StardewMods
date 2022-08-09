@@ -136,7 +136,7 @@ internal class TransferItems : IFeature
             return;
         }
 
-        var items = new Queue<Item>(Game1.player.Items.Where(item => item is not null));
+        var items = new Queue<Item>(Game1.player.Items.Where(item => item is not null && !ReferenceEquals(item, context)));
         while (items.Count > 0)
         {
             var item = items.Dequeue();
