@@ -2,12 +2,10 @@ namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
 using System.Linq;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
 

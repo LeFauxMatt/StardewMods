@@ -3,7 +3,6 @@
 using System;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
-using StardewValley;
 
 /// <summary>
 ///     Encompasses logic to determine if objects are within ranges defined by <see cref="FeatureOptionRange" />.

@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Features;
 
-using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;

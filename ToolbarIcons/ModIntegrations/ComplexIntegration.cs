@@ -1,7 +1,6 @@
 ﻿namespace StardewMods.ToolbarIcons.ModIntegrations;
 
 using System;
-using StardewModdingAPI;
 using StardewMods.Common.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
@@ -10,6 +9,7 @@ internal class ComplexIntegration : BaseIntegration
     private ComplexIntegration(IModHelper helper, IToolbarIconsApi api)
         : base(helper, api)
     {
+        // Nothing
     }
 
     private static ComplexIntegration? Instance { get; set; }
@@ -41,13 +41,14 @@ internal class ComplexIntegration : BaseIntegration
         }
 
         var action = getAction(mod);
-        if (action is not null)
+        if (action is null)
         {
-            this.AddIntegration(modId, index, hoverText, () => action.Invoke());
-            return true;
+            return false;
         }
 
-        return false;
+        this.AddIntegration(modId, index, hoverText, () => action.Invoke());
+        return true;
+
     }
 
     /// <summary>
@@ -59,7 +60,12 @@ internal class ComplexIntegration : BaseIntegration
     /// <param name="method">The method to run.</param>
     /// <param name="arguments">The arguments to pass to the method.</param>
     /// <returns>Returns true if the icon was added.</returns>
-    public bool AddMethodWithParams(string modId, int index, string hoverText, string method, params object?[] arguments)
+    public bool AddMethodWithParams(
+        string modId,
+        int index,
+        string hoverText,
+        string method,
+        params object?[] arguments)
     {
         if (!this.TryGetMod(modId, out var mod))
         {
@@ -67,16 +73,13 @@ internal class ComplexIntegration : BaseIntegration
         }
 
         var action = this.Helper.Reflection.GetMethod(mod, method, false);
-        if (action is not null)
+        if (action is null)
         {
-            this.AddIntegration(
-                modId,
-                index,
-                hoverText,
-                () => action.Invoke(arguments));
-            return true;
+            return false;
         }
 
-        return false;
+        this.AddIntegration(modId, index, hoverText, () => action.Invoke(arguments));
+        return true;
+
     }
 }

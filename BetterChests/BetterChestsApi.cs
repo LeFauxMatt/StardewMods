@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using StardewModdingAPI;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 

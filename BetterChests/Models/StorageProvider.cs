@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Integrations.BetterCrafting;
-using StardewValley;
 using StardewValley.Network;
 using StardewValley.Objects;
 

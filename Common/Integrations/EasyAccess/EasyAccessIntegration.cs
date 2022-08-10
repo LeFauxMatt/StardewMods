@@ -1,7 +1,5 @@
 namespace StardewMods.Common.Integrations.EasyAccess;
 
-using StardewModdingAPI;
-
 /// <inheritdoc />
 internal class EasyAccessIntegration : ModIntegration<IEasyAccessApi>
 {
@@ -14,5 +12,6 @@ internal class EasyAccessIntegration : ModIntegration<IEasyAccessApi>
     public EasyAccessIntegration(IModRegistry modRegistry)
         : base(modRegistry, EasyAccessIntegration.ModUniqueId)
     {
+        // Nothing
     }
 }

@@ -4,10 +4,8 @@ using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Models;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>
@@ -214,7 +212,9 @@ internal class HslColorPicker
         }
         else
         {
-            var hueValues = HslColorPicker.Colors.Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this._hslColor.H))).ToList();
+            var hueValues = HslColorPicker.Colors
+                                          .Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this._hslColor.H)))
+                                          .ToList();
             var minDiff = hueValues.Min(item => item.Diff);
             this._hueCoord = hueValues.First(item => Math.Abs(item.Diff - minDiff) == 0)
                                       .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)

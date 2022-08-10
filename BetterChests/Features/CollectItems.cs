@@ -3,7 +3,6 @@ namespace StardewMods.BetterChests.Features;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
@@ -12,7 +11,6 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
-using StardewValley;
 using StardewValley.Objects;
 
 /// <summary>

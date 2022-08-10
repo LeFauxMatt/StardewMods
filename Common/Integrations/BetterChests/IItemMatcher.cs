@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using StardewValley;
 
 /// <summary>
 ///     Matches item name/tags against a set of search phrases.

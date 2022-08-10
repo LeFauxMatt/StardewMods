@@ -1,8 +1,6 @@
 namespace StardewMods.Common.Integrations;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using StardewModdingAPI;
 
 /// <summary>Provides an integration point for using external mods' APIs.</summary>
 /// <typeparam name="T">Interface for the external mod's API.</typeparam>

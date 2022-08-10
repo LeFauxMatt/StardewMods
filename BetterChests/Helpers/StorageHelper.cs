@@ -2,18 +2,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
-using SObject = StardewValley.Object;
 
 /// <summary>
 ///     Provides access to all supported storages in the game.

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
-using StardewModdingAPI;
 using StardewMods.Common.Helpers;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Models;
@@ -33,7 +32,11 @@ internal static class HarmonyHelper
     /// <param name="name">The patch method name.</param>
     /// <param name="patchType">One of postfix, prefix, or transpiler.</param>
     public static void AddPatch(
-        string id, MethodBase original, Type type, string name, PatchType patchType = PatchType.Prefix)
+        string id,
+        MethodBase original,
+        Type type,
+        string name,
+        PatchType patchType = PatchType.Prefix)
     {
         HarmonyHelper.AddPatches(id, new[] { new SavedPatch(original, type, name, patchType) });
     }

@@ -1,11 +1,9 @@
 ﻿namespace StardewMods.Common.Integrations.Automate;
 
 using Microsoft.Xna.Framework;
-using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.TerrainFeatures;
-using SObject = StardewValley.Object;
 
 /// <summary>
 ///     Constructs machines, containers, or connectors which can be added to a machine group.

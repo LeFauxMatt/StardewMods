@@ -10,6 +10,7 @@
         <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
         <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1"/>
@@ -21,5 +22,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Using Include="StardewValley"/>
+        <Using Include="StardewModdingAPI"/>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Alias="Object" Include="System.Object"/>
+        <Using Alias="SObject" Include="StardewValley.Object"/>
     </ItemGroup>
 </Project>

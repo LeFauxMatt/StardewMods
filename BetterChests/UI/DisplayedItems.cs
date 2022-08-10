@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>

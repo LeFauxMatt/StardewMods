@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewMods.ToolbarIcons.Models;
@@ -22,7 +21,10 @@ public class ToolbarIconsApi : IToolbarIconsApi
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="icons">List containing toolbar icons.</param>
     /// <param name="components">Dictionary containing the textures.</param>
-    public ToolbarIconsApi(IModHelper helper, List<ToolbarIcon> icons, Dictionary<string, ClickableTextureComponent> components)
+    public ToolbarIconsApi(
+        IModHelper helper,
+        List<ToolbarIcon> icons,
+        Dictionary<string, ClickableTextureComponent> components)
     {
         this.Helper = helper;
         this.Icons = icons;
@@ -75,13 +77,16 @@ public class ToolbarIconsApi : IToolbarIconsApi
     /// <inheritdoc />
     public void RemoveToolbarIcon(string id)
     {
-        var toolbarIcon = this.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
-        if (toolbarIcon is not null)
+        var toolbarIcon =
+            this.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        if (toolbarIcon is null)
         {
-            Log.Trace($"Removing icon: {id}");
-            this.Icons.Remove(toolbarIcon);
-            this.Components.Remove(id);
+            return;
         }
+
+        Log.Trace($"Removing icon: {id}");
+        this.Icons.Remove(toolbarIcon);
+        this.Components.Remove(id);
     }
 
     /// <summary>

@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using StardewModdingAPI;
 using StardewMods.Common.Integrations.ToolbarIcons;
-using StardewValley;
 
 /// <inheritdoc />
 internal class SimpleIntegration : BaseIntegration
@@ -15,14 +13,13 @@ internal class SimpleIntegration : BaseIntegration
     private SimpleIntegration(IModHelper helper, IToolbarIconsApi api)
         : base(helper, api)
     {
+        // Nothing
     }
 
     private static SimpleIntegration? Instance { get; set; }
 
-    private MethodInfo OverrideButtonReflected
-    {
-        get => this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
-    }
+    private MethodInfo OverrideButtonReflected =>
+        this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
 
     /// <summary>
     ///     Initializes <see cref="SimpleIntegration" />.
@@ -93,22 +90,23 @@ internal class SimpleIntegration : BaseIntegration
         }
 
         var action = this.Helper.Reflection.GetMethod(mod, method, false);
-        if (action is not null)
+        if (action is null)
         {
-            this.AddIntegration(
-                modId,
-                index,
-                hoverText,
-                () => action.Invoke(),
-                texturePath);
-            return true;
+            return false;
         }
 
-        return false;
+        this.AddIntegration(modId, index, hoverText, () => action.Invoke(), texturePath);
+        return true;
     }
 
     private void OverrideButton(SButton button, bool inputState)
     {
-        this.OverrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
+        this.OverrideButtonReflected.Invoke(
+            Game1.input,
+            new object[]
+            {
+                button,
+                inputState,
+            });
     }
 }

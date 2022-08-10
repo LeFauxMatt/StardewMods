@@ -2,8 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using StardewModdingAPI;
-using StardewValley;
 using StardewValley.Locations;
 
 /// <summary>
@@ -19,7 +17,8 @@ internal static class LocationHelper
         get
         {
             IEnumerable<GameLocation> IterateLocations(
-                IEnumerable<GameLocation>? locations = null, HashSet<GameLocation>? excluded = null)
+                IEnumerable<GameLocation>? locations = null,
+                HashSet<GameLocation>? excluded = null)
             {
                 locations ??= Context.IsMainPlayer ? Game1.locations : LocationHelper.Multiplayer!.GetActiveLocations();
                 excluded ??= new();

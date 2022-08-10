@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Features;
 
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Storages;

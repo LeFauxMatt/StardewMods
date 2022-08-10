@@ -1,7 +1,5 @@
 namespace StardewMods.Common.Integrations.ProducerFrameworkMod;
 
-using StardewModdingAPI;
-
 /// <inheritdoc />
 internal class ProducerFrameworkModIntegration : ModIntegration<IProducerFrameworkModApi>
 {
@@ -14,5 +12,6 @@ internal class ProducerFrameworkModIntegration : ModIntegration<IProducerFramewo
     public ProducerFrameworkModIntegration(IModRegistry modRegistry)
         : base(modRegistry, ProducerFrameworkModIntegration.ModUniqueId)
     {
+        // Nothing
     }
 }

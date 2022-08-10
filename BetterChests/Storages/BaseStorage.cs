@@ -11,11 +11,9 @@ using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Objects;
-using SObject = StardewValley.Object;
 
 /// <inheritdoc />
 internal abstract class BaseStorage : IStorageObject

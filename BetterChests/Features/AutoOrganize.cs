@@ -1,9 +1,7 @@
 namespace StardewMods.BetterChests.Features;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Storages;

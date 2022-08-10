@@ -1,11 +1,9 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
 using Microsoft.Xna.Framework;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>

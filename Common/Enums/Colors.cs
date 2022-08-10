@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.Common.Enums;
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using NetEscapades.EnumGenerators;
 

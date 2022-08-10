@@ -1,7 +1,6 @@
 namespace StardewMods.Common.Integrations.BetterChests;
 
 using System;
-using StardewModdingAPI;
 
 /// <summary>
 ///     API for Better Chests.

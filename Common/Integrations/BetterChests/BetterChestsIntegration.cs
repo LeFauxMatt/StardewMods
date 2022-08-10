@@ -1,7 +1,5 @@
 namespace StardewMods.Common.Integrations.BetterChests;
 
-using StardewModdingAPI;
-
 /// <inheritdoc />
 internal class BetterChestsIntegration : ModIntegration<IBetterChestsApi>
 {
@@ -14,5 +12,6 @@ internal class BetterChestsIntegration : ModIntegration<IBetterChestsApi>
     public BetterChestsIntegration(IModRegistry modRegistry)
         : base(modRegistry, BetterChestsIntegration.ModUniqueId)
     {
+        // Nothing
     }
 }

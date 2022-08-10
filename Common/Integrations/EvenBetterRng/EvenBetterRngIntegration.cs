@@ -1,7 +1,5 @@
 namespace StardewMods.Common.Integrations.EvenBetterRng;
 
-using StardewModdingAPI;
-
 /// <inheritdoc />
 internal class EvenBetterRngIntegration : ModIntegration<IEvenBetterRngApi>
 {
@@ -14,5 +12,6 @@ internal class EvenBetterRngIntegration : ModIntegration<IEvenBetterRngApi>
     public EvenBetterRngIntegration(IModRegistry modRegistry)
         : base(modRegistry, EvenBetterRngIntegration.ModUniqueId)
     {
+        // Nothing
     }
 }

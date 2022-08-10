@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.TooManyAnimals;
 
-using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 /// <summary>

@@ -1,10 +1,8 @@
 namespace StardewMods.BetterChests.Features;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.UI;
@@ -12,7 +10,6 @@ using StardewMods.Common.Enums;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
-using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -208,10 +205,7 @@ internal class BetterColorPicker : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                colorPickerToggleButton: not null, context: Chest chest,
-            })
+        if (Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: not null, context: Chest chest })
         {
             return;
         }

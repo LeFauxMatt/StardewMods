@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 
 /// <inheritdoc />
 internal class StorageModData : IStorageData

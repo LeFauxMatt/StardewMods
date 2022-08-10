@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
-using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
 /// <summary>

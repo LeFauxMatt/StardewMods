@@ -5,14 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.UI;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 
 /// <summary>
 ///     Search for which chests have the item you're looking for.

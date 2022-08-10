@@ -6,9 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using StardewModdingAPI;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 
 /// <inheritdoc cref="StardewMods.Common.Integrations.BetterChests.IItemMatcher" />
 internal class ItemMatcher : ObservableCollection<string>, IItemMatcher

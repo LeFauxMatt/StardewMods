@@ -4,15 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.CommonHarmony.Helpers;
-using StardewValley;
 using StardewValley.Menus;
-using SObject = StardewValley.Object;
 
 /// <inheritdoc />
 public class TooManyAnimals : Mod
@@ -64,9 +61,8 @@ public class TooManyAnimals : Mod
         }
     }
 
-    private ClickableTextureComponent NextPage
-    {
-        get => this._nextPage.Value ??= new(
+    private ClickableTextureComponent NextPage =>
+        this._nextPage.Value ??= new(
             new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(365, 495, 12, 11),
@@ -74,11 +70,9 @@ public class TooManyAnimals : Mod
         {
             myID = 69420,
         };
-    }
 
-    private ClickableTextureComponent PreviousPage
-    {
-        get => this._previousPage.Value ??= new(
+    private ClickableTextureComponent PreviousPage =>
+        this._previousPage.Value ??= new(
             new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(352, 495, 12, 11),
@@ -86,7 +80,6 @@ public class TooManyAnimals : Mod
         {
             myID = 69421,
         };
-    }
 
     private List<SObject>? Stock { get; set; }
 
@@ -125,25 +118,30 @@ public class TooManyAnimals : Mod
 
         // Limit stock
         stock = TooManyAnimals.Instance.Stock
-                              .Skip(TooManyAnimals.Instance.CurrentPage * TooManyAnimals.Instance.Config.AnimalShopLimit)
+                              .Skip(
+                                  TooManyAnimals.Instance.CurrentPage * TooManyAnimals.Instance.Config.AnimalShopLimit)
                               .Take(TooManyAnimals.Instance.Config.AnimalShopLimit)
                               .ToList();
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
+         || this.Stock is null
+         || this.Stock.Count <= this.Config.AnimalShopLimit)
         {
             return;
         }
 
-        if (e.Button is not SButton.MouseLeft or SButton.MouseRight && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
+        if (e.Button is not SButton.MouseLeft or SButton.MouseRight
+         && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (this.NextPage.containsPoint(x, y) && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
+        if (this.NextPage.containsPoint(x, y)
+         && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
         {
             this.CurrentPage++;
         }
@@ -156,12 +154,15 @@ public class TooManyAnimals : Mod
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
+         || this.Stock is null
+         || this.Stock.Count <= this.Config.AnimalShopLimit)
         {
             return;
         }
 
-        if (this.Config.ControlScheme.NextPage.JustPressed() && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
+        if (this.Config.ControlScheme.NextPage.JustPressed()
+         && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
         {
             this.CurrentPage++;
             return;
@@ -182,10 +183,7 @@ public class TooManyAnimals : Mod
         }
 
         // Register mod configuration
-        gmcm.Register(
-            this.ModManifest,
-            () => this._config = new(),
-            () => this.Helper.WriteConfig(this.Config));
+        gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
 
         gmcm.API!.AddSectionTitle(this.ModManifest, I18n.Section_General_Name, I18n.Section_General_Description);
 
@@ -246,27 +244,41 @@ public class TooManyAnimals : Mod
                 menu.animalsToPurchase[index].sourceRect.Y = 448 + i / 3 * 16;
             }
 
-            if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
+            if (!ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
             {
-                menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
-                menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
+                continue;
             }
+
+            menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
+            menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
         }
 
         // Assign neighborId for controller
         var maxY = menu.animalsToPurchase.Max(component => component.bounds.Y);
         var bottomComponents = menu.animalsToPurchase.Where(component => component.bounds.Y == maxY).ToList();
-        this.PreviousPage.upNeighborID = bottomComponents.OrderBy(component => Math.Abs(component.bounds.Center.X - this.PreviousPage.bounds.X)).First().myID;
-        this.NextPage.upNeighborID = bottomComponents.OrderBy(component => Math.Abs(component.bounds.Center.X - this.NextPage.bounds.X)).First().myID;
+        this.PreviousPage.upNeighborID = bottomComponents
+                                         .OrderBy(
+                                             component => Math.Abs(
+                                                 component.bounds.Center.X - this.PreviousPage.bounds.X))
+                                         .First()
+                                         .myID;
+        this.NextPage.upNeighborID = bottomComponents
+                                     .OrderBy(component => Math.Abs(component.bounds.Center.X - this.NextPage.bounds.X))
+                                     .First()
+                                     .myID;
         foreach (var component in bottomComponents)
         {
-            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + menu.width / 2 ? this.PreviousPage.myID : this.NextPage.myID;
+            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + menu.width / 2
+                ? this.PreviousPage.myID
+                : this.NextPage.myID;
         }
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.Stock is null || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
+         || this.Stock is null
+         || this.Stock.Count <= this.Config.AnimalShopLimit)
         {
             return;
         }

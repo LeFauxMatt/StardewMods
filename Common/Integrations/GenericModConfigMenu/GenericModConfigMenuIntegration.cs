@@ -2,7 +2,6 @@ namespace StardewMods.Common.Integrations.GenericModConfigMenu;
 
 using System;
 using System.Collections.Generic;
-using StardewModdingAPI;
 
 /// <inheritdoc />
 internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuApi>
@@ -16,6 +15,7 @@ internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfi
     public GenericModConfigMenuIntegration(IModRegistry modRegistry)
         : base(modRegistry, GenericModConfigMenuIntegration.ModUniqueId)
     {
+        // Nothing
     }
 
     private HashSet<string> Registered { get; } = new();

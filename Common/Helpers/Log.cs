@@ -1,7 +1,5 @@
 namespace StardewMods.Common.Helpers;
 
-using StardewModdingAPI;
-
 /// <summary>
 ///     Provides logging across mods.
 /// </summary>

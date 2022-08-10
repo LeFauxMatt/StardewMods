@@ -1,3 +1,4 @@
+#nullable disable
 namespace StardewMods.Common.Integrations.GenericModConfigMenu;
 
 using System;

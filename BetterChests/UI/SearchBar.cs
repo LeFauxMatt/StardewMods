@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>

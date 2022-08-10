@@ -2,12 +2,10 @@ namespace StardewMods.BetterChests.Features;
 
 using System.Globalization;
 using Microsoft.Xna.Framework;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
 

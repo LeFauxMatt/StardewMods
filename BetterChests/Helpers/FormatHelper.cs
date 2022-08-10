@@ -2,10 +2,8 @@ namespace StardewMods.BetterChests.Helpers;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using StardewMods.Common.Enums;
-using StardewValley;
 
 /// <summary>
 ///     Helper methods to convert between different text formats.

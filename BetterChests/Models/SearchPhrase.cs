@@ -2,8 +2,6 @@
 
 using System;
 using System.Linq;
-using StardewModdingAPI;
-using StardewValley;
 
 /// <summary>
 ///     Parsed search text for <see cref="ItemMatcher" />.

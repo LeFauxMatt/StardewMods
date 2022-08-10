@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Network;
 using StardewValley.Objects;
