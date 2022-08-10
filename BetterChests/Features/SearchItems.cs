@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
@@ -13,7 +12,6 @@ using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>
@@ -27,7 +25,6 @@ internal class SearchItems : IFeature
     private static SearchItems? Instance;
 
     private readonly ModConfig _config;
-    private readonly PerScreen<object?> _context = new();
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly IModHelper _helper;
 
@@ -46,7 +43,6 @@ internal class SearchItems : IFeature
         () => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
 
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
-    private readonly PerScreen<IStorageObject?> _storage = new();
     private readonly PerScreen<int> _timeOut = new();
 
     private bool _isActivated;
@@ -55,12 +51,6 @@ internal class SearchItems : IFeature
     {
         this._helper = helper;
         this._config = config;
-    }
-
-    private object? Context
-    {
-        get => this._context.Value;
-        set => this._context.Value = value;
     }
 
     private ItemGrabMenu? CurrentMenu
@@ -81,12 +71,6 @@ internal class SearchItems : IFeature
     {
         get => this._searchText.Value;
         set => this._searchText.Value = value;
-    }
-
-    private IStorageObject? Storage
-    {
-        get => this._storage.Value;
-        set => this._storage.Value = value;
     }
 
     private int TimeOut
@@ -115,7 +99,7 @@ internal class SearchItems : IFeature
         }
 
         this._isActivated = true;
-        BetterItemGrabMenu.Constructing += this.OnConstructing;
+        BetterItemGrabMenu.Constructing += SearchItems.OnConstructing;
         this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -130,10 +114,30 @@ internal class SearchItems : IFeature
         }
 
         this._isActivated = false;
-        BetterItemGrabMenu.Constructing -= this.OnConstructing;
+        BetterItemGrabMenu.Constructing -= SearchItems.OnConstructing;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+    }
+
+    private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
+    {
+        if (BetterItemGrabMenu.TopPadding > 0)
+        {
+            return;
+        }
+
+        if (BetterItemGrabMenu.Context is null)
+        {
+            BetterItemGrabMenu.TopPadding = 0;
+            return;
+        }
+
+        BetterItemGrabMenu.TopPadding = BetterItemGrabMenu.Context.SearchItems switch
+        {
+            FeatureOption.Disabled => 0,
+            _ => SearchItems.ExtraSpace,
+        };
     }
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
@@ -182,29 +186,6 @@ internal class SearchItems : IFeature
         }
     }
 
-    private void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
-    {
-        if (BetterItemGrabMenu.TopPadding != 0)
-        {
-            return;
-        }
-
-        if (itemGrabMenu.context is null || ReferenceEquals(this.Context, itemGrabMenu.context))
-        {
-            this.Context = null;
-            this.Storage = null;
-            return;
-        }
-
-        this.Context = itemGrabMenu.context;
-        this.Storage = StorageHelper.TryGetOne(this.Context, out var storage) ? storage : null;
-        BetterItemGrabMenu.TopPadding = this.Storage?.SearchItems switch
-        {
-            null or FeatureOption.Disabled => 0,
-            _ => SearchItems.ExtraSpace,
-        };
-    }
-
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         if (this.CurrentMenu is null || !this.SearchArea.visible)
@@ -236,7 +217,13 @@ internal class SearchItems : IFeature
                 return;
             }
 
-            this.ItemMatcher.Clear();
+            if (BetterItemGrabMenu.Context is not null
+             && !ReferenceEquals(storage.Context, BetterItemGrabMenu.Context.Context))
+            {
+                this.ItemMatcher.Clear();
+                this.SearchField.Text = string.Empty;
+            }
+
             this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
             this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
             this.SearchField.Width = this._config.TransferItems
@@ -264,7 +251,7 @@ internal class SearchItems : IFeature
             return;
         }
 
-        if (this.TimeOut > 0)
+        if (this.TimeOut >= 0)
         {
             if (--this.TimeOut == 0)
             {

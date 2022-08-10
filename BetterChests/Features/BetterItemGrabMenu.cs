@@ -2,23 +2,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.UI;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>
@@ -53,6 +51,7 @@ internal class BetterItemGrabMenu : IFeature
     private static BetterItemGrabMenu? Instance;
 
     private readonly ModConfig _config;
+    private readonly PerScreen<IStorageObject?> _context = new();
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly IModHelper _helper;
     private readonly PerScreen<DisplayedItems?> _inventory = new();
@@ -95,7 +94,29 @@ internal class BetterItemGrabMenu : IFeature
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
                     PatchType.Postfix),
                 new(
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>),
+                            typeof(object),
+                        }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix),
+                    PatchType.Postfix),
+                new(
                     BetterItemGrabMenu.ItemGrabMenuCtor,
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.Constructor(
+                        typeof(ItemGrabMenu),
+                        new[]
+                        {
+                            typeof(IList<Item>),
+                            typeof(object),
+                        }),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix),
                     PatchType.Prefix),
@@ -124,6 +145,21 @@ internal class BetterItemGrabMenu : IFeature
                     AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
                     typeof(BetterItemGrabMenu),
                     nameof(BetterItemGrabMenu.ItemGrabMenu_organizeItemsInList_postfix),
+                    PatchType.Postfix),
+                new(
+                    AccessTools.Constructor(
+                        typeof(MenuWithInventory),
+                        new[]
+                        {
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                        }),
+                    typeof(BetterItemGrabMenu),
+                    nameof(BetterItemGrabMenu.MenuWithInventory_constructor_postfix),
                     PatchType.Postfix),
                 new(
                     AccessTools.Method(
@@ -169,6 +205,15 @@ internal class BetterItemGrabMenu : IFeature
     {
         add => BetterItemGrabMenu.Instance!._drawingMenu += value;
         remove => BetterItemGrabMenu.Instance!._drawingMenu -= value;
+    }
+
+    /// <summary>
+    ///     Gets the current <see cref="IStorageObject" /> context.
+    /// </summary>
+    public static IStorageObject? Context
+    {
+        get => BetterItemGrabMenu.Instance!._context.Value;
+        private set => BetterItemGrabMenu.Instance!._context.Value = value;
     }
 
     /// <summary>
@@ -317,10 +362,9 @@ internal class BetterItemGrabMenu : IFeature
         bool drawSlots,
         ItemGrabMenu menu)
     {
-        if (menu.context is null
-         || !StorageHelper.TryGetOne(menu.context, out var storage)
-         || storage.MenuCapacity <= 0
-         || storage.MenuRows <= 0)
+        if (BetterItemGrabMenu.Context is null
+         || BetterItemGrabMenu.Context.MenuCapacity <= 0
+         || BetterItemGrabMenu.Context.MenuRows <= 0)
         {
             return new(
                 xPosition,
@@ -341,8 +385,8 @@ internal class BetterItemGrabMenu : IFeature
             playerInventory,
             actualInventory,
             highlightMethod,
-            storage.MenuCapacity,
-            storage.MenuRows,
+            BetterItemGrabMenu.Context.MenuCapacity,
+            BetterItemGrabMenu.Context.MenuRows,
             horizontalGap,
             verticalGap,
             drawSlots);
@@ -375,10 +419,11 @@ internal class BetterItemGrabMenu : IFeature
         __instance.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
         __instance.height += BetterItemGrabMenu.TopPadding;
 
-        if (!StorageHelper.TryGetOne(__instance.context, out _))
+        if (BetterItemGrabMenu.Context is null)
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
+            BetterItemGrabMenu.Instance!._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
             return;
         }
 
@@ -400,10 +445,17 @@ internal class BetterItemGrabMenu : IFeature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_constructor_prefix(ItemGrabMenu __instance, object context)
+    private static void ItemGrabMenu_constructor_prefix(ItemGrabMenu __instance, object? context)
     {
+        if (context is null || !StorageHelper.TryGetOne(context, out var storage))
+        {
+            BetterItemGrabMenu.Context = null;
+            BetterItemGrabMenu.Instance!._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+            return;
+        }
+
         __instance.context = context;
-        BetterItemGrabMenu.TopPadding = 0;
+        BetterItemGrabMenu.Context = storage;
         BetterItemGrabMenu.Instance!._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
     }
 
@@ -535,6 +587,16 @@ internal class BetterItemGrabMenu : IFeature
         BetterItemGrabMenu.RefreshItemsToGrabMenu |= ReferenceEquals(
             BetterItemGrabMenu.Instance.CurrentMenu.ItemsToGrabMenu.actualInventory,
             items);
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void MenuWithInventory_constructor_postfix(MenuWithInventory __instance)
+    {
+        if (__instance is not ItemGrabMenu || BetterItemGrabMenu.Context is null)
+        {
+            BetterItemGrabMenu.TopPadding = 0;
+        }
     }
 
     private static IEnumerable<CodeInstruction> MenuWithInventory_draw_transpiler(

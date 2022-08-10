@@ -1,19 +1,15 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Helpers;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>
@@ -38,35 +34,28 @@ internal class ResizeChestMenu : IFeature
             new SavedPatch[]
             {
                 new(
-                    AccessTools.Constructor(
+                    AccessTools.Method(
                         typeof(ItemGrabMenu),
-                        new[]
-                        {
-                            typeof(IList<Item>),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(InventoryMenu.highlightThisItem),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(string),
-                            typeof(ItemGrabMenu.behaviorOnItemSelect),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(Item),
-                            typeof(int),
-                            typeof(object),
-                        }),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.ItemGrabMenu_constructor_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw), new[] { typeof(SpriteBatch) }),
+                        nameof(ItemGrabMenu.draw),
+                        new[] { typeof(SpriteBatch) }),
                     typeof(ResizeChestMenu),
                     nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
                     PatchType.Transpiler),
+                new(
+                    AccessTools.Constructor(
+                        typeof(MenuWithInventory),
+                        new[]
+                        {
+                            typeof(InventoryMenu.highlightThisItem),
+                            typeof(bool),
+                            typeof(bool),
+                            typeof(int),
+                            typeof(int),
+                            typeof(int),
+                        }),
+                    typeof(ResizeChestMenu),
+                    nameof(ResizeChestMenu.MenuWithInventory_constructor_postfix),
+                    PatchType.Postfix),
                 new(
                     AccessTools.Method(
                         typeof(MenuWithInventory),
@@ -112,6 +101,7 @@ internal class ResizeChestMenu : IFeature
 
         this._isActivated = true;
         HarmonyHelper.ApplyPatches(ResizeChestMenu.Id);
+        BetterItemGrabMenu.Constructed += ResizeChestMenu.OnConstructed;
         this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
     }
 
@@ -125,39 +115,8 @@ internal class ResizeChestMenu : IFeature
 
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(ResizeChestMenu.Id);
+        BetterItemGrabMenu.Constructed -= ResizeChestMenu.OnConstructed;
         this._helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
-    {
-        ResizeChestMenu.ExtraSpace =
-            __instance.context is not null && StorageHelper.TryGetOne(__instance.context, out var storage)
-                ? storage.MenuExtraSpace
-                : 0;
-
-        if (ResizeChestMenu.ExtraSpace == 0)
-        {
-            return;
-        }
-
-        __instance.height += ResizeChestMenu.ExtraSpace;
-        __instance.inventory.movePosition(0, ResizeChestMenu.ExtraSpace);
-        if (__instance.okButton is not null)
-        {
-            __instance.okButton.bounds.Y += ResizeChestMenu.ExtraSpace;
-        }
-
-        if (__instance.trashCan is not null)
-        {
-            __instance.trashCan.bounds.Y += ResizeChestMenu.ExtraSpace;
-        }
-
-        if (__instance.dropItemInvisibleButton is not null)
-        {
-            __instance.dropItemInvisibleButton.bounds.Y += ResizeChestMenu.ExtraSpace;
-        }
     }
 
     /// <summary>Move backpack down by expanded menu height.</summary>
@@ -190,6 +149,16 @@ internal class ResizeChestMenu : IFeature
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void MenuWithInventory_constructor_postfix(MenuWithInventory __instance)
+    {
+        if (__instance is not ItemGrabMenu || BetterItemGrabMenu.Context is null)
+        {
+            ResizeChestMenu.ExtraSpace = 0;
+        }
+    }
+
     /// <summary>Move/resize bottom dialogue box by search bar height.</summary>
     [SuppressMessage(
         "ReSharper",
@@ -213,6 +182,33 @@ internal class ResizeChestMenu : IFeature
             {
                 yield return instruction;
             }
+        }
+    }
+
+    private static void OnConstructed(object? sender, ItemGrabMenu itemGrabMenu)
+    {
+        if (BetterItemGrabMenu.Context is null)
+        {
+            ResizeChestMenu.ExtraSpace = 0;
+            return;
+        }
+
+        ResizeChestMenu.ExtraSpace = BetterItemGrabMenu.Context.MenuExtraSpace;
+        itemGrabMenu.height += ResizeChestMenu.ExtraSpace;
+        itemGrabMenu.inventory.movePosition(0, ResizeChestMenu.ExtraSpace);
+        if (itemGrabMenu.okButton is not null)
+        {
+            itemGrabMenu.okButton.bounds.Y += ResizeChestMenu.ExtraSpace;
+        }
+
+        if (itemGrabMenu.trashCan is not null)
+        {
+            itemGrabMenu.trashCan.bounds.Y += ResizeChestMenu.ExtraSpace;
+        }
+
+        if (itemGrabMenu.dropItemInvisibleButton is not null)
+        {
+            itemGrabMenu.dropItemInvisibleButton.bounds.Y += ResizeChestMenu.ExtraSpace;
         }
     }
 

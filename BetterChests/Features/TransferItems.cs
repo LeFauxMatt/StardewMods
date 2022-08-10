@@ -3,11 +3,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
-using StardewValley;
 using StardewValley.Menus;
 
 /// <summary>
@@ -94,7 +92,9 @@ internal class TransferItems : IFeature
 
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
     {
-        if (itemGrabMenu.context is null || !StorageHelper.TryGetOne(itemGrabMenu.context, out _))
+        if (BetterItemGrabMenu.TopPadding > 0
+         || itemGrabMenu.context is null
+         || !StorageHelper.TryGetOne(itemGrabMenu.context, out _))
         {
             return;
         }
@@ -136,7 +136,8 @@ internal class TransferItems : IFeature
             return;
         }
 
-        var items = new Queue<Item>(Game1.player.Items.Where(item => item is not null && !ReferenceEquals(item, context)));
+        var items = new Queue<Item>(
+            Game1.player.Items.Where(item => item is not null && !ReferenceEquals(item, context)));
         while (items.Count > 0)
         {
             var item = items.Dequeue();
