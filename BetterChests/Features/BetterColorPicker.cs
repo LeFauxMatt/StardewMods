@@ -7,11 +7,11 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.UI;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Adds a chest color picker that support hue, saturation, and lightness.
@@ -141,24 +141,24 @@ internal class BetterColorPicker : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { chestColorPicker: not null, context: Chest chest })
+        if (__instance is not { chestColorPicker: not null } || BetterItemGrabMenu.Context is not IColorable colorable)
         {
             return;
         }
 
-        BetterColorPicker.Instance?.SetupColorPicker(__instance, chest);
+        BetterColorPicker.Instance?.SetupColorPicker(__instance, colorable);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { chestColorPicker: not null, context: Chest chest })
+        if (__instance is not { chestColorPicker: not null } || BetterItemGrabMenu.Context is not IColorable colorable)
         {
             return;
         }
 
-        BetterColorPicker.Instance?.SetupColorPicker(__instance, chest);
+        BetterColorPicker.Instance?.SetupColorPicker(__instance, colorable);
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -185,12 +185,13 @@ internal class BetterColorPicker : IFeature
 
     private void OnConstructed(object? sender, ItemGrabMenu itemGrabMenu)
     {
-        if (itemGrabMenu is not { colorPickerToggleButton: not null, context: Chest chest })
+        if (itemGrabMenu is not { colorPickerToggleButton: not null }
+         || BetterItemGrabMenu.Context is not IColorable colorable)
         {
             return;
         }
 
-        this.SetupColorPicker(itemGrabMenu, chest);
+        this.SetupColorPicker(itemGrabMenu, colorable);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -205,16 +206,17 @@ internal class BetterColorPicker : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: not null, context: Chest chest })
+        if (Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: not null }
+         || BetterItemGrabMenu.Context is not IColorable colorable)
         {
             return;
         }
 
         this.ColorPicker.Update(this._helper.Input);
-        chest.playerChoiceColor.Value = this.ColorPicker.Color;
+        colorable.Color = this.ColorPicker.Color;
     }
 
-    private void SetupColorPicker(ItemGrabMenu itemGrabMenu, Chest chest)
+    private void SetupColorPicker(ItemGrabMenu itemGrabMenu, IColorable colorable)
     {
         itemGrabMenu.chestColorPicker = null;
         itemGrabMenu.discreteColorPickerCC = null;
@@ -224,6 +226,6 @@ internal class BetterColorPicker : IFeature
             _ => itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96 + IClickableMenu.borderWidth / 2,
         };
         var y = itemGrabMenu.yPositionOnScreen - 56 + IClickableMenu.borderWidth / 2;
-        this.ColorPicker.Init(x, y, chest.playerChoiceColor.Value);
+        this.ColorPicker.Init(x, y, colorable);
     }
 }

@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomationFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IColorable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IItemMatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageObject.cs" />

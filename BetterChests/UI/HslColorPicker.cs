@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Models;
 using StardewValley.Menus;
 
@@ -45,6 +46,7 @@ internal class HslColorPicker
     private readonly Color[] _saturationShade = new Color[HslColorPicker.Cells];
     private readonly Range<int> _saturationTrack = new();
 
+    private IColorable? _colorable;
     private Thumb _held = Thumb.None;
     private HslColor _hslColor;
     private Rectangle _hueBarArea = new(0, 0, HslColorPicker.BarWidth, HslColorPicker.Height - 36);
@@ -125,6 +127,9 @@ internal class HslColorPicker
                 Color.Black,
                 Game1.pixelZoom,
                 false);
+
+            // Colorable object
+            this._colorable?.Draw(b, this._x, this._y - Game1.tileSize - IClickableMenu.borderWidth / 2);
             return;
         }
 
@@ -160,6 +165,9 @@ internal class HslColorPicker
             new(2.5f, 4f),
             SpriteEffects.None,
             1);
+
+        // Colorable object
+        this._colorable?.Draw(b, this._x, this._y - Game1.tileSize - IClickableMenu.borderWidth / 2);
     }
 
     /// <summary>
@@ -167,8 +175,8 @@ internal class HslColorPicker
     /// </summary>
     /// <param name="x">The x-coordinate.</param>
     /// <param name="y">The y-coordinate.</param>
-    /// <param name="color">The color to initialize.</param>
-    public void Init(int x, int y, Color? color = default)
+    /// <param name="colorable">The object to draw.</param>
+    public void Init(int x, int y, IColorable? colorable = default)
     {
         this._x = x;
         this._y = y;
@@ -202,7 +210,8 @@ internal class HslColorPicker
         this._saturationTrack.Minimum = this._saturationBar[0].Top;
         this._saturationTrack.Maximum = this._saturationBar[HslColorPicker.Cells - 1].Bottom;
 
-        this.Color = color ?? Color.Black;
+        this._colorable = colorable;
+        this.Color = this._colorable?.Color ?? Color.Black;
         this._hslColor = HslColor.FromColor(this.Color);
         if (this.Color == Color.Black)
         {

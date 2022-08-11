@@ -2,13 +2,16 @@
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Network;
 using StardewValley.Objects;
 
-/// <inheritdoc />
-internal class ChestStorage : BaseStorage
+/// <inheritdoc cref="StardewMods.BetterChests.Storages.BaseStorage" />
+internal class ChestStorage : BaseStorage, IColorable
 {
+    private readonly Chest _chest;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChestStorage" /> class.
     /// </summary>
@@ -24,12 +27,35 @@ internal class ChestStorage : BaseStorage
             position)
     {
         this.Chest = chest;
+        this._chest = new(true, this.Chest.ParentSheetIndex)
+        {
+            Name = this.Chest.Name,
+            playerChoiceColor = { Value = this.Chest.playerChoiceColor.Value },
+        };
+
+        foreach (var (key, value) in this.Chest.modData.Pairs)
+        {
+            this._chest.modData[key] = value;
+        }
+
+        this._chest.resetLidFrame();
     }
 
     /// <summary>
     ///     Gets the source chest object.
     /// </summary>
     public Chest Chest { get; }
+
+    /// <inheritdoc />
+    public Color Color
+    {
+        get => this.Chest.playerChoiceColor.Value;
+        set
+        {
+            this._chest.playerChoiceColor.Value = value;
+            this.Chest.playerChoiceColor.Value = value;
+        }
+    }
 
     /// <inheritdoc />
     public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
@@ -39,6 +65,12 @@ internal class ChestStorage : BaseStorage
 
     /// <inheritdoc />
     public override NetMutex? Mutex => this.Chest.GetMutex();
+
+    /// <inheritdoc />
+    public void Draw(SpriteBatch spriteBatch, int x, int y)
+    {
+        this._chest.draw(spriteBatch, x, y, 1f, true);
+    }
 
     /// <inheritdoc />
     public override void ShowMenu()
