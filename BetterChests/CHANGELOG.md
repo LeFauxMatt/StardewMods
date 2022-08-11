@@ -1,5 +1,10 @@
 ﻿# Better Chests Change Log
 
+## 2.3.1 (August 11, 2022)
+
+* Added Chest preview to Color Picker.
+* Fixed graphical glitches in menus.
+
 ## 2.3.0 (August 7, 2022)
 
 * Added TransferItems feature to transfer items in/out of a chest.
