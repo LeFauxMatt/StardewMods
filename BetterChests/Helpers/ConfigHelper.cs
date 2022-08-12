@@ -22,44 +22,38 @@ internal class ConfigHelper
 {
     private static ConfigHelper? Instance;
 
+    private readonly Lazy<ModConfig> _config;
+
     private readonly Dictionary<IFeature, Func<bool>> _features;
     private readonly IModHelper _helper;
     private readonly IManifest _modManifest;
 
-    private ModConfig? _config;
-
     private ConfigHelper(IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
     {
+        this._config = new(
+            () =>
+            {
+                ModConfig? config = null;
+                try
+                {
+                    config = helper.ReadConfig<ModConfig>();
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+
+                config ??= new();
+                Log.Trace(config.ToString());
+                return config;
+            });
         this._helper = helper;
         this._modManifest = manifest;
         this._features = features;
         this._helper.Events.GameLoop.GameLaunched += ConfigHelper.OnGameLaunched;
     }
 
-    private ModConfig Config
-    {
-        get
-        {
-            if (this._config is not null)
-            {
-                return this._config;
-            }
-
-            ModConfig? config = null;
-            try
-            {
-                config = this._helper.ReadConfig<ModConfig>();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            this._config = config ?? new ModConfig();
-            Log.Trace(this._config.ToString());
-            return this._config;
-        }
-    }
+    private ModConfig Config => this._config.Value;
 
     /// <summary>
     ///     Initializes <see cref="ConfigHelper" />.
@@ -91,7 +85,7 @@ internal class ConfigHelper
 
         IntegrationHelper.GMCM.Register(
             ConfigHelper.Instance._modManifest,
-            () => ConfigHelper.Instance._config = new(),
+            ConfigHelper.Instance.ResetConfig,
             ConfigHelper.Instance.SaveConfig);
 
         // General
@@ -369,7 +363,7 @@ internal class ConfigHelper
             return;
         }
 
-        if (register)
+        if (register && ConfigHelper.Instance is not null)
         {
             if (IntegrationHelper.GMCM.IsRegistered(manifest))
             {
@@ -378,8 +372,8 @@ internal class ConfigHelper
 
             IntegrationHelper.GMCM.Register(
                 manifest,
-                () => ConfigHelper.Instance!._config = new(),
-                ConfigHelper.Instance!.SaveConfig);
+                ConfigHelper.Instance.ResetConfig,
+                ConfigHelper.Instance.SaveConfig);
         }
 
         ConfigHelper.Instance!.SetupConfig(manifest, storage);
@@ -440,6 +434,11 @@ internal class ConfigHelper
                 -1,
                 0f);
         };
+    }
+
+    private void ResetConfig()
+    {
+        this.Config.Reset();
     }
 
     private void SaveConfig()

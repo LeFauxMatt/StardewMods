@@ -13,66 +13,57 @@ using StardewMods.Common.Enums;
 internal class ModConfig
 {
     /// <summary>
+    ///     Initializes a new instance of the <see cref="ModConfig" /> class.
+    /// </summary>
+    public ModConfig()
+    {
+        this.Reset();
+    }
+
+    /// <summary>
     ///     Gets or sets a value indicating whether advanced config options will be shown.
     /// </summary>
-    public bool AdvancedConfig { get; set; } = false;
+    public bool AdvancedConfig { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether shipping bin will be relaunched as a regular chest inventory menu.
     /// </summary>
-    public bool BetterShippingBin { get; set; } = true;
+    public bool BetterShippingBin { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating how many chests containing items can be carried at once.
     /// </summary>
-    public int CarryChestLimit { get; set; } = 1;
+    public int CarryChestLimit { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
     /// </summary>
-    public int CarryChestSlowAmount { get; set; } = 1;
+    public int CarryChestSlowAmount { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be searched for.
     /// </summary>
-    public bool ChestFinder { get; set; } = true;
+    public bool ChestFinder { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether Configurator will be enabled.
     /// </summary>
-    public bool Configurator { get; set; } = true;
+    public bool Configurator { get; set; }
 
     /// <summary>
     ///     Gets or sets the control scheme.
     /// </summary>
-    public Controls ControlScheme { get; set; } = new();
+    public Controls ControlScheme { get; set; }
 
     /// <summary>
     ///     Gets or sets the <see cref="ComponentArea" /> that the <see cref="BetterColorPicker" /> will be aligned to.
     /// </summary>
-    public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
+    public ComponentArea CustomColorPickerArea { get; set; }
 
     /// <summary>
     ///     Gets or sets the default storage configuration.
     /// </summary>
-    public StorageData DefaultChest { get; set; } = new()
-    {
-        CarryChest = FeatureOption.Enabled,
-        CarryChestSlow = FeatureOption.Enabled,
-        ChestMenuTabs = FeatureOption.Enabled,
-        CraftFromChest = FeatureOptionRange.Location,
-        CraftFromChestDistance = -1,
-        CustomColorPicker = FeatureOption.Enabled,
-        FilterItems = FeatureOption.Enabled,
-        OpenHeldChest = FeatureOption.Enabled,
-        ResizeChest = FeatureOption.Enabled,
-        ResizeChestCapacity = 60,
-        ResizeChestMenu = FeatureOption.Enabled,
-        ResizeChestMenuRows = 5,
-        SearchItems = FeatureOption.Enabled,
-        StashToChest = FeatureOptionRange.Location,
-        StashToChestDistance = -1,
-    };
+    public StorageData DefaultChest { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether items will be hidden or grayed out.
@@ -82,37 +73,78 @@ internal class ModConfig
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be labeled.
     /// </summary>
-    public bool LabelChest { get; set; } = true;
+    public bool LabelChest { get; set; }
 
     /// <summary>
     ///     Gets or sets the symbol used to denote context tags in searches.
     /// </summary>
-    public char SearchTagSymbol { get; set; } = '#';
+    public char SearchTagSymbol { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether the slot lock feature is enabled.
     /// </summary>
-    public bool SlotLock { get; set; } = true;
+    public bool SlotLock { get; set; }
 
     /// <summary>
     ///     Gets or sets the color of locked slots.
     /// </summary>
-    public Colors SlotLockColor { get; set; } = Colors.Red;
+    public Colors SlotLockColor { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
     /// </summary>
-    public bool SlotLockHold { get; set; } = true;
+    public bool SlotLockHold { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether to add button for transferring items to/from a chest.
     /// </summary>
-    public bool TransferItems { get; set; } = true;
+    public bool TransferItems { get; set; }
 
     /// <summary>
     ///     Gets or sets storage data for vanilla storage types.
     /// </summary>
-    public Dictionary<string, StorageData> VanillaStorages { get; set; } = new();
+    public Dictionary<string, StorageData> VanillaStorages { get; set; }
+
+    /// <summary>
+    ///     Resets <see cref="ModConfig" /> to default options.
+    /// </summary>
+    [MemberNotNull(nameof(ModConfig.ControlScheme), nameof(ModConfig.DefaultChest), nameof(ModConfig.VanillaStorages))]
+    public void Reset()
+    {
+        this.AdvancedConfig = false;
+        this.BetterShippingBin = true;
+        this.CarryChestLimit = 1;
+        this.CarryChestSlowAmount = 1;
+        this.ChestFinder = true;
+        this.Configurator = true;
+        this.ControlScheme = new();
+        this.CustomColorPickerArea = ComponentArea.Right;
+        this.DefaultChest = new()
+        {
+            CarryChest = FeatureOption.Enabled,
+            CarryChestSlow = FeatureOption.Enabled,
+            ChestMenuTabs = FeatureOption.Enabled,
+            CraftFromChest = FeatureOptionRange.Location,
+            CraftFromChestDistance = -1,
+            CustomColorPicker = FeatureOption.Enabled,
+            FilterItems = FeatureOption.Enabled,
+            OpenHeldChest = FeatureOption.Enabled,
+            ResizeChest = FeatureOption.Enabled,
+            ResizeChestCapacity = 60,
+            ResizeChestMenu = FeatureOption.Enabled,
+            ResizeChestMenuRows = 5,
+            SearchItems = FeatureOption.Enabled,
+            StashToChest = FeatureOptionRange.Location,
+            StashToChestDistance = -1,
+        };
+        this.HideItems = false;
+        this.LabelChest = true;
+        this.SearchTagSymbol = '#';
+        this.SlotLockColor = Colors.Red;
+        this.SlotLockHold = true;
+        this.TransferItems = true;
+        this.VanillaStorages = new();
+    }
 
     /// <inheritdoc />
     public override string ToString()

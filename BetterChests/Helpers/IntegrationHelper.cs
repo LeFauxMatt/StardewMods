@@ -25,16 +25,14 @@ internal class IntegrationHelper
 
     private readonly AutomateIntegration _automate;
     private readonly BetterCraftingIntegration _betterCrafting;
-    private readonly ModConfig _config;
     private readonly GenericModConfigMenuIntegration _gmcm;
     private readonly IModHelper _helper;
     private readonly Dictionary<string, HashSet<string>> _incompatibilities;
     private readonly ToolbarIconsIntegration _toolbarIcons;
 
-    private IntegrationHelper(IModHelper helper, ModConfig config)
+    private IntegrationHelper(IModHelper helper)
     {
         this._helper = helper;
-        this._config = config;
         this._automate = new(helper.ModRegistry);
         this._betterCrafting = new(helper.ModRegistry);
         this._gmcm = new(helper.ModRegistry);
@@ -111,11 +109,10 @@ internal class IntegrationHelper
     ///     Initializes <see cref="IntegrationHelper" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="IntegrationHelper" /> class.</returns>
-    public static IntegrationHelper Init(IModHelper helper, ModConfig config)
+    public static IntegrationHelper Init(IModHelper helper)
     {
-        return IntegrationHelper.Instance ??= new(helper, config);
+        return IntegrationHelper.Instance ??= new(helper);
     }
 
     /// <summary>
@@ -197,7 +194,7 @@ internal class IntegrationHelper
             if (horse?.HorseId == stable.HorseId && Game1.player.currentLocation.Equals(location))
             {
                 excluded.Add(chest);
-                yield return new ChestStorage(chest, horse, this._config.DefaultChest, Game1.player.getTileLocation());
+                yield return new ChestStorage(chest, horse, Game1.player.getTileLocation());
             }
 
             horse = stable.getStableHorse();
@@ -207,7 +204,7 @@ internal class IntegrationHelper
             }
 
             excluded.Add(chest);
-            yield return new ChestStorage(chest, horse, this._config.DefaultChest, horse.getTileLocation());
+            yield return new ChestStorage(chest, horse, horse.getTileLocation());
         }
     }
 
@@ -236,7 +233,7 @@ internal class IntegrationHelper
         }
 
         excluded.Add(chest);
-        yield return new ChestStorage(chest, Game1.player, this._config.DefaultChest, player.getTileLocation());
+        yield return new ChestStorage(chest, Game1.player, player.getTileLocation());
     }
 
     private bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out IStorageObject? storage)
@@ -263,7 +260,7 @@ internal class IntegrationHelper
             var horse = Game1.player.mount;
             if (horse?.HorseId == stable.HorseId)
             {
-                storage = new ChestStorage(chest, Game1.player, this._config.DefaultChest, horse.getTileLocation());
+                storage = new ChestStorage(chest, Game1.player, horse.getTileLocation());
                 return true;
             }
 
@@ -273,7 +270,7 @@ internal class IntegrationHelper
                 continue;
             }
 
-            storage = new ChestStorage(chest, horse, this._config.DefaultChest, horse.getTileLocation());
+            storage = new ChestStorage(chest, horse, horse.getTileLocation());
             return true;
         }
 
