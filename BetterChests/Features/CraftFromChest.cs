@@ -46,11 +46,10 @@ internal class CraftFromChest : IFeature
            && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
              && Game1.player.currentLocation is MineShaft mineShaft
              && mineShaft.Name.StartsWith("UndergroundMine"))
-           && storage.Parent is not null
-           && RangeHelper.IsWithinRangeOfPlayer(
-                  storage.CraftFromChest,
+           && storage.Source is not null
+           && storage.CraftFromChest.WithinRangeOfPlayer(
                   storage.CraftFromChestDistance,
-                  storage.Parent,
+                  storage.Source,
                   storage.Position)
         select storage;
 
@@ -207,7 +206,7 @@ internal class CraftFromChest : IFeature
         for (var index = this.CurrentEligible.Count - 1; index >= 0; index--)
         {
             var storage = this.CurrentEligible[index];
-            storage.Mutex?.Update(storage.Parent as GameLocation ?? Game1.currentLocation);
+            storage.Mutex?.Update(storage.Source as GameLocation ?? Game1.currentLocation);
         }
 
         if (Game1.activeClickableMenu is not GameMenu { currentTab: var currentTab } gameMenu
@@ -250,7 +249,7 @@ internal class CraftFromChest : IFeature
                 this.CurrentEligible.Select(
                         storage => new Tuple<object, GameLocation>(
                             new StorageWrapper(storage),
-                            storage.Parent as GameLocation ?? Game1.currentLocation))
+                            storage.Source as GameLocation ?? Game1.currentLocation))
                     .ToList());
             return;
         }
