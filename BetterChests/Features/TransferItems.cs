@@ -94,6 +94,7 @@ internal class TransferItems : IFeature
     {
         if (BetterItemGrabMenu.TopPadding > 0
          || itemGrabMenu.context is null
+         || itemGrabMenu.shippingBin
          || !StorageHelper.TryGetOne(itemGrabMenu.context, out _))
         {
             return;
@@ -104,7 +105,7 @@ internal class TransferItems : IFeature
 
     private static void TransferDown()
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context }
+        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
          || !StorageHelper.TryGetOne(context, out var storage))
         {
             return;
@@ -130,7 +131,7 @@ internal class TransferItems : IFeature
 
     private static void TransferUp()
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context }
+        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
          || !StorageHelper.TryGetOne(context, out var storage))
         {
             return;
@@ -180,7 +181,10 @@ internal class TransferItems : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu }
+        if (e.NewMenu is not ItemGrabMenu
+            {
+                context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false,
+            }
          || !StorageHelper.TryGetOne(context, out _))
         {
             this.DownArrow.visible = false;

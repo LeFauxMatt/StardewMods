@@ -122,7 +122,7 @@ internal class SearchItems : IFeature
 
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
     {
-        if (BetterItemGrabMenu.TopPadding > 0)
+        if (itemGrabMenu.shippingBin || BetterItemGrabMenu.TopPadding > 0)
         {
             return;
         }
@@ -209,7 +209,10 @@ internal class SearchItems : IFeature
         if (!ReferenceEquals(menu, this.CurrentMenu))
         {
             this.CurrentMenu = menu;
-            if (this.CurrentMenu is not { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu }
+            if (this.CurrentMenu is not
+                {
+                    context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false,
+                }
              || !StorageHelper.TryGetOne(context, out var storage)
              || storage.SearchItems == FeatureOption.Disabled)
             {
