@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Locations;
@@ -65,9 +66,9 @@ internal class UnloadChest : IFeature
         if (!Context.IsPlayerFree
          || !e.Button.IsUseToolButton()
          || this._helper.Input.IsSuppressed(e.Button)
-         || Game1.player.CurrentItem is Chest { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-                                        or not Chest
-                                        or null
+         || StorageHelper.CurrentItem is null
+                                         or ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+                                         or { UnloadChest: FeatureOption.Disabled }
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
@@ -90,17 +91,10 @@ internal class UnloadChest : IFeature
             return;
         }
 
-        // Disabled for held object
-        if (!StorageHelper.TryGetOne(Game1.player.CurrentItem, out var fromStorage)
-         || fromStorage.UnloadChest == FeatureOption.Disabled)
-        {
-            return;
-        }
-
         // Stash items into target chest
-        for (var index = fromStorage.Items.Count - 1; index >= 0; index--)
+        for (var index = StorageHelper.CurrentItem.Items.Count - 1; index >= 0; index--)
         {
-            var item = fromStorage.Items[index];
+            var item = StorageHelper.CurrentItem.Items[index];
             if (item is null)
             {
                 continue;
@@ -114,11 +108,11 @@ internal class UnloadChest : IFeature
             }
 
             Log.Trace(
-                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
-            fromStorage.Items[index] = null;
+                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {StorageHelper.CurrentItem}, To: {toStorage}");
+            StorageHelper.CurrentItem.Items[index] = null;
         }
 
-        fromStorage.ClearNulls();
+        StorageHelper.CurrentItem.ClearNulls();
         CarryChest.CheckForOverburdened();
         this._helper.Input.Suppress(e.Button);
     }

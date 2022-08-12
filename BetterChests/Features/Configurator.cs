@@ -203,14 +203,13 @@ internal class Configurator : IFeature
     {
         if (!Context.IsPlayerFree
          || !this._config.ControlScheme.Configure.JustPressed()
-         || Game1.player.CurrentItem is not SObject obj
-         || !StorageHelper.TryGetOne(obj, out var storage))
+         || StorageHelper.CurrentItem is null)
         {
             return;
         }
 
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.Configure);
-        ConfigHelper.SetupSpecificConfig(this._modManifest, storage, true);
+        ConfigHelper.SetupSpecificConfig(this._modManifest, StorageHelper.CurrentItem, true);
         IntegrationHelper.GMCM.API!.OpenModMenu(this._modManifest);
         this._isActive = true;
     }

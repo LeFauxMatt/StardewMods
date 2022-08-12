@@ -129,6 +129,14 @@ internal class StorageHelper
     }
 
     /// <summary>
+    ///     Gets the current storage item from the farmer's inventory.
+    /// </summary>
+    public static IStorageObject? CurrentItem =>
+        Game1.player.CurrentItem is not null && StorageHelper.TryGetOne(Game1.player.CurrentItem, out var storage)
+            ? storage.WithType(StorageHelper.Instance!._storageTypes)
+            : null;
+
+    /// <summary>
     ///     Gets all placed storages in the current location.
     /// </summary>
     public static IEnumerable<IStorageObject> CurrentLocation =>

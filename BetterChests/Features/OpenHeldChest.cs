@@ -107,27 +107,13 @@ internal class OpenHeldChest : IFeature
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || Game1.player.CurrentItem is not SObject obj)
+        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || StorageHelper.CurrentItem is null or { OpenHeldChest: FeatureOption.Disabled })
         {
             return;
         }
 
-        // Disabled for object
-        if (!StorageHelper.TryGetOne(obj, out var storage) || storage.OpenHeldChest is FeatureOption.Disabled)
-        {
-            return;
-        }
-
-        if (Context.IsMainPlayer)
-        {
-            obj.checkForAction(Game1.player);
-        }
-        else if (obj is Chest chest)
-        {
-            Game1.player.currentLocation.localSound("openChest");
-            chest.ShowMenu();
-        }
-
+        Game1.player.currentLocation.localSound("openChest");
+        StorageHelper.CurrentItem.ShowMenu();
         this._helper.Input.Suppress(e.Button);
     }
 }
