@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Helpers.ItemRepository;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
@@ -25,7 +26,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
     private static readonly Lazy<List<ClickableComponent>> TagsLazy = new(
         () => (
                 from item in ItemSelectionMenu.Items
-                from tag in item.GetContextTags()
+                from tag in item.GetContextTagsExt()
                 where !tag.StartsWith("id_") && !tag.StartsWith("item_") && !tag.StartsWith("preserve_")
                 orderby tag
                 select tag).Distinct()
@@ -40,6 +41,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
 
     private static readonly Lazy<int> LineHeightLazy = new(
         () => ItemSelectionMenu.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing);
+
 
     private static ITranslationHelper? Translation;
 
@@ -226,7 +228,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         if (itemSlot is not null
          && int.TryParse(itemSlot.name, out var slotNumber)
          && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item
-         && item.GetContextTags().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
+         && item.GetContextTagsExt().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
          && !string.IsNullOrWhiteSpace(tag))
         {
             this.AddTag(tag);
@@ -259,7 +261,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         }
 
         var tags = new HashSet<string>(
-            item.GetContextTags().Where(tag => !(tag.StartsWith("id_") || tag.StartsWith("preserve_"))));
+            item.GetContextTagsExt().Where(tag => !(tag.StartsWith("id_") || tag.StartsWith("preserve_"))));
 
         // Add extra quality levels
         if (tags.Contains("quality_none"))

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -255,10 +256,11 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
                         .OrderBy(
                             item => this.OrganizeChestGroupBy switch
                             {
-                                GroupBy.Category => item.GetContextTags()
+                                GroupBy.Category => item.GetContextTagsExt()
                                                         .FirstOrDefault(tag => tag.StartsWith("category_"))
                                                  ?? string.Empty,
-                                GroupBy.Color => item.GetContextTags().FirstOrDefault(tag => tag.StartsWith("color_"))
+                                GroupBy.Color => item.GetContextTagsExt()
+                                                     .FirstOrDefault(tag => tag.StartsWith("color_"))
                                               ?? string.Empty,
                                 GroupBy.Name => item.DisplayName,
                                 GroupBy.Default or _ => string.Empty,

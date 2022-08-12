@@ -6,12 +6,88 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley.Locations;
+using StardewValley.Objects;
 
 /// <summary>
-///     Extension methods
+///     Extension methods.
 /// </summary>
 internal static class Extensions
 {
+    /// <summary>
+    ///     Checks if the <see cref="Item" /> can be donated to a <see cref="CommunityCenter" /> bundle.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>Returns true if the item can be donated.</returns>
+    public static bool CanDonateToBundle(this Item item)
+    {
+        return item is SObject obj
+            && (Game1.locations.OfType<CommunityCenter>().FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
+             ?? false);
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="Item" /> can be donated to the <see cref="LibraryMuseum" />.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>Returns true if the item can be donated.</returns>
+    public static bool CanDonateToMuseum(this Item item)
+    {
+        return Game1.locations.OfType<LibraryMuseum>().FirstOrDefault()?.isItemSuitableForDonation(item) ?? false;
+    }
+
+    /// <summary>
+    ///     Gets context tags from an <see cref="Item" /> with extended tag set.
+    /// </summary>
+    /// <param name="item">The item to get context tags from.</param>
+    /// <returns>Returns the context tags.</returns>
+    public static IEnumerable<string> GetContextTagsExt(this Item item)
+    {
+        var tags = item.GetContextTags();
+
+        if (item.CanDonateToBundle())
+        {
+            tags.Add("donate_bundle");
+        }
+
+        if (item.CanDonateToMuseum())
+        {
+            tags.Add("donate_museum");
+        }
+
+        if (item.IsArtifact())
+        {
+            tags.Add("category_artifact");
+        }
+
+        if (item.IsFurniture())
+        {
+            tags.Add("category_furniture");
+        }
+
+        return tags;
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="Item" /> is an artifact.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>Returns true if the item is an artifact.</returns>
+    public static bool IsArtifact(this Item item)
+    {
+        return item is SObject { Type: "Arch" };
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="Item" /> is <see cref="Furniture" />.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>Returns true if the item is furniture.</returns>
+    public static bool IsFurniture(this Item item)
+    {
+        return item is Furniture;
+    }
+
     /// <summary>
     ///     Tests whether the player is within range of the location.
     /// </summary>

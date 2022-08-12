@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using StardewMods.BetterChests.Helpers;
 
 /// <summary>
 ///     Parsed search text for <see cref="ItemMatcher" />.
@@ -49,7 +50,7 @@ internal class SearchPhrase
     public bool Matches(Item item)
     {
         return (this.TagMatch
-                   ? item.GetContextTags().Any(this.Matches)
+                   ? item.GetContextTagsExt().Any(this.Matches)
                    : this.Matches(item.DisplayName) || this.Matches(item.Name))
             != this.NotMatch;
     }
