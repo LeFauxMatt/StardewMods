@@ -19,24 +19,9 @@ using StardewValley.Menus;
 /// </summary>
 internal class ChestMenuTabs : IFeature
 {
-    private static readonly Lazy<Dictionary<string, ClickableTextureComponent>> AllTabsLazy = new(
-        () => (
-            from tab in
-                from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
-                select (tab.Key, Value: tab.Value.Split('/'))
-            select (
-                tab.Key,
-                Value: new ClickableTextureComponent(
-                    tab.Value[3],
-                    new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
-                    string.Empty,
-                    tab.Value[0],
-                    Game1.content.Load<Texture2D>(tab.Value[1]),
-                    new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
-                    Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value));
-
     private static ChestMenuTabs? Instance;
 
+    private readonly Lazy<Dictionary<string, ClickableTextureComponent>> _allTabs;
     private readonly ModConfig _config;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly IModHelper _helper;
@@ -50,9 +35,29 @@ internal class ChestMenuTabs : IFeature
     {
         this._helper = helper;
         this._config = config;
+        this._allTabs = new(
+            () =>
+            {
+                return (
+                    from tab in
+                        from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
+                        select (tab.Key, Value: tab.Value.Split('/'))
+                    select (
+                        tab.Key,
+                        Value: new ClickableTextureComponent(
+                            tab.Value[3],
+                            new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
+                            string.Empty,
+                            !string.IsNullOrWhiteSpace(tab.Value[0])
+                                ? tab.Value[0]
+                                : helper.Translation.Get($"tabs.{tab.Key}.name").Default(tab.Key),
+                            Game1.content.Load<Texture2D>(tab.Value[1]),
+                            new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
+                            Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value);
+            });
     }
 
-    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.AllTabsLazy.Value;
+    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.Instance!._allTabs.Value;
 
     private List<ClickableTextureComponent> Components => this._tabs.Value;
 
@@ -363,7 +368,7 @@ internal class ChestMenuTabs : IFeature
 
         this.CurrentMenu = menu;
         this.Components.Clear();
-        if (this.CurrentMenu is not { context: { } context }
+        if (this.CurrentMenu is not { context: { } context, shippingBin: false }
          || !StorageHelper.TryGetOne(context, out var storage)
          || storage.ChestMenuTabs == FeatureOption.Disabled)
         {
