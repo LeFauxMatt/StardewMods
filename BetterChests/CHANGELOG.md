@@ -1,5 +1,16 @@
 ﻿# Better Chests Change Log
 
+## 2.3.2 (Unreleased)
+
+* Added back context tag extensions.
+  * category_artifact
+  * category_furniture
+  * donate_bundle
+  * donate_museum
+* Fixed features not being disabled when BetterShippingBin is disabled.
+* Fixed tabs using non-localized hover text.
+* Fixed CarryChestSlow debuff activating for empty chests.
+
 ## 2.3.1 (August 11, 2022)
 
 * Added Chest preview to Color Picker.
