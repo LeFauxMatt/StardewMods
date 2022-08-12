@@ -113,7 +113,9 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (Game1.player.Items.OfType<Chest>().Any(chest => !excludeCurrent || Game1.player.CurrentItem != chest))
+        if (StorageHelper.FromPlayer(Game1.player)
+                         .Where(storage => !excludeCurrent || storage.Context != Game1.player.CurrentItem)
+                         .Any(storage => storage.Items.OfType<Item>().Any()))
         {
             Game1.buffsDisplay.addOtherBuff(
                 CarryChest.GetOverburdened(CarryChest.Instance._config.CarryChestSlowAmount));
