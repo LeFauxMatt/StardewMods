@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -16,10 +15,9 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="location">The location of the shipping bin.</param>
-    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(GameLocation location, IStorageData defaultChest, Vector2 position)
-        : base(location, location, defaultChest, position)
+    public ShippingBinStorage(GameLocation location, Vector2 position)
+        : base(location, location, position)
     {
         // Do nothing
     }
@@ -28,11 +26,10 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="shippingBin">The shipping bin.</param>
-    /// <param name="parent">The context where the source object is contained.</param>
-    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(ShippingBin shippingBin, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(shippingBin, parent, defaultChest, position)
+    public ShippingBinStorage(ShippingBin shippingBin, object? source, Vector2 position)
+        : base(shippingBin, source, position)
     {
         // Do nothing
     }
@@ -41,11 +38,10 @@ internal class ShippingBinStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
     /// </summary>
     /// <param name="chest">The mini-shipping bin.</param>
-    /// <param name="parent">The context where the source object is contained.</param>
-    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
-    public ShippingBinStorage(Chest chest, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(chest, parent, defaultChest, position)
+    public ShippingBinStorage(Chest chest, object? source, Vector2 position)
+        : base(chest, source, position)
     {
         // Do nothing
     }

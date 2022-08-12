@@ -35,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IColorable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IItemMatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IStorageObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\BetterCraftingIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterCrafting\IBetterCraftingApi.cs" />

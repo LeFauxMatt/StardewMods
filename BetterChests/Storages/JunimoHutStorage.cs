@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
 using StardewValley.Network;
 using StardewValley.Objects;
@@ -14,11 +13,10 @@ internal class JunimoHutStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="JunimoHutStorage" /> class.
     /// </summary>
     /// <param name="junimoHut">The junimo hut.</param>
-    /// <param name="parent">The context where the source object is contained.</param>
-    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
-    public JunimoHutStorage(JunimoHut junimoHut, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(junimoHut, parent, defaultChest, position)
+    public JunimoHutStorage(JunimoHut junimoHut, object? source, Vector2 position)
+        : base(junimoHut, source, position)
     {
         this.JunimoHut = junimoHut;
     }

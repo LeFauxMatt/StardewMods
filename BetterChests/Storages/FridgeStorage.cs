@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;
 using StardewValley.Network;
 using StardewValley.Objects;
@@ -15,10 +14,9 @@ internal class FridgeStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="FridgeStorage" /> class.
     /// </summary>
     /// <param name="location">The farmhouse or island farmhouse location.</param>
-    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
     /// <param name="position">The position of the source object.</param>
-    public FridgeStorage(GameLocation location, IStorageData defaultChest, Vector2 position)
-        : base(location, location, defaultChest, position)
+    public FridgeStorage(GameLocation location, Vector2 position)
+        : base(location, location, position)
     {
         this.Location = location;
     }

@@ -26,7 +26,7 @@ public class BetterChests : Mod
         LocationHelper.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(helper.Translation);
         this._config = ConfigHelper.Init(this.Helper, this.ModManifest, this._features);
-        IntegrationHelper.Init(this.Helper, this._config);
+        IntegrationHelper.Init(this.Helper);
         StorageHelper.Init(this._config, this._storageTypes);
         ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
 
@@ -94,7 +94,7 @@ public class BetterChests : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new BetterChestsApi(this._storageTypes);
+        return new BetterChestsApi(this._storageTypes, this._config!.DefaultChest);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)

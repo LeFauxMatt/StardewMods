@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Network;
 using StardewValley.Objects;
 
@@ -13,11 +12,10 @@ internal class ObjectStorage : BaseStorage
     ///     Initializes a new instance of the <see cref="ObjectStorage" /> class.
     /// </summary>
     /// <param name="obj">The source object.</param>
-    /// <param name="parent">The context where the source object is contained.</param>
-    /// <param name="defaultChest">Config options for <see cref="ModConfig.DefaultChest" />.</param>
+    /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
-    public ObjectStorage(SObject obj, object? parent, IStorageData defaultChest, Vector2 position)
-        : base(obj, parent, defaultChest, position)
+    public ObjectStorage(SObject obj, object? source, Vector2 position)
+        : base(obj, source, position)
     {
         this.Object = obj;
     }
