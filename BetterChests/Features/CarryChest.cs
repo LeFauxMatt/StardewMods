@@ -101,24 +101,24 @@ internal class CarryChest : IFeature
             });
     }
 
+    private static ModConfig Config => CarryChest.Instance!._config;
+
     /// <summary>
     ///     Checks if the player should be overburdened while carrying a chest.
     /// </summary>
     /// <param name="excludeCurrent">Whether to exclude the current item.</param>
     public static void CheckForOverburdened(bool excludeCurrent = false)
     {
-        if (CarryChest.Instance!._config.CarryChestSlowAmount == 0)
+        if (CarryChest.Config.CarryChestSlowAmount == 0)
         {
             Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
             return;
         }
 
-        if (StorageHelper.FromPlayer(Game1.player)
-                         .Where(storage => !excludeCurrent || storage.Context != Game1.player.CurrentItem)
+        if (StorageHelper.Inventory.Where(storage => !excludeCurrent || storage.Context != Game1.player.CurrentItem)
                          .Any(storage => storage.Items.OfType<Item>().Any()))
         {
-            Game1.buffsDisplay.addOtherBuff(
-                CarryChest.GetOverburdened(CarryChest.Instance._config.CarryChestSlowAmount));
+            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(CarryChest.Config.CarryChestSlowAmount));
             return;
         }
 
@@ -425,7 +425,7 @@ internal class CarryChest : IFeature
         pos.Y = (int)pos.Y;
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
          || !StorageHelper.TryGetOne(obj, out var storage)
-         || storage.CarryChest == FeatureOption.Disabled)
+         || storage.CarryChest is not FeatureOption.Enabled)
         {
             return;
         }

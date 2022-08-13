@@ -25,7 +25,7 @@ internal class StorageHelper
     private StorageHelper(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
         this._storageTypes = storageTypes;
-        this.InitTypes(config.VanillaStorages, config.DefaultChest);
+        this.InitTypes(config.VanillaStorages, config);
         this._referenceContext = new(
             () =>
             {
@@ -80,51 +80,32 @@ internal class StorageHelper
     {
         get
         {
-            IEnumerable<IStorageObject> GetAll()
+            var excluded = new HashSet<object>();
+            var storages = new List<IStorageObject>();
+
+            // Iterate Inventory
+            foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
             {
-                var excluded = new HashSet<object>();
-                var storages = new List<IStorageObject>();
+                storages.Add(storage);
+                yield return storage;
+            }
 
-                // Inventory Mod Integrations
-                foreach (var storage in IntegrationHelper.FromPlayer(Game1.player, excluded))
+            // Iterate Locations
+            foreach (var location in LocationHelper.AllLocations)
+            {
+                foreach (var storage in StorageHelper.FromLocation(location, excluded))
                 {
                     storages.Add(storage);
-                    yield return storage;
-                }
-
-                // Iterate Inventory
-                foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
-                {
-                    storages.Add(storage);
-                    yield return storage;
-                }
-
-                // Iterate Locations
-                foreach (var location in LocationHelper.AllLocations)
-                {
-                    // Mod Integrations
-                    foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
-                    {
-                        storages.Add(storage);
-                        yield return storage;
-                    }
-
-                    foreach (var storage in StorageHelper.Instance!.FromLocation(location, excluded))
-                    {
-                        storages.Add(storage);
-                        yield return storage;
-                    }
-                }
-
-                // Sub Storage
-                foreach (var storage in storages.SelectMany(
-                             managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
-                {
                     yield return storage;
                 }
             }
 
-            return GetAll().WithTypes(StorageHelper.Instance!._storageTypes);
+            // Sub Storage
+            foreach (var storage in storages.SelectMany(
+                         managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
+            {
+                yield return storage;
+            }
         }
     }
 
@@ -133,20 +114,18 @@ internal class StorageHelper
     /// </summary>
     public static IStorageObject? CurrentItem =>
         Game1.player.CurrentItem is not null && StorageHelper.TryGetOne(Game1.player.CurrentItem, out var storage)
-            ? storage.WithType(StorageHelper.Instance!._storageTypes)
+            ? storage.WithType(StorageHelper.StorageTypes)
             : null;
 
     /// <summary>
     ///     Gets all placed storages in the current location.
     /// </summary>
-    public static IEnumerable<IStorageObject> CurrentLocation =>
-        StorageHelper.Instance!.FromLocation(Game1.currentLocation).WithTypes(StorageHelper.Instance._storageTypes);
+    public static IEnumerable<IStorageObject> CurrentLocation => StorageHelper.FromLocation(Game1.currentLocation);
 
     /// <summary>
     ///     Gets storages in the farmer's inventory.
     /// </summary>
-    public static IEnumerable<IStorageObject> Inventory =>
-        StorageHelper.FromPlayer(Game1.player).WithTypes(StorageHelper.Instance!._storageTypes);
+    public static IEnumerable<IStorageObject> Inventory => StorageHelper.FromPlayer(Game1.player);
 
     /// <summary>
     ///     Gets the types of storages in the game.
@@ -161,14 +140,14 @@ internal class StorageHelper
         get
         {
             var excluded = new HashSet<object>();
-            return LocationHelper.AllLocations
-                                 .SelectMany(location => StorageHelper.Instance!.FromLocation(location, excluded))
-                                 .WithTypes(StorageHelper.Instance!._storageTypes);
+            return LocationHelper.AllLocations.SelectMany(location => StorageHelper.FromLocation(location, excluded));
         }
     }
 
     private static Dictionary<object, IStorageObject> ReferenceContext =>
         StorageHelper.Instance!._referenceContext.Value;
+
+    private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => StorageHelper.Instance!._storageTypes;
 
     /// <summary>
     ///     Gets all storages placed in a particular farmer's inventory.
@@ -185,30 +164,36 @@ internal class StorageHelper
         excluded ??= new HashSet<object>();
         if (excluded.Contains(player))
         {
-            yield break;
+            return Array.Empty<IStorageObject>();
         }
 
         excluded.Add(player);
 
-        // Mod Integrations
-        foreach (var storage in IntegrationHelper.FromPlayer(player, excluded))
+        IEnumerable<IStorageObject> GetAll()
         {
-            yield return storage;
-        }
-
-        limit ??= player.MaxItems;
-        var position = player.getTileLocation();
-        for (var index = 0; index < limit; index++)
-        {
-            var item = player.Items[index];
-            if (!StorageHelper.TryGetOne(item, player, position, out var storage) || excluded.Contains(storage.Context))
+            // Mod Integrations
+            foreach (var storage in IntegrationHelper.FromPlayer(player, excluded))
             {
-                continue;
+                yield return storage;
             }
 
-            excluded.Add(storage.Context);
-            yield return storage;
+            limit ??= player.MaxItems;
+            var position = player.getTileLocation();
+            for (var index = 0; index < limit; index++)
+            {
+                var item = player.Items[index];
+                if (!StorageHelper.TryGetOne(item, player, position, out var storage)
+                 || excluded.Contains(storage.Context))
+                {
+                    continue;
+                }
+
+                excluded.Add(storage.Context);
+                yield return storage;
+            }
         }
+
+        return GetAll().WithTypes(StorageHelper.StorageTypes);
     }
 
     /// <summary>
@@ -220,6 +205,20 @@ internal class StorageHelper
     public static StorageHelper Init(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
         return StorageHelper.Instance ??= new(config, storageTypes);
+    }
+
+    /// <summary>
+    ///     Attempt to gets a placed storage at a specific position.
+    /// </summary>
+    /// <param name="location">The location to get the storage from.</param>
+    /// <param name="pos">The position to get the storage from.</param>
+    /// <param name="storage">The storage object.</param>
+    /// <returns>Returns true if a storage could be found at the location and position..</returns>
+    public static bool TryGetOne(GameLocation location, Vector2 pos, [NotNullWhen(true)] out IStorageObject? storage)
+    {
+        storage = StorageHelper.FromLocation(location)
+                               .FirstOrDefault(locationStorage => locationStorage.Position.Equals(pos));
+        return storage is not null;
     }
 
     /// <summary>
@@ -242,7 +241,7 @@ internal class StorageHelper
             return false;
         }
 
-        storage.WithType(StorageHelper.Instance!._storageTypes);
+        storage.WithType(StorageHelper.StorageTypes);
         return true;
     }
 
@@ -252,83 +251,88 @@ internal class StorageHelper
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
-    public IEnumerable<IStorageObject> FromLocation(GameLocation location, ISet<object>? excluded = null)
+    private static IEnumerable<IStorageObject> FromLocation(GameLocation location, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(location))
         {
-            yield break;
+            return Array.Empty<IStorageObject>();
         }
 
         excluded.Add(location);
 
-        // Mod Integrations
-        foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
+        IEnumerable<IStorageObject> GetAll()
         {
-            yield return storage;
-        }
-
-        // Special Locations
-        switch (location)
-        {
-            case FarmHouse { fridge.Value: { } fridge } farmHouse
-                when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
-                excluded.Add(fridge);
-                yield return new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2());
-                break;
-            case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
-             && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                excluded.Add(fridge);
-                yield return new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2());
-                break;
-            case IslandWest islandWest:
-                excluded.Add(islandWest);
-                yield return new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2());
-                break;
-        }
-
-        if (location is BuildableGameLocation buildableGameLocation)
-        {
-            // Buildings
-            foreach (var building in buildableGameLocation.buildings)
+            // Mod Integrations
+            foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
             {
-                // Special Buildings
-                switch (building)
+                yield return storage;
+            }
+
+            // Special Locations
+            switch (location)
+            {
+                case FarmHouse { fridge.Value: { } fridge } farmHouse
+                    when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
+                    excluded.Add(fridge);
+                    yield return new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2());
+                    break;
+                case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
+                 && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                    excluded.Add(fridge);
+                    yield return new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2());
+                    break;
+                case IslandWest islandWest:
+                    excluded.Add(islandWest);
+                    yield return new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2());
+                    break;
+            }
+
+            if (location is BuildableGameLocation buildableGameLocation)
+            {
+                // Buildings
+                foreach (var building in buildableGameLocation.buildings)
                 {
-                    case JunimoHut junimoHut when !excluded.Contains(junimoHut):
-                        excluded.Add(junimoHut);
-                        yield return new JunimoHutStorage(
-                            junimoHut,
-                            location,
-                            new(
-                                building.tileX.Value + building.tilesWide.Value / 2,
-                                building.tileY.Value + building.tilesHigh.Value / 2));
-                        break;
-                    case ShippingBin shippingBin when !excluded.Contains(shippingBin):
-                        excluded.Add(shippingBin);
-                        yield return new ShippingBinStorage(
-                            shippingBin,
-                            location,
-                            new(
-                                building.tileX.Value + building.tilesWide.Value / 2,
-                                building.tileY.Value + building.tilesHigh.Value / 2));
-                        break;
+                    // Special Buildings
+                    switch (building)
+                    {
+                        case JunimoHut junimoHut when !excluded.Contains(junimoHut):
+                            excluded.Add(junimoHut);
+                            yield return new JunimoHutStorage(
+                                junimoHut,
+                                location,
+                                new(
+                                    building.tileX.Value + building.tilesWide.Value / 2,
+                                    building.tileY.Value + building.tilesHigh.Value / 2));
+                            break;
+                        case ShippingBin shippingBin when !excluded.Contains(shippingBin):
+                            excluded.Add(shippingBin);
+                            yield return new ShippingBinStorage(
+                                shippingBin,
+                                location,
+                                new(
+                                    building.tileX.Value + building.tilesWide.Value / 2,
+                                    building.tileY.Value + building.tilesHigh.Value / 2));
+                            break;
+                    }
                 }
             }
-        }
 
-        // Objects
-        foreach (var (position, obj) in location.Objects.Pairs)
-        {
-            if (!StorageHelper.TryGetOne(obj, location, position, out var subStorage)
-             || excluded.Contains(subStorage.Context))
+            // Objects
+            foreach (var (position, obj) in location.Objects.Pairs)
             {
-                continue;
-            }
+                if (!StorageHelper.TryGetOne(obj, location, position, out var subStorage)
+                 || excluded.Contains(subStorage.Context))
+                {
+                    continue;
+                }
 
-            excluded.Add(subStorage.Context);
-            yield return subStorage;
+                excluded.Add(subStorage.Context);
+                yield return subStorage;
+            }
         }
+
+        return GetAll().WithTypes(StorageHelper.StorageTypes);
     }
 
     private static IEnumerable<IStorageObject> FromStorage(IStorageObject storage, ISet<object>? excluded = null)
@@ -336,31 +340,37 @@ internal class StorageHelper
         excluded ??= new HashSet<object>();
         if (excluded.Contains(storage.Context))
         {
-            yield break;
+            return Array.Empty<IStorageObject>();
         }
 
         excluded.Add(storage.Context);
-        var managedStorages = new List<IStorageObject>();
 
-        foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
+        IEnumerable<IStorageObject> GetAll()
         {
-            if (!StorageHelper.TryGetOne(item, storage.Source, storage.Position, out var managedStorage)
-             || excluded.Contains(managedStorage.Context))
+            var managedStorages = new List<IStorageObject>();
+
+            foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
             {
-                continue;
+                if (!StorageHelper.TryGetOne(item, storage.Source, storage.Position, out var managedStorage)
+                 || excluded.Contains(managedStorage.Context))
+                {
+                    continue;
+                }
+
+                excluded.Add(managedStorage.Context);
+                managedStorages.Add(managedStorage);
+                yield return managedStorage;
             }
 
-            excluded.Add(managedStorage.Context);
-            managedStorages.Add(managedStorage);
-            yield return managedStorage;
+            // Sub Storage
+            foreach (var subStorage in managedStorages.SelectMany(
+                         managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
+            {
+                yield return subStorage;
+            }
         }
 
-        // Sub Storage
-        foreach (var subStorage in managedStorages.SelectMany(
-                     managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
-        {
-            yield return subStorage;
-        }
+        return GetAll().WithTypes(StorageHelper.StorageTypes);
     }
 
     private static bool TryGetOne(

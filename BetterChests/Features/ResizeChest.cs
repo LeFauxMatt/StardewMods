@@ -72,7 +72,7 @@ internal class ResizeChest : IFeature
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
         if (!StorageHelper.TryGetOne(__instance, out var storage)
-         || storage.ResizeChest is FeatureOption.Disabled
+         || storage.ResizeChest is not FeatureOption.Enabled
          || storage.ResizeChestCapacity == 0)
         {
             return;

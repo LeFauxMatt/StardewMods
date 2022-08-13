@@ -57,6 +57,8 @@ internal class FilterItems : IFeature
         }
     }
 
+    private static IReflectionHelper Reflection => FilterItems.Instance!._helper.Reflection;
+
     /// <summary>
     ///     Initializes <see cref="FilterItems" />.
     /// </summary>
@@ -98,7 +100,7 @@ internal class FilterItems : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
-        var item = FilterItems.Instance!._helper.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
+        var item = FilterItems.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
         return !StorageHelper.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
@@ -119,16 +121,14 @@ internal class FilterItems : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { context: { } context }
-         || !StorageHelper.TryGetOne(context, out var storage)
-         || storage.FilterItems == FeatureOption.Disabled)
+        if (e.NewMenu is not ItemGrabMenu || BetterItemGrabMenu.Context?.FilterItems is not FeatureOption.Enabled)
         {
             return;
         }
 
         if (BetterItemGrabMenu.Inventory is not null)
         {
-            BetterItemGrabMenu.Inventory.AddHighlighter(storage.FilterMatcher);
+            BetterItemGrabMenu.Inventory.AddHighlighter(BetterItemGrabMenu.Context.FilterMatcher);
         }
     }
 }

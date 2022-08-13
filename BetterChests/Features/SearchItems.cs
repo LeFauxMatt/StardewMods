@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -27,21 +26,11 @@ internal class SearchItems : IFeature
     private readonly ModConfig _config;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly IModHelper _helper;
-
-    private readonly PerScreen<IItemMatcher> _itemMatcher = new(
-        () => new ItemMatcher(
-            false,
-            SearchItems.Instance!._config.SearchTagSymbol.ToString(),
-            SearchItems.Instance._helper.Translation));
-
-    private readonly PerScreen<ClickableComponent> _searchArea = new(() => new(Rectangle.Empty, string.Empty));
-
-    private readonly PerScreen<TextBox> _searchField = new(
-        () => new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor));
-
-    private readonly PerScreen<ClickableTextureComponent> _searchIcon = new(
-        () => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
-
+    private readonly PerScreen<IItemMatcher> _itemMatcher;
+    private readonly PerScreen<IStorageObject?> _lastContext = new();
+    private readonly PerScreen<ClickableComponent> _searchArea;
+    private readonly PerScreen<TextBox> _searchField;
+    private readonly PerScreen<ClickableTextureComponent> _searchIcon;
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
     private readonly PerScreen<int> _timeOut = new();
 
@@ -51,6 +40,15 @@ internal class SearchItems : IFeature
     {
         this._helper = helper;
         this._config = config;
+        this._itemMatcher = new(() => new ItemMatcher(false, config.SearchTagSymbol.ToString(), helper.Translation));
+        this._searchArea = new(() => new(Rectangle.Empty, string.Empty));
+        this._searchField = new(
+            () => new(
+                helper.GameContent.Load<Texture2D>("LooseSprites\\textBox"),
+                null,
+                Game1.smallFont,
+                Game1.textColor));
+        this._searchIcon = new(() => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
     }
 
     private ItemGrabMenu? CurrentMenu
@@ -60,6 +58,12 @@ internal class SearchItems : IFeature
     }
 
     private IItemMatcher ItemMatcher => this._itemMatcher.Value;
+
+    private IStorageObject? LastContext
+    {
+        get => this._lastContext.Value;
+        set => this._lastContext.Value = value;
+    }
 
     private ClickableComponent SearchArea => this._searchArea.Value;
 
@@ -135,14 +139,14 @@ internal class SearchItems : IFeature
 
         BetterItemGrabMenu.TopPadding = BetterItemGrabMenu.Context.SearchItems switch
         {
-            FeatureOption.Disabled => 0,
-            _ => SearchItems.ExtraSpace,
+            FeatureOption.Enabled => SearchItems.ExtraSpace,
+            _ => 0,
         };
     }
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
     {
-        if (this._config.HideItems)
+        if (this._config.HideItems is FeatureOption.Enabled)
         {
             return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
         }
@@ -209,27 +213,24 @@ internal class SearchItems : IFeature
         if (!ReferenceEquals(menu, this.CurrentMenu))
         {
             this.CurrentMenu = menu;
-            if (this.CurrentMenu is not
-                {
-                    context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false,
-                }
-             || !StorageHelper.TryGetOne(context, out var storage)
-             || storage.SearchItems == FeatureOption.Disabled)
+            if (this.CurrentMenu is not { ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false }
+             || BetterItemGrabMenu.Context?.SearchItems is not FeatureOption.Enabled)
             {
                 this.SearchArea.visible = false;
                 return;
             }
 
-            if (BetterItemGrabMenu.Context is not null
-             && !ReferenceEquals(storage.Context, BetterItemGrabMenu.Context.Context))
+            if (this.LastContext is not null
+             && !ReferenceEquals(this.LastContext.Context, BetterItemGrabMenu.Context.Context))
             {
                 this.ItemMatcher.Clear();
                 this.SearchField.Text = string.Empty;
             }
 
+            this.LastContext = BetterItemGrabMenu.Context;
             this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
             this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-            this.SearchField.Width = this._config.TransferItems
+            this.SearchField.Width = this._config.TransferItems is FeatureOption.Enabled
                 ? itemsToGrabMenu.width - Game1.tileSize - 4
                 : itemsToGrabMenu.width;
             this.SearchField.Selected = false;

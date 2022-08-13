@@ -26,19 +26,7 @@ internal class Configurator : IFeature
     private static Configurator? Instance;
 
     private readonly ModConfig _config;
-
-    private readonly PerScreen<ClickableTextureComponent> _configButton = new(
-        () => new(
-            new(0, 0, Game1.tileSize, Game1.tileSize),
-            Game1.content.Load<Texture2D>("furyx639.BetterChests/Icons"),
-            new(0, 0, 16, 16),
-            Game1.pixelZoom)
-        {
-            name = "Configure",
-            hoverText = I18n.Button_Configure_Name(),
-            myID = 42069,
-        });
-
+    private readonly PerScreen<ClickableTextureComponent> _configButton;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly PerScreen<IStorageObject?> _currentStorage = new();
     private readonly IModHelper _helper;
@@ -52,6 +40,17 @@ internal class Configurator : IFeature
     {
         this._helper = helper;
         this._config = config;
+        this._configButton = new(
+            () => new(
+                new(0, 0, Game1.tileSize, Game1.tileSize),
+                helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+                new(0, 0, 16, 16),
+                Game1.pixelZoom)
+            {
+                name = "Configure",
+                hoverText = I18n.Button_Configure_Name(),
+                myID = 42069,
+            });
         this._modManifest = manifest;
         HarmonyHelper.AddPatches(
             Configurator.Id,
@@ -74,7 +73,7 @@ internal class Configurator : IFeature
         remove => Configurator.Instance!._storageEdited -= value;
     }
 
-    private ClickableTextureComponent ConfigButton => this._configButton.Value;
+    private static ClickableTextureComponent ConfigButton => Configurator.Instance!._configButton.Value;
 
     private ItemGrabMenu? CurrentMenu
     {
@@ -137,12 +136,12 @@ internal class Configurator : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_RepositionSideButtons_postfix(ItemGrabMenu __instance)
     {
-        if (__instance.allClickableComponents?.Contains(Configurator.Instance!.ConfigButton) == false)
+        if (__instance.allClickableComponents?.Contains(Configurator.ConfigButton) == false)
         {
-            __instance.allClickableComponents.Add(Configurator.Instance.ConfigButton);
+            __instance.allClickableComponents.Add(Configurator.ConfigButton);
         }
 
-        Configurator.Instance!.ConfigButton.bounds.Y = 0;
+        Configurator.ConfigButton.bounds.Y = 0;
         var buttons = new List<ClickableComponent>(
             new[]
             {
@@ -150,7 +149,7 @@ internal class Configurator : IFeature
                 __instance.fillStacksButton,
                 __instance.colorPickerToggleButton,
                 __instance.specialButton,
-                Configurator.Instance.ConfigButton,
+                Configurator.ConfigButton,
                 __instance.junimoNoteIcon,
             }.Where(component => component is not null));
 
@@ -193,7 +192,7 @@ internal class Configurator : IFeature
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (!this.ConfigButton.containsPoint(x, y)
+        if (!Configurator.ConfigButton.containsPoint(x, y)
          || !StorageHelper.TryGetOne(this.CurrentMenu.context, out var storage))
         {
             return;
@@ -263,21 +262,23 @@ internal class Configurator : IFeature
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        this.ConfigButton.tryHover(x, y);
+        Configurator.ConfigButton.tryHover(x, y);
         e.SpriteBatch.Draw(
-            this.ConfigButton.texture,
-            new(this.ConfigButton.bounds.X + 8 * Game1.pixelZoom, this.ConfigButton.bounds.Y + 8 * Game1.pixelZoom),
+            Configurator.ConfigButton.texture,
+            new(
+                Configurator.ConfigButton.bounds.X + 8 * Game1.pixelZoom,
+                Configurator.ConfigButton.bounds.Y + 8 * Game1.pixelZoom),
             new(64, 0, 16, 16),
             Color.White,
             0f,
             new(8, 8),
-            this.ConfigButton.scale,
+            Configurator.ConfigButton.scale,
             SpriteEffects.None,
             0.86f);
-        this.ConfigButton.draw(e.SpriteBatch);
-        if (this.ConfigButton.containsPoint(x, y))
+        Configurator.ConfigButton.draw(e.SpriteBatch);
+        if (Configurator.ConfigButton.containsPoint(x, y))
         {
-            this.CurrentMenu.hoverText = this.ConfigButton.hoverText;
+            this.CurrentMenu.hoverText = Configurator.ConfigButton.hoverText;
         }
     }
 }

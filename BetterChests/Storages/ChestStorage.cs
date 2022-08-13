@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Network;
 using StardewValley.Objects;
@@ -39,6 +40,14 @@ internal class ChestStorage : BaseStorage, IColorable
         this._chest.resetLidFrame();
     }
 
+    /// <inheritdoc />
+    public override FeatureOption AutoOrganize =>
+        this.Chest switch
+        {
+            { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } => FeatureOption.Disabled,
+            _ => base.AutoOrganize,
+        };
+
     /// <summary>
     ///     Gets the source chest object.
     /// </summary>
@@ -56,6 +65,14 @@ internal class ChestStorage : BaseStorage, IColorable
     }
 
     /// <inheritdoc />
+    public override FeatureOptionRange CraftFromChest =>
+        this.Chest switch
+        {
+            { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } => FeatureOptionRange.Disabled,
+            _ => base.CraftFromChest,
+        };
+
+    /// <inheritdoc />
     public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <inheritdoc />
@@ -63,6 +80,14 @@ internal class ChestStorage : BaseStorage, IColorable
 
     /// <inheritdoc />
     public override NetMutex? Mutex => this.Chest.GetMutex();
+
+    /// <inheritdoc />
+    public override FeatureOption UnloadChest =>
+        this.Chest switch
+        {
+            { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } => FeatureOption.Disabled,
+            _ => base.UnloadChest,
+        };
 
     /// <inheritdoc />
     public void Draw(SpriteBatch spriteBatch, int x, int y)

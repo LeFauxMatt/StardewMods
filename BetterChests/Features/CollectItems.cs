@@ -42,7 +42,7 @@ internal class CollectItems : IFeature
             });
     }
 
-    private List<IStorageObject> Eligible => this._eligible.Value;
+    private static List<IStorageObject> Eligible => CollectItems.Instance!._eligible.Value;
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
@@ -64,9 +64,9 @@ internal class CollectItems : IFeature
 
         this._isActivated = true;
         HarmonyHelper.ApplyPatches(CollectItems.Id);
-        Configurator.StorageEdited += this.OnStorageEdited;
-        this._helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-        this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        Configurator.StorageEdited += CollectItems.OnStorageEdited;
+        this._helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
+        this._helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
     }
 
     /// <inheritdoc />
@@ -79,9 +79,9 @@ internal class CollectItems : IFeature
 
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(CollectItems.Id);
-        Configurator.StorageEdited -= this.OnStorageEdited;
-        this._helper.Events.GameLoop.SaveLoaded -= this.OnSaveLoaded;
-        this._helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+        Configurator.StorageEdited -= CollectItems.OnStorageEdited;
+        this._helper.Events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
+        this._helper.Events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
     }
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item? item, bool makeActiveObject)
@@ -91,16 +91,16 @@ internal class CollectItems : IFeature
             return true;
         }
 
-        if (!CollectItems.Instance!.Eligible.Any())
+        if (!CollectItems.Eligible.Any())
         {
             return farmer.addItemToInventoryBool(item, makeActiveObject);
         }
 
-        foreach (var storage in CollectItems.Instance.Eligible)
+        foreach (var storage in CollectItems.Eligible)
         {
             item.resetState();
             storage.ClearNulls();
-            item = storage.StashItem(item, storage.StashToChestStacks != FeatureOption.Disabled);
+            item = storage.StashItem(item, storage.StashToChestStacks is FeatureOption.Enabled);
 
             if (item is null)
             {
@@ -118,28 +118,28 @@ internal class CollectItems : IFeature
             AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
     }
 
-    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+    private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
         if (e.IsLocalPlayer && (e.Added.OfType<Chest>().Any() || e.Removed.OfType<Chest>().Any()))
         {
-            this.RefreshEligible();
+            CollectItems.RefreshEligible();
         }
     }
 
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    private static void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        this.RefreshEligible();
+        CollectItems.RefreshEligible();
     }
 
-    private void OnStorageEdited(object? sender, IStorageObject storage)
+    private static void OnStorageEdited(object? sender, IStorageObject storage)
     {
-        this.RefreshEligible();
+        CollectItems.RefreshEligible();
     }
 
-    private void RefreshEligible()
+    private static void RefreshEligible()
     {
         var storages = StorageHelper.FromPlayer(Game1.player, limit: 12);
-        this.Eligible.Clear();
-        this.Eligible.AddRange(storages.Where(storage => storage.CollectItems != FeatureOption.Disabled));
+        CollectItems.Eligible.Clear();
+        CollectItems.Eligible.AddRange(storages.Where(storage => storage.CollectItems is FeatureOption.Enabled));
     }
 }

@@ -99,6 +99,19 @@ internal class StorageNodeData : IStorageData, IStorageNode
     }
 
     /// <inheritdoc />
+    public virtual FeatureOption Configurator
+    {
+        get => this.Data.Configurator switch
+        {
+            _ when this.Parent.Configurator is FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default when this.Parent.Configurator is FeatureOption.Default => FeatureOption.Disabled,
+            FeatureOption.Default => this.Parent.Configurator,
+            _ => this.Data.Configurator,
+        };
+        set => this.Data.Configurator = value;
+    }
+
+    /// <inheritdoc />
     public virtual FeatureOptionRange CraftFromChest
     {
         get => this.Data.CraftFromChest switch
@@ -164,6 +177,32 @@ internal class StorageNodeData : IStorageData, IStorageNode
     {
         get => this.Data.FilterItemsList.Any() ? this.Data.FilterItemsList : this.Parent.FilterItemsList;
         set => this.Data.FilterItemsList = value;
+    }
+
+    /// <inheritdoc />
+    public virtual FeatureOption HideItems
+    {
+        get => this.Data.HideItems switch
+        {
+            _ when this.Parent.HideItems is FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default when this.Parent.HideItems is FeatureOption.Default => FeatureOption.Disabled,
+            FeatureOption.Default => this.Parent.HideItems,
+            _ => this.Data.HideItems,
+        };
+        set => this.Data.HideItems = value;
+    }
+
+    /// <inheritdoc />
+    public virtual FeatureOption LabelChest
+    {
+        get => this.Data.LabelChest switch
+        {
+            _ when this.Parent.LabelChest is FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default when this.Parent.LabelChest is FeatureOption.Default => FeatureOption.Disabled,
+            FeatureOption.Default => this.Parent.LabelChest,
+            _ => this.Data.LabelChest,
+        };
+        set => this.Data.LabelChest = value;
     }
 
     /// <inheritdoc />
@@ -322,6 +361,19 @@ internal class StorageNodeData : IStorageData, IStorageNode
     }
 
     /// <inheritdoc />
+    public virtual FeatureOption TransferItems
+    {
+        get => this.Data.TransferItems switch
+        {
+            _ when this.Parent.TransferItems is FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default when this.Parent.TransferItems is FeatureOption.Default => FeatureOption.Disabled,
+            FeatureOption.Default => this.Parent.TransferItems,
+            _ => this.Data.TransferItems,
+        };
+        set => this.Data.TransferItems = value;
+    }
+
+    /// <inheritdoc />
     public virtual FeatureOption UnloadChest
     {
         get => this.Data.UnloadChest switch
@@ -332,5 +384,19 @@ internal class StorageNodeData : IStorageData, IStorageNode
             _ => this.Data.UnloadChest,
         };
         set => this.Data.UnloadChest = value;
+    }
+
+    /// <inheritdoc />
+    public virtual FeatureOption UnloadChestCombine
+    {
+        get => this.Data.UnloadChestCombine switch
+        {
+            _ when this.Parent.UnloadChestCombine is FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default when this.Parent.UnloadChestCombine is FeatureOption.Default =>
+                FeatureOption.Disabled,
+            FeatureOption.Default => this.Parent.UnloadChestCombine,
+            _ => this.Data.UnloadChestCombine,
+        };
+        set => this.Data.UnloadChestCombine = value;
     }
 }

@@ -42,59 +42,57 @@ public class BetterChests : Mod
         // Features
         this._features.Add(
             AutoOrganize.Init(this.Helper),
-            () => this._config.DefaultChest.AutoOrganize != FeatureOption.Disabled);
+            () => this._config.AutoOrganize is not FeatureOption.Disabled);
         this._features.Add(
             BetterColorPicker.Init(this.Helper, this._config),
-            () => this._config.DefaultChest.CustomColorPicker != FeatureOption.Disabled);
+            () => this._config.CustomColorPicker is not FeatureOption.Disabled);
         this._features.Add(BetterItemGrabMenu.Init(this.Helper, this._config), () => true);
         this._features.Add(BetterShippingBin.Init(this.Helper), () => this._config.BetterShippingBin);
         this._features.Add(
             CarryChest.Init(this.Helper, this._config),
-            () => this._config.DefaultChest.CarryChest != FeatureOption.Disabled);
-        this._features.Add(LabelChest.Init(this.Helper), () => this._config.LabelChest);
+            () => this._config.CarryChest is not FeatureOption.Disabled);
+        this._features.Add(LabelChest.Init(this.Helper), () => this._config.LabelChest is not FeatureOption.Disabled);
         this._features.Add(ChestFinder.Init(this.Helper, this._config), () => this._config.ChestFinder);
         this._features.Add(
             ChestMenuTabs.Init(this.Helper, this._config),
-            () => this._config.DefaultChest.ChestMenuTabs != FeatureOption.Disabled);
+            () => this._config.ChestMenuTabs is not FeatureOption.Disabled);
         this._features.Add(
             CollectItems.Init(this.Helper),
-            () => this._config.DefaultChest.CollectItems != FeatureOption.Disabled);
+            () => this._config.CollectItems is not FeatureOption.Disabled);
         this._features.Add(
             Configurator.Init(this.Helper, this._config, this.ModManifest),
-            () => this._config.Configurator && IntegrationHelper.GMCM.IsLoaded);
+            () => this._config.Configurator is not FeatureOption.Disabled && IntegrationHelper.GMCM.IsLoaded);
         this._features.Add(
             CraftFromChest.Init(this.Helper, this._config),
-            () => this._config.DefaultChest.CraftFromChest != FeatureOptionRange.Disabled);
-        this._features.Add(
-            FilterItems.Init(this.Helper),
-            () => this._config.DefaultChest.FilterItems != FeatureOption.Disabled);
+            () => this._config.CraftFromChest is not FeatureOptionRange.Disabled);
+        this._features.Add(FilterItems.Init(this.Helper), () => this._config.FilterItems is not FeatureOption.Disabled);
         this._features.Add(
             OpenHeldChest.Init(this.Helper),
-            () => this._config.DefaultChest.OpenHeldChest != FeatureOption.Disabled);
+            () => this._config.OpenHeldChest is not FeatureOption.Disabled);
         this._features.Add(
             OrganizeChest.Init(this.Helper),
-            () => this._config.DefaultChest.OrganizeChest != FeatureOption.Disabled);
-        this._features.Add(ResizeChest.Init(), () => this._config.DefaultChest.ResizeChest != FeatureOption.Disabled);
+            () => this._config.OrganizeChest is not FeatureOption.Disabled);
+        this._features.Add(ResizeChest.Init(), () => this._config.ResizeChest is not FeatureOption.Disabled);
         this._features.Add(
             ResizeChestMenu.Init(this.Helper),
-            () => this._config.DefaultChest.ResizeChestMenu != FeatureOption.Disabled);
+            () => this._config.ResizeChestMenu is not FeatureOption.Disabled);
         this._features.Add(
             SearchItems.Init(this.Helper, this._config),
-            () => this._config.DefaultChest.SearchItems != FeatureOption.Disabled);
+            () => this._config.SearchItems is not FeatureOption.Disabled);
         this._features.Add(SlotLock.Init(this.Helper, this._config), () => this._config.SlotLock);
         this._features.Add(
             StashToChest.Init(this.Helper, this._config),
-            () => this._config.DefaultChest.StashToChest != FeatureOptionRange.Disabled);
-        this._features.Add(TransferItems.Init(this.Helper), () => this._config.TransferItems);
+            () => this._config.StashToChest is not FeatureOptionRange.Disabled);
         this._features.Add(
-            UnloadChest.Init(this.Helper),
-            () => this._config.DefaultChest.UnloadChest != FeatureOption.Disabled);
+            TransferItems.Init(this.Helper),
+            () => this._config.TransferItems is not FeatureOption.Disabled);
+        this._features.Add(UnloadChest.Init(this.Helper), () => this._config.UnloadChest is not FeatureOption.Disabled);
     }
 
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new BetterChestsApi(this._storageTypes, this._config!.DefaultChest);
+        return new BetterChestsApi(this._storageTypes, this._config!);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)

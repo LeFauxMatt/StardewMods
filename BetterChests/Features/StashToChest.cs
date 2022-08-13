@@ -29,7 +29,7 @@ internal class StashToChest : IFeature
 
     private static IEnumerable<IStorageObject> Eligible =>
         from storage in StorageHelper.All
-        where storage.StashToChest != FeatureOptionRange.Disabled
+        where storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
            && storage.StashToChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
            && !(storage.StashToChestDisableLocations?.Contains("UndergroundMine") == true
              && Game1.player.currentLocation is MineShaft mineShaft
@@ -106,7 +106,7 @@ internal class StashToChest : IFeature
         var (x, y) = Game1.getMousePosition(true);
         if (itemGrabMenu.fillStacksButton?.containsPoint(x, y) == true
          && StorageHelper.TryGetOne(context, out var storage)
-         && storage.StashToChest != FeatureOptionRange.Disabled)
+         && storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default))
         {
             StashToChest.StashIntoStorage(storage);
         }
@@ -151,9 +151,7 @@ internal class StashToChest : IFeature
             }
 
             var stack = Game1.player.Items[index].Stack;
-            var tmp = storage.StashItem(
-                Game1.player.Items[index],
-                storage.StashToChestStacks != FeatureOption.Disabled);
+            var tmp = storage.StashItem(Game1.player.Items[index], storage.StashToChestStacks is FeatureOption.Enabled);
             if (tmp is null)
             {
                 Game1.player.Items[index] = null;
@@ -175,7 +173,7 @@ internal class StashToChest : IFeature
         // Stash to Current
         if (Game1.activeClickableMenu is ItemGrabMenu { context: { } context }
          && StorageHelper.TryGetOne(context, out var storage)
-         && storage.StashToChest != FeatureOptionRange.Disabled)
+         && storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default))
         {
             StashToChest.StashIntoStorage(storage);
             return;

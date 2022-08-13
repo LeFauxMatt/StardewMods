@@ -107,7 +107,9 @@ internal class OpenHeldChest : IFeature
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton() || StorageHelper.CurrentItem is null or { OpenHeldChest: FeatureOption.Disabled })
+        if (!Context.IsPlayerFree
+         || !e.Button.IsActionButton()
+         || StorageHelper.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled })
         {
             return;
         }

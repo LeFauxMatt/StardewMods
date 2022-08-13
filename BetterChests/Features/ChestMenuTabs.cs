@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -190,7 +189,7 @@ internal class ChestMenuTabs : IFeature
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
     {
-        if (this._config.HideItems)
+        if (this._config.HideItems is FeatureOption.Enabled)
         {
             return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
         }
@@ -365,15 +364,14 @@ internal class ChestMenuTabs : IFeature
 
         this.CurrentMenu = menu;
         this.Components.Clear();
-        if (this.CurrentMenu is not { context: { } context, shippingBin: false }
-         || !StorageHelper.TryGetOne(context, out var storage)
-         || storage.ChestMenuTabs == FeatureOption.Disabled)
+        if (this.CurrentMenu is not { shippingBin: false }
+         || BetterItemGrabMenu.Context?.ChestMenuTabs is not FeatureOption.Enabled)
         {
             return;
         }
 
-        var tabs = storage.ChestMenuTabSet.Any()
-            ? ChestMenuTabs.AllTabs.Where(tab => storage.ChestMenuTabSet.Contains(tab.Key))
+        var tabs = BetterItemGrabMenu.Context.ChestMenuTabSet.Any()
+            ? ChestMenuTabs.AllTabs.Where(tab => BetterItemGrabMenu.Context.ChestMenuTabSet.Contains(tab.Key))
             : ChestMenuTabs.AllTabs;
 
         this.Components.AddRange(

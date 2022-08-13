@@ -109,6 +109,8 @@
   "config.transfer-items.tooltip": "Transfer items into or out of a Chest.",
   "config.unload-chest.name": "Unload Chest",
   "config.unload-chest.tooltip": "Using a held chest on a placed chest will transfer items into the placed one.",
+  "config.unload-chest-combine.name": "Unload Chest Combine",
+  "config.unload-chest-combine.tooltip": "Unloaded chest is consumed and it's capacity is added to the target chest.",
   // Feature Option Formatting
   "config.range-distance.value-unlimited": "Unlimited",
   "config.range-distance.value-one": "1 tile",

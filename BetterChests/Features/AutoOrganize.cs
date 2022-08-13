@@ -4,10 +4,8 @@ using System.Globalization;
 using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Automatically organizes items between chests during sleep.
@@ -62,12 +60,7 @@ internal class AutoOrganize : IFeature
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages = StorageHelper.All.Where(
-                                        storage => storage.AutoOrganize == FeatureOption.Enabled
-                                                && storage is not ChestStorage
-                                                       {
-                                                           Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-                                                       })
+        var storages = StorageHelper.All.Where(storage => storage.AutoOrganize is FeatureOption.Enabled)
                                     .OrderByDescending(storage => storage.StashToChestPriority)
                                     .ToList();
 

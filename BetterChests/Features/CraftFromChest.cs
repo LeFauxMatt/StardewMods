@@ -12,7 +12,6 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Craft using items from placed chests and chests in the farmer's inventory.
@@ -40,8 +39,7 @@ internal class CraftFromChest : IFeature
 
     private static IEnumerable<IStorageObject> Eligible =>
         from storage in StorageHelper.All
-        where storage is not ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-           && storage.CraftFromChest != FeatureOptionRange.Disabled
+        where storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
            && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
            && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
              && Game1.player.currentLocation is MineShaft mineShaft

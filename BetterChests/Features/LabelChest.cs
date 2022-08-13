@@ -60,22 +60,21 @@ internal class LabelChest : IFeature
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu
-         || !StorageHelper.TryGetOne(context, out var storage)
-         || string.IsNullOrWhiteSpace(storage.ChestLabel))
+        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+         || string.IsNullOrWhiteSpace(BetterItemGrabMenu.Context?.ChestLabel))
         {
             return;
         }
 
         IClickableMenu.drawHoverText(
             e.SpriteBatch,
-            storage.ChestLabel,
+            BetterItemGrabMenu.Context.ChestLabel,
             Game1.smallFont,
             overrideX: itemGrabMenu.xPositionOnScreen,
             overrideY: itemGrabMenu.yPositionOnScreen
                      - IClickableMenu.spaceToClearSideBorder
                      - Game1.tileSize
-                     - (storage.SearchItems is not FeatureOption.Disabled ? 14 * Game1.pixelZoom : 0));
+                     - (BetterItemGrabMenu.Context.SearchItems is FeatureOption.Enabled ? 14 * Game1.pixelZoom : 0));
     }
 
     private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)

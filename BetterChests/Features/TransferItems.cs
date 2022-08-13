@@ -15,35 +15,35 @@ internal class TransferItems : IFeature
 {
     private static TransferItems? Instance;
 
-    private readonly PerScreen<ClickableTextureComponent> _downArrow = new(
-        () => new(
-            new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-            Game1.content.Load<Texture2D>("furyx639.BetterChests/Icons"),
-            new(84, 0, 7, 16),
-            Game1.pixelZoom)
-        {
-            hoverText = I18n.Button_TransferDown_Name(),
-            myID = 5318010,
-        });
-
+    private readonly PerScreen<ClickableTextureComponent> _downArrow;
     private readonly IModHelper _helper;
-
-    private readonly PerScreen<ClickableTextureComponent> _upArrow = new(
-        () => new(
-            new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-            Game1.content.Load<Texture2D>("furyx639.BetterChests/Icons"),
-            new(100, 0, 7, 16),
-            Game1.pixelZoom)
-        {
-            hoverText = I18n.Button_TransferUp_Name(),
-            myID = 5318011,
-        });
+    private readonly PerScreen<ClickableTextureComponent> _upArrow;
 
     private bool _isActivated;
 
     private TransferItems(IModHelper helper)
     {
         this._helper = helper;
+        this._downArrow = new(
+            () => new(
+                new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
+                helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+                new(84, 0, 7, 16),
+                Game1.pixelZoom)
+            {
+                hoverText = I18n.Button_TransferDown_Name(),
+                myID = 5318010,
+            });
+        this._upArrow = new(
+            () => new(
+                new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
+                helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+                new(100, 0, 7, 16),
+                Game1.pixelZoom)
+            {
+                hoverText = I18n.Button_TransferUp_Name(),
+                myID = 5318011,
+            });
     }
 
     private ClickableTextureComponent DownArrow => this._downArrow.Value;

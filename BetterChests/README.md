@@ -13,6 +13,7 @@ Adds enhanced chest features to the game.
     * [Chest Finder](#chest-finder)
     * [Chest Menu Tabs](#chest-menu-tabs)
     * [Collect Items](#collect-items)
+    * [Combine Chest](#combine-chest)
     * [Configurator](#configurator)
     * [Craft From Chest](#craft-from-chest)
     * [Filter Items](#filter-items)
@@ -25,7 +26,6 @@ Adds enhanced chest features to the game.
     * [Slot Lock](#slot-lock)
     * [Stash To Chest](#stash-to-chest)
     * [Transfer Items](#transfer-items)
-    * [Unload Chest](#unload-chest)
 * [Usage](#usage)
     * [Item Tags](#item-tags)
 * [Configurations](#configurations)
@@ -295,9 +295,10 @@ Adds buttons that transfer all items into or out of the currently opened chest.
 While carrying a chest and facing another chest, hit the Use Tool button to unload the carried chests contents into the
 placed chest.
 
-| Config Option | Description                       | Default Value | Other Value(s)                        |
-|:--------------|:----------------------------------|:--------------|:--------------------------------------|
-| UnloadChest   | Enables the Unload Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| Config Option      | Description                       | Default Value | Other Value(s)                        |
+|:-------------------|:----------------------------------|:--------------|:--------------------------------------|
+| UnloadChest        | Enables the Unload Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| UnloadChestCombine | Combine source chest with target  | false         | `true`                                |
 
 1. See [Option Values](#option-values).
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using StardewMods.Common.Enums;
 using StardewValley.Buildings;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -70,6 +71,14 @@ internal class ShippingBinStorage : BaseStorage
             GameLocation location => location.modData,
             Chest chest => chest.modData,
             _ => throw new ArgumentOutOfRangeException(),
+        };
+
+    /// <inheritdoc />
+    public override FeatureOption UnloadChestCombine =>
+        this.Context switch
+        {
+            GameLocation or ShippingBin => FeatureOption.Disabled,
+            _ => base.UnloadChestCombine,
         };
 
     /// <inheritdoc />

@@ -44,6 +44,11 @@ public interface IStorageData
     public FeatureOption CollectItems { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether Configurator will be enabled.
+    /// </summary>
+    public FeatureOption Configurator { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if the chest can be remotely crafted from.
     /// </summary>
     public FeatureOptionRange CraftFromChest { get; set; }
@@ -74,6 +79,16 @@ public interface IStorageData
     ///     Gets or sets a value indicating what categories of items are allowed in the chest.
     /// </summary>
     public HashSet<string> FilterItemsList { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether items will be hidden or grayed out.
+    /// </summary>
+    public FeatureOption HideItems { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether chests can be labeled.
+    /// </summary>
+    public FeatureOption LabelChest { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating if the chest can be opened while it's being carried in the players inventory.
@@ -147,7 +162,17 @@ public interface IStorageData
     public FeatureOption StashToChestStacks { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether to add button for transferring items to/from a chest.
+    /// </summary>
+    public FeatureOption TransferItems { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if the chest can have its inventory unloaded into another chest.
     /// </summary>
     public FeatureOption UnloadChest { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether unloaded chests will combine with target chest.
+    /// </summary>
+    public FeatureOption UnloadChestCombine { get; set; }
 }

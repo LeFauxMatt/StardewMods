@@ -29,6 +29,9 @@ internal class StorageData : IStorageData
     public FeatureOption CollectItems { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
+    public FeatureOption Configurator { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
     public FeatureOptionRange CraftFromChest { get; set; } = FeatureOptionRange.Default;
 
     /// <inheritdoc />
@@ -45,6 +48,12 @@ internal class StorageData : IStorageData
 
     /// <inheritdoc />
     public HashSet<string> FilterItemsList { get; set; } = new();
+
+    /// <inheritdoc />
+    public FeatureOption HideItems { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
+    public FeatureOption LabelChest { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
     public FeatureOption OpenHeldChest { get; set; } = FeatureOption.Default;
@@ -89,5 +98,11 @@ internal class StorageData : IStorageData
     public FeatureOption StashToChestStacks { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
+    public FeatureOption TransferItems { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
     public FeatureOption UnloadChest { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
+    public FeatureOption UnloadChestCombine { get; set; } = FeatureOption.Default;
 }
