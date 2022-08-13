@@ -1,14 +1,13 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Globalization;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Locations;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Unload a held chest's contents into another chest.
@@ -66,9 +65,7 @@ internal class UnloadChest : IFeature
         if (!Context.IsPlayerFree
          || !e.Button.IsUseToolButton()
          || this._helper.Input.IsSuppressed(e.Button)
-         || StorageHelper.CurrentItem is null
-                                         or ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-                                         or { UnloadChest: FeatureOption.Disabled }
+         || StorageHelper.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
@@ -85,10 +82,23 @@ internal class UnloadChest : IFeature
 
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-         || !StorageHelper.TryGetOne(obj, out var toStorage))
+        if (!StorageHelper.TryGetOne(Game1.currentLocation, pos, out var toStorage))
         {
             return;
+        }
+
+        // Add source capacity to target
+        var combined = false;
+        if (toStorage.UnloadChestCombine is FeatureOption.Enabled
+         && StorageHelper.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
+        {
+            var currentCapacity = toStorage.ActualCapacity;
+            var addedCapacity = StorageHelper.CurrentItem.ActualCapacity;
+            if (currentCapacity < int.MaxValue - addedCapacity)
+            {
+                combined = true;
+                toStorage.ResizeChestCapacity = currentCapacity + addedCapacity;
+            }
         }
 
         // Stash items into target chest
@@ -112,7 +122,15 @@ internal class UnloadChest : IFeature
             StorageHelper.CurrentItem.Items[index] = null;
         }
 
-        StorageHelper.CurrentItem.ClearNulls();
+        if (combined && !StorageHelper.CurrentItem.Items.OfType<Item>().Any())
+        {
+            Game1.player.Items[Game1.player.CurrentToolIndex] = null;
+        }
+        else
+        {
+            StorageHelper.CurrentItem.ClearNulls();
+        }
+
         CarryChest.CheckForOverburdened();
         this._helper.Input.Suppress(e.Button);
     }
