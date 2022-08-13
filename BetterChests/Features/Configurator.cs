@@ -36,6 +36,7 @@ internal class Configurator : IFeature
         {
             name = "Configure",
             hoverText = I18n.Button_Configure_Name(),
+            myID = 42069,
         });
 
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
@@ -136,6 +137,11 @@ internal class Configurator : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_RepositionSideButtons_postfix(ItemGrabMenu __instance)
     {
+        if (__instance.allClickableComponents?.Contains(Configurator.Instance!.ConfigButton) == false)
+        {
+            __instance.allClickableComponents.Add(Configurator.Instance.ConfigButton);
+        }
+
         Configurator.Instance!.ConfigButton.bounds.Y = 0;
         var buttons = new List<ClickableComponent>(
             new[]
@@ -181,7 +187,7 @@ internal class Configurator : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (this.CurrentMenu is null)
+        if (this.CurrentMenu is null || e.Button is not SButton.MouseLeft or SButton.ControllerA)
         {
             return;
         }
@@ -216,11 +222,10 @@ internal class Configurator : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: false } itemGrabMenu
-         && StorageHelper.TryGetOne(context, out var storage))
+        if (e.NewMenu is ItemGrabMenu { shippingBin: false } itemGrabMenu && BetterItemGrabMenu.Context is not null)
         {
             this.CurrentMenu = itemGrabMenu;
-            this.CurrentStorage = storage;
+            this.CurrentStorage = BetterItemGrabMenu.Context;
             this.CurrentMenu.RepositionSideButtons();
             return;
         }

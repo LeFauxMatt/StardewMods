@@ -7,6 +7,7 @@
   * category_furniture
   * donate_bundle
   * donate_museum
+* Improved controller support.
 * Fixed features not being disabled when BetterShippingBin is disabled.
 * Fixed tabs using non-localized hover text.
 * Fixed CarryChestSlow debuff activating for empty chests.

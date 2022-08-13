@@ -163,11 +163,8 @@ internal class BetterColorPicker : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (e.Button is not SButton.MouseLeft
-         || Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                chestColorPicker: not null, colorPickerToggleButton: var toggleButton,
-            })
+        if (e.Button is not (SButton.MouseLeft or SButton.ControllerA)
+         || Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: { } toggleButton })
         {
             return;
         }

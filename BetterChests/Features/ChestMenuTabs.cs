@@ -218,10 +218,7 @@ internal class ChestMenuTabs : IFeature
         var index = tab is not null ? this.Components.IndexOf(tab) : -1;
         switch (e.Button)
         {
-            case SButton.MouseLeft when index != -1:
-                this.Index = this.Index == index ? -1 : index;
-                break;
-            case SButton.MouseRight when index != -1:
+            case SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA when index != -1:
                 this.Index = this.Index == index ? -1 : index;
                 break;
             default:
@@ -381,8 +378,10 @@ internal class ChestMenuTabs : IFeature
 
         this.Components.AddRange(
             tabs.Select(
-                    tab =>
+                    (tab, index) =>
                     {
+                        tab.Value.myID = 69420 + index;
+
                         if (string.IsNullOrWhiteSpace(tab.Value.hoverText))
                         {
                             tab.Value.hoverText = this._helper.Translation.Get($"tab.{tab.Key}.Name").Default(tab.Key);
@@ -393,12 +392,28 @@ internal class ChestMenuTabs : IFeature
                 .OrderBy(tab => tab.hoverText));
 
         ClickableTextureComponent? prevTab = null;
-        foreach (var tab in this.Components)
+        var bottomRow = this.CurrentMenu.ItemsToGrabMenu.inventory.TakeLast(12).ToArray();
+        var topRow = this.CurrentMenu.inventory.inventory.Take(12).ToArray();
+        for (var index = 0; index < this.Components.Count; index++)
         {
+            var tab = this.Components.ElementAt(index);
+            this.CurrentMenu.allClickableComponents.Add(tab);
             if (prevTab is not null)
             {
                 prevTab.rightNeighborID = tab.myID;
                 tab.leftNeighborID = prevTab.myID;
+            }
+
+            if (index < topRow.Length)
+            {
+                topRow.ElementAt(index).upNeighborID = tab.myID;
+                tab.downNeighborID = topRow.ElementAt(index).myID;
+            }
+
+            if (index < bottomRow.Length)
+            {
+                bottomRow.ElementAt(index).downNeighborID = tab.myID;
+                tab.upNeighborID = bottomRow.ElementAt(index).myID;
             }
 
             tab.bounds.X = prevTab?.bounds.Right ?? this.CurrentMenu.ItemsToGrabMenu.inventory[0].bounds.Left;

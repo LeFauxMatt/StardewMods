@@ -167,7 +167,7 @@ internal class StashToChest : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!this._config.ControlScheme.StashItems.JustPressed())
+        if (!Context.IsPlayerFree || !this._config.ControlScheme.StashItems.JustPressed())
         {
             return;
         }
