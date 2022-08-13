@@ -19,7 +19,12 @@
 
 ### Changed
 
-* Default Storage settings are now part of the main config.
+* Default Storage options are now part of the main config.
+* The following features are now configurable individually or by type:
+  * Configurator
+  * HideItems
+  * LabelChest
+  * TransferItems
 * Improved controller support.
 
 ## 2.3.1 (August 11, 2022)
