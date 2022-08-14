@@ -418,6 +418,10 @@ internal class BetterItemGrabMenu : IFeature
         __instance.drawBG = false;
         __instance.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
         __instance.height += BetterItemGrabMenu.TopPadding;
+        if (__instance.chestColorPicker is not null)
+        {
+            __instance.chestColorPicker.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
+        }
 
         if (BetterItemGrabMenu.Context is null)
         {

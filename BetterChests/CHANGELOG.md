@@ -1,14 +1,20 @@
 ﻿# Better Chests Change Log
 
-## 2.4.0 (Unreleased)
+## 2.4.1 (Unreleased)
+
+### Fixed
+
+* Fixed CustomColorPicker drawing even when disabled.
+
+## 2.4.0 (August 13, 2022)
 
 ### Added
 
 * Added back context tag extensions.
-  * category_artifact
-  * category_furniture
-  * donate_bundle
-  * donate_museum
+    * category_artifact
+    * category_furniture
+    * donate_bundle
+    * donate_museum
 * UnloadChestCombine adds held chest capacity to target chest.
 
 ### Fixed
@@ -21,10 +27,10 @@
 
 * Default Storage options are now part of the main config.
 * The following features are now configurable individually or by type:
-  * Configurator
-  * HideItems
-  * LabelChest
-  * TransferItems
+    * Configurator
+    * HideItems
+    * LabelChest
+    * TransferItems
 * Improved controller support.
 
 ## 2.3.1 (August 11, 2022)

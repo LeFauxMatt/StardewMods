@@ -141,7 +141,9 @@ internal class BetterColorPicker : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { chestColorPicker: not null } || BetterItemGrabMenu.Context is not IColorable colorable)
+        if (__instance is not { chestColorPicker: not null }
+         || BetterItemGrabMenu.Context is not (IColorable colorable
+                                               and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
         }
@@ -153,7 +155,9 @@ internal class BetterColorPicker : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { chestColorPicker: not null } || BetterItemGrabMenu.Context is not IColorable colorable)
+        if (__instance is not { chestColorPicker: not null }
+         || BetterItemGrabMenu.Context is not (IColorable colorable
+                                               and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
         }
@@ -164,7 +168,9 @@ internal class BetterColorPicker : IFeature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not (SButton.MouseLeft or SButton.ControllerA)
-         || Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: { } toggleButton })
+         || Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: { } toggleButton }
+         || BetterItemGrabMenu.Context is not (IColorable
+                                               and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
         }
@@ -182,8 +188,8 @@ internal class BetterColorPicker : IFeature
 
     private void OnConstructed(object? sender, ItemGrabMenu itemGrabMenu)
     {
-        if (itemGrabMenu is not { colorPickerToggleButton: not null }
-         || BetterItemGrabMenu.Context is not IColorable colorable)
+        if (BetterItemGrabMenu.Context is not (IColorable colorable
+                                               and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
         }
@@ -193,7 +199,8 @@ internal class BetterColorPicker : IFeature
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: not null })
+        if (BetterItemGrabMenu.Context is not (IColorable
+                                               and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
         }
@@ -203,8 +210,8 @@ internal class BetterColorPicker : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: not null }
-         || BetterItemGrabMenu.Context is not IColorable colorable)
+        if (BetterItemGrabMenu.Context is not (IColorable colorable
+                                               and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
         }
