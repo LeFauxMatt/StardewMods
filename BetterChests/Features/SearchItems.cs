@@ -210,67 +210,64 @@ internal class SearchItems : IFeature
             _ => null,
         };
 
-        if (!ReferenceEquals(menu, this.CurrentMenu))
+        if (menu is not null && ReferenceEquals(menu, this.CurrentMenu))
         {
-            this.CurrentMenu = menu;
-            if (this.CurrentMenu is not { ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false }
-             || BetterItemGrabMenu.Context?.SearchItems is not FeatureOption.Enabled)
+            if (!this.SearchArea.visible)
             {
-                this.SearchArea.visible = false;
                 return;
             }
 
-            if (this.LastContext is not null
-             && !ReferenceEquals(this.LastContext.Context, BetterItemGrabMenu.Context.Context))
+            if (this.TimeOut >= 0)
             {
-                this.ItemMatcher.Clear();
-                this.SearchField.Text = string.Empty;
+                if (--this.TimeOut == 0)
+                {
+                    Log.Trace($"SearchItems: {this.SearchText}");
+                    this.ItemMatcher.StringValue = this.SearchText;
+                    BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
+                }
             }
 
-            this.LastContext = BetterItemGrabMenu.Context;
-            this.SearchField.X = itemsToGrabMenu.xPositionOnScreen;
-            this.SearchField.Y = itemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-            this.SearchField.Width = this._config.TransferItems is FeatureOption.Enabled
-                ? itemsToGrabMenu.width - Game1.tileSize - 4
-                : itemsToGrabMenu.width;
-            this.SearchField.Selected = false;
-            this.SearchArea.visible = true;
-            this.SearchArea.bounds = new(
-                this.SearchField.X,
-                this.SearchField.Y,
-                this.SearchField.Width,
-                this.SearchField.Height);
-            this.SearchIcon.bounds = new(
-                this.SearchField.X + this.SearchField.Width - 38,
-                this.SearchField.Y + 6,
-                32,
-                32);
+            if (this.SearchText.Equals(this.SearchField.Text, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
 
-            BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
-            BetterItemGrabMenu.ItemsToGrabMenu?.AddHighlighter(this.ItemMatcher);
-        }
-
-        if (this.CurrentMenu is null || !this.SearchArea.visible)
-        {
+            this.TimeOut = SearchItems.MaxTimeOut;
+            this.SearchText = this.SearchField.Text;
             return;
         }
 
-        if (this.TimeOut >= 0)
+        this.CurrentMenu = menu;
+        if (this.CurrentMenu is null or { shippingBin: true })
         {
-            if (--this.TimeOut == 0)
-            {
-                Log.Trace($"SearchItems: {this.SearchText}");
-                this.ItemMatcher.StringValue = this.SearchText;
-                BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
-            }
-        }
-
-        if (this.SearchText.Equals(this.SearchField.Text, StringComparison.OrdinalIgnoreCase))
-        {
+            this.SearchArea.visible = false;
             return;
         }
 
-        this.TimeOut = SearchItems.MaxTimeOut;
-        this.SearchText = this.SearchField.Text;
+        if (this.LastContext is not null
+         && BetterItemGrabMenu.Context is not null
+         && !ReferenceEquals(this.LastContext.Context, BetterItemGrabMenu.Context.Context))
+        {
+            this.ItemMatcher.Clear();
+            this.SearchField.Text = string.Empty;
+        }
+
+        this.LastContext = BetterItemGrabMenu.Context;
+        this.SearchField.X = this.CurrentMenu.ItemsToGrabMenu.xPositionOnScreen;
+        this.SearchField.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
+        this.SearchField.Width = this._config.TransferItems is FeatureOption.Enabled
+            ? this.CurrentMenu.ItemsToGrabMenu.width - Game1.tileSize - 4
+            : this.CurrentMenu.ItemsToGrabMenu.width;
+        this.SearchField.Selected = false;
+        this.SearchArea.visible = true;
+        this.SearchArea.bounds = new(
+            this.SearchField.X,
+            this.SearchField.Y,
+            this.SearchField.Width,
+            this.SearchField.Height);
+        this.SearchIcon.bounds = new(this.SearchField.X + this.SearchField.Width - 38, this.SearchField.Y + 6, 32, 32);
+
+        BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
+        BetterItemGrabMenu.ItemsToGrabMenu?.AddHighlighter(this.ItemMatcher);
     }
 }

@@ -199,7 +199,8 @@ internal class BetterColorPicker : IFeature
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (BetterItemGrabMenu.Context is not (IColorable
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+         || BetterItemGrabMenu.Context is not (IColorable
                                                and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;
@@ -210,7 +211,8 @@ internal class BetterColorPicker : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (BetterItemGrabMenu.Context is not (IColorable colorable
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+         || BetterItemGrabMenu.Context is not (IColorable colorable
                                                and IStorageData { CustomColorPicker: FeatureOption.Enabled }))
         {
             return;

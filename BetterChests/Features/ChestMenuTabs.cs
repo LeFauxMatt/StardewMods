@@ -357,14 +357,14 @@ internal class ChestMenuTabs : IFeature
             _ => null,
         };
 
-        if (ReferenceEquals(menu, this.CurrentMenu))
+        if (menu is not null && ReferenceEquals(menu, this.CurrentMenu))
         {
             return;
         }
 
         this.CurrentMenu = menu;
         this.Components.Clear();
-        if (this.CurrentMenu is not { shippingBin: false }
+        if (this.CurrentMenu is null or { shippingBin: true }
          || BetterItemGrabMenu.Context?.ChestMenuTabs is not FeatureOption.Enabled)
         {
             return;
