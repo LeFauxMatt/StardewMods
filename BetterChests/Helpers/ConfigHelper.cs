@@ -50,6 +50,9 @@ internal class ConfigHelper
                     config ??= new();
                 }
 
+                // Assign default values
+                config.FillDefaults();
+
                 Log.Trace(config.ToString());
                 return config;
             });
@@ -442,6 +445,13 @@ internal class ConfigHelper
         };
 
         var simpleConfig = storage.ConfigureMenu is not (InGameMenu.Full or InGameMenu.Advanced);
+        var allowedOptions = FeatureOptionExtensions.GetNames();
+        var allowedRanges = FeatureOptionRangeExtensions.GetNames();
+        if (ReferenceEquals(storage, ConfigHelper.Config))
+        {
+            allowedOptions = allowedOptions.Except(new[] { nameof(FeatureOption.Default) }).ToArray();
+            allowedRanges = allowedRanges.Except(new[] { nameof(FeatureOptionRange.Default) }).ToArray();
+        }
 
         if (storage is IStorageObject storageObject)
         {
@@ -479,7 +489,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_AutoOrganize_Name,
                 I18n.Config_AutoOrganize_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.AutoOrganize));
         }
@@ -496,7 +506,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_CarryChest_Name,
                 I18n.Config_CarryChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.CarryChest));
 
@@ -508,7 +518,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_CarryChestSlow_Name,
                 I18n.Config_CarryChestSlow_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.CarryChestSlow));
         }
@@ -525,7 +535,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_ChestMenuTabs_Name,
                 I18n.Config_ChestMenuTabs_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.ChestMenuTabs));
         }
@@ -542,7 +552,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_CollectItems_Name,
                 I18n.Config_CollectItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.CollectItems));
         }
@@ -558,7 +568,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_Configure_Name,
                 I18n.Config_Configure_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.Configurator));
 
@@ -589,7 +599,7 @@ internal class ConfigHelper
                         : FeatureOptionRange.Default,
                     I18n.Config_CraftFromChest_Name,
                     I18n.Config_CraftFromChest_Tooltip,
-                    FeatureOptionRangeExtensions.GetNames(),
+                    allowedRanges,
                     FormatHelper.FormatRange,
                     nameof(IStorageData.CraftFromChest));
 
@@ -663,7 +673,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_CustomColorPicker_Name,
                 I18n.Config_CustomColorPicker_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.CustomColorPicker));
         }
@@ -680,7 +690,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_FilterItems_Name,
                 I18n.Config_FilterItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.FilterItems));
         }
@@ -696,7 +706,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_HideItems_Name,
                 I18n.Config_HideItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.HideItems));
         }
@@ -713,7 +723,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_LabelChest_Name,
                 I18n.Config_LabelChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.LabelChest));
         }
@@ -730,7 +740,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_OpenHeldChest_Name,
                 I18n.Config_OpenHeldChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.OpenHeldChest));
         }
@@ -747,7 +757,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_OrganizeChest_Name,
                 I18n.Config_OrganizeChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.OrganizeChest));
 
@@ -788,7 +798,7 @@ internal class ConfigHelper
                         : FeatureOption.Default,
                     I18n.Config_ResizeChest_Name,
                     I18n.Config_ResizeChest_Tooltip,
-                    FeatureOptionExtensions.GetNames(),
+                    allowedOptions,
                     FormatHelper.FormatOption,
                     nameof(IStorageData.ResizeChest));
 
@@ -852,7 +862,7 @@ internal class ConfigHelper
                         : FeatureOption.Default,
                     I18n.Config_ResizeChestMenu_Name,
                     I18n.Config_ResizeChestMenu_Tooltip,
-                    FeatureOptionExtensions.GetNames(),
+                    allowedOptions,
                     FormatHelper.FormatOption,
                     nameof(IStorageData.ResizeChestMenu));
 
@@ -911,7 +921,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_SearchItems_Name,
                 I18n.Config_SearchItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.SearchItems));
         }
@@ -930,7 +940,7 @@ internal class ConfigHelper
                         : FeatureOptionRange.Default,
                     I18n.Config_StashToChest_Name,
                     I18n.Config_StashToChest_Tooltip,
-                    FeatureOptionRangeExtensions.GetNames(),
+                    allowedRanges,
                     FormatHelper.FormatRange,
                     nameof(IStorageData.StashToChest));
 
@@ -1007,7 +1017,7 @@ internal class ConfigHelper
                 FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
             I18n.Config_StashToChestStacks_Name,
             I18n.Config_StashToChestStacks_Tooltip,
-            FeatureOptionExtensions.GetNames(),
+            allowedOptions,
             FormatHelper.FormatOption,
             nameof(IStorageData.StashToChestStacks));
 
@@ -1023,7 +1033,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_TransferItems_Name,
                 I18n.Config_TransferItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.TransferItems));
         }
@@ -1040,7 +1050,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_UnloadChest_Name,
                 I18n.Config_UnloadChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.UnloadChest));
 
@@ -1052,7 +1062,7 @@ internal class ConfigHelper
                     : FeatureOption.Default,
                 I18n.Config_UnloadChestCombine_Name,
                 I18n.Config_UnloadChestCombine_Tooltip,
-                FeatureOptionExtensions.GetNames(),
+                allowedOptions,
                 FormatHelper.FormatOption,
                 nameof(IStorageData.UnloadChestCombine));
         }
