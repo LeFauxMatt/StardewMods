@@ -76,40 +76,166 @@ internal class ModConfig : StorageData
     public Dictionary<string, StorageData> VanillaStorages { get; set; }
 
     /// <summary>
+    ///     Populates all default values with specific values.
+    /// </summary>
+    public void FillDefaults()
+    {
+        if (this.AutoOrganize is FeatureOption.Default)
+        {
+            this.AutoOrganize = FeatureOption.Disabled;
+        }
+
+        if (this.CarryChest is FeatureOption.Default)
+        {
+            this.CarryChest = FeatureOption.Enabled;
+        }
+
+        if (this.CarryChestSlow is FeatureOption.Default)
+        {
+            this.CarryChestSlow = FeatureOption.Enabled;
+        }
+
+        if (this.ChestMenuTabs is FeatureOption.Default)
+        {
+            this.ChestMenuTabs = FeatureOption.Enabled;
+        }
+
+        if (this.CollectItems is FeatureOption.Default)
+        {
+            this.CollectItems = FeatureOption.Disabled;
+        }
+
+        if (this.Configurator is FeatureOption.Default)
+        {
+            this.Configurator = FeatureOption.Enabled;
+        }
+
+        if (this.ConfigureMenu is InGameMenu.Default)
+        {
+            this.ConfigureMenu = InGameMenu.Simple;
+        }
+
+        if (this.CraftFromChest is FeatureOptionRange.Default)
+        {
+            this.CraftFromChest = FeatureOptionRange.Location;
+        }
+
+        if (this.CraftFromChestDistance == 0)
+        {
+            this.CraftFromChestDistance = -1;
+        }
+
+        if (this.CustomColorPicker is FeatureOption.Default)
+        {
+            this.CustomColorPicker = FeatureOption.Enabled;
+        }
+
+        if (this.CustomColorPickerArea is not (ComponentArea.Left or ComponentArea.Right))
+        {
+            this.CustomColorPickerArea = ComponentArea.Right;
+        }
+
+        if (this.FilterItems is FeatureOption.Default)
+        {
+            this.FilterItems = FeatureOption.Enabled;
+        }
+
+        if (this.HideItems is FeatureOption.Default)
+        {
+            this.HideItems = FeatureOption.Disabled;
+        }
+
+        if (this.LabelChest is FeatureOption.Default)
+        {
+            this.LabelChest = FeatureOption.Enabled;
+        }
+
+        if (this.OpenHeldChest is FeatureOption.Default)
+        {
+            this.OpenHeldChest = FeatureOption.Enabled;
+        }
+
+        if (this.OrganizeChest is FeatureOption.Default)
+        {
+            this.OrganizeChest = FeatureOption.Disabled;
+        }
+
+        if (this.ResizeChest is FeatureOption.Default)
+        {
+            this.ResizeChest = FeatureOption.Enabled;
+        }
+
+        if (this.ResizeChestCapacity == 0)
+        {
+            this.ResizeChestCapacity = 60;
+        }
+
+        if (this.ResizeChestMenu is FeatureOption.Default)
+        {
+            this.ResizeChestMenu = FeatureOption.Enabled;
+        }
+
+        if (this.ResizeChestMenuRows == 0)
+        {
+            this.ResizeChestMenuRows = 5;
+        }
+
+        if (this.SearchItems is FeatureOption.Default)
+        {
+            this.SearchItems = FeatureOption.Enabled;
+        }
+
+        if (string.IsNullOrWhiteSpace(this.SearchTagSymbol.ToString()))
+        {
+            this.SearchTagSymbol = '#';
+        }
+
+        if (this.StashToChest is FeatureOptionRange.Disabled)
+        {
+            this.StashToChest = FeatureOptionRange.Location;
+        }
+
+        if (this.StashToChestDistance == 0)
+        {
+            this.StashToChestDistance = -1;
+        }
+
+        if (this.StashToChestStacks is FeatureOption.Default)
+        {
+            this.StashToChestStacks = FeatureOption.Enabled;
+        }
+
+        if (this.TransferItems is FeatureOption.Default)
+        {
+            this.TransferItems = FeatureOption.Enabled;
+        }
+
+        if (this.UnloadChest is FeatureOption.Default)
+        {
+            this.UnloadChest = FeatureOption.Disabled;
+        }
+
+        if (this.UnloadChestCombine is FeatureOption.Default)
+        {
+            this.UnloadChestCombine = FeatureOption.Disabled;
+        }
+    }
+
+    /// <summary>
     ///     Resets <see cref="ModConfig" /> to default options.
     /// </summary>
     [MemberNotNull(nameof(ModConfig.ControlScheme), nameof(ModConfig.VanillaStorages))]
     public void Reset()
     {
+        this.FillDefaults();
         this.BetterShippingBin = true;
-        this.CarryChest = FeatureOption.Enabled;
         this.CarryChestLimit = 1;
-        this.CarryChestSlow = FeatureOption.Enabled;
         this.CarryChestSlowAmount = 1;
         this.ChestFinder = true;
-        this.ChestMenuTabs = FeatureOption.Enabled;
-        this.Configurator = FeatureOption.Enabled;
-        this.ConfigureMenu = InGameMenu.Simple;
         this.ControlScheme = new();
-        this.CraftFromChest = FeatureOptionRange.Location;
-        this.CraftFromChestDistance = -1;
-        this.CustomColorPicker = FeatureOption.Enabled;
-        this.CustomColorPickerArea = ComponentArea.Right;
-        this.FilterItems = FeatureOption.Enabled;
-        this.HideItems = FeatureOption.Disabled;
-        this.LabelChest = FeatureOption.Enabled;
-        this.OpenHeldChest = FeatureOption.Enabled;
-        this.ResizeChest = FeatureOption.Enabled;
-        this.ResizeChestCapacity = 60;
-        this.ResizeChestMenu = FeatureOption.Enabled;
-        this.ResizeChestMenuRows = 5;
-        this.SearchItems = FeatureOption.Enabled;
-        this.SearchTagSymbol = '#';
+        this.SlotLock = true;
         this.SlotLockColor = Colors.Red;
         this.SlotLockHold = true;
-        this.StashToChest = FeatureOptionRange.Location;
-        this.StashToChestDistance = -1;
-        this.TransferItems = FeatureOption.Enabled;
         this.VanillaStorages = new();
     }
 
