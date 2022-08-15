@@ -21,11 +21,6 @@ internal class ModConfig : StorageData
     }
 
     /// <summary>
-    ///     Gets or sets a value indicating whether advanced config options will be shown.
-    /// </summary>
-    public bool AdvancedConfig { get; set; }
-
-    /// <summary>
     ///     Gets or sets a value indicating whether shipping bin will be relaunched as a regular chest inventory menu.
     /// </summary>
     public bool BetterShippingBin { get; set; }
@@ -86,7 +81,6 @@ internal class ModConfig : StorageData
     [MemberNotNull(nameof(ModConfig.ControlScheme), nameof(ModConfig.VanillaStorages))]
     public void Reset()
     {
-        this.AdvancedConfig = false;
         this.BetterShippingBin = true;
         this.CarryChest = FeatureOption.Enabled;
         this.CarryChestLimit = 1;
@@ -95,6 +89,7 @@ internal class ModConfig : StorageData
         this.ChestFinder = true;
         this.ChestMenuTabs = FeatureOption.Enabled;
         this.Configurator = FeatureOption.Enabled;
+        this.ConfigureMenu = InGameMenu.Simple;
         this.ControlScheme = new();
         this.CraftFromChest = FeatureOptionRange.Location;
         this.CraftFromChestDistance = -1;
@@ -132,6 +127,7 @@ internal class ModConfig : StorageData
         sb.AppendLine($"ChestMenuTabs: {this.ChestMenuTabs.ToStringFast()}");
         sb.AppendLine($"CollectItems: {this.CollectItems.ToStringFast()}");
         sb.AppendLine($"Configurator: {this.Configurator.ToStringFast()}");
+        sb.AppendLine($"ConfigureMenu: {this.ConfigureMenu.ToStringFast()}");
         sb.AppendLine($"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
         sb.AppendLine($"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using NetEscapades.EnumGenerators;
 
 /// <summary>
-///     Enum representation of some <see cref="Color" />.
+///     Represents some predefined <see cref="Color" />.
 /// </summary>
 [EnumExtensions]
 [SuppressMessage("StyleCop", "SA1602", Justification = "No")]

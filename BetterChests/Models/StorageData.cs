@@ -32,6 +32,9 @@ internal class StorageData : IStorageData
     public FeatureOption Configurator { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
+    public InGameMenu ConfigureMenu { get; set; } = InGameMenu.Default;
+
+    /// <inheritdoc />
     public FeatureOptionRange CraftFromChest { get; set; } = FeatureOptionRange.Default;
 
     /// <inheritdoc />

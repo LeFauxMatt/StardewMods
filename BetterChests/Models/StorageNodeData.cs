@@ -112,6 +112,18 @@ internal class StorageNodeData : IStorageData, IStorageNode
     }
 
     /// <inheritdoc />
+    public InGameMenu ConfigureMenu
+    {
+        get => this.Data.ConfigureMenu switch
+        {
+            InGameMenu.Default when this.Parent.ConfigureMenu is InGameMenu.Default => InGameMenu.Simple,
+            InGameMenu.Default => this.Parent.ConfigureMenu,
+            _ => this.Data.ConfigureMenu,
+        };
+        set => this.Data.ConfigureMenu = value;
+    }
+
+    /// <inheritdoc />
     public virtual FeatureOptionRange CraftFromChest
     {
         get => this.Data.CraftFromChest switch

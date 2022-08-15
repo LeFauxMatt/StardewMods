@@ -290,6 +290,15 @@ internal class BetterItemGrabMenu : IFeature
     }
 
     /// <summary>
+    ///     Invokes the BetterItemGrabMenu.DrawingMenu event.
+    /// </summary>
+    /// <param name="b">The sprite batch to draw to.</param>
+    public static void InvokeDrawingMenu(SpriteBatch b)
+    {
+        BetterItemGrabMenu.Instance!._drawingMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
+    }
+
+    /// <summary>
     ///     Removes an overlay from the current <see cref="StardewValley.Menus.ItemGrabMenu" />.
     /// </summary>
     /// <returns>Returns the removed overlay.</returns>
@@ -529,7 +538,7 @@ internal class BetterItemGrabMenu : IFeature
             Game1.fadeToBlackRect,
             new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
             Color.Black * 0.5f);
-        BetterItemGrabMenu.Instance!._drawingMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
+        BetterItemGrabMenu.InvokeDrawingMenu(b);
     }
 
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)

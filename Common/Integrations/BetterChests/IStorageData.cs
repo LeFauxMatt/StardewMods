@@ -49,6 +49,11 @@ public interface IStorageData
     public FeatureOption Configurator { get; set; }
 
     /// <summary>
+    ///     Gets or sets what type of config menu will be available in game.
+    /// </summary>
+    public InGameMenu ConfigureMenu { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating if the chest can be remotely crafted from.
     /// </summary>
     public FeatureOptionRange CraftFromChest { get; set; }

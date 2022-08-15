@@ -9,6 +9,8 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.UI;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
@@ -192,15 +194,26 @@ internal class Configurator : IFeature
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (!Configurator.ConfigButton.containsPoint(x, y)
-         || !StorageHelper.TryGetOne(this.CurrentMenu.context, out var storage))
+        if (!Configurator.ConfigButton.containsPoint(x, y) || BetterItemGrabMenu.Context is null)
         {
             return;
         }
 
-        ConfigHelper.SetupSpecificConfig(this._modManifest, storage, true);
-        IntegrationHelper.GMCM.API!.OpenModMenu(this._modManifest);
-        this._isActive = true;
+        if (BetterItemGrabMenu.Context.ConfigureMenu is InGameMenu.Categorize)
+        {
+            Game1.activeClickableMenu = new ItemSelectionMenu(
+                BetterItemGrabMenu.Context,
+                BetterItemGrabMenu.Context.FilterMatcher,
+                this._helper.Input,
+                this._helper.Translation);
+        }
+        else
+        {
+            ConfigHelper.SetupSpecificConfig(this._modManifest, BetterItemGrabMenu.Context, true);
+            IntegrationHelper.GMCM.API!.OpenModMenu(this._modManifest);
+            this._isActive = true;
+        }
+
         this._helper.Input.Suppress(e.Button);
     }
 
@@ -221,7 +234,8 @@ internal class Configurator : IFeature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ItemGrabMenu { shippingBin: false } itemGrabMenu && BetterItemGrabMenu.Context is not null)
+        if (e.NewMenu is ItemGrabMenu { shippingBin: false } itemGrabMenu and not ItemSelectionMenu
+         && BetterItemGrabMenu.Context is not null)
         {
             this.CurrentMenu = itemGrabMenu;
             this.CurrentStorage = BetterItemGrabMenu.Context;

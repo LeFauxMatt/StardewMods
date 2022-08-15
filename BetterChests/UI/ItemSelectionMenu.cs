@@ -102,6 +102,8 @@ internal class ItemSelectionMenu : ItemGrabMenu
             new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
             Color.Black * 0.5f);
 
+        BetterItemGrabMenu.InvokeDrawingMenu(b);
+
         Game1.drawDialogueBox(
             this.ItemsToGrabMenu.xPositionOnScreen
           - ItemSelectionMenu.borderWidth
@@ -315,8 +317,9 @@ internal class ItemSelectionMenu : ItemGrabMenu
     public override void update(GameTime time)
     {
         if (this._suppressInput
-         && Game1.oldMouseState.LeftButton == ButtonState.Pressed
-         && Mouse.GetState().LeftButton == ButtonState.Released)
+         && (this._parentMenu is null
+          || (Game1.oldMouseState.LeftButton is ButtonState.Pressed
+           && Mouse.GetState().LeftButton is ButtonState.Released)))
         {
             this._suppressInput = false;
         }

@@ -100,6 +100,24 @@ internal static class FormatHelper
     }
 
     /// <summary>
+    ///     Formats a menu value using localized text when available.
+    /// </summary>
+    /// <param name="value">The menu value to format.</param>
+    /// <returns>Localized text for the menu value.</returns>
+    public static string FormatMenu(string value)
+    {
+        return value switch
+        {
+            nameof(InGameMenu.Default) => I18n.Option_Default_Name(),
+            nameof(InGameMenu.Categorize) => I18n.Menu_Categorize_Name(),
+            nameof(InGameMenu.Simple) => I18n.Menu_Simple_Name(),
+            nameof(InGameMenu.Full) => I18n.Menu_Full_Name(),
+            nameof(InGameMenu.Advanced) => I18n.Menu_Advanced_Name(),
+            _ => value,
+        };
+    }
+
+    /// <summary>
     ///     Formats an option value using localized text when available.
     /// </summary>
     /// <param name="value">The option value to format.</param>

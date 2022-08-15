@@ -113,6 +113,17 @@ internal class StorageModData : IStorageData
         set => this.ModData["furyx639.BetterChests/Configurator"] = value.ToStringFast();
     }
 
+
+    /// <inheritdoc />
+    public InGameMenu ConfigureMenu
+    {
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ConfigureMenu", out var value)
+            && InGameMenuExtensions.TryParse(value, true, out var menu)
+            ? menu
+            : InGameMenu.Default;
+        set => this.ModData["furyx639.BetterChests/ConfigureMenu"] = value.ToStringFast();
+    }
+
     /// <inheritdoc />
     public FeatureOptionRange CraftFromChest
     {

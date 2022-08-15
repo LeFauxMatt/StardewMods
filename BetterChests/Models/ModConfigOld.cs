@@ -121,7 +121,6 @@ internal class ModConfigOld
 
         config = new()
         {
-            AdvancedConfig = configOld.AdvancedConfig,
             AutoOrganize = configOld.DefaultChest.AutoOrganize,
             BetterShippingBin = configOld.BetterShippingBin,
             CarryChest = configOld.DefaultChest.CarryChest,
@@ -134,6 +133,7 @@ internal class ModConfigOld
             ChestMenuTabSet = configOld.DefaultChest.ChestMenuTabSet,
             CollectItems = configOld.DefaultChest.CollectItems,
             Configurator = configOld.Configurator ? FeatureOption.Enabled : FeatureOption.Default,
+            ConfigureMenu = configOld.AdvancedConfig ? InGameMenu.Advanced : InGameMenu.Default,
             ControlScheme = configOld.ControlScheme,
             CraftFromChest = configOld.DefaultChest.CraftFromChest,
             CraftFromChestDisableLocations = configOld.DefaultChest.CraftFromChestDisableLocations,

@@ -13,6 +13,7 @@ using StardewMods.BetterChests.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
 /// <summary>
@@ -327,7 +328,7 @@ internal class ConfigHelper
             IntegrationHelper.GMCM.Register(manifest, ConfigHelper.ResetConfig, ConfigHelper.SaveConfig);
         }
 
-        ConfigHelper.SetupConfig(manifest, storage);
+        ConfigHelper.SetupConfig(manifest, storage, true);
     }
 
     private static Action<SpriteBatch, Vector2> DrawButton(IStorageObject storage, string label)
@@ -407,11 +408,30 @@ internal class ConfigHelper
         }
     }
 
-    private static void SetupConfig(IManifest manifest, IStorageData storage)
+    private static void SetupConfig(IManifest manifest, IStorageData storage, bool inGame = false)
     {
         if (!IntegrationHelper.GMCM.IsLoaded)
         {
             return;
+        }
+
+        bool Conflicts(string feature, GenericModConfigMenuIntegration gmcm)
+        {
+            if (!IntegrationHelper.TestConflicts(feature, out var mods))
+            {
+                return false;
+            }
+
+            if (inGame)
+            {
+                return true;
+            }
+
+            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
+            gmcm.API!.AddParagraph(
+                manifest,
+                () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{feature}", modList));
+            return true;
         }
 
         var data = storage switch
@@ -421,20 +441,23 @@ internal class ConfigHelper
             _ => storage,
         };
 
-        if (storage is IStorageObject)
-        {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => data.ChestLabel,
-                value => data.ChestLabel = value,
-                I18n.Config_ChestLabel_Name,
-                I18n.Config_ChestLabel_Tooltip,
-                fieldId: nameof(IStorageData.ChestLabel));
-        }
+        var simpleConfig = storage.ConfigureMenu is not (InGameMenu.Full or InGameMenu.Advanced);
 
-        // Chest Categories
         if (storage is IStorageObject storageObject)
         {
+            if (ConfigHelper.Config.LabelChest is not FeatureOption.Disabled)
+            {
+                // Chest Label
+                IntegrationHelper.GMCM.API.AddTextOption(
+                    manifest,
+                    () => data.ChestLabel,
+                    value => data.ChestLabel = value,
+                    I18n.Config_ChestLabel_Name,
+                    I18n.Config_ChestLabel_Tooltip,
+                    fieldId: nameof(IStorageData.ChestLabel));
+            }
+
+            // Chest Categories
             IntegrationHelper.GMCM.API.AddComplexOption(
                 manifest,
                 I18n.Config_FilterItemsList_Name,
@@ -445,17 +468,8 @@ internal class ConfigHelper
         }
 
         // Auto Organize
-        if (IntegrationHelper.TestConflicts(nameof(AutoOrganize), out var mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(AutoOrganize)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.AutoOrganize is not FeatureOption.Disabled))
+         && !Conflicts(nameof(AutoOrganize), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -471,17 +485,8 @@ internal class ConfigHelper
         }
 
         // Carry Chest
-        if (IntegrationHelper.TestConflicts(nameof(CarryChest), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(CarryChest)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.CarryChest is not FeatureOption.Disabled))
+         && !Conflicts(nameof(CarryChest), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -509,17 +514,8 @@ internal class ConfigHelper
         }
 
         // Chest Menu Tabs
-        if (IntegrationHelper.TestConflicts(nameof(ChestMenuTabs), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(ChestMenuTabs)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.ChestMenuTabs is not FeatureOption.Disabled))
+         && !Conflicts(nameof(ChestMenuTabs), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -535,17 +531,8 @@ internal class ConfigHelper
         }
 
         // Collect Items
-        if (IntegrationHelper.TestConflicts(nameof(CollectItems), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(CollectItems)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.CollectItems is not FeatureOption.Disabled))
+         && !Conflicts(nameof(CollectItems), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -561,17 +548,7 @@ internal class ConfigHelper
         }
 
         // Configurator
-        if (IntegrationHelper.TestConflicts(nameof(Configurator), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(Configurator)}",
-                    modList));
-        }
-        else
+        if (!inGame && !Conflicts(nameof(Configurator), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -584,102 +561,99 @@ internal class ConfigHelper
                 FeatureOptionExtensions.GetNames(),
                 FormatHelper.FormatOption,
                 nameof(IStorageData.Configurator));
+
+            IntegrationHelper.GMCM.API.AddTextOption(
+                manifest,
+                () => data.ConfigureMenu.ToStringFast(),
+                value => data.ConfigureMenu = InGameMenuExtensions.TryParse(value, out var menu)
+                    ? menu
+                    : InGameMenu.Default,
+                I18n.Config_ConfigureMenu_Name,
+                I18n.Config_ConfigureMenu_Tooltip,
+                InGameMenuExtensions.GetNames(),
+                FormatHelper.FormatMenu,
+                nameof(IStorageData.ConfigureMenu));
         }
 
         // Craft From Chest
-        if (IntegrationHelper.TestConflicts(nameof(CraftFromChest), out mods))
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.CraftFromChest is not FeatureOptionRange.Disabled))
+         && !Conflicts(nameof(CraftFromChest), IntegrationHelper.GMCM))
         {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(CraftFromChest)}",
-                    modList));
-        }
-        else if (ConfigHelper.Config.AdvancedConfig)
-        {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => data.CraftFromChest.ToStringFast(),
-                value => data.CraftFromChest = FeatureOptionRangeExtensions.TryParse(value, out var range)
-                    ? range
-                    : FeatureOptionRange.Default,
-                I18n.Config_CraftFromChest_Name,
-                I18n.Config_CraftFromChest_Tooltip,
-                FeatureOptionRangeExtensions.GetNames(),
-                FormatHelper.FormatRange,
-                nameof(IStorageData.CraftFromChest));
+            if (storage.ConfigureMenu is InGameMenu.Advanced)
+            {
+                IntegrationHelper.GMCM.API.AddTextOption(
+                    manifest,
+                    () => data.CraftFromChest.ToStringFast(),
+                    value => data.CraftFromChest = FeatureOptionRangeExtensions.TryParse(value, out var range)
+                        ? range
+                        : FeatureOptionRange.Default,
+                    I18n.Config_CraftFromChest_Name,
+                    I18n.Config_CraftFromChest_Tooltip,
+                    FeatureOptionRangeExtensions.GetNames(),
+                    FormatHelper.FormatRange,
+                    nameof(IStorageData.CraftFromChest));
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.CraftFromChestDistance,
-                value => data.CraftFromChestDistance = value,
-                I18n.Config_CraftFromChestDistance_Name,
-                I18n.Config_CraftFromChestDistance_Tooltip,
-                fieldId: nameof(IStorageData.CraftFromChest));
-        }
-        else
-        {
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.CraftFromChestDistance switch
-                {
-                    _ when data.CraftFromChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
-                    _ when data.CraftFromChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
-                    _ when data.CraftFromChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
-                    _ when data.CraftFromChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
-                    >= 2 when data.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
-                      + (int)Math.Ceiling(Math.Log2(data.CraftFromChestDistance))
-                      - 1,
-                    _ when data.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
-                    _ => (int)FeatureOptionRange.Default,
-                },
-                value =>
-                {
-                    data.CraftFromChestDistance = value switch
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.CraftFromChestDistance,
+                    value => data.CraftFromChestDistance = value,
+                    I18n.Config_CraftFromChestDistance_Name,
+                    I18n.Config_CraftFromChestDistance_Tooltip,
+                    fieldId: nameof(IStorageData.CraftFromChest));
+            }
+            else
+            {
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.CraftFromChestDistance switch
                     {
-                        (int)FeatureOptionRange.Default => 0,
-                        (int)FeatureOptionRange.Disabled => 0,
-                        (int)FeatureOptionRange.Inventory => 0,
-                        (int)FeatureOptionRange.World => 0,
-                        (int)FeatureOptionRange.World - 1 => -1,
-                        >= (int)FeatureOptionRange.Location => (int)Math.Pow(
-                            2,
-                            1 + value - (int)FeatureOptionRange.Location),
-                        _ => 0,
-                    };
-                    data.CraftFromChest = value switch
+                        _ when data.CraftFromChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
+                        _ when data.CraftFromChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
+                        _ when data.CraftFromChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
+                        _ when data.CraftFromChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
+                        >= 2 when data.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
+                          + (int)Math.Ceiling(Math.Log2(data.CraftFromChestDistance))
+                          - 1,
+                        _ when data.CraftFromChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
+                        _ => (int)FeatureOptionRange.Default,
+                    },
+                    value =>
                     {
-                        (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
-                        (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
-                        (int)FeatureOptionRange.Inventory => FeatureOptionRange.Inventory,
-                        (int)FeatureOptionRange.World => FeatureOptionRange.World,
-                        (int)FeatureOptionRange.World - 1 => FeatureOptionRange.Location,
-                        _ => FeatureOptionRange.Location,
-                    };
-                },
-                I18n.Config_CraftFromChestDistance_Name,
-                I18n.Config_CraftFromChestDistance_Tooltip,
-                (int)FeatureOptionRange.Default,
-                (int)FeatureOptionRange.World,
-                1,
-                FormatHelper.FormatRangeDistance,
-                nameof(IStorageData.CraftFromChest));
+                        data.CraftFromChestDistance = value switch
+                        {
+                            (int)FeatureOptionRange.Default => 0,
+                            (int)FeatureOptionRange.Disabled => 0,
+                            (int)FeatureOptionRange.Inventory => 0,
+                            (int)FeatureOptionRange.World => 0,
+                            (int)FeatureOptionRange.World - 1 => -1,
+                            >= (int)FeatureOptionRange.Location => (int)Math.Pow(
+                                2,
+                                1 + value - (int)FeatureOptionRange.Location),
+                            _ => 0,
+                        };
+                        data.CraftFromChest = value switch
+                        {
+                            (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
+                            (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+                            (int)FeatureOptionRange.Inventory => FeatureOptionRange.Inventory,
+                            (int)FeatureOptionRange.World => FeatureOptionRange.World,
+                            (int)FeatureOptionRange.World - 1 => FeatureOptionRange.Location,
+                            _ => FeatureOptionRange.Location,
+                        };
+                    },
+                    I18n.Config_CraftFromChestDistance_Name,
+                    I18n.Config_CraftFromChestDistance_Tooltip,
+                    (int)FeatureOptionRange.Default,
+                    (int)FeatureOptionRange.World,
+                    1,
+                    FormatHelper.FormatRangeDistance,
+                    nameof(IStorageData.CraftFromChest));
+            }
         }
 
         // Custom Color Picker
-        if (IntegrationHelper.TestConflicts(nameof(BetterColorPicker), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(BetterColorPicker)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.CustomColorPicker is not FeatureOption.Disabled))
+         && !Conflicts(nameof(BetterColorPicker), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -695,17 +669,8 @@ internal class ConfigHelper
         }
 
         // Filter Items
-        if (IntegrationHelper.TestConflicts(nameof(FilterItems), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(FilterItems)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.FilterItems is not FeatureOption.Disabled))
+         && !Conflicts(nameof(FilterItems), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -721,30 +686,24 @@ internal class ConfigHelper
         }
 
         // Hide Items
-        IntegrationHelper.GMCM.API.AddTextOption(
-            ConfigHelper.ModManifest,
-            () => ConfigHelper.Config.HideItems.ToStringFast(),
-            value => ConfigHelper.Config.HideItems = FeatureOptionExtensions.TryParse(value, out var option)
-                ? option
-                : FeatureOption.Default,
-            I18n.Config_HideItems_Name,
-            I18n.Config_HideItems_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            FormatHelper.FormatOption,
-            nameof(IStorageData.HideItems));
+        if (!inGame || data.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced)
+        {
+            IntegrationHelper.GMCM.API.AddTextOption(
+                ConfigHelper.ModManifest,
+                () => data.HideItems.ToStringFast(),
+                value => data.HideItems = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_HideItems_Name,
+                I18n.Config_HideItems_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                FormatHelper.FormatOption,
+                nameof(IStorageData.HideItems));
+        }
 
         // Label Chest
-        if (IntegrationHelper.TestConflicts(nameof(LabelChest), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                ConfigHelper.ModManifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(LabelChest)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.LabelChest is not FeatureOption.Disabled))
+         && !Conflicts(nameof(LabelChest), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 ConfigHelper.ModManifest,
@@ -760,17 +719,8 @@ internal class ConfigHelper
         }
 
         // Open Held Chest
-        if (IntegrationHelper.TestConflicts(nameof(OpenHeldChest), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(OpenHeldChest)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.OpenHeldChest is not FeatureOption.Disabled))
+         && !Conflicts(nameof(OpenHeldChest), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -786,17 +736,8 @@ internal class ConfigHelper
         }
 
         // Organize Chest
-        if (IntegrationHelper.TestConflicts(nameof(OrganizeChest), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(OrganizeChest)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.OrganizeChest is not FeatureOption.Disabled))
+         && !Conflicts(nameof(OrganizeChest), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -834,154 +775,133 @@ internal class ConfigHelper
         }
 
         // Resize Chest
-        if (IntegrationHelper.TestConflicts(nameof(ResizeChest), out mods))
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.ResizeChest is not FeatureOption.Disabled))
+         && !Conflicts(nameof(ResizeChest), IntegrationHelper.GMCM))
         {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(ResizeChest)}",
-                    modList));
-        }
-        else if (ConfigHelper.Config.AdvancedConfig)
-        {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => data.ResizeChest.ToStringFast(),
-                value => data.ResizeChest = FeatureOptionExtensions.TryParse(value, out var option)
-                    ? option
-                    : FeatureOption.Default,
-                I18n.Config_ResizeChest_Name,
-                I18n.Config_ResizeChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
-                FormatHelper.FormatOption,
-                nameof(IStorageData.ResizeChest));
+            if (storage.ConfigureMenu is InGameMenu.Advanced)
+            {
+                IntegrationHelper.GMCM.API.AddTextOption(
+                    manifest,
+                    () => data.ResizeChest.ToStringFast(),
+                    value => data.ResizeChest = FeatureOptionExtensions.TryParse(value, out var option)
+                        ? option
+                        : FeatureOption.Default,
+                    I18n.Config_ResizeChest_Name,
+                    I18n.Config_ResizeChest_Tooltip,
+                    FeatureOptionExtensions.GetNames(),
+                    FormatHelper.FormatOption,
+                    nameof(IStorageData.ResizeChest));
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.ResizeChestCapacity,
-                value => data.ResizeChestCapacity = value,
-                I18n.Config_ResizeChestCapacity_Name,
-                I18n.Config_ResizeChestCapacity_Tooltip,
-                fieldId: nameof(IStorageData.ResizeChestCapacity));
-        }
-        else
-        {
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.ResizeChestCapacity switch
-                {
-                    _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
-                    _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
-                    -1 => 8,
-                    _ => (int)FeatureOption.Enabled + data.ResizeChestCapacity / 12 - 1,
-                },
-                value =>
-                {
-                    data.ResizeChestCapacity = value switch
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.ResizeChestCapacity,
+                    value => data.ResizeChestCapacity = value,
+                    I18n.Config_ResizeChestCapacity_Name,
+                    I18n.Config_ResizeChestCapacity_Tooltip,
+                    fieldId: nameof(IStorageData.ResizeChestCapacity));
+            }
+            else
+            {
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.ResizeChestCapacity switch
                     {
-                        (int)FeatureOption.Default => 0,
-                        (int)FeatureOption.Disabled => 0,
-                        8 => -1,
-                        >= (int)FeatureOption.Enabled => 12 * (1 + value - (int)FeatureOption.Enabled),
-                        _ => 0,
-                    };
-                    data.ResizeChest = value switch
+                        _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
+                        _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+                        -1 => 8,
+                        _ => (int)FeatureOption.Enabled + data.ResizeChestCapacity / 12 - 1,
+                    },
+                    value =>
                     {
-                        (int)FeatureOption.Default => FeatureOption.Default,
-                        (int)FeatureOption.Disabled => FeatureOption.Disabled,
-                        _ => FeatureOption.Enabled,
-                    };
-                },
-                I18n.Config_ResizeChestCapacity_Name,
-                I18n.Config_ResizeChestCapacity_Tooltip,
-                (int)FeatureOption.Default,
-                8,
-                1,
-                FormatHelper.FormatChestCapacity,
-                nameof(IStorageData.ResizeChestCapacity));
+                        data.ResizeChestCapacity = value switch
+                        {
+                            (int)FeatureOption.Default => 0,
+                            (int)FeatureOption.Disabled => 0,
+                            8 => -1,
+                            >= (int)FeatureOption.Enabled => 12 * (1 + value - (int)FeatureOption.Enabled),
+                            _ => 0,
+                        };
+                        data.ResizeChest = value switch
+                        {
+                            (int)FeatureOption.Default => FeatureOption.Default,
+                            (int)FeatureOption.Disabled => FeatureOption.Disabled,
+                            _ => FeatureOption.Enabled,
+                        };
+                    },
+                    I18n.Config_ResizeChestCapacity_Name,
+                    I18n.Config_ResizeChestCapacity_Tooltip,
+                    (int)FeatureOption.Default,
+                    8,
+                    1,
+                    FormatHelper.FormatChestCapacity,
+                    nameof(IStorageData.ResizeChestCapacity));
+            }
         }
 
         // Resize Chest Menu
-        if (IntegrationHelper.TestConflicts(nameof(ResizeChestMenu), out mods))
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.ResizeChestMenu is not FeatureOption.Disabled))
+         && !Conflicts(nameof(ResizeChestMenu), IntegrationHelper.GMCM))
         {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(ResizeChestMenu)}",
-                    modList));
-        }
-        else if (ConfigHelper.Config.AdvancedConfig)
-        {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => data.ResizeChestMenu.ToStringFast(),
-                value => data.ResizeChestMenu = FeatureOptionExtensions.TryParse(value, out var option)
-                    ? option
-                    : FeatureOption.Default,
-                I18n.Config_ResizeChestMenu_Name,
-                I18n.Config_ResizeChestMenu_Tooltip,
-                FeatureOptionExtensions.GetNames(),
-                FormatHelper.FormatOption,
-                nameof(IStorageData.ResizeChestMenu));
+            if (storage.ConfigureMenu is InGameMenu.Advanced)
+            {
+                IntegrationHelper.GMCM.API.AddTextOption(
+                    manifest,
+                    () => data.ResizeChestMenu.ToStringFast(),
+                    value => data.ResizeChestMenu = FeatureOptionExtensions.TryParse(value, out var option)
+                        ? option
+                        : FeatureOption.Default,
+                    I18n.Config_ResizeChestMenu_Name,
+                    I18n.Config_ResizeChestMenu_Tooltip,
+                    FeatureOptionExtensions.GetNames(),
+                    FormatHelper.FormatOption,
+                    nameof(IStorageData.ResizeChestMenu));
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.ResizeChestMenuRows,
-                value => data.ResizeChestMenuRows = value,
-                I18n.Config_ResizeChestMenuRows_Name,
-                I18n.Config_ResizeChestMenuRows_Tooltip,
-                fieldId: nameof(IStorageData.ResizeChestMenuRows));
-        }
-        else
-        {
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.ResizeChestMenuRows switch
-                {
-                    _ when data.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
-                    _ when data.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
-                    _ => (int)FeatureOption.Enabled + data.ResizeChestMenuRows - 3,
-                },
-                value =>
-                {
-                    data.ResizeChestMenuRows = value switch
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.ResizeChestMenuRows,
+                    value => data.ResizeChestMenuRows = value,
+                    I18n.Config_ResizeChestMenuRows_Name,
+                    I18n.Config_ResizeChestMenuRows_Tooltip,
+                    fieldId: nameof(IStorageData.ResizeChestMenuRows));
+            }
+            else
+            {
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.ResizeChestMenuRows switch
                     {
-                        (int)FeatureOption.Default => 0,
-                        (int)FeatureOption.Disabled => 0,
-                        _ => 3 + value - (int)FeatureOption.Enabled,
-                    };
-                    data.ResizeChestMenu = value switch
+                        _ when data.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
+                        _ when data.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+                        _ => (int)FeatureOption.Enabled + data.ResizeChestMenuRows - 3,
+                    },
+                    value =>
                     {
-                        (int)FeatureOption.Default => FeatureOption.Default,
-                        (int)FeatureOption.Disabled => FeatureOption.Disabled,
-                        _ => FeatureOption.Enabled,
-                    };
-                },
-                I18n.Config_ResizeChestMenuRows_Name,
-                I18n.Config_ResizeChestMenuRows_Tooltip,
-                (int)FeatureOption.Default,
-                5,
-                1,
-                FormatHelper.FormatChestMenuRows,
-                nameof(IStorageData.ResizeChestMenuRows));
+                        data.ResizeChestMenuRows = value switch
+                        {
+                            (int)FeatureOption.Default => 0,
+                            (int)FeatureOption.Disabled => 0,
+                            _ => 3 + value - (int)FeatureOption.Enabled,
+                        };
+                        data.ResizeChestMenu = value switch
+                        {
+                            (int)FeatureOption.Default => FeatureOption.Default,
+                            (int)FeatureOption.Disabled => FeatureOption.Disabled,
+                            _ => FeatureOption.Enabled,
+                        };
+                    },
+                    I18n.Config_ResizeChestMenuRows_Name,
+                    I18n.Config_ResizeChestMenuRows_Tooltip,
+                    (int)FeatureOption.Default,
+                    5,
+                    1,
+                    FormatHelper.FormatChestMenuRows,
+                    nameof(IStorageData.ResizeChestMenuRows));
+            }
         }
 
         // Search Items
-        if (IntegrationHelper.TestConflicts(nameof(SearchItems), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(SearchItems)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.SearchItems is not FeatureOption.Disabled))
+         && !Conflicts(nameof(SearchItems), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,
@@ -997,85 +917,79 @@ internal class ConfigHelper
         }
 
         // Stash To Chest
-        if (IntegrationHelper.TestConflicts(nameof(StashToChest), out mods))
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.StashToChest is not FeatureOptionRange.Disabled))
+         && !Conflicts(nameof(StashToChest), IntegrationHelper.GMCM))
         {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(StashToChest)}",
-                    modList));
-        }
-        else if (ConfigHelper.Config.AdvancedConfig)
-        {
-            IntegrationHelper.GMCM.API.AddTextOption(
-                manifest,
-                () => data.StashToChest.ToStringFast(),
-                value => data.StashToChest = FeatureOptionRangeExtensions.TryParse(value, out var range)
-                    ? range
-                    : FeatureOptionRange.Default,
-                I18n.Config_StashToChest_Name,
-                I18n.Config_StashToChest_Tooltip,
-                FeatureOptionRangeExtensions.GetNames(),
-                FormatHelper.FormatRange,
-                nameof(IStorageData.StashToChest));
+            if (storage.ConfigureMenu is InGameMenu.Advanced)
+            {
+                IntegrationHelper.GMCM.API.AddTextOption(
+                    manifest,
+                    () => data.StashToChest.ToStringFast(),
+                    value => data.StashToChest = FeatureOptionRangeExtensions.TryParse(value, out var range)
+                        ? range
+                        : FeatureOptionRange.Default,
+                    I18n.Config_StashToChest_Name,
+                    I18n.Config_StashToChest_Tooltip,
+                    FeatureOptionRangeExtensions.GetNames(),
+                    FormatHelper.FormatRange,
+                    nameof(IStorageData.StashToChest));
 
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.StashToChestDistance,
-                value => data.StashToChestDistance = value,
-                I18n.Config_StashToChestDistance_Name,
-                I18n.Config_StashToChestDistance_Tooltip,
-                fieldId: nameof(IStorageData.StashToChest));
-        }
-        else
-        {
-            IntegrationHelper.GMCM.API.AddNumberOption(
-                manifest,
-                () => data.StashToChestDistance switch
-                {
-                    _ when data.StashToChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
-                    _ when data.StashToChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
-                    _ when data.StashToChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
-                    _ when data.StashToChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
-                    >= 2 when data.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
-                      + (int)Math.Ceiling(Math.Log2(data.StashToChestDistance))
-                      - 1,
-                    _ when data.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
-                    _ => (int)FeatureOptionRange.Default,
-                },
-                value =>
-                {
-                    data.StashToChestDistance = value switch
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.StashToChestDistance,
+                    value => data.StashToChestDistance = value,
+                    I18n.Config_StashToChestDistance_Name,
+                    I18n.Config_StashToChestDistance_Tooltip,
+                    fieldId: nameof(IStorageData.StashToChest));
+            }
+            else
+            {
+                IntegrationHelper.GMCM.API.AddNumberOption(
+                    manifest,
+                    () => data.StashToChestDistance switch
                     {
-                        (int)FeatureOptionRange.Default => 0,
-                        (int)FeatureOptionRange.Disabled => 0,
-                        (int)FeatureOptionRange.Inventory => 0,
-                        (int)FeatureOptionRange.World - 1 => -1,
-                        (int)FeatureOptionRange.World => 0,
-                        >= (int)FeatureOptionRange.Location => (int)Math.Pow(
-                            2,
-                            1 + value - (int)FeatureOptionRange.Location),
-                        _ => 0,
-                    };
-                    data.StashToChest = value switch
+                        _ when data.StashToChest is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
+                        _ when data.StashToChest is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
+                        _ when data.StashToChest is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
+                        _ when data.StashToChest is FeatureOptionRange.World => (int)FeatureOptionRange.World,
+                        >= 2 when data.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
+                          + (int)Math.Ceiling(Math.Log2(data.StashToChestDistance))
+                          - 1,
+                        _ when data.StashToChest is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
+                        _ => (int)FeatureOptionRange.Default,
+                    },
+                    value =>
                     {
-                        (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
-                        (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
-                        (int)FeatureOptionRange.Inventory => FeatureOptionRange.Inventory,
-                        (int)FeatureOptionRange.World => FeatureOptionRange.World,
-                        (int)FeatureOptionRange.World - 1 => FeatureOptionRange.Location,
-                        _ => FeatureOptionRange.Location,
-                    };
-                },
-                I18n.Config_StashToChestDistance_Name,
-                I18n.Config_StashToChestDistance_Tooltip,
-                (int)FeatureOptionRange.Default,
-                (int)FeatureOptionRange.World,
-                1,
-                FormatHelper.FormatRangeDistance,
-                nameof(IStorageData.StashToChest));
+                        data.StashToChestDistance = value switch
+                        {
+                            (int)FeatureOptionRange.Default => 0,
+                            (int)FeatureOptionRange.Disabled => 0,
+                            (int)FeatureOptionRange.Inventory => 0,
+                            (int)FeatureOptionRange.World - 1 => -1,
+                            (int)FeatureOptionRange.World => 0,
+                            >= (int)FeatureOptionRange.Location => (int)Math.Pow(
+                                2,
+                                1 + value - (int)FeatureOptionRange.Location),
+                            _ => 0,
+                        };
+                        data.StashToChest = value switch
+                        {
+                            (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
+                            (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+                            (int)FeatureOptionRange.Inventory => FeatureOptionRange.Inventory,
+                            (int)FeatureOptionRange.World => FeatureOptionRange.World,
+                            (int)FeatureOptionRange.World - 1 => FeatureOptionRange.Location,
+                            _ => FeatureOptionRange.Location,
+                        };
+                    },
+                    I18n.Config_StashToChestDistance_Name,
+                    I18n.Config_StashToChestDistance_Tooltip,
+                    (int)FeatureOptionRange.Default,
+                    (int)FeatureOptionRange.World,
+                    1,
+                    FormatHelper.FormatRangeDistance,
+                    nameof(IStorageData.StashToChest));
+            }
         }
 
         IntegrationHelper.GMCM.API.AddNumberOption(
@@ -1098,17 +1012,8 @@ internal class ConfigHelper
             nameof(IStorageData.StashToChestStacks));
 
         // Transfer Items
-        if (IntegrationHelper.TestConflicts(nameof(TransferItems), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                ConfigHelper.ModManifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(TransferItems)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.TransferItems is not FeatureOption.Disabled))
+         && !Conflicts(nameof(TransferItems), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 ConfigHelper.ModManifest,
@@ -1124,17 +1029,8 @@ internal class ConfigHelper
         }
 
         // Unload Chest
-        if (IntegrationHelper.TestConflicts(nameof(UnloadChest), out mods))
-        {
-            var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            IntegrationHelper.GMCM.API.AddParagraph(
-                manifest,
-                () => string.Format(
-                    I18n.Warn_Incompatibility_Disabled(),
-                    $"BetterChests.{nameof(UnloadChest)}",
-                    modList));
-        }
-        else
+        if ((!inGame || (!simpleConfig && ConfigHelper.Config.UnloadChest is not FeatureOption.Disabled))
+         && !Conflicts(nameof(UnloadChest), IntegrationHelper.GMCM))
         {
             IntegrationHelper.GMCM.API.AddTextOption(
                 manifest,

@@ -51,6 +51,8 @@
   "config.collect-items.tooltip": "Allows chests in player inventory to collect items dropped on the ground (uses categories).",
   "config.configure.name": "Configure Chest",
   "config.configure.tooltip": "Configure the currently facing or held chest.",
+  "config.configure-menu.name": "Configure Menu",
+  "config.configure-menu.tooltip": "Set the type of menu that is available in-game.",
   "config.craft-from-chest.name": "Craft From Chest",
   "config.craft-from-chest.tooltip": "The default range that chests can be remotely crafted from.",
   "config.craft-from-chest-distance.name": "Craft from Chest Distance",
@@ -147,6 +149,11 @@
   "sort-by.type.name": "Type",
   "sort-by.quality.name": "Quality",
   "sort-by.quantity.name": "Quantity",
+  // In-Game Menu Types
+  "menu.categorize.name": "Categorize Only",
+  "menu.simple.name": "Basic Options",
+  "menu.full.name": "All Options",
+  "menu.advanced.name": "Advanced Options",
   // Menu Areas
   "area.top.name": "Above the inventory menu.",
   "area.right.name": "To the right of the inventory menu.",
