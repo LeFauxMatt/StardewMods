@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.5.1 (August 15, 2022)
+
+### Changed
+
+* Assign actual values to default config options.
+
 ## 2.5.0 (August 14, 2022)
 
 ### Added
