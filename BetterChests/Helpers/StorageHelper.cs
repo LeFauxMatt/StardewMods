@@ -19,11 +19,13 @@ internal class StorageHelper
 {
     private static StorageHelper? Instance;
 
+    private readonly ModConfig _config;
     private readonly Lazy<Dictionary<object, IStorageObject>> _referenceContext;
     private readonly Dictionary<Func<object, bool>, IStorageData> _storageTypes;
 
     private StorageHelper(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
+        this._config = config;
         this._storageTypes = storageTypes;
         this.InitTypes(config.VanillaStorages, config);
         this._referenceContext = new(
@@ -143,6 +145,8 @@ internal class StorageHelper
             return LocationHelper.AllLocations.SelectMany(location => StorageHelper.FromLocation(location, excluded));
         }
     }
+
+    private static ModConfig Config => StorageHelper.Instance!._config;
 
     private static Dictionary<object, IStorageObject> ReferenceContext =>
         StorageHelper.Instance!._referenceContext.Value;
@@ -398,6 +402,9 @@ internal class StorageHelper
             case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
                 storage = new ObjectStorage(heldObj, parent, position);
                 return true;
+            case ShippingBin or IslandWest when !StorageHelper.Config.BetterShippingBin:
+                storage = default;
+                return false;
             case ShippingBin shippingBin:
                 storage = new ShippingBinStorage(shippingBin, parent, position);
                 return true;
