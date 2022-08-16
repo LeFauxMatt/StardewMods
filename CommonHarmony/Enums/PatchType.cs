@@ -13,4 +13,7 @@ internal enum PatchType
 
     /// <summary>Transpiles the existing method.</summary>
     Transpiler,
+
+    /// <summary>Reverse patch an existing method.</summary>
+    Reverse,
 }
