@@ -92,6 +92,10 @@ internal static class HarmonyHelper
                     case PatchType.Transpiler:
                         harmony.Patch(patch.Original, transpiler: patch.Patch);
                         break;
+                    case PatchType.Reverse:
+                        harmony.CreateReversePatcher(patch.Original, patch.Patch)
+                               .Patch(HarmonyReversePatchType.Snapshot);
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException($"Failed to patch {nameof(patch.Type)}.{patch.Name}");
                 }
