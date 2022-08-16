@@ -298,7 +298,6 @@ internal class CarryChest : IFeature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
     {
@@ -313,9 +312,6 @@ internal class CarryChest : IFeature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Intentional to match game code")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_placementAction_postfix(
         SObject __instance,
@@ -324,9 +320,10 @@ internal class CarryChest : IFeature
         int y,
         ref bool __result)
     {
+        var pos = new Vector2(x / Game1.tileSize, y / Game1.tileSize);
         if (!__result
          || __instance is not Chest held
-         || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
+         || !location.Objects.TryGetValue(pos, out var obj)
          || obj is not Chest placed)
         {
             return;
@@ -347,6 +344,7 @@ internal class CarryChest : IFeature
         }
 
         // Copy properties
+        placed._GetOneFrom(held);
         placed.Name = held.Name;
         placed.SpecialChestType = held.SpecialChestType;
         placed.fridge.Value = held.fridge.Value;
