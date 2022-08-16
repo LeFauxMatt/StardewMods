@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
@@ -17,34 +18,81 @@ public class ChestProducers : Mod
 {
     private static Chest? TargetChest;
 
+    private bool _isInit;
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
 
         // Events
-        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
 
         // Patches
         HarmonyHelper.AddPatches(
-            this.ModManifest.UniqueID,
+            $"{this.ModManifest.UniqueID}/Early",
             new SavedPatch[]
             {
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)),
-                    typeof(ChestProducers),
-                    nameof(ChestProducers.Chest_GetItemsForPlayer_postfix),
-                    PatchType.Postfix),
                 new(
                     AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
                     typeof(ChestProducers),
                     nameof(ChestProducers.Object_checkForAction_transpiler),
                     PatchType.Transpiler),
+            });
+
+        HarmonyHelper.AddPatches(
+            $"{this.ModManifest.UniqueID}/Reverse",
+            new SavedPatch[]
+            {
                 new(
                     AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
                     typeof(ChestProducers),
-                    nameof(ChestProducers.Object_checkForAction_reverse),
+                    nameof(ChestProducers.Object_checkForAction),
                     PatchType.Reverse),
+                new(
+                    AccessTools.Method(
+                        typeof(SObject),
+                        nameof(SObject.draw),
+                        new[]
+                        {
+                            typeof(SpriteBatch),
+                            typeof(int),
+                            typeof(int),
+                            typeof(float),
+                        }),
+                    typeof(ChestProducers),
+                    nameof(ChestProducers.Object_draw),
+                    PatchType.Reverse),
+                new(
+                    AccessTools.Method(typeof(SObject), nameof(SObject.performObjectDropInAction)),
+                    typeof(ChestProducers),
+                    nameof(ChestProducers.Object_performObjectDropInAction),
+                    PatchType.Reverse),
+            });
+
+        HarmonyHelper.AddPatches(
+            $"{this.ModManifest.UniqueID}/Late",
+            new SavedPatch[]
+            {
+                new(
+                    AccessTools.Method(
+                        typeof(Chest),
+                        nameof(Chest.draw),
+                        new[]
+                        {
+                            typeof(SpriteBatch),
+                            typeof(int),
+                            typeof(int),
+                            typeof(float),
+                        }),
+                    typeof(ChestProducers),
+                    nameof(ChestProducers.Chest_draw_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(Chest), nameof(Chest.GetItemsForPlayer)),
+                    typeof(ChestProducers),
+                    nameof(ChestProducers.Chest_GetItemsForPlayer_postfix),
+                    PatchType.Postfix),
                 new(
                     AccessTools.Method(typeof(SObject), nameof(SObject.DayUpdate)),
                     typeof(ChestProducers),
@@ -55,11 +103,6 @@ public class ChestProducers : Mod
                     typeof(ChestProducers),
                     nameof(ChestProducers.Object_minutesElapsed_postfix),
                     PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(SObject), nameof(SObject.performObjectDropInAction)),
-                    typeof(ChestProducers),
-                    nameof(ChestProducers.Object_performObjectDropInAction_reverse),
-                    PatchType.Reverse),
                 new(
                     AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
                     typeof(ChestProducers),
@@ -83,6 +126,19 @@ public class ChestProducers : Mod
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Chest_draw_prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
+    {
+        if (!__instance.modData.ContainsKey("furyx639.ChestProducers/IsProducer"))
+        {
+            return true;
+        }
+
+        ChestProducers.Object_draw(__instance, spriteBatch, x, y, alpha);
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_GetItemsForPlayer_postfix(Chest __instance, long id, ref NetObjectList<Item> __result)
@@ -95,7 +151,7 @@ public class ChestProducers : Mod
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Object_checkForAction_reverse(SObject __instance, Farmer who, bool justCheckingForActivity)
+    private static bool Object_checkForAction(SObject __instance, Farmer who, bool justCheckingForActivity)
     {
         throw new NotImplementedException("This is a stub.");
     }
@@ -124,7 +180,7 @@ public class ChestProducers : Mod
          && __instance.heldObject.Value is not Chest)
         {
             ChestProducers.TargetChest = chest;
-            ChestProducers.Object_checkForAction_reverse(__instance, Game1.player, false);
+            ChestProducers.Object_checkForAction(__instance, Game1.player, false);
             ChestProducers.TargetChest = null;
         }
 
@@ -137,7 +193,7 @@ public class ChestProducers : Mod
         var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
         for (var index = 0; index < items.Count; index++)
         {
-            if (!ChestProducers.Object_performObjectDropInAction_reverse(__instance, items[index], false, Game1.player))
+            if (!ChestProducers.Object_performObjectDropInAction(__instance, items[index], false, Game1.player))
             {
                 continue;
             }
@@ -152,6 +208,13 @@ public class ChestProducers : Mod
         }
 
         chest.clearNulls();
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_draw(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
+    {
+        throw new NotImplementedException("This is a stub.");
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -170,7 +233,7 @@ public class ChestProducers : Mod
          && __instance.heldObject.Value is not Chest)
         {
             ChestProducers.TargetChest = chest;
-            ChestProducers.Object_checkForAction_reverse(__instance, Game1.player, false);
+            ChestProducers.Object_checkForAction(__instance, Game1.player, false);
             ChestProducers.TargetChest = null;
         }
 
@@ -183,7 +246,7 @@ public class ChestProducers : Mod
         var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
         for (var index = 0; index < items.Count; index++)
         {
-            if (!ChestProducers.Object_performObjectDropInAction_reverse(__instance, items[index], false, Game1.player))
+            if (!ChestProducers.Object_performObjectDropInAction(__instance, items[index], false, Game1.player))
             {
                 continue;
             }
@@ -202,11 +265,7 @@ public class ChestProducers : Mod
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Object_performObjectDropInAction_reverse(
-        SObject __instance,
-        Item dropInItem,
-        bool probe,
-        Farmer who)
+    private static bool Object_performObjectDropInAction(SObject __instance, Item dropInItem, bool probe, Farmer who)
     {
         throw new NotImplementedException("This is a stub.");
     }
@@ -247,14 +306,23 @@ public class ChestProducers : Mod
             chest.modData[key] = value;
         }
 
+        chest.modData["furyx639.ChestProducers/IsProducer"] = true.ToString();
         chest.performDropDownAction(who);
 
         // Replace object with Chest
         location.Objects[pos] = chest;
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
+        if (this._isInit)
+        {
+            return;
+        }
+
+        this._isInit = true;
+        HarmonyHelper.ApplyPatches($"{this.ModManifest.UniqueID}/Early");
+        HarmonyHelper.ApplyPatches($"{this.ModManifest.UniqueID}/Reverse");
+        HarmonyHelper.ApplyPatches($"{this.ModManifest.UniqueID}/Late");
     }
 }
