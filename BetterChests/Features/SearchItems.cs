@@ -238,14 +238,13 @@ internal class SearchItems : IFeature
         }
 
         this.CurrentMenu = menu;
-        if (this.CurrentMenu is null or { shippingBin: true })
+        if (BetterItemGrabMenu.Context is null || this.CurrentMenu is null or { shippingBin: true })
         {
             this.SearchArea.visible = false;
             return;
         }
 
         if (this.LastContext is not null
-         && BetterItemGrabMenu.Context is not null
          && !ReferenceEquals(this.LastContext.Context, BetterItemGrabMenu.Context.Context))
         {
             this.ItemMatcher.Clear();
