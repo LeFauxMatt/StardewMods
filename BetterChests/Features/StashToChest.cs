@@ -165,27 +165,29 @@ internal class StashToChest : IFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this._config.ControlScheme.StashItems.JustPressed())
+        if (!this._config.ControlScheme.StashItems.JustPressed())
+        {
+            return;
+        }
+
+        // Stash to All
+        if (Context.IsPlayerFree)
+        {
+            StashToChest.StashIntoAll();
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.StashItems);
+            return;
+        }
+
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+         || BetterItemGrabMenu.Context?.StashToChest is null
+                                                        or FeatureOptionRange.Disabled
+                                                        or FeatureOptionRange.Default)
         {
             return;
         }
 
         // Stash to Current
-        if (Game1.activeClickableMenu is ItemGrabMenu { context: { } context }
-         && StorageHelper.TryGetOne(context, out var storage)
-         && storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default))
-        {
-            StashToChest.StashIntoStorage(storage);
-            return;
-        }
-
-        // Stash to all
-        if (!Context.IsPlayerFree)
-        {
-            return;
-        }
-
-        StashToChest.StashIntoAll();
+        StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.StashItems);
     }
 }
