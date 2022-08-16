@@ -194,21 +194,23 @@ internal class ResizeChestMenu : IFeature
         }
 
         ResizeChestMenu.ExtraSpace = BetterItemGrabMenu.Context.MenuExtraSpace;
+        itemGrabMenu.yPositionOnScreen -= ResizeChestMenu.ExtraSpace / 2;
         itemGrabMenu.height += ResizeChestMenu.ExtraSpace;
-        itemGrabMenu.inventory.movePosition(0, ResizeChestMenu.ExtraSpace);
+        itemGrabMenu.ItemsToGrabMenu.movePosition(0, -ResizeChestMenu.ExtraSpace / 2);
+        itemGrabMenu.inventory.movePosition(0, ResizeChestMenu.ExtraSpace / 2);
         if (itemGrabMenu.okButton is not null)
         {
-            itemGrabMenu.okButton.bounds.Y += ResizeChestMenu.ExtraSpace;
+            itemGrabMenu.okButton.bounds.Y += ResizeChestMenu.ExtraSpace / 2;
         }
 
         if (itemGrabMenu.trashCan is not null)
         {
-            itemGrabMenu.trashCan.bounds.Y += ResizeChestMenu.ExtraSpace;
+            itemGrabMenu.trashCan.bounds.Y += ResizeChestMenu.ExtraSpace / 2;
         }
 
         if (itemGrabMenu.dropItemInvisibleButton is not null)
         {
-            itemGrabMenu.dropItemInvisibleButton.bounds.Y += ResizeChestMenu.ExtraSpace;
+            itemGrabMenu.dropItemInvisibleButton.bounds.Y += ResizeChestMenu.ExtraSpace / 2;
         }
     }
 
@@ -216,8 +218,10 @@ internal class ResizeChestMenu : IFeature
     {
         if (e.NewMenu is not ItemGrabMenu
             {
-                ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow,
-            })
+                shippingBin: false, ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow,
+            }
+         || BetterItemGrabMenu.Context is null
+         || BetterItemGrabMenu.Context.ResizeChestMenuRows == 3)
         {
             return;
         }
