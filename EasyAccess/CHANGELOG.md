@@ -1,6 +1,14 @@
 # Easy Access Change Log
 
+## 2.0.2 (Unreleased)
+
+### Changed
+
+* Removed FuryCore alert.
+
 ## 2.0.1 (July 9, 2022)
+
+### Added
 
 * Added alert if FuryCore is installed.
 * Log config options for debugging.
