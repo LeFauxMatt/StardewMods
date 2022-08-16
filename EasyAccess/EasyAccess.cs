@@ -44,11 +44,6 @@ public class EasyAccess : Mod
         I18n.Init(helper.Translation);
         Log.Monitor = this.Monitor;
 
-        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
-        {
-            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
-        }
-
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
