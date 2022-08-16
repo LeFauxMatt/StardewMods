@@ -556,7 +556,7 @@ internal class BetterItemGrabMenu : IFeature
             }
             else if (patchCount > 0
                   && instruction.LoadsField(
-                         AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.yPositionOnScreen))))
+                         AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
             {
                 patchCount--;
                 yield return instruction;
