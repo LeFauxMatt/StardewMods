@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared" />
+    <PropertyGroup>
+        <Name>Chest Producers</Name>
+        <Author>furyx639</Author>
+        <Description>Converts producers into chests.</Description>
+        <Version>1.0.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+        <RootNamespace>StardewMods.ChestProducers</RootNamespace>
+        <UniqueId>furyx639.ChestProducers</UniqueId>
+        <MinimumApiVersion>3.15.0</MinimumApiVersion>
+        <Version_AppendConfiguration>false</Version_AppendConfiguration>
+    </PropertyGroup>
+</Project>
