@@ -424,20 +424,20 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance)
     {
-        __instance.drawBG = false;
-        __instance.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
-        __instance.height += BetterItemGrabMenu.TopPadding;
-        if (__instance.chestColorPicker is not null)
-        {
-            __instance.chestColorPicker.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
-        }
-
         if (BetterItemGrabMenu.Context is null)
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
             BetterItemGrabMenu.Instance!._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
             return;
+        }
+
+        __instance.drawBG = false;
+        __instance.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
+        __instance.height += BetterItemGrabMenu.TopPadding;
+        if (__instance.chestColorPicker is not null)
+        {
+            __instance.chestColorPicker.yPositionOnScreen -= BetterItemGrabMenu.TopPadding;
         }
 
         var inventory = new DisplayedItems(__instance.inventory, false);
@@ -534,6 +534,11 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_draw_prefix(SpriteBatch b)
     {
+        if (BetterItemGrabMenu.Context is null)
+        {
+            return;
+        }
+
         b.Draw(
             Game1.fadeToBlackRect,
             new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),

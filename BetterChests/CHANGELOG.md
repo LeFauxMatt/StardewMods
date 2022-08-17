@@ -1,5 +1,12 @@
 ﻿# Better Chests Change Log
 
+## 2.5.2 (August 16, 2022)
+
+### Fixed
+
+* Fixed CustomColorPicker being drawn over other menus.
+* Fixed StashToChest not working for currently opened chest.
+
 ## 2.5.1 (August 15, 2022)
 
 ### Changed
@@ -11,10 +18,10 @@
 ### Added
 
 * Added multiple options for the Configure Menu.
-  * Simple (Default) only shows Chest Label, Categorize, and Stash to Chest Priority/Stacks.
-  * Categorize will load the Categorize Menu directly.
-  * Full will show all the config options.
-  * Advanced is full, and some options will be open text fields.
+    * Simple (Default) only shows Chest Label, Categorize, and Stash to Chest Priority/Stacks.
+    * Categorize will load the Categorize Menu directly.
+    * Full will show all the config options.
+    * Advanced is full, and some options will be open text fields.
 
 ### Fixed
 
