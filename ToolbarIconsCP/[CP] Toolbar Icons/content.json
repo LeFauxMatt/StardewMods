@@ -48,7 +48,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.DebugMode/Toggle": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsCP\\Icons/4/method/ToggleDebugMode"
+        "Pathoschild.DebugMode/Toggle": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsCP\\Icons/4/method/ToggleDebugMenu"
       },
       "When": {
         "HasMod": "Pathoschild.DebugMode"
@@ -70,7 +70,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.HorseFluteAnywhere/SummonHorse": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsCP\\Icons/6/method/SummonHorse"
+        "Pathoschild.HorseFluteAnywhere/SummonHorse": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsCP\\Icons/6/method/TryUseHorseFlute"
       },
       "When": {
         "HasMod": "Pathoschild.HorseFluteAnywhere"
