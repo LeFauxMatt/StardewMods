@@ -9,11 +9,9 @@ Adds enhanced chest features to the game.
     * [Better Color Picker](#better-color-picker)
     * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
-    * [Categorize Chest](#categorize-chest)
     * [Chest Finder](#chest-finder)
     * [Chest Menu Tabs](#chest-menu-tabs)
     * [Collect Items](#collect-items)
-    * [Combine Chest](#combine-chest)
     * [Configurator](#configurator)
     * [Craft From Chest](#craft-from-chest)
     * [Filter Items](#filter-items)
@@ -26,13 +24,16 @@ Adds enhanced chest features to the game.
     * [Slot Lock](#slot-lock)
     * [Stash To Chest](#stash-to-chest)
     * [Transfer Items](#transfer-items)
+    * [Unload Chest](#unload-chest)
 * [Usage](#usage)
     * [Item Tags](#item-tags)
 * [Configurations](#configurations)
     * [Config Inheritance](#config-inheritance)
     * [Group By Values](#group-by-values)
+    * [In Game Menus](#in-game-menus)
     * [Option Values](#option-values)
     * [Range Values](#range-values)
+    * [Slot Lock Colors](#slot-lock-colors)
     * [Sort By Values](#sort-by-values)
 * [Mod Integrations](#mod-integrations)
     * [Automate](#automate)
@@ -81,24 +82,15 @@ Relaunches the Shipping Bin menu as a regular Chest inventory menu so that items
 
 With Carry Chest enabled, you can hit the Use Tool button to pick up chests into your inventory even if it has items.
 
-| Config          | Description                             | Default Value | Other Value(s)                                                       |
-|:----------------|:----------------------------------------|:--------------|:---------------------------------------------------------------------|
-| CarryChest      | Enables the Carry Chest feature.        | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
-| CarryChestLimit | Limits how many chests can be carried.  | `0`           | Any positive integer.<sup>2</sup>                                    |
-| CarryChestSlow  | Slowness debuff while carrying a chest. | `0`           | Positive integer from `0` (normal speed) to `4` (slime speed debuff) |
+| Config               | Description                             | Default Value | Other Value(s)                                                       |
+|:---------------------|:----------------------------------------|:--------------|:---------------------------------------------------------------------|
+| CarryChest           | Enables the Carry Chest feature.        | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+| CarryChestLimit      | Limits how many chests can be carried.  | `0`           | Any positive integer.<sup>2</sup>                                    |
+| CarryChestSlow       | Enables the Carry Chest Slow feature.   | `Enabled`     | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+| CarryChestSlowAmount | Slowness debuff while carrying a chest. | `0`           | Positive integer from `0` (normal speed) to `4` (slime speed debuff) |
 
 1. See [Option Values](#option-values).
 2. Use `0` for unlimited chests.
-
-### Categorize Chest
-
-Categorize Chest allows you to assign item categories to chests so that only those items can be stashed into that chest.
-
-| Config Option   | Description                           | Default Value | Other Value(s)                        |
-|:----------------|:--------------------------------------|:--------------|:--------------------------------------|
-| CategorizeChest | Enables the Categorize Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-
-1. See [Option Values](#option-values).
 
 ### Chest Finder
 
@@ -134,21 +126,22 @@ bypassing your inventory.<sup>1</sup>
 
 | Config       | Description                        | Default Value | Other Value(s)                        |
 |:-------------|:-----------------------------------|:--------------|:--------------------------------------|
-| CollectItems | Enables the Collect Items feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>2</sup> |
+| CollectItems | Enables the Collect Items feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
 
-1. Only items assigned from [Categorize Chest](#categorize-chest) will be collected.
-2. See [Option Values](#option-values).
+1. See [Option Values](#option-values).
 
 ### Configurator
 
 Configure chests individually using a hotkey, configuration tool, or toolbar icon.
 
-| Config                         | Description                                               | Default Value | Other Value(s)                            |
-|:-------------------------------|:----------------------------------------------------------|:--------------|:------------------------------------------|
-| Configurator                   | Enables the Configurator feature.                         | `true`        | `true`, `false`                           |
-| Configure                      | Assigns the keybind for configuring a chest.              | `"End"`       | Any valid button code.<sup>1</sup>        |
+| Config        | Description                                   | Default Value | Other Value(s)                                                  |
+|:--------------|:----------------------------------------------|:--------------|:----------------------------------------------------------------|
+| Configurator  | Enables the Configurator feature.             | `true`        | `true`, `false`                                                 |
+| Configure     | Assigns the keybind for configuring a chest.  | `"End"`       | Any valid button code.<sup>1</sup>                              |
+| ConfigureMenu | The type of config menu to open from a chest. | `"Simple"`    | `"Default"`, `"Categorize"`, `"Full"`, `"Advanced"`<sup>2</sup> |
 
 1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+2. See [In Game Menus](#in-game-menus).
 
 ### Craft From Chest
 
@@ -256,13 +249,16 @@ Adds a search bar to the top of the Chest Menu to only display items that meet a
 Hover over an item slot in your backpack, and hit a configurable key to lock the item in its slot which prevents it from
 being stashed into a chest.
 
-| Config   | Description                             | Default Value | Other Value(s)                        |
-|:---------|:----------------------------------------|:--------------|:--------------------------------------|
-| SlotLock | Enables the Slot Lock feature.          | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| LockSlot | Assigns the keybind for locking a slot. | `"A"`         | Any valid button code.<sup>2</sup>    |
+| Config        | Description                                     | Default Value | Other Value(s)                        |
+|:--------------|:------------------------------------------------|:--------------|:--------------------------------------|
+| SlotLock      | Enables the Slot Lock feature.                  | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
+| SlotLockColor | Assign the outline color for locked slots.      | `"Red"`       | `"Blue"`, `"Green"`, ...<sup>2</sup>  |
+| SlotLockHold  | Hold the LockSlot key and click to lock a slot. | `true`        | `false`                               |
+| LockSlot      | Assigns the keybind for locking a slot.         | `"A"`         | Any valid button code.<sup>3</sup>    |
 
 1. See [Option Values](#option-values).
-2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+2. See [Slot Lock Colors](#slot-lock-colors).
+3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Stash To Chest
 
@@ -275,6 +271,7 @@ Hit a configurable key to instantly stash items from your inventory into nearby 
 | StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                           |
 | StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                     |
 | StashToChestPriority         | Prioritize certain chests over others.                    | 0             | Any integer value.                                                            |
+| StashToChestStacks           | Allow stashing items to existing stacks.                  | `true`        | `true`, `false`                                                               |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
@@ -372,6 +369,16 @@ Group by is a text property of the item that organize will order by first.
 * **Color** - Group by the item color (only if context tag supports it).
 * **Name** - Group by the item name.
 
+## In Game Menus
+
+The types of in-game menus.
+
+* **Default** - Inherit from the parent option.
+* **Categorize** - Only the Categorize menu will be loaded.
+* **Simple** - Only show ChestLabel, Categorize, and Priority.
+* **Full** - Show all options.
+* **Advanced** - Show all options, and replace some options with open fields.
+
 ### Option Values
 
 The option value determines whether a feature will be enabled or disabled for a chest.
@@ -393,6 +400,29 @@ The Range value limits which chests will be selected for a feature relative to t
 * **World** - Any chest accessible to the player in the world.
 
 1. If parent value is unspecified, Location will be the default value.
+
+### Slot Lock Colors
+
+The color to indicate an item slot is locked. 
+
+* **Red** - ( R:255, G:0, B:0 )
+* **DarkRed** - ( R:139, G:0, B:0 )
+* **PaleVioletRed** - ( R:219, G:112, B:147 )
+* **Blue** - ( R:0, G:0, B:255 )
+* **Green** - ( R:0, G:128, B:0 )
+* **DarkGreen** - ( R:0, G:100, B:0 )
+* **Jade** - ( R:0, G:128, B:128 )
+* **Brown** - ( R:165, G:42, B:42 )
+* **DarkBrown** - ( R:128, G:0, B:0 )
+* **Yellow** - ( R:255, G:255, B:0 )
+* **DarkYellow** - ( R:218, G:165, B:32 )
+* **Aquamarine** - ( R:127, G:255, B:212 )
+* **Purple** - ( R:128, G:0, B:128 )
+* **DarkPurple** - ( R:75, G:0, B:130 )
+* **Cyan** - ( R:0, G:255, B:255 )
+* **Pink** - ( R:255, G:192, B:203 )
+* **Orange** - ( R:255, G:165, B:0 )
+* **Gray** - ( R:128, G:128, B:128 )
 
 ### Sort By Values
 
