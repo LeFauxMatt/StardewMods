@@ -337,7 +337,7 @@ public class ToolbarIcons : Mod
 
     private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
     {
-        if (!Game1.displayHUD || Game1.activeClickableMenu is not null)
+        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !this.Loaded)
         {
             return;
         }
@@ -365,7 +365,6 @@ public class ToolbarIcons : Mod
     {
         if (!this.Loaded)
         {
-            this.Loaded = true;
             foreach (var (key, data) in this.Helper.GameContent.Load<IDictionary<string, string>>(
                          "furyx639.ToolbarIcons/Toolbar"))
             {
@@ -385,20 +384,23 @@ public class ToolbarIcons : Mod
         }
 
         this.ReorientComponents();
+        this.Loaded = true;
 
         var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
-        if (gmcm.IsLoaded)
+        if (!gmcm.IsLoaded)
         {
-            // Register mod configuration
-            gmcm.Register(this.ModManifest, () => this._config = new(), this.SaveConfig);
-
-            gmcm.API.AddComplexOption(
-                this.ModManifest,
-                I18n.Config_CustomizeToolbar_Name,
-                this.DrawButton,
-                I18n.Config_CustomizeToolbar_Tooltip,
-                height: () => Game1.tileSize);
+            return;
         }
+
+        // Register mod configuration
+        gmcm.Register(this.ModManifest, () => this._config = new(), this.SaveConfig);
+
+        gmcm.API.AddComplexOption(
+            this.ModManifest,
+            I18n.Config_CustomizeToolbar_Name,
+            this.DrawButton,
+            I18n.Config_CustomizeToolbar_Tooltip,
+            height: () => Game1.tileSize);
     }
 
     private void ReorientComponents()
