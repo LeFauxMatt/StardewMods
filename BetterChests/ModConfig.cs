@@ -255,8 +255,8 @@ internal class ModConfig : StorageData
         sb.AppendLine($"Configurator: {this.Configurator.ToStringFast()}");
         sb.AppendLine($"ConfigureMenu: {this.ConfigureMenu.ToStringFast()}");
         sb.AppendLine($"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
-        sb.AppendLine($"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");
+        sb.AppendLine($"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CustomColorPicker: {this.CustomColorPicker.ToStringFast()}");
         sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
         sb.AppendLine($"FilterItems: {this.FilterItems.ToStringFast()}");
@@ -276,8 +276,8 @@ internal class ModConfig : StorageData
         sb.AppendLine($"SlotLockColor: {this.SlotLockColor.ToStringFast()}");
         sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChest: {this.StashToChest.ToStringFast()}");
-        sb.AppendLine($"StashToChestDistance: {this.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.StashToChestDisableLocations)}");
+        sb.AppendLine($"StashToChestDistance: {this.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"StashToChestStacks: {this.StashToChestStacks.ToStringFast()}");
         sb.AppendLine($"TransferItems: {this.TransferItems.ToStringFast()}");
         sb.AppendLine($"UnloadChest: {this.UnloadChest.ToStringFast()}");
