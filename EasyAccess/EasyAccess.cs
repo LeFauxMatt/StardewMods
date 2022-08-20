@@ -41,7 +41,7 @@ public class EasyAccess : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        I18n.Init(helper.Translation);
+        I18n.Init(this.Helper.Translation);
         Log.Monitor = this.Monitor;
 
         // Events
