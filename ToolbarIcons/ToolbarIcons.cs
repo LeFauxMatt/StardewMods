@@ -112,13 +112,8 @@ public class ToolbarIcons : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
-        I18n.Init(helper.Translation);
+        I18n.Init(this.Helper.Translation);
         ThemeHelper.Init(this.Helper, "furyx639.ToolbarIcons/Icons", "furyx639.ToolbarIcons/Arrows");
-
-        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
-        {
-            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
-        }
 
         // Events
         this.Helper.Events.Content.AssetRequested += ToolbarIcons.OnAssetRequested;
