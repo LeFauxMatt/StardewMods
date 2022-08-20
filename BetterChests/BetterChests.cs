@@ -24,7 +24,7 @@ public class BetterChests : Mod
     {
         Log.Monitor = this.Monitor;
         LocationHelper.Multiplayer = this.Helper.Multiplayer;
-        I18n.Init(helper.Translation);
+        I18n.Init(this.Helper.Translation);
         this._config = ConfigHelper.Init(this.Helper, this.ModManifest, this._features);
         IntegrationHelper.Init(this.Helper);
         StorageHelper.Init(this._config, this._storageTypes);
