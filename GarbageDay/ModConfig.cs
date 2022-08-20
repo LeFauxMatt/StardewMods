@@ -1,8 +1,23 @@
-#nullable disable
+namespace StardewMods.GarbageDay;
 
-namespace GarbageDay;
+using System.Text;
+using StardewMods.Common.Enums;
 
+/// <summary>
+///     Mod config data.
+/// </summary>
 public class ModConfig
 {
-    public int GarbageDay { get; set; } = 0;
+    /// <summary>
+    ///     Gets or sets the day of the week that garbage is collected.
+    /// </summary>
+    public DayOfWeek GarbageDay { get; set; } = DayOfWeek.Monday;
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"GarbageDay: {this.GarbageDay.ToStringFast()}");
+        return sb.ToString();
+    }
 }

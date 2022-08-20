@@ -1,11 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\build\common.targets"/>
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared"/>
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Name>Garbage Day</Name>
+        <Author>furyx639</Author>
+        <Description>Turns the town trash cans into chests.</Description>
+        <Version>3.0.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+        <RootNamespace>StardewMods.GarbageDay</RootNamespace>
+        <UniqueId>furyx639.GarbageDay</UniqueId>
+        <MinimumApiVersion>3.15.0</MinimumApiVersion>
+        <UpdateKeys>Nexus:8204</UpdateKeys>
+        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="content.json" CopyToOutputDirectory="Always"/>
-        <Content Include="expanded-storage.json" CopyToOutputDirectory="Always"/>
+        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     </ItemGroup>
 </Project>
