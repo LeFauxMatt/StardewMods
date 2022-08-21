@@ -4,7 +4,7 @@
 
 ### Changed
 
-* Have lid open when nearby.
+* Open the Garbage Can lid when a farmer is nearby.
 
 ## 3.0.0 ( August 20, 2022)
 
