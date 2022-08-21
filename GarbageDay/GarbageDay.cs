@@ -106,6 +106,16 @@ public class GarbageDay : Mod
                     typeof(GarbageDay),
                     nameof(GarbageDay.Chest_performToolAction_prefix),
                     PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
+                    typeof(GarbageDay),
+                    nameof(GarbageDay.Chest_UpdateFarmerNearby_prefix),
+                    PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
+                    typeof(GarbageDay),
+                    nameof(GarbageDay.Chest_updateWhenCurrentLocation_prefix),
+                    PatchType.Prefix),
             });
         HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
 
@@ -187,6 +197,98 @@ public class GarbageDay : Mod
     private static bool Chest_performToolAction_prefix(Chest __instance)
     {
         return !__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan");
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Chest_UpdateFarmerNearby_prefix(
+        Chest __instance,
+        ref bool ____farmerNearby,
+        ref int ____shippingBinFrameCounter,
+        ref int ___currentLidFrame,
+        GameLocation location,
+        bool animate)
+    {
+        if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
+        {
+            return true;
+        }
+
+        var shouldOpen = location.farmers.Any(
+            farmer => Math.Abs(farmer.getTileX() - __instance.TileLocation.X) <= 1f
+                   && Math.Abs(farmer.getTileY() - __instance.TileLocation.Y) <= 1f);
+        if (shouldOpen == ____farmerNearby)
+        {
+            return false;
+        }
+
+        ____farmerNearby = shouldOpen;
+        ____shippingBinFrameCounter = 5;
+
+        if (!animate)
+        {
+            ____shippingBinFrameCounter = -1;
+            ___currentLidFrame = ____farmerNearby ? __instance.getLastLidFrame() : __instance.startingLidFrame.Value;
+        }
+        else if (Game1.gameMode != 6)
+        {
+            location.localSound("trashcanlid");
+        }
+
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Chest_updateWhenCurrentLocation_prefix(
+        Chest __instance,
+        ref int ____shippingBinFrameCounter,
+        ref bool ____farmerNearby,
+        ref int ___currentLidFrame,
+        GameLocation environment)
+    {
+        if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
+        {
+            return true;
+        }
+
+
+        if (__instance.synchronized.Value)
+        {
+            __instance.openChestEvent.Poll();
+        }
+
+        __instance.fixLidFrame();
+        __instance.mutex.Update(environment);
+
+        __instance.UpdateFarmerNearby(environment);
+        if (____shippingBinFrameCounter > -1)
+        {
+            ____shippingBinFrameCounter--;
+            if (____shippingBinFrameCounter <= 0)
+            {
+                ____shippingBinFrameCounter = 5;
+                switch (____farmerNearby)
+                {
+                    case true when ___currentLidFrame < __instance.getLastLidFrame():
+                        ___currentLidFrame++;
+                        break;
+                    case false when ___currentLidFrame > __instance.startingLidFrame.Value:
+                        ___currentLidFrame--;
+                        break;
+                    default:
+                        ____shippingBinFrameCounter = -1;
+                        break;
+                }
+            }
+        }
+
+        if (Game1.activeClickableMenu is null && __instance.GetMutex().IsLockHeld())
+        {
+            __instance.GetMutex().ReleaseLock();
+        }
+
+        return false;
     }
 
     private static void GarbageHat(string command, string[] args)

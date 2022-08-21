@@ -246,7 +246,7 @@ internal class GarbageCan
                 () =>
                 {
                     this._chest.frameCounter.Value = 5;
-                    Game1.playSound("trashcanlid");
+                    Game1.playSound("trashcan");
                     Game1.player.Halt();
                     Game1.player.freezePause = 1000;
                 });
@@ -258,24 +258,6 @@ internal class GarbageCan
     public void EmptyTrash()
     {
         this.Items.Clear();
-    }
-
-    /// <summary>
-    ///     Updates the Garbage Can to match a color from one of the trashed items.
-    /// </summary>
-    public void UpdateColor()
-    {
-        var colorTags = this.Items.SelectMany(item => item.GetContextTags())
-                            .Where(tag => tag.StartsWith("color"))
-                            .ToList();
-        if (!colorTags.Any())
-        {
-            this._chest.playerChoiceColor.Value = Color.Gray;
-            return;
-        }
-
-        var index = this.Randomizer.Next(colorTags.Count);
-        this._chest.playerChoiceColor.Value = ColorHelper.FromTag(colorTags[index]);
     }
 
     private static Random VanillaRandomizer(int whichCan)
@@ -301,5 +283,23 @@ internal class GarbageCan
     {
         this._chest.addItem(item);
         this.UpdateColor();
+    }
+
+    /// <summary>
+    ///     Updates the Garbage Can to match a color from one of the trashed items.
+    /// </summary>
+    private void UpdateColor()
+    {
+        var colorTags = this.Items.SelectMany(item => item.GetContextTags())
+                            .Where(tag => tag.StartsWith("color"))
+                            .ToList();
+        if (!colorTags.Any())
+        {
+            this._chest.playerChoiceColor.Value = Color.Gray;
+            return;
+        }
+
+        var index = this.Randomizer.Next(colorTags.Count);
+        this._chest.playerChoiceColor.Value = ColorHelper.FromTag(colorTags[index]);
     }
 }
