@@ -90,11 +90,6 @@ public class TooManyAnimals : Mod
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
 
-        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
-        {
-            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
-        }
-
         // Patches
         HarmonyHelper.AddPatch(
             this.ModManifest.UniqueID,
