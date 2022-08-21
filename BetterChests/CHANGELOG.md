@@ -11,6 +11,7 @@
 ### Fixed
 
 * Fixed vanilla color picker rendering under menu.
+* Fixed AutoGrabber inventory menu overlapping with backpack inventory.
 
 ## 2.5.2 (August 16, 2022)
 

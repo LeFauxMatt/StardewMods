@@ -94,7 +94,9 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     {
         get
         {
-            if (this._capacity == this.ResizeChestCapacity && this._rows == this.ResizeChestMenuRows)
+            if (this._menuRows > 0
+             && this._capacity == this.ResizeChestCapacity
+             && this._rows == this.ResizeChestMenuRows)
             {
                 return this._menuRows;
             }

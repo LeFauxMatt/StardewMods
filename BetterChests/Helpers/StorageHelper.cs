@@ -393,14 +393,14 @@ internal class StorageHelper
             case IStorageObject storageObject:
                 storage = storageObject;
                 return true;
+            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
+                storage = new ObjectStorage(heldObj, parent, position);
+                return true;
             case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } shippingChest:
                 storage = new ShippingBinStorage(shippingChest, parent, position);
                 return true;
             case Chest { playerChest.Value: true } chest:
                 storage = new ChestStorage(chest, parent, position);
-                return true;
-            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
-                storage = new ObjectStorage(heldObj, parent, position);
                 return true;
             case ShippingBin or IslandWest when !StorageHelper.Config.BetterShippingBin:
                 storage = default;
