@@ -313,6 +313,7 @@ internal class CarryChest : IFeature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Harmony")]
     private static void Object_placementAction_postfix(
         SObject __instance,
         GameLocation location,
