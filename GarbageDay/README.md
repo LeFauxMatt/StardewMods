@@ -21,7 +21,8 @@ from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098
 
 ## Customization
 
-Integration with GarbageDay is possible using [Content Patcher](docs/mod-integration.md).
+Integration with GarbageDay is possible
+using [Content Patcher](https://github.com/Pathoschild/StardewMods/blob/develop/ContentPatcher/docs/author-guide.md).
 
 ### Map
 
