@@ -403,7 +403,7 @@ The Range value limits which chests will be selected for a feature relative to t
 
 ### Slot Lock Colors
 
-The color to indicate an item slot is locked. 
+The color to indicate an item slot is locked.
 
 * **Red** - ( R:255, G:0, B:0 )
 * **DarkRed** - ( R:139, G:0, B:0 )

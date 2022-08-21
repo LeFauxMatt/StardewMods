@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.5.3 (Unreleased)
+
+### Fixed
+
+* Fixed vanilla color picker rendering under menu.
+
 ## 2.5.2 (August 16, 2022)
 
 ### Fixed

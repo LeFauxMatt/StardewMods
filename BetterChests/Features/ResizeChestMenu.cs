@@ -198,6 +198,12 @@ internal class ResizeChestMenu : IFeature
         itemGrabMenu.height += ResizeChestMenu.ExtraSpace;
         itemGrabMenu.ItemsToGrabMenu.movePosition(0, -ResizeChestMenu.ExtraSpace / 2);
         itemGrabMenu.inventory.movePosition(0, ResizeChestMenu.ExtraSpace / 2);
+
+        if (itemGrabMenu.chestColorPicker is not null)
+        {
+            itemGrabMenu.chestColorPicker.yPositionOnScreen -= ResizeChestMenu.ExtraSpace / 2;
+        }
+
         if (itemGrabMenu.okButton is not null)
         {
             itemGrabMenu.okButton.bounds.Y += ResizeChestMenu.ExtraSpace / 2;
