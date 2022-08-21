@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 2.5.3 (Unreleased)
+## 2.5.3 (August 21, 2022)
 
 ### Changed
 
