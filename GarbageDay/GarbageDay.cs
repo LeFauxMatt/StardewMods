@@ -258,7 +258,6 @@ public class GarbageDay : Mod
             __instance.openChestEvent.Poll();
         }
 
-        __instance.fixLidFrame();
         __instance.mutex.Update(environment);
 
         __instance.UpdateFarmerNearby(environment);
@@ -271,7 +270,7 @@ public class GarbageDay : Mod
                 switch (____farmerNearby)
                 {
                     case true when ___currentLidFrame < __instance.getLastLidFrame():
-                        ___currentLidFrame++;
+                        ___currentLidFrame = ___currentLidFrame + 1;
                         break;
                     case false when ___currentLidFrame > __instance.startingLidFrame.Value:
                         ___currentLidFrame--;

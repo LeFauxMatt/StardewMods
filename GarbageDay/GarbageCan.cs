@@ -69,7 +69,6 @@ internal class GarbageCan
     public void AddLoot()
     {
         // Reset daily state
-        this._chest.resetLidFrame();
         this._checked = false;
         this._dropQiBeans = false;
 
@@ -245,10 +244,8 @@ internal class GarbageCan
             .RequestLock(
                 () =>
                 {
-                    this._chest.frameCounter.Value = 5;
                     Game1.playSound("trashcan");
-                    Game1.player.Halt();
-                    Game1.player.freezePause = 1000;
+                    this._chest.ShowMenu();
                 });
     }
 

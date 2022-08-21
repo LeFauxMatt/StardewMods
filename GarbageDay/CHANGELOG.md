@@ -11,7 +11,7 @@
 ### Added
 
 * Added console command:
-  * `garbage_hat` - Next Garbage Can will drop a hat.
+    * `garbage_hat` - Next Garbage Can will drop a hat.
 
 ### Changed
 
@@ -56,8 +56,8 @@
 ### Added
 
 * Added console commands:
-  * `garbage_fill` - Adds loot to all garbage cans.
-  * `garbage_kill` - Removes all garbage cans.
+    * `garbage_fill` - Adds loot to all garbage cans.
+    * `garbage_kill` - Removes all garbage cans.
 * Added Open when Farmer Nearby
 * Added color based on items
 
