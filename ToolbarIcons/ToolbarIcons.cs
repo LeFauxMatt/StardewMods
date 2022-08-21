@@ -359,8 +359,9 @@ public class ToolbarIcons : Mod
     {
         if (!this.Loaded)
         {
-            foreach (var (key, data) in this.Helper.GameContent.Load<IDictionary<string, string>>(
-                         "furyx639.ToolbarIcons/Toolbar"))
+            var toolbarData =
+                this.Helper.GameContent.Load<IDictionary<string, string>>("furyx639.ToolbarIcons/Toolbar");
+            foreach (var (key, data) in toolbarData)
             {
                 var info = data.Split('/');
                 var modId = key.Split('/')[0];
