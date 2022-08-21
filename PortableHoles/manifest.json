@@ -1,0 +1,12 @@
+{
+  "EntryDll": "PortableHoles.dll",
+  "Name": "Portable Holes",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Adds craftable holes to the game.",
+  "UniqueID": "furyx639.PortableHoles",
+  "MinimumApiVersion": "3.15.0",
+  "UpdateKeys": [
+    "Nexus:13471"
+  ]
+}
