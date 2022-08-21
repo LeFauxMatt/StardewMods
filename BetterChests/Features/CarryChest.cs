@@ -457,6 +457,7 @@ internal class CarryChest : IFeature
             return;
         }
 
+        Game1.playSound("pickUpItem");
         Game1.currentLocation.Objects.Remove(pos);
         this._helper.Input.Suppress(e.Button);
         CarryChest.CheckForOverburdened();
