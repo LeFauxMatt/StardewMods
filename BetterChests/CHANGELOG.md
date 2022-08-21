@@ -5,6 +5,7 @@
 ### Changed
 
 * Added sound on picking up chests.
+* Added sound on combining chests.
 * Chests picked up from broken can be opened while held.
 
 ### Fixed

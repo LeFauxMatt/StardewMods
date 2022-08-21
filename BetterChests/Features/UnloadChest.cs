@@ -125,6 +125,7 @@ internal class UnloadChest : IFeature
         if (combined && !StorageHelper.CurrentItem.Items.OfType<Item>().Any())
         {
             Game1.player.Items[Game1.player.CurrentToolIndex] = null;
+            Game1.playSound("Ship");
         }
         else
         {
