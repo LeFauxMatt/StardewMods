@@ -100,12 +100,11 @@ public class ToolbarIcons : Mod
 
     private bool Loaded { get; set; }
 
-    private bool ShowToolbar =>
-        this.Loaded
-     && Game1.displayHUD
-     && Context.IsPlayerFree
-     && Game1.activeClickableMenu is not null
-     && Game1.onScreenMenus.OfType<Toolbar>().Any();
+    private bool ShowToolbar => this.Loaded
+                             && Game1.displayHUD
+                             && Context.IsPlayerFree
+                             && Game1.activeClickableMenu is not null
+                             && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
     private SimpleIntegration? SimpleIntegration { get; set; }
 
@@ -202,7 +201,13 @@ public class ToolbarIcons : Mod
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.ShowToolbar || e.Button is not SButton.MouseLeft or SButton.MouseRight)
+        if (!this.ShowToolbar || this.Helper.Input.IsSuppressed(e.Button))
+        {
+            return;
+        }
+
+        if (e.Button is not SButton.MouseLeft or SButton.MouseRight
+         && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }

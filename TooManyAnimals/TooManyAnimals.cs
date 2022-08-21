@@ -15,8 +15,27 @@ using StardewValley.Menus;
 public class TooManyAnimals : Mod
 {
     private readonly PerScreen<int> _currentPage = new();
-    private readonly PerScreen<ClickableTextureComponent?> _nextPage = new();
-    private readonly PerScreen<ClickableTextureComponent?> _previousPage = new();
+
+    private readonly PerScreen<ClickableTextureComponent> _nextPage = new(
+        () => new(
+            new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
+            Game1.mouseCursors,
+            new(365, 495, 12, 11),
+            Game1.pixelZoom)
+        {
+            myID = 69420,
+        });
+
+    private readonly PerScreen<ClickableTextureComponent> _previousPage = new(
+        () => new(
+            new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
+            Game1.mouseCursors,
+            new(352, 495, 12, 11),
+            Game1.pixelZoom)
+        {
+            myID = 69421,
+        });
+
     private ModConfig? _config;
 
     private static TooManyAnimals? Instance { get; set; }
@@ -61,25 +80,14 @@ public class TooManyAnimals : Mod
         }
     }
 
-    private ClickableTextureComponent NextPage =>
-        this._nextPage.Value ??= new(
-            new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
-            Game1.mouseCursors,
-            new(365, 495, 12, 11),
-            Game1.pixelZoom)
-        {
-            myID = 69420,
-        };
+    private ClickableTextureComponent NextPage => this._nextPage.Value;
 
-    private ClickableTextureComponent PreviousPage =>
-        this._previousPage.Value ??= new(
-            new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
-            Game1.mouseCursors,
-            new(352, 495, 12, 11),
-            Game1.pixelZoom)
-        {
-            myID = 69421,
-        };
+    private ClickableTextureComponent PreviousPage => this._previousPage.Value;
+
+    [MemberNotNullWhen(true, nameof(TooManyAnimals.Stock))]
+    private bool ShowOverlay => Game1.activeClickableMenu is PurchaseAnimalsMenu
+                             && this.Stock is not null
+                             && this.Stock.Count > this.Config.AnimalShopLimit;
 
     private List<SObject>? Stock { get; set; }
 
@@ -121,9 +129,7 @@ public class TooManyAnimals : Mod
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
-         || this.Stock is null
-         || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (!this.ShowOverlay || this.Helper.Input.IsSuppressed(e.Button))
         {
             return;
         }
@@ -149,9 +155,7 @@ public class TooManyAnimals : Mod
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
-         || this.Stock is null
-         || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (!this.ShowOverlay)
         {
             return;
         }
@@ -180,7 +184,7 @@ public class TooManyAnimals : Mod
         // Register mod configuration
         gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
 
-        gmcm.API!.AddSectionTitle(this.ModManifest, I18n.Section_General_Name, I18n.Section_General_Description);
+        gmcm.API.AddSectionTitle(this.ModManifest, I18n.Section_General_Name, I18n.Section_General_Description);
 
         // Animal Shop Limit
         gmcm.API.AddNumberOption(
@@ -271,9 +275,7 @@ public class TooManyAnimals : Mod
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
-         || this.Stock is null
-         || this.Stock.Count <= this.Config.AnimalShopLimit)
+        if (!this.ShowOverlay)
         {
             return;
         }
