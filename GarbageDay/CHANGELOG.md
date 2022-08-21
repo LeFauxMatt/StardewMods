@@ -1,6 +1,12 @@
 # Garbage Day Change Log
 
-## 3.0.0
+## 3.0.1 (Unreleased)
+
+### Changed
+
+* Have lid open when nearby.
+
+## 3.0.0 ( August 20, 2022)
 
 ### Added
 

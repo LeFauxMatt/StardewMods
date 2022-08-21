@@ -6,7 +6,7 @@
         <Name>Garbage Day</Name>
         <Author>furyx639</Author>
         <Description>Turns the town trash cans into chests.</Description>
-        <Version>3.0.0</Version>
+        <Version>3.0.1</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.GarbageDay</RootNamespace>
         <UniqueId>furyx639.GarbageDay</UniqueId>
