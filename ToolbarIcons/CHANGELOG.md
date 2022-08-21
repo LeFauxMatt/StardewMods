@@ -1,5 +1,11 @@
 # Toolbar Icons Change Log
 
+## 2.3.3 (Unreleased)
+
+### Fixed
+
+* Fixed icons being drawn during cutscenes.
+
 ## 2.3.2 (August 19, 2022)
 
 ### Fixed
