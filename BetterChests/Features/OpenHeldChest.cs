@@ -1,7 +1,10 @@
 namespace StardewMods.BetterChests.Features;
 
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
@@ -35,6 +38,11 @@ internal class OpenHeldChest : IFeature
                     typeof(OpenHeldChest),
                     nameof(OpenHeldChest.Chest_addItem_prefix),
                     PatchType.Prefix),
+                new(
+                    AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
+                    typeof(OpenHeldChest),
+                    nameof(OpenHeldChest.Chest_performToolAction_transpiler),
+                    PatchType.Transpiler),
             });
     }
 
@@ -89,6 +97,67 @@ internal class OpenHeldChest : IFeature
 
         __result = item;
         return false;
+    }
+
+    private static IEnumerable<CodeInstruction> Chest_performToolAction_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Is(
+                    OpCodes.Newobj,
+                    AccessTools.Constructor(
+                        typeof(Debris),
+                        new[]
+                        {
+                            typeof(int),
+                            typeof(Vector2),
+                            typeof(Vector2),
+                        })))
+            {
+                yield return new(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(typeof(OpenHeldChest), nameof(OpenHeldChest.GetDebris));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+    }
+
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    private static Debris GetDebris(Chest chest, int objectIndex, Vector2 debrisOrigin, Vector2 playerPosition)
+    {
+        var newChest = new Chest(true, Vector2.Zero, chest.ParentSheetIndex)
+        {
+            Name = chest.Name,
+            SpecialChestType = chest.SpecialChestType,
+            fridge = { Value = chest.fridge.Value },
+            lidFrameCount = { Value = chest.lidFrameCount.Value },
+            playerChoiceColor = { Value = chest.playerChoiceColor.Value },
+        };
+
+        // Copy properties
+        newChest._GetOneFrom(chest);
+
+        // Copy items from regular chest types
+        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+         && !newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+        {
+            newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
+                    .CopyFrom(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+        }
+
+        // Copy modData
+        foreach (var (key, value) in chest.modData.Pairs)
+        {
+            newChest.modData[key] = value;
+        }
+
+        return new(objectIndex, debrisOrigin, playerPosition)
+        {
+            item = newChest,
+        };
     }
 
     private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)

@@ -2,6 +2,10 @@
 
 ## 2.5.3 (Unreleased)
 
+### Changed
+
+* Chests picked up from broken can be opened while held.
+
 ### Fixed
 
 * Fixed vanilla color picker rendering under menu.
