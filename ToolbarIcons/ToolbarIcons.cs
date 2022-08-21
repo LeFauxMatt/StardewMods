@@ -103,7 +103,7 @@ public class ToolbarIcons : Mod
     private bool ShowToolbar => this.Loaded
                              && Game1.displayHUD
                              && Context.IsPlayerFree
-                             && Game1.activeClickableMenu is not null
+                             && Game1.activeClickableMenu is null
                              && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
     private SimpleIntegration? SimpleIntegration { get; set; }
