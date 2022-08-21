@@ -1,6 +1,7 @@
 #pragma warning disable
 
 #region License
+
 // MIT License
 //
 // Copyright (c) 2018 CJBok
@@ -22,17 +23,19 @@
 //     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
 #endregion
 
 #region README
+
 // This implementation of SearchableItem was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
+
 #endregion
 
 namespace StardewMods.Common.Helpers.ItemRepository;
 
 using System;
-using StardewValley;
 
 /// <summary>A game item with metadata.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
@@ -67,10 +70,7 @@ internal class SearchableItem
     public Func<Item> CreateItem { get; }
 
     /// <summary>The item's display name for the current language.</summary>
-    public string DisplayName
-    {
-        get => this.Item.DisplayName;
-    }
+    public string DisplayName => this.Item.DisplayName;
 
     /// <summary>The item's unique ID for its type.</summary>
     public int ID { get; }
@@ -79,10 +79,7 @@ internal class SearchableItem
     public Item Item { get; }
 
     /// <summary>The item's default name.</summary>
-    public string Name
-    {
-        get => this.Item.Name;
-    }
+    public string Name => this.Item.Name;
 
     /*********
     ** Accessors
@@ -94,8 +91,7 @@ internal class SearchableItem
     /// <param name="substring">The substring to find.</param>
     public bool NameContains(string substring)
     {
-        return
-            this.Name.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1
+        return this.Name.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1
             || this.DisplayName.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1;
     }
 
@@ -103,8 +99,7 @@ internal class SearchableItem
     /// <param name="name">The substring to find.</param>
     public bool NameEquivalentTo(string name)
     {
-        return
-            this.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+        return this.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
             || this.DisplayName.Equals(name, StringComparison.OrdinalIgnoreCase);
     }
 }

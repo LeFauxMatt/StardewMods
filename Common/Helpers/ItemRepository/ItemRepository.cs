@@ -1,6 +1,7 @@
 #pragma warning disable
 
 #region License
+
 // MIT License
 //
 // Copyright (c) 2018 CJBok
@@ -22,27 +23,27 @@
 //     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
 #endregion
 
 #region README
+
 // This implementation of ItemData was derived from
 // https://github.com/CJBok/SDV-Mods/tree/master/CJBItemSpawner
+
 #endregion
 
 namespace StardewMods.Common.Helpers.ItemRepository;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using StardewValley;
 using StardewValley.GameData.FishPond;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.Tools;
-using SObject = StardewValley.Object;
 
 /// <summary>Provides methods for searching and constructing items.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
@@ -60,7 +61,10 @@ internal class ItemRepository
     /// <summary>Get all spawnable items.</summary>
     /// <param name="itemTypes">The item types to fetch (or null for any type).</param>
     /// <param name="includeVariants">Whether to include flavored variants like "Sunflower Honey".</param>
-    [SuppressMessage("ReSharper", "AccessToModifiedClosure", Justification = "TryCreate invokes the lambda immediately.")]
+    [SuppressMessage(
+        "ReSharper",
+        "AccessToModifiedClosure",
+        Justification = "TryCreate invokes the lambda immediately.")]
     public IEnumerable<SearchableItem> GetAll(ItemType[] itemTypes = null, bool includeVariants = true)
     {
         //
@@ -89,17 +93,36 @@ internal class ItemRepository
                 {
                     var quality = q;
 
-                    yield return this.TryCreate(ItemType.Tool, ToolFactory.axe, _ => ToolFactory.getToolFromDescription(ToolFactory.axe, quality));
-                    yield return this.TryCreate(ItemType.Tool, ToolFactory.hoe, _ => ToolFactory.getToolFromDescription(ToolFactory.hoe, quality));
-                    yield return this.TryCreate(ItemType.Tool, ToolFactory.pickAxe, _ => ToolFactory.getToolFromDescription(ToolFactory.pickAxe, quality));
-                    yield return this.TryCreate(ItemType.Tool, ToolFactory.wateringCan, _ => ToolFactory.getToolFromDescription(ToolFactory.wateringCan, quality));
+                    yield return this.TryCreate(
+                        ItemType.Tool,
+                        ToolFactory.axe,
+                        _ => ToolFactory.getToolFromDescription(ToolFactory.axe, quality));
+                    yield return this.TryCreate(
+                        ItemType.Tool,
+                        ToolFactory.hoe,
+                        _ => ToolFactory.getToolFromDescription(ToolFactory.hoe, quality));
+                    yield return this.TryCreate(
+                        ItemType.Tool,
+                        ToolFactory.pickAxe,
+                        _ => ToolFactory.getToolFromDescription(ToolFactory.pickAxe, quality));
+                    yield return this.TryCreate(
+                        ItemType.Tool,
+                        ToolFactory.wateringCan,
+                        _ => ToolFactory.getToolFromDescription(ToolFactory.wateringCan, quality));
                     if (quality != Tool.iridium)
                     {
-                        yield return this.TryCreate(ItemType.Tool, ToolFactory.fishingRod, _ => ToolFactory.getToolFromDescription(ToolFactory.fishingRod, quality));
+                        yield return this.TryCreate(
+                            ItemType.Tool,
+                            ToolFactory.fishingRod,
+                            _ => ToolFactory.getToolFromDescription(ToolFactory.fishingRod, quality));
                     }
                 }
 
-                yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset, _ => new MilkPail()); // these don't have any sort of ID, so we'll just assign some arbitrary ones
+                yield return
+                    this.TryCreate(
+                        ItemType.Tool,
+                        this.CustomIDOffset,
+                        _ => new MilkPail()); // these don't have any sort of ID, so we'll just assign some arbitrary ones
                 yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset + 1, _ => new Shears());
                 yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset + 2, _ => new Pan());
                 yield return this.TryCreate(ItemType.Tool, this.CustomIDOffset + 3, _ => new Wand());
@@ -169,9 +192,7 @@ internal class ItemRepository
                     yield return this.TryCreate(
                         ItemType.Weapon,
                         id,
-                        p => p.ID >= 32 && p.ID <= 34
-                            ? new Slingshot(p.ID)
-                            : new MeleeWeapon(p.ID));
+                        p => p.ID >= 32 && p.ID <= 34 ? new Slingshot(p.ID) : new MeleeWeapon(p.ID));
                 }
             }
 
@@ -221,7 +242,9 @@ internal class ItemRepository
                     }
 
                     // ring
-                    else if (id != 801 && fields?.Length >= 4 && fields[3] == "Ring") // 801 = wedding ring, which isn't an equippable ring
+                    else if (id != 801
+                          && fields?.Length >= 4
+                          && fields[3] == "Ring") // 801 = wedding ring, which isn't an equippable ring
                     {
                         if (ShouldGet(ItemType.Ring))
                         {
@@ -341,7 +364,14 @@ internal class ItemRepository
                                         this.CustomIDOffset * 5 + item.ParentSheetIndex,
                                         _ =>
                                         {
-                                            var honey = new SObject(Vector2.Zero, 340, $"{item.Name} Honey", false, true, false, false)
+                                            var honey = new SObject(
+                                                Vector2.Zero,
+                                                340,
+                                                $"{item.Name} Honey",
+                                                false,
+                                                true,
+                                                false,
+                                                false)
                                             {
                                                 Name = $"{item.Name} Honey",
                                                 preservedParentSheetIndex =
@@ -364,7 +394,8 @@ internal class ItemRepository
                                     foreach (var pair in Game1.objectInformation)
                                     {
                                         // get input
-                                        var input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))?.Item as SObject;
+                                        var input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))
+                                                        ?.Item as SObject;
                                         var inputTags = input?.GetContextTags();
                                         if (inputTags?.Any() != true)
                                         {
@@ -372,7 +403,8 @@ internal class ItemRepository
                                         }
 
                                         // check if roe-producing fish
-                                        if (!inputTags.Any(tag => simpleTags.Contains(tag)) && !complexTags.Any(set => set.All(tag => input.HasContextTag(tag))))
+                                        if (!inputTags.Any(tag => simpleTags.Contains(tag))
+                                         && !complexTags.Any(set => set.All(tag => input.HasContextTag(tag))))
                                         {
                                             continue;
                                         }
@@ -403,7 +435,8 @@ internal class ItemRepository
                                             });
 
                                         // aged roe
-                                        if (roe != null && pair.Key != 698) // aged sturgeon roe is caviar, which is a separate item
+                                        if (roe != null
+                                         && pair.Key != 698) // aged sturgeon roe is caviar, which is a separate item
                                         {
                                             yield return this.TryCreate(
                                                 ItemType.Object,

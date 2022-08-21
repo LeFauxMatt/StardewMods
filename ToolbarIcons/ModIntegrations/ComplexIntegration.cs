@@ -48,7 +48,6 @@ internal class ComplexIntegration : BaseIntegration
 
         this.AddIntegration(modId, index, hoverText, () => action.Invoke());
         return true;
-
     }
 
     /// <summary>
@@ -80,6 +79,5 @@ internal class ComplexIntegration : BaseIntegration
 
         this.AddIntegration(modId, index, hoverText, () => action.Invoke(arguments));
         return true;
-
     }
 }
