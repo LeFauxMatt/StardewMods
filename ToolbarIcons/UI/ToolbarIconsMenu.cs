@@ -33,9 +33,8 @@ internal class ToolbarIconsMenu : IClickableMenu
                                    .ToList();
         this.TextHeight = textBounds.Max(textBound => textBound.Y);
         this.MaxItems = (int)(this.height / this.TextHeight);
-        for (var index = 0; index < this.Icons.Count; index++)
+        foreach (var icon in this.Icons)
         {
-            var icon = this.Icons[index];
             if (components.TryGetValue(icon.Id, out var component))
             {
                 this.Components.Add(
@@ -118,17 +117,19 @@ internal class ToolbarIconsMenu : IClickableMenu
         set
         {
             value = Math.Max(Math.Min(value, this.Components.Count - this.MaxItems), 0);
-            if (this._index != value)
+            if (this._index == value)
             {
-                this._index = value;
-                this.ScrollBar.bounds.Y = this.ScrollBarRunner.Top
-                                        + (int)((this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height)
-                                              * ((float)this._index / (this.Components.Count - this.MaxItems)));
-                for (var index = 0; index < this.Components.Count; index++)
-                {
-                    this.Components[index].bounds.Y =
-                        (int)(this.yPositionOnScreen + (index - this._index) * this.TextHeight);
-                }
+                return;
+            }
+
+            this._index = value;
+            this.ScrollBar.bounds.Y = this.ScrollBarRunner.Top
+                                    + (int)((this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height)
+                                          * ((float)this._index / (this.Components.Count - this.MaxItems)));
+            for (var index = 0; index < this.Components.Count; index++)
+            {
+                this.Components[index].bounds.Y =
+                    (int)(this.yPositionOnScreen + (index - this._index) * this.TextHeight);
             }
         }
     }
