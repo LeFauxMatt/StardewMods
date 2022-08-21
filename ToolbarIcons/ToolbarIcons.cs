@@ -100,6 +100,13 @@ public class ToolbarIcons : Mod
 
     private bool Loaded { get; set; }
 
+    private bool ShowToolbar =>
+        this.Loaded
+     && Game1.displayHUD
+     && Context.IsPlayerFree
+     && Game1.activeClickableMenu is not null
+     && Game1.onScreenMenus.OfType<Toolbar>().Any();
+
     private SimpleIntegration? SimpleIntegration { get; set; }
 
     private Toolbar? Toolbar
@@ -195,12 +202,7 @@ public class ToolbarIcons : Mod
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !Game1.onScreenMenus.OfType<Toolbar>().Any())
-        {
-            return;
-        }
-
-        if (e.Button is not SButton.MouseLeft or SButton.MouseRight)
+        if (!this.ShowToolbar || e.Button is not SButton.MouseLeft or SButton.MouseRight)
         {
             return;
         }
@@ -220,7 +222,7 @@ public class ToolbarIcons : Mod
 
     private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
     {
-        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !Game1.onScreenMenus.OfType<Toolbar>().Any())
+        if (!this.ShowToolbar)
         {
             return;
         }
@@ -316,10 +318,7 @@ public class ToolbarIcons : Mod
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!this.Loaded
-         || !Game1.displayHUD
-         || Game1.activeClickableMenu is not null
-         || !Game1.onScreenMenus.OfType<Toolbar>().Any())
+        if (!this.ShowToolbar)
         {
             return;
         }
@@ -332,7 +331,7 @@ public class ToolbarIcons : Mod
 
     private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
     {
-        if (!Game1.displayHUD || Game1.activeClickableMenu is not null || !this.Loaded)
+        if (!this.ShowToolbar)
         {
             return;
         }
