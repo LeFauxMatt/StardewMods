@@ -321,10 +321,9 @@ internal class CarryChest : IFeature
         int y,
         ref bool __result)
     {
-        var pos = new Vector2(x / Game1.tileSize, y / Game1.tileSize);
         if (!__result
          || __instance is not Chest held
-         || !location.Objects.TryGetValue(pos, out var obj)
+         || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
          || obj is not Chest placed)
         {
             return;
@@ -336,12 +335,6 @@ internal class CarryChest : IFeature
         {
             placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
                   .CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
-        }
-
-        // Copy modData
-        foreach (var (key, value) in held.modData.Pairs)
-        {
-            placed.modData[key] = value;
         }
 
         // Copy properties

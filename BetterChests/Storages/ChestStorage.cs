@@ -32,11 +32,7 @@ internal class ChestStorage : BaseStorage, IColorable
             playerChoiceColor = { Value = this.Chest.playerChoiceColor.Value },
         };
 
-        foreach (var (key, value) in this.Chest.modData.Pairs)
-        {
-            this._chest.modData[key] = value;
-        }
-
+        this._chest._GetOneFrom(this.Chest);
         this._chest.resetLidFrame();
     }
 

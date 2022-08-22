@@ -148,12 +148,6 @@ internal class OpenHeldChest : IFeature
                     .CopyFrom(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
-        // Copy modData
-        foreach (var (key, value) in chest.modData.Pairs)
-        {
-            newChest.modData[key] = value;
-        }
-
         return new(objectIndex, debrisOrigin, playerPosition)
         {
             item = newChest,
