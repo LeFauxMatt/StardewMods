@@ -1,0 +1,6 @@
+{
+  "config.production-time.name": "Production Time",
+  "config.production-time.tooltip": "The default production time in game minutes.",
+  "item.ordinary-capsule.name": "Ordinary Capsule",
+  "item.ordinary-capsule.description": "There is nothing strange about this capsule."
+}
