@@ -193,7 +193,7 @@ internal class ResizeChestMenu : IFeature
             return;
         }
 
-        ResizeChestMenu.ExtraSpace = BetterItemGrabMenu.Context.MenuExtraSpace;
+        ResizeChestMenu.ExtraSpace = (itemGrabMenu.ItemsToGrabMenu.rows - 3) * Game1.tileSize;
         itemGrabMenu.yPositionOnScreen -= ResizeChestMenu.ExtraSpace / 2;
         itemGrabMenu.height += ResizeChestMenu.ExtraSpace;
         itemGrabMenu.ItemsToGrabMenu.movePosition(0, -ResizeChestMenu.ExtraSpace / 2);

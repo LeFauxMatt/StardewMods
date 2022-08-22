@@ -1,5 +1,16 @@
 ﻿# Better Chests Change Log
 
+## 2.5.4 (Unreleased)
+
+### Changed
+
+* Moved menu ChestLabel to not overlap with the vanilla Color Picker.
+
+### Fixed
+
+* Fixed ResizeChest and ResizeChestMenu not being Disabled.
+* Fixed ChestLabel not supporting Zoom levels.
+
 ## 2.5.3 (August 21, 2022)
 
 ### Changed

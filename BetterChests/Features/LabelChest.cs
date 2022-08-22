@@ -3,7 +3,7 @@
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
 /// <summary>
@@ -66,15 +66,17 @@ internal class LabelChest : IFeature
             return;
         }
 
+        var bounds = Game1.smallFont.MeasureString(BetterItemGrabMenu.Context.ChestLabel).ToPoint();
+
         IClickableMenu.drawHoverText(
             e.SpriteBatch,
             BetterItemGrabMenu.Context.ChestLabel,
             Game1.smallFont,
-            overrideX: itemGrabMenu.xPositionOnScreen,
+            overrideX: itemGrabMenu.xPositionOnScreen - bounds.X - IClickableMenu.borderWidth,
             overrideY: itemGrabMenu.yPositionOnScreen
-                     - IClickableMenu.spaceToClearSideBorder
-                     - Game1.tileSize
-                     - (BetterItemGrabMenu.Context.SearchItems is FeatureOption.Enabled ? 14 * Game1.pixelZoom : 0));
+                     - IClickableMenu.borderWidth
+                     - BetterItemGrabMenu.TopPadding
+                     - Game1.tileSize);
     }
 
     private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)
@@ -84,12 +86,9 @@ internal class LabelChest : IFeature
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
-                / Game1.tileSize;
-
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+        var pos = CommonHelpers.GetCursorTile();
+        if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+          && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
          || !StorageHelper.TryGetOne(obj, out var storage)
          || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {

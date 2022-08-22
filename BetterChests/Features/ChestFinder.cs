@@ -162,7 +162,7 @@ internal class ChestFinder : IFeature
         var srcRect = new Rectangle(412, 495, 5, 4);
         foreach (var storage in this.Storages)
         {
-            var pos = storage.Position * 64f + new Vector2(32, -48);
+            var pos = (storage.Position + new Vector2(0.5f, -0.75f)) * Game1.tileSize;
             var onScreenPos = default(Vector2);
             if (Utility.isOnScreen(pos, 64))
             {

@@ -32,7 +32,7 @@ internal class StorageHelper
             () =>
             {
                 var referenceContext = new Dictionary<object, IStorageObject>();
-                foreach (var location in LocationHelper.AllLocations)
+                foreach (var location in CommonHelpers.AllLocations)
                 {
                     switch (location)
                     {
@@ -93,7 +93,7 @@ internal class StorageHelper
             }
 
             // Iterate Locations
-            foreach (var location in LocationHelper.AllLocations)
+            foreach (var location in CommonHelpers.AllLocations)
             {
                 foreach (var storage in StorageHelper.FromLocation(location, excluded))
                 {
@@ -142,7 +142,7 @@ internal class StorageHelper
         get
         {
             var excluded = new HashSet<object>();
-            return LocationHelper.AllLocations.SelectMany(location => StorageHelper.FromLocation(location, excluded));
+            return CommonHelpers.AllLocations.SelectMany(location => StorageHelper.FromLocation(location, excluded));
         }
     }
 

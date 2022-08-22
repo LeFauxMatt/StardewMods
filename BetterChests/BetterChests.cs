@@ -23,7 +23,7 @@ public class BetterChests : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
-        LocationHelper.Multiplayer = this.Helper.Multiplayer;
+        CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
         this._config = ConfigHelper.Init(this.Helper, this.ModManifest, this._features);
         IntegrationHelper.Init(this.Helper);

@@ -404,17 +404,7 @@ internal class CarryChest : IFeature
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
-                / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame
-         || Game1.mouseCursorTransparency == 0f
-         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
-        {
-            pos = Game1.player.GetGrabTile();
-        }
-
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
+        var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
          || !StorageHelper.TryGetOne(obj, out var storage)
          || storage.CarryChest is not FeatureOption.Enabled)

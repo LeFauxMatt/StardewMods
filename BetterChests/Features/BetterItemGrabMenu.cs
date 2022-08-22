@@ -12,6 +12,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.UI;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.CommonHarmony.Enums;
@@ -358,6 +359,7 @@ internal class BetterItemGrabMenu : IFeature
                 : actualInventory;
     }
 
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static InventoryMenu GetItemsToGrabMenu(
         int xPosition,
         int yPosition,
@@ -373,7 +375,8 @@ internal class BetterItemGrabMenu : IFeature
     {
         if (BetterItemGrabMenu.Context is null
          || BetterItemGrabMenu.Context.MenuCapacity <= 0
-         || BetterItemGrabMenu.Context.MenuRows <= 0)
+         || BetterItemGrabMenu.Context.MenuRows <= 0
+         || BetterItemGrabMenu.Context.ResizeChestMenu is not FeatureOption.Enabled)
         {
             return new(
                 xPosition,

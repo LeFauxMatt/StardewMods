@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Features;
 
 using System.Globalization;
 using System.Linq;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.Common.Enums;
@@ -71,17 +70,7 @@ internal class UnloadChest : IFeature
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
-                / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame
-         || Game1.mouseCursorTransparency == 0f
-         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
-        {
-            pos = Game1.player.GetGrabTile();
-        }
-
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
+        var pos = CommonHelpers.GetCursorTile(1);
         if (!StorageHelper.TryGetOne(Game1.currentLocation, pos, out var toStorage))
         {
             return;
