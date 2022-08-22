@@ -41,12 +41,6 @@ public interface IStorageObject : IStorageData, IEqualityComparer<IStorageObject
     public int MenuCapacity { get; }
 
     /// <summary>
-    ///     Gets the extra vertical space needed for the <see cref="InventoryMenu" /> based on
-    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
-    /// </summary>
-    public int MenuExtraSpace { get; }
-
-    /// <summary>
     ///     Gets the number of rows to display on the <see cref="InventoryMenu" /> based on
     ///     <see cref="IStorageData.ResizeChestMenuRows" />.
     /// </summary>
