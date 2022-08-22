@@ -252,7 +252,6 @@ public class GarbageDay : Mod
             return true;
         }
 
-
         if (__instance.synchronized.Value)
         {
             __instance.openChestEvent.Poll();
@@ -270,7 +269,7 @@ public class GarbageDay : Mod
                 switch (____farmerNearby)
                 {
                     case true when ___currentLidFrame < __instance.getLastLidFrame():
-                        ___currentLidFrame = ___currentLidFrame + 1;
+                        ___currentLidFrame++;
                         break;
                     case false when ___currentLidFrame > __instance.startingLidFrame.Value:
                         ___currentLidFrame--;
@@ -490,7 +489,7 @@ public class GarbageDay : Mod
          || obj is not Chest chest
          || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
          || !this._garbageCans.TryGetValue(whichCan, out var garbageCan)
-         || garbageCan?.Value is null)
+         || garbageCan.Value is null)
         {
             return;
         }
