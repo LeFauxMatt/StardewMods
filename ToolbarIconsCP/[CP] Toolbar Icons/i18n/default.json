@@ -10,6 +10,7 @@
   "button.LookupAnything": "Toggle Lookup Anything Search",
   "button.ResetTerrainFeatures": "Reset Terrain Features",
   "button.Screenshot": "Take Screenshot",
+  "button.TractorMod": "Summon Tractor",
   // Config
   "config.EventLookupHotkey.name": "Event Lookup Hotkey",
   "config.EventLookupHotkey.description": "The hotkey to press to activate the Event Lookup menu.",

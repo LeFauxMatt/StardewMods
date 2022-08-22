@@ -120,6 +120,17 @@
       "When": {
         "HasMod": "aedenthorn.Screenshot"
       }
+    },
+    // Add Tractor Mod Icon
+    {
+      "Action": "EditData",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
+      "Entries": {
+        "Pathoschild.TractorMod/SummonTractor": "{{i18n: button.TractorMod}}/furyx639.ToolbarIconsCP\\Icons/15/method/SummonTractor"
+      },
+      "When": {
+        "HasMod": "Pathoschild.TractorMod"
+      }
     }
   ]
 }
