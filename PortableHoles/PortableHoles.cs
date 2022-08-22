@@ -318,7 +318,7 @@ public class PortableHoles : Mod
                 asset =>
                 {
                     var data = asset.AsDictionary<string, string>().Data;
-                    data.Add("Portable Hole", "769 99/Field/71/true/Mining 10/Staircase");
+                    data.Add("Portable Hole", $"769 99/Field/71/true/Mining 10/{I18n.Item_PortableHole_Name()}");
                 });
         }
     }

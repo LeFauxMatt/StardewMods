@@ -4,18 +4,8 @@ Craftable holes
 
 ## Contents
 
-* [Configurations](#configurations)
 * [Customization](#customization)
 * [Translations](#translations)
-
-## Configurations
-
-For ease of use, it is recommended to set config options
-from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098).
-
-| Config     | Description                      | Default Value | Other Value(s)       |
-|:-----------|:---------------------------------|---------------|:---------------------|
-| GarbageDay | The day that garbage is cleared. | `"Monday"`    | Any day of the week. |
 
 ## Customization
 
