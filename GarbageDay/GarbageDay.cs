@@ -74,7 +74,7 @@ public class GarbageDay : Mod
     public override void Entry(IModHelper helper)
     {
         Log.Monitor = this.Monitor;
-        LocationHelper.Multiplayer = this.Helper.Multiplayer;
+        CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
 
         // Console Commands
@@ -297,7 +297,7 @@ public class GarbageDay : Mod
     private static void GarbageKill(string command, string[] args)
     {
         var objectsToRemove = new List<(GameLocation, Vector2)>();
-        foreach (var location in LocationHelper.AllLocations)
+        foreach (var location in CommonHelpers.AllLocations)
         {
             foreach (var (tile, obj) in location.Objects.Pairs)
             {
@@ -405,7 +405,7 @@ public class GarbageDay : Mod
                                 new(
                                     () =>
                                     {
-                                        var location = LocationHelper.AllLocations.FirstOrDefault(
+                                        var location = CommonHelpers.AllLocations.FirstOrDefault(
                                             location => asset.Name.IsEquivalentTo(location.mapPath.Value));
                                         if (location is null)
                                         {
@@ -474,17 +474,7 @@ public class GarbageDay : Mod
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
-                / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame
-         || Game1.mouseCursorTransparency == 0f
-         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
-        {
-            pos = Game1.player.GetGrabTile();
-        }
-
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
+        var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
          || obj is not Chest chest
          || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
@@ -591,7 +581,7 @@ public class GarbageDay : Mod
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
         var objectsToRemove = new List<(GameLocation, Vector2)>();
-        foreach (var location in LocationHelper.AllLocations)
+        foreach (var location in CommonHelpers.AllLocations)
         {
             foreach (var (tile, obj) in location.Objects.Pairs)
             {
