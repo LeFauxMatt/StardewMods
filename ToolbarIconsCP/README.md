@@ -18,6 +18,7 @@ Adds shortcut icons to activate hotkeys/commands from other mods.
 * [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541)
 * [Reset Terrain Features for .NET 5](https://www.nexusmods.com/stardewvalley/mods/9350)
 * [Simple Screenshots](https://www.nexusmods.com/stardewvalley/mods/10178)
+* [Tractor Mod](https://www.nexusmods.com/stardewvalley/mods/1401)
 
 ### Translations
 
