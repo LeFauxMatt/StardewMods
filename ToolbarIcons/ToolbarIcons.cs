@@ -23,6 +23,7 @@ public class ToolbarIcons : Mod
     private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
     private const string GenericModConfigMenuId = "spacechase0.GenericModConfigMenu";
+    private const string MagicId = "spacechase0.Magic";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
 
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
@@ -317,6 +318,26 @@ public class ToolbarIcons : Mod
                     {
                         enabledIndoors.SetValue(!enabledIndoors.GetValue());
                     }
+                };
+            });
+        this.ComplexIntegration.AddCustomAction(
+            ToolbarIcons.MagicId,
+            14,
+            I18n.Button_MagicMenu(),
+            _ =>
+            {
+                var magicMenu = ReflectionHelper.GetAssemblyByName("Magic")
+                                                ?.GetType("Magic.Framework.Game.Interface.MagicMenu")
+                                                ?.GetConstructor(Array.Empty<Type>());
+                return () =>
+                {
+                    if (magicMenu is null)
+                    {
+                        return;
+                    }
+
+                    var menu = magicMenu.Invoke(Array.Empty<object>());
+                    Game1.activeClickableMenu = (IClickableMenu)menu;
                 };
             });
     }

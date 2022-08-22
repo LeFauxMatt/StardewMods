@@ -1,5 +1,11 @@
 # Toolbar Icons Change Log
 
+## 2.4.0 (Unreleased)
+
+### Added
+
+* Added support for Magic.
+
 ## 2.3.3 (August 21, 2022)
 
 ### Fixed
