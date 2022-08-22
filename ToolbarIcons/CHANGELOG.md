@@ -1,6 +1,6 @@
 # Toolbar Icons Change Log
 
-## 2.3.3 (Unreleased)
+## 2.3.3 (August 21, 2022)
 
 ### Fixed
 
