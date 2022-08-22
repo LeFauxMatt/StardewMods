@@ -2,8 +2,8 @@
 
 using System.Collections.Generic;
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
@@ -201,17 +201,7 @@ public class OrdinaryCapsule : Mod
             return;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
-                / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame
-         || Game1.mouseCursorTransparency == 0f
-         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
-        {
-            pos = Game1.player.GetGrabTile();
-        }
-
-        pos.X = (int)pos.X;
-        pos.Y = (int)pos.Y;
+        var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
          || obj is not { bigCraftable.Value: true, ParentSheetIndex: 97 }
          || !obj.modData.ContainsKey("furyx639.OrdinaryCapsule/OrdinaryCapsule")

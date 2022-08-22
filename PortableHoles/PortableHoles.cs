@@ -161,9 +161,7 @@ public class PortableHoles : Mod
         float scaleSize,
         float transparency,
         float layerDepth,
-        StackDrawType drawStackNumber,
-        Color color,
-        bool drawShadow)
+        Color color)
     {
         if (!__instance.modData.ContainsKey("furyx639.PortableHoles/PortableHole"))
         {
@@ -243,6 +241,7 @@ public class PortableHoles : Mod
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static bool Object_drawWhenHeld_prefix(
         SObject __instance,
         SpriteBatch spriteBatch,
@@ -285,15 +284,7 @@ public class PortableHoles : Mod
             return false;
         }
 
-        var pos = new Vector2(Game1.getOldMouseX() + Game1.viewport.X, Game1.getOldMouseY() + Game1.viewport.Y)
-                / Game1.tileSize;
-        if (!Game1.wasMouseVisibleThisFrame
-         || Game1.mouseCursorTransparency == 0f
-         || !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player))
-        {
-            pos = Game1.player.GetGrabTile();
-        }
-
+        var pos = CommonHelpers.GetCursorTile(1);
         mineShaft.createLadderDown((int)pos.X, (int)pos.Y, true);
         return true;
     }
