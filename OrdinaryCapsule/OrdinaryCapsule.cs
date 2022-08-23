@@ -5,9 +5,6 @@ using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 
 /// <inheritdoc />
 public class OrdinaryCapsule : Mod
@@ -20,76 +17,21 @@ public class OrdinaryCapsule : Mod
         I18n.Init(this.Helper.Translation);
         OrdinaryCapsule.Config = this.Helper.ReadConfig<ModConfig>();
 
-        // Patches
-        HarmonyHelper.AddPatches(
-            this.ModManifest.UniqueID,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem)),
-                    typeof(OrdinaryCapsule),
-                    nameof(OrdinaryCapsule.CraftingRecipe_createItem_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                    typeof(OrdinaryCapsule),
-                    nameof(OrdinaryCapsule.Item_canStackWith_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(SObject), "getMinutesForCrystalarium"),
-                    typeof(OrdinaryCapsule),
-                    nameof(OrdinaryCapsule.Object_getMinutesForCrystalarium_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(SObject), nameof(SObject.minutesElapsed)),
-                    typeof(OrdinaryCapsule),
-                    nameof(OrdinaryCapsule.Object_minutesElapsed_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                    typeof(OrdinaryCapsule),
-                    nameof(OrdinaryCapsule.Object_placementAction_postfix),
-                    PatchType.Postfix),
-            });
-        HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
-
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
         this.Helper.Events.GameLoop.DayStarted += OrdinaryCapsule.OnDayStarted;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-    }
+        this.Helper.Events.World.ObjectListChanged += OrdinaryCapsule.OnObjectListChanged;
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void CraftingRecipe_createItem_postfix(CraftingRecipe __instance, ref Item __result)
-    {
-        if (!__instance.name.Equals("Ordinary Capsule")
-         || __result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 97 } obj)
-        {
-            return;
-        }
-
-        obj.Name = "Crystalarium";
-        obj.modData["furyx639.OrdinaryCapsule/OrdinaryCapsule"] = "true";
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
-    {
-        if (!__result
-         || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 97 } obj
-         || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 97 } otherObj)
-        {
-            return;
-        }
-
-        if (obj.modData.ContainsKey("furyx639.OrdinaryCapsule/OrdinaryCapsule")
-          ^ otherObj.modData.ContainsKey("furyx639.OrdinaryCapsule/OrdinaryCapsule"))
-        {
-            __result = false;
-        }
+        // Patches
+        var harmony = new Harmony(this.ModManifest.UniqueID);
+        harmony.Patch(
+            AccessTools.Method(typeof(SObject), "getMinutesForCrystalarium"),
+            postfix: new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_getMinutesForCrystalarium_postfix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.minutesElapsed)),
+            new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_minutesElapsed_prefix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -115,36 +57,12 @@ public class OrdinaryCapsule : Mod
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_minutesElapsed_prefix(SObject __instance)
     {
-        if (__instance is not { bigCraftable.Value: true, ParentSheetIndex: 97 })
+        if (__instance is not { bigCraftable.Value: true, Name: "Crystalarium", ParentSheetIndex: 97 })
         {
             return true;
         }
 
         return __instance.heldObject.Value is not null;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Harmony")]
-    private static void Object_placementAction_postfix(
-        SObject __instance,
-        GameLocation location,
-        int x,
-        int y,
-        ref bool __result)
-    {
-        if (!__result
-         || __instance is not { bigCraftable.Value: true, ParentSheetIndex: 97 }
-         || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
-         || obj is not { bigCraftable.Value: true, ParentSheetIndex: 97 })
-        {
-            return;
-        }
-
-        // Copy properties
-        obj._GetOneFrom(__instance);
-        obj.Name = "Crystalarium";
-        obj.modData["furyx639.OrdinaryCapsule/OrdinaryCapsule"] = "true";
     }
 
     private static void OnDayStarted(object? sender, DayStartedEventArgs e)
@@ -153,6 +71,19 @@ public class OrdinaryCapsule : Mod
          && !Game1.player.craftingRecipes.ContainsKey("Ordinary Capsule"))
         {
             Game1.player.craftingRecipes.Add("Ordinary Capsule", 0);
+        }
+    }
+
+    private static void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
+    {
+        foreach (var (_, obj) in e.Added)
+        {
+            if (obj is not { bigCraftable.Value: true, ParentSheetIndex: 97 })
+            {
+                continue;
+            }
+
+            obj.Name = "Crystalarium";
         }
     }
 
@@ -203,8 +134,7 @@ public class OrdinaryCapsule : Mod
 
         var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-         || obj is not { bigCraftable.Value: true, ParentSheetIndex: 97 }
-         || !obj.modData.ContainsKey("furyx639.OrdinaryCapsule/OrdinaryCapsule")
+         || obj is not { bigCraftable.Value: true, Name: "Crystalarium", ParentSheetIndex: 97 }
          || obj.heldObject.Value is not null
          || obj.MinutesUntilReady > 0)
         {
