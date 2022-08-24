@@ -1,25 +1,59 @@
 ﻿namespace StardewMods.OrdinaryCapsule;
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Helpers.ItemRepository;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 
 /// <inheritdoc />
 public class OrdinaryCapsule : Mod
 {
-    private static ModConfig? Config;
+    private static readonly Dictionary<int, int> CachedTimes = new();
+
+    private static readonly Lazy<List<Item>> ItemsLazy = new(
+        () => new(from item in new ItemRepository().GetAll() select item.Item));
+
+    private ModConfig? _config;
+
+    private static IEnumerable<Item> AllItems => OrdinaryCapsule.ItemsLazy.Value;
+
+    private ModConfig Config
+    {
+        get
+        {
+            if (this._config is not null)
+            {
+                return this._config;
+            }
+
+            ModConfig? config = null;
+            try
+            {
+                config = this.Helper.ReadConfig<ModConfig>();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            this._config = config ?? new ModConfig();
+            Log.Trace(this._config.ToString());
+            return this._config;
+        }
+    }
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         I18n.Init(this.Helper.Translation);
-        OrdinaryCapsule.Config = this.Helper.ReadConfig<ModConfig>();
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
-        this.Helper.Events.GameLoop.DayStarted += OrdinaryCapsule.OnDayStarted;
+        this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.World.ObjectListChanged += OrdinaryCapsule.OnObjectListChanged;
@@ -34,6 +68,33 @@ public class OrdinaryCapsule : Mod
             new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_minutesElapsed_prefix)));
     }
 
+    private static int GetMinutes(Item item)
+    {
+        var productionTimes = Game1.content.Load<Dictionary<string, int>>("furyx639.OrdinaryCapsule/ProductionTime");
+        var minutes = productionTimes.Where(kvp => item.GetContextTags().Contains(kvp.Key))
+                                     .Select(kvp => kvp.Value)
+                                     .FirstOrDefault();
+        OrdinaryCapsule.CachedTimes[item.ParentSheetIndex] = minutes;
+        return minutes;
+    }
+
+    private static int GetMinutes(int parentSheetIndex)
+    {
+        if (OrdinaryCapsule.CachedTimes.TryGetValue(parentSheetIndex, out var minutes))
+        {
+            return minutes;
+        }
+
+        var item = OrdinaryCapsule.AllItems.FirstOrDefault(item => item.ParentSheetIndex == parentSheetIndex);
+        if (item is not null)
+        {
+            return OrdinaryCapsule.GetMinutes(item);
+        }
+
+        OrdinaryCapsule.CachedTimes[parentSheetIndex] = 0;
+        return 0;
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_getMinutesForCrystalarium_postfix(SObject __instance, ref int __result, int whichGem)
@@ -43,14 +104,11 @@ public class OrdinaryCapsule : Mod
             return;
         }
 
-        var productionTime = Game1.content.Load<Dictionary<string, int>>("furyx639.OrdinaryCapsule/ProductionTime");
-        if (productionTime.TryGetValue(whichGem.ToString(), out var minutes))
+        var minutes = OrdinaryCapsule.GetMinutes(whichGem);
+        if (minutes > 0)
         {
             __result = minutes;
-            return;
         }
-
-        __result = OrdinaryCapsule.Config?.Minutes ?? 1440;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -63,15 +121,6 @@ public class OrdinaryCapsule : Mod
         }
 
         return __instance.heldObject.Value is not null;
-    }
-
-    private static void OnDayStarted(object? sender, DayStartedEventArgs e)
-    {
-        if (Game1.MasterPlayer.mailReceived.Contains("Capsule_Broken")
-         && !Game1.player.craftingRecipes.ContainsKey("Ordinary Capsule"))
-        {
-            Game1.player.craftingRecipes.Add("Ordinary Capsule", 0);
-        }
     }
 
     private static void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
@@ -91,7 +140,7 @@ public class OrdinaryCapsule : Mod
     {
         if (e.Name.IsEquivalentTo($"{this.ModManifest.UniqueID}/ProductionTime"))
         {
-            e.LoadFrom(() => new Dictionary<string, int>(), AssetLoadPriority.Exclusive);
+            e.LoadFromModFile<Dictionary<string, int>>("assets/items.json", AssetLoadPriority.Exclusive);
             return;
         }
 
@@ -124,9 +173,7 @@ public class OrdinaryCapsule : Mod
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
-         || Game1.player.CurrentItem is null
-         || (Game1.player.CurrentItem.Category is not (-5 or -6 or -14)
-          && Game1.player.CurrentItem.ParentSheetIndex != 430)
+         || Game1.player.CurrentItem is not SObject { bigCraftable.Value: false }
          || !e.Button.IsUseToolButton())
         {
             return;
@@ -141,38 +188,46 @@ public class OrdinaryCapsule : Mod
             return;
         }
 
+        var minutes = OrdinaryCapsule.GetMinutes(Game1.player.CurrentItem);
+        if (minutes == 0)
+        {
+            return;
+        }
+
         obj.heldObject.Value = (SObject)Game1.player.CurrentItem.getOne();
         Game1.currentLocation.playSound("select");
-        var productionTime =
-            this.Helper.GameContent.Load<Dictionary<string, int>>("furyx639.OrdinaryCapsule/ProductionTime");
-        obj.MinutesUntilReady =
-            productionTime.TryGetValue(Game1.player.CurrentItem.ParentSheetIndex.ToString(), out var minutes)
-                ? minutes
-                : OrdinaryCapsule.Config?.Minutes ?? 1440;
+        obj.MinutesUntilReady = minutes;
         Game1.player.reduceActiveItemByOne();
         this.Helper.Input.Suppress(e.Button);
+    }
+
+    private void OnDayStarted(object? sender, DayStartedEventArgs e)
+    {
+        if (this.Config.UnlockAutomatically
+         || (Game1.MasterPlayer.mailReceived.Contains("Capsule_Broken")
+          && !Game1.player.craftingRecipes.ContainsKey("Ordinary Capsule")))
+        {
+            Game1.player.craftingRecipes.Add("Ordinary Capsule", 0);
+        }
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
-        if (!gmcm.IsLoaded || OrdinaryCapsule.Config is null)
+        if (!gmcm.IsLoaded)
         {
             return;
         }
 
         // Register mod configuration
-        gmcm.Register(
-            this.ModManifest,
-            () => OrdinaryCapsule.Config = new(),
-            () => this.Helper.WriteConfig(OrdinaryCapsule.Config));
+        gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
 
-        // Production Time
-        gmcm.API.AddNumberOption(
+        // Unlock Automatically
+        gmcm.API.AddBoolOption(
             this.ModManifest,
-            () => OrdinaryCapsule.Config.Minutes,
-            value => OrdinaryCapsule.Config.Minutes = value,
-            I18n.Config_ProductionTime_Name,
-            I18n.Config_ProductionTime_Tooltip);
+            () => this.Config.UnlockAutomatically,
+            value => this.Config.UnlockAutomatically = value,
+            I18n.Config_UnlockAutomatically_Name,
+            I18n.Config_UnlockAutomatically_Tooltip);
     }
 }

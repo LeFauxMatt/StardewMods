@@ -13,9 +13,9 @@ Nothing strange about this capsule.
 For ease of use, it is recommended to set config options
 from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098).
 
-| Config  | Description                               | Default Value | Other Value(s)             |
-|:--------|:------------------------------------------|---------------|:---------------------------|
-| Minutes | The default production time for any item. | 1440          | Any number greater than 0. |
+| Config              | Description                                       | Default Value | Other Value(s)    |
+|:--------------------|:--------------------------------------------------|---------------|:------------------|
+| UnlockAutomatically | Automatically unlock the Ordinary Capsule recipe. | false         | `true` or `false` |
 
 ## Customization
 
@@ -37,7 +37,7 @@ Modify production times for supported items.
       "Target": "furyx639.OrdinaryCapsule/ProductionTime",
       "Entries": {
         // Make Truffle production time 60 minutes
-        "430": "60"
+        "item_truffle": "60"
       },
     },
   ]

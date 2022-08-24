@@ -1,6 +1,6 @@
 {
-  "config.production-time.name": "Production Time",
-  "config.production-time.tooltip": "The default production time in game minutes.",
+  "config.unlock-automatically.name": "Unlock Automatically",
+  "config.unlock-automatically.tooltip": "Automatically unlock the Ordinary Capsule recipe.",
   "item.ordinary-capsule.name": "Ordinary Capsule",
   "item.ordinary-capsule.description": "There is nothing strange about this capsule."
 }
