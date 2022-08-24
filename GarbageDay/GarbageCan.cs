@@ -41,7 +41,7 @@ internal class GarbageCan
     }
 
     /// <summary>
-    ///     Gets or sets a value indicating if the next can will have a hat.
+    ///     Gets or sets a value indicating whether the next can will drop a hat.
     /// </summary>
     public static bool GarbageHat { get; set; }
 
