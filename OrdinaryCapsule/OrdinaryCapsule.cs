@@ -203,9 +203,8 @@ public class OrdinaryCapsule : Mod
 
     private void OnDayStarted(object? sender, DayStartedEventArgs e)
     {
-        if (this.Config.UnlockAutomatically
-         || (Game1.MasterPlayer.mailReceived.Contains("Capsule_Broken")
-          && !Game1.player.craftingRecipes.ContainsKey("Ordinary Capsule")))
+        if (!Game1.player.craftingRecipes.ContainsKey("Ordinary Capsule")
+         && (this.Config.UnlockAutomatically || Game1.MasterPlayer.mailReceived.Contains("Capsule_Broken")))
         {
             Game1.player.craftingRecipes.Add("Ordinary Capsule", 0);
         }

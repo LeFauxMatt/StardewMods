@@ -1,5 +1,11 @@
 # Ordinary Capsule Change Log
 
+## 1.1.1 (August 24, 2022)
+
+### Fixed
+
+* Fixed recipe unlocking after received.
+
 ## 1.1.0 (August 24, 2022)
 
 ### Added
