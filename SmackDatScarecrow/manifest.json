@@ -1,0 +1,12 @@
+{
+  "EntryDll": "SmackDatScarecrow.dll",
+  "Name": "Smack Dat Scarecrow",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Go ahead and do it, they can take it.",
+  "UniqueID": "furyx639.SmackDatScarecrow",
+  "MinimumApiVersion": "3.15.0",
+  "UpdateKeys": [
+    "Nexus:13528"
+  ]
+}
