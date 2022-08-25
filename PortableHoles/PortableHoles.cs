@@ -1,100 +1,120 @@
 ﻿namespace StardewMods.PortableHoles;
 
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Locations;
 
 /// <inheritdoc />
 public class PortableHoles : Mod
 {
+    private static PortableHoles? Instance;
+
+    private ModConfig? _config;
+
+    private ModConfig Config
+    {
+        get
+        {
+            if (this._config is not null)
+            {
+                return this._config;
+            }
+
+            ModConfig? config = null;
+            try
+            {
+                config = this.Helper.ReadConfig<ModConfig>();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            this._config = config ?? new ModConfig();
+            Log.Trace(this._config.ToString());
+            return this._config;
+        }
+    }
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        PortableHoles.Instance = this;
+
         I18n.Init(this.Helper.Translation);
         Log.Monitor = this.Monitor;
 
-        // Patches
-        HarmonyHelper.AddPatches(
-            this.ModManifest.UniqueID,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem)),
-                    typeof(PortableHoles),
-                    nameof(PortableHoles.CraftingRecipe_createItem_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                    typeof(PortableHoles),
-                    nameof(PortableHoles.Item_canStackWith_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(
-                        typeof(SObject),
-                        nameof(SObject.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(int),
-                            typeof(int),
-                            typeof(float),
-                        }),
-                    typeof(PortableHoles),
-                    nameof(PortableHoles.Object_draw_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(
-                        typeof(SObject),
-                        nameof(SObject.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(int),
-                            typeof(int),
-                            typeof(float),
-                            typeof(float),
-                        }),
-                    typeof(PortableHoles),
-                    nameof(PortableHoles.Object_drawLocal_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(
-                        typeof(SObject),
-                        nameof(SObject.drawInMenu),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(Vector2),
-                            typeof(float),
-                            typeof(float),
-                            typeof(float),
-                            typeof(StackDrawType),
-                            typeof(Color),
-                            typeof(bool),
-                        }),
-                    typeof(PortableHoles),
-                    nameof(PortableHoles.Object_drawInMenu_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
-                    typeof(PortableHoles),
-                    nameof(PortableHoles.Object_drawWhenHeld_prefix),
-                    PatchType.Prefix),
-            });
-        HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
-
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+        // Patches
+        var harmony = new Harmony(this.ModManifest.UniqueID);
+        harmony.Patch(
+            AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem)),
+            postfix: new(typeof(PortableHoles), nameof(PortableHoles.CraftingRecipe_createItem_postfix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
+            postfix: new(typeof(PortableHoles), nameof(PortableHoles.Item_canStackWith_postfix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(MineShaft), nameof(MineShaft.enterMineShaft)),
+            transpiler: new(typeof(PortableHoles), nameof(PortableHoles.MineShaft_enterMineShaft_transpiler)));
+        harmony.Patch(
+            AccessTools.Method(
+                typeof(SObject),
+                nameof(SObject.draw),
+                new[]
+                {
+                    typeof(SpriteBatch),
+                    typeof(int),
+                    typeof(int),
+                    typeof(float),
+                }),
+            new(typeof(PortableHoles), nameof(PortableHoles.Object_draw_prefix)));
+        harmony.Patch(
+            AccessTools.Method(
+                typeof(SObject),
+                nameof(SObject.draw),
+                new[]
+                {
+                    typeof(SpriteBatch),
+                    typeof(int),
+                    typeof(int),
+                    typeof(float),
+                    typeof(float),
+                }),
+            new(typeof(PortableHoles), nameof(PortableHoles.Object_drawLocal_prefix)));
+        harmony.Patch(
+            AccessTools.Method(
+                typeof(SObject),
+                nameof(SObject.drawInMenu),
+                new[]
+                {
+                    typeof(SpriteBatch),
+                    typeof(Vector2),
+                    typeof(float),
+                    typeof(float),
+                    typeof(float),
+                    typeof(StackDrawType),
+                    typeof(Color),
+                    typeof(bool),
+                }),
+            new(typeof(PortableHoles), nameof(PortableHoles.Object_drawInMenu_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
+            new(typeof(PortableHoles), nameof(PortableHoles.Object_drawWhenHeld_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+            new(typeof(PortableHoles), nameof(PortableHoles.Object_placementAction_prefix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -128,6 +148,20 @@ public class PortableHoles : Mod
         }
     }
 
+    private static IEnumerable<CodeInstruction> MineShaft_enterMineShaft_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.StoresField(AccessTools.Field(typeof(Farmer), nameof(Farmer.health))))
+            {
+                yield return CodeInstruction.Call(typeof(PortableHoles), nameof(PortableHoles.SetFarmerHealth));
+            }
+
+            yield return instruction;
+        }
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
@@ -146,7 +180,7 @@ public class PortableHoles : Mod
             Color.White * alpha,
             0f,
             Vector2.Zero,
-            Game1.pixelZoom,
+            __instance.getScale() * Game1.pixelZoom,
             SpriteEffects.None,
             Math.Max(0f, ((y + 1) * Game1.tileSize + 2) / 10000f) + x / 1000000f);
         return false;
@@ -193,8 +227,10 @@ public class PortableHoles : Mod
                 spriteBatch,
                 location
               + new Vector2(
-                    64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) + 3f * scaleSize,
-                    64f - 18f * scaleSize + 2f),
+                    Game1.tileSize
+                  - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
+                  + 3f * scaleSize,
+                    Game1.tileSize - 18f * scaleSize + 2f),
                 3f * scaleSize,
                 1f,
                 color);
@@ -267,6 +303,14 @@ public class PortableHoles : Mod
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    private static bool Object_placementAction_prefix(SObject __instance)
+    {
+        return !__instance.modData.ContainsKey("furyx639.PortableHoles/PortableHole");
+    }
+
     private static void OnToolbarIconPressed(object? sender, string id)
     {
         switch (id)
@@ -277,9 +321,15 @@ public class PortableHoles : Mod
         }
     }
 
+    private static int SetFarmerHealth(int targetHealth)
+    {
+        return PortableHoles.Instance!.Config.SoftFall ? Game1.player.health : targetHealth;
+    }
+
     private static bool TryToPlaceHole()
     {
-        if (Game1.currentLocation is not MineShaft mineShaft || !mineShaft.shouldCreateLadderOnThisLevel())
+        if (Game1.currentLocation is not MineShaft { mineLevel: > 120 } mineShaft
+         || !mineShaft.shouldCreateLadderOnThisLevel())
         {
             return false;
         }
@@ -332,20 +382,51 @@ public class PortableHoles : Mod
         this.Helper.Input.Suppress(e.Button);
     }
 
+    private void OnDayStarted(object? sender, DayStartedEventArgs e)
+    {
+        if (this.Config.UnlockAutomatically && !Game1.player.craftingRecipes.ContainsKey("Portable Hole"))
+        {
+            Game1.player.craftingRecipes.Add("Portable Hole", 0);
+        }
+    }
+
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var toolbarIcons = new ToolbarIconsIntegration(this.Helper.ModRegistry);
-        if (!toolbarIcons.IsLoaded)
+        if (toolbarIcons.IsLoaded)
+        {
+            toolbarIcons.API.AddToolbarIcon(
+                "PortableHoles.PlaceHole",
+                $"{this.ModManifest.UniqueID}/Icons",
+                new Rectangle(0, 0, 16, 16),
+                I18n.Button_PortableHole_Tooltip());
+
+            toolbarIcons.API.ToolbarIconPressed += PortableHoles.OnToolbarIconPressed;
+        }
+
+        var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
+        if (!gmcm.IsLoaded)
         {
             return;
         }
 
-        toolbarIcons.API.AddToolbarIcon(
-            "PortableHoles.PlaceHole",
-            $"{this.ModManifest.UniqueID}/Icons",
-            new Rectangle(0, 0, 16, 16),
-            I18n.Button_PortableHole_Tooltip());
+        // Register mod configuration
+        gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
 
-        toolbarIcons.API.ToolbarIconPressed += PortableHoles.OnToolbarIconPressed;
+        // Soft Fall
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.SoftFall,
+            value => this.Config.SoftFall = value,
+            I18n.Config_SoftFall_Name,
+            I18n.Config_SoftFall_Tooltip);
+
+        // Unlock Automatically
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.UnlockAutomatically,
+            value => this.Config.UnlockAutomatically = value,
+            I18n.Config_UnlockAutomatically_Name,
+            I18n.Config_UnlockAutomatically_Tooltip);
     }
 }

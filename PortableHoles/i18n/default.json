@@ -1,5 +1,9 @@
 {
   "button.portable-hole.tooltip": "Place a Portable Hole",
+  "config.soft-fall.name": "Soft Fall",
+  "config.soft-fall.tooltip": "Negate damage taken while falling down a hole.",
+  "config.unlock-automatically.name": "Unlock Automatically",
+  "config.unlock-automatically.tooltip": "Automatically unlock the Portable Hole recipe.",
   "item.portable-hole.name": "Portable Hole",
   "item.portable-hole.description": "This is a portable hole."
 }
