@@ -44,6 +44,30 @@ Pay a daily rate to have chores automatically done for you every day.
 
 Allows custom items to be created as chests.
 
+## [Ordinary Capsule](https://www.nexusmods.com/stardewvalley/mods/13489)
+
+( [source](OrdinaryCapsule)
+| [docs](OrdinaryCapsule/README.md)
+| [changelog](OrdinaryCapsule/CHANGELOG.md) )
+
+Nothing strange about this capsule.
+
+## [Portable Holes](https://www.nexusmods.com/stardewvalley/mods/13471)
+
+( [source](PortableHoles)
+| [docs](PortableHoles/README.md)
+| [changelog](PortableHoles/CHANGELOG.md) )
+
+Adds craftable holes to the game.
+
+## [Smack Dat Scarecrow](https://www.nexusmods.com/stardewvalley/mods/13528)
+
+( [source](SmackDatScarecrow)
+| [docs](SmackDatScarecrow/README.md)
+| [changelog](SmackDatScarecrow/CHANGELOG.md) )
+
+Go ahead and do it, they can take it.
+
 ## [Too Many Animals](https://www.nexusmods.com/stardewvalley/mods/11033)
 
 ( [source](TooManyAnimals)
