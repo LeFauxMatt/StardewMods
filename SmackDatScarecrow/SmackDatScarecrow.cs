@@ -55,7 +55,6 @@ public class SmackDatScarecrow : Mod
         Rectangle areaOfEffect,
         int minDamage,
         int maxDamage,
-        float knockBackModifier,
         float critChance,
         float critMultiplier,
         Farmer who)
@@ -81,12 +80,6 @@ public class SmackDatScarecrow : Mod
             if (Game1.currentLocation.Equals(farm))
             {
                 Rumble.rumble(0.1f + (float)(Game1.random.NextDouble() / 8.0), 200 + Game1.random.Next(-50, 50));
-            }
-
-            var trajectory = Utility.getAwayFromPlayerTrajectory(monsterBox, who);
-            if (knockBackModifier > 0f)
-            {
-                trajectory *= knockBackModifier;
             }
 
             var crit = false;
