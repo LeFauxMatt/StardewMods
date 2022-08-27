@@ -163,20 +163,14 @@ internal class CraftFromChest : IFeature
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (this.TimeOut == 0)
+        if (this.TimeOut == 0 || --this.TimeOut != 0)
         {
             return;
         }
 
-        // Chest locking timed out
-        if (this.CurrentEligible.Count != 0 && --this.TimeOut != 0)
+        foreach (var storage in this.CurrentEligible)
         {
-            return;
-        }
-
-        for (var index = this.CurrentEligible.Count - 1; index >= 0; index--)
-        {
-            this.CurrentEligible[index].Mutex?.ReleaseLock();
+            storage.Mutex?.ReleaseLock();
         }
 
         this.CurrentEligible.Clear();
@@ -199,9 +193,8 @@ internal class CraftFromChest : IFeature
 
     private void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
     {
-        for (var index = this.CurrentEligible.Count - 1; index >= 0; index--)
+        foreach (var storage in this.CurrentEligible)
         {
-            var storage = this.CurrentEligible[index];
             storage.Mutex?.Update(storage.Source as GameLocation ?? Game1.currentLocation);
         }
 
