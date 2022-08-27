@@ -111,16 +111,14 @@ internal class Config
             () => Config.ModConfig.BetterShippingBin,
             value => Config.ModConfig.BetterShippingBin = value,
             I18n.Config_BetterShippingBin_Name,
-            I18n.Config_BetterShippingBin_Tooltip,
-            nameof(StardewMods.BetterChests.ModConfig.BetterShippingBin));
+            I18n.Config_BetterShippingBin_Tooltip);
 
         Integrations.GMCM.API.AddNumberOption(
             Config.ModManifest,
             () => Config.ModConfig.CarryChestLimit,
             value => Config.ModConfig.CarryChestLimit = value,
             I18n.Config_CarryChestLimit_Name,
-            I18n.Config_CarryChestLimit_Tooltip,
-            fieldId: nameof(StardewMods.BetterChests.ModConfig.CarryChestLimit));
+            I18n.Config_CarryChestLimit_Tooltip);
 
         Integrations.GMCM.API.AddNumberOption(
             Config.ModManifest,
@@ -131,16 +129,14 @@ internal class Config
             0,
             4,
             1,
-            Formatting.CarryChestSlow,
-            nameof(StardewMods.BetterChests.ModConfig.CarryChestSlowAmount));
+            Formatting.CarryChestSlow);
 
         Integrations.GMCM.API.AddBoolOption(
             Config.ModManifest,
             () => Config.ModConfig.ChestFinder,
             value => Config.ModConfig.ChestFinder = value,
             I18n.Config_ChestFinder_Name,
-            I18n.Config_ChestFinder_Tooltip,
-            nameof(StardewMods.BetterChests.ModConfig.ChestFinder));
+            I18n.Config_ChestFinder_Tooltip);
 
         Integrations.GMCM.API.AddTextOption(
             Config.ModManifest,
@@ -154,16 +150,14 @@ internal class Config
                 ComponentArea.Left.ToStringFast(),
                 ComponentArea.Right.ToStringFast(),
             },
-            Formatting.Area,
-            nameof(StardewMods.BetterChests.ModConfig.CustomColorPickerArea));
+            Formatting.Area);
 
         Integrations.GMCM.API.AddTextOption(
             Config.ModManifest,
             () => Config.ModConfig.SearchTagSymbol.ToString(),
             value => Config.ModConfig.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
             I18n.Config_SearchItemsSymbol_Name,
-            I18n.Config_SearchItemsSymbol_Tooltip,
-            fieldId: nameof(StardewMods.BetterChests.ModConfig.SearchTagSymbol));
+            I18n.Config_SearchItemsSymbol_Tooltip);
 
         if (Integrations.TestConflicts(nameof(SlotLock), out var mods))
         {
@@ -179,8 +173,7 @@ internal class Config
                 () => Config.ModConfig.SlotLock,
                 value => Config.ModConfig.SlotLock = value,
                 I18n.Config_SlotLock_Name,
-                I18n.Config_SlotLock_Tooltip,
-                nameof(StardewMods.BetterChests.ModConfig.SlotLock));
+                I18n.Config_SlotLock_Tooltip);
 
             Integrations.GMCM.API.AddTextOption(
                 Config.ModManifest,
@@ -189,16 +182,14 @@ internal class Config
                     ColorsExtensions.TryParse(value, out var color) ? color : Colors.Gray,
                 I18n.Config_SlotLockColor_Name,
                 I18n.Config_SlotLockColor_Tooltip,
-                ColorsExtensions.GetNames(),
-                fieldId: nameof(StardewMods.BetterChests.ModConfig.SlotLockColor));
+                ColorsExtensions.GetNames());
 
             Integrations.GMCM.API.AddBoolOption(
                 Config.ModManifest,
                 () => Config.ModConfig.SlotLockHold,
                 value => Config.ModConfig.SlotLockHold = value,
                 I18n.Config_SlotLockHold_Name,
-                I18n.Config_SlotLockHold_Tooltip,
-                nameof(StardewMods.BetterChests.ModConfig.SlotLockHold));
+                I18n.Config_SlotLockHold_Tooltip);
         }
 
         // Controls
@@ -210,72 +201,63 @@ internal class Config
             () => Config.ModConfig.ControlScheme.FindChest,
             value => Config.ModConfig.ControlScheme.FindChest = value,
             I18n.Config_FindChest_Name,
-            I18n.Config_FindChest_Tooltip,
-            nameof(Controls.FindChest));
+            I18n.Config_FindChest_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.OpenCrafting,
             value => Config.ModConfig.ControlScheme.OpenCrafting = value,
             I18n.Config_OpenCrafting_Name,
-            I18n.Config_OpenCrafting_Tooltip,
-            nameof(Controls.OpenCrafting));
+            I18n.Config_OpenCrafting_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.StashItems,
             value => Config.ModConfig.ControlScheme.StashItems = value,
             I18n.Config_StashItems_Name,
-            I18n.Config_StashItems_Tooltip,
-            nameof(Controls.StashItems));
+            I18n.Config_StashItems_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.Configure,
             value => Config.ModConfig.ControlScheme.Configure = value,
             I18n.Config_Configure_Name,
-            I18n.Config_Configure_Tooltip,
-            nameof(Controls.Configure));
+            I18n.Config_Configure_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.PreviousTab,
             value => Config.ModConfig.ControlScheme.PreviousTab = value,
             I18n.Config_PreviousTab_Name,
-            I18n.Config_PreviousTab_Tooltip,
-            nameof(Controls.PreviousTab));
+            I18n.Config_PreviousTab_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.NextTab,
             value => Config.ModConfig.ControlScheme.NextTab = value,
             I18n.Config_NextTab_Name,
-            I18n.Config_NextTab_Tooltip,
-            nameof(Controls.NextTab));
+            I18n.Config_NextTab_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.ScrollUp,
             value => Config.ModConfig.ControlScheme.ScrollUp = value,
             I18n.Config_ScrollUp_Name,
-            I18n.Config_ScrollUp_Tooltip,
-            nameof(Controls.ScrollUp));
+            I18n.Config_ScrollUp_Tooltip);
 
         Integrations.GMCM.API.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.ScrollDown,
             value => Config.ModConfig.ControlScheme.ScrollDown = value,
             I18n.Config_ScrollDown_Name,
-            I18n.Config_ScrollDown_Tooltip,
-            nameof(Controls.ScrollDown));
+            I18n.Config_ScrollDown_Tooltip);
 
         Integrations.GMCM.API.AddKeybind(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.LockSlot,
             value => Config.ModConfig.ControlScheme.LockSlot = value,
             I18n.Config_LockSlot_Name,
-            I18n.Config_LockSlot_Tooltip,
-            nameof(Controls.LockSlot));
+            I18n.Config_LockSlot_Tooltip);
 
         // Default Chest
         Integrations.GMCM.API.AddSectionTitle(Config.ModManifest, I18n.Storage_Default_Name);
@@ -401,6 +383,8 @@ internal class Config
 
             feature.Deactivate();
         }
+
+        Log.Trace(Config.ModConfig.ToString());
     }
 
     private static void SetupConfig(IManifest manifest, IStorageData storage, bool inGame = false)
@@ -447,7 +431,7 @@ internal class Config
 
         if (storage is IStorageObject storageObject)
         {
-            if (Config.ModConfig.LabelChest is not FeatureOption.Disabled)
+            if (data.LabelChest is not FeatureOption.Disabled)
             {
                 // Chest Label
                 Integrations.GMCM.API.AddTextOption(
@@ -455,8 +439,7 @@ internal class Config
                     () => data.ChestLabel,
                     value => data.ChestLabel = value,
                     I18n.Config_ChestLabel_Name,
-                    I18n.Config_ChestLabel_Tooltip,
-                    fieldId: nameof(IStorageData.ChestLabel));
+                    I18n.Config_ChestLabel_Tooltip);
             }
 
             // Chest Categories
@@ -465,8 +448,7 @@ internal class Config
                 I18n.Config_FilterItemsList_Name,
                 Config.DrawButton(storageObject, I18n.Button_Configure_Name()),
                 I18n.Config_FilterItemsList_Tooltip,
-                height: () => Game1.tileSize,
-                fieldId: nameof(IStorageData.FilterItemsList));
+                height: () => Game1.tileSize);
         }
 
         // Auto Organize
@@ -482,8 +464,7 @@ internal class Config
                 I18n.Config_AutoOrganize_Name,
                 I18n.Config_AutoOrganize_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.AutoOrganize));
+                Formatting.Option);
         }
 
         // Carry Chest
@@ -499,8 +480,7 @@ internal class Config
                 I18n.Config_CarryChest_Name,
                 I18n.Config_CarryChest_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.CarryChest));
+                Formatting.Option);
 
             Integrations.GMCM.API.AddTextOption(
                 manifest,
@@ -511,8 +491,7 @@ internal class Config
                 I18n.Config_CarryChestSlow_Name,
                 I18n.Config_CarryChestSlow_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.CarryChestSlow));
+                Formatting.Option);
         }
 
         // Chest Menu Tabs
@@ -528,8 +507,7 @@ internal class Config
                 I18n.Config_ChestMenuTabs_Name,
                 I18n.Config_ChestMenuTabs_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.ChestMenuTabs));
+                Formatting.Option);
         }
 
         // Collect Items
@@ -545,8 +523,7 @@ internal class Config
                 I18n.Config_CollectItems_Name,
                 I18n.Config_CollectItems_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.CollectItems));
+                Formatting.Option);
         }
 
         // Configurator
@@ -561,8 +538,7 @@ internal class Config
                 I18n.Config_Configure_Name,
                 I18n.Config_Configure_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.Configurator));
+                Formatting.Option);
 
             Integrations.GMCM.API.AddTextOption(
                 manifest,
@@ -573,8 +549,7 @@ internal class Config
                 I18n.Config_ConfigureMenu_Name,
                 I18n.Config_ConfigureMenu_Tooltip,
                 InGameMenuExtensions.GetNames(),
-                Formatting.Menu,
-                nameof(IStorageData.ConfigureMenu));
+                Formatting.Menu);
         }
 
         // Craft From Chest
@@ -592,16 +567,14 @@ internal class Config
                     I18n.Config_CraftFromChest_Name,
                     I18n.Config_CraftFromChest_Tooltip,
                     allowedRanges,
-                    Formatting.Range,
-                    nameof(IStorageData.CraftFromChest));
+                    Formatting.Range);
 
                 Integrations.GMCM.API.AddNumberOption(
                     manifest,
                     () => data.CraftFromChestDistance,
                     value => data.CraftFromChestDistance = value,
                     I18n.Config_CraftFromChestDistance_Name,
-                    I18n.Config_CraftFromChestDistance_Tooltip,
-                    fieldId: nameof(IStorageData.CraftFromChest));
+                    I18n.Config_CraftFromChestDistance_Tooltip);
             }
             else
             {
@@ -648,8 +621,7 @@ internal class Config
                     (int)FeatureOptionRange.Default,
                     (int)FeatureOptionRange.World,
                     1,
-                    Formatting.Distance,
-                    nameof(IStorageData.CraftFromChest));
+                    Formatting.Distance);
             }
         }
 
@@ -666,8 +638,7 @@ internal class Config
                 I18n.Config_CustomColorPicker_Name,
                 I18n.Config_CustomColorPicker_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.CustomColorPicker));
+                Formatting.Option);
         }
 
         // Filter Items
@@ -683,8 +654,7 @@ internal class Config
                 I18n.Config_FilterItems_Name,
                 I18n.Config_FilterItems_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.FilterItems));
+                Formatting.Option);
         }
 
         // Hide Items
@@ -699,8 +669,7 @@ internal class Config
                 I18n.Config_HideItems_Name,
                 I18n.Config_HideItems_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.HideItems));
+                Formatting.Option);
         }
 
         // Label Chest
@@ -709,15 +678,14 @@ internal class Config
         {
             Integrations.GMCM.API.AddTextOption(
                 Config.ModManifest,
-                () => Config.ModConfig.LabelChest.ToStringFast(),
-                value => Config.ModConfig.LabelChest = FeatureOptionExtensions.TryParse(value, out var option)
+                () => data.LabelChest.ToStringFast(),
+                value => data.LabelChest = FeatureOptionExtensions.TryParse(value, out var option)
                     ? option
                     : FeatureOption.Default,
                 I18n.Config_LabelChest_Name,
                 I18n.Config_LabelChest_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.LabelChest));
+                Formatting.Option);
         }
 
         // Open Held Chest
@@ -733,8 +701,7 @@ internal class Config
                 I18n.Config_OpenHeldChest_Name,
                 I18n.Config_OpenHeldChest_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.OpenHeldChest));
+                Formatting.Option);
         }
 
         // Organize Chest
@@ -750,8 +717,7 @@ internal class Config
                 I18n.Config_OrganizeChest_Name,
                 I18n.Config_OrganizeChest_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.OrganizeChest));
+                Formatting.Option);
 
             Integrations.GMCM.API.AddTextOption(
                 manifest,
@@ -761,8 +727,7 @@ internal class Config
                 I18n.Config_OrganizeChestGroupBy_Name,
                 I18n.Config_OrganizeChestGroupBy_Tooltip,
                 GroupByExtensions.GetNames(),
-                Formatting.OrganizeGroupBy,
-                nameof(IStorageData.OrganizeChestGroupBy));
+                Formatting.OrganizeGroupBy);
 
             Integrations.GMCM.API.AddTextOption(
                 manifest,
@@ -772,8 +737,7 @@ internal class Config
                 I18n.Config_OrganizeChestSortBy_Name,
                 I18n.Config_OrganizeChestSortBy_Tooltip,
                 SortByExtensions.GetNames(),
-                Formatting.OrganizeSortBy,
-                nameof(IStorageData.OrganizeChestSortBy));
+                Formatting.OrganizeSortBy);
         }
 
         // Resize Chest
@@ -791,16 +755,14 @@ internal class Config
                     I18n.Config_ResizeChest_Name,
                     I18n.Config_ResizeChest_Tooltip,
                     allowedOptions,
-                    Formatting.Option,
-                    nameof(IStorageData.ResizeChest));
+                    Formatting.Option);
 
                 Integrations.GMCM.API.AddNumberOption(
                     manifest,
                     () => data.ResizeChestCapacity,
                     value => data.ResizeChestCapacity = value,
                     I18n.Config_ResizeChestCapacity_Name,
-                    I18n.Config_ResizeChestCapacity_Tooltip,
-                    fieldId: nameof(IStorageData.ResizeChestCapacity));
+                    I18n.Config_ResizeChestCapacity_Tooltip);
             }
             else
             {
@@ -835,8 +797,7 @@ internal class Config
                     (int)FeatureOption.Default,
                     8,
                     1,
-                    Formatting.ChestCapacity,
-                    nameof(IStorageData.ResizeChestCapacity));
+                    Formatting.ChestCapacity);
             }
         }
 
@@ -855,16 +816,14 @@ internal class Config
                     I18n.Config_ResizeChestMenu_Name,
                     I18n.Config_ResizeChestMenu_Tooltip,
                     allowedOptions,
-                    Formatting.Option,
-                    nameof(IStorageData.ResizeChestMenu));
+                    Formatting.Option);
 
                 Integrations.GMCM.API.AddNumberOption(
                     manifest,
                     () => data.ResizeChestMenuRows,
                     value => data.ResizeChestMenuRows = value,
                     I18n.Config_ResizeChestMenuRows_Name,
-                    I18n.Config_ResizeChestMenuRows_Tooltip,
-                    fieldId: nameof(IStorageData.ResizeChestMenuRows));
+                    I18n.Config_ResizeChestMenuRows_Tooltip);
             }
             else
             {
@@ -896,8 +855,7 @@ internal class Config
                     (int)FeatureOption.Default,
                     5,
                     1,
-                    Formatting.ChestMenuRows,
-                    nameof(IStorageData.ResizeChestMenuRows));
+                    Formatting.ChestMenuRows);
             }
         }
 
@@ -914,8 +872,7 @@ internal class Config
                 I18n.Config_SearchItems_Name,
                 I18n.Config_SearchItems_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.SearchItems));
+                Formatting.Option);
         }
 
         // Stash To Chest
@@ -933,16 +890,14 @@ internal class Config
                     I18n.Config_StashToChest_Name,
                     I18n.Config_StashToChest_Tooltip,
                     allowedRanges,
-                    Formatting.Range,
-                    nameof(IStorageData.StashToChest));
+                    Formatting.Range);
 
                 Integrations.GMCM.API.AddNumberOption(
                     manifest,
                     () => data.StashToChestDistance,
                     value => data.StashToChestDistance = value,
                     I18n.Config_StashToChestDistance_Name,
-                    I18n.Config_StashToChestDistance_Tooltip,
-                    fieldId: nameof(IStorageData.StashToChest));
+                    I18n.Config_StashToChestDistance_Tooltip);
             }
             else
             {
@@ -989,8 +944,7 @@ internal class Config
                     (int)FeatureOptionRange.Default,
                     (int)FeatureOptionRange.World,
                     1,
-                    Formatting.Distance,
-                    nameof(IStorageData.StashToChest));
+                    Formatting.Distance);
             }
         }
 
@@ -999,8 +953,7 @@ internal class Config
             () => data.StashToChestPriority,
             value => data.StashToChestPriority = value,
             I18n.Config_StashToChestPriority_Name,
-            I18n.Config_StashToChestPriority_Tooltip,
-            fieldId: nameof(IStorageData.StashToChestPriority));
+            I18n.Config_StashToChestPriority_Tooltip);
 
         Integrations.GMCM.API.AddTextOption(
             manifest,
@@ -1010,8 +963,7 @@ internal class Config
             I18n.Config_StashToChestStacks_Name,
             I18n.Config_StashToChestStacks_Tooltip,
             allowedOptions,
-            Formatting.Option,
-            nameof(IStorageData.StashToChestStacks));
+            Formatting.Option);
 
         // Transfer Items
         if ((!inGame || (!simpleConfig && Config.ModConfig.TransferItems is not FeatureOption.Disabled))
@@ -1019,15 +971,14 @@ internal class Config
         {
             Integrations.GMCM.API.AddTextOption(
                 Config.ModManifest,
-                () => Config.ModConfig.TransferItems.ToStringFast(),
-                value => Config.ModConfig.TransferItems = FeatureOptionExtensions.TryParse(value, out var option)
+                () => data.TransferItems.ToStringFast(),
+                value => data.TransferItems = FeatureOptionExtensions.TryParse(value, out var option)
                     ? option
                     : FeatureOption.Default,
                 I18n.Config_TransferItems_Name,
                 I18n.Config_TransferItems_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.TransferItems));
+                Formatting.Option);
         }
 
         // Unload Chest
@@ -1043,8 +994,7 @@ internal class Config
                 I18n.Config_UnloadChest_Name,
                 I18n.Config_UnloadChest_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.UnloadChest));
+                Formatting.Option);
 
             Integrations.GMCM.API.AddTextOption(
                 manifest,
@@ -1055,8 +1005,7 @@ internal class Config
                 I18n.Config_UnloadChestCombine_Name,
                 I18n.Config_UnloadChestCombine_Tooltip,
                 allowedOptions,
-                Formatting.Option,
-                nameof(IStorageData.UnloadChestCombine));
+                Formatting.Option);
         }
     }
 }
