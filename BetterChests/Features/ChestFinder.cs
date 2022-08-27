@@ -62,17 +62,17 @@ internal class ChestFinder : IFeature
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
 
-        if (!IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
+        Integrations.ToolbarIcons.API.AddToolbarIcon(
             "BetterChests.FindChest",
             "furyx639.BetterChests/Icons",
             new(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
-        IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -89,13 +89,13 @@ internal class ChestFinder : IFeature
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this._helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
 
-        if (!IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.FindChest");
-        IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.FindChest");
+        Integrations.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -117,7 +117,7 @@ internal class ChestFinder : IFeature
         }
 
         var storage =
-            StorageHelper.CurrentLocation.FirstOrDefault(storage => ReferenceEquals(storage.Context, e.Chest));
+            Helpers.Storages.CurrentLocation.FirstOrDefault(storage => ReferenceEquals(storage.Context, e.Chest));
         if (storage is null)
         {
             return;
@@ -147,7 +147,7 @@ internal class ChestFinder : IFeature
         if (this.ItemMatcher.Any())
         {
             this.Storages.UnionWith(
-                StorageHelper.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
+                Helpers.Storages.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
         }
     }
 

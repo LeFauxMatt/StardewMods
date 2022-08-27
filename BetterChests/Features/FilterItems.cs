@@ -39,7 +39,7 @@ internal class FilterItems : IFeature
                     PatchType.Prefix),
             });
 
-        if (!IntegrationHelper.Automate.IsLoaded)
+        if (!Integrations.Automate.IsLoaded)
         {
             return;
         }
@@ -101,7 +101,7 @@ internal class FilterItems : IFeature
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
         var item = FilterItems.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !StorageHelper.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
+        return !Storages.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -110,7 +110,7 @@ internal class FilterItems : IFeature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!StorageHelper.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
+        if (!Storages.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
         {
             return true;
         }

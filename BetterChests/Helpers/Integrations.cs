@@ -15,13 +15,13 @@ using StardewValley.Objects;
 /// <summary>
 ///     Handles integrations with other mods.
 /// </summary>
-internal class IntegrationHelper
+internal class Integrations
 {
     private const string ExpandedFridgeId = "Uwazouri.ExpandedFridge";
     private const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";
     private const string WearMoreRingsId = "bcmpinc.WearMoreRings";
 
-    private static IntegrationHelper? Instance;
+    private static Integrations? Instance;
 
     private readonly AutomateIntegration _automate;
     private readonly BetterCraftingIntegration _betterCrafting;
@@ -30,7 +30,7 @@ internal class IntegrationHelper
     private readonly Dictionary<string, HashSet<string>> _incompatibilities;
     private readonly ToolbarIconsIntegration _toolbarIcons;
 
-    private IntegrationHelper(IModHelper helper)
+    private Integrations(IModHelper helper)
     {
         this._helper = helper;
         this._automate = new(helper.ModRegistry);
@@ -44,27 +44,27 @@ internal class IntegrationHelper
     /// <summary>
     ///     Gets Automate integration.
     /// </summary>
-    public static AutomateIntegration Automate => IntegrationHelper.Instance!._automate;
+    public static AutomateIntegration Automate => Integrations.Instance!._automate;
 
     /// <summary>
     ///     Gets Better Craft integration.
     /// </summary>
-    public static BetterCraftingIntegration BetterCrafting => IntegrationHelper.Instance!._betterCrafting;
+    public static BetterCraftingIntegration BetterCrafting => Integrations.Instance!._betterCrafting;
 
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => IntegrationHelper.Instance!._gmcm;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance!._gmcm;
 
     /// <summary>
     ///     Gets Toolbar Icons integration.
     /// </summary>
-    public static ToolbarIconsIntegration ToolbarIcons => IntegrationHelper.Instance!._toolbarIcons;
+    public static ToolbarIconsIntegration ToolbarIcons => Integrations.Instance!._toolbarIcons;
 
     private static Dictionary<string, HashSet<string>> Incompatibilities =>
-        IntegrationHelper.Instance!._incompatibilities;
+        Integrations.Instance!._incompatibilities;
 
-    private static IModRegistry ModRegistry => IntegrationHelper.Instance!._helper.ModRegistry;
+    private static IModRegistry ModRegistry => Integrations.Instance!._helper.ModRegistry;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.
@@ -76,17 +76,17 @@ internal class IntegrationHelper
     {
         excluded ??= new HashSet<object>();
 
-        foreach (var storage in IntegrationHelper.ExpandedFridge_FromLocation(location, excluded))
+        foreach (var storage in Integrations.ExpandedFridge_FromLocation(location, excluded))
         {
             yield return storage;
         }
 
-        foreach (var storage in IntegrationHelper.HorseOverhaul_FromLocation(location, excluded))
+        foreach (var storage in Integrations.HorseOverhaul_FromLocation(location, excluded))
         {
             yield return storage;
         }
 
-        if (IntegrationHelper.ModRegistry.IsLoaded(IntegrationHelper.WearMoreRingsId)
+        if (Integrations.ModRegistry.IsLoaded(Integrations.WearMoreRingsId)
          && location is Farm
          && location.Objects.TryGetValue(new(0, -50), out var obj))
         {
@@ -104,20 +104,20 @@ internal class IntegrationHelper
     {
         excluded ??= new HashSet<object>();
 
-        foreach (var storage in IntegrationHelper.HorseOverhaul_FromPlayer(player, excluded))
+        foreach (var storage in Integrations.HorseOverhaul_FromPlayer(player, excluded))
         {
             yield return storage;
         }
     }
 
     /// <summary>
-    ///     Initializes <see cref="IntegrationHelper" />.
+    ///     Initializes <see cref="Integrations" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="IntegrationHelper" /> class.</returns>
-    public static IntegrationHelper Init(IModHelper helper)
+    /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
+    public static Integrations Init(IModHelper helper)
     {
-        return IntegrationHelper.Instance ??= new(helper);
+        return Integrations.Instance ??= new(helper);
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ internal class IntegrationHelper
     /// <returns>Returns true if there is an incompatibility.</returns>
     public static bool TestConflicts(string featureName, [NotNullWhen(true)] out List<IModInfo?>? mods)
     {
-        if (!IntegrationHelper.Incompatibilities.TryGetValue(featureName, out var modIds))
+        if (!Integrations.Incompatibilities.TryGetValue(featureName, out var modIds))
         {
             mods = null;
             return false;
@@ -136,8 +136,8 @@ internal class IntegrationHelper
 
         mods = (
             from modId in modIds
-            where IntegrationHelper.ModRegistry.IsLoaded(modId)
-            select IntegrationHelper.ModRegistry.Get(modId)).ToList();
+            where Integrations.ModRegistry.IsLoaded(modId)
+            select Integrations.ModRegistry.Get(modId)).ToList();
 
         return mods.Any();
     }
@@ -150,7 +150,7 @@ internal class IntegrationHelper
     /// <returns>Returns true if a storage could be found for the context object.</returns>
     public static bool TryGetOne(object? context, [NotNullWhen(true)] out IStorageObject? storage)
     {
-        if (IntegrationHelper.HorseOverhaul_TryGetOne(context, out storage))
+        if (Integrations.HorseOverhaul_TryGetOne(context, out storage))
         {
             return true;
         }
@@ -161,7 +161,7 @@ internal class IntegrationHelper
 
     private static IEnumerable<IStorageObject> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
     {
-        if (!IntegrationHelper.ModRegistry.IsLoaded(IntegrationHelper.ExpandedFridgeId)
+        if (!Integrations.ModRegistry.IsLoaded(Integrations.ExpandedFridgeId)
          || location is not FarmHouse { upgradeLevel: > 0 })
         {
             yield break;
@@ -178,7 +178,7 @@ internal class IntegrationHelper
 
     private static IEnumerable<IStorageObject> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
     {
-        if (!IntegrationHelper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
+        if (!Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
             yield break;
         }
@@ -186,11 +186,11 @@ internal class IntegrationHelper
         var farm = Game1.getFarm();
         foreach (var stable in farm.buildings.OfType<Stable>())
         {
-            if (!stable.modData.TryGetValue($"{IntegrationHelper.HorseOverhaulId}/stableID", out var stableId)
+            if (!stable.modData.TryGetValue($"{Integrations.HorseOverhaulId}/stableID", out var stableId)
              || !int.TryParse(stableId, out var x)
              || !farm.Objects.TryGetValue(new(x, 0), out var obj)
              || obj is not Chest chest
-             || !chest.modData.ContainsKey($"{IntegrationHelper.HorseOverhaulId}/isSaddleBag"))
+             || !chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"))
             {
                 continue;
             }
@@ -215,7 +215,7 @@ internal class IntegrationHelper
 
     private static IEnumerable<IStorageObject> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
     {
-        if (!IntegrationHelper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId))
+        if (!Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
             yield break;
         }
@@ -228,11 +228,11 @@ internal class IntegrationHelper
         var farm = Game1.getFarm();
         var stable = farm.buildings.OfType<Stable>().FirstOrDefault(stable => stable.HorseId == player.mount.HorseId);
         if (stable is null
-         || !stable.modData.TryGetValue($"{IntegrationHelper.HorseOverhaulId}/stableID", out var stableId)
+         || !stable.modData.TryGetValue($"{Integrations.HorseOverhaulId}/stableID", out var stableId)
          || !int.TryParse(stableId, out var x)
          || !farm.Objects.TryGetValue(new(x, 0), out var obj)
          || obj is not Chest chest
-         || !chest.modData.ContainsKey($"{IntegrationHelper.HorseOverhaulId}/isSaddleBag"))
+         || !chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"))
         {
             yield break;
         }
@@ -243,9 +243,9 @@ internal class IntegrationHelper
 
     private static bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out IStorageObject? storage)
     {
-        if (!IntegrationHelper.ModRegistry.IsLoaded(IntegrationHelper.HorseOverhaulId)
+        if (!Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId)
          || context is not Chest chest
-         || !chest.modData.ContainsKey($"{IntegrationHelper.HorseOverhaulId}/isSaddleBag"))
+         || !chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"))
         {
             storage = default;
             return false;
@@ -254,7 +254,7 @@ internal class IntegrationHelper
         var farm = Game1.getFarm();
         foreach (var stable in farm.buildings.OfType<Stable>())
         {
-            if (!stable.modData.TryGetValue($"{IntegrationHelper.HorseOverhaulId}/stableID", out var stableId)
+            if (!stable.modData.TryGetValue($"{Integrations.HorseOverhaulId}/stableID", out var stableId)
              || !int.TryParse(stableId, out var x)
              || !farm.Objects.TryGetValue(new(x, 0), out var obj)
              || !ReferenceEquals(chest, obj))

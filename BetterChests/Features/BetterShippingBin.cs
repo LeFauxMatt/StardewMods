@@ -59,7 +59,7 @@ internal class BetterShippingBin : IFeature
     {
         // Relaunch as regular ItemGrabMenu
         if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: true }
-         && StorageHelper.TryGetOne(context, out var storage)
+         && Storages.TryGetOne(context, out var storage)
          && storage is ShippingBinStorage)
         {
             storage.ShowMenu();

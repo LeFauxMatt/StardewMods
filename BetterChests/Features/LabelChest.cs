@@ -89,7 +89,7 @@ internal class LabelChest : IFeature
         var pos = CommonHelpers.GetCursorTile();
         if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
           && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
-         || !StorageHelper.TryGetOne(obj, out var storage)
+         || !Storages.TryGetOne(obj, out var storage)
          || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
             return;

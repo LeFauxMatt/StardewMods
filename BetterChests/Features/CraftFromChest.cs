@@ -38,7 +38,7 @@ internal class CraftFromChest : IFeature
     }
 
     private static IEnumerable<IStorageObject> Eligible =>
-        from storage in StorageHelper.All
+        from storage in Storages.All
         where storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
            && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
            && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
@@ -91,21 +91,19 @@ internal class CraftFromChest : IFeature
         this._helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
-        if (IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (Integrations.ToolbarIcons.IsLoaded)
         {
-            IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
+            Integrations.ToolbarIcons.API.AddToolbarIcon(
                 "BetterChests.CraftFromChest",
                 "furyx639.BetterChests/Icons",
                 new(32, 0, 16, 16),
                 I18n.Button_CraftFromChest_Name());
-            IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+            Integrations.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
         }
 
-        if (IntegrationHelper.BetterCrafting.IsLoaded)
+        if (Integrations.BetterCrafting.IsLoaded)
         {
-            IntegrationHelper.BetterCrafting.API.RegisterInventoryProvider(
-                typeof(StorageWrapper),
-                new StorageProvider());
+            Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(StorageWrapper), new StorageProvider());
         }
     }
 
@@ -122,15 +120,15 @@ internal class CraftFromChest : IFeature
         this._helper.Events.GameLoop.UpdateTicking -= this.OnUpdateTicking;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
-        if (IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (Integrations.ToolbarIcons.IsLoaded)
         {
-            IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
-            IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
+            Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
+            Integrations.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
         }
 
-        if (IntegrationHelper.BetterCrafting.IsLoaded)
+        if (Integrations.BetterCrafting.IsLoaded)
         {
-            IntegrationHelper.BetterCrafting.API.UnregisterInventoryProvider(typeof(StorageWrapper));
+            Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(StorageWrapper));
         }
     }
 
@@ -235,9 +233,9 @@ internal class CraftFromChest : IFeature
             return;
         }
 
-        if (IntegrationHelper.BetterCrafting.IsLoaded)
+        if (Integrations.BetterCrafting.IsLoaded)
         {
-            IntegrationHelper.BetterCrafting.API.OpenCraftingMenu(
+            Integrations.BetterCrafting.API.OpenCraftingMenu(
                 false,
                 false,
                 null,

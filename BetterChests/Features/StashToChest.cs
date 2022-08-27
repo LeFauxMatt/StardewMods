@@ -28,7 +28,7 @@ internal class StashToChest : IFeature
     }
 
     private static IEnumerable<IStorageObject> Eligible =>
-        from storage in StorageHelper.All
+        from storage in Storages.All
         where storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
            && storage.StashToChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
            && !(storage.StashToChestDisableLocations?.Contains("UndergroundMine") == true
@@ -61,17 +61,17 @@ internal class StashToChest : IFeature
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this._helper.Events.Input.ButtonPressed += StashToChest.OnButtonPressed;
 
-        if (!IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationHelper.ToolbarIcons.API.AddToolbarIcon(
+        Integrations.ToolbarIcons.API.AddToolbarIcon(
             "BetterChests.StashToChest",
             "furyx639.BetterChests/Icons",
             new(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
-        IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.API.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -86,13 +86,13 @@ internal class StashToChest : IFeature
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this._helper.Events.Input.ButtonPressed -= StashToChest.OnButtonPressed;
 
-        if (!IntegrationHelper.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationHelper.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.StashToChest");
-        IntegrationHelper.ToolbarIcons.API.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.StashToChest");
+        Integrations.ToolbarIcons.API.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
     }
 
     private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -105,7 +105,7 @@ internal class StashToChest : IFeature
 
         var (x, y) = Game1.getMousePosition(true);
         if (itemGrabMenu.fillStacksButton?.containsPoint(x, y) == true
-         && StorageHelper.TryGetOne(context, out var storage)
+         && Storages.TryGetOne(context, out var storage)
          && storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default))
         {
             StashToChest.StashIntoStorage(storage);

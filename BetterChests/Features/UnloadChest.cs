@@ -64,14 +64,14 @@ internal class UnloadChest : IFeature
         if (!Context.IsPlayerFree
          || !e.Button.IsUseToolButton()
          || this._helper.Input.IsSuppressed(e.Button)
-         || StorageHelper.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
+         || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
 
         var pos = CommonHelpers.GetCursorTile(1);
-        if (!StorageHelper.TryGetOne(Game1.currentLocation, pos, out var toStorage))
+        if (!Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage))
         {
             return;
         }
@@ -79,10 +79,10 @@ internal class UnloadChest : IFeature
         // Add source capacity to target
         var combined = false;
         if (toStorage.UnloadChestCombine is FeatureOption.Enabled
-         && StorageHelper.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
+         && Storages.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
         {
             var currentCapacity = toStorage.ActualCapacity;
-            var addedCapacity = StorageHelper.CurrentItem.ActualCapacity;
+            var addedCapacity = Storages.CurrentItem.ActualCapacity;
             if (currentCapacity < int.MaxValue - addedCapacity)
             {
                 combined = true;
@@ -91,9 +91,9 @@ internal class UnloadChest : IFeature
         }
 
         // Stash items into target chest
-        for (var index = StorageHelper.CurrentItem.Items.Count - 1; index >= 0; index--)
+        for (var index = Storages.CurrentItem.Items.Count - 1; index >= 0; index--)
         {
-            var item = StorageHelper.CurrentItem.Items[index];
+            var item = Storages.CurrentItem.Items[index];
             if (item is null)
             {
                 continue;
@@ -107,18 +107,18 @@ internal class UnloadChest : IFeature
             }
 
             Log.Trace(
-                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {StorageHelper.CurrentItem}, To: {toStorage}");
-            StorageHelper.CurrentItem.Items[index] = null;
+                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {Storages.CurrentItem}, To: {toStorage}");
+            Storages.CurrentItem.Items[index] = null;
         }
 
-        if (combined && !StorageHelper.CurrentItem.Items.OfType<Item>().Any())
+        if (combined && !Storages.CurrentItem.Items.OfType<Item>().Any())
         {
             Game1.player.Items[Game1.player.CurrentToolIndex] = null;
             Game1.playSound("Ship");
         }
         else
         {
-            StorageHelper.CurrentItem.ClearNulls();
+            Storages.CurrentItem.ClearNulls();
         }
 
         CarryChest.CheckForOverburdened();

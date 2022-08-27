@@ -115,8 +115,8 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (StorageHelper.Inventory.Where(storage => !excludeCurrent || storage.Context != Game1.player.CurrentItem)
-                         .Any(storage => storage.Items.OfType<Item>().Any()))
+        if (Storages.Inventory.Where(storage => !excludeCurrent || storage.Context != Game1.player.CurrentItem)
+                    .Any(storage => storage.Items.OfType<Item>().Any()))
         {
             Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(CarryChest.Config.CarryChestSlowAmount));
             return;
@@ -406,7 +406,7 @@ internal class CarryChest : IFeature
 
         var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-         || !StorageHelper.TryGetOne(obj, out var storage)
+         || !Storages.TryGetOne(obj, out var storage)
          || storage.CarryChest is not FeatureOption.Enabled)
         {
             return;

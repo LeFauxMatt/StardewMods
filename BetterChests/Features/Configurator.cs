@@ -209,8 +209,8 @@ internal class Configurator : IFeature
         }
         else
         {
-            ConfigHelper.SetupSpecificConfig(this._modManifest, BetterItemGrabMenu.Context, true);
-            IntegrationHelper.GMCM.API!.OpenModMenu(this._modManifest);
+            Config.SetupSpecificConfig(this._modManifest, BetterItemGrabMenu.Context, true);
+            Integrations.GMCM.API!.OpenModMenu(this._modManifest);
             this._isActive = true;
         }
 
@@ -221,14 +221,14 @@ internal class Configurator : IFeature
     {
         if (!Context.IsPlayerFree
          || !this._config.ControlScheme.Configure.JustPressed()
-         || StorageHelper.CurrentItem is null)
+         || Storages.CurrentItem is null)
         {
             return;
         }
 
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.Configure);
-        ConfigHelper.SetupSpecificConfig(this._modManifest, StorageHelper.CurrentItem, true);
-        IntegrationHelper.GMCM.API!.OpenModMenu(this._modManifest);
+        Config.SetupSpecificConfig(this._modManifest, Storages.CurrentItem, true);
+        Integrations.GMCM.API!.OpenModMenu(this._modManifest);
         this._isActive = true;
     }
 
@@ -250,7 +250,7 @@ internal class Configurator : IFeature
         }
 
         this._isActive = false;
-        ConfigHelper.SetupMainConfig();
+        Config.SetupMainConfig();
 
         if (e.NewMenu?.GetType().Name != "ModConfigMenu")
         {

@@ -138,7 +138,7 @@ internal class CollectItems : IFeature
 
     private static void RefreshEligible()
     {
-        var storages = StorageHelper.FromPlayer(Game1.player, limit: 12);
+        var storages = Storages.FromPlayer(Game1.player, limit: 12);
         CollectItems.Eligible.Clear();
         CollectItems.Eligible.AddRange(storages.Where(storage => storage.CollectItems is FeatureOption.Enabled));
     }

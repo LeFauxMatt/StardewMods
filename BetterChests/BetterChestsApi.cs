@@ -26,7 +26,7 @@ public class BetterChestsApi : IBetterChestsApi
     /// <inheritdoc />
     public void AddConfigOptions(IManifest manifest, IStorageData storage)
     {
-        ConfigHelper.SetupSpecificConfig(manifest, storage);
+        Config.SetupSpecificConfig(manifest, storage);
     }
 
     /// <inheritdoc />

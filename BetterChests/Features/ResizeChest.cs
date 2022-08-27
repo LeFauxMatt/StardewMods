@@ -71,7 +71,7 @@ internal class ResizeChest : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (!StorageHelper.TryGetOne(__instance, out var storage)
+        if (!Storages.TryGetOne(__instance, out var storage)
          || storage.ResizeChest is not FeatureOption.Enabled
          || storage.ResizeChestCapacity == 0)
         {

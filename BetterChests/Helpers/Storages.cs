@@ -15,15 +15,15 @@ using StardewValley.Objects;
 /// <summary>
 ///     Provides access to all supported storages in the game.
 /// </summary>
-internal class StorageHelper
+internal class Storages
 {
-    private static StorageHelper? Instance;
+    private static Storages? Instance;
 
     private readonly ModConfig _config;
     private readonly Lazy<Dictionary<object, IStorageObject>> _referenceContext;
     private readonly Dictionary<Func<object, bool>, IStorageData> _storageTypes;
 
-    private StorageHelper(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
+    private Storages(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
         this._config = config;
         this._storageTypes = storageTypes;
@@ -86,7 +86,7 @@ internal class StorageHelper
             var storages = new List<IStorageObject>();
 
             // Iterate Inventory
-            foreach (var storage in StorageHelper.FromPlayer(Game1.player, excluded))
+            foreach (var storage in Storages.FromPlayer(Game1.player, excluded))
             {
                 storages.Add(storage);
                 yield return storage;
@@ -95,7 +95,7 @@ internal class StorageHelper
             // Iterate Locations
             foreach (var location in CommonHelpers.AllLocations)
             {
-                foreach (var storage in StorageHelper.FromLocation(location, excluded))
+                foreach (var storage in Storages.FromLocation(location, excluded))
                 {
                     storages.Add(storage);
                     yield return storage;
@@ -104,7 +104,7 @@ internal class StorageHelper
 
             // Sub Storage
             foreach (var storage in storages.SelectMany(
-                         managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
+                         managedStorage => Storages.FromStorage(managedStorage, excluded)))
             {
                 yield return storage;
             }
@@ -115,19 +115,19 @@ internal class StorageHelper
     ///     Gets the current storage item from the farmer's inventory.
     /// </summary>
     public static IStorageObject? CurrentItem =>
-        Game1.player.CurrentItem is not null && StorageHelper.TryGetOne(Game1.player.CurrentItem, out var storage)
-            ? storage.WithType(StorageHelper.StorageTypes)
+        Game1.player.CurrentItem is not null && Storages.TryGetOne(Game1.player.CurrentItem, out var storage)
+            ? storage.WithType(Storages.StorageTypes)
             : null;
 
     /// <summary>
     ///     Gets all placed storages in the current location.
     /// </summary>
-    public static IEnumerable<IStorageObject> CurrentLocation => StorageHelper.FromLocation(Game1.currentLocation);
+    public static IEnumerable<IStorageObject> CurrentLocation => Storages.FromLocation(Game1.currentLocation);
 
     /// <summary>
     ///     Gets storages in the farmer's inventory.
     /// </summary>
-    public static IEnumerable<IStorageObject> Inventory => StorageHelper.FromPlayer(Game1.player);
+    public static IEnumerable<IStorageObject> Inventory => Storages.FromPlayer(Game1.player);
 
     /// <summary>
     ///     Gets the types of storages in the game.
@@ -142,16 +142,16 @@ internal class StorageHelper
         get
         {
             var excluded = new HashSet<object>();
-            return CommonHelpers.AllLocations.SelectMany(location => StorageHelper.FromLocation(location, excluded));
+            return CommonHelpers.AllLocations.SelectMany(location => Storages.FromLocation(location, excluded));
         }
     }
 
-    private static ModConfig Config => StorageHelper.Instance!._config;
+    private static ModConfig Config => Storages.Instance!._config;
 
     private static Dictionary<object, IStorageObject> ReferenceContext =>
-        StorageHelper.Instance!._referenceContext.Value;
+        Storages.Instance!._referenceContext.Value;
 
-    private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => StorageHelper.Instance!._storageTypes;
+    private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => Storages.Instance!._storageTypes;
 
     /// <summary>
     ///     Gets all storages placed in a particular farmer's inventory.
@@ -176,7 +176,7 @@ internal class StorageHelper
         IEnumerable<IStorageObject> GetAll()
         {
             // Mod Integrations
-            foreach (var storage in IntegrationHelper.FromPlayer(player, excluded))
+            foreach (var storage in Integrations.FromPlayer(player, excluded))
             {
                 yield return storage;
             }
@@ -186,8 +186,7 @@ internal class StorageHelper
             for (var index = 0; index < limit; index++)
             {
                 var item = player.Items[index];
-                if (!StorageHelper.TryGetOne(item, player, position, out var storage)
-                 || excluded.Contains(storage.Context))
+                if (!Storages.TryGetOne(item, player, position, out var storage) || excluded.Contains(storage.Context))
                 {
                     continue;
                 }
@@ -197,18 +196,18 @@ internal class StorageHelper
             }
         }
 
-        return GetAll().WithTypes(StorageHelper.StorageTypes);
+        return GetAll().WithTypes(Storages.StorageTypes);
     }
 
     /// <summary>
-    ///     Initialized <see cref="StorageHelper" />.
+    ///     Initialized <see cref="Storages" />.
     /// </summary>
     /// <param name="config">Mod config data.</param>
     /// <param name="storageTypes">A dictionary of all registered storage types.</param>
-    /// <returns>Returns an instance of the <see cref="StorageHelper" /> class.</returns>
-    public static StorageHelper Init(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
+    /// <returns>Returns an instance of the <see cref="Storages" /> class.</returns>
+    public static Storages Init(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
     {
-        return StorageHelper.Instance ??= new(config, storageTypes);
+        return Storages.Instance ??= new(config, storageTypes);
     }
 
     /// <summary>
@@ -220,8 +219,8 @@ internal class StorageHelper
     /// <returns>Returns true if a storage could be found at the location and position..</returns>
     public static bool TryGetOne(GameLocation location, Vector2 pos, [NotNullWhen(true)] out IStorageObject? storage)
     {
-        storage = StorageHelper.FromLocation(location)
-                               .FirstOrDefault(locationStorage => locationStorage.Position.Equals(pos));
+        storage = Storages.FromLocation(location)
+                          .FirstOrDefault(locationStorage => locationStorage.Position.Equals(pos));
         return storage is not null;
     }
 
@@ -239,13 +238,13 @@ internal class StorageHelper
             return true;
         }
 
-        if (!IntegrationHelper.TryGetOne(context, out storage)
-         && !StorageHelper.TryGetOne(context, default, default, out storage))
+        if (!Integrations.TryGetOne(context, out storage)
+         && !Storages.TryGetOne(context, default, default, out storage))
         {
             return false;
         }
 
-        storage.WithType(StorageHelper.StorageTypes);
+        storage.WithType(Storages.StorageTypes);
         return true;
     }
 
@@ -268,7 +267,7 @@ internal class StorageHelper
         IEnumerable<IStorageObject> GetAll()
         {
             // Mod Integrations
-            foreach (var storage in IntegrationHelper.FromLocation(location, excluded))
+            foreach (var storage in Integrations.FromLocation(location, excluded))
             {
                 yield return storage;
             }
@@ -325,7 +324,7 @@ internal class StorageHelper
             // Objects
             foreach (var (position, obj) in location.Objects.Pairs)
             {
-                if (!StorageHelper.TryGetOne(obj, location, position, out var subStorage)
+                if (!Storages.TryGetOne(obj, location, position, out var subStorage)
                  || excluded.Contains(subStorage.Context))
                 {
                     continue;
@@ -336,7 +335,7 @@ internal class StorageHelper
             }
         }
 
-        return GetAll().WithTypes(StorageHelper.StorageTypes);
+        return GetAll().WithTypes(Storages.StorageTypes);
     }
 
     private static IEnumerable<IStorageObject> FromStorage(IStorageObject storage, ISet<object>? excluded = null)
@@ -355,7 +354,7 @@ internal class StorageHelper
 
             foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
             {
-                if (!StorageHelper.TryGetOne(item, storage.Source, storage.Position, out var managedStorage)
+                if (!Storages.TryGetOne(item, storage.Source, storage.Position, out var managedStorage)
                  || excluded.Contains(managedStorage.Context))
                 {
                     continue;
@@ -368,13 +367,13 @@ internal class StorageHelper
 
             // Sub Storage
             foreach (var subStorage in managedStorages.SelectMany(
-                         managedStorage => StorageHelper.FromStorage(managedStorage, excluded)))
+                         managedStorage => Storages.FromStorage(managedStorage, excluded)))
             {
                 yield return subStorage;
             }
         }
 
-        return GetAll().WithTypes(StorageHelper.StorageTypes);
+        return GetAll().WithTypes(Storages.StorageTypes);
     }
 
     private static bool TryGetOne(
@@ -383,7 +382,7 @@ internal class StorageHelper
         Vector2 position,
         [NotNullWhen(true)] out IStorageObject? storage)
     {
-        if (context is not null && StorageHelper.ReferenceContext.TryGetValue(context, out storage))
+        if (context is not null && Storages.ReferenceContext.TryGetValue(context, out storage))
         {
             return true;
         }
@@ -402,7 +401,7 @@ internal class StorageHelper
             case Chest { playerChest.Value: true } chest:
                 storage = new ChestStorage(chest, parent, position);
                 return true;
-            case ShippingBin or IslandWest when !StorageHelper.Config.BetterShippingBin:
+            case ShippingBin or IslandWest when !Storages.Config.BetterShippingBin:
                 storage = default;
                 return false;
             case ShippingBin shippingBin:

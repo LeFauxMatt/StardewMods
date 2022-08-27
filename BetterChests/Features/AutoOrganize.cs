@@ -60,9 +60,9 @@ internal class AutoOrganize : IFeature
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages = StorageHelper.All.Where(storage => storage.AutoOrganize is FeatureOption.Enabled)
-                                    .OrderByDescending(storage => storage.StashToChestPriority)
-                                    .ToList();
+        var storages = Storages.All.Where(storage => storage.AutoOrganize is FeatureOption.Enabled)
+                               .OrderByDescending(storage => storage.StashToChestPriority)
+                               .ToList();
 
         foreach (var fromStorage in storages)
         {

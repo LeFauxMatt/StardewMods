@@ -463,7 +463,7 @@ internal class BetterItemGrabMenu : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_constructor_prefix(ItemGrabMenu __instance, object? context)
     {
-        if (context is null || !StorageHelper.TryGetOne(context, out var storage))
+        if (context is null || !Storages.TryGetOne(context, out var storage))
         {
             BetterItemGrabMenu.Context = null;
             BetterItemGrabMenu.Instance!._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);

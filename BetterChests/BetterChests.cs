@@ -25,15 +25,10 @@ public class BetterChests : Mod
         Log.Monitor = this.Monitor;
         CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
-        this._config = ConfigHelper.Init(this.Helper, this.ModManifest, this._features);
-        IntegrationHelper.Init(this.Helper);
-        StorageHelper.Init(this._config, this._storageTypes);
+        this._config = Config.Init(this.Helper, this.ModManifest, this._features);
+        Integrations.Init(this.Helper);
+        Helpers.Storages.Init(this._config, this._storageTypes);
         ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
-
-        if (this.Helper.ModRegistry.IsLoaded("furyx639.FuryCore"))
-        {
-            Log.Alert("Remove FuryCore, it is no longer needed by this mod!");
-        }
 
         // Events
         this.Helper.Events.Content.AssetRequested += BetterChests.OnAssetRequested;
@@ -61,7 +56,7 @@ public class BetterChests : Mod
             () => this._config.CollectItems is not FeatureOption.Disabled);
         this._features.Add(
             Configurator.Init(this.Helper, this._config, this.ModManifest),
-            () => this._config.Configurator is not FeatureOption.Disabled && IntegrationHelper.GMCM.IsLoaded);
+            () => this._config.Configurator is not FeatureOption.Disabled && Integrations.GMCM.IsLoaded);
         this._features.Add(
             CraftFromChest.Init(this.Helper, this._config),
             () => this._config.CraftFromChest is not FeatureOptionRange.Disabled);
@@ -120,7 +115,7 @@ public class BetterChests : Mod
         foreach (var (feature, condition) in this._features)
         {
             var featureName = feature.GetType().Name;
-            if (IntegrationHelper.TestConflicts(featureName, out var mods))
+            if (Integrations.TestConflicts(featureName, out var mods))
             {
                 var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
                 Log.Warn(string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{featureName}", modList));

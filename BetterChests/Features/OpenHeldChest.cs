@@ -172,13 +172,13 @@ internal class OpenHeldChest : IFeature
     {
         if (!Context.IsPlayerFree
          || !e.Button.IsActionButton()
-         || StorageHelper.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled })
+         || Storages.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled })
         {
             return;
         }
 
         Game1.player.currentLocation.localSound("openChest");
-        StorageHelper.CurrentItem.ShowMenu();
+        Storages.CurrentItem.ShowMenu();
         this._helper.Input.Suppress(e.Button);
     }
 }
