@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortableHoles", "PortableHo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmackDatScarecrow", "SmackDatScarecrow\SmackDatScarecrow.csproj", "{66F2B279-351B-499C-826B-A885C2255334}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpfulSpouses", "archived\HelpfulSpouses\HelpfulSpouses.csproj", "{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -112,6 +114,10 @@ Global
 		{66F2B279-351B-499C-826B-A885C2255334}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66F2B279-351B-499C-826B-A885C2255334}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66F2B279-351B-499C-826B-A885C2255334}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,6 +127,7 @@ Global
 		{D591B042-7360-4FA1-9D17-064C6929ECD9} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{E6085D20-0427-4196-954A-8958DE22ACC9} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{98F22749-5C13-4CBD-85D3-9F4BB89EB016} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
+		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
