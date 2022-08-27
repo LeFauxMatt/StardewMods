@@ -1,7 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -67,7 +66,6 @@ internal class OpenHeldChest : IFeature
         this._isActivated = true;
         HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
     }
 
     /// <inheritdoc />
@@ -81,7 +79,6 @@ internal class OpenHeldChest : IFeature
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
@@ -152,19 +149,6 @@ internal class OpenHeldChest : IFeature
         {
             item = newChest,
         };
-    }
-
-    private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
-    {
-        if (!Context.IsPlayerFree)
-        {
-            return;
-        }
-
-        foreach (var obj in Game1.player.Items.Take(12).OfType<SObject>())
-        {
-            obj.updateWhenCurrentLocation(Game1.currentGameTime, Game1.currentLocation);
-        }
     }
 
     /// <summary>Open inventory for currently held chest.</summary>
