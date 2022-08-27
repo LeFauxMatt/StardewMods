@@ -20,10 +20,7 @@ internal class ChestStorage : BaseStorage, IColorable
     /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
     public ChestStorage(Chest chest, object? source, Vector2 position)
-        : base(
-            chest is { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } ? Game1.player.team : chest,
-            source,
-            position)
+        : base(chest, source, position)
     {
         this.Chest = chest;
         this._chest = new(true, this.Chest.ParentSheetIndex)
