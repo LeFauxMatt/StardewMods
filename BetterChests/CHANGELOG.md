@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 2.5.4 (Unreleased)
+## 2.5.4 (August 27, 2022)
 
 ### Changed
 
@@ -10,6 +10,9 @@
 
 * Fixed ResizeChest and ResizeChestMenu not being Disabled.
 * Fixed ChestLabel not supporting Zoom levels.
+* Fixed TransferItems not saving config from GMCM menu.
+* Fixed LabelChest not saving config from GMCM menu.
+* Fixed config options not applying to Junimo Chests.
 
 ## 2.5.3 (August 21, 2022)
 
