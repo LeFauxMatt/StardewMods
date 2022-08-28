@@ -6,6 +6,10 @@
 
 * Added configurable SaddleBag type when Horse Overhaul is installed.
 
+### Changed
+
+* Disallow any Chest from being automatically stashed into another chest.
+
 ## 2.5.5 (August 27, 2022)
 
 ### Fixed

@@ -321,6 +321,12 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     /// <inheritdoc />
     public Item? StashItem(Item item, bool existingStacks = false)
     {
+        // Disallow stashing of any Chest.
+        if (item is Chest or SObject { heldObject.Value: Chest })
+        {
+            return item;
+        }
+
         var condition1 = existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true);
         var condition2 = this.FilterItemsList.Any()
                       && !this.FilterItemsList.All(filter => filter.StartsWith("!"))
