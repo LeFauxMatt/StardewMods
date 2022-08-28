@@ -1,8 +1,10 @@
 ﻿namespace StardewMods.BetterChests.Helpers;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewMods.BetterChests.Storages;
+using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Integrations.Automate;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.BetterCrafting;
@@ -118,6 +120,34 @@ internal class Integrations
     public static Integrations Init(IModHelper helper)
     {
         return Integrations.Instance ??= new(helper);
+    }
+
+    /// <summary>
+    ///     Initializes integrated storage types.
+    /// </summary>
+    /// <param name="vanillaStorages">Collection of storage type config options.</param>
+    /// <returns>Returns storage types added from integrations.</returns>
+    public static Dictionary<Func<object, bool>, IStorageData> InitTypes(
+        IDictionary<string, StorageData> vanillaStorages)
+    {
+        var storageTypes = new Dictionary<Func<object, bool>, IStorageData>();
+
+        // Saddle Bag
+        if (Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
+        {
+            if (!vanillaStorages.TryGetValue("SaddleBag", out var storageData))
+            {
+                storageData = new();
+                vanillaStorages.Add("SaddleBag", storageData);
+            }
+
+            storageTypes.Add(
+                context => context is Chest chest
+                        && chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"),
+                storageData);
+        }
+
+        return storageTypes;
     }
 
     /// <summary>

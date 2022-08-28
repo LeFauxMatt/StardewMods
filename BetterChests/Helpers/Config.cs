@@ -279,7 +279,7 @@ internal class Config
         }
 
         // Other Chests
-        foreach (var (key, value) in Config.ModConfig.VanillaStorages)
+        foreach (var (key, value) in Config.ModConfig.VanillaStorages.OrderBy(kvp => Formatting.StorageName(kvp.Key)))
         {
             Integrations.GMCM.API.AddPage(Config.ModManifest, key, () => Formatting.StorageName(key));
             Config.SetupConfig(Config.ModManifest, value);

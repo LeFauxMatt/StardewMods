@@ -2,7 +2,7 @@ namespace StardewMods.BetterChests.Features;
 
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
-using StardewMods.BetterChests.Storages;
+using StardewMods.BetterChests.StorageHandlers;
 using StardewValley.Menus;
 
 /// <summary>

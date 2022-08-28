@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Storages;
+﻿namespace StardewMods.BetterChests.StorageHandlers;
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -8,7 +8,7 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Network;
 using StardewValley.Objects;
 
-/// <inheritdoc cref="StardewMods.BetterChests.Storages.BaseStorage" />
+/// <inheritdoc cref="BaseStorage" />
 internal class ChestStorage : BaseStorage, IColorable
 {
     private readonly Chest _chest;

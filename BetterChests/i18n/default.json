@@ -8,6 +8,8 @@
   "storage.Default.tooltip": "Config options that apply to every storage.",
   "storage.Fridge.name": "Fridge",
   "storage.Fridge.tooltip": "Storage in the farmhouse for cooking ingredients.",
+  "storage.SaddleBag.name": "SaddleBag",
+  "storage.SaddleBag.tooltip": "Storage from the Horse Overhaul mod.",
   // Effects
   "effect.carry-chest-slow.description": "Overburdened -{0} Speed",
   // Config Pages

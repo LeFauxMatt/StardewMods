@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Storages;
+﻿namespace StardewMods.BetterChests.StorageHandlers;
 
 using System;
 using System.Collections.Generic;

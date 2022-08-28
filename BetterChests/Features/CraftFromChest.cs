@@ -7,7 +7,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
-using StardewMods.BetterChests.Storages;
+using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;

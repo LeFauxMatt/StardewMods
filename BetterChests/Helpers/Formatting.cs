@@ -10,6 +10,9 @@ using StardewMods.Common.Enums;
 /// </summary>
 internal static class Formatting
 {
+    /// <summary>SMAPI helper for providing translations.</summary>
+    public static ITranslationHelper? Translations;
+
     private static readonly Lazy<Dictionary<string, string>> BlueprintsDataLazy =
         new(() => Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints"));
 
@@ -219,6 +222,8 @@ internal static class Formatting
                 break;
             case "Fridge":
                 return I18n.Storage_Fridge_Name();
+            default:
+                return Formatting.Translations?.Get($"storage.{value}.name").Default(value) ?? value;
         }
 
         return value;
@@ -254,6 +259,8 @@ internal static class Formatting
                 break;
             case "Fridge":
                 return I18n.Storage_Fridge_Tooltip();
+            default:
+                return Formatting.Translations?.Get($"storage.{value}.tooltip").Default(value) ?? value;
         }
 
         return value;

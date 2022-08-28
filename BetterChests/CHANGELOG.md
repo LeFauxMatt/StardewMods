@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.6.0 (Unreleased)
+
+### Added
+
+* Added configurable SaddleBag type when Horse Overhaul is installed.
+
 ## 2.5.5 (August 27, 2022)
 
 ### Fixed

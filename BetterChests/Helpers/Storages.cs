@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Models;
-using StardewMods.BetterChests.Storages;
+using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
@@ -27,6 +27,12 @@ internal class Storages
     {
         this._config = config;
         this._storageTypes = storageTypes;
+
+        foreach (var (predicate, storageData) in Integrations.InitTypes(config.VanillaStorages))
+        {
+            this._storageTypes.Add(predicate, new StorageNodeData(storageData, config));
+        }
+
         this.InitTypes(config.VanillaStorages, config);
         this._referenceContext = new(
             () =>
