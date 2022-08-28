@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.5.5 (August 27, 2022)
+
+### Fixed
+
+* Fixed Unlimited Chests freezing the game.
+
 ## 2.5.4 (August 27, 2022)
 
 ### Changed

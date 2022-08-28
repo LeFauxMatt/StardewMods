@@ -101,14 +101,14 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
             this._capacity = this.ResizeChestCapacity;
             this._rows = this.ResizeChestMenuRows;
             return this._menuRows = (int)Math.Min(
-                this.ResizeChestCapacity switch
+                this.ActualCapacity switch
                 {
                     0 or Chest.capacity => 3,
                     _ when this.ResizeChestMenuRows <= 0 => 3,
                     < 0 or >= 72 => this.ResizeChestMenuRows,
                     < 72 => this.ResizeChestMenuRows,
                 },
-                Math.Ceiling(this.ResizeChestCapacity / 12f));
+                Math.Ceiling(this.ActualCapacity / 12f));
         }
     }
 
