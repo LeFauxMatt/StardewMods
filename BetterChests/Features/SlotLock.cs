@@ -74,6 +74,7 @@ internal class SlotLock : IFeature
         this._isActivated = true;
         HarmonyHelper.ApplyPatches(SlotLock.Id);
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
     }
 
     /// <inheritdoc />
@@ -87,6 +88,7 @@ internal class SlotLock : IFeature
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(SlotLock.Id);
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -117,6 +119,13 @@ internal class SlotLock : IFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
+        if (!this._config.SlotLockHold
+         || e.Button is not SButton.MouseLeft
+         || !this._config.ControlScheme.LockSlot.IsDown())
+        {
+            return;
+        }
+
         var (x, y) = Game1.getMousePosition(true);
         var menu = Game1.activeClickableMenu switch
         {
@@ -128,26 +137,13 @@ internal class SlotLock : IFeature
             _ => null,
         };
 
-        if (menu is null)
-        {
-            return;
-        }
-
-        if (!(this._config.SlotLockHold
-           && e.Button == SButton.MouseLeft
-           && e.IsDown(this._config.ControlScheme.LockSlot))
-         && !(!this._config.SlotLockHold && e.Button == this._config.ControlScheme.LockSlot))
-        {
-            return;
-        }
-
-        var slot = menu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        var slot = menu?.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (slot is null || !int.TryParse(slot.name, out var index))
         {
             return;
         }
 
-        var item = menu.actualInventory.ElementAtOrDefault(index);
+        var item = menu?.actualInventory.ElementAtOrDefault(index);
         if (item is null)
         {
             return;
@@ -163,5 +159,47 @@ internal class SlotLock : IFeature
         }
 
         this._helper.Input.Suppress(e.Button);
+    }
+
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    {
+        if (this._config.SlotLockHold || !this._config.ControlScheme.LockSlot.JustPressed())
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        var menu = Game1.activeClickableMenu switch
+        {
+            ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
+            ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
+                itemsToGrabMenu,
+            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+                => inventoryPage,
+            _ => null,
+        };
+
+        var slot = menu?.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        if (slot is null || !int.TryParse(slot.name, out var index))
+        {
+            return;
+        }
+
+        var item = menu?.actualInventory.ElementAtOrDefault(index);
+        if (item is null)
+        {
+            return;
+        }
+
+        if (item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
+        {
+            item.modData.Remove("furyx639.BetterChests/LockedSlot");
+        }
+        else
+        {
+            item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
+        }
+
+        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.LockSlot);
     }
 }

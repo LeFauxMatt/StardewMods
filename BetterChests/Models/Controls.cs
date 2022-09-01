@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
+using System.Text;
 using StardewModdingAPI.Utilities;
 
 /// <summary>
@@ -22,7 +23,7 @@ internal class Controls
     /// <summary>
     ///     Gets or sets controls to lock an item slot.
     /// </summary>
-    public SButton LockSlot { get; set; } = SButton.LeftAlt;
+    public KeybindList LockSlot { get; set; } = new(SButton.LeftAlt);
 
     /// <summary>
     ///     Gets or sets controls to switch to next tab.
@@ -53,4 +54,20 @@ internal class Controls
     ///     Gets or sets controls to stash player items into storages.
     /// </summary>
     public KeybindList StashItems { get; set; } = new(SButton.Z);
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Configure: {this.Configure}");
+        sb.AppendLine($"FindChest: {this.FindChest}");
+        sb.AppendLine($"LockSlot: {this.LockSlot}");
+        sb.AppendLine($"NextTab: {this.NextTab}");
+        sb.AppendLine($"OpenCrafting: {this.OpenCrafting}");
+        sb.AppendLine($"PreviousTab: {this.PreviousTab}");
+        sb.AppendLine($"ScrollDown: {this.ScrollDown}");
+        sb.AppendLine($"ScrollUp: {this.ScrollUp}");
+        sb.AppendLine($"StashItems: {this.StashItems}");
+        return sb.ToString();
+    }
 }
