@@ -206,10 +206,11 @@ internal class CarryChest : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void InventoryMenu_rightClick_postfix(
         InventoryMenu __instance,
+        Item? toAddTo,
         ref Item? __result,
         ref (Item?, int)? __state)
     {
-        if (__state is null)
+        if (__state is null || toAddTo is not null)
         {
             return;
         }
@@ -225,12 +226,24 @@ internal class CarryChest : IFeature
             return;
         }
 
-        if (__instance.actualInventory.ElementAtOrDefault(slotNumber) is not null)
+        switch (__instance.actualInventory.ElementAtOrDefault(slotNumber))
         {
-            return;
-        }
+            case null:
+                __result = item;
+                return;
+            case Chest { SpecialChestType: not Chest.SpecialChestTypes.JunimoChest } chest:
+                __result = new Chest(true, chest.ParentSheetIndex)
+                {
+                    Name = chest.Name,
+                    SpecialChestType = chest.SpecialChestType,
+                    fridge = { Value = chest.fridge.Value },
+                    lidFrameCount = { Value = chest.lidFrameCount.Value },
+                    playerChoiceColor = { Value = chest.playerChoiceColor.Value },
+                };
 
-        __result = item;
+                __result._GetOneFrom(chest);
+                return;
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -291,7 +304,8 @@ internal class CarryChest : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
-        if (__instance is Chest || other is Chest)
+        if ((__instance is Chest chest && chest.items.OfType<Item>().Any())
+         || (other is Chest otherChest && otherChest.items.OfType<Item>().Any()))
         {
             __result = false;
         }
@@ -404,8 +418,9 @@ internal class CarryChest : IFeature
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile(1);
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+        var pos = CommonHelpers.GetCursorTile(1, false);
+        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
+         || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
          || !Storages.TryGetOne(obj, out var storage)
          || storage.CarryChest is not FeatureOption.Enabled)
         {

@@ -14,6 +14,7 @@
 
 * Disallow any Chest from being automatically stashed into another chest.
 * Craft From Chest will only lock chests when crafting items.
+* Allow stacking of empty chests.
 
 ## 2.5.5 (August 27, 2022)
 
