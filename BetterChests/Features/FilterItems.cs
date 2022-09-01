@@ -126,9 +126,6 @@ internal class FilterItems : IFeature
             return;
         }
 
-        if (BetterItemGrabMenu.Inventory is not null)
-        {
-            BetterItemGrabMenu.Inventory.AddHighlighter(BetterItemGrabMenu.Context.FilterMatcher);
-        }
+        BetterItemGrabMenu.Inventory?.AddHighlighter(BetterItemGrabMenu.Context.FilterMatcher);
     }
 }

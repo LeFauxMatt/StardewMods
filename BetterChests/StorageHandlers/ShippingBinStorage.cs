@@ -130,13 +130,11 @@ internal class ShippingBinStorage : BaseStorage
             null,
             -1,
             this.Context);
-        if (Game1.activeClickableMenu is ItemGrabMenu itemGrabMenu)
+        if (Game1.options.SnappyMenus
+         && Game1.activeClickableMenu is ItemGrabMenu { currentlySnappedComponent: { } currentlySnappedComponent })
         {
-            if (Game1.options.SnappyMenus && itemGrabMenu.currentlySnappedComponent is not null)
-            {
-                menu.setCurrentlySnappedComponentTo(itemGrabMenu.currentlySnappedComponent.myID);
-                menu.snapCursorToCurrentSnappedComponent();
-            }
+            menu.setCurrentlySnappedComponentTo(currentlySnappedComponent.myID);
+            menu.snapCursorToCurrentSnappedComponent();
         }
 
         Game1.activeClickableMenu = menu;

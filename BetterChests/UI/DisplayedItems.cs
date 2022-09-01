@@ -37,7 +37,7 @@ internal class DisplayedItems
             new(421, 459, 11, 12),
             Game1.pixelZoom) { myID = 5318009 });
 
-    private EventHandler? _itemsRefreshed;
+    private EventHandler<List<Item>>? _itemsRefreshed;
     private int _offset;
 
     /// <summary>
@@ -51,6 +51,7 @@ internal class DisplayedItems
         this._topMenu = topMenu;
         this._columns = this.Menu.capacity / this.Menu.rows;
         this._highlightMethod = this.Menu.highlightMethod;
+
         this.Menu.highlightMethod = this.Highlight;
 
         // Reposition Arrows
@@ -75,7 +76,7 @@ internal class DisplayedItems
     /// <summary>
     ///     Raised after the displayed items is refreshed.
     /// </summary>
-    public event EventHandler ItemsRefreshed
+    public event EventHandler<List<Item>> ItemsRefreshed
     {
         add => this._itemsRefreshed += value;
         remove => this._itemsRefreshed -= value;
@@ -226,32 +227,12 @@ internal class DisplayedItems
                 : int.MaxValue).ToString();
         }
 
-        this.Invoke();
+        this._itemsRefreshed.InvokeAll(this, this._items);
     }
 
     private bool Highlight(Item item)
     {
         return this._highlightMethod(item)
             && (!this._highlighters.Any() || this._highlighters.All(matcher => matcher.Matches(item)));
-    }
-
-    private void Invoke()
-    {
-        if (this._itemsRefreshed is null)
-        {
-            return;
-        }
-
-        foreach (var handler in this._itemsRefreshed.GetInvocationList())
-        {
-            try
-            {
-                handler.DynamicInvoke(this, EventArgs.Empty);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
     }
 }

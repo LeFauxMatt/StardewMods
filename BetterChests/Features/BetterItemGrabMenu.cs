@@ -21,7 +21,7 @@ using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 
 /// <summary>
-///     Enhances the <see cref="StardewValley.Menus.ItemGrabMenu" /> to support filters, sorting, and scrolling..
+///     Enhances the <see cref="StardewValley.Menus.ItemGrabMenu" /> to support filters, sorting, and scrolling.
 /// </summary>
 internal class BetterItemGrabMenu : IFeature
 {

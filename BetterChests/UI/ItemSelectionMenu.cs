@@ -446,7 +446,7 @@ internal class ItemSelectionMenu : ItemGrabMenu
         this._dropDown = null;
     }
 
-    private void OnItemsRefreshed(object? sender, EventArgs e)
+    private void OnItemsRefreshed(object? sender, List<Item> items)
     {
         this._refreshItems = true;
     }
