@@ -13,6 +13,10 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public class ToolbarIconsApi : IToolbarIconsApi
 {
+    private readonly Dictionary<string, ClickableTextureComponent> _components;
+    private readonly IModHelper _helper;
+    private readonly List<ToolbarIcon> _icons;
+
     private EventHandler<string>? _toolbarIconPressed;
 
     /// <summary>
@@ -26,9 +30,9 @@ public class ToolbarIconsApi : IToolbarIconsApi
         List<ToolbarIcon> icons,
         Dictionary<string, ClickableTextureComponent> components)
     {
-        this.Helper = helper;
-        this.Icons = icons;
-        this.Components = components;
+        this._helper = helper;
+        this._icons = icons;
+        this._components = components;
     }
 
     /// <summary>
@@ -40,53 +44,49 @@ public class ToolbarIconsApi : IToolbarIconsApi
         remove => this._toolbarIconPressed -= value;
     }
 
-    private Dictionary<string, ClickableTextureComponent> Components { get; }
-
-    private IModHelper Helper { get; }
-
-    private List<ToolbarIcon> Icons { get; }
-
     /// <inheritdoc />
     public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText)
     {
-        var icon = this.Icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        var icon = this._icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (icon is null)
         {
             icon = new(id);
-            this.Icons.Add(icon);
+            this._icons.Add(icon);
         }
 
-        if (!this.Components.ContainsKey(id))
+        if (this._components.ContainsKey(id))
         {
-            Log.Trace($"Adding icon: {id}");
-            this.Components.Add(
-                id,
-                new(
-                    new(0, 0, 32, 32),
-                    this.Helper.GameContent.Load<Texture2D>(texturePath),
-                    sourceRect ?? new(0, 0, 16, 16),
-                    2f)
-                {
-                    hoverText = hoverText,
-                    name = id,
-                    visible = icon.Enabled,
-                });
+            return;
         }
+
+        Log.Trace($"Adding icon: {id}");
+        this._components.Add(
+            id,
+            new(
+                new(0, 0, 32, 32),
+                this._helper.GameContent.Load<Texture2D>(texturePath),
+                sourceRect ?? new(0, 0, 16, 16),
+                2f)
+            {
+                hoverText = hoverText,
+                name = id,
+                visible = icon.Enabled,
+            });
     }
 
     /// <inheritdoc />
     public void RemoveToolbarIcon(string id)
     {
         var toolbarIcon =
-            this.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            this._icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (toolbarIcon is null)
         {
             return;
         }
 
         Log.Trace($"Removing icon: {id}");
-        this.Icons.Remove(toolbarIcon);
-        this.Components.Remove(id);
+        this._icons.Remove(toolbarIcon);
+        this._components.Remove(id);
     }
 
     /// <summary>
