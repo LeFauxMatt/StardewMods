@@ -35,7 +35,6 @@ internal class CraftFromChest : IFeature
            && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
              && Game1.player.currentLocation is MineShaft mineShaft
              && mineShaft.Name.StartsWith("UndergroundMine"))
-           && storage.Source is not null
            && storage.CraftFromChest.WithinRangeOfPlayer(
                   storage.CraftFromChestDistance,
                   storage.Location,
@@ -115,9 +114,14 @@ internal class CraftFromChest : IFeature
 
     private static void OnToolbarIconPressed(object? sender, string id)
     {
-        if (id == "BetterChests.CraftFromChest")
+        if (id != "BetterChests.CraftFromChest")
         {
-            BetterCrafting.ShowCraftingPage(CraftFromChest.Eligible);
+            return;
+        }
+
+        if (!BetterCrafting.ShowCraftingPage(CraftFromChest.Eligible))
+        {
+            Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
         }
     }
 
@@ -129,6 +133,9 @@ internal class CraftFromChest : IFeature
         }
 
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.OpenCrafting);
-        BetterCrafting.ShowCraftingPage(CraftFromChest.Eligible);
+        if (!BetterCrafting.ShowCraftingPage(CraftFromChest.Eligible))
+        {
+            Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
+        }
     }
 }

@@ -34,8 +34,7 @@ internal class StashToChest : IFeature
            && !(storage.StashToChestDisableLocations?.Contains("UndergroundMine") == true
              && Game1.player.currentLocation is MineShaft mineShaft
              && mineShaft.Name.StartsWith("UndergroundMine"))
-           && storage.Source is not null
-           && storage.StashToChest.WithinRangeOfPlayer(storage.StashToChestDistance, storage.Source, storage.Position)
+           && storage.StashToChest.WithinRangeOfPlayer(storage.StashToChestDistance, storage.Location, storage.Position)
         select storage;
 
     /// <summary>

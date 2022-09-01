@@ -14,6 +14,7 @@ Adds enhanced chest features to the game.
     * [Collect Items](#collect-items)
     * [Configurator](#configurator)
     * [Craft From Chest](#craft-from-chest)
+    * [Craft From Workbench](#craft-from-workbench)
     * [Filter Items](#filter-items)
     * [Label Chest](#label-chest)
     * [Open Held Chest](#open-held-chest)
@@ -158,6 +159,18 @@ Hit a configurable key to bring up a crafting menu that uses items stored in nea
 2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 3. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
 4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
+
+### Craft From Workbench
+
+Allows the Workbench to craft from chests within a configurable range.
+
+| Config                     | Description                                                                          | Default Value | Other Value(s)                                                                 |
+|:---------------------------|:-------------------------------------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
+| CraftFromWorkbench         | Enables the Craft From Workbench feature.                                            | `"Location"`  | `"Disabled"`, `"Default"`, `"Inventory"`, `"Location"`, `"World"` <sup>1</sup> |
+| CraftFromWorkbenchDistance | Limits the distance that a chest can be crafted from when accessed from a workbench. | -1            | Any positive integer or `-1`.<sup>2</sup>                                      |
+
+1. See [Range Values](#range-values).
+2. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
 ### Filter Items
 

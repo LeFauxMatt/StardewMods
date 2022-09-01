@@ -46,6 +46,16 @@ internal class ModConfig : StorageData
     public Controls ControlScheme { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating the range which workbenches will craft from.
+    /// </summary>
+    public FeatureOptionRange CraftFromWorkbench { get; set; } = FeatureOptionRange.Default;
+
+    /// <summary>
+    ///     Gets or sets a value indicating the distance in tiles that the workbench can be remotely crafted from.
+    /// </summary>
+    public int CraftFromWorkbenchDistance { get; set; }
+
+    /// <summary>
     ///     Gets or sets the <see cref="ComponentArea" /> that the <see cref="BetterColorPicker" /> will be aligned to.
     /// </summary>
     public ComponentArea CustomColorPickerArea { get; set; }
@@ -63,7 +73,7 @@ internal class ModConfig : StorageData
     /// <summary>
     ///     Gets or sets the color of locked slots.
     /// </summary>
-    public Colors SlotLockColor { get; set; }
+    public Colors SlotLockColor { get; set; } = Colors.Red;
 
     /// <summary>
     ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
@@ -123,6 +133,16 @@ internal class ModConfig : StorageData
         if (this.CraftFromChestDistance == 0)
         {
             this.CraftFromChestDistance = -1;
+        }
+
+        if (this.CraftFromWorkbench is FeatureOptionRange.Default)
+        {
+            this.CraftFromWorkbench = FeatureOptionRange.Location;
+        }
+
+        if (this.CraftFromWorkbenchDistance == 0)
+        {
+            this.CraftFromWorkbenchDistance = -1;
         }
 
         if (this.CustomColorPicker is FeatureOption.Default)
@@ -257,6 +277,9 @@ internal class ModConfig : StorageData
         sb.AppendLine($"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
         sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");
         sb.AppendLine($"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CraftFromWorkbench: {this.CraftFromWorkbench.ToStringFast()}");
+        sb.AppendLine(
+            $"CraftFromWorkbenchDistance: {this.CraftFromWorkbenchDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CustomColorPicker: {this.CustomColorPicker.ToStringFast()}");
         sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
         sb.AppendLine($"FilterItems: {this.FilterItems.ToStringFast()}");

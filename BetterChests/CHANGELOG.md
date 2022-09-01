@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.6.1 (Unreleased)
+
+### Added
+
+* Added Craft From Workbench feature.
+
 ## 2.6.0 (September 1, 2022)
 
 ### Added

@@ -42,7 +42,7 @@ public class BetterChests : Mod
         this._features.Add(
             BetterColorPicker.Init(this.Helper, this._config),
             () => this._config.CustomColorPicker is not FeatureOption.Disabled);
-        this._features.Add(BetterCrafting.Init(this.Helper), () => true);
+        this._features.Add(BetterCrafting.Init(this.Helper, this._config), () => true);
         this._features.Add(BetterItemGrabMenu.Init(this.Helper, this._config), () => true);
         this._features.Add(BetterShippingBin.Init(this.Helper), () => this._config.BetterShippingBin);
         this._features.Add(
