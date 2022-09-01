@@ -6,6 +6,10 @@
 
 * Added Craft From Workbench feature.
 
+### Fixed
+
+* Fixed ingredients getting multiplied every time Crafting Page is reopened.
+
 ## 2.6.0 (September 1, 2022)
 
 ### Added

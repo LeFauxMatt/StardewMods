@@ -238,7 +238,7 @@ internal class BetterCrafting : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.OldMenu is not CraftingPage
+        if (e.OldMenu is not CraftingPage or GameMenu
          && (!Integrations.BetterCrafting.IsLoaded
           || e.OldMenu?.GetType() != Integrations.BetterCrafting.API.GetMenuType()))
         {
@@ -477,7 +477,6 @@ internal class BetterCrafting : IFeature
         BetterCrafting.Craft = new(recipe, amount);
         return true;
     }
-
 
     [HarmonyPriority(Priority.High)]
     private static bool Workbench_checkForAction_prefix(bool justCheckingForActivity)
