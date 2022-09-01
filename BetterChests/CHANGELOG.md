@@ -6,9 +6,14 @@
 
 * Added configurable SaddleBag type when Horse Overhaul is installed.
 
+### Fixed
+
+* Completely disable Shipping Bin features when a conflicting mod is installed.
+
 ### Changed
 
 * Disallow any Chest from being automatically stashed into another chest.
+* Craft From Chest will only lock chests when crafting items.
 
 ## 2.5.5 (August 27, 2022)
 
