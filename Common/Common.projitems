@@ -44,14 +44,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\ContentPatcherIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\IContentPatcherApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\IManagedConditions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\EasyAccessIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\EasyAccess\IEasyAccessApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\IEvenBetterRngApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\MoreChests\IMoreChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\OrdinaryCapsule\ICapsuleItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\OrdinaryCapsule\IOrdinaryCapsuleApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\IProducerFrameworkModApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProducerFrameworkMod\ProducerFrameworkModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProjectFluent\IFluent.cs" />
