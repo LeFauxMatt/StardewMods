@@ -1,6 +1,6 @@
 # Ordinary Capsule Change Log
 
-## 1.2.0 (Unreleased)
+## 1.2.0 (September 1, 2022)
 
 ### Added
 
