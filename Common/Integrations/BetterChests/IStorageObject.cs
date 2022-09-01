@@ -36,6 +36,11 @@ public interface IStorageObject : IStorageData, IEqualityComparer<IStorageObject
     public IList<Item?> Items { get; }
 
     /// <summary>
+    ///     Gets the context object's current location.
+    /// </summary>
+    public GameLocation Location { get; }
+
+    /// <summary>
     ///     Gets the calculated capacity of the <see cref="InventoryMenu" />.
     /// </summary>
     public int MenuCapacity { get; }

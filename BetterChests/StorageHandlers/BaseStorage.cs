@@ -84,6 +84,26 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     public abstract IList<Item?> Items { get; }
 
     /// <inheritdoc />
+    public GameLocation Location
+    {
+        get
+        {
+            var source = this.Source;
+            while (source is IStorageObject parent && !ReferenceEquals(this, parent))
+            {
+                source = parent.Source;
+            }
+
+            return source switch
+            {
+                GameLocation gameLocation => gameLocation,
+                Character character => character.currentLocation,
+                _ => Game1.currentLocation,
+            };
+        }
+    }
+
+    /// <inheritdoc />
     public int MenuCapacity => this.MenuRows * 12;
 
     /// <inheritdoc />
@@ -217,9 +237,7 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
         }
 
         this.ClearNulls();
-        var oldId = Game1.activeClickableMenu.currentlySnappedComponent != null
-            ? Game1.activeClickableMenu.currentlySnappedComponent.myID
-            : -1;
+        var oldId = Game1.activeClickableMenu.currentlySnappedComponent?.myID ?? -1;
         this.ShowMenu();
         ((ItemGrabMenu)Game1.activeClickableMenu).heldItem = tmp;
         if (oldId == -1)
