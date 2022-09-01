@@ -10,6 +10,7 @@ using StardewMods.Common.Enums;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
@@ -42,6 +43,11 @@ internal class OpenHeldChest : IFeature
                     typeof(OpenHeldChest),
                     nameof(OpenHeldChest.Chest_performToolAction_transpiler),
                     PatchType.Transpiler),
+                new(
+                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.highlightAllItems)),
+                    typeof(OpenHeldChest),
+                    nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix),
+                    PatchType.Postfix),
             });
     }
 
@@ -151,12 +157,25 @@ internal class OpenHeldChest : IFeature
         };
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void InventoryMenu_highlightAllItems_postfix(ref bool __result, Item i)
+    {
+        if (!__result || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+        {
+            return;
+        }
+
+        __result = !ReferenceEquals(itemGrabMenu.context, i);
+    }
+
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
          || !e.Button.IsActionButton()
-         || Storages.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled })
+         || Storages.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled }
+         || Game1.player.CurrentItem.Stack > 1)
         {
             return;
         }
