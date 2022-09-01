@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Integrations.BetterChests;
@@ -24,14 +25,44 @@ public class BetterChestsApi : IBetterChestsApi
     }
 
     /// <inheritdoc />
+    public IEnumerable<IStorageObject> AllStorages => Storages.All;
+
+    /// <inheritdoc />
+    public Dictionary<string, IStorageData> StorageTypes => Storages.Types;
+
+    /// <inheritdoc />
     public void AddConfigOptions(IManifest manifest, IStorageData storage)
     {
         Config.SetupSpecificConfig(manifest, storage);
     }
 
     /// <inheritdoc />
+    public IEnumerable<IStorageObject> GetStorages(Farmer farmer)
+    {
+        return Storages.FromPlayer(farmer);
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IStorageObject> GetStorages(GameLocation location)
+    {
+        return Storages.FromLocation(location);
+    }
+
+    /// <inheritdoc />
     public void RegisterChest(Func<object, bool> predicate, IStorageData storage)
     {
         this._storageTypes[predicate] = new StorageNodeData(storage, this._default);
+    }
+
+    /// <inheritdoc />
+    public void ShowCraftingPage(IEnumerable<IStorageObject> storages)
+    {
+        BetterCrafting.ShowCraftingPage(storages);
+    }
+
+    /// <inheritdoc />
+    public bool TryGetStorage(object context, [NotNullWhen(true)] out IStorageObject? storage)
+    {
+        return Storages.TryGetOne(context, out storage);
     }
 }
