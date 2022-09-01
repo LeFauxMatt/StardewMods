@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.ItemRepository;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.OrdinaryCapsule.Models;
 
 /// <inheritdoc />
 public class OrdinaryCapsule : Mod
@@ -16,6 +18,8 @@ public class OrdinaryCapsule : Mod
 
     private static readonly Lazy<List<Item>> ItemsLazy = new(
         () => new(from item in new ItemRepository().GetAll() select item.Item));
+
+    private static OrdinaryCapsule? Instance;
 
     private ModConfig? _config;
 
@@ -49,6 +53,7 @@ public class OrdinaryCapsule : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        OrdinaryCapsule.Instance = this;
         I18n.Init(this.Helper.Translation);
 
         // Events
@@ -61,6 +66,9 @@ public class OrdinaryCapsule : Mod
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
         harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
+            transpiler: new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_checkForAction_transpiler)));
+        harmony.Patch(
             AccessTools.Method(typeof(SObject), "getMinutesForCrystalarium"),
             postfix: new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_getMinutesForCrystalarium_postfix)));
         harmony.Patch(
@@ -68,13 +76,20 @@ public class OrdinaryCapsule : Mod
             new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_minutesElapsed_prefix)));
     }
 
+    /// <inheritdoc />
+    public override object GetApi()
+    {
+        return new OrdinaryCapsuleApi(this.Helper);
+    }
+
     private static int GetMinutes(Item item)
     {
-        var productionTimes = Game1.content.Load<Dictionary<string, int>>("furyx639.OrdinaryCapsule/ProductionTime");
-        var minutes = productionTimes.Where(kvp => item.GetContextTags().Contains(kvp.Key))
-                                     .Select(kvp => kvp.Value)
-                                     .FirstOrDefault();
-        OrdinaryCapsule.CachedTimes[item.ParentSheetIndex] = minutes;
+        var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
+        var minutes = capsuleItems.Where(capsuleItem => capsuleItem.ContextTags.Any(item.GetContextTags().Contains))
+                                  .Select(capsuleItem => capsuleItem.ProductionTime)
+                                  .FirstOrDefault();
+        OrdinaryCapsule.CachedTimes[item.ParentSheetIndex] =
+            minutes > 0 ? minutes : OrdinaryCapsule.Instance!.Config.DefaultProductionTime;
         return minutes;
     }
 
@@ -93,6 +108,25 @@ public class OrdinaryCapsule : Mod
 
         OrdinaryCapsule.CachedTimes[parentSheetIndex] = 0;
         return 0;
+    }
+
+    private static IEnumerable<CodeInstruction> Object_checkForAction_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(AccessTools.Method(typeof(Game1), nameof(Game1.playSound))))
+            {
+                yield return new(OpCodes.Ldarg_0);
+                yield return new(OpCodes.Ldloc_1);
+                yield return CodeInstruction.Call(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.PlaySound));
+                yield return instruction;
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -136,11 +170,25 @@ public class OrdinaryCapsule : Mod
         }
     }
 
+    private static string PlaySound(string sound, SObject obj, SObject? heldObj)
+    {
+        if (heldObj is null || obj is not { bigCraftable.Value: true, ParentSheetIndex: 97 })
+        {
+            return sound;
+        }
+
+        var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
+        return capsuleItems.FirstOrDefault(
+                               capsuleItem => capsuleItem.ContextTags.Any(heldObj.GetContextTags().Contains))
+                           ?.Sound
+            ?? sound;
+    }
+
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (e.Name.IsEquivalentTo($"{this.ModManifest.UniqueID}/ProductionTime"))
+        if (e.Name.IsEquivalentTo($"{this.ModManifest.UniqueID}/CapsuleItems"))
         {
-            e.LoadFromModFile<Dictionary<string, int>>("assets/items.json", AssetLoadPriority.Exclusive);
+            e.LoadFromModFile<List<CapsuleItem>>("assets/items.json", AssetLoadPriority.Exclusive);
             return;
         }
 
@@ -188,15 +236,19 @@ public class OrdinaryCapsule : Mod
             return;
         }
 
-        var minutes = OrdinaryCapsule.GetMinutes(Game1.player.CurrentItem);
-        if (minutes == 0)
+        var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
+        var capsuleItem = capsuleItems.FirstOrDefault(
+            capsuleItem => capsuleItem.ContextTags.Any(Game1.player.CurrentItem.GetContextTags().Contains));
+        if (capsuleItem is null)
         {
             return;
         }
 
         obj.heldObject.Value = (SObject)Game1.player.CurrentItem.getOne();
-        Game1.currentLocation.playSound("select");
-        obj.MinutesUntilReady = minutes;
+        Game1.currentLocation.playSound(capsuleItem.Sound ?? "select");
+        obj.MinutesUntilReady = capsuleItem.ProductionTime > 0
+            ? capsuleItem.ProductionTime
+            : this.Config.DefaultProductionTime;
         Game1.player.reduceActiveItemByOne();
         this.Helper.Input.Suppress(e.Button);
     }
@@ -220,6 +272,14 @@ public class OrdinaryCapsule : Mod
 
         // Register mod configuration
         gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
+
+        // Production Time
+        gmcm.API.AddNumberOption(
+            this.ModManifest,
+            () => this.Config.DefaultProductionTime,
+            value => this.Config.DefaultProductionTime = value,
+            I18n.Config_DefaultProductionTime_Name,
+            I18n.Config_DefaultProductionTime_Tooltip);
 
         // Unlock Automatically
         gmcm.API.AddBoolOption(

@@ -1,5 +1,17 @@
 # Ordinary Capsule Change Log
 
+## 1.2.0 (Unreleased)
+
+### Added
+
+* Added support for more items.
+* Added sounds for loading/grabbing items.
+* Added an API for mod integrations.
+
+### Changed
+
+* Changed the format of items.json.
+
 ## 1.1.1 (August 24, 2022)
 
 ### Fixed

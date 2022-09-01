@@ -1,4 +1,6 @@
 {
+  "config.default-production-time.name": "Default Production Time",
+  "config.default-production-time.tooltip": "The default time it takes to produce supported items.",
   "config.unlock-automatically.name": "Unlock Automatically",
   "config.unlock-automatically.tooltip": "Automatically unlock the Ordinary Capsule recipe.",
   "item.ordinary-capsule.name": "Ordinary Capsule",

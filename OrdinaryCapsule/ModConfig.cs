@@ -9,6 +9,11 @@ using System.Text;
 public class ModConfig
 {
     /// <summary>
+    ///     Gets or sets the default production time for supported items.
+    /// </summary>
+    public int DefaultProductionTime { get; set; } = 1440;
+
+    /// <summary>
     ///     Gets or sets a value indicating whether to unlock the recipe automatically.
     /// </summary>
     public bool UnlockAutomatically { get; set; }

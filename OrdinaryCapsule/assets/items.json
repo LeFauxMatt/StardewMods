@@ -1,7 +1,107 @@
-{
-  "category_egg": 1440,
-  "category_milk": 1440,
-  "category_meat": 1440,
-  "category_monster_loot": 1440,
-  "item_truffle": 1440
-}
+[
+  {
+    "ContextTags": [
+      "cow_milk_item"
+    ],
+    "Sound": "cow"
+  },
+  {
+    "ContextTags": [
+      "goat_milk_item"
+    ],
+    "Sound": "goat"
+  },
+  {
+    "ContextTags": [
+      "item_egg",
+      "item_large_egg"
+    ],
+    "Sound": "cluck"
+  },
+  {
+    "ContextTags": [
+      "item_duck_egg",
+      "item_duck_feather"
+    ],
+    "Sound": "Duck"
+  },
+  {
+    "ContextTags": [
+      "item_ostrich_egg"
+    ],
+    "Sound": "Ostrich"
+  },
+  {
+    "ContextTags": [
+      "slime_egg_item"
+    ],
+    "Sound": "slimedead"
+  },
+  {
+    "ContextTags": [
+      "item_rabbits_foot"
+    ],
+    "Sound": "rabbit"
+  },
+  {
+    "ContextTags": [
+      "item_truffle"
+    ],
+    "Sound": "pig"
+  },
+  {
+    "ContextTags": [
+      "item_wool"
+    ],
+    "Sound": "sheep"
+  },
+  {
+    "ContextTags": [
+      "item_bat_wing"
+    ],
+    "Sound": "batScreech"
+  },
+  {
+    "ContextTags": [
+      "item_bug_meat"
+    ],
+    "Sound": "monsterdead"
+  },
+  {
+    "ContextTags": [
+      "item_solar_essence"
+    ],
+    "Sound": "ghost"
+  },
+  {
+    "ContextTags": [
+      "item_void_essence"
+    ],
+    "Sound": "shadowDie"
+  },
+  {
+    "ContextTags": [
+      "category_egg"
+    ]
+  },
+  {
+    "ContextTags": [
+      "category_milk"
+    ]
+  },
+  {
+    "ContextTags": [
+      "category_meat"
+    ]
+  },
+  {
+    "ContextTags": [
+      "category_monster_loot"
+    ]
+  },
+  {
+    "ContextTags": [
+      "item_lucky_purple_shorts"
+    ]
+  }
+]
