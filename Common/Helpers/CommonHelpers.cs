@@ -62,8 +62,9 @@ internal static class CommonHelpers
     ///     Gets the map tile the cursor is over.
     /// </summary>
     /// <param name="radius">The tile distance from the player.</param>
+    /// <param name="fallback">Fallback to grab tile if cursor tile is out of range.</param>
     /// <returns>Returns the tile position.</returns>
-    public static Vector2 GetCursorTile(int radius = 0)
+    public static Vector2 GetCursorTile(int radius = 0, bool fallback = true)
     {
         if (radius == 0)
         {
@@ -74,7 +75,7 @@ internal static class CommonHelpers
         pos.X = (int)pos.X;
         pos.Y = (int)pos.Y;
 
-        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, radius, Game1.player))
+        if (fallback && !Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, radius, Game1.player))
         {
             pos = Game1.player.GetGrabTile();
         }
