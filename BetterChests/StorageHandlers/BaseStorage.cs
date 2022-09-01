@@ -84,7 +84,7 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     public abstract IList<Item?> Items { get; }
 
     /// <inheritdoc />
-    public GameLocation Location
+    public virtual GameLocation Location
     {
         get
         {

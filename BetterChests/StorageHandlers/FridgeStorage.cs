@@ -27,7 +27,7 @@ internal class FridgeStorage : BaseStorage
     /// <summary>
     ///     Gets the location of the fridge.
     /// </summary>
-    public GameLocation Location { get; }
+    public override GameLocation Location { get; }
 
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Chest.modData;
