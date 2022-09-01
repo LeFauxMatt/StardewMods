@@ -65,13 +65,15 @@ internal class UnloadChest : IFeature
          || !e.Button.IsUseToolButton()
          || this._helper.Input.IsSuppressed(e.Button)
          || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
+         || (!Storages.CurrentItem.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile(1);
-        if (!Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage))
+        var pos = CommonHelpers.GetCursorTile(1, false);
+        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
+         || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage))
         {
             return;
         }

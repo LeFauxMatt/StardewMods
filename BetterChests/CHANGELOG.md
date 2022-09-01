@@ -16,6 +16,7 @@
 * Craft From Chest will only lock chests when crafting items.
 * Allow stacking of empty chests.
 * When opening a held chest, gray out that chest in inventory.
+* UnloadChest only activates when the target chest is clicked on.
 
 ## 2.5.5 (August 27, 2022)
 
