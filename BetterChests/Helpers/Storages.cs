@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Helpers;
@@ -160,6 +161,96 @@ internal class Storages
     private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => Storages.Instance!._storageTypes;
 
     /// <summary>
+    ///     Gets all storages placed in a particular location.
+    /// </summary>
+    /// <param name="location">The location to get storages from.</param>
+    /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
+    /// <returns>An enumerable of all placed storages at the location.</returns>
+    public static IEnumerable<IStorageObject> FromLocation(GameLocation location, ISet<object>? excluded = null)
+    {
+        excluded ??= new HashSet<object>();
+        if (excluded.Contains(location))
+        {
+            return Array.Empty<IStorageObject>();
+        }
+
+        excluded.Add(location);
+
+        IEnumerable<IStorageObject> GetAll()
+        {
+            // Mod Integrations
+            foreach (var storage in Integrations.FromLocation(location, excluded))
+            {
+                yield return storage;
+            }
+
+            // Special Locations
+            switch (location)
+            {
+                case FarmHouse { fridge.Value: { } fridge } farmHouse
+                    when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
+                    excluded.Add(fridge);
+                    yield return new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2());
+                    break;
+                case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
+                 && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                    excluded.Add(fridge);
+                    yield return new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2());
+                    break;
+                case IslandWest islandWest:
+                    excluded.Add(islandWest);
+                    yield return new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2());
+                    break;
+            }
+
+            if (location is BuildableGameLocation buildableGameLocation)
+            {
+                // Buildings
+                foreach (var building in buildableGameLocation.buildings)
+                {
+                    // Special Buildings
+                    switch (building)
+                    {
+                        case JunimoHut junimoHut when !excluded.Contains(junimoHut):
+                            excluded.Add(junimoHut);
+                            yield return new JunimoHutStorage(
+                                junimoHut,
+                                location,
+                                new(
+                                    building.tileX.Value + building.tilesWide.Value / 2,
+                                    building.tileY.Value + building.tilesHigh.Value / 2));
+                            break;
+                        case ShippingBin shippingBin when !excluded.Contains(shippingBin):
+                            excluded.Add(shippingBin);
+                            yield return new ShippingBinStorage(
+                                shippingBin,
+                                location,
+                                new(
+                                    building.tileX.Value + building.tilesWide.Value / 2,
+                                    building.tileY.Value + building.tilesHigh.Value / 2));
+                            break;
+                    }
+                }
+            }
+
+            // Objects
+            foreach (var (position, obj) in location.Objects.Pairs)
+            {
+                if (!Storages.TryGetOne(obj, location, position, out var subStorage)
+                 || excluded.Contains(subStorage.Context))
+                {
+                    continue;
+                }
+
+                excluded.Add(subStorage.Context);
+                yield return subStorage;
+            }
+        }
+
+        return GetAll().WithTypes(Storages.StorageTypes);
+    }
+
+    /// <summary>
     ///     Gets all storages placed in a particular farmer's inventory.
     /// </summary>
     /// <param name="player">The farmer to get storages from.</param>
@@ -250,98 +341,14 @@ internal class Storages
             return false;
         }
 
+        if (storage is ShippingBinStorage && Integrations.TestConflicts(nameof(BetterShippingBin), out _))
+        {
+            storage = null;
+            return false;
+        }
+
         storage.WithType(Storages.StorageTypes);
         return true;
-    }
-
-    /// <summary>
-    ///     Gets all storages placed in a particular location.
-    /// </summary>
-    /// <param name="location">The location to get storages from.</param>
-    /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
-    /// <returns>An enumerable of all placed storages at the location.</returns>
-    private static IEnumerable<IStorageObject> FromLocation(GameLocation location, ISet<object>? excluded = null)
-    {
-        excluded ??= new HashSet<object>();
-        if (excluded.Contains(location))
-        {
-            return Array.Empty<IStorageObject>();
-        }
-
-        excluded.Add(location);
-
-        IEnumerable<IStorageObject> GetAll()
-        {
-            // Mod Integrations
-            foreach (var storage in Integrations.FromLocation(location, excluded))
-            {
-                yield return storage;
-            }
-
-            // Special Locations
-            switch (location)
-            {
-                case FarmHouse { fridge.Value: { } fridge } farmHouse
-                    when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
-                    excluded.Add(fridge);
-                    yield return new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2());
-                    break;
-                case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
-                 && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                    excluded.Add(fridge);
-                    yield return new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2());
-                    break;
-                case IslandWest islandWest:
-                    excluded.Add(islandWest);
-                    yield return new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2());
-                    break;
-            }
-
-            if (location is BuildableGameLocation buildableGameLocation)
-            {
-                // Buildings
-                foreach (var building in buildableGameLocation.buildings)
-                {
-                    // Special Buildings
-                    switch (building)
-                    {
-                        case JunimoHut junimoHut when !excluded.Contains(junimoHut):
-                            excluded.Add(junimoHut);
-                            yield return new JunimoHutStorage(
-                                junimoHut,
-                                location,
-                                new(
-                                    building.tileX.Value + building.tilesWide.Value / 2,
-                                    building.tileY.Value + building.tilesHigh.Value / 2));
-                            break;
-                        case ShippingBin shippingBin when !excluded.Contains(shippingBin):
-                            excluded.Add(shippingBin);
-                            yield return new ShippingBinStorage(
-                                shippingBin,
-                                location,
-                                new(
-                                    building.tileX.Value + building.tilesWide.Value / 2,
-                                    building.tileY.Value + building.tilesHigh.Value / 2));
-                            break;
-                    }
-                }
-            }
-
-            // Objects
-            foreach (var (position, obj) in location.Objects.Pairs)
-            {
-                if (!Storages.TryGetOne(obj, location, position, out var subStorage)
-                 || excluded.Contains(subStorage.Context))
-                {
-                    continue;
-                }
-
-                excluded.Add(subStorage.Context);
-                yield return subStorage;
-            }
-        }
-
-        return GetAll().WithTypes(Storages.StorageTypes);
     }
 
     private static IEnumerable<IStorageObject> FromStorage(IStorageObject storage, ISet<object>? excluded = null)
