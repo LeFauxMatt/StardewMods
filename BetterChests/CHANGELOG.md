@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 2.6.0 (Unreleased)
+## 2.6.0 (September 1, 2022)
 
 ### Added
 
