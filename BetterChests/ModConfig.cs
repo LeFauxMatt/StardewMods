@@ -263,48 +263,38 @@ internal class ModConfig : StorageData
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"AutoOrganize: {this.AutoOrganize.ToStringFast()}");
+        sb.AppendLine(" Main Config".PadLeft(50, '=')[^50..]);
         sb.AppendLine($"BetterShippingBin: {this.BetterShippingBin.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CarryChest: {this.CarryChest.ToStringFast()}");
         sb.AppendLine($"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CarryChestSlow: {this.CarryChestSlow.ToStringFast()}");
         sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"ChestFinder: {this.ChestFinder.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"ChestMenuTabs: {this.ChestMenuTabs.ToStringFast()}");
-        sb.AppendLine($"CollectItems: {this.CollectItems.ToStringFast()}");
-        sb.AppendLine($"Configurator: {this.Configurator.ToStringFast()}");
-        sb.AppendLine($"ConfigureMenu: {this.ConfigureMenu.ToStringFast()}");
-        sb.AppendLine($"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
-        sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");
-        sb.AppendLine($"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromWorkbench: {this.CraftFromWorkbench.ToStringFast()}");
         sb.AppendLine(
             $"CraftFromWorkbenchDistance: {this.CraftFromWorkbenchDistance.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"CustomColorPicker: {this.CustomColorPicker.ToStringFast()}");
         sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
-        sb.AppendLine($"FilterItems: {this.FilterItems.ToStringFast()}");
-        sb.AppendLine($"HideItems: {this.HideItems.ToStringFast()}");
-        sb.AppendLine($"LabelChest: {this.LabelChest.ToStringFast()}");
-        sb.AppendLine($"OpenHeldChest: {this.OpenHeldChest.ToStringFast()}");
-        sb.AppendLine($"OrganizeChest: {this.OrganizeChest.ToStringFast()}");
-        sb.AppendLine($"OrganizeChestGroupBy: {this.OrganizeChestGroupBy.ToStringFast()}");
-        sb.AppendLine($"OrganizeChestSortBy: {this.OrganizeChestSortBy.ToStringFast()}");
-        sb.AppendLine($"ResizeChest: {this.ResizeChest.ToStringFast()}");
-        sb.AppendLine($"ResizeChestCapacity: {this.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"ResizeChestMenu: {this.ResizeChestMenu.ToStringFast()}");
-        sb.AppendLine($"ResizeChestMenuRows: {this.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"SearchItems: {this.SearchItems.ToStringFast()}");
         sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLock: {this.SlotLock.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLockColor: {this.SlotLockColor.ToStringFast()}");
         sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"StashToChest: {this.StashToChest.ToStringFast()}");
-        sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.StashToChestDisableLocations)}");
-        sb.AppendLine($"StashToChestDistance: {this.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"StashToChestStacks: {this.StashToChestStacks.ToStringFast()}");
-        sb.AppendLine($"TransferItems: {this.TransferItems.ToStringFast()}");
-        sb.AppendLine($"UnloadChest: {this.UnloadChest.ToStringFast()}");
-        sb.AppendLine($"UnloadChestCombine: {this.UnloadChestCombine.ToStringFast()}");
+
+        sb.AppendLine(" Control Scheme".PadLeft(50, '=')[^50..]);
+        sb.Append(this.ControlScheme);
+
+        sb.AppendLine(" Default Storage".PadLeft(50, '=')[^50..]);
+        sb.Append(base.ToString());
+
+        foreach (var (key, data) in this.VanillaStorages)
+        {
+            var output = data.ToString();
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                continue;
+            }
+
+            sb.AppendLine($" {key}".PadLeft(50, '=')[^50..]);
+            sb.Append(data);
+        }
+
         return sb.ToString();
     }
 }

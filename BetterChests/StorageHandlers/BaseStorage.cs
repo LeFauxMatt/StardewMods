@@ -389,16 +389,16 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
             sb.Append($", Name: {this.ChestLabel}");
         }
 
-        switch (this.Source)
+        sb.Append($", Location: {this.Location.Name}");
+        if (!this.Position.Equals(Vector2.Zero))
         {
-            case GameLocation location:
-                sb.Append($", Location: {location.Name}");
-                sb.Append($", Position: ({this.Position.X.ToString(CultureInfo.InvariantCulture)}");
-                sb.Append($", {this.Position.Y.ToString(CultureInfo.InvariantCulture)})");
-                break;
-            case Farmer farmer:
-                sb.Append($", Inventory: {farmer.Name}");
-                break;
+            sb.Append($", Position: ({this.Position.X.ToString(CultureInfo.InvariantCulture)}");
+            sb.Append($", {this.Position.Y.ToString(CultureInfo.InvariantCulture)})");
+        }
+
+        if (this.Source is Farmer farmer)
+        {
+            sb.Append($", Inventory: {farmer.Name}");
         }
 
         sb.Append(" }");

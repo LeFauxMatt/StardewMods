@@ -1,6 +1,9 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 
@@ -108,4 +111,162 @@ internal class StorageData : IStorageData
 
     /// <inheritdoc />
     public FeatureOption UnloadChestCombine { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        if (this.AutoOrganize is not FeatureOption.Default)
+        {
+            sb.AppendLine($"AutoOrganize: {this.AutoOrganize.ToStringFast()}");
+        }
+
+        if (this.CarryChest is not FeatureOption.Default)
+        {
+            sb.AppendLine($"CarryChest: {this.CarryChest.ToStringFast()}");
+        }
+
+        if (this.CarryChestSlow is not FeatureOption.Default)
+        {
+            sb.AppendLine($"CarryChestSlow: {this.CarryChestSlow.ToStringFast()}");
+        }
+
+        if (this.ChestMenuTabs is not FeatureOption.Default)
+        {
+            sb.AppendLine($"ChestMenuTabs: {this.ChestMenuTabs.ToStringFast()}");
+        }
+
+        if (this.CollectItems is not FeatureOption.Default)
+        {
+            sb.AppendLine($"CollectItems: {this.CollectItems.ToStringFast()}");
+        }
+
+        if (this.Configurator is not FeatureOption.Default)
+        {
+            sb.AppendLine($"Configurator: {this.Configurator.ToStringFast()}");
+        }
+
+        if (this.ConfigureMenu is not InGameMenu.Default)
+        {
+            sb.AppendLine($"ConfigureMenu: {this.ConfigureMenu.ToStringFast()}");
+        }
+
+        if (this.CraftFromChest is not FeatureOptionRange.Default)
+        {
+            sb.AppendLine($"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
+        }
+
+        if (this.CraftFromChestDisableLocations.Any())
+        {
+            sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");
+        }
+
+        if (this.CraftFromChestDistance != 0)
+        {
+            sb.AppendLine(
+                $"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        if (this.CustomColorPicker is not FeatureOption.Default)
+        {
+            sb.AppendLine($"CustomColorPicker: {this.CustomColorPicker.ToStringFast()}");
+        }
+
+        if (this.FilterItems is not FeatureOption.Default)
+        {
+            sb.AppendLine($"FilterItems: {this.FilterItems.ToStringFast()}");
+        }
+
+        if (this.HideItems is not FeatureOption.Default)
+        {
+            sb.AppendLine($"HideItems: {this.HideItems.ToStringFast()}");
+        }
+
+        if (this.LabelChest is not FeatureOption.Default)
+        {
+            sb.AppendLine($"LabelChest: {this.LabelChest.ToStringFast()}");
+        }
+
+        if (this.OpenHeldChest is not FeatureOption.Default)
+        {
+            sb.AppendLine($"OpenHeldChest: {this.OpenHeldChest.ToStringFast()}");
+        }
+
+        if (this.OrganizeChest is not FeatureOption.Default)
+        {
+            sb.AppendLine($"OrganizeChest: {this.OrganizeChest.ToStringFast()}");
+        }
+
+        if (this.OrganizeChestGroupBy is not GroupBy.Default)
+        {
+            sb.AppendLine($"OrganizeChestGroupBy: {this.OrganizeChestGroupBy.ToStringFast()}");
+        }
+
+        if (this.OrganizeChestSortBy is not SortBy.Default)
+        {
+            sb.AppendLine($"OrganizeChestSortBy: {this.OrganizeChestSortBy.ToStringFast()}");
+        }
+
+        if (this.ResizeChest is not FeatureOption.Default)
+        {
+            sb.AppendLine($"ResizeChest: {this.ResizeChest.ToStringFast()}");
+        }
+
+        if (this.ResizeChestCapacity != 0)
+        {
+            sb.AppendLine($"ResizeChestCapacity: {this.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        if (this.ResizeChestMenu is not FeatureOption.Default)
+        {
+            sb.AppendLine($"ResizeChestMenu: {this.ResizeChestMenu.ToStringFast()}");
+        }
+
+        if (this.ResizeChestMenuRows != 0)
+        {
+            sb.AppendLine($"ResizeChestMenuRows: {this.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        if (this.SearchItems is not FeatureOption.Default)
+        {
+            sb.AppendLine($"SearchItems: {this.SearchItems.ToStringFast()}");
+        }
+
+        if (this.StashToChest is not FeatureOptionRange.Default)
+        {
+            sb.AppendLine($"StashToChest: {this.StashToChest.ToStringFast()}");
+        }
+
+        if (this.StashToChestDisableLocations.Any())
+        {
+            sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.StashToChestDisableLocations)}");
+        }
+
+        if (this.StashToChestDistance != 0)
+        {
+            sb.AppendLine($"StashToChestDistance: {this.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        if (this.StashToChestStacks is not FeatureOption.Default)
+        {
+            sb.AppendLine($"StashToChestStacks: {this.StashToChestStacks.ToStringFast()}");
+        }
+
+        if (this.TransferItems is not FeatureOption.Default)
+        {
+            sb.AppendLine($"TransferItems: {this.TransferItems.ToStringFast()}");
+        }
+
+        if (this.UnloadChest is not FeatureOption.Default)
+        {
+            sb.AppendLine($"UnloadChest: {this.UnloadChest.ToStringFast()}");
+        }
+
+        if (this.UnloadChestCombine is not FeatureOption.Default)
+        {
+            sb.AppendLine($"UnloadChestCombine: {this.UnloadChestCombine.ToStringFast()}");
+        }
+
+        return sb.ToString();
+    }
 }

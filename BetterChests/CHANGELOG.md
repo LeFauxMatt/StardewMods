@@ -5,6 +5,7 @@
 ### Added
 
 * Added Craft From Workbench feature.
+* Added extra logging for Storages types and individual storages.
 
 ### Fixed
 

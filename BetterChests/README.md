@@ -470,7 +470,7 @@ The SaddleBag can have its own Better Chest config by adding an entry for a ches
 
 ## Customization
 
-#### API
+### API
 
 Register your chest using the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
 

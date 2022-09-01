@@ -3,12 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.BetterChests.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -329,7 +331,7 @@ internal class Config
             I18n.Config_ScrollDown_Name,
             I18n.Config_ScrollDown_Tooltip);
 
-        Config.GMCM.AddKeybind(
+        Config.GMCM.AddKeybindList(
             Config.ModManifest,
             () => Config.ModConfig.ControlScheme.LockSlot,
             value => Config.ModConfig.ControlScheme.LockSlot = value,
@@ -376,6 +378,19 @@ internal class Config
             return;
         }
 
+        void SaveSpecificConfig()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(" Configure Storage".PadLeft(50, '=')[^50..]);
+            if (storage is BaseStorage baseStorage)
+            {
+                sb.AppendLine(baseStorage.ToString());
+                sb.Append(baseStorage.Data);
+            }
+
+            Log.Trace(sb.ToString());
+        }
+
         if (register)
         {
             if (Integrations.GMCM.IsRegistered(manifest))
@@ -383,7 +398,7 @@ internal class Config
                 Integrations.GMCM.Unregister(manifest);
             }
 
-            Integrations.GMCM.Register(manifest, Config.ResetConfig, Config.SaveConfig);
+            Integrations.GMCM.Register(manifest, Config.ResetConfig, SaveSpecificConfig);
         }
 
         Config.SetupConfig(manifest, storage, true);
@@ -471,7 +486,7 @@ internal class Config
             return;
         }
 
-        bool Conflicts(string feature, GenericModConfigMenuIntegration gmcm)
+        bool Conflicts(string feature)
         {
             if (!Integrations.TestConflicts(feature, out var mods))
             {
@@ -484,7 +499,7 @@ internal class Config
             }
 
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
-            gmcm.API!.AddParagraph(
+            Config.GMCM.AddParagraph(
                 manifest,
                 () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{feature}", modList));
             return true;
@@ -530,7 +545,7 @@ internal class Config
 
         // Auto Organize
         if ((!inGame || (!simpleConfig && Config.ModConfig.AutoOrganize is not FeatureOption.Disabled))
-         && !Conflicts(nameof(AutoOrganize), Integrations.GMCM))
+         && !Conflicts(nameof(AutoOrganize)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -546,7 +561,7 @@ internal class Config
 
         // Carry Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.CarryChest is not FeatureOption.Disabled))
-         && !Conflicts(nameof(CarryChest), Integrations.GMCM))
+         && !Conflicts(nameof(CarryChest)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -573,7 +588,7 @@ internal class Config
 
         // Chest Menu Tabs
         if ((!inGame || (!simpleConfig && Config.ModConfig.ChestMenuTabs is not FeatureOption.Disabled))
-         && !Conflicts(nameof(ChestMenuTabs), Integrations.GMCM))
+         && !Conflicts(nameof(ChestMenuTabs)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -589,7 +604,7 @@ internal class Config
 
         // Collect Items
         if ((!inGame || (!simpleConfig && Config.ModConfig.CollectItems is not FeatureOption.Disabled))
-         && !Conflicts(nameof(CollectItems), Integrations.GMCM))
+         && !Conflicts(nameof(CollectItems)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -604,7 +619,7 @@ internal class Config
         }
 
         // Configurator
-        if (!inGame && !Conflicts(nameof(Configurator), Integrations.GMCM))
+        if (!inGame && !Conflicts(nameof(Configurator)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -631,7 +646,7 @@ internal class Config
 
         // Craft From Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.CraftFromChest is not FeatureOptionRange.Disabled))
-         && !Conflicts(nameof(CraftFromChest), Integrations.GMCM))
+         && !Conflicts(nameof(CraftFromChest)))
         {
             if (storage.ConfigureMenu is InGameMenu.Advanced)
             {
@@ -704,7 +719,7 @@ internal class Config
 
         // Custom Color Picker
         if ((!inGame || (!simpleConfig && Config.ModConfig.CustomColorPicker is not FeatureOption.Disabled))
-         && !Conflicts(nameof(BetterColorPicker), Integrations.GMCM))
+         && !Conflicts(nameof(BetterColorPicker)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -720,7 +735,7 @@ internal class Config
 
         // Filter Items
         if ((!inGame || (!simpleConfig && Config.ModConfig.FilterItems is not FeatureOption.Disabled))
-         && !Conflicts(nameof(FilterItems), Integrations.GMCM))
+         && !Conflicts(nameof(FilterItems)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -751,7 +766,7 @@ internal class Config
 
         // Label Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.LabelChest is not FeatureOption.Disabled))
-         && !Conflicts(nameof(LabelChest), Integrations.GMCM))
+         && !Conflicts(nameof(LabelChest)))
         {
             Config.GMCM.AddTextOption(
                 Config.ModManifest,
@@ -767,7 +782,7 @@ internal class Config
 
         // Open Held Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.OpenHeldChest is not FeatureOption.Disabled))
-         && !Conflicts(nameof(OpenHeldChest), Integrations.GMCM))
+         && !Conflicts(nameof(OpenHeldChest)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -783,7 +798,7 @@ internal class Config
 
         // Organize Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.OrganizeChest is not FeatureOption.Disabled))
-         && !Conflicts(nameof(OrganizeChest), Integrations.GMCM))
+         && !Conflicts(nameof(OrganizeChest)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -819,7 +834,7 @@ internal class Config
 
         // Resize Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.ResizeChest is not FeatureOption.Disabled))
-         && !Conflicts(nameof(ResizeChest), Integrations.GMCM))
+         && !Conflicts(nameof(ResizeChest)))
         {
             if (storage.ConfigureMenu is InGameMenu.Advanced)
             {
@@ -880,7 +895,7 @@ internal class Config
 
         // Resize Chest Menu
         if ((!inGame || (!simpleConfig && Config.ModConfig.ResizeChestMenu is not FeatureOption.Disabled))
-         && !Conflicts(nameof(ResizeChestMenu), Integrations.GMCM))
+         && !Conflicts(nameof(ResizeChestMenu)))
         {
             if (storage.ConfigureMenu is InGameMenu.Advanced)
             {
@@ -938,7 +953,7 @@ internal class Config
 
         // Search Items
         if ((!inGame || (!simpleConfig && Config.ModConfig.SearchItems is not FeatureOption.Disabled))
-         && !Conflicts(nameof(SearchItems), Integrations.GMCM))
+         && !Conflicts(nameof(SearchItems)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
@@ -954,7 +969,7 @@ internal class Config
 
         // Stash To Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.StashToChest is not FeatureOptionRange.Disabled))
-         && !Conflicts(nameof(StashToChest), Integrations.GMCM))
+         && !Conflicts(nameof(StashToChest)))
         {
             if (storage.ConfigureMenu is InGameMenu.Advanced)
             {
@@ -1044,7 +1059,7 @@ internal class Config
 
         // Transfer Items
         if ((!inGame || (!simpleConfig && Config.ModConfig.TransferItems is not FeatureOption.Disabled))
-         && !Conflicts(nameof(TransferItems), Integrations.GMCM))
+         && !Conflicts(nameof(TransferItems)))
         {
             Config.GMCM.AddTextOption(
                 Config.ModManifest,
@@ -1060,7 +1075,7 @@ internal class Config
 
         // Unload Chest
         if ((!inGame || (!simpleConfig && Config.ModConfig.UnloadChest is not FeatureOption.Disabled))
-         && !Conflicts(nameof(UnloadChest), Integrations.GMCM))
+         && !Conflicts(nameof(UnloadChest)))
         {
             Config.GMCM.AddTextOption(
                 manifest,
