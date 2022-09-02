@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.StorageHandlers;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
@@ -458,7 +459,10 @@ internal class Storages
         // Fridge
         if (!vanillaStorages.TryGetValue("Fridge", out storageData))
         {
-            storageData = new();
+            storageData = new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            };
             vanillaStorages.Add("Fridge", storageData);
         }
 
@@ -469,7 +473,10 @@ internal class Storages
         // Junimo Chest
         if (!vanillaStorages.TryGetValue("Junimo Chest", out storageData))
         {
-            storageData = new();
+            storageData = new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            };
             vanillaStorages.Add("Junimo Chest", storageData);
         }
 
@@ -483,7 +490,10 @@ internal class Storages
         // Junimo Hut
         if (!vanillaStorages.TryGetValue("Junimo Hut", out storageData))
         {
-            storageData = new();
+            storageData = new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            };
             vanillaStorages.Add("Junimo Hut", storageData);
         }
 
@@ -492,7 +502,10 @@ internal class Storages
         // Mini-Fridge
         if (!vanillaStorages.TryGetValue("Mini-Fridge", out storageData))
         {
-            storageData = new();
+            storageData = new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            };
             vanillaStorages.Add("Mini-Fridge", storageData);
         }
 
@@ -503,7 +516,10 @@ internal class Storages
         // Mini-Shipping Bin
         if (!vanillaStorages.TryGetValue("Mini-Shipping Bin", out storageData))
         {
-            storageData = new();
+            storageData = new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            };
             vanillaStorages.Add("Mini-Shipping Bin", storageData);
         }
 
@@ -517,7 +533,10 @@ internal class Storages
         // Shipping Bin
         if (!vanillaStorages.TryGetValue("Shipping Bin", out storageData))
         {
-            storageData = new();
+            storageData = new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            };
             vanillaStorages.Add("Shipping Bin", storageData);
         }
 
