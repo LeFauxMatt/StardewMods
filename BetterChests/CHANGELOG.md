@@ -10,10 +10,12 @@
 ### Fixed
 
 * Fixed ingredients getting multiplied every time Crafting Page is reopened.
+* Fixed SearchBar not spanning full width of ItemSelectionMenu.
 
 ### Changed
 
 * Changed LockSlot key to a KeybindList.
+* Prevent CustomColorPicker from showing up on unsupported Storage Types.
 
 ## 2.6.0 (September 1, 2022)
 
