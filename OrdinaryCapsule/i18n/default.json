@@ -1,6 +1,10 @@
 {
+  "config.break-chance.name": "Break Chance",
+  "config.break-chance.tooltip": "The chance that an Ordinary Capsule will become broken.",
   "config.default-production-time.name": "Default Production Time",
   "config.default-production-time.tooltip": "The default time it takes to produce supported items.",
+  "config.duplicate-everything.name": "Duplicate Everything",
+  "config.duplicate-everything.tooltip": "Duplicate any item in the Ordinary Capsule.",
   "config.unlock-automatically.name": "Unlock Automatically",
   "config.unlock-automatically.tooltip": "Automatically unlock the Ordinary Capsule recipe.",
   "item.ordinary-capsule.name": "Ordinary Capsule",

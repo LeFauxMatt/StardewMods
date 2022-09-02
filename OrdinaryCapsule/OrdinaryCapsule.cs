@@ -74,6 +74,9 @@ public class OrdinaryCapsule : Mod
         harmony.Patch(
             AccessTools.Method(typeof(SObject), nameof(SObject.minutesElapsed)),
             new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_minutesElapsed_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.minutesElapsed)),
+            postfix: new(typeof(OrdinaryCapsule), nameof(OrdinaryCapsule.Object_minutesElapsed_postfix)));
     }
 
     /// <inheritdoc />
@@ -90,7 +93,7 @@ public class OrdinaryCapsule : Mod
                                   .FirstOrDefault();
         OrdinaryCapsule.CachedTimes[item.ParentSheetIndex] =
             minutes > 0 ? minutes : OrdinaryCapsule.Instance!.Config.DefaultProductionTime;
-        return minutes;
+        return OrdinaryCapsule.CachedTimes[item.ParentSheetIndex];
     }
 
     private static int GetMinutes(int parentSheetIndex)
@@ -106,8 +109,8 @@ public class OrdinaryCapsule : Mod
             return OrdinaryCapsule.GetMinutes(item);
         }
 
-        OrdinaryCapsule.CachedTimes[parentSheetIndex] = 0;
-        return 0;
+        OrdinaryCapsule.CachedTimes[parentSheetIndex] = OrdinaryCapsule.Instance!.Config.DefaultProductionTime;
+        return OrdinaryCapsule.CachedTimes[parentSheetIndex];
     }
 
     private static IEnumerable<CodeInstruction> Object_checkForAction_transpiler(
@@ -139,10 +142,40 @@ public class OrdinaryCapsule : Mod
         }
 
         var minutes = OrdinaryCapsule.GetMinutes(whichGem);
-        if (minutes > 0)
+        if (minutes == 0)
         {
-            __result = minutes;
+            return;
         }
+
+        __result = minutes;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_minutesElapsed_postfix(SObject __instance, GameLocation environment)
+    {
+        if (OrdinaryCapsule.Instance!.Config.BreakChance <= 0
+         || __instance is not
+            {
+                bigCraftable.Value: true,
+                Name: "Crystalarium",
+                ParentSheetIndex: 97,
+                heldObject.Value: not null,
+                MinutesUntilReady: 0,
+            })
+        {
+            return;
+        }
+
+        if (Game1.random.NextDouble() > OrdinaryCapsule.Instance.Config.BreakChance)
+        {
+            return;
+        }
+
+        __instance.ParentSheetIndex = 98;
+        Game1.createItemDebris(__instance.heldObject.Value.getOne(), __instance.TileLocation * Game1.tileSize, 2);
+        __instance.heldObject.Value = null;
+        environment.localSound("breakingGlass");
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -239,14 +272,14 @@ public class OrdinaryCapsule : Mod
         var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
         var capsuleItem = capsuleItems.FirstOrDefault(
             capsuleItem => capsuleItem.ContextTags.Any(Game1.player.CurrentItem.GetContextTags().Contains));
-        if (capsuleItem is null)
+        if (capsuleItem is null && !this.Config.DuplicateEverything)
         {
             return;
         }
 
         obj.heldObject.Value = (SObject)Game1.player.CurrentItem.getOne();
-        Game1.currentLocation.playSound(capsuleItem.Sound ?? "select");
-        obj.MinutesUntilReady = capsuleItem.ProductionTime > 0
+        Game1.currentLocation.playSound(capsuleItem?.Sound ?? "select");
+        obj.MinutesUntilReady = capsuleItem?.ProductionTime > 0
             ? capsuleItem.ProductionTime
             : this.Config.DefaultProductionTime;
         Game1.player.reduceActiveItemByOne();
@@ -273,13 +306,32 @@ public class OrdinaryCapsule : Mod
         // Register mod configuration
         gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
 
+        // Break Chance
+        gmcm.API.AddNumberOption(
+            this.ModManifest,
+            () => this.Config.BreakChance,
+            value => this.Config.BreakChance = value,
+            I18n.Config_BreakChance_Name,
+            I18n.Config_BreakChance_Tooltip,
+            0,
+            1);
+
         // Production Time
         gmcm.API.AddNumberOption(
             this.ModManifest,
             () => this.Config.DefaultProductionTime,
             value => this.Config.DefaultProductionTime = value,
             I18n.Config_DefaultProductionTime_Name,
-            I18n.Config_DefaultProductionTime_Tooltip);
+            I18n.Config_DefaultProductionTime_Tooltip,
+            0);
+
+        // Duplicate Everything
+        gmcm.API.AddBoolOption(
+            this.ModManifest,
+            () => this.Config.DuplicateEverything,
+            value => this.Config.DuplicateEverything = value,
+            I18n.Config_DuplicateEverything_Name,
+            I18n.Config_DuplicateEverything_Name);
 
         // Unlock Automatically
         gmcm.API.AddBoolOption(

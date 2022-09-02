@@ -1,5 +1,12 @@
 # Ordinary Capsule Change Log
 
+## 1.3.0 (Unreleased)
+
+### Added
+
+* Added an optional break chance.
+* Added a config option for duplicating every item.
+
 ## 1.2.0 (September 1, 2022)
 
 ### Added
