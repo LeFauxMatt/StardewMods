@@ -10,11 +10,11 @@ using StardewMods.Common.Enums;
 /// </summary>
 internal static class Formatting
 {
-    /// <summary>Gets or sets SMAPI helper for providing translations.</summary>
-    public static ITranslationHelper? Translations { get; set; }
-
     private static readonly Lazy<Dictionary<string, string>> BlueprintsDataLazy =
         new(() => Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints"));
+
+    /// <summary>Gets or sets SMAPI helper for providing translations.</summary>
+    public static ITranslationHelper? Translations { get; set; }
 
     private static Dictionary<string, string> BlueprintsData => Formatting.BlueprintsDataLazy.Value;
 
