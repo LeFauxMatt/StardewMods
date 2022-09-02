@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
@@ -254,7 +255,7 @@ internal class SearchItems : IFeature
         this.LastContext = BetterItemGrabMenu.Context;
         this.SearchField.X = this.CurrentMenu.ItemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-        this.SearchField.Width = this._config.TransferItems is FeatureOption.Enabled
+        this.SearchField.Width = this._config.TransferItems is FeatureOption.Enabled && this.CurrentMenu is not ItemSelectionMenu
             ? this.CurrentMenu.ItemsToGrabMenu.width - Game1.tileSize - 4
             : this.CurrentMenu.ItemsToGrabMenu.width;
         this.SearchField.Selected = false;
