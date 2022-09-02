@@ -238,7 +238,7 @@ internal class BetterCrafting : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.OldMenu is not CraftingPage or GameMenu
+        if (e.OldMenu is not (CraftingPage or GameMenu)
          && (!Integrations.BetterCrafting.IsLoaded
           || e.OldMenu?.GetType() != Integrations.BetterCrafting.API.GetMenuType()))
         {
