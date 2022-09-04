@@ -9,7 +9,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <summary>
-///     The various currency types supported by <see cref="IBetterCrafting.CreateCurrencyIngredient(string, int)" />
+///     The various currency types supported by <see cref="IBetterCraftingApi.CreateCurrencyIngredient(string, int)" />
 /// </summary>
 public enum CurrencyType
 {
@@ -525,8 +525,96 @@ public interface IRecipeProvider
     IRecipe? GetRecipe(CraftingRecipe recipe);
 }
 
+/// <summary>
+///     This interface contains a few basic properties on the Better Crafting
+///     menu that may be useful for other mods.
+/// </summary>
+public interface IBetterCraftingMenu
+{
+    /// <summary>
+    ///     Get the current recipe. This is normally the recipe that the
+    ///     player's cursor is hovering over, but when performing a craft
+    ///     or when the bulk crafting menu is open, it will return the
+    ///     relevant recipe.
+    /// </summary>
+    IRecipe? ActiveRecipe { get; }
+
+    /// <summary>
+    ///     Whether or not this crafting menu is for cooking. If this is
+    ///     false, then the menu is for crafting recipes.
+    /// </summary>
+    bool Cooking { get; }
+
+    /// <summary>
+    ///     Whether or not the user is currently editing their categories.
+    /// </summary>
+    bool Editing { get; }
+
+    /// <summary>
+    ///     The <see cref="IClickableMenu" /> instance for this menu. This is the
+    ///     same object, but included for convenience due to how API proxying works.
+    /// </summary>
+    IClickableMenu Menu { get; }
+
+    /// <summary>
+    ///     Whether or not this is a standalone menu. If this is false,
+    ///     this menu is likely contained in <see cref="GameMenu" />.
+    /// </summary>
+    bool Standalone { get; }
+
+    /// <summary>
+    ///     Whether or not the menu is actively crafting something. This
+    ///     will only return true when a craft is happening, or when the
+    ///     menu is waiting for an asynchronous craft to return.
+    /// </summary>
+    bool Working { get; }
+
+    /// <summary>
+    ///     Get a list of specific recipes that are to be displayed in the
+    ///     crafting menu. If this list is <c>null</c>, all recipes will be
+    ///     displayed to the user.
+    /// </summary>
+    IReadOnlyList<string>? GetListedRecipes();
+
+    /// <summary>
+    ///     Calling this method will toggle edit mode, as though the user
+    ///     clicked the button themselves.
+    /// </summary>
+    void ToggleEditMode();
+
+    /// <summary>
+    ///     Set a new list of specific recipes that are to be displayed in the
+    ///     crafting menu. Note: If the user does not know these recipes, they
+    ///     will not be displayed even if they're in this list.
+    ///     Set the list to <c>null</c> to display all recipes.
+    /// </summary>
+    /// <param name="recipes">The list of recipes that should be displayed.</param>
+    void UpdateListedRecipes(IEnumerable<string>? recipes);
+}
+
+/// <summary>
+///     This event is emitted by <see cref="IBetterCraftingApi" /> whenever a new
+///     Better Crafting menu is opened, and serves to allow other mods to add
+///     or remove specific containers from a menu.
+/// </summary>
+public interface IPopulateContainersEvent
+{
+    IList<Tuple<object, GameLocation?>> Containers { get; }
+
+    /// <summary>
+    ///     The relevant Better Crafting menu.
+    /// </summary>
+    IBetterCraftingMenu Menu { get; }
+}
+
 public interface IBetterCraftingApi
 {
+    /// <summary>
+    ///     This event is fired whenever a new Better Crafting menu is opened,
+    ///     allowing other mods to manipulate the list of containers.
+    /// </summary>
+    event Action<IPopulateContainersEvent>? MenuPopulateContainers;
+
     /// <summary>
     ///     Register a recipe provider with Better Crafting. Calling this
     ///     will also invalidate the recipe cache.
@@ -608,7 +696,10 @@ public interface IBetterCraftingApi
     ///     An internal ID for the category. Make sure
     ///     this is unique.
     /// </param>
-    /// <param name="Name">A human-readable name displayed in the menu.</param>
+    /// <param name="Name">
+    ///     A method returning a human-readable name to be
+    ///     displayed in the menu.
+    /// </param>
     /// <param name="recipeNames">
     ///     An enumeration of recipe names for recipes to
     ///     display in the category.
@@ -617,6 +708,14 @@ public interface IBetterCraftingApi
     ///     The name of a recipe to use as the category's
     ///     default icon.
     /// </param>
+    void CreateDefaultCategory(
+        bool cooking,
+        string categoryId,
+        Func<string> Name,
+        IEnumerable<string>? recipeNames = null,
+        string? iconRecipe = null);
+
+    [Obsolete("Use the method that takes a function for the display-name instead.")]
     void CreateDefaultCategory(
         bool cooking,
         string categoryId,
@@ -669,6 +768,12 @@ public interface IBetterCraftingApi
         CraftingRecipe recipe,
         IEnumerable<IIngredient> ingredients,
         Action<IPerformCraftEvent>? onPerformCraft = null);
+
+    /// <summary>
+    ///     Get the currently open Better Crafting menu. This may be <c>null</c> if
+    ///     the menu is still opening.
+    /// </summary>
+    IBetterCraftingMenu? GetActiveMenu();
 
     /// <summary>
     ///     Return the Better Crafting menu's type. In case you want to do

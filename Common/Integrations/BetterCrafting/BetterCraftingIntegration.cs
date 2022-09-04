@@ -10,7 +10,7 @@ internal class BetterCraftingIntegration : ModIntegration<IBetterCraftingApi>
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public BetterCraftingIntegration(IModRegistry modRegistry)
-        : base(modRegistry, BetterCraftingIntegration.ModUniqueId)
+        : base(modRegistry, BetterCraftingIntegration.ModUniqueId, "1.2.0")
     {
         // Nothing
     }

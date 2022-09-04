@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomateApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomationFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\BetterChestsIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\ICraftingStoragesLoadingEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IBetterChestsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IColorable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\BetterChests\IItemMatcher.cs" />

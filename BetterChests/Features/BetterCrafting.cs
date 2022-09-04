@@ -8,9 +8,10 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
-using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewMods.Common.Integrations.BetterCrafting;
 using StardewMods.CommonHarmony.Enums;
 using StardewMods.CommonHarmony.Helpers;
 using StardewMods.CommonHarmony.Models;
@@ -29,11 +30,14 @@ internal class BetterCrafting : IFeature
 
     private readonly ModConfig _config;
     private readonly PerScreen<Tuple<CraftingRecipe, int>?> _craft = new();
-    private readonly PerScreen<List<IStorageObject>> _eligibleStorages = new(() => new());
+    private readonly PerScreen<IList<IStorageObject>> _eligibleStorages = new(() => new List<IStorageObject>());
     private readonly PerScreen<IReflectedField<Item?>?> _heldItem = new();
     private readonly IModHelper _helper;
-    private readonly PerScreen<List<IStorageObject>> _materialStorages = new(() => new());
 
+    private readonly PerScreen<bool> _inWorkbench = new();
+    private readonly PerScreen<IList<IStorageObject>> _materialStorages = new(() => new List<IStorageObject>());
+
+    private EventHandler<ICraftingStoragesLoadingEventArgs>? _craftingStoragesLoading;
     private bool _isActivated;
 
     private BetterCrafting(IModHelper helper, ModConfig config)
@@ -78,6 +82,15 @@ internal class BetterCrafting : IFeature
             });
     }
 
+    /// <summary>
+    ///     Raised before storages are added to a Crafting Page.
+    /// </summary>
+    public static event EventHandler<ICraftingStoragesLoadingEventArgs> CraftingStoragesLoading
+    {
+        add => BetterCrafting.Instance!._craftingStoragesLoading += value;
+        remove => BetterCrafting.Instance!._craftingStoragesLoading -= value;
+    }
+
     private static ModConfig Config => BetterCrafting.Instance!._config;
 
     private static Tuple<CraftingRecipe, int>? Craft
@@ -86,7 +99,7 @@ internal class BetterCrafting : IFeature
         set => BetterCrafting.Instance!._craft.Value = value;
     }
 
-    private static List<IStorageObject> EligibleStorages => BetterCrafting.Instance!._eligibleStorages.Value;
+    private static IList<IStorageObject> EligibleStorages => BetterCrafting.Instance!._eligibleStorages.Value;
 
     private static IReflectedField<Item?>? HeldItem
     {
@@ -94,22 +107,13 @@ internal class BetterCrafting : IFeature
         set => BetterCrafting.Instance!._heldItem.Value = value;
     }
 
-    private static List<IStorageObject> MaterialStorages => BetterCrafting.Instance!._materialStorages.Value;
-
-    /// <summary>
-    ///     Adds additional materials for use in the current <see cref="CraftingPage" />.
-    /// </summary>
-    /// <param name="storages">The storages to add.</param>
-    public static void AddMaterials(IEnumerable<IStorageObject> storages)
+    private static bool InWorkbench
     {
-        foreach (var storage in storages)
-        {
-            if (!BetterCrafting.EligibleStorages.Contains(storage))
-            {
-                BetterCrafting.EligibleStorages.Add(storage);
-            }
-        }
+        get => BetterCrafting.Instance!._inWorkbench.Value;
+        set => BetterCrafting.Instance!._inWorkbench.Value = value;
     }
+
+    private static IList<IStorageObject> MaterialStorages => BetterCrafting.Instance!._materialStorages.Value;
 
     /// <summary>
     ///     Initializes <see cref="BetterCrafting" />.
@@ -125,34 +129,23 @@ internal class BetterCrafting : IFeature
     /// <summary>
     ///     Opens the crafting menu.
     /// </summary>
-    /// <param name="storages">The storages to craft from.</param>
     /// <returns>Returns true if crafting page could be displayed.</returns>
-    public static bool ShowCraftingPage(IEnumerable<IStorageObject> storages)
+    public static bool ShowCraftingPage()
     {
         BetterCrafting.EligibleStorages.Clear();
-        BetterCrafting.EligibleStorages.AddRange(storages.OfType<ChestStorage>());
+        BetterCrafting.MaterialStorages.Clear();
+        if (Integrations.BetterCrafting.IsLoaded)
+        {
+            Integrations.BetterCrafting.API.OpenCraftingMenu(false, false, null, null, null, false);
+            return true;
+        }
 
+        BetterCrafting.Instance!._craftingStoragesLoading.InvokeAll(
+            BetterCrafting.Instance,
+            new CraftingStoragesLoadingEventArgs(BetterCrafting.EligibleStorages));
         if (!BetterCrafting.EligibleStorages.Any())
         {
             return false;
-        }
-
-        if (Integrations.BetterCrafting.IsLoaded)
-        {
-            Tuple<object, GameLocation> StorageForBetterCrafting(IStorageObject storage)
-            {
-                return new(new StorageWrapper(storage), storage.Location);
-            }
-
-            Integrations.BetterCrafting.API.OpenCraftingMenu(
-                false,
-                false,
-                null,
-                null,
-                null,
-                false,
-                BetterCrafting.EligibleStorages.Select(StorageForBetterCrafting).ToList());
-            return true;
         }
 
         var width = 800 + IClickableMenu.borderWidth * 2;
@@ -172,9 +165,17 @@ internal class BetterCrafting : IFeature
 
         this._isActivated = true;
         HarmonyHelper.ApplyPatches(BetterCrafting.Id);
+        BetterCrafting.CraftingStoragesLoading += BetterCrafting.OnCraftingStoragesLoading;
         this._helper.Events.GameLoop.UpdateTicked += BetterCrafting.OnUpdateTicked;
         this._helper.Events.GameLoop.UpdateTicking += BetterCrafting.OnUpdateTicking;
         this._helper.Events.Display.MenuChanged += BetterCrafting.OnMenuChanged;
+
+        if (!Integrations.BetterCrafting.IsLoaded)
+        {
+            return;
+        }
+
+        Integrations.BetterCrafting.API.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
     }
 
     /// <inheritdoc />
@@ -187,9 +188,17 @@ internal class BetterCrafting : IFeature
 
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(BetterCrafting.Id);
+        BetterCrafting.CraftingStoragesLoading -= BetterCrafting.OnCraftingStoragesLoading;
         this._helper.Events.GameLoop.UpdateTicked -= BetterCrafting.OnUpdateTicked;
         this._helper.Events.GameLoop.UpdateTicking -= BetterCrafting.OnUpdateTicking;
         this._helper.Events.Display.MenuChanged -= BetterCrafting.OnMenuChanged;
+
+        if (!Integrations.BetterCrafting.IsLoaded)
+        {
+            return;
+        }
+
+        Integrations.BetterCrafting.API.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -236,6 +245,30 @@ internal class BetterCrafting : IFeature
         __result = BetterCrafting.EligibleStorages.SelectMany(storage => storage.Items.OfType<Item>()).ToList();
     }
 
+    private static void OnCraftingStoragesLoading(object? sender, ICraftingStoragesLoadingEventArgs e)
+    {
+        if (!BetterCrafting.InWorkbench
+         || BetterCrafting.Config.CraftFromWorkbench is FeatureOptionRange.Default or FeatureOptionRange.Disabled)
+        {
+            return;
+        }
+
+        BetterCrafting.InWorkbench = false;
+        e.AddStorages(
+            from storage in Storages.All
+            where storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+               && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
+               && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
+                 && Game1.player.currentLocation is MineShaft mineShaft
+                 && mineShaft.Name.StartsWith("UndergroundMine"))
+               && storage.Source is not null
+               && BetterCrafting.Config.CraftFromWorkbench.WithinRangeOfPlayer(
+                      BetterCrafting.Config.CraftFromWorkbenchDistance,
+                      storage.Location,
+                      storage.Position)
+            select storage);
+    }
+
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.OldMenu is not (CraftingPage or GameMenu)
@@ -254,6 +287,23 @@ internal class BetterCrafting : IFeature
         BetterCrafting.MaterialStorages.Clear();
         BetterCrafting.Craft = null;
         BetterCrafting.HeldItem = null;
+    }
+
+    private static void OnMenuPopulateContainers(IPopulateContainersEvent e)
+    {
+        BetterCrafting.Instance!._craftingStoragesLoading.InvokeAll(
+            BetterCrafting.Instance,
+            new CraftingStoragesLoadingEventArgs(BetterCrafting.EligibleStorages));
+        if (!BetterCrafting.EligibleStorages.Any())
+        {
+            return;
+        }
+
+        foreach (var (storage, location) in BetterCrafting.EligibleStorages.Select(
+                     BetterCrafting.StorageForBetterCrafting))
+        {
+            e.Containers.Add(new(storage, location));
+        }
     }
 
     private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -396,6 +446,11 @@ internal class BetterCrafting : IFeature
         }
     }
 
+    private static Tuple<object, GameLocation> StorageForBetterCrafting(IStorageObject storage)
+    {
+        return new(new StorageWrapper(storage), storage.Location);
+    }
+
     private static bool TryCrafting(CraftingRecipe recipe, Item? heldItem)
     {
         if (!BetterCrafting.EligibleStorages.Any() || BetterCrafting.Craft is not null)
@@ -481,24 +536,38 @@ internal class BetterCrafting : IFeature
     [HarmonyPriority(Priority.High)]
     private static bool Workbench_checkForAction_prefix(bool justCheckingForActivity)
     {
-        if (justCheckingForActivity
-         || BetterCrafting.Config.CraftFromWorkbench is FeatureOptionRange.Default or FeatureOptionRange.Disabled)
+        if (justCheckingForActivity)
         {
             return true;
         }
 
-        return !BetterCrafting.ShowCraftingPage(
-            from storage in Storages.All
-            where storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-               && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
-               && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
-                 && Game1.player.currentLocation is MineShaft mineShaft
-                 && mineShaft.Name.StartsWith("UndergroundMine"))
-               && storage.Source is not null
-               && BetterCrafting.Config.CraftFromWorkbench.WithinRangeOfPlayer(
-                      BetterCrafting.Config.CraftFromWorkbenchDistance,
-                      storage.Location,
-                      storage.Position)
-            select storage);
+        BetterCrafting.InWorkbench = true;
+        return !BetterCrafting.ShowCraftingPage();
+    }
+
+    private class CraftingStoragesLoadingEventArgs : ICraftingStoragesLoadingEventArgs
+    {
+        private readonly IList<IStorageObject> _storages;
+
+        public CraftingStoragesLoadingEventArgs(IList<IStorageObject> storages)
+        {
+            this._storages = storages;
+        }
+
+        public void AddStorage(IStorageObject storage)
+        {
+            if (!this._storages.Contains(storage))
+            {
+                this._storages.Add(storage);
+            }
+        }
+
+        public void AddStorages(IEnumerable<IStorageObject> storages)
+        {
+            foreach (var storage in storages)
+            {
+                this.AddStorage(storage);
+            }
+        }
     }
 }

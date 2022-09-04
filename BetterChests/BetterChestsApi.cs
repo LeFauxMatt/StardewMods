@@ -25,6 +25,13 @@ public class BetterChestsApi : IBetterChestsApi
     }
 
     /// <inheritdoc />
+    public event EventHandler<ICraftingStoragesLoadingEventArgs> CraftingStoragesLoading
+    {
+        add => BetterCrafting.CraftingStoragesLoading += value;
+        remove => BetterCrafting.CraftingStoragesLoading -= value;
+    }
+
+    /// <inheritdoc />
     public IEnumerable<IStorageObject> AllStorages => Storages.All;
 
     /// <inheritdoc />
@@ -55,9 +62,9 @@ public class BetterChestsApi : IBetterChestsApi
     }
 
     /// <inheritdoc />
-    public void ShowCraftingPage(IEnumerable<IStorageObject> storages)
+    public void ShowCraftingPage()
     {
-        BetterCrafting.ShowCraftingPage(storages);
+        BetterCrafting.ShowCraftingPage();
     }
 
     /// <inheritdoc />

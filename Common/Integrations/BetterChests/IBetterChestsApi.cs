@@ -9,6 +9,11 @@ using System.Collections.Generic;
 public interface IBetterChestsApi
 {
     /// <summary>
+    ///     Raised before storages are added to a Crafting Page.
+    /// </summary>
+    public event EventHandler<ICraftingStoragesLoadingEventArgs> CraftingStoragesLoading;
+
+    /// <summary>
     ///     Gets storages from all locations and farmer inventory in the game.
     /// </summary>
     public IEnumerable<IStorageObject> AllStorages { get; }
@@ -49,8 +54,7 @@ public interface IBetterChestsApi
     /// <summary>
     ///     Opens the crafting menu.
     /// </summary>
-    /// <param name="storages">The storages to craft from.</param>
-    public void ShowCraftingPage(IEnumerable<IStorageObject> storages);
+    public void ShowCraftingPage();
 
     /// <summary>
     ///     Attempts to retrieve a storage based on a context object.

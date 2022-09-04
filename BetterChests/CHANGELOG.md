@@ -1,6 +1,12 @@
 ﻿# Better Chests Change Log
 
-## 2.6.1 (Unreleased)
+## 2.6.2 (Unreleased)
+
+### Changed
+
+* Added support for Better Crafting from the inventory menu.
+
+## 2.6.1 (September 2, 2022)
 
 ### Added
 

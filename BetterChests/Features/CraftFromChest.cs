@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;
-using StardewValley.Menus;
 
 /// <summary>
 ///     Craft using items from placed chests and chests in the farmer's inventory.
@@ -61,7 +60,7 @@ internal class CraftFromChest : IFeature
         }
 
         this._isActivated = true;
-        this._helper.Events.Display.MenuChanged += CraftFromChest.OnMenuChanged;
+        BetterCrafting.CraftingStoragesLoading += CraftFromChest.OnCraftingStoragesLoading;
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         if (Integrations.ToolbarIcons.IsLoaded)
@@ -89,7 +88,7 @@ internal class CraftFromChest : IFeature
         }
 
         this._isActivated = false;
-        this._helper.Events.Display.MenuChanged -= CraftFromChest.OnMenuChanged;
+        BetterCrafting.CraftingStoragesLoading -= CraftFromChest.OnCraftingStoragesLoading;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         if (Integrations.ToolbarIcons.IsLoaded)
@@ -104,12 +103,9 @@ internal class CraftFromChest : IFeature
         }
     }
 
-    private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private static void OnCraftingStoragesLoading(object? sender, ICraftingStoragesLoadingEventArgs e)
     {
-        if (e.NewMenu is GameMenu)
-        {
-            BetterCrafting.AddMaterials(CraftFromChest.Eligible);
-        }
+        e.AddStorages(CraftFromChest.Eligible);
     }
 
     private static void OnToolbarIconPressed(object? sender, string id)
@@ -119,7 +115,7 @@ internal class CraftFromChest : IFeature
             return;
         }
 
-        if (!BetterCrafting.ShowCraftingPage(CraftFromChest.Eligible))
+        if (!BetterCrafting.ShowCraftingPage())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
         }
@@ -133,7 +129,7 @@ internal class CraftFromChest : IFeature
         }
 
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.OpenCrafting);
-        if (!BetterCrafting.ShowCraftingPage(CraftFromChest.Eligible))
+        if (!BetterCrafting.ShowCraftingPage())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
         }
