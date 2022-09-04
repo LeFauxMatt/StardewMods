@@ -25,11 +25,16 @@ internal abstract class ModIntegration<T>
     protected internal T? API => this.IsLoaded ? this._modAPI.Value : default;
 
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
-    [MemberNotNullWhen(true, nameof(ModIntegration<T>.API))]
+    [MemberNotNullWhen(true, nameof(ModIntegration<T>.API), nameof(ModIntegration<T>.ModInfo))]
     protected internal bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId)
                                      && (this.Version is null
-                                      || this.ModRegistry.Get(this.UniqueId)?.Manifest.Version.IsOlderThan(this.Version)
-                                      == true);
+                                      || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version)
+                                      != true);
+
+    /// <summary>
+    ///     Gets metadata for this mod.
+    /// </summary>
+    protected internal IModInfo? ModInfo => this.ModRegistry.Get(this.UniqueId);
 
     /// <summary>
     ///     Gets the Unique Id for this mod.
