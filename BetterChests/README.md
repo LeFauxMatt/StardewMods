@@ -10,6 +10,7 @@ Adds enhanced chest features to the game.
     * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
     * [Chest Finder](#chest-finder)
+    * [Chest Info](#chest-info)
     * [Chest Menu Tabs](#chest-menu-tabs)
     * [Collect Items](#collect-items)
     * [Configurator](#configurator)
@@ -103,6 +104,18 @@ Search for which chest(s) have the item you're looking for.
 | FindChest   | Assigns a keybind to find a chest. | `"LeftControl + F, RightControl + F"` | Any valid button code.<sup>1</sup> |
 
 1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
+### Chest Info
+
+Search for which chest(s) have the item you're looking for.
+
+| Config     | Description                                | Default Value | Other Value(s)                        |
+|:-----------|:-------------------------------------------|---------------|:--------------------------------------|
+| ChestInfo  | Enables the Chest Info feature.            | `"Disabled"`  | `"Disabled"`, `"Default"`<sup>1</sup> |
+| ToggleInfo | Assigns a keybind to show/hide chest info. | `"F1"`        | Any valid button code.<sup>2</sup>    |
+
+1. See [Option Values](#option-values).
+2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Chest Menu Tabs
 

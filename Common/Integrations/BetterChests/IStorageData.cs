@@ -24,6 +24,11 @@ public interface IStorageData
     public FeatureOption CarryChestSlow { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether chest info will be displayed next to the chest menu.
+    /// </summary>
+    public FeatureOption ChestInfo { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating the label for a chest.
     /// </summary>
     public string ChestLabel { get; set; }

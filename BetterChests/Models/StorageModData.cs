@@ -51,6 +51,17 @@ internal class StorageModData : IStorageData
     }
 
     /// <inheritdoc />
+    public FeatureOption ChestInfo
+    {
+        get => this.ModData.TryGetValue("furyx639.BetterChests/ChestInfo", out var value)
+            && FeatureOptionExtensions.TryParse(value, true, out var option)
+            ? option
+            : FeatureOption.Default;
+        set => this.ModData["furyx639.BetterChests/ChestInfo"] = value.ToStringFast();
+    }
+
+
+    /// <inheritdoc />
     public string ChestLabel
     {
         get => this.ModData.TryGetValue("furyx639.BetterChests/ChestLabel", out var label) ? label : string.Empty;

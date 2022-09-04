@@ -59,6 +59,19 @@ internal class StorageNodeData : IStorageData, IStorageNode
     }
 
     /// <inheritdoc />
+    public FeatureOption ChestInfo
+    {
+        get => this.Data.ChestInfo switch
+        {
+            _ when this.Parent.ChestInfo is FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default when this.Parent.ChestInfo is FeatureOption.Default => FeatureOption.Disabled,
+            FeatureOption.Default => this.Parent.ChestInfo,
+            _ => this.Data.ChestInfo,
+        };
+        set => this.Data.ChestInfo = value;
+    }
+
+    /// <inheritdoc />
     public virtual string ChestLabel
     {
         get => this.Data.ChestLabel;

@@ -338,6 +338,13 @@ internal class Config
             I18n.Config_LockSlot_Name,
             I18n.Config_LockSlot_Tooltip);
 
+        Config.GMCM.AddKeybindList(
+            Config.ModManifest,
+            () => Config.ModConfig.ControlScheme.ToggleInfo,
+            value => Config.ModConfig.ControlScheme.ToggleInfo = value,
+            I18n.Config_ToggleInfo_Name,
+            I18n.Config_ToggleInfo_Tooltip);
+
         // Default Chest
         Config.GMCM.AddSectionTitle(Config.ModManifest, I18n.Storage_Default_Name);
         Config.GMCM.AddParagraph(Config.ModManifest, I18n.Storage_Default_Tooltip);
@@ -582,6 +589,22 @@ internal class Config
                     : FeatureOption.Default,
                 I18n.Config_CarryChestSlow_Name,
                 I18n.Config_CarryChestSlow_Tooltip,
+                allowedOptions,
+                Formatting.Option);
+        }
+
+        // Chest Info
+        if ((!inGame || (!simpleConfig && Config.ModConfig.ChestInfo is not FeatureOption.Disabled))
+         && !Conflicts(nameof(ChestInfo)))
+        {
+            Config.GMCM.AddTextOption(
+                manifest,
+                () => data.ChestInfo.ToStringFast(),
+                value => data.ChestInfo = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_ChestInfo_Name,
+                I18n.Config_ChestInfo_Tooltip,
                 allowedOptions,
                 Formatting.Option);
         }

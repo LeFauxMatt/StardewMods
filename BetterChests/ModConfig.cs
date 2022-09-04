@@ -105,6 +105,11 @@ internal class ModConfig : StorageData
             this.CarryChestSlow = FeatureOption.Enabled;
         }
 
+        if (this.ChestInfo is FeatureOption.Default)
+        {
+            this.ChestInfo = FeatureOption.Disabled;
+        }
+
         if (this.ChestMenuTabs is FeatureOption.Default)
         {
             this.ChestMenuTabs = FeatureOption.Enabled;

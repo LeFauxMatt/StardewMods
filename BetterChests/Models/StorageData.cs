@@ -20,6 +20,9 @@ internal class StorageData : IStorageData
     public FeatureOption CarryChestSlow { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
+    public FeatureOption ChestInfo { get; set; } = FeatureOption.Default;
+
+    /// <inheritdoc />
     public string ChestLabel { get; set; } = string.Empty;
 
     /// <inheritdoc />
@@ -129,6 +132,11 @@ internal class StorageData : IStorageData
         if (this.CarryChestSlow is not FeatureOption.Default)
         {
             sb.AppendLine($"CarryChestSlow: {this.CarryChestSlow.ToStringFast()}");
+        }
+
+        if (this.ChestInfo is not FeatureOption.Default)
+        {
+            sb.AppendLine($"ChestInfo: {this.ChestInfo.ToStringFast()}");
         }
 
         if (this.ChestMenuTabs is not FeatureOption.Default)

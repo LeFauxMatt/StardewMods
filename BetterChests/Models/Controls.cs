@@ -55,6 +55,11 @@ internal class Controls
     /// </summary>
     public KeybindList StashItems { get; set; } = new(SButton.Z);
 
+    /// <summary>
+    ///     Gets or sets controls to toggle chest info.
+    /// </summary>
+    public KeybindList ToggleInfo { get; set; } = new(SButton.F1);
+
     /// <inheritdoc />
     public override string ToString()
     {
@@ -68,6 +73,7 @@ internal class Controls
         sb.AppendLine($"ScrollDown: {this.ScrollDown}");
         sb.AppendLine($"ScrollUp: {this.ScrollUp}");
         sb.AppendLine($"StashItems: {this.StashItems}");
+        sb.AppendLine($"ToggleInfo: {this.ToggleInfo}");
         return sb.ToString();
     }
 }

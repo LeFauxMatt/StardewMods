@@ -43,6 +43,8 @@
   "config.categorize-chest.tooltip": "Organize chests by assigning categories of items (stashing will use these categories).",
   "config.chest-finder.name": "Chest Finder",
   "config.chest-finder.tooltip": "Search for chest(s) containing the item you're looking for.",
+  "config.chest-info.name": "Chest Info",
+  "config.chest-info.tooltip": "Display chest stats next to the Chest inventory menu.",
   "config.chest-label.name": "Chest Label",
   "config.chest-label.tooltip": "The label that is assigned to this chest.",
   "config.chest-menu-tabs.name": "Chest Menu Tabs",
@@ -140,6 +142,8 @@
   "config.previous-tab.tooltip": "Key to switch to previous tab.",
   "config.next-tab.name": "Next Tab",
   "config.next-tab.tooltip": "Key to switch to next tab.",
+  "config.toggle-info.name": "Toggle Info",
+  "config.toggle-info.tooltip": "Key to show or hide chest info.",
   // Config Options
   "option.default.name": "Default",
   "option.enabled.name": "Enabled",

@@ -54,7 +54,7 @@ internal class TransferItems : IFeature
     ///     Initializes <see cref="TransferItems" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
+    /// <returns>Returns an instance of the <see cref="TransferItems" /> class.</returns>
     public static TransferItems Init(IModHelper helper)
     {
         return TransferItems.Instance ??= new(helper);

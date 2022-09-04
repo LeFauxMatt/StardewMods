@@ -115,10 +115,13 @@ internal class CraftFromChest : IFeature
             return;
         }
 
-        if (!BetterCrafting.ShowCraftingPage())
+        if (!CraftFromChest.Eligible.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
+            return;
         }
+
+        BetterCrafting.ShowCraftingPage();
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -129,9 +132,12 @@ internal class CraftFromChest : IFeature
         }
 
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.OpenCrafting);
-        if (!BetterCrafting.ShowCraftingPage())
+        if (!CraftFromChest.Eligible.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
+            return;
         }
+
+        BetterCrafting.ShowCraftingPage();
     }
 }

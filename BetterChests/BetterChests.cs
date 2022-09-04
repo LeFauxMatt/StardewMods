@@ -51,6 +51,9 @@ public class BetterChests : Mod
         this._features.Add(LabelChest.Init(this.Helper), () => this._config.LabelChest is not FeatureOption.Disabled);
         this._features.Add(ChestFinder.Init(this.Helper, this._config), () => this._config.ChestFinder);
         this._features.Add(
+            ChestInfo.Init(this.Helper, this._config),
+            () => this._config.ChestInfo is not FeatureOption.Disabled);
+        this._features.Add(
             ChestMenuTabs.Init(this.Helper, this._config),
             () => this._config.ChestMenuTabs is not FeatureOption.Disabled);
         this._features.Add(
