@@ -98,10 +98,13 @@ With Carry Chest enabled, you can hit the Use Tool button to pick up chests into
 
 Search for which chest(s) have the item you're looking for.
 
-| Config      | Description                        | Default Value                         | Other Value(s)                     |
-|:------------|:-----------------------------------|---------------------------------------|:-----------------------------------|
-| ChestFinder | Enables the Chest Finder feature.  | `true`                                | `true', 'false'                    |
-| FindChest   | Assigns a keybind to find a chest. | `"LeftControl + F, RightControl + F"` | Any valid button code.<sup>1</sup> |
+| Config           | Description                                     | Default Value                         | Other Value(s)                     |
+|:-----------------|:------------------------------------------------|---------------------------------------|:-----------------------------------|
+| ChestFinder      | Enables the Chest Finder feature.               | `true`                                | `true', 'false'                    |
+| CloseChestFinder | Assigns a keybind to close the chest finder.    | `"Escape"`                            | Any valid button code.<sup>1</sup> |
+| FindChest        | Assigns a keybind to find a chest.              | `"LeftControl + F, RightControl + F"` | Any valid button code.<sup>1</sup> |
+| OpenFoundChest   | Assigns a keybind to open a found chest.        | `"Enter"`                             | Any valid button code.<sup>1</sup> |
+| OpenNextChest    | Assigns a keybind to open the next found chest. | `"Tab"`                               | Any valid button code.<sup>1</sup> |
 
 1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 

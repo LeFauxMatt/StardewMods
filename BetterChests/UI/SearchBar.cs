@@ -4,8 +4,6 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewMods.Common.Helpers;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
 
 /// <summary>
@@ -13,7 +11,6 @@ using StardewValley.Menus;
 /// </summary>
 internal class SearchBar : IClickableMenu
 {
-    private readonly IItemMatcher _itemMatcher;
     private readonly ClickableComponent _searchArea;
     private readonly TextBox _searchField;
     private readonly ClickableTextureComponent _searchIcon;
@@ -21,11 +18,8 @@ internal class SearchBar : IClickableMenu
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchBar" /> class.
     /// </summary>
-    /// <param name="matcher">ItemMatcher for holding the selected item tags.</param>
-    public SearchBar(IItemMatcher matcher)
+    public SearchBar()
     {
-        this._itemMatcher = matcher;
-
         var texture = Game1.content.Load<Texture2D>("LooseSprites\\textBox");
         this.width = Math.Min(12 * Game1.tileSize, Game1.uiViewport.Width);
         this.height = texture.Height;
@@ -40,7 +34,6 @@ internal class SearchBar : IClickableMenu
             Y = this.yPositionOnScreen,
             Width = this.width,
             Selected = true,
-            Text = this._itemMatcher.StringValue,
         };
 
         this._searchArea = new(Rectangle.Empty, string.Empty)
@@ -54,6 +47,11 @@ internal class SearchBar : IClickableMenu
             bounds = new(this._searchField.X + this._searchField.Width - 38, this._searchField.Y + 6, 32, 32),
         };
     }
+
+    /// <summary>
+    ///     Gets the current search text.
+    /// </summary>
+    public string SearchText => this._searchField.Text;
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
@@ -85,7 +83,7 @@ internal class SearchBar : IClickableMenu
     {
         if (this._searchArea.containsPoint(x, y))
         {
-            this._searchField.Selected = true;
+            this.SetFocus();
             return;
         }
 
@@ -98,7 +96,7 @@ internal class SearchBar : IClickableMenu
     {
         if (this._searchArea.containsPoint(x, y))
         {
-            this._searchField.Selected = true;
+            this.SetFocus();
             this._searchField.Text = string.Empty;
             return;
         }
@@ -107,17 +105,12 @@ internal class SearchBar : IClickableMenu
         this.exitThisMenuNoSound();
     }
 
-    /// <inheritdoc />
-    protected override void cleanupBeforeExit()
+    /// <summary>
+    ///     Assigns focus to the search field.
+    /// </summary>
+    public void SetFocus()
     {
-        if (!string.IsNullOrWhiteSpace(this._searchField.Text))
-        {
-            Log.Trace($"ChestFinder: {this._searchField.Text}");
-            this._itemMatcher.StringValue = this._searchField.Text;
-        }
-        else
-        {
-            this._itemMatcher.Clear();
-        }
+        Game1.activeClickableMenu = this;
+        this._searchField.Selected = true;
     }
 }

@@ -218,14 +218,11 @@ internal class SearchItems : IFeature
                 return;
             }
 
-            if (this.TimeOut >= 0)
+            if (this.TimeOut > 0 && --this.TimeOut == 0)
             {
-                if (--this.TimeOut == 0)
-                {
-                    Log.Trace($"SearchItems: {this.SearchText}");
-                    this.ItemMatcher.StringValue = this.SearchText;
-                    BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
-                }
+                Log.Trace($"SearchItems: {this.SearchText}");
+                this.ItemMatcher.StringValue = this.SearchText;
+                BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
             }
 
             if (this.SearchText.Equals(this.SearchField.Text, StringComparison.OrdinalIgnoreCase))
@@ -255,9 +252,10 @@ internal class SearchItems : IFeature
         this.LastContext = BetterItemGrabMenu.Context;
         this.SearchField.X = this.CurrentMenu.ItemsToGrabMenu.xPositionOnScreen;
         this.SearchField.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
-        this.SearchField.Width = this._config.TransferItems is FeatureOption.Enabled && this.CurrentMenu is not ItemSelectionMenu
-            ? this.CurrentMenu.ItemsToGrabMenu.width - Game1.tileSize - 4
-            : this.CurrentMenu.ItemsToGrabMenu.width;
+        this.SearchField.Width =
+            this._config.TransferItems is FeatureOption.Enabled && this.CurrentMenu is not ItemSelectionMenu
+                ? this.CurrentMenu.ItemsToGrabMenu.width - Game1.tileSize - 4
+                : this.CurrentMenu.ItemsToGrabMenu.width;
         this.SearchField.Selected = false;
         this.SearchArea.visible = true;
         this.SearchArea.bounds = new(

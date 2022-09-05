@@ -9,6 +9,11 @@ using StardewModdingAPI.Utilities;
 internal class Controls
 {
     /// <summary>
+    ///     Gets or sets controls to close the chest finder.
+    /// </summary>
+    public KeybindList CloseChestFinder { get; set; } = new(SButton.Escape);
+
+    /// <summary>
     ///     Gets or sets controls to configure currently held object.
     /// </summary>
     public KeybindList Configure { get; set; } = new(SButton.End);
@@ -34,6 +39,16 @@ internal class Controls
     ///     Gets or sets controls to open <see cref="StardewValley.Menus.CraftingPage" />.
     /// </summary>
     public KeybindList OpenCrafting { get; set; } = new(SButton.K);
+
+    /// <summary>
+    ///     Gets or sets controls to open the first found chest.
+    /// </summary>
+    public KeybindList OpenFoundChest { get; set; } = new(SButton.Enter);
+
+    /// <summary>
+    ///     Gets or sets controls to open the next found chest.
+    /// </summary>
+    public KeybindList OpenNextChest { get; set; } = new(SButton.Tab);
 
     /// <summary>
     ///     Gets or sets controls to switch to previous tab.
@@ -64,11 +79,14 @@ internal class Controls
     public override string ToString()
     {
         var sb = new StringBuilder();
+        sb.AppendLine($"CloseChestFinder: {this.CloseChestFinder}");
         sb.AppendLine($"Configure: {this.Configure}");
         sb.AppendLine($"FindChest: {this.FindChest}");
         sb.AppendLine($"LockSlot: {this.LockSlot}");
         sb.AppendLine($"NextTab: {this.NextTab}");
         sb.AppendLine($"OpenCrafting: {this.OpenCrafting}");
+        sb.AppendLine($"OpenFoundChest: {this.OpenFoundChest}");
+        sb.AppendLine($"OpenNextChest: {this.OpenNextChest}");
         sb.AppendLine($"PreviousTab: {this.PreviousTab}");
         sb.AppendLine($"ScrollDown: {this.ScrollDown}");
         sb.AppendLine($"ScrollUp: {this.ScrollUp}");

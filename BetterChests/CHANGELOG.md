@@ -6,6 +6,11 @@
 
 * Added Chest Info feature.
 
+### Changed
+
+* ChestFinder can now open the menu to found chests.
+* ChestFinder automatically adds arrows after a short delay.
+
 ## 2.6.3 (September 4, 2022)
 
 ### Changed

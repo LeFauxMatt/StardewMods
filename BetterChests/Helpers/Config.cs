@@ -284,6 +284,27 @@ internal class Config
 
         Config.GMCM.AddKeybindList(
             Config.ModManifest,
+            () => Config.ModConfig.ControlScheme.CloseChestFinder,
+            value => Config.ModConfig.ControlScheme.CloseChestFinder = value,
+            I18n.Config_CloseChestFinder_Name,
+            I18n.Config_CloseChestFinder_Tooltip);
+
+        Config.GMCM.AddKeybindList(
+            Config.ModManifest,
+            () => Config.ModConfig.ControlScheme.OpenFoundChest,
+            value => Config.ModConfig.ControlScheme.OpenFoundChest = value,
+            I18n.Config_OpenFoundChest_Name,
+            I18n.Config_OpenFoundChest_Tooltip);
+
+        Config.GMCM.AddKeybindList(
+            Config.ModManifest,
+            () => Config.ModConfig.ControlScheme.OpenNextChest,
+            value => Config.ModConfig.ControlScheme.OpenNextChest = value,
+            I18n.Config_OpenNextChest_Name,
+            I18n.Config_OpenNextChest_Tooltip);
+
+        Config.GMCM.AddKeybindList(
+            Config.ModManifest,
             () => Config.ModConfig.ControlScheme.OpenCrafting,
             value => Config.ModConfig.ControlScheme.OpenCrafting = value,
             I18n.Config_OpenCrafting_Name,

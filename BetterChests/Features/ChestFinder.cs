@@ -10,19 +10,28 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.UI;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley.Menus;
 
 /// <summary>
 ///     Search for which chests have the item you're looking for.
 /// </summary>
 internal class ChestFinder : IFeature
 {
+    private const int MaxTimeOut = 20;
+
     private static ChestFinder? Instance;
 
     private readonly ModConfig _config;
+    private readonly PerScreen<int> _currentIndex = new();
     private readonly IModHelper _helper;
     private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
-    private readonly PerScreen<HashSet<IStorageObject>> _storages = new(() => new());
+    private readonly PerScreen<SearchBar> _searchBar = new(() => new());
+    private readonly PerScreen<string> _searchText = new(() => string.Empty);
+    private readonly PerScreen<bool> _showSearch = new();
+    private readonly PerScreen<List<IStorageObject>> _storages = new(() => new());
+    private readonly PerScreen<int> _timeOut = new();
 
     private bool _isActivated;
 
@@ -32,10 +41,36 @@ internal class ChestFinder : IFeature
         this._config = config;
     }
 
+    private int CurrentIndex
+    {
+        get => this._currentIndex.Value;
+        set => this._currentIndex.Value = value;
+    }
+
     private IItemMatcher ItemMatcher =>
         this._itemMatcher.Value ??= new ItemMatcher(false, this._config.SearchTagSymbol.ToString());
 
-    private HashSet<IStorageObject> Storages => this._storages.Value;
+    private SearchBar SearchBar => this._searchBar.Value;
+
+    private string SearchText
+    {
+        get => this._searchText.Value;
+        set => this._searchText.Value = value;
+    }
+
+    private bool ShowSearch
+    {
+        get => this._showSearch.Value && Game1.displayHUD && Context.IsPlayerFree && Game1.activeClickableMenu is null;
+        set => this._showSearch.Value = value;
+    }
+
+    private List<IStorageObject> Storages => this._storages.Value;
+
+    private int TimeOut
+    {
+        get => this._timeOut.Value;
+        set => this._timeOut.Value = value;
+    }
 
     /// <summary>
     ///     Initializes <see cref="ChestFinder" />.
@@ -57,8 +92,9 @@ internal class ChestFinder : IFeature
         }
 
         this._isActivated = true;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
 
@@ -84,8 +120,9 @@ internal class ChestFinder : IFeature
         }
 
         this._isActivated = false;
-        this._helper.Events.Display.MenuChanged -= this.OnMenuChanged;
         this._helper.Events.Display.RenderedHud -= this.OnRenderedHud;
+        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this._helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
 
@@ -98,62 +135,123 @@ internal class ChestFinder : IFeature
         Integrations.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this._config.ControlScheme.FindChest.JustPressed())
+        if (!this.ShowSearch)
         {
             return;
         }
 
-        this.OpenChestFinder();
-        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.FindChest);
+        var (x, y) = Game1.getMousePosition(true);
+        switch (e.Button)
+        {
+            case SButton.MouseLeft:
+                this.SearchBar.receiveLeftClick(x, y);
+                break;
+            case SButton.MouseRight:
+                this.SearchBar.receiveRightClick(x, y);
+                break;
+            default:
+                return;
+        }
+
+        if (Game1.activeClickableMenu is SearchBar)
+        {
+            this._helper.Input.Suppress(e.Button);
+        }
+    }
+
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    {
+        if (Context.IsPlayerFree && this._config.ControlScheme.FindChest.JustPressed())
+        {
+            this.ShowSearch = true;
+            if (this.ShowSearch)
+            {
+                this.SearchBar.SetFocus();
+            }
+
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.FindChest);
+            return;
+        }
+
+        if (Game1.activeClickableMenu is ItemGrabMenu && this._config.ControlScheme.OpenNextChest.JustPressed())
+        {
+            this.CurrentIndex++;
+            if (this.CurrentIndex < 0 || this.CurrentIndex >= this.Storages.Count)
+            {
+                this.CurrentIndex = 0;
+            }
+
+            if (this.CurrentIndex < this.Storages.Count)
+            {
+                this.Storages[this.CurrentIndex].ShowMenu();
+            }
+
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
+        }
+
+        if (!this.ShowSearch && Game1.activeClickableMenu != this.SearchBar)
+        {
+            return;
+        }
+
+        if (this._config.ControlScheme.CloseChestFinder.JustPressed())
+        {
+            this.SearchBar.exitThisMenuNoSound();
+            this.ShowSearch = false;
+            this.SearchText = string.Empty;
+            this.ItemMatcher.Clear();
+            this.Storages.Clear();
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
+        }
+
+        if (this._config.ControlScheme.OpenFoundChest.JustPressed())
+        {
+            var storages = this.Storages.OrderBy(
+                                   storage => Math.Abs(storage.Position.X - Game1.player.getTileX())
+                                            + Math.Abs(storage.Position.Y - Game1.player.getTileY()))
+                               .ToList();
+            this.Storages.Clear();
+            this.Storages.AddRange(storages);
+
+            if (this.CurrentIndex < 0 || this.CurrentIndex >= this.Storages.Count)
+            {
+                this.CurrentIndex = 0;
+            }
+
+            if (this.CurrentIndex < this.Storages.Count)
+            {
+                this.Storages[this.CurrentIndex].ShowMenu();
+            }
+
+            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
+        }
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
     {
-        if (!e.Location.Equals(Game1.currentLocation) || !this.ItemMatcher.Any())
+        if (!e.Location.Equals(Game1.currentLocation) || string.IsNullOrWhiteSpace(this.SearchText))
         {
             return;
         }
 
-        var storage =
-            Helpers.Storages.CurrentLocation.FirstOrDefault(storage => ReferenceEquals(storage.Context, e.Chest));
-        if (storage is null)
-        {
-            return;
-        }
-
-        if (storage.Items.Any(this.ItemMatcher.Matches))
-        {
-            if (!this.Storages.Contains(storage))
-            {
-                this.Storages.Add(storage);
-            }
-
-            return;
-        }
-
-        this.Storages.RemoveWhere(cachedStorage => ReferenceEquals(cachedStorage.Context, e.Chest));
-    }
-
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
-    {
-        if (e.OldMenu is not SearchBar || e.NewMenu is not null)
-        {
-            return;
-        }
-
-        this.Storages.Clear();
-        if (this.ItemMatcher.Any())
-        {
-            this.Storages.UnionWith(
-                Helpers.Storages.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)));
-        }
+        this.RefreshStorages();
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.Storages.Any())
+        if (!Context.IsPlayerFree && Game1.activeClickableMenu != this.SearchBar)
+        {
+            return;
+        }
+
+        if (this.ShowSearch)
+        {
+            this.SearchBar.draw(e.SpriteBatch);
+        }
+
+        if (!this.Storages.Any())
         {
             return;
         }
@@ -248,12 +346,48 @@ internal class ChestFinder : IFeature
     {
         if (id == "BetterChests.FindChest")
         {
-            this.OpenChestFinder();
+            this.ShowSearch = true;
+        }
+
+        if (this.ShowSearch)
+        {
+            this.SearchBar.SetFocus();
         }
     }
 
-    private void OpenChestFinder()
+    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        Game1.activeClickableMenu = new SearchBar(this.ItemMatcher);
+        if (!this.ShowSearch && Game1.activeClickableMenu != this.SearchBar)
+        {
+            return;
+        }
+
+        if (this.TimeOut > 0 && --this.TimeOut == 0)
+        {
+            Log.Trace($"ChestFinder: {this.SearchText}");
+            this.ItemMatcher.StringValue = this.SearchText;
+            this.RefreshStorages();
+        }
+
+        if (this.SearchBar.SearchText.Equals(this.SearchText, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        this.TimeOut = ChestFinder.MaxTimeOut;
+        this.SearchText = this.SearchBar.SearchText;
+    }
+
+    private void RefreshStorages()
+    {
+        this.Storages.Clear();
+        if (!this.ItemMatcher.Any())
+        {
+            return;
+        }
+
+        this.Storages.AddRange(
+            Helpers.Storages.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)).Distinct());
+        this.CurrentIndex = 0;
     }
 }
