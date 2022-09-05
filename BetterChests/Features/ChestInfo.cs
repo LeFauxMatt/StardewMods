@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -21,7 +22,7 @@ internal class ChestInfo : IFeature
     private static ChestInfo? Instance;
 
     private readonly ModConfig _config;
-    private readonly PerScreen<IList<Point>> _dims = new(() => new List<Point>());
+    private readonly PerScreen<IList<Tuple<Point, Point>>> _dims = new(() => new List<Tuple<Point, Point>>());
     private readonly IModHelper _helper;
 
     private readonly PerScreen<IList<KeyValuePair<string, string>>> _info = new(
@@ -35,7 +36,7 @@ internal class ChestInfo : IFeature
         this._config = config;
     }
 
-    private IList<Point> Dims => this._dims.Value;
+    private IList<Tuple<Point, Point>> Dims => this._dims.Value;
 
     private IList<KeyValuePair<string, string>> Info => this._info.Value;
 
@@ -130,7 +131,7 @@ internal class ChestInfo : IFeature
 
         if (storage.Items.Any())
         {
-            info.Add(new("Total Items", $"{storage.Items.OfType<Item>().Sum(item => item.Stack):n0}"));
+            info.Add(new("Total Items", $"{storage.Items.OfType<Item>().Sum(item => (long)item.Stack):n0}"));
             info.Add(
                 new(
                     "Unique Items",
@@ -138,7 +139,7 @@ internal class ChestInfo : IFeature
             info.Add(
                 new(
                     "Total Value",
-                    $"{storage.Items.OfType<Item>().Sum(item => Utility.getSellToStorePriceOfItem(item)):n0}"));
+                    $"{storage.Items.OfType<Item>().Sum(item => (long)Utility.getSellToStorePriceOfItem(item)):n0}"));
         }
 
         return info;
@@ -172,23 +173,38 @@ internal class ChestInfo : IFeature
             return;
         }
 
-        var x = itemGrabMenu.xPositionOnScreen - Game1.tileSize - 384;
-        var y = itemGrabMenu.yPositionOnScreen - IClickableMenu.borderWidth / 2;
+        var x = itemGrabMenu.xPositionOnScreen - IClickableMenu.borderWidth / 2 - 384;
+        var y = itemGrabMenu.yPositionOnScreen;
+        if (BetterItemGrabMenu.Context?.CustomColorPicker is FeatureOption.Enabled
+         && this._config.CustomColorPickerArea is ComponentArea.Left)
+        {
+            x -= 2 * Game1.tileSize;
+        }
+
         Game1.drawDialogueBox(
             x - IClickableMenu.borderWidth,
             y - IClickableMenu.borderWidth / 2 - IClickableMenu.spaceToClearTopBorder,
             384,
-            this.Dims.Sum(dim => dim.Y) + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth * 2,
+            this.Dims.Sum(dim => dim.Item1.Y) + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth * 2,
             false,
             true);
 
         for (var i = 0; i < this.Info.Count; i++)
         {
             var (key, value) = this.Info[i];
-            var dim = this.Dims[i];
+            var (dim1, dim2) = this.Dims[i];
             Utility.drawTextWithShadow(b, $"{key}:", Game1.smallFont, new(x, y), Game1.textColor, 1f, 0.1f);
-            b.DrawString(Game1.smallFont, value, new(x + dim.X, y), Game1.textColor);
-            y += dim.Y;
+            if (dim1.X + dim2.X <= 384 - IClickableMenu.borderWidth)
+            {
+                b.DrawString(Game1.smallFont, value, new(x + dim1.X, y), Game1.textColor);
+            }
+            else
+            {
+                y += dim1.Y;
+                b.DrawString(Game1.smallFont, value, new(x, y), Game1.textColor);
+            }
+
+            y += dim1.Y;
         }
     }
 
@@ -232,9 +248,12 @@ internal class ChestInfo : IFeature
             return;
         }
 
-        foreach (var (key, _) in this.Info)
+        foreach (var (key, value) in this.Info)
         {
-            this.Dims.Add(Game1.smallFont.MeasureString($"{key}: ").ToPoint());
+            this.Dims.Add(
+                new(
+                    Game1.smallFont.MeasureString($"{key}: ").ToPoint(),
+                    Game1.smallFont.MeasureString(value).ToPoint()));
         }
     }
 }
