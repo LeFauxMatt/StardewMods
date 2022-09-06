@@ -6,7 +6,7 @@ internal class ProjectFluentIntegration : ModIntegration<IProjectFluentApi>
     private const string ModUniqueId = "Shockah.ProjectFluent";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProjectFluentIntegration"/> class.
+    ///     Initializes a new instance of the <see cref="ProjectFluentIntegration" /> class.
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public ProjectFluentIntegration(IModRegistry modRegistry)

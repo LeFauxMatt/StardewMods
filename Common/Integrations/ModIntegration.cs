@@ -28,8 +28,7 @@ internal abstract class ModIntegration<T>
     [MemberNotNullWhen(true, nameof(ModIntegration<T>.API), nameof(ModIntegration<T>.ModInfo))]
     protected internal bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId)
                                      && (this.Version is null
-                                      || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version)
-                                      != true);
+                                      || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version) != true);
 
     /// <summary>
     ///     Gets metadata for this mod.
