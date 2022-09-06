@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.7.1 (Unreleased)
+
+### Fixed
+
+* Fixed CraftFromChest not working on Crafting tab.
+
 ## 2.7.0 (September 5, 2022)
 
 ### Added

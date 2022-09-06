@@ -10,6 +10,8 @@
   "storage.Fridge.tooltip": "Storage in the farmhouse for cooking ingredients.",
   "storage.SaddleBag.name": "SaddleBag",
   "storage.SaddleBag.tooltip": "Storage from the Horse Overhaul mod.",
+  "storage.Object.name": "Object",
+  "storage.Other.name": "Other",
   // Effects
   "effect.carry-chest-slow.description": "Overburdened -{0} Speed",
   // Config Pages
@@ -183,6 +185,15 @@
   "button.craft-from-chest.name": "Craft from Chest",
   "button.transfer-up.name": "Transfer Items into Chest",
   "button.transfer-down.name": "Transfer Items into Inventory",
+  // Chest Info
+  "chest-info.name": "Name",
+  "chest-info.type": "Type",
+  "chest-info.location": "Location",
+  "chest-info.position": "Position",
+  "chest-info.inventory": "Inventory",
+  "chest-info.total-items": "Total Items",
+  "chest-info.unique-items": "Unique Items",
+  "chest-info.total-value": "Total Value",
   // UI - Tabs
   "tabs.Clothing.name": "Clothing",
   "tabs.Cooking.name": "Cooking",

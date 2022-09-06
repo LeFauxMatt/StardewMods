@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Helpers;
 using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
@@ -87,58 +88,65 @@ internal class ChestInfo : IFeature
 
         if (!string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
-            info.Add(new("Name", storage.ChestLabel));
+            info.Add(new(I18n.ChestInfo_Name(), storage.ChestLabel));
         }
 
         switch (storage)
         {
             case ChestStorage { Chest: { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } }:
-                info.Add(new("Type", "JunimoChest"));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Chest")));
+                break;
+            case ChestStorage { Chest: { fridge.Value: true } }:
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Fridge")));
+                break;
+            case ChestStorage { Chest: { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } }:
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Shipping Bin")));
                 break;
             case ChestStorage:
-                info.Add(new("Type", "Chest"));
-                break;
-            case FridgeStorage:
-                info.Add(new("Type", "Fridge"));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Chest")));
                 break;
             case JunimoHutStorage:
-                info.Add(new("Type", "JunimoHut"));
-                break;
-            case ObjectStorage:
-                info.Add(new("Type", "Object"));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Hut")));
                 break;
             case ShippingBinStorage:
-                info.Add(new("Type", "ShippingBin"));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Shipping Bin")));
+                break;
+            case FridgeStorage:
+                info.Add(new(I18n.ChestInfo_Type(), I18n.Storage_Fridge_Name()));
+                break;
+            case ObjectStorage:
+                info.Add(new(I18n.ChestInfo_Type(), "Object"));
                 break;
             default:
-                info.Add(new("Type", "Other"));
+                info.Add(new(I18n.ChestInfo_Type(), "Other"));
                 break;
         }
 
-        info.Add(new("Location", storage.Location.Name));
+        info.Add(new(I18n.ChestInfo_Location(), storage.Location.Name));
         if (!storage.Position.Equals(Vector2.Zero))
         {
             info.Add(
                 new(
-                    "Position",
+                    I18n.ChestInfo_Position(),
                     $"({storage.Position.X.ToString(CultureInfo.InvariantCulture)}, {storage.Position.Y.ToString(CultureInfo.InvariantCulture)})"));
         }
 
         if (storage.Source is Farmer farmer)
         {
-            info.Add(new("Inventory", farmer.Name));
+            info.Add(new(I18n.ChestInfo_Inventory(), farmer.Name));
         }
 
         if (storage.Items.Any())
         {
-            info.Add(new("Total Items", $"{storage.Items.OfType<Item>().Sum(item => (long)item.Stack):n0}"));
+            info.Add(
+                new(I18n.ChestInfo_TotalItems(), $"{storage.Items.OfType<Item>().Sum(item => (long)item.Stack):n0}"));
             info.Add(
                 new(
-                    "Unique Items",
+                    I18n.ChestInfo_UniqueItems(),
                     $"{storage.Items.OfType<Item>().Select(item => $"{item.GetType().Name}-{item.ParentSheetIndex.ToString(CultureInfo.InvariantCulture)}").Distinct().Count():n0}"));
             info.Add(
                 new(
-                    "Total Value",
+                    I18n.ChestInfo_TotalValue(),
                     $"{storage.Items.OfType<Item>().Sum(item => (long)Utility.getSellToStorePriceOfItem(item)):n0}"));
         }
 

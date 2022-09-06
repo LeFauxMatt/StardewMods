@@ -140,14 +140,6 @@ internal class BetterCrafting : IFeature
             return true;
         }
 
-        BetterCrafting.Instance!._craftingStoragesLoading.InvokeAll(
-            BetterCrafting.Instance,
-            new CraftingStoragesLoadingEventArgs(BetterCrafting.EligibleStorages));
-        if (!BetterCrafting.EligibleStorages.Any())
-        {
-            return false;
-        }
-
         var width = 800 + IClickableMenu.borderWidth * 2;
         var height = 600 + IClickableMenu.borderWidth * 2;
         var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height).ToPoint();
@@ -230,6 +222,9 @@ internal class BetterCrafting : IFeature
     private static void CraftingPage_constructor_postfix(CraftingPage __instance)
     {
         BetterCrafting.HeldItem = BetterCrafting.Instance!._helper.Reflection.GetField<Item?>(__instance, "heldItem");
+        BetterCrafting.Instance!._craftingStoragesLoading.InvokeAll(
+            BetterCrafting.Instance,
+            new CraftingStoragesLoadingEventArgs(BetterCrafting.EligibleStorages));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
