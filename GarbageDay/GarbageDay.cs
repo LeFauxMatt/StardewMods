@@ -4,15 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Characters;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -84,41 +80,28 @@ public class GarbageDay : Mod
         this.Helper.ConsoleCommands.Add("garbage_clear", I18n.Command_GarbageClear_Description(), this.GarbageClear);
 
         // Patches
-        HarmonyHelper.AddPatches(
-            this.ModManifest.UniqueID,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(
-                        typeof(Chest),
-                        nameof(Chest.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(int),
-                            typeof(int),
-                            typeof(float),
-                        }),
-                    typeof(GarbageDay),
-                    nameof(GarbageDay.Chest_draw_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                    typeof(GarbageDay),
-                    nameof(GarbageDay.Chest_performToolAction_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-                    typeof(GarbageDay),
-                    nameof(GarbageDay.Chest_UpdateFarmerNearby_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-                    typeof(GarbageDay),
-                    nameof(GarbageDay.Chest_updateWhenCurrentLocation_prefix),
-                    PatchType.Prefix),
-            });
-        HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
+        var harmony = new Harmony(this.ModManifest.UniqueID);
+        harmony.Patch(
+            AccessTools.Method(
+                typeof(Chest),
+                nameof(Chest.draw),
+                new[]
+                {
+                    typeof(SpriteBatch),
+                    typeof(int),
+                    typeof(int),
+                    typeof(float),
+                }),
+            new(typeof(GarbageDay), nameof(GarbageDay.Chest_draw_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
+            new(typeof(GarbageDay), nameof(GarbageDay.Chest_performToolAction_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
+            new(typeof(GarbageDay), nameof(GarbageDay.Chest_UpdateFarmerNearby_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
+            new(typeof(GarbageDay), nameof(GarbageDay.Chest_updateWhenCurrentLocation_prefix)));
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
