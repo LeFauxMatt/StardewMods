@@ -1,5 +1,9 @@
 # Too Many Animals Change Log
 
+## 2.0.2 (Unreleased)
+
+* Internal refactoring.
+
 ## 2.0.1 (July 9, 2022)
 
 * Added alert if FuryCore is installed.

@@ -8,7 +8,6 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.CommonHarmony.Helpers;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -99,12 +98,10 @@ public class TooManyAnimals : Mod
         I18n.Init(this.Helper.Translation);
 
         // Patches
-        HarmonyHelper.AddPatch(
-            this.ModManifest.UniqueID,
+        var harmony = new Harmony(this.ModManifest.UniqueID);
+        harmony.Patch(
             AccessTools.Constructor(typeof(PurchaseAnimalsMenu), new[] { typeof(List<SObject>) }),
-            typeof(TooManyAnimals),
-            nameof(TooManyAnimals.PurchaseAnimalsMenu_constructor_prefix));
-        HarmonyHelper.ApplyPatches(this.ModManifest.UniqueID);
+            new(typeof(TooManyAnimals), nameof(TooManyAnimals.PurchaseAnimalsMenu_constructor_prefix)));
 
         // Events
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
