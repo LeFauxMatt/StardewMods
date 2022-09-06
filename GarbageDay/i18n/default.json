@@ -1,5 +1,5 @@
 {
   "command.garbage-fill.description": "Adds loot to all Garbage Cans.",
   "command.garbage-hat.description": "The next looted can will have a hat.",
-  "command.garbage-kill.description": "Removes all Garbage Cans."
+  "command.garbage-clear.description": "Removes all Garbage Cans."
 }

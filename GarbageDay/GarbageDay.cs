@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -80,7 +81,7 @@ public class GarbageDay : Mod
         // Console Commands
         this.Helper.ConsoleCommands.Add("garbage_fill", I18n.Command_GarbageFill_Description(), this.GarbageFill);
         this.Helper.ConsoleCommands.Add("garbage_hat", I18n.Command_GarbageHat_Description(), GarbageDay.GarbageHat);
-        this.Helper.ConsoleCommands.Add("garbage_kill", I18n.Command_GarbageKill_Description(), GarbageDay.GarbageKill);
+        this.Helper.ConsoleCommands.Add("garbage_clear", I18n.Command_GarbageClear_Description(), this.GarbageClear);
 
         // Patches
         HarmonyHelper.AddPatches(
@@ -294,7 +295,7 @@ public class GarbageDay : Mod
         GarbageCan.GarbageHat = true;
     }
 
-    private static void GarbageKill(string command, string[] args)
+    private void GarbageClear(string command, string[] args)
     {
         var objectsToRemove = new List<(GameLocation, Vector2)>();
         foreach (var location in CommonHelpers.AllLocations)
@@ -314,6 +315,8 @@ public class GarbageDay : Mod
         {
             location.Objects.Remove(tile);
         }
+
+        this._garbageCans.Clear();
     }
 
     private void GarbageFill(string command, string[] args)
