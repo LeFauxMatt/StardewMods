@@ -1,23 +1,39 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
+## 2.4.1 (September 6, 2022)
+
+### Fixed
+
+* Fixed Magic using the wrong translation.
+
 ## 2.4.0 (September 6, 2022)
+
+### Added
 
 * Added Magic Mod.
 * Added Fashion Sense.
 
 ## 2.3.0 (August 21, 2022)
 
+### Added
+
 * Added Tractor Mod.
 
 ## 2.2.2 (August 19, 2022)
+
+### Fixed
 
 * Fixed Debug Mode and Horse Flute Anywhere icons not loading.
 
 ## 2.2.1 (July 15, 2022)
 
+### Fixed
+
 * Fixed Lookup Anything icon not loading.
 
 ## 2.2.0 (July 14, 2022)
+
+### Added
 
 * Added support for Simple Screenshots.
 * Added back some icons using method-based integration.
@@ -30,6 +46,8 @@
 
 ## 2.1.0 (July 9, 2022)
 
+### Changed
+
 * Removed icons for mods that are directly integrated into ToolbarIcons.
     * Always Scroll Map
     * CJB Cheats Menu
@@ -38,6 +56,8 @@
     * Stardew Aquarium
 
 ## 2.0.0 (July 1, 2022)
+
+### Changed
 
 * Changed dependency to ToolbarIcons.
 
