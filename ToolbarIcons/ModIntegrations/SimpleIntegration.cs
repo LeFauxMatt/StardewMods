@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewValley.Menus;
 
 /// <inheritdoc />
 internal class SimpleIntegration : BaseIntegration
@@ -74,7 +75,42 @@ internal class SimpleIntegration : BaseIntegration
     }
 
     /// <summary>
-    ///     Adds a simple mod integration for a method with out parameters.
+    ///     Adds a simple mod integration for a parameterless menu.
+    /// </summary>
+    /// <param name="modId">The id of the mod.</param>
+    /// <param name="index">The index of the mod icon.</param>
+    /// <param name="hoverText">The text to display.</param>
+    /// <param name="fullName">The full name to the menu class.</param>
+    /// <param name="texturePath">The texture path of the icon.</param>
+    /// <returns>Returns true if the icon was added.</returns>
+    public bool AddMenu(string modId, int index, string hoverText, string fullName, string? texturePath = null)
+    {
+        if (!this.TryGetMod(modId, out var mod))
+        {
+            return false;
+        }
+
+        var action = mod.GetType().Assembly.GetType(fullName)?.GetConstructor(Array.Empty<Type>());
+        if (action is null)
+        {
+            return false;
+        }
+
+        this.AddIntegration(
+            modId,
+            index,
+            hoverText,
+            () =>
+            {
+                var menu = action.Invoke(Array.Empty<object>());
+                Game1.activeClickableMenu = (IClickableMenu)menu;
+            },
+            texturePath);
+        return true;
+    }
+
+    /// <summary>
+    ///     Adds a simple mod integration for a parameterless method.
     /// </summary>
     /// <param name="modId">The id of the mod.</param>
     /// <param name="index">The index of the mod icon.</param>

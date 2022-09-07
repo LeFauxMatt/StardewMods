@@ -102,7 +102,6 @@ Some integrations are handled directly by the Toolbar Icons mod which means icon
 * [CJB Item Spawner](https://www.nexusmods.com/stardewvalley/mods/93)
 * [Dynamic Game Assets](https://www.nexusmods.com/stardewvalley/mods/9365)
 * [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098)
-* [Magic](https://www.nexusmods.com/stardewvalley/mods/2007)
 * [Stardew Aquarium](https://www.nexusmods.com/stardewvalley/mods/6372)
 
 ## Translations

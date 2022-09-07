@@ -4,7 +4,7 @@
 
 ### Added
 
-* Added support for Magic.
+* Added support for opening custom menus.
 
 ## 2.3.3 (August 21, 2022)
 
