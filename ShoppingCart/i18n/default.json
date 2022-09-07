@@ -1,0 +1,9 @@
+{
+  "ui.available": "Available",
+  "ui.price": "Price",
+  "ui.quantity": "Quantity",
+  "ui.buy": "Buying",
+  "ui.sell": "Selling",
+  "ui.total": "Total",
+  "ui.purchase": "Purchase"
+}

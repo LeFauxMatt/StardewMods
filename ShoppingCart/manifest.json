@@ -1,0 +1,9 @@
+{
+  "EntryDll": "ShoppingCart.dll",
+  "Name": "Shopping Cart",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Adds a shopping cart and checkout to the Shop Menu.",
+  "UniqueID": "furyx639.ShoppingCart",
+  "MinimumApiVersion": "3.15.0"
+}
