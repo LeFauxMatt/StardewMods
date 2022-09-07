@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.7.2 (September 7, 2022)
+
+### Fixed
+
+* Fixed StashToChest Default was not being overridden by a default setting.
+
 ## 2.7.1 (September 6, 2022)
 
 ### Fixed

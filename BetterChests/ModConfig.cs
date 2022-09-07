@@ -215,7 +215,7 @@ internal class ModConfig : StorageData
             this.SearchTagSymbol = '#';
         }
 
-        if (this.StashToChest is FeatureOptionRange.Disabled)
+        if (this.StashToChest is FeatureOptionRange.Default)
         {
             this.StashToChest = FeatureOptionRange.Location;
         }
