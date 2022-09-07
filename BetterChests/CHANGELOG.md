@@ -1,6 +1,6 @@
 ﻿# Better Chests Change Log
 
-## 2.7.1 (Unreleased)
+## 2.7.1 (September 6, 2022)
 
 ### Fixed
 

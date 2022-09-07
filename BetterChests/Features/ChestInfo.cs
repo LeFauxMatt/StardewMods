@@ -147,7 +147,7 @@ internal class ChestInfo : IFeature
             info.Add(
                 new(
                     I18n.ChestInfo_TotalValue(),
-                    $"{storage.Items.OfType<Item>().Sum(item => (long)Utility.getSellToStorePriceOfItem(item)):n0}"));
+                    $"{storage.Items.OfType<SObject>().Sum(obj => (long)obj.salePrice() * obj.Stack / 2):n0}"));
         }
 
         return info;
