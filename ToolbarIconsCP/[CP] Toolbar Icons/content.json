@@ -15,13 +15,13 @@
     }
   },
   "Changes": [
-    // Load Texture Icons
+    // Load Textures
     {
       "Action": "Load",
       "Target": "furyx639.ToolbarIconsCP/Icons",
       "FromFile": "assets/icons.png"
     },
-    // Add Chests Anywhere Icon
+    // Chests Anywhere
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -32,7 +32,7 @@
         "HasMod": "Pathoschild.ChestsAnywhere"
       }
     },
-    // Add Data Layers Icon
+    // Data Layers
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -43,7 +43,7 @@
         "HasMod": "Pathoschild.DataLayers"
       }
     },
-    // Add Debug Mode Icon
+    // Debug Mode
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -54,7 +54,7 @@
         "HasMod": "Pathoschild.DebugMode"
       }
     },
-    // Add Event Lookup Icon
+    // Event Lookup
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -65,7 +65,18 @@
         "HasMod": "shekurika.EventLookup"
       }
     },
-    // Add Horse Flute Anywhere Icon
+    // Fashion Sense
+    {
+      "Action": "EditData",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
+      "Entries": {
+        "PeacefulEnd.FashionSense/ShowMenu": "{{i18n: button.FashionSense}}/furyx639.ToolbarIconsCP\\Icons/17/menu/FashionSense.Framework.UI.HandMirrorMenu"
+      },
+      "When": {
+        "HasMod": "PeacefulEnd.FashionSense"
+      }
+    },
+    // Horse Flute Anywhere
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -76,7 +87,7 @@
         "HasMod": "Pathoschild.HorseFluteAnywhere"
       }
     },
-    // Add Instant Building Build Icon
+    // Instant Building Build
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -88,7 +99,7 @@
         "HasMod": "BitwiseJonMods.InstantBuildings"
       }
     },
-    // Add Lookup Anything Icon
+    // Lookup Anything
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -99,7 +110,18 @@
         "HasMod": "Pathoschild.LookupAnything"
       }
     },
-    // Add Reset Terrain Features Icon
+    // Magic
+    {
+      "Action": "EditData",
+      "Target": "furyx639.ToolbarIcons/Toolbar",
+      "Entries": {
+        "spacechase0.Magic/ShowMenu": "{{i18n: button.Magic}}/furyx639.ToolbarIconsCP\\Icons/16/menu/Magic.Framework.Game.Interface.MagicMenu"
+      },
+      "When": {
+        "HasMod": "spacechase0.Magic"
+      }
+    },
+    // Reset Terrain Features
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -110,7 +132,7 @@
         "HasMod": "MabelSyrup.ResetTerrainFeatures"
       }
     },
-    // Add Screenshot Icon
+    // Screenshot
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
@@ -121,7 +143,7 @@
         "HasMod": "aedenthorn.Screenshot"
       }
     },
-    // Add Tractor Mod Icon
+    // Tractor Mod
     {
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",

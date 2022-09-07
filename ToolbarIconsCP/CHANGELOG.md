@@ -1,5 +1,10 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
+## 2.4.0 (September 6, 2022)
+
+* Added Magic Mod.
+* Added Fashion Sense.
+
 ## 2.3.0 (August 21, 2022)
 
 * Added Tractor Mod.
