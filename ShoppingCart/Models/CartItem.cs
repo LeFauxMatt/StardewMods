@@ -7,18 +7,20 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
+/// <summary>
+///     Represents an item being bought or sold.
+/// </summary>
 internal class CartItem
 {
     private readonly int _available;
     private readonly ClickableTextureComponent _minus;
     private readonly ClickableTextureComponent _plus;
-    private readonly int _price;
     private readonly TextBox _quantityField;
 
     private CartItem(ISalable item, int price, int quantity, int available)
     {
         this.Item = item;
-        this._price = price;
+        this.Price = price;
         this.Quantity = quantity;
         this._available = available;
 
@@ -45,19 +47,50 @@ internal class CartItem
         };
     }
 
+    /// <summary>
+    ///     Gets the item.
+    /// </summary>
     public ISalable Item { get; }
 
+    /// <summary>
+    ///     Gets the individual sale price of an item.
+    /// </summary>
+    public int Price { get; }
+
+    /// <summary>
+    ///     Gets or sets the quantity to buy/sell.
+    /// </summary>
     public int Quantity { get; set; }
 
-    public int Total => this._price * this.Quantity;
+    /// <summary>
+    ///     Gets the total price.
+    /// </summary>
+    public long Total => this.Price * (long)this.Quantity;
 
+    /// <summary>
+    ///     Gets or sets a value indicating whether the item is visible.
+    /// </summary>
     public bool Visible { get; set; }
 
+    /// <summary>
+    ///     Gets an instance of CartItem for items being purchased.
+    /// </summary>
+    /// <param name="item">The item to purchase.</param>
+    /// <param name="quantity">The quantity of the item to purchase.</param>
+    /// <param name="priceAndStock">The shop prices and stock.</param>
+    /// <returns>Returns an instance of CartItem.</returns>
     public static CartItem ToBuy(ISalable item, int quantity, int[] priceAndStock)
     {
-        return new(item, -priceAndStock[0], quantity, priceAndStock[1]);
+        return new(item, priceAndStock[0], quantity, priceAndStock[1]);
     }
 
+    /// <summary>
+    ///     Gets an instance of CartItem for items being sold.
+    /// </summary>
+    /// <param name="item">The item to sell.</param>
+    /// <param name="sellPercentage">The shop's sell percentage modifier.</param>
+    /// <param name="inventory">The player's inventory selling the item.</param>
+    /// <returns>Returns an instance of CartItem.</returns>
     public static CartItem ToSell(Item item, float sellPercentage, IEnumerable<Item?> inventory)
     {
         var copy = item.GetSalableInstance();
@@ -70,9 +103,16 @@ internal class CartItem
         var available = inventory.OfType<Item>()
                                  .Where(inventoryItem => inventoryItem.canStackWith(item))
                                  .Sum(inventoryItem => inventoryItem.Stack > 0 ? inventoryItem.Stack : 1);
-        return new(copy, price, item.Stack, available);
+        return new(copy, -price, item.Stack, available);
     }
 
+    /// <summary>
+    ///     Draws the cart item to the screen.
+    /// </summary>
+    /// <param name="b">The sprite batch to draw to.</param>
+    /// <param name="x">The x-coordinate to draw the item at.</param>
+    /// <param name="y">The y-coordinate to draw the item at.</param>
+    /// <param name="cols">The column widths.</param>
     public void Draw(SpriteBatch b, int x, int y, int[] cols)
     {
         if (!this.Visible)
@@ -85,7 +125,7 @@ internal class CartItem
 
         this.Item.drawInMenu(b, new(x - 8, y - 8), 0.5f, 1f, 0.9f, StackDrawType.Hide, Color.White, false);
 
-        if (this._available < int.MaxValue)
+        if (!this.Item.IsInfiniteStock())
         {
             text = $"{this._available:n0}";
             width = (int)Game1.smallFont.MeasureString(text).X;
@@ -125,6 +165,12 @@ internal class CartItem
         this._plus.draw(b);
     }
 
+    /// <summary>
+    ///     Perform a left click on the cart item.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <returns>Returns true if an item was clicked.</returns>
     public bool LeftClick(int x, int y)
     {
         if (!this.Visible)

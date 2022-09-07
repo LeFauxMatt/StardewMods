@@ -18,6 +18,15 @@ public class ShoppingCart : Mod
     private ModConfig? _config;
     private bool _showMenuBackground;
 
+    /// <summary>
+    ///     Gets the current instance of VirtualShop.
+    /// </summary>
+    internal static VirtualShop? CurrentShop
+    {
+        get => ShoppingCart.Instance!._currentShop.Value;
+        private set => ShoppingCart.Instance!._currentShop.Value = value;
+    }
+
     private ModConfig Config
     {
         get
@@ -43,12 +52,6 @@ public class ShoppingCart : Mod
         }
     }
 
-    private VirtualShop? CurrentShop
-    {
-        get => this._currentShop.Value;
-        set => this._currentShop.Value = value;
-    }
-
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
@@ -71,20 +74,20 @@ public class ShoppingCart : Mod
 
     private static bool ShopMenu_receiveScrollWheelAction_prefix(int direction)
     {
-        return !ShoppingCart.Instance?.CurrentShop?.Scroll(direction) ?? true;
+        return !ShoppingCart.CurrentShop?.Scroll(direction) ?? true;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (Game1.activeClickableMenu is not ShopMenu
-         || this.CurrentShop is null
+         || ShoppingCart.CurrentShop is null
          || (!e.Button.IsActionButton() && e.Button is not (SButton.MouseLeft or SButton.MouseRight)))
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (this.CurrentShop.LeftClick(x, y))
+        if (ShoppingCart.CurrentShop.LeftClick(x, y))
         {
             this.Helper.Input.Suppress(e.Button);
         }
@@ -92,24 +95,17 @@ public class ShoppingCart : Mod
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ShopMenu newMenu)
-        {
-            // Create new virtual shop
-            var newShop = new VirtualShop(this.Helper, newMenu);
-
-            // Migrate shopping cart
-            this.CurrentShop?.MoveItems(newShop);
-            this.CurrentShop = newShop;
-            return;
-        }
-
-        if (e.OldMenu is not ShopMenu)
+        if (e.NewMenu is not ShopMenu newMenu)
         {
             return;
         }
 
-        // Clean-up old menu
-        this.CurrentShop = null;
+        // Create new virtual shop
+        var newShop = new VirtualShop(this.Helper, newMenu);
+
+        // Migrate shopping cart
+        ShoppingCart.CurrentShop?.MoveItems(newShop);
+        ShoppingCart.CurrentShop = newShop;
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -129,7 +125,7 @@ public class ShoppingCart : Mod
             return;
         }
 
-        this.CurrentShop?.Draw(e.SpriteBatch);
+        ShoppingCart.CurrentShop?.Draw(e.SpriteBatch);
         this._showMenuBackground = Game1.options.showMenuBackground;
         Game1.options.showMenuBackground = true;
     }
