@@ -1,9 +1,14 @@
 {
+  // UI
+  "ui.shopping-cart": "Shopping Cart",
   "ui.available": "Available",
   "ui.price": "Price",
   "ui.quantity": "Quantity",
   "ui.buy": "Buying",
   "ui.sell": "Selling",
   "ui.total": "Total",
-  "ui.purchase": "Purchase"
+  "ui.purchase": "Purchase",
+  // Alerts
+  "alert.money": "Not enough gold",
+  "alert.inventory": "Not enough space"
 }

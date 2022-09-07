@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.ShoppingCart;
 
 using System;
+using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
@@ -10,6 +11,8 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public class ShoppingCart : Mod
 {
+    private static ShoppingCart? Instance;
+
     private readonly PerScreen<VirtualShop?> _currentShop = new();
 
     private ModConfig? _config;
@@ -49,6 +52,7 @@ public class ShoppingCart : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        ShoppingCart.Instance = this;
         I18n.Init(this.Helper.Translation);
         Log.Monitor = this.Monitor;
 
@@ -57,6 +61,17 @@ public class ShoppingCart : Mod
         this.Helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.Helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+        // Patches
+        var harmony = new Harmony(this.ModManifest.UniqueID);
+        harmony.Patch(
+            AccessTools.Method(typeof(ShopMenu), nameof(ShopMenu.receiveScrollWheelAction)),
+            new(typeof(ShoppingCart), nameof(ShoppingCart.ShopMenu_receiveScrollWheelAction_prefix)));
+    }
+
+    private static bool ShopMenu_receiveScrollWheelAction_prefix(int direction)
+    {
+        return !ShoppingCart.Instance?.CurrentShop?.Scroll(direction) ?? true;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -80,7 +95,7 @@ public class ShoppingCart : Mod
         if (e.NewMenu is ShopMenu newMenu)
         {
             // Create new virtual shop
-            var newShop = new VirtualShop(this.Helper, this.Config, newMenu);
+            var newShop = new VirtualShop(this.Helper, newMenu);
 
             // Migrate shopping cart
             this.CurrentShop?.MoveItems(newShop);
@@ -94,7 +109,6 @@ public class ShoppingCart : Mod
         }
 
         // Clean-up old menu
-        this.CurrentShop?.ReturnItems();
         this.CurrentShop = null;
     }
 
