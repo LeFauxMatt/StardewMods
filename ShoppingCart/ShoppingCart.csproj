@@ -5,11 +5,12 @@
         <Name>Shopping Cart</Name>
         <Author>furyx639</Author>
         <Description>Adds a shopping cart and checkout to the Shop Menu.</Description>
-        <Version>1.0.0-beta.1</Version>
+        <Version>1.0.0-beta.2</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.ShoppingCart</RootNamespace>
         <UniqueId>furyx639.ShoppingCart</UniqueId>
         <MinimumApiVersion>3.15.0</MinimumApiVersion>
+        <UpdateKeys>Nexus:13701</UpdateKeys>
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
