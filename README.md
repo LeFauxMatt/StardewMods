@@ -16,8 +16,7 @@ Adds enhanced chest features to the game.
 
 ( [source](EasyAccess)
 | [docs](EasyAccess/README.md)
-| [changelog](EasyAccess/CHANGELOG.md)
-| [api](Common/Integrations/EasyAccess/IEasyAccessApi.cs) )
+| [changelog](EasyAccess/CHANGELOG.md) )
 
 Provides easier access to machines and producers in the game.
 
@@ -29,26 +28,12 @@ Provides easier access to machines and producers in the game.
 
 Converts Garbage Cans on the map into storages
 
-## [Help For Hire](https://www.nexusmods.com/stardewvalley/mods/5316)
-
-( [source](HelpForHire)
-| docs | changelog )
-
-Pay a daily rate to have chores automatically done for you every day.
-
-## [More Chests](https://www.nexusmods.com/stardewvalley/mods/9790)
-
-( [source](MoreChests)
-| [docs](MoreChests/README.md)
-| [changelog](MoreChests/CHANGELOG.md) )
-
-Allows custom items to be created as chests.
-
 ## [Ordinary Capsule](https://www.nexusmods.com/stardewvalley/mods/13489)
 
 ( [source](OrdinaryCapsule)
 | [docs](OrdinaryCapsule/README.md)
-| [changelog](OrdinaryCapsule/CHANGELOG.md) )
+| [changelog](OrdinaryCapsule/CHANGELOG.md)
+| [api](Common/Integrations/OrdinaryCapsule/IOrdinaryCapsuleApi.cs) )
 
 Nothing strange about this capsule.
 
@@ -59,6 +44,14 @@ Nothing strange about this capsule.
 | [changelog](PortableHoles/CHANGELOG.md) )
 
 Adds craftable holes to the game.
+
+## [Shopping Cart](https://www.nexusmods.com/stardewvalley/mods/13701)
+
+( [source](ShoppingCart)
+| [docs](ShoppingCart/README.md)
+| [changelog](ShoppingCart/CHANGELOG.md) )
+
+Adds a shopping cart and checkout to the Shop Menu.
 
 ## [Smack Dat Scarecrow](https://www.nexusmods.com/stardewvalley/mods/13528)
 
@@ -80,6 +73,7 @@ Makes Marnie's Animal Shop menu paginated so that you're able to view all of you
 
 ( [source](ToolbarIcons)
 | [docs](ToolbarIcons/README.md)
-| [changelog](ToolbarIcons/CHANGELOG.md) )
+| [changelog](ToolbarIcons/CHANGELOG.md)
+| [api](Common/Integrations/ToolbarIcons/IToolbarIconsApi.cs) )
 
 Adds shortcut icons to activate hotkeys/commands from other mods.
