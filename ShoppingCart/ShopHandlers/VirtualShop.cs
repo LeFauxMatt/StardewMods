@@ -637,10 +637,10 @@ internal class VirtualShop
         {
             var quantity = toSell.Quantity;
             coins += quantity / 8;
-            for (var i = Game1.player.Items.Count - 1; i >= 0; i--)
+            for (var i = 0; i < Game1.player.MaxItems; ++i)
             {
                 var item = Game1.player.Items.ElementAtOrDefault(i);
-                if (item is null || !item.canStackWith(toSell.Item))
+                if (item?.canStackWith(toSell.Item) != true)
                 {
                     continue;
                 }
@@ -649,7 +649,7 @@ internal class VirtualShop
                 stack -= quantity;
                 if (stack <= 0)
                 {
-                    Game1.player.Items.RemoveAt(i);
+                    Game1.player.Items[i] = null;
                     quantity -= item.Stack;
                     ShopMenu.chargePlayer(Game1.player, this.Menu.currency, toSell.Price * item.Stack);
                     continue;
