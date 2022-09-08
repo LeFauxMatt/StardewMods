@@ -1,6 +1,6 @@
 ﻿namespace StardewMods.ShoppingCart;
 
-using System;
+using System.Linq;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -14,8 +14,8 @@ public class ShoppingCart : Mod
     private static ShoppingCart? Instance;
 
     private readonly PerScreen<VirtualShop?> _currentShop = new();
+    private readonly PerScreen<bool> _isSupported = new();
 
-    private ModConfig? _config;
     private bool _showMenuBackground;
 
     /// <summary>
@@ -27,29 +27,10 @@ public class ShoppingCart : Mod
         private set => ShoppingCart.Instance!._currentShop.Value = value;
     }
 
-    private ModConfig Config
+    private static bool IsSupported
     {
-        get
-        {
-            if (this._config is not null)
-            {
-                return this._config;
-            }
-
-            ModConfig? config = null;
-            try
-            {
-                config = this.Helper.ReadConfig<ModConfig>();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            this._config = config ?? new ModConfig();
-            Log.Trace(this._config.ToString());
-            return this._config;
-        }
+        get => ShoppingCart.Instance!._isSupported.Value;
+        set => ShoppingCart.Instance!._isSupported.Value = value;
     }
 
     /// <inheritdoc />
@@ -74,12 +55,18 @@ public class ShoppingCart : Mod
 
     private static bool ShopMenu_receiveScrollWheelAction_prefix(int direction)
     {
+        if (!ShoppingCart.IsSupported)
+        {
+            return true;
+        }
+
         return !ShoppingCart.CurrentShop?.Scroll(direction) ?? true;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (Game1.activeClickableMenu is not ShopMenu
+         || !ShoppingCart.IsSupported
          || ShoppingCart.CurrentShop is null
          || (!e.Button.IsActionButton() && e.Button is not (SButton.MouseLeft or SButton.MouseRight)))
         {
@@ -100,17 +87,23 @@ public class ShoppingCart : Mod
             return;
         }
 
-        // Create new virtual shop
-        var newShop = new VirtualShop(this.Helper, newMenu);
+        // Check for supported
+        ShoppingCart.IsSupported = newMenu.portraitPerson is not null
+                                && newMenu.currency == 0
+                                && newMenu.forSale.Any()
+                                && newMenu.itemPriceAndStock.Any();
+        if (!ShoppingCart.IsSupported)
+        {
+            return;
+        }
 
-        // Migrate shopping cart
-        ShoppingCart.CurrentShop?.MoveItems(newShop);
-        ShoppingCart.CurrentShop = newShop;
+        // Create new virtual shop
+        ShoppingCart.CurrentShop = new(this.Helper, newMenu);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ShopMenu)
+        if (Game1.activeClickableMenu is not ShopMenu || !ShoppingCart.IsSupported)
         {
             return;
         }
@@ -120,7 +113,7 @@ public class ShoppingCart : Mod
 
     private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ShopMenu)
+        if (Game1.activeClickableMenu is not ShopMenu || !ShoppingCart.IsSupported)
         {
             return;
         }

@@ -17,11 +17,13 @@ internal class CartItem
     private readonly ClickableTextureComponent _plus;
     private readonly TextBox _quantityField;
 
+    private int _quantity;
+
     private CartItem(ISalable item, int price, int quantity, int available)
     {
         this.Item = item;
         this.Price = price;
-        this.Quantity = quantity;
+        this._quantity = quantity;
         this._available = available;
 
         this._minus = new(
@@ -60,7 +62,15 @@ internal class CartItem
     /// <summary>
     ///     Gets or sets the quantity to buy/sell.
     /// </summary>
-    public int Quantity { get; set; }
+    public int Quantity
+    {
+        get => this._quantity;
+        set
+        {
+            this._quantity = Math.Min(this._available, value);
+            this._quantityField.Text = this._quantity.ToString();
+        }
+    }
 
     /// <summary>
     ///     Gets the total price.
@@ -125,7 +135,7 @@ internal class CartItem
 
         this.Item.drawInMenu(b, new(x - 8, y - 8), 0.5f, 1f, 0.9f, StackDrawType.Hide, Color.White, false);
 
-        if (!this.Item.IsInfiniteStock())
+        if (!this.Item.IsInfiniteStock() && this._available != int.MaxValue)
         {
             text = $"{this._available:n0}";
             width = (int)Game1.smallFont.MeasureString(text).X;
@@ -137,15 +147,6 @@ internal class CartItem
             this.Quantity = string.IsNullOrWhiteSpace(this._quantityField.Text)
                 ? 0
                 : Convert.ToInt32(this._quantityField.Text);
-            if (this.Quantity > this._available)
-            {
-                this.Quantity = this._available;
-            }
-        }
-
-        if (this._quantityField.Text != this.Quantity.ToString())
-        {
-            this._quantityField.Text = this.Quantity.ToString();
         }
 
         text = $"{Math.Abs(this.Total):n0}G";

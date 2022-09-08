@@ -85,14 +85,14 @@ internal class VirtualShop
     {
         get
         {
-            if (this._offset < 0)
-            {
-                this._offset = 0;
-            }
-
             if (this._bottomY > 0 && this._offset > this._bottomY - this._topY - this._bounds.Height + this._bounds.Top)
             {
                 this._offset -= this._lineHeight;
+            }
+
+            if (this._offset < 0)
+            {
+                this._offset = 0;
             }
 
             return this._offset;
@@ -395,26 +395,6 @@ internal class VirtualShop
     }
 
     /// <summary>
-    ///     Move an existing cart to another shop.
-    /// </summary>
-    /// <param name="other">The other shop to move items to.</param>
-    public virtual void MoveItems(VirtualShop other)
-    {
-        other._toBuy.Clear();
-        other._toSell.Clear();
-
-        foreach (var toBuy in this._toBuy)
-        {
-            other._toBuy.Add(toBuy);
-        }
-
-        foreach (var toSell in this._toSell)
-        {
-            other._toSell.Add(toSell);
-        }
-    }
-
-    /// <summary>
     ///     Scrolls the menu.
     /// </summary>
     /// <param name="direction">The direction to scroll.</param>
@@ -457,10 +437,14 @@ internal class VirtualShop
         var cartItem = this._toBuy.FirstOrDefault(cartItem => cartItem.Item.canStackWith(salable));
         if (cartItem is not null)
         {
+            cartItem.Quantity += !salable.IsInfiniteStock() && salable.Stack != int.MaxValue ? salable.Stack : 1;
             return true;
         }
 
-        cartItem = CartItem.ToBuy(salable, 1, priceAndStock);
+        cartItem = CartItem.ToBuy(
+            salable,
+            !salable.IsInfiniteStock() && salable.Stack != int.MaxValue ? salable.Stack : 1,
+            priceAndStock);
         this._toBuy.Add(cartItem);
         return true;
     }
@@ -480,6 +464,7 @@ internal class VirtualShop
         var cartItem = this._toSell.FirstOrDefault(cartItem => cartItem.Item.canStackWith(item));
         if (cartItem is not null)
         {
+            cartItem.Quantity += item.Stack;
             return true;
         }
 
@@ -506,6 +491,7 @@ internal class VirtualShop
             {
                 this.Menu.itemPriceAndStock.Remove(toBuy.Item);
                 this.Menu.forSale.RemoveAt(index);
+                continue;
             }
 
             if (this.Menu.heldItem is null || !Game1.player.addItemToInventoryBool(this.Menu.heldItem as Item))
