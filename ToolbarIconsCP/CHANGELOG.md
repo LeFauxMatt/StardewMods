@@ -1,5 +1,11 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
+## 2.4.2 (September 7, 2022)
+
+### Fixed
+
+* Repackage mod to include mod folder.
+
 ## 2.4.1 (September 6, 2022)
 
 ### Fixed
