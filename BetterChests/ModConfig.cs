@@ -61,6 +61,11 @@ internal class ModConfig : StorageData
     public ComponentArea CustomColorPickerArea { get; set; }
 
     /// <summary>
+    ///     Gets or sets a value indicating whether experimental features will be enabled.
+    /// </summary>
+    public bool Experimental { get; set; }
+
+    /// <summary>
     ///     Gets or sets the symbol used to denote context tags in searches.
     /// </summary>
     public char SearchTagSymbol { get; set; }

@@ -71,6 +71,8 @@
   "config.custom-color-picker.tooltip": "Replaces the Color Picker with an HSL Color Picker.",
   "config.custom-color-picker-area.name": "Custom Color Picker Area",
   "config.custom-color-picker-area.tooltip": "The area next to the inventory menu that the color picker will be.",
+  "config.experimental.name": "Experimental Features",
+  "config.experimental.tooltip":  "Enable experimental features.",
   "config.filter-items.name": "Filter Items",
   "config.filter-items.tooltip": "Restrict what items can be added to a Chest.",
   "config.filter-items-list.name": "Chest Categories",

@@ -271,6 +271,13 @@ internal class Config
                 I18n.Config_SlotLockHold_Tooltip);
         }
 
+        Config.GMCM.AddBoolOption(
+            Config.ModManifest,
+            () => Config.ModConfig.Experimental,
+            value => Config.ModConfig.Experimental = value,
+            I18n.Config_Experimental_Name,
+            I18n.Config_Experimental_Tooltip);
+
         // Controls
         Config.GMCM.AddSectionTitle(Config.ModManifest, I18n.Section_Controls_Name);
         Config.GMCM.AddParagraph(Config.ModManifest, I18n.Section_Controls_Description);
