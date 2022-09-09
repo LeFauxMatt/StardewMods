@@ -703,7 +703,7 @@ internal class BetterItemGrabMenu : IFeature
          && (this.CurrentMenu.currentlySnappedComponent is null
           || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
-            displayedItems.Offset--;
+            displayedItems.Offset -= this._config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
             if (offset != displayedItems.Offset)
             {
                 this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ScrollUp);
@@ -714,7 +714,7 @@ internal class BetterItemGrabMenu : IFeature
          && (this.CurrentMenu.currentlySnappedComponent is null
           || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
-            displayedItems.Offset++;
+            displayedItems.Offset += this._config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
             if (offset != displayedItems.Offset)
             {
                 this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ScrollDown);
@@ -756,12 +756,16 @@ internal class BetterItemGrabMenu : IFeature
 
         if (BetterItemGrabMenu.Inventory?.Menu.isWithinBounds(x, y) == true)
         {
-            BetterItemGrabMenu.Inventory.Offset += e.Delta > 0 ? -1 : 1;
+            var scroll = this._config.ControlScheme.ScrollPage.IsDown() ? BetterItemGrabMenu.Inventory.Menu.rows : 1;
+            BetterItemGrabMenu.Inventory.Offset += e.Delta > 0 ? -scroll : scroll;
         }
 
         if (BetterItemGrabMenu.ItemsToGrabMenu?.Menu.isWithinBounds(x, y) == true)
         {
-            BetterItemGrabMenu.ItemsToGrabMenu.Offset += e.Delta > 0 ? -1 : 1;
+            var scroll = this._config.ControlScheme.ScrollPage.IsDown()
+                ? BetterItemGrabMenu.ItemsToGrabMenu.Menu.rows
+                : 1;
+            BetterItemGrabMenu.ItemsToGrabMenu.Offset += e.Delta > 0 ? -scroll : scroll;
         }
     }
 

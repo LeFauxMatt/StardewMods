@@ -361,6 +361,13 @@ internal class Config
 
         Config.GMCM.AddKeybindList(
             Config.ModManifest,
+            () => Config.ModConfig.ControlScheme.ScrollPage,
+            value => Config.ModConfig.ControlScheme.ScrollPage = value,
+            I18n.Config_ScrollPage_Name,
+            I18n.Config_ScrollPage_Tooltip);
+
+        Config.GMCM.AddKeybindList(
+            Config.ModManifest,
             () => Config.ModConfig.ControlScheme.LockSlot,
             value => Config.ModConfig.ControlScheme.LockSlot = value,
             I18n.Config_LockSlot_Name,

@@ -100,8 +100,17 @@ internal class DisplayedItems
         get => this._offset;
         set
         {
-            if (value < 0 || value * this._columns + this.Menu.capacity > this.ActualInventory.Count.RoundUp(12))
+            if (value < 0)
             {
+                this._offset = 0;
+                this.RefreshItems();
+                return;
+            }
+
+            if (value * this._columns + this.Menu.capacity > this.ActualInventory.Count.RoundUp(12))
+            {
+                this._offset = (this.ActualInventory.Count.RoundUp(12) - this.Menu.capacity) / this._columns;
+                this.RefreshItems();
                 return;
             }
 
@@ -220,7 +229,7 @@ internal class DisplayedItems
             while (!this._items.Any() && --this.Offset > 0);
         }
 
-        for (var index = 0; index < this.Menu.inventory.Count; index++)
+        for (var index = 0; index < this.Menu.inventory.Count; ++index)
         {
             this.Menu.inventory[index].name = (index < this._items.Count
                 ? this.Menu.actualInventory.IndexOf(this._items[index])

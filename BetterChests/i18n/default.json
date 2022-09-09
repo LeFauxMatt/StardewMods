@@ -148,6 +148,8 @@
   "config.scroll-up.tooltip": "Key to scroll up in expanded inventory menus.",
   "config.scroll-down.name": "Scroll Down",
   "config.scroll-down.tooltip": "Key to scroll down in expanded inventory menus.",
+  "config.scroll-page.name": "Scroll Page",
+  "config.scroll-page.tooltip":  "Key to scroll inventory one page at a time.",
   "config.previous-tab.name": "Previous Tab",
   "config.previous-tab.tooltip": "Key to switch to previous tab.",
   "config.next-tab.name": "Next Tab",

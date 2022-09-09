@@ -61,6 +61,11 @@ internal class Controls
     public KeybindList ScrollDown { get; set; } = new(SButton.DPadDown);
 
     /// <summary>
+    ///     Gets or sets controls to scroll by page instead of row.
+    /// </summary>
+    public KeybindList ScrollPage { get; set; } = new(new Keybind(SButton.LeftShift), new Keybind(SButton.RightShift));
+
+    /// <summary>
     ///     Gets or sets controls to scroll <see cref="StardewValley.Menus.ItemGrabMenu" /> up.
     /// </summary>
     public KeybindList ScrollUp { get; set; } = new(SButton.DPadUp);
@@ -89,6 +94,7 @@ internal class Controls
         sb.AppendLine($"OpenNextChest: {this.OpenNextChest}");
         sb.AppendLine($"PreviousTab: {this.PreviousTab}");
         sb.AppendLine($"ScrollDown: {this.ScrollDown}");
+        sb.AppendLine($"ScrollPage: {this.ScrollPage}");
         sb.AppendLine($"ScrollUp: {this.ScrollUp}");
         sb.AppendLine($"StashItems: {this.StashItems}");
         sb.AppendLine($"ToggleInfo: {this.ToggleInfo}");

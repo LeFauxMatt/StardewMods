@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.8.0 (Unreleased)
+
+### Added
+
+* Added modifier key to scroll inventory one page at a time.
+
 ## 2.7.2 (September 7, 2022)
 
 ### Fixed
