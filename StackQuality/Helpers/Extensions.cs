@@ -36,14 +36,71 @@ internal static class Extensions
     }
 
     /// <summary>
+    ///     Splits an item into two separate stacks.
+    /// </summary>
+    /// <param name="obj">The item to split.</param>
+    /// <param name="other">Another item to stack the split into.</param>
+    /// <param name="take">The amount of items to take from the first.</param>
+    /// <returns>Returns true if the stack could be split.</returns>
+    public static bool SplitStacks(this SObject obj, [NotNullWhen(true)]ref Item? other, int take)
+    {
+        if (other is not (SObject or null) || other?.canStackWith(obj) == false)
+        {
+            return false;
+        }
+
+        take = Math.Max(1, take);
+        var stack = 0;
+        var stacks = obj.GetStacks();
+        var otherStacks = (other as SObject)?.GetStacks() ?? new int[4];
+        other ??= (SObject)obj.getOne();
+        for (var i = 0; i < 4; ++i)
+        {
+            if (stacks[i] == 0)
+            {
+                continue;
+            }
+
+            if (take == 1)
+            {
+                stacks[i]--;
+                otherStacks[i]++;
+                break;
+            }
+
+            stack += stacks[i];
+            if (stack > take)
+            {
+                var over = stack - take;
+                otherStacks[i] = stacks[i] - over;
+                stacks[i] = over;
+                break;
+            }
+
+            otherStacks[i] = stacks[i];
+            stacks[i] = 0;
+        }
+
+        obj.UpdateQuality(stacks);
+        ((SObject)other).UpdateQuality(otherStacks);
+        return true;
+    }
+
+    /// <summary>
     ///     Updates the quality of the item based on if it is holding multiple stacks.
     /// </summary>
     /// <param name="obj">The object to update.</param>
     /// <param name="stacks">The stacks to update the object with.</param>
-    public static void UpdateQuality(this SObject obj, int[] stacks)
+    /// <param name="updateStack">Indicates whether to update the stack size of the object.</param>
+    public static void UpdateQuality(this SObject obj, int[] stacks, bool updateStack = true)
     {
-        obj.Stack = stacks.Sum();
         obj.modData["furyx639.StackQuality/qualities"] = stacks.ToModData();
+        if (updateStack)
+        {
+            obj.Stack = stacks.Sum();
+            return;
+        }
+
         for (var index = 3; index >= 0; index--)
         {
             if (stacks[index] <= 0)
