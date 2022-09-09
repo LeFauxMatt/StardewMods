@@ -197,7 +197,7 @@ internal class ChestInfo : IFeature
             false,
             true);
 
-        for (var i = 0; i < this.Info.Count; i++)
+        for (var i = 0; i < this.Info.Count; ++i)
         {
             var (key, value) = this.Info[i];
             var (dim1, dim2) = this.Dims[i];

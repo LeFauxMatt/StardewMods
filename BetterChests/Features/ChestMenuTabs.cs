@@ -256,7 +256,7 @@ internal class ChestMenuTabs : IFeature
         }
 
         ClickableTextureComponent? tab;
-        for (var index = 0; index < this.Components.Count; index++)
+        for (var index = 0; index < this.Components.Count; ++index)
         {
             tab = this.Components[index];
             tab.sourceRect.Y = 4;
@@ -392,7 +392,7 @@ internal class ChestMenuTabs : IFeature
         ClickableTextureComponent? prevTab = null;
         var bottomRow = this.CurrentMenu.ItemsToGrabMenu.inventory.TakeLast(12).ToArray();
         var topRow = this.CurrentMenu.inventory.inventory.Take(12).ToArray();
-        for (var index = 0; index < this.Components.Count; index++)
+        for (var index = 0; index < this.Components.Count; ++index)
         {
             var tab = this.Components.ElementAt(index);
             this.CurrentMenu.allClickableComponents.Add(tab);

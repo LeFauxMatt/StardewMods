@@ -141,7 +141,7 @@ internal class StashToChest : IFeature
     {
         var stashedAny = false;
 
-        for (var index = 0; index < Game1.player.MaxItems; index++)
+        for (var index = 0; index < Game1.player.MaxItems; ++index)
         {
             if (Game1.player.Items[index] is null
              || Game1.player.Items[index].modData.ContainsKey("furyx639.BetterChests/LockedSlot"))

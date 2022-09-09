@@ -235,7 +235,7 @@ internal class ResizeChestMenu : IFeature
         // Set upNeighborId for first row of player inventory
         bottomRow = bottomRow.TakeLast(12).ToList();
         topRow = topRow.Take(12).ToList();
-        for (var index = 0; index < 12; index++)
+        for (var index = 0; index < 12; ++index)
         {
             var bottomSlot = bottomRow.ElementAtOrDefault(index);
             var topSlot = topRow.ElementAtOrDefault(index);

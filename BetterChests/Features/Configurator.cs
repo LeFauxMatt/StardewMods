@@ -168,7 +168,7 @@ internal class Configurator : IFeature
                            _ => 16,
                        };
 
-        for (var index = 0; index < buttons.Count; index++)
+        for (var index = 0; index < buttons.Count; ++index)
         {
             var button = buttons[index];
             if (index > 0 && buttons.Count > 1)

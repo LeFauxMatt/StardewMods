@@ -281,7 +281,7 @@ internal class Storages
 
             limit ??= player.MaxItems;
             var position = player.getTileLocation();
-            for (var index = 0; index < limit; index++)
+            for (var index = 0; index < limit; ++index)
             {
                 var item = player.Items[index];
                 if (!Storages.TryGetOne(item, player, position, out var storage) || excluded.Contains(storage.Context))

@@ -102,7 +102,7 @@ internal class HslColorPicker
         // Hue Bar
         b.Draw(HslColorPicker.HueBar, this._hueBarArea, Color.White);
 
-        for (var i = 0; i < HslColorPicker.Cells; i++)
+        for (var i = 0; i < HslColorPicker.Cells; ++i)
         {
             // Lightness Bar
             b.Draw(Game1.staminaRect, this._lightnessBar[i], this._lightnessShade[i]);
@@ -191,7 +191,7 @@ internal class HslColorPicker
         this._noColorArea.Y = this._y - 4;
         this._hueTrack.Minimum = this._hueBarArea.Top;
         this._hueTrack.Maximum = this._hueBarArea.Bottom;
-        for (var cell = 0; cell < HslColorPicker.Cells; cell++)
+        for (var cell = 0; cell < HslColorPicker.Cells; ++cell)
         {
             this._lightnessBar[cell] = new(
                 centerX + HslColorPicker.Gap / 2,
@@ -232,7 +232,7 @@ internal class HslColorPicker
             this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
         }
 
-        for (var i = 0; i < HslColorPicker.Cells; i++)
+        for (var i = 0; i < HslColorPicker.Cells; ++i)
         {
             var value = (float)i / HslColorPicker.Cells;
             this._lightnessShade[i] = new HslColor
@@ -368,7 +368,7 @@ internal class HslColorPicker
         }
 
         this.Color = this._hslColor.ToRgbColor();
-        for (var i = 0; i < HslColorPicker.Cells; i++)
+        for (var i = 0; i < HslColorPicker.Cells; ++i)
         {
             var value = (float)i / HslColorPicker.Cells;
             this._lightnessShade[i] = new HslColor
