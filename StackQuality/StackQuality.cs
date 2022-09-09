@@ -16,25 +16,26 @@ public class StackQuality : Mod
     private static StackQuality? Instance;
 
     /// <summary>
-    ///     Gets or sets the currently held item for the active menu.
+    ///     Sets the currently held item for the active menu.
     /// </summary>
     internal static Item? HeldItem
     {
-        get => Game1.activeClickableMenu switch
-        {
-            ItemGrabMenu itemGrabMenu => itemGrabMenu.heldItem,
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage => Game1.player.CursorSlotItem,
-            _ => null,
-        };
         set
         {
             switch (Game1.activeClickableMenu)
             {
-                case ItemGrabMenu itemGrabMenu:
-                    itemGrabMenu.heldItem = value;
-                    return;
                 case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage:
                     Game1.player.CursorSlotItem = value;
+                    return;
+                case JunimoNoteMenu junimoNoteMenu:
+                    StackQuality.Instance!.Helper.Reflection.GetField<Item?>(junimoNoteMenu, "heldItem")
+                                .SetValue(value);
+                    return;
+                case MenuWithInventory menuWithInventory:
+                    menuWithInventory.heldItem = value;
+                    return;
+                case ShopMenu shopMenu:
+                    shopMenu.heldItem = value;
                     return;
             }
         }
@@ -46,12 +47,19 @@ public class StackQuality : Mod
         {
             switch (Game1.activeClickableMenu)
             {
-                case ItemGrabMenu itemGrabMenu:
-                    itemGrabMenu.hoveredItem = value;
-                    return;
                 case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage inventoryPage:
                     StackQuality.Instance!.Helper.Reflection.GetField<Item?>(inventoryPage, "hoveredItem")
                                 .SetValue(value);
+                    return;
+                case JunimoNoteMenu junimoNoteMenu:
+                    StackQuality.Instance!.Helper.Reflection.GetField<Item?>(junimoNoteMenu, "hoveredItem")
+                                .SetValue(value);
+                    return;
+                case MenuWithInventory menuWithInventory:
+                    menuWithInventory.hoveredItem = value;
+                    return;
+                case ShopMenu shopMenu:
+                    shopMenu.hoveredItem = value;
                     return;
             }
         }
@@ -63,18 +71,24 @@ public class StackQuality : Mod
         {
             switch (Game1.activeClickableMenu)
             {
-                case ItemGrabMenu itemGrabMenu:
-                    itemGrabMenu.hoverText = value;
-                    return;
                 case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage inventoryPage:
                     StackQuality.Instance!.Helper.Reflection.GetField<string?>(inventoryPage, "hoverText")
                                 .SetValue(value);
+                    return;
+                case JunimoNoteMenu:
+                    JunimoNoteMenu.hoverText = value;
+                    return;
+                case MenuWithInventory menuWithInventory:
+                    menuWithInventory.hoverText = value;
+                    return;
+                case ShopMenu shopMenu:
+                    StackQuality.Instance!.Helper.Reflection.GetField<string?>(shopMenu, "hoverText").SetValue(value ?? string.Empty);
                     return;
             }
         }
     }
 
-    private static bool IsSupported => Game1.activeClickableMenu is ItemGrabMenu
+    private static bool IsSupported => Game1.activeClickableMenu is (JunimoNoteMenu or MenuWithInventory or ShopMenu)
                                     || (Game1.activeClickableMenu is GameMenu gameMenu
                                      && gameMenu.pages[gameMenu.currentTab] is InventoryPage);
 
@@ -98,6 +112,9 @@ public class StackQuality : Mod
                 }),
             new(typeof(StackQuality), nameof(StackQuality.Farmer_addItemToInventory_prefix)));
         harmony.Patch(
+            AccessTools.Method(typeof(Farmer), nameof(Farmer.removeItemsFromInventory)),
+            new(typeof(StackQuality), nameof(StackQuality.Farmer_removeItemsFromInventory_prefix)));
+        harmony.Patch(
             AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.leftClick)),
             new(typeof(StackQuality), nameof(StackQuality.InventoryMenu_leftClick_prefix)));
         harmony.Patch(
@@ -110,8 +127,14 @@ public class StackQuality : Mod
             AccessTools.Method(typeof(SObject), nameof(SObject.addToStack)),
             new(typeof(StackQuality), nameof(StackQuality.Object_addToStack_prefix)));
         harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.getOne)),
+            postfix: new(typeof(StackQuality), nameof(StackQuality.Object_getOne_postfix)));
+        harmony.Patch(
             AccessTools.PropertyGetter(typeof(SObject), nameof(SObject.Stack)),
-            postfix: new(typeof(StackQuality), nameof(StackQuality.Object_Stack_postfix)));
+            postfix: new(typeof(StackQuality), nameof(StackQuality.Object_StackGetter_postfix)));
+        harmony.Patch(
+            AccessTools.PropertySetter(typeof(SObject), nameof(SObject.Stack)),
+            postfix: new(typeof(StackQuality), nameof(StackQuality.Object_StackSetter_postfix)));
         harmony.Patch(
             AccessTools.Method(typeof(Utility), nameof(Utility.addItemToInventory)),
             postfix: new(typeof(StackQuality), nameof(StackQuality.Utility_addItemToInventory_postfix)));
@@ -120,15 +143,99 @@ public class StackQuality : Mod
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Farmer_addItemToInventory_prefix(Farmer __instance, Item? item)
+    private static bool Farmer_addItemToInventory_prefix(Farmer __instance, ref Item? __result, Item? item, List<Item>? affected_items_list)
     {
-        return item is not SObject
-            || item.maximumStackSize() <= 1
-            || __instance.Items.OfType<SObject>()
-                         .Where(
-                             inventoryItem =>
-                                 inventoryItem.canStackWith(item) && inventoryItem.maximumStackSize() != -1)
-                         .All(inventoryItem => inventoryItem.addToStack(item) > 0);
+        if (item is not SObject obj || item.maximumStackSize() == 1)
+        {
+            return true;
+        }
+
+        // Stack to existing item slot(s)
+        for (var i = 0; i < __instance.MaxItems; ++i)
+        {
+            var slot = __instance.Items.ElementAtOrDefault(i);
+            if (slot is not SObject other || !other.canStackWith(obj))
+            {
+                continue;
+            }
+
+            var stack = other.addToStack(obj);
+            affected_items_list?.Add(slot);
+            if (stack <= 0)
+            {
+                return false;
+            }
+        }
+
+        // Add to empty item slot
+        for (var i = 0; i < __instance.MaxItems; ++i)
+        {
+            if (__instance.Items.ElementAtOrDefault(i) is not null)
+            {
+                continue;
+            }
+
+            __instance.Items[i] = item;
+            affected_items_list?.Add(item);
+            return false;
+        }
+
+        __result = item;
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Farmer_removeItemsFromInventory_prefix(
+        Farmer __instance,
+        ref bool __result,
+        int index,
+        int stack)
+    {
+        for (var i = 0; i < __instance.MaxItems; ++i)
+        {
+            var item = __instance.Items.ElementAtOrDefault(i);
+            if (item is not SObject obj || obj.ParentSheetIndex != index)
+            {
+                continue;
+            }
+
+            var stacks = obj.GetStacks();
+            for (var j = 0; j < 4; ++j)
+            {
+                if (stacks[j] > stack)
+                {
+                    stacks[j] -= stack;
+                    obj.UpdateQuality(stacks);
+                    if (obj.Stack == 0)
+                    {
+                        __instance.Items[i] = null;
+                    }
+
+                    __result = true;
+                    return false;
+                }
+
+                stack -= stacks[j];
+                stacks[j] = 0;
+
+                if (stack != 0)
+                {
+                    continue;
+                }
+
+                obj.UpdateQuality(stacks);
+                if (obj.Stack == 0)
+                {
+                    __instance.Items[i] = null;
+                }
+
+                __result = true;
+                return false;
+            }
+        }
+
+        return false;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -181,13 +288,15 @@ public class StackQuality : Mod
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool InventoryMenu_rightClick_prefix(
         InventoryMenu __instance,
-        ref Item __result,
+        ref Item? __result,
         int x,
         int y,
         Item? toAddTo,
+        bool playSound,
         bool onlyCheckToolAttachments)
     {
         if (!StackQuality.IsSupported || onlyCheckToolAttachments)
@@ -203,112 +312,30 @@ public class StackQuality : Mod
 
         var slotNumber = Convert.ToInt32(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
-        if (slot is not SObject obj || toAddTo?.canStackWith(obj) == false)
+        if (slot is not SObject obj)
         {
             return true;
         }
 
-        var take = StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift) ? Math.Max(1, obj.Stack / 2) : 1;
-        var stacks = obj.GetStacks();
-
-        switch (toAddTo)
+        var take = StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift) ? obj.Stack / 2 : 1;
+        if (!obj.SplitStacks(ref toAddTo, take))
         {
-            case SObject other:
-                var otherStacks = other.GetStacks();
-                if (take == 1)
-                {
-                    for (var i = 0; i < 4; ++i)
-                    {
-                        if (stacks[i] == 0)
-                        {
-                            continue;
-                        }
-
-                        stacks[i]--;
-                        otherStacks[i]++;
-                        break;
-                    }
-                }
-                else
-                {
-                    var stack = 0;
-                    for (var i = 0; i < 4; ++i)
-                    {
-                        stack += stacks[i];
-                        if (stack > take)
-                        {
-                            var over = stack - take;
-                            otherStacks[i] = stacks[i] - over;
-                            stacks[i] = over;
-                            break;
-                        }
-
-                        otherStacks[i] = stacks[i];
-                        stacks[i] = 0;
-                    }
-                }
-
-                obj.UpdateQuality(stacks);
-                other.UpdateQuality(otherStacks);
-                if (obj.Stack == 0)
-                {
-                    __instance.actualInventory[slotNumber] = null;
-                }
-
-                __result = other.getOne();
-                __result.Stack = other.Stack;
-                return false;
-
-            case null:
-                var newStacks = new int[4];
-                var item = (SObject)obj.getOne();
-                if (take == 1)
-                {
-                    for (var i = 0; i < 4; ++i)
-                    {
-                        if (stacks[i] == 0)
-                        {
-                            continue;
-                        }
-
-                        stacks[i]--;
-                        newStacks[i]++;
-                        break;
-                    }
-                }
-                else
-                {
-                    var stack = 0;
-                    for (var i = 0; i < 4; ++i)
-                    {
-                        stack += stacks[i];
-                        if (stack > take)
-                        {
-                            var over = stack - take;
-                            newStacks[i] = stacks[i] - over;
-                            stacks[i] = over;
-                            break;
-                        }
-
-                        newStacks[i] = stacks[i];
-                        stacks[i] = 0;
-                    }
-                }
-
-                obj.UpdateQuality(stacks);
-                item.UpdateQuality(newStacks);
-                if (obj.Stack == 0)
-                {
-                    __instance.actualInventory[slotNumber] = null;
-                }
-
-                __result = item.getOne();
-                __result.Stack = item.Stack;
-                return false;
-
-            default:
-                return true;
+            return true;
         }
+
+        __result = ((SObject)toAddTo).getOne();
+        __result.Stack = toAddTo.Stack;
+        if (obj.Stack == 0)
+        {
+            __instance.actualInventory[slotNumber] = null;
+        }
+
+        if (playSound)
+        {
+            Game1.playSound(__instance.moveItemSound);
+        }
+
+        return false;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -358,32 +385,57 @@ public class StackQuality : Mod
 
         var stacks = __instance.GetStacks();
         var otherStacks = other.GetStacks();
-        for (var i = 0; i < 4; ++i)
+        var stack = stacks.Sum();
+        if (stack < maxStack)
         {
-            __instance.Stack += otherStacks[i];
-            if (__instance.Stack > maxStack)
+            for (var i = 0; i < 4; ++i)
             {
-                __result = __instance.Stack - maxStack;
-                stacks[i] += otherStacks[i] - __result;
-                otherStacks[i] = __result;
-                __instance.UpdateQuality(stacks);
-                other.UpdateQuality(otherStacks);
-                return false;
+                var add = Math.Min(Math.Min(maxStack - stack, otherStacks[i]), maxStack - stacks[i]);
+                stack += add;
+                stacks[i] += add;
+                otherStacks[i] -= add;
+                if (stack >= maxStack)
+                {
+                    break;
+                }
             }
-
-            stacks[i] += otherStacks[i];
-            otherStacks[i] = 0;
         }
 
         __instance.UpdateQuality(stacks);
         other.UpdateQuality(otherStacks);
+        __result = other.Stack;
         return false;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_getOne_postfix(ref Item __result)
+    {
+        if (__result is not SObject obj)
+        {
+            return;
+        }
+
+        var stacks = obj.GetStacks();
+        var newStacks = new int[4];
+        for (var i = 0; i < 4; ++i)
+        {
+            if (stacks[i] == 0)
+            {
+                continue;
+            }
+
+            newStacks[i] = 1;
+            break;
+        }
+
+        obj.UpdateQuality(newStacks);
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    private static void Object_Stack_postfix(SObject __instance, ref int __result)
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_StackGetter_postfix(SObject __instance, ref int __result)
     {
         if (!__instance.modData.TryGetValue("furyx639.StackQuality/qualities", out var qualities)
          || string.IsNullOrWhiteSpace(qualities))
@@ -397,6 +449,59 @@ public class StackQuality : Mod
         {
             __result += Convert.ToInt32(quality[i]);
         }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_StackSetter_postfix(SObject __instance, int value)
+    {
+        var stacks = __instance.GetStacks();
+        var stack = stacks.Sum();
+        var delta = value - stack;
+        switch (delta)
+        {
+            case 0:
+                break;
+
+            case < 0:
+                for (var i = 0; i < 4; ++i)
+                {
+                    if (stacks[i] > -delta)
+                    {
+                        stacks[i] += delta;
+                        break;
+                    }
+
+                    delta += stacks[i];
+                    stacks[i] = 0;
+
+                    if (delta == 0)
+                    {
+                        break;
+                    }
+                }
+
+                break;
+
+            case > 0:
+                var maxStack = __instance.maximumStackSize();
+                for (var i = 0; i < 4; ++i)
+                {
+                    var add = Math.Min(Math.Min(maxStack - stack, delta), maxStack - stacks[i]);
+                    stack += add;
+                    stacks[i] += add;
+                    delta -= add;
+                    if (delta <= 0)
+                    {
+                        break;
+                    }
+                }
+
+                break;
+        }
+
+        __instance.UpdateQuality(stacks, false);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
