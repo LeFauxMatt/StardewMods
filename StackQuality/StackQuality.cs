@@ -88,6 +88,16 @@ public class StackQuality : Mod
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
         harmony.Patch(
+            AccessTools.Method(
+                typeof(Farmer),
+                nameof(Farmer.addItemToInventory),
+                new[]
+                {
+                    typeof(Item),
+                    typeof(List<Item>),
+                }),
+            new(typeof(StackQuality), nameof(StackQuality.Farmer_addItemToInventory_prefix)));
+        harmony.Patch(
             AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.leftClick)),
             new(typeof(StackQuality), nameof(StackQuality.InventoryMenu_leftClick_prefix)));
         harmony.Patch(
@@ -100,8 +110,25 @@ public class StackQuality : Mod
             AccessTools.Method(typeof(SObject), nameof(SObject.addToStack)),
             new(typeof(StackQuality), nameof(StackQuality.Object_addToStack_prefix)));
         harmony.Patch(
+            AccessTools.PropertyGetter(typeof(SObject), nameof(SObject.Stack)),
+            postfix: new(typeof(StackQuality), nameof(StackQuality.Object_Stack_postfix)));
+        harmony.Patch(
             AccessTools.Method(typeof(Utility), nameof(Utility.addItemToInventory)),
             postfix: new(typeof(StackQuality), nameof(StackQuality.Utility_addItemToInventory_postfix)));
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Farmer_addItemToInventory_prefix(Farmer __instance, Item? item)
+    {
+        return item is not SObject
+            || item.maximumStackSize() <= 1
+            || __instance.Items.OfType<SObject>()
+                         .Where(
+                             inventoryItem =>
+                                 inventoryItem.canStackWith(item) && inventoryItem.maximumStackSize() != -1)
+                         .All(inventoryItem => inventoryItem.addToStack(item) > 0);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -181,7 +208,7 @@ public class StackQuality : Mod
             return true;
         }
 
-        var take = StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift) ? obj.Stack / 2 : 1;
+        var take = StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift) ? Math.Max(1, obj.Stack / 2) : 1;
         var stacks = obj.GetStacks();
 
         switch (toAddTo)
@@ -351,6 +378,25 @@ public class StackQuality : Mod
         __instance.UpdateQuality(stacks);
         other.UpdateQuality(otherStacks);
         return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    private static void Object_Stack_postfix(SObject __instance, ref int __result)
+    {
+        if (!__instance.modData.TryGetValue("furyx639.StackQuality/qualities", out var qualities)
+         || string.IsNullOrWhiteSpace(qualities))
+        {
+            return;
+        }
+
+        var quality = qualities.Split(' ');
+        __result = 0;
+        for (var i = 0; i < 4; ++i)
+        {
+            __result += Convert.ToInt32(quality[i]);
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
