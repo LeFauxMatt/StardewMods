@@ -129,7 +129,7 @@ internal class ThemeHelper
     {
         var colors = new Color[source.Width * source.Height];
         source.GetData(colors);
-        for (var index = 0; index < colors.Length; index++)
+        for (var index = 0; index < colors.Length; ++index)
         {
             if (this.PaletteSwap.TryGetValue(colors[index], out var newColor))
             {

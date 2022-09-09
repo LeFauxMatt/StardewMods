@@ -126,7 +126,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             this.ScrollBar.bounds.Y = this.ScrollBarRunner.Top
                                     + (int)((this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height)
                                           * ((float)this._index / (this.Components.Count - this.MaxItems)));
-            for (var index = 0; index < this.Components.Count; index++)
+            for (var index = 0; index < this.Components.Count; ++index)
             {
                 this.Components[index].bounds.Y =
                     (int)(this.yPositionOnScreen + (index - this._index) * this.TextHeight);
@@ -179,7 +179,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             4f);
         this.ScrollBar.draw(b);
 
-        for (var index = 0; index < this.Components.Count; index++)
+        for (var index = 0; index < this.Components.Count; ++index)
         {
             if (this.Components[index].bounds.Top < this.yPositionOnScreen)
             {
@@ -406,7 +406,7 @@ internal class ToolbarIconsMenu : IClickableMenu
             this.Components[index + 1] = currentComponent;
         }
 
-        for (index = 0; index < this.Components.Count; index++)
+        for (index = 0; index < this.Components.Count; ++index)
         {
             this.Components[index].bounds.Y = (int)(this.yPositionOnScreen + (index - this._index) * this.TextHeight);
         }

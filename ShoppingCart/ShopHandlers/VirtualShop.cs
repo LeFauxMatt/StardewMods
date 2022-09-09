@@ -677,7 +677,7 @@ internal class VirtualShop
         }
 
         coins = Math.Min(coins, 99);
-        for (var i = 0; i < coins; i++)
+        for (var i = 0; i < coins; ++i)
         {
             this.Animations.Add(
                 new(

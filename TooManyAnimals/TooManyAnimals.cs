@@ -231,7 +231,7 @@ public class TooManyAnimals : Mod
         this.PreviousPage.bounds.Y = menu.yPositionOnScreen + menu.height;
         this.PreviousPage.rightNeighborID = this.NextPage.myID;
 
-        for (var index = 0; index < menu.animalsToPurchase.Count; index++)
+        for (var index = 0; index < menu.animalsToPurchase.Count; ++index)
         {
             var i = index + this.CurrentPage * this.Config.AnimalShopLimit;
             if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors))

@@ -55,11 +55,11 @@ public class EasyAccess : Mod
         var (pX, pY) = Game1.player.getTileLocation();
         for (var tY = (int)(pY - this.Config.CollectOutputDistance);
              tY <= (int)(pY + this.Config.CollectOutputDistance);
-             tY++)
+             ++tY)
         {
             for (var tX = (int)(pX - this.Config.CollectOutputDistance);
                  tX <= (int)(pX + this.Config.CollectOutputDistance);
-                 tX++)
+                 ++tX)
             {
                 if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.Config.CollectOutputDistance)
                 {
@@ -171,11 +171,11 @@ public class EasyAccess : Mod
         var (pX, pY) = Game1.player.getTileLocation();
         for (var tY = (int)(pY - this.Config.DispenseInputDistance);
              tY <= (int)(pY + this.Config.DispenseInputDistance);
-             tY++)
+             ++tY)
         {
             for (var tX = (int)(pX - this.Config.DispenseInputDistance);
                  tX <= (int)(pX + this.Config.DispenseInputDistance);
-                 tX++)
+                 ++tX)
             {
                 if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.Config.CollectOutputDistance)
                 {

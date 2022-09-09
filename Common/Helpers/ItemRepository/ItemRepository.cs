@@ -89,7 +89,7 @@ internal class ItemRepository
             // get tools
             if (ShouldGet(ItemType.Tool))
             {
-                for (var q = Tool.stone; q <= Tool.iridium; q++)
+                for (var q = Tool.stone; q <= Tool.iridium; ++q)
                 {
                     var quality = q;
 

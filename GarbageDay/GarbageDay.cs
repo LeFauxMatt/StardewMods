@@ -311,7 +311,7 @@ public class GarbageDay : Mod
 
         foreach (var garbageCan in this.GarbageCans)
         {
-            for (var i = 0; i < amount; i++)
+            for (var i = 0; i < amount; ++i)
             {
                 garbageCan.AddLoot();
             }
@@ -353,9 +353,9 @@ public class GarbageDay : Mod
                     lootKey = "Town";
                 }
 
-                for (var x = 0; x < map.Layers[0].LayerWidth; x++)
+                for (var x = 0; x < map.Layers[0].LayerWidth; ++x)
                 {
-                    for (var y = 0; y < map.Layers[0].LayerHeight; y++)
+                    for (var y = 0; y < map.Layers[0].LayerHeight; ++y)
                     {
                         var layer = map.GetLayer("Buildings");
                         var tile = layer.PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size);

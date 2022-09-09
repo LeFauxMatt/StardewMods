@@ -262,13 +262,13 @@ internal class GarbageCan
         var randomizer = new Random(
             (int)Game1.uniqueIDForThisGame / 2 + (int)Game1.stats.DaysPlayed + 777 + whichCan * 77);
         var prewarm = randomizer.Next(0, 100);
-        for (var k = 0; k < prewarm; k++)
+        for (var k = 0; k < prewarm; ++k)
         {
             randomizer.NextDouble();
         }
 
         prewarm = randomizer.Next(0, 100);
-        for (var j = 0; j < prewarm; j++)
+        for (var j = 0; j < prewarm; ++j)
         {
             randomizer.NextDouble();
         }
