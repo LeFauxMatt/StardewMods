@@ -86,7 +86,7 @@ internal class ItemQualityMenu : IClickableMenu
                 .drawInMenu(
                     b,
                     new(this._x + Game1.tileSize * (index % 2), this._y + Game1.tileSize * (index / 2)),
-                    this._inventory[index].scale,
+                    this.Items[index].Stack == 0 ? 1f : this._inventory[index].scale,
                     this.Items[index].Stack == 0 ? 0.25f : 1f,
                     0.865f,
                     StackDrawType.Draw,
