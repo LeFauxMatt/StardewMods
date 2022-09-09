@@ -32,6 +32,7 @@ internal class ItemQualityMenu : IClickableMenu
         for (var index = 0; index < 4; ++index)
         {
             var item = (SObject)this._object.getOne();
+            item.modData.Remove("furyx639.StackQuality/qualities");
             item.Quality = index == 3 ? 4 : index;
             item.Stack = stacks[index];
             this.Items.Add(item);
