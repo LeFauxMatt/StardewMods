@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 
 /// <summary>
 ///     Extension methods.
@@ -21,10 +22,14 @@ internal static class Extensions
         if (obj.modData.TryGetValue("furyx639.StackQuality/qualities", out var qualities)
          && !string.IsNullOrWhiteSpace(qualities))
         {
-            var quality = qualities.Split(' ');
+            var qualitiesSpan = new StreamSplit(qualities);
+            var quality = qualitiesSpan.GetEnumerator();
             for (var i = 0; i < 4; ++i)
             {
-                stacks[i] = Convert.ToInt32(quality[i]);
+                if (quality.MoveNext())
+                {
+                    stacks[i] = int.Parse(quality.Current);
+                }
             }
         }
         else
@@ -42,7 +47,7 @@ internal static class Extensions
     /// <param name="other">Another item to stack the split into.</param>
     /// <param name="take">The amount of items to take from the first.</param>
     /// <returns>Returns true if the stack could be split.</returns>
-    public static bool SplitStacks(this SObject obj, [NotNullWhen(true)]ref Item? other, int take)
+    public static bool SplitStacks(this SObject obj, [NotNullWhen(true)] ref Item? other, int take)
     {
         if (other is not (SObject or null) || other?.canStackWith(obj) == false)
         {
@@ -50,7 +55,6 @@ internal static class Extensions
         }
 
         take = Math.Max(1, take);
-        var stack = 0;
         var stacks = obj.GetStacks();
         var otherStacks = (other as SObject)?.GetStacks() ?? new int[4];
         other ??= (SObject)obj.getOne();
@@ -68,17 +72,20 @@ internal static class Extensions
                 break;
             }
 
-            stack += stacks[i];
-            if (stack > take)
+            if (stacks[i] >= take)
             {
-                var over = stack - take;
-                otherStacks[i] = stacks[i] - over;
-                stacks[i] = over;
+                stacks[i] -= take;
+                otherStacks[i] = take;
                 break;
             }
 
-            otherStacks[i] = stacks[i];
+            take -= stacks[i];
+            otherStacks[i] += stacks[i];
             stacks[i] = 0;
+            if (take == 0)
+            {
+                break;
+            }
         }
 
         obj.UpdateQuality(stacks);

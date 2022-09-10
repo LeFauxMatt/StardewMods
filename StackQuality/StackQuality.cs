@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 using StardewMods.StackQuality.Helpers;
 using StardewMods.StackQuality.UI;
 using StardewValley.Menus;
@@ -82,7 +83,8 @@ public class StackQuality : Mod
                     menuWithInventory.hoverText = value;
                     return;
                 case ShopMenu shopMenu:
-                    StackQuality.Instance!.Helper.Reflection.GetField<string?>(shopMenu, "hoverText").SetValue(value ?? string.Empty);
+                    StackQuality.Instance!.Helper.Reflection.GetField<string?>(shopMenu, "hoverText")
+                                .SetValue(value ?? string.Empty);
                     return;
             }
         }
@@ -143,7 +145,11 @@ public class StackQuality : Mod
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Farmer_addItemToInventory_prefix(Farmer __instance, ref Item? __result, Item? item, List<Item>? affected_items_list)
+    private static bool Farmer_addItemToInventory_prefix(
+        Farmer __instance,
+        ref Item? __result,
+        Item? item,
+        List<Item>? affected_items_list)
     {
         if (item is not SObject obj || item.maximumStackSize() == 1)
         {
@@ -443,11 +449,10 @@ public class StackQuality : Mod
             return;
         }
 
-        var quality = qualities.Split(' ');
-        __result = 0;
-        for (var i = 0; i < 4; ++i)
+        var qualitiesSpan = new StreamSplit(qualities);
+        foreach (var quality in qualitiesSpan)
         {
-            __result += Convert.ToInt32(quality[i]);
+            __result += int.Parse(quality);
         }
     }
 
@@ -456,6 +461,11 @@ public class StackQuality : Mod
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_StackSetter_postfix(SObject __instance, int value)
     {
+        if (!__instance.modData.ContainsKey("furyx639.StackQuality/qualities"))
+        {
+            return;
+        }
+
         var stacks = __instance.GetStacks();
         var stack = stacks.Sum();
         var delta = value - stack;
