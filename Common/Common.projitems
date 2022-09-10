@@ -18,6 +18,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\GroupBy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SortBy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\CustomExceptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\Extensions\StringExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\StringHandlers\SpanSplit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\StringHandlers\SpanSplitEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\StringHandlers\SpanSplitExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\StringHandlers\StreamSplit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\TKConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\IPatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
@@ -63,5 +70,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\LICENSE" />
   </ItemGroup>
 </Project>
