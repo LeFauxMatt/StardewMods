@@ -450,6 +450,7 @@ public class StackQuality : Mod
         }
 
         var qualitiesSpan = new StreamSplit(qualities);
+        __result = 0;
         foreach (var quality in qualitiesSpan)
         {
             __result += int.Parse(quality);
