@@ -15,7 +15,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Adds additional rows to the <see cref="ItemGrabMenu" />.
 /// </summary>
-internal class ResizeChestMenu : IFeature
+internal sealed class ResizeChestMenu : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChestMenu";
 

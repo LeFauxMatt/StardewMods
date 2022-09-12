@@ -17,7 +17,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Handles integrations with other mods.
 /// </summary>
-internal class Integrations
+internal sealed class Integrations
 {
     private const string ExpandedFridgeId = "Uwazouri.ExpandedFridge";
     private const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";

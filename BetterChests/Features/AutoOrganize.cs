@@ -10,7 +10,7 @@ using StardewMods.Common.Helpers;
 /// <summary>
 ///     Automatically organizes items between chests during sleep.
 /// </summary>
-internal class AutoOrganize : IFeature
+internal sealed class AutoOrganize : IFeature
 {
     private static AutoOrganize? Instance;
 

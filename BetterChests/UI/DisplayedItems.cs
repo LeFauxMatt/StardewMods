@@ -13,7 +13,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Represents an Inventory Menu.
 /// </summary>
-internal class DisplayedItems
+internal sealed class DisplayedItems
 {
     private readonly int _columns;
 

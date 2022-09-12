@@ -17,7 +17,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Search for which chests have the item you're looking for.
 /// </summary>
-internal class ChestFinder : IFeature
+internal sealed class ChestFinder : IFeature
 {
     private const int MaxTimeOut = 20;
 

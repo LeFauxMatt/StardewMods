@@ -22,7 +22,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Enhances the <see cref="StardewValley.Menus.CraftingPage" />.
 /// </summary>
-internal class BetterCrafting : IFeature
+internal sealed class BetterCrafting : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterCrafting";
 

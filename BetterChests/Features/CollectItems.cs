@@ -16,7 +16,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.
 /// </summary>
-internal class CollectItems : IFeature
+internal sealed class CollectItems : IFeature
 {
     private const string Id = "furyx639.BetterChests/CollectItems";
 

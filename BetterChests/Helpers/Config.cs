@@ -21,7 +21,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Handles config options.
 /// </summary>
-internal class Config
+internal sealed class Config
 {
     private static Config? Instance;
 

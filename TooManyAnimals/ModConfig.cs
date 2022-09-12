@@ -6,7 +6,7 @@ using System.Text;
 /// <summary>
 ///     Mod config data.
 /// </summary>
-internal class ModConfig
+internal sealed class ModConfig
 {
     /// <summary>
     ///     Gets or sets a value indicating how many animals will be shown in the Animal Purchase menu at once.

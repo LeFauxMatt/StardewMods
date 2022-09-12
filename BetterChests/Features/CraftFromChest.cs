@@ -12,7 +12,7 @@ using StardewValley.Locations;
 /// <summary>
 ///     Craft using items from placed chests and chests in the farmer's inventory.
 /// </summary>
-internal class CraftFromChest : IFeature
+internal sealed class CraftFromChest : IFeature
 {
     private static CraftFromChest? Instance;
 

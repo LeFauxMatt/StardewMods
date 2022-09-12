@@ -11,7 +11,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Encapsulates logic for each Garbage Can managed by this mod.
 /// </summary>
-internal class GarbageCan
+internal sealed class GarbageCan
 {
     private static readonly Lazy<List<Item>> ItemsLazy = new(
         () => new(from item in new ItemRepository().GetAll() select item.Item));

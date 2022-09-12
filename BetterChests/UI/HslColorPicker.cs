@@ -12,7 +12,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     A component for picking a color using HSL sliders.
 /// </summary>
-internal class HslColorPicker
+internal sealed class HslColorPicker
 {
     private const int BarHeight = (HslColorPicker.Height - HslColorPicker.Gap - 36) / 2;
     private const int BarWidth = HslColorPicker.Width / 2 - HslColorPicker.Gap;

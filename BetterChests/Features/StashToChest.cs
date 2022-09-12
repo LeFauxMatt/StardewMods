@@ -12,7 +12,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Stash items into placed chests and chests in the farmer's inventory.
 /// </summary>
-internal class StashToChest : IFeature
+internal sealed class StashToChest : IFeature
 {
     private static StashToChest? Instance;
 

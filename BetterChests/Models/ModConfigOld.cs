@@ -8,7 +8,7 @@ using StardewMods.Common.Enums;
 /// <summary>
 ///     Deprecated mod config data.
 /// </summary>
-internal class ModConfigOld
+internal sealed class ModConfigOld
 {
     /// <summary>
     ///     Gets or sets a value indicating whether advanced config options will be shown.

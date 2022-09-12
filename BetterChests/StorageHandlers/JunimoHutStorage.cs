@@ -7,7 +7,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class JunimoHutStorage : BaseStorage
+internal sealed class JunimoHutStorage : BaseStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="JunimoHutStorage" /> class.

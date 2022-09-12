@@ -8,7 +8,7 @@ using StardewMods.ToolbarIcons.Models;
 /// <summary>
 ///     Mod config data.
 /// </summary>
-internal class ModConfig
+internal sealed class ModConfig
 {
     /// <summary>
     ///     Gets or sets a value of the detected toolbar icons.

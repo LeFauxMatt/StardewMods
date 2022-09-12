@@ -8,7 +8,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Forces the ShippingBin to use a regular ItemGrabMenu.
 /// </summary>
-internal class BetterShippingBin : IFeature
+internal sealed class BetterShippingBin : IFeature
 {
     private static BetterShippingBin? Instance;
 

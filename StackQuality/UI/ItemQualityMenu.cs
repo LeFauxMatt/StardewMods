@@ -9,7 +9,7 @@ using StardewMods.StackQuality.Helpers;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal class ItemQualityMenu : IClickableMenu
+internal sealed class ItemQualityMenu : IClickableMenu
 {
     private readonly List<ClickableComponent> _inventory = new();
     private readonly SObject _object;
@@ -92,6 +92,8 @@ internal class ItemQualityMenu : IClickableMenu
                     StackDrawType.Draw,
                     Color.White,
                     true);
+
+            // Draw Quality
         }
 
         // Draw Mouse

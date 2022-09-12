@@ -20,7 +20,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Allows a placed chest full of items to be picked up by the farmer.
 /// </summary>
-internal class CarryChest : IFeature
+internal sealed class CarryChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/CarryChest";
     private const int WhichBuff = 69420;

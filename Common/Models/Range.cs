@@ -6,7 +6,7 @@ using System;
 ///     Represents a range of values.
 /// </summary>
 /// <typeparam name="T">The value type for the range.</typeparam>
-internal class Range<T>
+internal sealed class Range<T>
     where T : IComparable<T>
 {
     /// <summary>

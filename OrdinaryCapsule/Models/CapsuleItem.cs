@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using StardewMods.Common.Integrations.OrdinaryCapsule;
 
 /// <inheritdoc />
-internal class CapsuleItem : ICapsuleItem
+internal sealed class CapsuleItem : ICapsuleItem
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="CapsuleItem" /> class.

@@ -11,7 +11,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Expand the capacity of chests and add scrolling to access extra items.
 /// </summary>
-internal class ResizeChest : IFeature
+internal sealed class ResizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChest";
 

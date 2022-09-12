@@ -16,7 +16,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Allows a chest to be opened while in the farmer's inventory.
 /// </summary>
-internal class OpenHeldChest : IFeature
+internal sealed class OpenHeldChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/OpenHeldChest";
 

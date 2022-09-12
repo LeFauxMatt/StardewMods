@@ -5,7 +5,7 @@ using StardewMods.Common.Integrations.BetterChests;
 /// <summary>
 ///     A wrapper for a Storage Object.
 /// </summary>
-internal class StorageWrapper
+internal sealed class StorageWrapper
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageWrapper" /> class.

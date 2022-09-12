@@ -9,7 +9,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Draw chest label to the screen.
 /// </summary>
-internal class LabelChest : IFeature
+internal sealed class LabelChest : IFeature
 {
     private static LabelChest? Instance;
 

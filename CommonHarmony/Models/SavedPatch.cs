@@ -8,7 +8,7 @@ using StardewMods.CommonHarmony.Enums;
 /// <summary>
 ///     Stores info about Harmony patches.
 /// </summary>
-internal class SavedPatch
+internal sealed class SavedPatch
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="SavedPatch" /> class.

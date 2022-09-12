@@ -39,7 +39,7 @@ using System;
 
 /// <summary>A game item with metadata.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
-internal class SearchableItem
+internal sealed class SearchableItem
 {
     /*********
     ** Public methods

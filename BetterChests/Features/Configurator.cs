@@ -21,7 +21,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Configure storages individually.
 /// </summary>
-internal class Configurator : IFeature
+internal sealed class Configurator : IFeature
 {
     private const string Id = "furyx639.BetterChests/Configurator";
 

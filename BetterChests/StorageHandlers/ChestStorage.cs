@@ -9,7 +9,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc cref="BaseStorage" />
-internal class ChestStorage : BaseStorage, IColorable
+internal sealed class ChestStorage : BaseStorage, IColorable
 {
     private readonly Chest _chest;
 

@@ -10,7 +10,7 @@ using StardewMods.Common.Enums;
 /// <summary>
 ///     Mod config data.
 /// </summary>
-internal class ModConfig : StorageData
+internal sealed class ModConfig : StorageData
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ModConfig" /> class.

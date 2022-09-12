@@ -7,7 +7,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class StorageProvider : IInventoryProvider
+internal sealed class StorageProvider : IInventoryProvider
 {
     /// <inheritdoc />
     public bool CanExtractItems(object obj, GameLocation? location, Farmer? who)

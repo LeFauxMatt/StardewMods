@@ -9,7 +9,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Menu for searching for chests which contain specific items.
 /// </summary>
-internal class SearchBar : IClickableMenu
+internal sealed class SearchBar : IClickableMenu
 {
     private readonly ClickableComponent _searchArea;
     private readonly TextBox _searchField;

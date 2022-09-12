@@ -15,7 +15,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Restricts what items can be added into a chest.
 /// </summary>
-internal class FilterItems : IFeature
+internal sealed class FilterItems : IFeature
 {
     private const string Id = "furyx639.BetterChests/FilterItems";
 

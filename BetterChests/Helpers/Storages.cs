@@ -17,7 +17,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Provides access to all supported storages in the game.
 /// </summary>
-internal class Storages
+internal sealed class Storages
 {
     private static Storages? Instance;
 

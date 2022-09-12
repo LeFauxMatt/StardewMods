@@ -47,7 +47,7 @@ using StardewValley.Tools;
 
 /// <summary>Provides methods for searching and constructing items.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
-internal class ItemRepository
+internal sealed class ItemRepository
 {
     /*********
     ** Fields

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <inheritdoc />
-internal class PatternPatcher<TItem> : IPatternPatcher<TItem>
+internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="PatternPatcher{TItem}" /> class.

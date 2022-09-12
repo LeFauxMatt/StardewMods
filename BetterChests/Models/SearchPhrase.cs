@@ -7,7 +7,7 @@ using StardewMods.BetterChests.Helpers;
 /// <summary>
 ///     Parsed search text for <see cref="ItemMatcher" />.
 /// </summary>
-internal class SearchPhrase
+internal sealed class SearchPhrase
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchPhrase" /> class.

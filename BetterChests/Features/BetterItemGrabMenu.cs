@@ -23,7 +23,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Enhances the <see cref="StardewValley.Menus.ItemGrabMenu" /> to support filters, sorting, and scrolling.
 /// </summary>
-internal class BetterItemGrabMenu : IFeature
+internal sealed class BetterItemGrabMenu : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterItemGrabMenu";
 

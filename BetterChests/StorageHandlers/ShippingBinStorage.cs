@@ -10,7 +10,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class ShippingBinStorage : BaseStorage
+internal sealed class ShippingBinStorage : BaseStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.

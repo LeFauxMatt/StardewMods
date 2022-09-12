@@ -7,7 +7,7 @@ using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal class SimpleIntegration : BaseIntegration
+internal sealed class SimpleIntegration : BaseIntegration
 {
     private MethodInfo? _overrideButtonReflected;
 

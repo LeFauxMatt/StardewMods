@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc cref="StardewMods.Common.Integrations.BetterChests.IItemMatcher" />
-internal class ItemMatcher : ObservableCollection<string>, IItemMatcher
+internal sealed class ItemMatcher : ObservableCollection<string>, IItemMatcher
 {
     private readonly IDictionary<string, SearchPhrase> _clean = new Dictionary<string, SearchPhrase>();
 

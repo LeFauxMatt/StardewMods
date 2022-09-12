@@ -16,7 +16,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Locks items in inventory so they cannot be stashed.
 /// </summary>
-internal class SlotLock : IFeature
+internal sealed class SlotLock : IFeature
 {
     private const string Id = "furyx639.BetterChests/SlotLock";
 

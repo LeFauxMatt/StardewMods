@@ -4,7 +4,7 @@ using System;
 using StardewMods.Common.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
-internal class ComplexIntegration : BaseIntegration
+internal sealed class ComplexIntegration : BaseIntegration
 {
     private ComplexIntegration(IModHelper helper, IToolbarIconsApi api)
         : base(helper, api)

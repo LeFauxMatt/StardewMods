@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.Common.Integrations.ProjectFluent;
 
 /// <inheritdoc />
-internal class ProjectFluentIntegration : ModIntegration<IProjectFluentApi>
+internal sealed class ProjectFluentIntegration : ModIntegration<IProjectFluentApi>
 {
     private const string ModUniqueId = "Shockah.ProjectFluent";
 

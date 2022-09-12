@@ -18,7 +18,7 @@ using StardewValley.Objects;
 /// <summary>
 ///     Show stats to the side of a chest.
 /// </summary>
-internal class ChestInfo : IFeature
+internal sealed class ChestInfo : IFeature
 {
     private static ChestInfo? Instance;
 

@@ -11,7 +11,7 @@ using StardewValley.Locations;
 /// <summary>
 ///     Unload a held chest's contents into another chest.
 /// </summary>
-internal class UnloadChest : IFeature
+internal sealed class UnloadChest : IFeature
 {
     private static UnloadChest? Instance;
 

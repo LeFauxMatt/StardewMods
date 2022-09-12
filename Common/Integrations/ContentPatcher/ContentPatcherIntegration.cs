@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.Common.Integrations.ContentPatcher;
 
 /// <inheritdoc />
-internal class ContentPatcherIntegration : ModIntegration<IContentPatcherApi>
+internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcherApi>
 {
     private const string ModUniqueId = "Pathoschild.ContentPatcher";
     private const string ModVersion = "1.28.0";

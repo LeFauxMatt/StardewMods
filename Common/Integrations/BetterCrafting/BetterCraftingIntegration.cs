@@ -1,7 +1,7 @@
 namespace StardewMods.Common.Integrations.BetterCrafting;
 
 /// <inheritdoc />
-internal class BetterCraftingIntegration : ModIntegration<IBetterCraftingApi>
+internal sealed class BetterCraftingIntegration : ModIntegration<IBetterCraftingApi>
 {
     private const string ModUniqueId = "leclair.bettercrafting";
 

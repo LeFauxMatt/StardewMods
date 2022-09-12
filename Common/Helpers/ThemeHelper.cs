@@ -9,7 +9,7 @@ using StardewModdingAPI.Events;
 /// <summary>
 ///     Handles palette swaps for theme compatibility.
 /// </summary>
-internal class ThemeHelper
+internal sealed class ThemeHelper
 {
     private ThemeHelper(IModHelper helper, string[] assetNames)
     {

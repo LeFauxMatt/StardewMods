@@ -17,7 +17,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Adds a search bar to the top of the <see cref="ItemGrabMenu" />.
 /// </summary>
-internal class SearchItems : IFeature
+internal sealed class SearchItems : IFeature
 {
     private const int ExtraSpace = 24;
     private const int MaxTimeOut = 20;

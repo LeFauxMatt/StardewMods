@@ -16,7 +16,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Adds a chest color picker that support hue, saturation, and lightness.
 /// </summary>
-internal class BetterColorPicker : IFeature
+internal sealed class BetterColorPicker : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterColorPicker";
 

@@ -16,7 +16,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.
 /// </summary>
-internal class ChestMenuTabs : IFeature
+internal sealed class ChestMenuTabs : IFeature
 {
     private static ChestMenuTabs? Instance;
 

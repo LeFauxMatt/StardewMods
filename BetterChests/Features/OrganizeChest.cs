@@ -12,7 +12,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Sort items in a chest using a customized criteria.
 /// </summary>
-internal class OrganizeChest : IFeature
+internal sealed class OrganizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/OrganizeChest";
 

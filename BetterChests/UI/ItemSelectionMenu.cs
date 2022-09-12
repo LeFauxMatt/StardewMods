@@ -15,7 +15,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Menu for selecting <see cref="Item" /> based on their context tags.
 /// </summary>
-internal class ItemSelectionMenu : ItemGrabMenu
+internal sealed class ItemSelectionMenu : ItemGrabMenu
 {
     private const int HorizontalTagSpacing = 10;
     private const int VerticalTagSpacing = 5;

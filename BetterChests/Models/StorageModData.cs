@@ -9,7 +9,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-internal class StorageModData : IStorageData
+internal sealed class StorageModData : IStorageData
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageModData" /> class.

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 
 /// <inheritdoc />
-internal class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuApi>
+internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuApi>
 {
     private const string ModUniqueId = "spacechase0.GenericModConfigMenu";
 

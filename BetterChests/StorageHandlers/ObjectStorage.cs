@@ -6,7 +6,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class ObjectStorage : BaseStorage
+internal sealed class ObjectStorage : BaseStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ObjectStorage" /> class.

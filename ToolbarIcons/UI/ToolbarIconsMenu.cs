@@ -11,7 +11,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     <see cref="IClickableMenu" /> for configuring Toolbar Icons.
 /// </summary>
-internal class ToolbarIconsMenu : IClickableMenu
+internal sealed class ToolbarIconsMenu : IClickableMenu
 {
     private int _index;
 

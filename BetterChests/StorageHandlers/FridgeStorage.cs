@@ -8,7 +8,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class FridgeStorage : BaseStorage
+internal sealed class FridgeStorage : BaseStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="FridgeStorage" /> class.

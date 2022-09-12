@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.Common.Integrations.Automate;
 
 /// <inheritdoc />
-internal class AutomateIntegration : ModIntegration<IAutomateApi>
+internal sealed class AutomateIntegration : ModIntegration<IAutomateApi>
 {
     private const string ModUniqueId = "Pathoschild.Automate";
 

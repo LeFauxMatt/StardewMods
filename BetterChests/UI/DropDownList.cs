@@ -10,7 +10,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     A dropdown for selecting a string from a list of values.
 /// </summary>
-internal class DropDownList : IClickableMenu
+internal sealed class DropDownList : IClickableMenu
 {
     private readonly Rectangle _bounds;
     private readonly Action<string?> _callback;

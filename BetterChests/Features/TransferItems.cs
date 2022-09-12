@@ -11,7 +11,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Transfer all items into or out from a chest.
 /// </summary>
-internal class TransferItems : IFeature
+internal sealed class TransferItems : IFeature
 {
     private static TransferItems? Instance;
 

@@ -1,7 +1,7 @@
 namespace StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-internal class BetterChestsIntegration : ModIntegration<IBetterChestsApi>
+internal sealed class BetterChestsIntegration : ModIntegration<IBetterChestsApi>
 {
     private const string ModUniqueId = "furyx639.BetterChests";
 
