@@ -49,8 +49,11 @@ internal sealed class ItemQualityMenu : IClickableMenu
 
     private List<SObject> Items { get; } = new();
 
-    /// <inheritdoc />
-    public override void draw(SpriteBatch b)
+    /// <summary>
+    ///     Draws the overlay.
+    /// </summary>
+    /// <param name="b">The SpriteBatch to draw to.</param>
+    public void Draw(SpriteBatch b)
     {
         // Draw Background
         Game1.drawDialogueBox(

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 using StardewMods.StackQuality.Helpers;
@@ -91,7 +92,7 @@ public class StackQuality : Mod
     }
 
     private static bool IsSupported =>
-        Game1.activeClickableMenu is (JunimoNoteMenu or MenuWithInventory or ShopMenu)
+        Game1.activeClickableMenu is JunimoNoteMenu or MenuWithInventory or ShopMenu
      || (Game1.activeClickableMenu is GameMenu gameMenu && gameMenu.pages[gameMenu.currentTab] is InventoryPage);
 
     /// <inheritdoc />
@@ -100,6 +101,9 @@ public class StackQuality : Mod
         // Init
         StackQuality.Instance = this;
         Log.Monitor = this.Monitor;
+
+        // Events
+        this.Helper.Events.Display.RenderedActiveMenu += StackQuality.OnRenderedActiveMenu;
 
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
@@ -560,6 +564,18 @@ public class StackQuality : Mod
         }
 
         __instance.UpdateQuality(stacks, false);
+    }
+
+    [EventPriority(EventPriority.Low)]
+    private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        if (!StackQuality.IsSupported
+         || Game1.activeClickableMenu.GetChildMenu() is not ItemQualityMenu itemQualityMenu)
+        {
+            return;
+        }
+
+        itemQualityMenu.Draw(e.SpriteBatch);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

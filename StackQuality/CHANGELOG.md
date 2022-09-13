@@ -2,6 +2,10 @@
 
 ## 1.0.0-beta.4 (Unreleased)
 
+### Fixed
+
+* Fixed Stack Menu being drawn under Better Chests search bar.
+
 ### Changed
 
 * SHIFT + Right-Click will move/grab a full stack of one quality level from an item.
