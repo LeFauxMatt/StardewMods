@@ -6,6 +6,10 @@
 
 * Added compatibility with Better Shop Menu's grid layout.
 
+### Changed
+
+* Draw hover item over Shopping Cart menu.
+
 ## 1.0.0-beta.3 (September 12, 2022)
 
 ### Added

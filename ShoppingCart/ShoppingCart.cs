@@ -17,8 +17,15 @@ public class ShoppingCart : Mod
 {
     private static ShoppingCart? Instance;
 
+    private readonly PerScreen<ShopMenu?> _currentMenu = new();
     private readonly PerScreen<VirtualShop?> _currentShop = new();
     private readonly PerScreen<bool> _makePurchase = new();
+
+    private IReflectedField<string?>? _boldTitleText;
+    private IReflectedMethod? _getHoveredItemExtraItemAmount;
+    private IReflectedMethod? _getHoveredItemExtraItemIndex;
+
+    private IReflectedField<string?>? _hoverText;
 
     /// <summary>
     ///     Gets the current instance of VirtualShop.
@@ -38,6 +45,16 @@ public class ShoppingCart : Mod
         set => ShoppingCart.Instance!._makePurchase.Value = value;
     }
 
+    private static string? BoldTitleText => ShoppingCart.Instance!._boldTitleText?.GetValue();
+
+    private static ShopMenu? CurrentMenu
+    {
+        get => ShoppingCart.Instance!._currentMenu.Value;
+        set => ShoppingCart.Instance!._currentMenu.Value = value;
+    }
+
+    private static string? HoverText => ShoppingCart.Instance!._hoverText?.GetValue();
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
@@ -49,6 +66,7 @@ public class ShoppingCart : Mod
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this.Helper.Events.Display.RenderedActiveMenu += ShoppingCart.OnRenderedActiveMenu;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.Helper.Events.Input.CursorMoved += ShoppingCart.OnCursorMoved;
 
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
@@ -80,6 +98,16 @@ public class ShoppingCart : Mod
         harmony.Patch(
             AccessTools.Method(typeof(ShopMenu), nameof(ShopMenu.updatePosition)),
             postfix: new(typeof(ShoppingCart), nameof(ShoppingCart.ShopMenu_updatePosition_postfix)));
+    }
+
+    private static int GetHoveredItemExtraItemAmount()
+    {
+        return ShoppingCart.Instance!._getHoveredItemExtraItemAmount?.Invoke<int>() ?? -1;
+    }
+
+    private static int GetHoveredItemExtraItemIndex()
+    {
+        return ShoppingCart.Instance!._getHoveredItemExtraItemIndex?.Invoke<int>() ?? -1;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -147,16 +175,64 @@ public class ShoppingCart : Mod
               && shopMenu.forSale.Any(forSale => forSale is Axe or WateringCan or Pickaxe or Hoe or GenericTool));
     }
 
+    private static void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    {
+        if (ShoppingCart.CurrentShop is null)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        ShoppingCart.CurrentShop.Hover(x, y);
+    }
+
     [EventPriority(EventPriority.Low)]
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (ShoppingCart.CurrentShop is null || Game1.activeClickableMenu is not ShopMenu menu)
+        if (ShoppingCart.CurrentShop is null || ShoppingCart.CurrentMenu is null)
         {
             return;
         }
 
         ShoppingCart.CurrentShop.Draw(e.SpriteBatch);
-        menu.drawMouse(e.SpriteBatch);
+
+        // Redraw Hover Item
+        if (!string.IsNullOrWhiteSpace(ShoppingCart.HoverText))
+        {
+            if (ShoppingCart.CurrentMenu.hoveredItem is SObject { IsRecipe: true })
+            {
+                IClickableMenu.drawToolTip(
+                    e.SpriteBatch,
+                    " ",
+                    ShoppingCart.BoldTitleText,
+                    ShoppingCart.CurrentMenu.hoveredItem as Item,
+                    ShoppingCart.CurrentMenu.heldItem != null,
+                    -1,
+                    ShoppingCart.CurrentMenu.currency,
+                    ShoppingCart.GetHoveredItemExtraItemIndex(),
+                    ShoppingCart.GetHoveredItemExtraItemAmount(),
+                    new(ShoppingCart.CurrentMenu.hoveredItem.Name.Replace(" Recipe", string.Empty)),
+                    ShoppingCart.CurrentMenu.hoverPrice > 0 ? ShoppingCart.CurrentMenu.hoverPrice : -1);
+            }
+            else
+            {
+                IClickableMenu.drawToolTip(
+                    e.SpriteBatch,
+                    ShoppingCart.HoverText,
+                    ShoppingCart.BoldTitleText,
+                    ShoppingCart.CurrentMenu.hoveredItem as Item,
+                    ShoppingCart.CurrentMenu.heldItem != null,
+                    -1,
+                    ShoppingCart.CurrentMenu.currency,
+                    ShoppingCart.GetHoveredItemExtraItemIndex(),
+                    ShoppingCart.GetHoveredItemExtraItemAmount(),
+                    null,
+                    ShoppingCart.CurrentMenu.hoverPrice > 0 ? ShoppingCart.CurrentMenu.hoverPrice : -1);
+            }
+        }
+
+        // Redraw Mouse
+        ShoppingCart.CurrentMenu.drawMouse(e.SpriteBatch);
     }
 
     private static IEnumerable<CodeInstruction> ShopMenu_constructor_transpiler(
@@ -250,12 +326,22 @@ public class ShoppingCart : Mod
         // Check for supported
         if (!ShoppingCart.IsSupported(e.NewMenu))
         {
+            ShoppingCart.CurrentMenu = null;
             ShoppingCart.CurrentShop = null;
             return;
         }
 
         // Create new virtual shop
         ShoppingCart.MakePurchase = false;
-        ShoppingCart.CurrentShop = new(this.Helper, (ShopMenu)e.NewMenu!);
+        ShoppingCart.CurrentMenu = (ShopMenu)e.NewMenu!;
+        ShoppingCart.CurrentShop = new(this.Helper, ShoppingCart.CurrentMenu);
+        this._hoverText = this.Helper.Reflection.GetField<string?>(ShoppingCart.CurrentMenu, "hoverText");
+        this._boldTitleText = this.Helper.Reflection.GetField<string?>(ShoppingCart.CurrentMenu, "boldTitleText");
+        this._getHoveredItemExtraItemIndex = this.Helper.Reflection.GetMethod(
+            ShoppingCart.CurrentMenu,
+            "getHoveredItemExtraItemIndex");
+        this._getHoveredItemExtraItemAmount = this.Helper.Reflection.GetMethod(
+            ShoppingCart.CurrentMenu,
+            "getHoveredItemExtraItemAmount");
     }
 }

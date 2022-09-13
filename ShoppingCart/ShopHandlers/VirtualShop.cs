@@ -258,8 +258,13 @@ internal sealed class VirtualShop
                 VirtualShop.LineHeight,
                 y =>
                 {
+                    quantityField.Bounds = new(
+                        this._bounds.X + this._cols[1] + Game1.tileSize / 2,
+                        y - 4,
+                        this._cols[2] - this._cols[1] - Game1.tileSize,
+                        VirtualShop.LineHeight);
+                    quantityField.Draw(b);
                     this.DrawItem(toBuy, b, this._bounds.X, y);
-                    quantityField.Draw(b, this._bounds.X, y, this._cols);
                 });
 
             if (!quantityField.IsVisible)
@@ -331,8 +336,13 @@ internal sealed class VirtualShop
                 VirtualShop.LineHeight,
                 y =>
                 {
+                    quantityField.Bounds = new(
+                        this._bounds.X + this._cols[1] + Game1.tileSize / 2,
+                        y - 4,
+                        this._cols[2] - this._cols[1] - Game1.tileSize,
+                        VirtualShop.LineHeight);
+                    quantityField.Draw(b);
                     this.DrawItem(toSell, b, this._bounds.X, y);
-                    quantityField.Draw(b, this._bounds.X, y, this._cols);
                 });
 
             if (!quantityField.IsVisible)
@@ -407,6 +417,34 @@ internal sealed class VirtualShop
                     Game1.textColor);
                 this._purchase.draw(b);
             });
+    }
+
+    /// <summary>
+    ///     Perform a hover action.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    public void Hover(int x, int y)
+    {
+        if (!this._bounds.Contains(x, y))
+        {
+            return;
+        }
+
+        var remove = new List<ICartItem>();
+        foreach (var (cartItem, quantityField) in this._quantityFields)
+        {
+            if (!quantityField.Hover(x, y) && cartItem.Quantity == 0)
+            {
+                remove.Add(cartItem);
+            }
+        }
+
+        foreach (var cartItem in remove)
+        {
+            this._items.Remove(cartItem);
+            this._quantityFields.Remove(cartItem);
+        }
     }
 
     /// <summary>

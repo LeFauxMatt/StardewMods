@@ -6,6 +6,9 @@ using StardewMods.Common.Integrations.ShoppingCart;
 using StardewMods.Common.Models;
 using StardewValley.Menus;
 
+/// <summary>
+///     The quantity of an item to buy or sell.
+/// </summary>
 internal class QuantityField
 {
     private readonly ClickableTextureComponent _minus;
@@ -13,6 +16,12 @@ internal class QuantityField
     private readonly Range<int> _range;
     private readonly TextBox _textBox;
 
+    private Rectangle _bounds = Rectangle.Empty;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QuantityField" /> class.
+    /// </summary>
+    /// <param name="cartItem">The CartItem for this QuantityField.</param>
     public QuantityField(ICartItem cartItem)
     {
         this.CartItem = cartItem;
@@ -41,6 +50,33 @@ internal class QuantityField
         };
     }
 
+    /// <summary>
+    ///     Gets or sets the bounds of the Quantity Field.
+    /// </summary>
+    public Rectangle Bounds
+    {
+        get => this._bounds;
+        set
+        {
+            if (this._bounds.Equals(value))
+            {
+                return;
+            }
+
+            this._bounds = value;
+            this._textBox.X = value.X;
+            this._textBox.Y = value.Y;
+            this._textBox.Width = value.Width;
+            this._minus.bounds.X = value.X - 24;
+            this._minus.bounds.Y = value.Y + 4;
+            this._plus.bounds.X = value.X + value.Width + 2;
+            this._plus.bounds.Y = value.Y + 4;
+        }
+    }
+
+    /// <summary>
+    ///     Gets the CartItem associated with this QuantityField.
+    /// </summary>
     public ICartItem CartItem { get; }
 
     /// <summary>
@@ -48,16 +84,11 @@ internal class QuantityField
     /// </summary>
     public bool IsVisible { get; set; }
 
-    private Rectangle Bounds => new(this._textBox.X, this._textBox.Y, this._textBox.Width, this._textBox.Height);
-
     /// <summary>
     ///     Draws the cart item to the screen.
     /// </summary>
     /// <param name="b">The sprite batch to draw to.</param>
-    /// <param name="x">The x-coordinate to draw the item at.</param>
-    /// <param name="y">The y-coordinate to draw the item at.</param>
-    /// <param name="cols">The column widths.</param>
-    public void Draw(SpriteBatch b, int x, int y, int[] cols)
+    public void Draw(SpriteBatch b)
     {
         if (this._textBox.Text != this.CartItem.Quantity.ToString())
         {
@@ -66,19 +97,27 @@ internal class QuantityField
                 : this._range.Clamp(int.Parse(this._textBox.Text));
         }
 
-        this._textBox.X = x + cols[1] + 32;
-        this._textBox.Y = y - 4;
-        this._textBox.Width = cols[2] - cols[1] - 64;
-
-        this._minus.bounds.X = x + cols[1] + 8;
-        this._minus.bounds.Y = y;
-
-        this._plus.bounds.X = x + cols[2] - 30;
-        this._plus.bounds.Y = y;
-
         this._textBox.Draw(b, false);
         this._minus.draw(b);
         this._plus.draw(b);
+    }
+
+    /// <summary>
+    ///     Perform a hover action.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <returns>Returns true if a component was hovered.</returns>
+    public bool Hover(int x, int y)
+    {
+        if (!this.IsVisible || !this.Bounds.Contains(x, y))
+        {
+            this._textBox.Selected = false;
+            return false;
+        }
+
+        this._textBox.SelectMe();
+        return true;
     }
 
     /// <summary>
@@ -104,12 +143,10 @@ internal class QuantityField
         }
         else if (!this.Bounds.Contains(x, y))
         {
-            this._textBox.Selected = false;
             return false;
         }
 
         this._textBox.Text = this.CartItem.Quantity.ToString();
-        this._textBox.SelectMe();
         return true;
     }
 }
