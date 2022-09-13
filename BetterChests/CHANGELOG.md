@@ -6,6 +6,10 @@
 
 * Added modifier key to scroll inventory one page at a time.
 
+### Fixed
+
+* Fixed locked items getting stashed when using the FillOutStacks button.
+
 ## 2.7.2 (September 7, 2022)
 
 ### Fixed

@@ -58,7 +58,7 @@ internal sealed class StashToChest : IFeature
 
         this._isActivated = true;
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.ButtonPressed += StashToChest.OnButtonPressed;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
         if (!Integrations.ToolbarIcons.IsLoaded)
         {
@@ -83,7 +83,7 @@ internal sealed class StashToChest : IFeature
 
         this._isActivated = false;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this._helper.Events.Input.ButtonPressed -= StashToChest.OnButtonPressed;
+        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
 
         if (!Integrations.ToolbarIcons.IsLoaded)
         {
@@ -92,23 +92,6 @@ internal sealed class StashToChest : IFeature
 
         Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.StashToChest");
         Integrations.ToolbarIcons.API.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
-    }
-
-    private static void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
-    {
-        if (e.Button is not SButton.MouseLeft
-         || Game1.activeClickableMenu is not ItemGrabMenu { context: { } context } itemGrabMenu)
-        {
-            return;
-        }
-
-        var (x, y) = Game1.getMousePosition(true);
-        if (itemGrabMenu.fillStacksButton?.containsPoint(x, y) == true
-         && Storages.TryGetOne(context, out var storage)
-         && storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default))
-        {
-            StashToChest.StashIntoStorage(storage);
-        }
     }
 
     private static void OnToolbarIconPressed(object? sender, string id)
@@ -162,6 +145,28 @@ internal sealed class StashToChest : IFeature
         return stashedAny;
     }
 
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    {
+        if (e.Button is not SButton.MouseLeft
+         || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+         || BetterItemGrabMenu.Context?.StashToChest is null
+                                                        or FeatureOptionRange.Disabled
+                                                        or FeatureOptionRange.Default)
+        {
+            return;
+        }
+
+        var (x, y) = Game1.getMousePosition(true);
+        if (itemGrabMenu.fillStacksButton?.containsPoint(x, y) != true)
+        {
+            return;
+        }
+
+        this._helper.Input.Suppress(e.Button);
+        StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
+        Game1.playSound("Ship");
+    }
+
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (!this._config.ControlScheme.StashItems.JustPressed())
@@ -186,7 +191,8 @@ internal sealed class StashToChest : IFeature
         }
 
         // Stash to Current
-        StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.StashItems);
+        StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
+        Game1.playSound("Ship");
     }
 }
