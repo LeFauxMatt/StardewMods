@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOptionRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\GroupBy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\Quality.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SortBy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\CustomExceptions.cs" />
