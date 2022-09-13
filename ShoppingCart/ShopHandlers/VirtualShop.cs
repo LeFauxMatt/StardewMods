@@ -172,11 +172,6 @@ internal sealed class VirtualShop
     /// <param name="b">The <see cref="SpriteBatch" /> to draw to.</param>
     public void Draw(SpriteBatch b)
     {
-        if (!Game1.options.showMenuBackground)
-        {
-            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
-        }
-
         this._currentY = this._bounds.Y;
 
         Game1.drawDialogueBox(
