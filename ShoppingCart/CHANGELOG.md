@@ -5,6 +5,7 @@
 ### Added
 
 * Added compatibility with Better Shop Menu's grid layout.
+* Added integration with Stack Quality.
 
 ### Changed
 

@@ -8,6 +8,7 @@ using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
+using StardewMods.ShoppingCart.Helpers;
 using StardewMods.ShoppingCart.ShopHandlers;
 using StardewValley.Menus;
 using StardewValley.Tools;
@@ -59,8 +60,9 @@ public class ShoppingCart : Mod
     public override void Entry(IModHelper helper)
     {
         ShoppingCart.Instance = this;
-        I18n.Init(this.Helper.Translation);
         Log.Monitor = this.Monitor;
+        I18n.Init(this.Helper.Translation);
+        Integrations.Init(this.Helper);
 
         // Events
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;
@@ -119,17 +121,41 @@ public class ShoppingCart : Mod
         int y,
         Item? toPlace)
     {
-        if (ShoppingCart.CurrentShop is null
-         || toPlace is not null
-         || __result is null
-         || !ShoppingCart.CurrentShop.AddToCart(__result))
+        if (ShoppingCart.CurrentShop is null || toPlace is not null || __result is null)
+        {
+            return;
+        }
+
+        var component = __instance.inventory.Single(cc => cc.containsPoint(x, y));
+        var slotNumber = int.Parse(component.name);
+
+        if (Integrations.StackQuality.IsLoaded && __result is SObject obj)
+        {
+            var stacks = Integrations.StackQuality.API.GetStacks(obj);
+            for (var i = 0; i < 4; ++i)
+            {
+                Item? split = null;
+                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, stacks[i]))
+                {
+                    continue;
+                }
+
+                ShoppingCart.CurrentShop.AddToCart(split);
+            }
+
+            // Return item to inventory
+            Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+            __instance.actualInventory[slotNumber] = obj;
+            __result = null;
+            return;
+        }
+
+        if (!ShoppingCart.CurrentShop.AddToCart(__result))
         {
             return;
         }
 
         // Return item to inventory
-        var component = __instance.inventory.Single(cc => cc.containsPoint(x, y));
-        var slotNumber = int.Parse(component.name);
         __instance.actualInventory[slotNumber] = __result;
         __result = null;
     }
@@ -145,15 +171,41 @@ public class ShoppingCart : Mod
     {
         if (ShoppingCart.CurrentShop is null
          || toAddTo is not null
-         || __result is null
-         || !ShoppingCart.CurrentShop.AddToCart(__result))
+         || __result is null)
+        {
+            return;
+        }
+
+        var component = __instance.inventory.Single(cc => cc.containsPoint(x, y));
+        var slotNumber = int.Parse(component.name);
+
+        if (Integrations.StackQuality.IsLoaded && __result is SObject obj)
+        {
+            var stacks = Integrations.StackQuality.API.GetStacks(obj);
+            for (var i = 0; i < 4; ++i)
+            {
+                Item? split = null;
+                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, stacks[i]))
+                {
+                    continue;
+                }
+
+                ShoppingCart.CurrentShop.AddToCart(split);
+            }
+
+            // Return item to inventory
+            Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+            __instance.actualInventory[slotNumber] = obj;
+            __result = null;
+            return;
+        }
+
+        if (!ShoppingCart.CurrentShop.AddToCart(__result))
         {
             return;
         }
 
         // Return item to inventory
-        var component = __instance.inventory.Single(cc => cc.containsPoint(x, y));
-        var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
         if (slot is not null)
         {
