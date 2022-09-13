@@ -8,6 +8,7 @@
   "ui.selling": "Selling",
   "ui.total": "Total",
   "ui.checkout": "Checkout",
+  "ui.other-category": "Other",
   // Alerts
   "alert.money": "Not enough gold",
   "alert.inventory": "Not enough space"

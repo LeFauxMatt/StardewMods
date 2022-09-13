@@ -4,10 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewMods.Common.Models;
+using StardewValley.Objects;
+using StardewValley.Tools;
 
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions
 {
+    /// <summary>
+    ///     Invokes all event handlers for an event.
+    /// </summary>
+    /// <param name="eventHandler">The event.</param>
+    /// <param name="source">The source.</param>
+    /// <param name="param">The event parameters.</param>
+    /// <typeparam name="T">The event handler type.</typeparam>
     public static void InvokeAll<T>(this EventHandler<T>? eventHandler, object source, T param)
     {
         if (eventHandler is null)
@@ -26,6 +35,38 @@ internal static class CommonExtensions
                 // ignored
             }
         }
+    }
+
+    /// <summary>
+    ///     Test if an item is equivalent to another item.
+    /// </summary>
+    /// <param name="salable">The item to test.</param>
+    /// <param name="other">The other item to test against.</param>
+    /// <returns>Returns true if the items are equivalent.</returns>
+    public static bool IsEquivalentTo(this ISalable salable, ISalable? other)
+    {
+        if (other is null || !salable.Name.Equals(other.Name))
+        {
+            return false;
+        }
+
+        return salable switch
+        {
+            ColoredObject cObj when other is not ColoredObject ocObj || !cObj.color.Value.Equals(ocObj.color.Value) =>
+                false,
+            SObject obj when other is not SObject otherObj
+                          || obj.ParentSheetIndex != otherObj.ParentSheetIndex
+                          || obj.bigCraftable.Value != otherObj.bigCraftable.Value
+                          || obj.Quality != otherObj.Quality
+                          || obj.Type != otherObj.Type => false,
+            Item item when other is not Item otherItem
+                        || item.Category != otherItem.Category
+                        || item.ParentSheetIndex != otherItem.ParentSheetIndex => false,
+            Stackable stackable when other is not Stackable otherStackable || !stackable.canStackWith(otherStackable) =>
+                false,
+            Tool when other is not Tool => false,
+            _ => true,
+        };
     }
 
     /// <summary>
