@@ -149,10 +149,9 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     {
         item.resetState();
         this.ClearNulls();
-        foreach (var existingItem in this.Items.Where(
-                     existingItem => existingItem is not null && existingItem.canStackWith(item)))
+        foreach (var existingItem in this.Items.OfType<Item>().Where(item.canStackWith))
         {
-            item.Stack = existingItem!.addToStack(item);
+            item.Stack = existingItem.addToStack(item);
             if (item.Stack <= 0)
             {
                 return null;
@@ -345,12 +344,13 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
             return item;
         }
 
-        var condition1 = existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true);
-        var condition2 = this.FilterItemsList.Any()
-                      && !this.FilterItemsList.All(filter => filter.StartsWith("!"))
-                      && this.FilterMatches(item);
         var stack = item.Stack;
-        var tmp = condition1 || condition2 ? this.AddItem(item) : item;
+        var tmp = (existingStacks && this.Items.Any(otherItem => otherItem?.canStackWith(item) == true))
+               || (this.FilterItemsList.Any()
+                && !this.FilterItemsList.All(filter => filter.StartsWith("!"))
+                && this.FilterMatches(item))
+            ? this.AddItem(item)
+            : item;
         if (tmp is null || stack != item.Stack)
         {
             Log.Trace(
