@@ -2,6 +2,10 @@
 
 ## 1.0.0-beta.4 (Unreleased)
 
+### Added
+
+* Added API to support mod integrations.
+
 ### Fixed
 
 * Fixed Stack Menu being drawn under Better Chests search bar.

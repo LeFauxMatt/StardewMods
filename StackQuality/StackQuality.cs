@@ -149,6 +149,12 @@ public class StackQuality : Mod
             postfix: new(typeof(StackQuality), nameof(StackQuality.Utility_addItemToInventory_postfix)));
     }
 
+    /// <inheritdoc/>
+    public override object GetApi()
+    {
+        return new StackQualityApi();
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
