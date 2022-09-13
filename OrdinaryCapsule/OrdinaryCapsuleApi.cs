@@ -6,7 +6,7 @@ using StardewMods.Common.Integrations.OrdinaryCapsule;
 using StardewMods.OrdinaryCapsule.Models;
 
 /// <inheritdoc />
-public class OrdinaryCapsuleApi : IOrdinaryCapsuleApi
+public sealed class OrdinaryCapsuleApi : IOrdinaryCapsuleApi
 {
     private readonly IModHelper _helper;
 

@@ -11,7 +11,7 @@ using StardewMods.ToolbarIcons.Models;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-public class ToolbarIconsApi : IToolbarIconsApi
+public sealed class ToolbarIconsApi : IToolbarIconsApi
 {
     private readonly Dictionary<string, ClickableTextureComponent> _components;
     private readonly IModHelper _helper;

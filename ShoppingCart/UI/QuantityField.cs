@@ -9,7 +9,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     The quantity of an item to buy or sell.
 /// </summary>
-internal class QuantityField
+internal sealed class QuantityField
 {
     private readonly ClickableTextureComponent _minus;
     private readonly ClickableTextureComponent _plus;
