@@ -110,12 +110,13 @@ internal static class Extensions
 
         for (var index = 3; index >= 0; index--)
         {
+            var quality = Common.IndexToQuality(index);
             if (stacks[index] <= 0)
             {
                 continue;
             }
 
-            obj.Quality = index == 3 ? 4 : index;
+            obj.Quality = (int)Common.IndexToQuality(index);
             return;
         }
 

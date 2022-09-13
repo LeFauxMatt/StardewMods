@@ -1,5 +1,12 @@
 ﻿# Stack Quality Change Log
 
+## 1.0.0-beta.4 (Unreleased)
+
+### Changed
+
+* SHIFT + Right-Click will move/grab a full stack of one quality level from an item.
+* SHIFT + Left-Click will move/grab the full stack of all quality levels from an item.
+
 ## 1.0.0-beta.3 (September 10, 2022)
 
 ### Fixed

@@ -90,9 +90,9 @@ public class StackQuality : Mod
         }
     }
 
-    private static bool IsSupported => Game1.activeClickableMenu is (JunimoNoteMenu or MenuWithInventory or ShopMenu)
-                                    || (Game1.activeClickableMenu is GameMenu gameMenu
-                                     && gameMenu.pages[gameMenu.currentTab] is InventoryPage);
+    private static bool IsSupported =>
+        Game1.activeClickableMenu is (JunimoNoteMenu or MenuWithInventory or ShopMenu)
+     || (Game1.activeClickableMenu is GameMenu gameMenu && gameMenu.pages[gameMenu.currentTab] is InventoryPage);
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -125,6 +125,9 @@ public class StackQuality : Mod
         harmony.Patch(
             AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
             postfix: new(typeof(StackQuality), nameof(StackQuality.Item_canStackWith_postfix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(Item), nameof(Item.GetContextTags)),
+            postfix: new(typeof(StackQuality), nameof(StackQuality.Item_GetContextTags_postfix)));
         harmony.Patch(
             AccessTools.Method(typeof(SObject), nameof(SObject.addToStack)),
             new(typeof(StackQuality), nameof(StackQuality.Object_addToStack_prefix)));
@@ -247,7 +250,13 @@ public class StackQuality : Mod
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool InventoryMenu_leftClick_prefix(InventoryMenu __instance, int x, int y, Item? toPlace)
+    private static bool InventoryMenu_leftClick_prefix(
+        InventoryMenu __instance,
+        ref Item? __result,
+        int x,
+        int y,
+        Item? toPlace,
+        bool playSound)
     {
         if (!StackQuality.IsSupported || toPlace is not null)
         {
@@ -260,7 +269,7 @@ public class StackQuality : Mod
             return true;
         }
 
-        var slotNumber = Convert.ToInt32(component.name);
+        var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
         if (slot is not SObject obj)
         {
@@ -272,7 +281,17 @@ public class StackQuality : Mod
             return true;
         }
 
-        // TODO: Test if object supports quality
+        if (StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift))
+        {
+            if (playSound)
+            {
+                Game1.playSound(__instance.moveItemSound);
+            }
+
+            __result = Utility.removeItemFromInventory(slotNumber, __instance.actualInventory);
+            return false;
+        }
+
         var overlay = new ItemQualityMenu(
             obj,
             component.bounds.X - Game1.tileSize / 2,
@@ -316,21 +335,26 @@ public class StackQuality : Mod
             return true;
         }
 
-        var slotNumber = Convert.ToInt32(component.name);
+        var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
         if (slot is not SObject obj)
         {
             return true;
         }
 
-        var take = StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift) ? obj.Stack / 2 : 1;
+        var take = 1;
+        if (StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift))
+        {
+            var stacks = obj.GetStacks();
+            take = stacks.FirstOrDefault(stack => stack > 0);
+        }
+
         if (!obj.SplitStacks(ref toAddTo, take))
         {
             return true;
         }
 
-        __result = ((SObject)toAddTo).getOne();
-        __result.Stack = toAddTo.Stack;
+        __result = toAddTo;
         if (obj.Stack == 0)
         {
             __instance.actualInventory[slotNumber] = null;
@@ -366,6 +390,29 @@ public class StackQuality : Mod
         }
 
         __result = true;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Item_GetContextTags_postfix(Item __instance, ref HashSet<string> __result)
+    {
+        if (__instance is not SObject obj)
+        {
+            return;
+        }
+
+        var stacks = obj.GetStacks();
+        for (var i = 0; i < 4; ++i)
+        {
+            var tag = Common.IndexToContextTag(i);
+            if (stacks[i] == 0)
+            {
+                __result.Remove(tag);
+                continue;
+            }
+
+            __result.Add(tag);
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

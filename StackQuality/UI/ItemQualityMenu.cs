@@ -125,7 +125,7 @@ internal sealed class ItemQualityMenu : IClickableMenu
             return;
         }
 
-        var slotNumber = Convert.ToInt32(component.name);
+        var slotNumber = int.Parse(component.name);
         var slot = this.Items[slotNumber];
         if (slot.Stack == 0)
         {
