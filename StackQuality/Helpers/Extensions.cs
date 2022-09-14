@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.StackQuality.Helpers;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewMods.Common.Helpers.AtraBase.StringHandlers;
@@ -47,16 +46,14 @@ internal static class Extensions
     /// <param name="other">Another item to stack the split into.</param>
     /// <param name="take">The amount of items to take from the first.</param>
     /// <returns>Returns true if the stack could be split.</returns>
-    public static bool SplitStacks(this SObject obj, [NotNullWhen(true)] ref Item? other, int take)
+    public static bool SplitStacks(this SObject obj, [NotNullWhen(true)] ref Item? other, int[] take)
     {
-        if (other is not (SObject or null) || other?.canStackWith(obj) == false)
+        if (other is not (SObject or null) || other?.canStackWith(obj) == false || take.All(stack => stack == 0))
         {
             return false;
         }
 
-        take = Math.Max(1, take);
         var stacks = obj.GetStacks();
-        var otherStacks = (other as SObject)?.GetStacks() ?? new int[4];
         other ??= (SObject)obj.getOne();
         for (var i = 0; i < 4; ++i)
         {
@@ -65,31 +62,18 @@ internal static class Extensions
                 continue;
             }
 
-            if (take == 1)
+            if (stacks[i] >= take[i])
             {
-                stacks[i]--;
-                otherStacks[i]++;
-                break;
+                stacks[i] -= take[i];
+                continue;
             }
 
-            if (stacks[i] >= take)
-            {
-                stacks[i] -= take;
-                otherStacks[i] = take;
-                break;
-            }
-
-            take -= stacks[i];
-            otherStacks[i] += stacks[i];
+            take[i] = stacks[i];
             stacks[i] = 0;
-            if (take == 0)
-            {
-                break;
-            }
         }
 
         obj.UpdateQuality(stacks);
-        ((SObject)other).UpdateQuality(otherStacks);
+        ((SObject)other).UpdateQuality(take);
         return true;
     }
 
