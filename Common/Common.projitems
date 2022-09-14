@@ -69,6 +69,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\IBuyable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\ICartItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\ISellable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\IShop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\IShoppingCartApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\ShoppingCartIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\StackQuality\IStackQualityApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\StackQuality\StackQualityIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\IToolbarIcon.cs" />

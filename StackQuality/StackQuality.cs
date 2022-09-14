@@ -101,6 +101,7 @@ public class StackQuality : Mod
         // Init
         StackQuality.Instance = this;
         Log.Monitor = this.Monitor;
+        Integrations.Init(this.Helper);
 
         // Events
         this.Helper.Events.Display.RenderedActiveMenu += StackQuality.OnRenderedActiveMenu;
@@ -149,10 +150,21 @@ public class StackQuality : Mod
             postfix: new(typeof(StackQuality), nameof(StackQuality.Utility_addItemToInventory_postfix)));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override object GetApi()
     {
         return new StackQualityApi();
+    }
+
+    private static IClickableMenu.onExit ExitFunction(IList<Item> inventory, int slotNumber)
+    {
+        return () =>
+        {
+            if (inventory.ElementAtOrDefault(slotNumber)?.Stack == 0)
+            {
+                inventory[slotNumber] = null!;
+            }
+        };
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -307,13 +319,7 @@ public class StackQuality : Mod
             component.bounds.X - Game1.tileSize / 2,
             component.bounds.Y - Game1.tileSize / 2)
         {
-            exitFunction = () =>
-            {
-                if (slot.Stack == 0)
-                {
-                    __instance.actualInventory[slotNumber] = null;
-                }
-            },
+            exitFunction = StackQuality.ExitFunction(__instance.actualInventory, slotNumber),
         };
 
         StackQuality.HoveredItem = null;
@@ -352,11 +358,41 @@ public class StackQuality : Mod
             return true;
         }
 
-        var take = 1;
+        var take = new int[4];
         if (StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift))
         {
+            var existingStacks = new int[4];
             var stacks = obj.GetStacks();
-            take = stacks.FirstOrDefault(stack => stack > 0);
+            if (Integrations.ShoppingCart.IsLoaded)
+            {
+                if (Integrations.ShoppingCart.API.CurrentShop is not null)
+                {
+                    foreach (var cartItem in Integrations.ShoppingCart.API.CurrentShop.ToSell)
+                    {
+                        if (cartItem.Item is not SObject cartObj)
+                        {
+                            continue;
+                        }
+
+                        var cartStacks = cartObj.GetStacks();
+                        for (var i = 0; i < 4; ++i)
+                        {
+                            existingStacks[i] += cartStacks[i];
+                        }
+                    }
+                }
+            }
+
+            for (var i = 0; i < 4; ++i)
+            {
+                if (stacks[i] <= 0 || existingStacks[i] > 0)
+                {
+                    continue;
+                }
+
+                take[i] = stacks[i];
+                break;
+            }
         }
 
         if (!obj.SplitStacks(ref toAddTo, take))

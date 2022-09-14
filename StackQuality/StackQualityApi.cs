@@ -6,19 +6,19 @@ using StardewMods.StackQuality.Helpers;
 /// <inheritdoc />
 public sealed class StackQualityApi : IStackQualityApi
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int[] GetStacks(SObject obj)
     {
         return obj.GetStacks();
     }
 
-    /// <inheritdoc/>
-    public bool SplitStacks(SObject obj, [NotNullWhen(true)] ref Item? other, int take)
+    /// <inheritdoc />
+    public bool SplitStacks(SObject obj, [NotNullWhen(true)] ref Item? other, int[] take)
     {
         return obj.SplitStacks(ref other, take);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void UpdateQuality(SObject obj, int[] stacks, bool updateStack = true)
     {
         obj.UpdateQuality(stacks, updateStack);

@@ -19,7 +19,7 @@ public interface IStackQualityApi
     /// <param name="other">Another item to stack the split into.</param>
     /// <param name="take">The amount of items to take from the first.</param>
     /// <returns>Returns true if the stack could be split.</returns>
-    public bool SplitStacks(SObject obj, [NotNullWhen(true)] ref Item? other, int take);
+    public bool SplitStacks(SObject obj, [NotNullWhen(true)] ref Item? other, int[] take);
 
     /// <summary>
     ///     Updates the quality of the item based on if it is holding multiple stacks.
@@ -28,4 +28,6 @@ public interface IStackQualityApi
     /// <param name="stacks">The stacks to update the object with.</param>
     /// <param name="updateStack">Indicates whether to update the stack size of the object.</param>
     public void UpdateQuality(SObject obj, int[] stacks, bool updateStack = true);
+
+    // Callback for item select
 }
