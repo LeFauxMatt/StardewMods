@@ -54,6 +54,7 @@ internal static class Extensions
         }
 
         var stacks = obj.GetStacks();
+        var existingStacks = (other as SObject)?.GetStacks() ?? new int[4];
         other ??= (SObject)obj.getOne();
         for (var i = 0; i < 4; ++i)
         {
@@ -65,15 +66,17 @@ internal static class Extensions
             if (stacks[i] >= take[i])
             {
                 stacks[i] -= take[i];
+                existingStacks[i] += take[i];
                 continue;
             }
 
             take[i] = stacks[i];
+            existingStacks[i] += stacks[i];
             stacks[i] = 0;
         }
 
         obj.UpdateQuality(stacks);
-        ((SObject)other).UpdateQuality(take);
+        ((SObject)other).UpdateQuality(existingStacks);
         return true;
     }
 
@@ -94,7 +97,6 @@ internal static class Extensions
 
         for (var index = 3; index >= 0; index--)
         {
-            var quality = Common.IndexToQuality(index);
             if (stacks[index] <= 0)
             {
                 continue;

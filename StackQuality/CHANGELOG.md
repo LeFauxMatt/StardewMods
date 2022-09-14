@@ -5,6 +5,7 @@
 ### Added
 
 * Added API to support mod integrations.
+* Added integration with Shopping Cart.
 
 ### Fixed
 

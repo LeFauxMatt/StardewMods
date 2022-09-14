@@ -293,12 +293,7 @@ public class StackQuality : Mod
 
         var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
-        if (slot is not SObject obj)
-        {
-            return true;
-        }
-
-        if (obj.GetStacks().Any(stack => stack == obj.Stack))
+        if (slot is not SObject obj || obj.GetStacks().Any(stack => stack == obj.Stack))
         {
             return true;
         }
@@ -353,46 +348,43 @@ public class StackQuality : Mod
 
         var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
-        if (slot is not SObject obj)
+        if (slot is not SObject obj || (toAddTo is null && obj.GetStacks().Any(stack => stack == obj.Stack)))
         {
             return true;
         }
 
         var take = new int[4];
-        if (StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift))
+        var existingStacks = new int[4];
+        var stacks = obj.GetStacks();
+        if (Integrations.ShoppingCart.IsLoaded)
         {
-            var existingStacks = new int[4];
-            var stacks = obj.GetStacks();
-            if (Integrations.ShoppingCart.IsLoaded)
+            if (Integrations.ShoppingCart.API.CurrentShop is not null)
             {
-                if (Integrations.ShoppingCart.API.CurrentShop is not null)
+                foreach (var cartItem in Integrations.ShoppingCart.API.CurrentShop.ToSell)
                 {
-                    foreach (var cartItem in Integrations.ShoppingCart.API.CurrentShop.ToSell)
+                    if (cartItem.Item is not SObject cartObj)
                     {
-                        if (cartItem.Item is not SObject cartObj)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        var cartStacks = cartObj.GetStacks();
-                        for (var i = 0; i < 4; ++i)
-                        {
-                            existingStacks[i] += cartStacks[i];
-                        }
+                    var cartStacks = cartObj.GetStacks();
+                    for (var i = 0; i < 4; ++i)
+                    {
+                        existingStacks[i] += cartStacks[i];
                     }
                 }
             }
+        }
 
-            for (var i = 0; i < 4; ++i)
+        for (var i = 0; i < 4; ++i)
+        {
+            if (stacks[i] <= 0 || existingStacks[i] > 0)
             {
-                if (stacks[i] <= 0 || existingStacks[i] > 0)
-                {
-                    continue;
-                }
-
-                take[i] = stacks[i];
-                break;
+                continue;
             }
+
+            take[i] += StackQuality.Instance!.Helper.Input.IsDown(SButton.LeftShift) ? stacks[i] : 1;
+            break;
         }
 
         if (!obj.SplitStacks(ref toAddTo, take))
@@ -562,12 +554,30 @@ public class StackQuality : Mod
 
         var stacks = __instance.GetStacks();
         var stack = stacks.Sum();
+        if (stack == 1)
+        {
+            for (var i = 0; i < 4; ++i)
+            {
+                if (stacks[i] == 0)
+                {
+                    continue;
+                }
+
+                stacks[i] = value;
+                __instance.UpdateQuality(stacks, false);
+                return;
+            }
+        }
+
         var delta = value - stack;
+        if (delta == 0)
+        {
+            __instance.UpdateQuality(stacks, false);
+            return;
+        }
+
         switch (delta)
         {
-            case 0:
-                break;
-
             case < 0:
                 for (var i = 0; i < 4; ++i)
                 {
