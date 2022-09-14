@@ -102,6 +102,12 @@ public class ShoppingCart : Mod
             postfix: new(typeof(ShoppingCart), nameof(ShoppingCart.ShopMenu_updatePosition_postfix)));
     }
 
+    /// <inheritdoc />
+    public override object GetApi()
+    {
+        return new ShoppingCartApi();
+    }
+
     private static int GetHoveredItemExtraItemAmount()
     {
         return ShoppingCart.Instance!._getHoveredItemExtraItemAmount?.Invoke<int>() ?? -1;
@@ -135,7 +141,9 @@ public class ShoppingCart : Mod
             for (var i = 0; i < 4; ++i)
             {
                 Item? split = null;
-                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, stacks[i]))
+                var take = new int[4];
+                take[i] = stacks[i];
+                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, take))
                 {
                     continue;
                 }
@@ -145,6 +153,13 @@ public class ShoppingCart : Mod
 
             // Return item to inventory
             Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+            if (__instance.actualInventory[slotNumber] is SObject otherObj)
+            {
+                otherObj.addToStack(obj);
+                __result = null;
+                return;
+            }
+
             __instance.actualInventory[slotNumber] = obj;
             __result = null;
             return;
@@ -169,9 +184,7 @@ public class ShoppingCart : Mod
         int y,
         Item? toAddTo)
     {
-        if (ShoppingCart.CurrentShop is null
-         || toAddTo is not null
-         || __result is null)
+        if (ShoppingCart.CurrentShop is null || toAddTo is not null || __result is null)
         {
             return;
         }
@@ -185,7 +198,9 @@ public class ShoppingCart : Mod
             for (var i = 0; i < 4; ++i)
             {
                 Item? split = null;
-                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, stacks[i]))
+                var take = new int[4];
+                take[i] = stacks[i];
+                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, take))
                 {
                     continue;
                 }
@@ -195,6 +210,13 @@ public class ShoppingCart : Mod
 
             // Return item to inventory
             Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+            if (__instance.actualInventory[slotNumber] is SObject otherObj)
+            {
+                otherObj.addToStack(obj);
+                __result = null;
+                return;
+            }
+
             __instance.actualInventory[slotNumber] = obj;
             __result = null;
             return;
@@ -221,7 +243,7 @@ public class ShoppingCart : Mod
 
     private static bool IsSupported(IClickableMenu? menu)
     {
-        return menu is ShopMenu { currency: 0 } shopMenu
+        return menu is ShopMenu { currency: 0, storeContext: not ("Dresser" or "FishTank") } shopMenu
             && shopMenu.forSale.OfType<Item>().Any()
             && !(shopMenu.portraitPerson?.Equals(Game1.getCharacterFromName("Clint")) == true
               && shopMenu.forSale.Any(forSale => forSale is Axe or WateringCan or Pickaxe or Hoe or GenericTool));
@@ -295,6 +317,7 @@ public class ShoppingCart : Mod
             if (instruction.Calls(AccessTools.Method(typeof(ShopMenu), nameof(ShopMenu.updatePosition))))
             {
                 yield return new(OpCodes.Ldarg_3);
+                yield return new(OpCodes.Ldarg_S, (short)6);
                 yield return CodeInstruction.Call(typeof(ShoppingCart), nameof(ShoppingCart.ShopMenu_updatePosition));
             }
             else
@@ -331,17 +354,17 @@ public class ShoppingCart : Mod
         return false;
     }
 
-    private static void ShopMenu_updatePosition(ShopMenu shopMenu, string who)
+    private static void ShopMenu_updatePosition(ShopMenu shopMenu, string who, string context)
     {
         shopMenu.updatePosition();
 
-        switch (who)
+        if (who is not "ClintUpgrade" && context is not ("Dresser" or "FishTank"))
         {
-            case "ClintUpgrade":
-                shopMenu.xPositionOnScreen += VirtualShop.MenuWidth / 2;
-                shopMenu.upperRightCloseButton.bounds.X -= VirtualShop.MenuWidth / 2 + Game1.tileSize;
-                break;
+            return;
         }
+
+        shopMenu.xPositionOnScreen += VirtualShop.MenuWidth / 2;
+        shopMenu.upperRightCloseButton.bounds.X -= VirtualShop.MenuWidth / 2 + Game1.tileSize;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -367,10 +390,17 @@ public class ShoppingCart : Mod
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (ShoppingCart.CurrentShop.LeftClick(x, y))
+        switch (e.Button)
         {
-            this.Helper.Input.Suppress(e.Button);
+            case SButton.MouseLeft when ShoppingCart.CurrentShop.LeftClick(x, y):
+                break;
+            case SButton.MouseRight when ShoppingCart.CurrentShop.RightClick(x, y):
+                break;
+            default:
+                return;
         }
+
+        this.Helper.Input.Suppress(e.Button);
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)

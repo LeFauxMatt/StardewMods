@@ -12,10 +12,8 @@ using StardewMods.ShoppingCart.UI;
 using StardewValley.Locations;
 using StardewValley.Menus;
 
-/// <summary>
-///     A virtual representation of a <see cref="ShopMenu" />.
-/// </summary>
-internal sealed class VirtualShop
+/// <inheritdoc />
+internal sealed class VirtualShop : IShop
 {
     /// <summary>
     ///     The width of the shopping cart menu.
@@ -82,14 +80,18 @@ internal sealed class VirtualShop
         this._cols[1] = this._cols[2] - Math.Max(this._dims[I18n.Ui_Quantity()].X + 8, minWidth + Game1.tileSize);
     }
 
-    /// <summary>
-    ///     Gets the actual ShopMenu this VirtualShop is attached to.
-    /// </summary>
+    /// <inheritdoc />
     public ShopMenu Menu { get; }
+
+    /// <inheritdoc />
+    public IEnumerable<ICartItem> ToBuy => this._items.OfType<IBuyable>();
+
+    /// <inheritdoc />
+    public IEnumerable<ICartItem> ToSell => this._items.OfType<ISellable>();
 
     private List<TemporaryAnimatedSprite> Animations => this._animations.GetValue();
 
-    private long BuyTotal => this._items.Sum(item => (item as IBuyable)?.Total ?? 0);
+    private long BuyTotal => this.ToBuy.Sum(item => item.Total);
 
     private long GrandTotal => this.BuyTotal - this.SellTotal;
 
@@ -97,12 +99,13 @@ internal sealed class VirtualShop
     {
         get
         {
-            if (this._bottomY > 0 && this._offset > this._bottomY - this._topY - this._bounds.Height + this._bounds.Top)
+            if (this._offset > this._bottomY - this._topY - this._bounds.Height + this._bounds.Top)
             {
-                this._offset -= VirtualShop.LineHeight;
+                this._offset = this._bottomY == 0
+                    ? 0
+                    : Math.Max(0, this._bottomY - this._topY - this._bounds.Height + this._bounds.Top);
             }
-
-            if (this._offset < 0)
+            else if (this._offset < 0)
             {
                 this._offset = 0;
             }
@@ -114,14 +117,9 @@ internal sealed class VirtualShop
 
     private float SellPercentage => this._sellPercentage.GetValue();
 
-    private long SellTotal => this._items.Sum(item => (item as ISellable)?.Total ?? 0);
+    private long SellTotal => this.ToSell.Sum(item => item.Total);
 
-    /// <summary>
-    ///     Try adding an item to the shopping cart to buy.
-    /// </summary>
-    /// <param name="toBuy">The item to buy.</param>
-    /// <param name="quantity">The quantity of the item to buy.</param>
-    /// <returns>Returns true if the item can be purchased.</returns>
+    /// <inheritdoc />
     public bool AddToCart(ISalable toBuy, int quantity)
     {
         if (!this.Menu.itemPriceAndStock.TryGetValue(toBuy, out var priceAndStock))
@@ -129,7 +127,7 @@ internal sealed class VirtualShop
             return false;
         }
 
-        var item = this._items.FirstOrDefault(item => (item as IBuyable)?.Item.IsEquivalentTo(toBuy) == true);
+        var item = this.ToBuy.FirstOrDefault(item => item.Item.IsEquivalentTo(toBuy));
         var stack = toBuy.IsInfiniteStock() || toBuy.Stack == int.MaxValue ? quantity : 1;
         if (item is not null)
         {
@@ -142,11 +140,7 @@ internal sealed class VirtualShop
         return true;
     }
 
-    /// <summary>
-    ///     Try adding an item to the shopping cart to sell.
-    /// </summary>
-    /// <param name="toSell">The item to sell.</param>
-    /// <returns>Returns true if the item can be sold.</returns>
+    /// <inheritdoc />
     public bool AddToCart(Item toSell)
     {
         if (!this.Menu.highlightItemToSell(toSell))
@@ -154,7 +148,7 @@ internal sealed class VirtualShop
             return false;
         }
 
-        var item = this._items.FirstOrDefault(item => (item as ISellable)?.Item.IsEquivalentTo(toSell) == true);
+        var item = this.ToSell.FirstOrDefault(item => item.Item.IsEquivalentTo(toSell));
         if (item is not null)
         {
             item.Quantity += toSell.Stack;
@@ -167,9 +161,9 @@ internal sealed class VirtualShop
     }
 
     /// <summary>
-    ///     Draw the Shopping Cart.
+    ///     Draws the ShoppingCart overlay.
     /// </summary>
-    /// <param name="b">The <see cref="SpriteBatch" /> to draw to.</param>
+    /// <param name="b">The SpriteBatch to draw to.</param>
     public void Draw(SpriteBatch b)
     {
         this._currentY = this._bounds.Y;
@@ -186,11 +180,7 @@ internal sealed class VirtualShop
             b,
             I18n.Ui_ShoppingCart(),
             Game1.dialogueFont,
-            new(
-                this._bounds.X
-              + (this._bounds.Width - this._dims[I18n.Ui_ShoppingCart()].X) / 2
-              - IClickableMenu.borderWidth,
-                this._currentY),
+            new(this._bounds.Center.X - this._dims[I18n.Ui_ShoppingCart()].X / 2, this._currentY),
             Game1.textColor);
         this._currentY += this._dims[I18n.Ui_ShoppingCart()].Y;
 
@@ -221,7 +211,7 @@ internal sealed class VirtualShop
 
         // Draw Buying
         var prevCategory = string.Empty;
-        foreach (var toBuy in this._items.OfType<IBuyable>())
+        foreach (var toBuy in this.ToBuy)
         {
             var category = (toBuy.Item as Item ?? (Item)toBuy.Item.GetSalableInstance()).getCategoryName();
             if (string.IsNullOrWhiteSpace(category))
@@ -244,6 +234,7 @@ internal sealed class VirtualShop
                                 Game1.textColor);
                         }))
                 {
+                    this._bottomY = this._currentY + VirtualShop.LineHeight;
                     return;
                 }
             }
@@ -269,6 +260,7 @@ internal sealed class VirtualShop
 
             if (!quantityField.IsVisible)
             {
+                this._bottomY = this._currentY + VirtualShop.LineHeight;
                 return;
             }
         }
@@ -294,12 +286,13 @@ internal sealed class VirtualShop
                         Game1.textColor);
                 }))
         {
+            this._bottomY = this._currentY + VirtualShop.LineHeight;
             return;
         }
 
         // Draw Selling
         prevCategory = string.Empty;
-        foreach (var toSell in this._items.OfType<ISellable>())
+        foreach (var toSell in this.ToSell)
         {
             var category = (toSell.Item as Item ?? (Item)toSell.Item.GetSalableInstance()).getCategoryName();
             if (string.IsNullOrWhiteSpace(category))
@@ -322,6 +315,7 @@ internal sealed class VirtualShop
                                 Game1.textColor);
                         }))
                 {
+                    this._bottomY = this._currentY + VirtualShop.LineHeight;
                     return;
                 }
             }
@@ -347,6 +341,7 @@ internal sealed class VirtualShop
 
             if (!quantityField.IsVisible)
             {
+                this._bottomY = this._currentY + VirtualShop.LineHeight;
                 return;
             }
         }
@@ -372,6 +367,7 @@ internal sealed class VirtualShop
                         Game1.textColor);
                 }))
         {
+            this._bottomY = this._currentY + VirtualShop.LineHeight;
             return;
         }
 
@@ -396,6 +392,7 @@ internal sealed class VirtualShop
                         Game1.textColor);
                 }))
         {
+            this._bottomY = this._currentY + VirtualShop.LineHeight;
             return;
         }
 
@@ -417,6 +414,7 @@ internal sealed class VirtualShop
                     Game1.textColor);
                 this._purchase.draw(b);
             });
+        this._bottomY = this._currentY;
     }
 
     /// <summary>
@@ -495,6 +493,40 @@ internal sealed class VirtualShop
     }
 
     /// <summary>
+    ///     Clears the shop of all queued items to buy or sell.
+    /// </summary>
+    public void Reset()
+    {
+        this._items.Clear();
+        this._quantityFields.Clear();
+    }
+
+    /// <summary>
+    ///     Attempt to perform a right click.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <returns>Returns true if right click was handled.</returns>
+    public bool RightClick(int x, int y)
+    {
+        if (!this._bounds.Contains(x, y))
+        {
+            return false;
+        }
+
+        // Check for Quantity update
+        foreach (var quantityField in this._quantityFields.Values)
+        {
+            if (quantityField.RightClick(x, y))
+            {
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     ///     Scrolls the menu.
     /// </summary>
     /// <param name="direction">The direction to scroll.</param>
@@ -568,19 +600,7 @@ internal sealed class VirtualShop
         }
 
         this._currentY += lineHeight;
-        if (this._currentY - this.Offset + VirtualShop.LineHeight <= this._bounds.Bottom)
-        {
-            return true;
-        }
-
-        this._bottomY = this._currentY + VirtualShop.LineHeight;
-        return false;
-    }
-
-    private void Reset()
-    {
-        this._items.Clear();
-        this._quantityFields.Clear();
+        return this._currentY - this.Offset + VirtualShop.LineHeight <= this._bounds.Bottom;
     }
 
     private bool TryCheckout(bool test = false)
@@ -605,23 +625,26 @@ internal sealed class VirtualShop
         for (var i = 0; i < inventory.Length; ++i)
         {
             inventory[i] = Game1.player.Items.ElementAtOrDefault(i)?.getOne();
-            if (inventory[i] is { } item)
+            if (inventory[i] is not { } item)
             {
-                item.Stack = Game1.player.Items[i].Stack;
+                continue;
             }
+
+            item.Stack = Game1.player.Items[i].Stack;
+            item._GetOneFrom(Game1.player.Items[i]);
         }
 
         // Simulate selling
-        if (this._items.Any(item => (item as ISellable)?.TrySell(inventory, this.Menu.currency, true) == false))
+        if (this.ToSell.Any(item => !((ISellable)item).TrySell(inventory, this.Menu.currency, true)))
         {
             return false;
         }
 
         // Simulate buying
         if ((
-                from item in this._items.OfType<IBuyable>()
+                from item in this.ToBuy
                 let index = this.Menu.forSale.IndexOf(item.Item)
-                where !item.TestBuy(inventory, ref qiGems, ref walnuts, index, this.Menu.canPurchaseCheck)
+                where !((IBuyable)item).TestBuy(inventory, ref qiGems, ref walnuts, index, this.Menu.canPurchaseCheck)
                 select item).Any())
         {
             return false;
@@ -636,9 +659,9 @@ internal sealed class VirtualShop
 
         // Sell items
         var coins = 2;
-        foreach (var toSell in this._items.OfType<ISellable>())
+        foreach (var toSell in this.ToSell)
         {
-            if (!toSell.TrySell(Game1.player.Items, this.Menu.currency))
+            if (!((ISellable)toSell).TrySell(Game1.player.Items, this.Menu.currency))
             {
                 return false;
             }
@@ -659,13 +682,14 @@ internal sealed class VirtualShop
                 buyBackItem = this.Menu.AddBuybackItem(toSell.Item, toSell.Price, toSell.Quantity);
             }
 
-            if (toSell.Item is not SObject { Edibility: not -300 })
+            if (toSell.Item is not SObject { Edibility: not -300 } obj)
             {
                 continue;
             }
 
             var clone = (Item)toSell.Item.GetSalableInstance();
             clone.Stack = toSell.Quantity;
+            clone._GetOneFrom(obj);
             toSell.Quantity = 0;
             if (buyBackItem is not null && this.Menu.buyBackItemsToResellTomorrow.ContainsKey(buyBackItem))
             {
@@ -734,7 +758,7 @@ internal sealed class VirtualShop
 
         // Buy items
         ShoppingCart.MakePurchase = true;
-        foreach (var toBuy in this._items.OfType<IBuyable>())
+        foreach (var toBuy in this.ToBuy)
         {
             var index = this.Menu.forSale.IndexOf(toBuy.Item);
             if (index == -1)
@@ -769,12 +793,12 @@ internal sealed class VirtualShop
 
         ShoppingCart.MakePurchase = false;
 
-        if (this._items.OfType<ISellable>().Any())
+        if (this.ToSell.Any())
         {
             Game1.playSound("sell");
         }
 
-        if (this._items.OfType<IBuyable>().Any())
+        if (this.ToBuy.Any())
         {
             Game1.playSound("purchase");
         }
