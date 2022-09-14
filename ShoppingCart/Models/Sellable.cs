@@ -1,7 +1,6 @@
 ﻿namespace StardewMods.ShoppingCart.Models;
 
 using System.Collections.Generic;
-using System.Linq;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
 using StardewMods.ShoppingCart.Helpers;
@@ -28,8 +27,7 @@ internal sealed class Sellable : ISellable
                 SObject obj => (int)(obj.sellToStorePrice() * sellPercentage),
                 _ => (int)(item.salePrice() / 2f * sellPercentage),
             },
-            (item.Stack > 0 ? item.Stack : 1)
-          + inventory.OfType<Item>().Where(item.IsEquivalentTo).Sum(i => i.Stack > 0 ? i.Stack : 1));
+            Sellable.GetAvailable(item, inventory));
     }
 
     /// <inheritdoc />
@@ -110,5 +108,46 @@ internal sealed class Sellable : ISellable
         }
 
         return quantity == 0;
+    }
+
+    private static int GetAvailable(ISalable heldItem, IEnumerable<Item?> inventory)
+    {
+        var obj = heldItem as SObject;
+        var available = 0;
+
+        if (Integrations.StackQuality.IsLoaded && obj is not null)
+        {
+            var stacks = Integrations.StackQuality.API.GetStacks(obj);
+            available += stacks[obj.Quality == 4 ? 3 : obj.Quality];
+        }
+        else
+        {
+            available += heldItem.Stack > 0 ? heldItem.Stack : 1;
+        }
+
+        foreach (var item in inventory)
+        {
+            if (item is null)
+            {
+                continue;
+            }
+
+            if (Integrations.StackQuality.IsLoaded
+             && heldItem.canStackWith(item)
+             && obj is not null
+             && item is SObject otherObj)
+            {
+                var stacks = Integrations.StackQuality.API.GetStacks(otherObj);
+                available += stacks[obj.Quality == 4 ? 3 : obj.Quality];
+                continue;
+            }
+
+            if (heldItem.IsEquivalentTo(item))
+            {
+                available += item.Stack > 0 ? item.Stack : 1;
+            }
+        }
+
+        return available;
     }
 }

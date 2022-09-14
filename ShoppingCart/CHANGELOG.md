@@ -2,14 +2,15 @@
 
 ## 1.0.0-beta.4 (Unreleased)
 
+### Added
+
+* Added API to support mod integrations.
+* Added compatibility with Better Shop Menu's grid layout.
+* Added integration with Stack Quality.
+
 ### Fixed
 
 * Disable ShoppingCart in FishTank and Dresser.
-
-### Added
-
-* Added compatibility with Better Shop Menu's grid layout.
-* Added integration with Stack Quality.
 
 ### Changed
 
