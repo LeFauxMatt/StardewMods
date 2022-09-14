@@ -149,4 +149,21 @@ internal sealed class QuantityField
         this._textBox.Text = this.CartItem.Quantity.ToString();
         return true;
     }
+
+    /// <summary>
+    ///     Perform a right click action.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <returns>Returns true if a component was clicked.</returns>
+    public bool RightClick(int x, int y)
+    {
+        if (!this.IsVisible || !this.Bounds.Contains(x, y))
+        {
+            return false;
+        }
+
+        this._textBox.Text = string.Empty;
+        return true;
+    }
 }

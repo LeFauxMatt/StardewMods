@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
+using StardewMods.ShoppingCart.Helpers;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -62,7 +63,32 @@ internal sealed class Sellable : ISellable
         var quantity = this.Quantity;
         for (var i = 0; i < inventory.Count; ++i)
         {
-            if (inventory[i] is not { } item || !this.Item.IsEquivalentTo(item))
+            if (inventory[i] is not { } item)
+            {
+                continue;
+            }
+
+            if (Integrations.StackQuality.IsLoaded
+             && item is SObject obj
+             && this.Item is SObject otherObj
+             && otherObj.canStackWith(obj))
+            {
+                var stacks = Integrations.StackQuality.API.GetStacks(obj);
+                if (stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality] <= quantity)
+                {
+                    quantity -= stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality];
+                    stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality] = 0;
+                    Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+                    continue;
+                }
+
+                stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality] -= quantity;
+                quantity = 0;
+                Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+                continue;
+            }
+
+            if (!this.Item.IsEquivalentTo(item))
             {
                 continue;
             }
