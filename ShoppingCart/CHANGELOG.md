@@ -2,6 +2,10 @@
 
 ## 1.0.0-beta.5 (Unreleased)
 
+### Added
+
+* Added config option to customize SHIFT+Click quantity.
+
 ### Changed
 
 * Support click/shift+click on shop items to add +1/+5 to current item.

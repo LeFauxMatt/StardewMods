@@ -11,5 +11,8 @@
   "ui.other-category": "Other",
   // Alerts
   "alert.money": "Not enough gold",
-  "alert.inventory": "Not enough space"
+  "alert.inventory": "Not enough space",
+  // Config
+  "config.shift-click-quantity.name": "SHIFT+Click Quantity",
+  "config.shift-click-quantity.tooltip": "The quantity of an item to purchase when you SHIFT+Click"
 }

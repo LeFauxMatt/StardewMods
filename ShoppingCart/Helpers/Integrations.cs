@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.ShoppingCart.Helpers;
 
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.StackQuality;
 
 /// <summary>
@@ -8,6 +9,7 @@ using StardewMods.Common.Integrations.StackQuality;
 internal sealed class Integrations
 {
     private static Integrations? Instance;
+    private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
 
     private readonly IModHelper _helper;
     private readonly StackQualityIntegration _stackQualityIntegration;
@@ -15,8 +17,14 @@ internal sealed class Integrations
     private Integrations(IModHelper helper)
     {
         this._helper = helper;
+        this._genericModConfigMenu = new(helper.ModRegistry);
         this._stackQualityIntegration = new(helper.ModRegistry);
     }
+
+    /// <summary>
+    ///     Gets Generic Mod Config Menu integration.
+    /// </summary>
+    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance!._genericModConfigMenu;
 
     /// <summary>
     ///     Gets Stack Quality integration.
