@@ -1,6 +1,6 @@
 ﻿# Stack Quality Change Log
 
-## 1.0.0-beta.4 (Unreleased)
+## 1.0.0-beta.4 (September 13, 2022)
 
 ### Added
 
