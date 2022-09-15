@@ -51,6 +51,7 @@ public class StackQuality : Mod
         StackQuality.Instance = this;
         Log.Monitor = this.Monitor;
         Integrations.Init(this.Helper);
+        ModPatches.Init(this.Helper, this.ModManifest);
 
         // Events
         this.Helper.Events.Display.RenderedActiveMenu += StackQuality.OnRenderedActiveMenu;

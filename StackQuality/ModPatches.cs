@@ -11,7 +11,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
-///     Harmony Patches for ShoppingCart.
+///     Harmony Patches for StackQuality.
 /// </summary>
 internal sealed class ModPatches
 {

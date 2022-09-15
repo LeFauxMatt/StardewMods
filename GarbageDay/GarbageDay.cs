@@ -3,7 +3,6 @@ namespace StardewMods.GarbageDay;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -14,7 +13,6 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 using xTile;
 using xTile.Dimensions;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 /// <inheritdoc />
 public class GarbageDay : Mod
@@ -47,38 +45,16 @@ public class GarbageDay : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
+        // Init
         Log.Monitor = this.Monitor;
         CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
+        ModPatches.Init(this.ModManifest);
 
         // Console Commands
         this.Helper.ConsoleCommands.Add("garbage_fill", I18n.Command_GarbageFill_Description(), this.GarbageFill);
         this.Helper.ConsoleCommands.Add("garbage_hat", I18n.Command_GarbageHat_Description(), GarbageDay.GarbageHat);
         this.Helper.ConsoleCommands.Add("garbage_clear", I18n.Command_GarbageClear_Description(), this.GarbageClear);
-
-        // Patches
-        var harmony = new Harmony(this.ModManifest.UniqueID);
-        harmony.Patch(
-            AccessTools.Method(
-                typeof(Chest),
-                nameof(Chest.draw),
-                new[]
-                {
-                    typeof(SpriteBatch),
-                    typeof(int),
-                    typeof(int),
-                    typeof(float),
-                }),
-            new(typeof(GarbageDay), nameof(GarbageDay.Chest_draw_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-            new(typeof(GarbageDay), nameof(GarbageDay.Chest_performToolAction_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-            new(typeof(GarbageDay), nameof(GarbageDay.Chest_UpdateFarmerNearby_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-            new(typeof(GarbageDay), nameof(GarbageDay.Chest_updateWhenCurrentLocation_prefix)));
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
@@ -93,161 +69,6 @@ public class GarbageDay : Mod
 
         this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_draw_prefix(
-        Chest __instance,
-        ref int ___currentLidFrame,
-        SpriteBatch spriteBatch,
-        int x,
-        int y,
-        float alpha)
-    {
-        if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
-        {
-            return true;
-        }
-
-        var texture = Game1.content.Load<Texture2D>("furyx639.GarbageDay/Texture");
-        var currentLidFrame = ___currentLidFrame % 3;
-        var layerDepth = Math.Max(0.0f, ((y + 1f) * 64f - 24f) / 10000f) + x * 1E-05f;
-        if (__instance.playerChoiceColor.Value.Equals(Color.Black))
-        {
-            spriteBatch.Draw(
-                texture,
-                Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize),
-                new Rectangle(currentLidFrame * 16, 0, 16, 32),
-                Color.White * alpha,
-                0f,
-                Vector2.Zero,
-                Game1.pixelZoom,
-                SpriteEffects.None,
-                layerDepth + (1 + layerDepth) * 1E-05f);
-            return false;
-        }
-
-        spriteBatch.Draw(
-            texture,
-            Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize),
-            new Rectangle(currentLidFrame * 16, 64, 16, 32),
-            Color.White * alpha,
-            0f,
-            Vector2.Zero,
-            Game1.pixelZoom,
-            SpriteEffects.None,
-            layerDepth * 1E-05f);
-
-        spriteBatch.Draw(
-            texture,
-            Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize),
-            new Rectangle(currentLidFrame * 16, 32, 16, 32),
-            __instance.playerChoiceColor.Value * alpha,
-            0f,
-            Vector2.Zero,
-            Game1.pixelZoom,
-            SpriteEffects.None,
-            layerDepth * 1E-05f);
-        return false;
-    }
-
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_performToolAction_prefix(Chest __instance)
-    {
-        return !__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan");
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_UpdateFarmerNearby_prefix(
-        Chest __instance,
-        ref bool ____farmerNearby,
-        ref int ____shippingBinFrameCounter,
-        ref int ___currentLidFrame,
-        GameLocation location,
-        bool animate)
-    {
-        if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
-        {
-            return true;
-        }
-
-        var shouldOpen = location.farmers.Any(
-            farmer => Math.Abs(farmer.getTileX() - __instance.TileLocation.X) <= 1f
-                   && Math.Abs(farmer.getTileY() - __instance.TileLocation.Y) <= 1f);
-        if (shouldOpen == ____farmerNearby)
-        {
-            return false;
-        }
-
-        ____farmerNearby = shouldOpen;
-        ____shippingBinFrameCounter = 5;
-
-        if (!animate)
-        {
-            ____shippingBinFrameCounter = -1;
-            ___currentLidFrame = ____farmerNearby ? __instance.getLastLidFrame() : __instance.startingLidFrame.Value;
-        }
-        else if (Game1.gameMode != 6)
-        {
-            location.localSound("trashcanlid");
-        }
-
-        return false;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_updateWhenCurrentLocation_prefix(
-        Chest __instance,
-        ref int ____shippingBinFrameCounter,
-        ref bool ____farmerNearby,
-        ref int ___currentLidFrame,
-        GameLocation environment)
-    {
-        if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
-        {
-            return true;
-        }
-
-        if (__instance.synchronized.Value)
-        {
-            __instance.openChestEvent.Poll();
-        }
-
-        __instance.mutex.Update(environment);
-
-        __instance.UpdateFarmerNearby(environment);
-        if (____shippingBinFrameCounter > -1)
-        {
-            ____shippingBinFrameCounter--;
-            if (____shippingBinFrameCounter <= 0)
-            {
-                ____shippingBinFrameCounter = 5;
-                switch (____farmerNearby)
-                {
-                    case true when ___currentLidFrame < __instance.getLastLidFrame():
-                        ___currentLidFrame++;
-                        break;
-                    case false when ___currentLidFrame > __instance.startingLidFrame.Value:
-                        ___currentLidFrame--;
-                        break;
-                    default:
-                        ____shippingBinFrameCounter = -1;
-                        break;
-                }
-            }
-        }
-
-        if (Game1.activeClickableMenu is null && __instance.GetMutex().IsLockHeld())
-        {
-            __instance.GetMutex().ReleaseLock();
-        }
-
-        return false;
     }
 
     private static void GarbageHat(string command, string[] args)

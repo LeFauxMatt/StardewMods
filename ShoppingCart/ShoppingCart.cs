@@ -76,7 +76,7 @@ public class ShoppingCart : Mod
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
         Integrations.Init(this.Helper);
-        Patches.Init(this.Helper, this.ModManifest, this.Config);
+        ModPatches.Init(this.Helper, this.ModManifest, this.Config);
 
         // Events
         this.Helper.Events.Display.MenuChanged += this.OnMenuChanged;

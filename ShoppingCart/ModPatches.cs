@@ -12,14 +12,14 @@ using StardewValley.Menus;
 /// <summary>
 ///     Harmony Patches for ShoppingCart.
 /// </summary>
-internal sealed class Patches
+internal sealed class ModPatches
 {
-    private static Patches? Instance;
+    private static ModPatches? Instance;
     private readonly ModConfig _config;
 
     private readonly IModHelper _helper;
 
-    private Patches(IModHelper helper, IManifest manifest, ModConfig config)
+    private ModPatches(IModHelper helper, IManifest manifest, ModConfig config)
     {
         this._helper = helper;
         this._config = config;
@@ -27,10 +27,10 @@ internal sealed class Patches
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
             AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.leftClick)),
-            postfix: new(typeof(Patches), nameof(Patches.InventoryMenu_leftClick_postfix)));
+            postfix: new(typeof(ModPatches), nameof(ModPatches.InventoryMenu_leftClick_postfix)));
         harmony.Patch(
             AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
-            postfix: new(typeof(Patches), nameof(Patches.InventoryMenu_rightClick_postfix)));
+            postfix: new(typeof(ModPatches), nameof(ModPatches.InventoryMenu_rightClick_postfix)));
         harmony.Patch(
             AccessTools.Constructor(
                 typeof(ShopMenu),
@@ -43,32 +43,32 @@ internal sealed class Patches
                     typeof(Func<ISalable, bool>),
                     typeof(string),
                 }),
-            transpiler: new(typeof(Patches), nameof(Patches.ShopMenu_constructor_transpiler)));
+            transpiler: new(typeof(ModPatches), nameof(ModPatches.ShopMenu_constructor_transpiler)));
         harmony.Patch(
             AccessTools.Method(typeof(ShopMenu), nameof(ShopMenu.receiveScrollWheelAction)),
-            new(typeof(Patches), nameof(Patches.ShopMenu_receiveScrollWheelAction_prefix)));
+            new(typeof(ModPatches), nameof(ModPatches.ShopMenu_receiveScrollWheelAction_prefix)));
         harmony.Patch(
             AccessTools.Method(typeof(ShopMenu), "tryToPurchaseItem"),
-            new(typeof(Patches), nameof(Patches.ShopMenu_tryToPurchaseItem_prefix)));
+            new(typeof(ModPatches), nameof(ModPatches.ShopMenu_tryToPurchaseItem_prefix)));
         harmony.Patch(
             AccessTools.Method(typeof(ShopMenu), nameof(ShopMenu.updatePosition)),
-            postfix: new(typeof(Patches), nameof(Patches.ShopMenu_updatePosition_postfix)));
+            postfix: new(typeof(ModPatches), nameof(ModPatches.ShopMenu_updatePosition_postfix)));
     }
 
-    private static ModConfig Config => Patches.Instance!._config;
+    private static ModConfig Config => ModPatches.Instance!._config;
 
-    private static IInputHelper Input => Patches.Instance!._helper.Input;
+    private static IInputHelper Input => ModPatches.Instance!._helper.Input;
 
     /// <summary>
-    ///     Initializes <see cref="Patches" />.
+    ///     Initializes <see cref="ModPatches" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="Patches" /> class.</returns>
-    public static Patches Init(IModHelper helper, IManifest manifest, ModConfig config)
+    /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
+    public static ModPatches Init(IModHelper helper, IManifest manifest, ModConfig config)
     {
-        return Patches.Instance ??= new(helper, manifest, config);
+        return ModPatches.Instance ??= new(helper, manifest, config);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -203,7 +203,7 @@ internal sealed class Patches
             {
                 yield return new(OpCodes.Ldarg_3);
                 yield return new(OpCodes.Ldarg_S, (short)6);
-                yield return CodeInstruction.Call(typeof(Patches), nameof(Patches.ShopMenu_updatePosition));
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.ShopMenu_updatePosition));
             }
             else
             {
@@ -235,9 +235,9 @@ internal sealed class Patches
             return true;
         }
 
-        if (numberToBuy == 5 && Patches.Input.IsDown(SButton.LeftShift))
+        if (numberToBuy == 5 && ModPatches.Input.IsDown(SButton.LeftShift))
         {
-            numberToBuy = Patches.Config.ShiftClickQuantity;
+            numberToBuy = ModPatches.Config.ShiftClickQuantity;
         }
 
         if (!ShoppingCart.CurrentShop.AddToCart(item, numberToBuy))
