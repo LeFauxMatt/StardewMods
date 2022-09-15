@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.Common.Integrations.ShoppingCart;
 
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using StardewValley.Menus;
 
 /// <summary>
@@ -8,6 +9,11 @@ using StardewValley.Menus;
 /// </summary>
 public interface IShop
 {
+    /// <summary>
+    ///     Gets the area this ShoppingCart menu occupies.
+    /// </summary>
+    public Rectangle Bounds { get; }
+
     /// <summary>
     ///     Gets the actual ShopMenu this ShoppingCart is attached to.
     /// </summary>
