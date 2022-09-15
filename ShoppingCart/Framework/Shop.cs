@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ShoppingCart.ShopHandlers;
+﻿namespace StardewMods.ShoppingCart.Framework;
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using StardewValley.Locations;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal sealed class VirtualShop : IShop
+internal sealed class Shop : IShop
 {
     /// <summary>
     ///     The width of the shopping cart menu.
@@ -37,11 +37,11 @@ internal sealed class VirtualShop : IShop
     private int _topY;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="VirtualShop" /> class.
+    ///     Initializes a new instance of the <see cref="Shop" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="menu">The <see cref="ShopMenu" /> to attach to.</param>
-    public VirtualShop(IModHelper helper, ShopMenu menu)
+    public Shop(IModHelper helper, ShopMenu menu)
     {
         this.Menu = menu;
         this._animations = helper.Reflection.GetField<List<TemporaryAnimatedSprite>>(this.Menu, "animations");
@@ -59,7 +59,7 @@ internal sealed class VirtualShop : IShop
         this.Bounds = new(
             this.Menu.xPositionOnScreen + this.Menu.width + Game1.tileSize + IClickableMenu.borderWidth,
             this.Menu.yPositionOnScreen + IClickableMenu.borderWidth / 2,
-            VirtualShop.MenuWidth - IClickableMenu.borderWidth * 2,
+            Shop.MenuWidth - IClickableMenu.borderWidth * 2,
             this.Menu.inventory.yPositionOnScreen
           - this.Menu.yPositionOnScreen
           + this.Menu.inventory.height
@@ -211,7 +211,7 @@ internal sealed class VirtualShop : IShop
             new(this.Bounds.X + this._cols[2] - this._dims[I18n.Ui_Quantity()].X - 32, this._currentY),
             Game1.textColor);
 
-        this._currentY += VirtualShop.LineHeight;
+        this._currentY += Shop.LineHeight;
         this._topY = this._currentY;
 
         // Draw Buying
@@ -228,7 +228,7 @@ internal sealed class VirtualShop : IShop
             {
                 prevCategory = category;
                 if (!this.DrawRow(
-                        VirtualShop.LineHeight,
+                        Shop.LineHeight,
                         y =>
                         {
                             Utility.drawTextWithShadow(
@@ -239,7 +239,7 @@ internal sealed class VirtualShop : IShop
                                 Game1.textColor);
                         }))
                 {
-                    this._bottomY = this._currentY + VirtualShop.LineHeight;
+                    this._bottomY = this._currentY + Shop.LineHeight;
                     return;
                 }
             }
@@ -251,28 +251,28 @@ internal sealed class VirtualShop : IShop
             }
 
             quantityField.IsVisible = this.DrawRow(
-                VirtualShop.LineHeight,
+                Shop.LineHeight,
                 y =>
                 {
                     quantityField.Bounds = new(
                         this.Bounds.X + this._cols[1] + Game1.tileSize / 2,
                         y - 4,
                         this._cols[2] - this._cols[1] - Game1.tileSize,
-                        VirtualShop.LineHeight);
+                        Shop.LineHeight);
                     quantityField.Draw(b);
                     this.DrawItem(toBuy, b, this.Bounds.X, y);
                 });
 
             if (!quantityField.IsVisible)
             {
-                this._bottomY = this._currentY + VirtualShop.LineHeight;
+                this._bottomY = this._currentY + Shop.LineHeight;
                 return;
             }
         }
 
         // Draw Total Buying
         if (!this.DrawRow(
-                VirtualShop.LineHeight * 2,
+                Shop.LineHeight * 2,
                 y =>
                 {
                     var text = $"{this.BuyTotal:n0}G";
@@ -291,7 +291,7 @@ internal sealed class VirtualShop : IShop
                         Game1.textColor);
                 }))
         {
-            this._bottomY = this._currentY + VirtualShop.LineHeight;
+            this._bottomY = this._currentY + Shop.LineHeight;
             return;
         }
 
@@ -309,7 +309,7 @@ internal sealed class VirtualShop : IShop
             {
                 prevCategory = category;
                 if (!this.DrawRow(
-                        VirtualShop.LineHeight,
+                        Shop.LineHeight,
                         y =>
                         {
                             Utility.drawTextWithShadow(
@@ -320,7 +320,7 @@ internal sealed class VirtualShop : IShop
                                 Game1.textColor);
                         }))
                 {
-                    this._bottomY = this._currentY + VirtualShop.LineHeight;
+                    this._bottomY = this._currentY + Shop.LineHeight;
                     return;
                 }
             }
@@ -332,28 +332,28 @@ internal sealed class VirtualShop : IShop
             }
 
             quantityField.IsVisible = this.DrawRow(
-                VirtualShop.LineHeight,
+                Shop.LineHeight,
                 y =>
                 {
                     quantityField.Bounds = new(
                         this.Bounds.X + this._cols[1] + Game1.tileSize / 2,
                         y - 4,
                         this._cols[2] - this._cols[1] - Game1.tileSize,
-                        VirtualShop.LineHeight);
+                        Shop.LineHeight);
                     quantityField.Draw(b);
                     this.DrawItem(toSell, b, this.Bounds.X, y);
                 });
 
             if (!quantityField.IsVisible)
             {
-                this._bottomY = this._currentY + VirtualShop.LineHeight;
+                this._bottomY = this._currentY + Shop.LineHeight;
                 return;
             }
         }
 
         // Draw Total Selling
         if (!this.DrawRow(
-                VirtualShop.LineHeight * 2,
+                Shop.LineHeight * 2,
                 y =>
                 {
                     var text = $"{Math.Abs(this.SellTotal):n0}G";
@@ -372,13 +372,13 @@ internal sealed class VirtualShop : IShop
                         Game1.textColor);
                 }))
         {
-            this._bottomY = this._currentY + VirtualShop.LineHeight;
+            this._bottomY = this._currentY + Shop.LineHeight;
             return;
         }
 
         // Draw Grand Total
         if (!this.DrawRow(
-                VirtualShop.LineHeight,
+                Shop.LineHeight,
                 y =>
                 {
                     var text = $"{this.GrandTotal:n0}G";
@@ -397,14 +397,14 @@ internal sealed class VirtualShop : IShop
                         Game1.textColor);
                 }))
         {
-            this._bottomY = this._currentY + VirtualShop.LineHeight;
+            this._bottomY = this._currentY + Shop.LineHeight;
             return;
         }
 
         // Draw purchase
         this._purchase.visible = false;
         this.DrawRow(
-            VirtualShop.LineHeight,
+            Shop.LineHeight,
             y =>
             {
                 var width = (int)Game1.smallFont.MeasureString(I18n.Ui_Checkout()).X;
@@ -547,11 +547,11 @@ internal sealed class VirtualShop : IShop
         switch (direction)
         {
             case > 0:
-                this.Offset -= VirtualShop.LineHeight;
+                this.Offset -= Shop.LineHeight;
                 Game1.playSound("shiny4");
                 return true;
             case < 0:
-                this.Offset += VirtualShop.LineHeight;
+                this.Offset += Shop.LineHeight;
                 Game1.playSound("shiny4");
                 return true;
         }
@@ -605,7 +605,7 @@ internal sealed class VirtualShop : IShop
         }
 
         this._currentY += lineHeight;
-        return this._currentY - this.Offset + VirtualShop.LineHeight <= this.Bounds.Bottom;
+        return this._currentY - this.Offset + Shop.LineHeight <= this.Bounds.Bottom;
     }
 
     private bool TryCheckout(bool test = false)

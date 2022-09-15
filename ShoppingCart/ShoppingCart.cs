@@ -5,8 +5,7 @@ using System.Reflection;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Helpers;
-using StardewMods.ShoppingCart.Helpers;
-using StardewMods.ShoppingCart.ShopHandlers;
+using StardewMods.ShoppingCart.Framework;
 using StardewValley.Menus;
 using StardewValley.Tools;
 
@@ -16,7 +15,7 @@ public class ShoppingCart : Mod
     private static ShoppingCart? Instance;
 
     private readonly PerScreen<ShopMenu?> _currentMenu = new();
-    private readonly PerScreen<VirtualShop?> _currentShop = new();
+    private readonly PerScreen<Shop?> _currentShop = new();
     private readonly PerScreen<bool> _makePurchase = new();
 
     private IReflectedField<string?>? _boldTitleText;
@@ -29,7 +28,7 @@ public class ShoppingCart : Mod
     /// <summary>
     ///     Gets the current instance of VirtualShop.
     /// </summary>
-    internal static VirtualShop? CurrentShop
+    internal static Shop? CurrentShop
     {
         get => ShoppingCart.Instance!._currentShop.Value;
         private set => ShoppingCart.Instance!._currentShop.Value = value;

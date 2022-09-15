@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.StackQuality.Helpers;
+using StardewMods.StackQuality.Framework;
 using StardewValley.Menus;
 
 /// <inheritdoc />

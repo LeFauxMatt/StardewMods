@@ -1,11 +1,10 @@
-﻿namespace StardewMods.StackQuality;
+﻿namespace StardewMods.StackQuality.Framework;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using StardewMods.Common.Helpers.AtraBase.StringHandlers;
-using StardewMods.StackQuality.Helpers;
 using StardewMods.StackQuality.UI;
 using StardewValley.Menus;
 using StardewValley.Objects;

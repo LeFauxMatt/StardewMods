@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.StackQuality;
 
 using StardewMods.Common.Integrations.StackQuality;
-using StardewMods.StackQuality.Helpers;
+using StardewMods.StackQuality.Framework;
 
 /// <inheritdoc />
 public sealed class StackQualityApi : IStackQualityApi

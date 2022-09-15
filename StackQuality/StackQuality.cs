@@ -2,7 +2,7 @@
 
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
-using StardewMods.StackQuality.Helpers;
+using StardewMods.StackQuality.Framework;
 using StardewMods.StackQuality.UI;
 using StardewValley.Menus;
 

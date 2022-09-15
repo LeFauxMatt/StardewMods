@@ -1,4 +1,4 @@
-﻿namespace StardewMods.StackQuality.Helpers;
+﻿namespace StardewMods.StackQuality.Framework;
 
 using System.Collections.Generic;
 using System.Linq;

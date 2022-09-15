@@ -1,12 +1,10 @@
-﻿namespace StardewMods.ShoppingCart;
+﻿namespace StardewMods.ShoppingCart.Framework;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
-using StardewMods.ShoppingCart.Helpers;
-using StardewMods.ShoppingCart.ShopHandlers;
 using StardewValley.Menus;
 
 /// <summary>
@@ -258,8 +256,8 @@ internal sealed class ModPatches
             return;
         }
 
-        shopMenu.xPositionOnScreen += VirtualShop.MenuWidth / 2;
-        shopMenu.upperRightCloseButton.bounds.X -= VirtualShop.MenuWidth / 2 + Game1.tileSize;
+        shopMenu.xPositionOnScreen += Shop.MenuWidth / 2;
+        shopMenu.upperRightCloseButton.bounds.X -= Shop.MenuWidth / 2 + Game1.tileSize;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -272,7 +270,7 @@ internal sealed class ModPatches
             return;
         }
 
-        __instance.xPositionOnScreen -= VirtualShop.MenuWidth / 2;
-        __instance.upperRightCloseButton.bounds.X += VirtualShop.MenuWidth / 2 + Game1.tileSize;
+        __instance.xPositionOnScreen -= Shop.MenuWidth / 2;
+        __instance.upperRightCloseButton.bounds.X += Shop.MenuWidth / 2 + Game1.tileSize;
     }
 }

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
-using StardewMods.ShoppingCart.Helpers;
+using StardewMods.ShoppingCart.Framework;
 using StardewValley.Menus;
 
 /// <inheritdoc />

@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ShoppingCart.Helpers;
+﻿namespace StardewMods.ShoppingCart.Framework;
 
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.StackQuality;
@@ -11,12 +11,10 @@ internal sealed class Integrations
     private static Integrations? Instance;
     private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
 
-    private readonly IModHelper _helper;
     private readonly StackQualityIntegration _stackQualityIntegration;
 
     private Integrations(IModHelper helper)
     {
-        this._helper = helper;
         this._genericModConfigMenu = new(helper.ModRegistry);
         this._stackQualityIntegration = new(helper.ModRegistry);
     }
