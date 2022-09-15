@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.Common.Helpers;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -57,6 +58,30 @@ internal static class CommonHelpers
 
     /// <inheritdoc cref="IMultiplayerHelper" />
     public static IMultiplayerHelper? Multiplayer { get; set; }
+
+    /// <summary>
+    ///     Gets or initializes ModConfig.
+    /// </summary>
+    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <typeparam name="T">The ModConfig type.</typeparam>
+    /// <returns>Returns an existing or new instance of ModConfig.</returns>
+    public static T GetConfig<T>(IModHelper helper)
+        where T : class, new()
+    {
+        T? config = default;
+        try
+        {
+            config = helper.ReadConfig<T>();
+        }
+        catch (Exception)
+        {
+            Log.Warn($"Error loading config: {typeof(T).Name}");
+        }
+
+        config ??= new();
+        Log.Trace(config.ToString()!);
+        return config;
+    }
 
     /// <summary>
     ///     Gets the map tile the cursor is over.

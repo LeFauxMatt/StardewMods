@@ -6,7 +6,7 @@ using StardewMods.Common.Enums;
 /// <summary>
 ///     Mod config data.
 /// </summary>
-public sealed class ModConfig
+internal sealed class ModConfig
 {
     /// <summary>
     ///     Gets or sets the day of the week that garbage is collected.

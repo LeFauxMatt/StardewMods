@@ -27,30 +27,7 @@ public class GarbageDay : Mod
     private ModConfig? _config;
     private Multiplayer? _multiplayer;
 
-    private ModConfig Config
-    {
-        get
-        {
-            if (this._config is not null)
-            {
-                return this._config;
-            }
-
-            ModConfig? config = null;
-            try
-            {
-                config = this.Helper.ReadConfig<ModConfig>();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            this._config = config ?? new ModConfig();
-            Log.Trace(this._config.ToString());
-            return this._config;
-        }
-    }
+    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private GarbageCan? GarbageCan
     {

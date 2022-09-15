@@ -6,7 +6,7 @@ using System.Text;
 /// <summary>
 ///     Mod config data.
 /// </summary>
-public sealed class ModConfig
+internal sealed class ModConfig
 {
     /// <summary>
     ///     Gets or sets a value indicating whether damage while falling will be negated.

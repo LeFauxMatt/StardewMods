@@ -6,7 +6,7 @@ using System.Text;
 /// <summary>
 ///     Mod config data.
 /// </summary>
-public sealed class ModConfig
+internal sealed class ModConfig
 {
     /// <summary>
     ///     Gets or sets the chance that an OrdinaryCapsule will break.
