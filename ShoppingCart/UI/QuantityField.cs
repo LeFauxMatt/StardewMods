@@ -85,16 +85,23 @@ internal sealed class QuantityField
     public bool IsVisible { get; set; }
 
     /// <summary>
+    ///     Gets or sets the quantity represented by the text box.
+    /// </summary>
+    public int Quantity
+    {
+        get => this._range.Clamp(string.IsNullOrWhiteSpace(this._textBox.Text) ? 0 : int.Parse(this._textBox.Text));
+        set => this._textBox.Text = value.ToString();
+    }
+
+    /// <summary>
     ///     Draws the cart item to the screen.
     /// </summary>
     /// <param name="b">The sprite batch to draw to.</param>
     public void Draw(SpriteBatch b)
     {
-        if (this._textBox.Text != this.CartItem.Quantity.ToString())
+        if (this.Quantity != this.CartItem.Quantity)
         {
-            this.CartItem.Quantity = string.IsNullOrWhiteSpace(this._textBox.Text)
-                ? 0
-                : this._range.Clamp(int.Parse(this._textBox.Text));
+            this.CartItem.Quantity = this.Quantity;
         }
 
         this._textBox.Draw(b, false);
@@ -135,19 +142,17 @@ internal sealed class QuantityField
 
         if (this._minus.containsPoint(x, y))
         {
-            this.CartItem.Quantity--;
-        }
-        else if (this._plus.containsPoint(x, y))
-        {
-            this.CartItem.Quantity++;
-        }
-        else if (!this.Bounds.Contains(x, y))
-        {
-            return false;
+            this.Quantity--;
+            return true;
         }
 
-        this._textBox.Text = this.CartItem.Quantity.ToString();
-        return true;
+        if (this._plus.containsPoint(x, y))
+        {
+            this.Quantity++;
+            return true;
+        }
+
+        return this.Bounds.Contains(x, y);
     }
 
     /// <summary>

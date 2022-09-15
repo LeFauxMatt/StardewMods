@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using StardewModdingAPI.Events;
@@ -69,6 +70,7 @@ public class ShoppingCart : Mod
         this.Helper.Events.Display.RenderedActiveMenu += ShoppingCart.OnRenderedActiveMenu;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.CursorMoved += ShoppingCart.OnCursorMoved;
+        this.Helper.Events.Input.MouseWheelScrolled += ShoppingCart.OnMouseWheelScrolled;
 
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
@@ -260,6 +262,20 @@ public class ShoppingCart : Mod
         ShoppingCart.CurrentShop.Hover(x, y);
     }
 
+    [EventPriority(EventPriority.High)]
+    private static void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
+    {
+        if (ShoppingCart.CurrentShop?.Scroll(e.Delta) != true)
+        {
+            return;
+        }
+
+        typeof(MouseWheelScrolledEventArgs).GetField(
+                                               $"<{nameof(e.OldValue)}>k__BackingField",
+                                               BindingFlags.Instance | BindingFlags.NonPublic)
+                                           ?.SetValue(e, e.NewValue);
+    }
+
     [EventPriority(EventPriority.Low)]
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
@@ -327,9 +343,10 @@ public class ShoppingCart : Mod
         }
     }
 
-    private static bool ShopMenu_receiveScrollWheelAction_prefix(int direction)
+    private static bool ShopMenu_receiveScrollWheelAction_prefix()
     {
-        return ShoppingCart.CurrentShop?.Scroll(direction) != true;
+        var (x, y) = Game1.getMousePosition(true);
+        return ShoppingCart.CurrentShop?.Bounds.Contains(x, y) != true;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

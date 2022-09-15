@@ -1,6 +1,13 @@
 # Shopping Cart Change Log
 
-## 1.0.0-beta.4 (Unreleased)
+## 1.0.0-beta.5 (Unreleased)
+
+### Changed
+
+* Support click/shift+click on shop items to add +1/+5 to current item.
+* Suppress Mouse Wheel scrolling to better support BetterShopMenu grid layout.
+
+## 1.0.0-beta.4 (September 13, 2022)
 
 ### Added
 
