@@ -250,18 +250,17 @@ internal sealed class BetterCrafting : IFeature
 
         BetterCrafting.InWorkbench = false;
         e.AddStorages(
-            from storage in Storages.All
-            where storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-               && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
-               && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
-                 && Game1.player.currentLocation is MineShaft mineShaft
-                 && mineShaft.Name.StartsWith("UndergroundMine"))
-               && storage.Source is not null
-               && BetterCrafting.Config.CraftFromWorkbench.WithinRangeOfPlayer(
-                      BetterCrafting.Config.CraftFromWorkbenchDistance,
-                      storage.Location,
-                      storage.Position)
-            select storage);
+            Storages.All.Where(
+                storage => storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+                        && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
+                        && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
+                          && Game1.player.currentLocation is MineShaft mineShaft
+                          && mineShaft.Name.StartsWith("UndergroundMine"))
+                        && storage.Source is not null
+                        && BetterCrafting.Config.CraftFromWorkbench.WithinRangeOfPlayer(
+                               BetterCrafting.Config.CraftFromWorkbenchDistance,
+                               storage.Location,
+                               storage.Position)));
     }
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)

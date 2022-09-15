@@ -164,11 +164,7 @@ internal sealed class Integrations
             return false;
         }
 
-        mods = (
-            from modId in modIds
-            where Integrations.ModRegistry.IsLoaded(modId)
-            select Integrations.ModRegistry.Get(modId)).ToList();
-
+        mods = modIds.Where(Integrations.ModRegistry.IsLoaded).Select(Integrations.ModRegistry.Get).ToList();
         return mods.Any();
     }
 

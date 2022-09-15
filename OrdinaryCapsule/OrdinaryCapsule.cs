@@ -17,7 +17,7 @@ public class OrdinaryCapsule : Mod
     private static readonly Dictionary<int, int> CachedTimes = new();
 
     private static readonly Lazy<List<Item>> ItemsLazy = new(
-        () => new(from item in new ItemRepository().GetAll() select item.Item));
+        () => new(new ItemRepository().GetAll().Select(item => item.Item)));
 
     private static OrdinaryCapsule? Instance;
 

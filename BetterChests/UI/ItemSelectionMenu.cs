@@ -21,23 +21,28 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     private const int VerticalTagSpacing = 5;
 
     private static readonly Lazy<List<Item>> ItemsLazy = new(
-        () => new(from item in new ItemRepository().GetAll() select item.Item));
+        () => new(new ItemRepository().GetAll().Select(item => item.Item)));
 
     private static readonly Lazy<List<ClickableComponent>> TagsLazy = new(
-        () => (
-                from item in ItemSelectionMenu.Items
-                from tag in item.GetContextTagsExt()
-                where !tag.StartsWith("id_") && !tag.StartsWith("item_") && !tag.StartsWith("preserve_")
-                orderby tag
-                select tag).Distinct()
-                           .Select(
-                               tag =>
-                               {
-                                   var localTag = ItemSelectionMenu.Translation!.Get($"tag.{tag}").Default(tag);
-                                   var (tagWidth, tagHeight) = Game1.smallFont.MeasureString(localTag).ToPoint();
-                                   return new ClickableComponent(new(0, 0, tagWidth, tagHeight), tag);
-                               })
-                           .ToList());
+        () =>
+        {
+            var tags = ItemSelectionMenu.Items.SelectMany(item => item.GetContextTagsExt())
+                                        .Where(
+                                            tag => !tag.StartsWith("id_")
+                                                && !tag.StartsWith("item_")
+                                                && !tag.StartsWith("preserve_"))
+                                        .Distinct()
+                                        .ToArray();
+            Array.Sort(tags);
+            return tags.Select(
+                           tag =>
+                           {
+                               var localTag = ItemSelectionMenu.Translation!.Get($"tag.{tag}").Default(tag);
+                               var (tagWidth, tagHeight) = Game1.smallFont.MeasureString(localTag).ToPoint();
+                               return new ClickableComponent(new(0, 0, tagWidth, tagHeight), tag);
+                           })
+                       .ToList();
+        });
 
     private static readonly Lazy<int> LineHeightLazy = new(
         () => ItemSelectionMenu.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing);
@@ -337,17 +342,18 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
             this._displayedTags.Clear();
             this._displayedTags.AddRange(
                 this._selected.Any()
-                    ?
-                    from tag in ItemSelectionMenu.AllTags
-                    where this._selected.Contains(tag.name)
-                       || (tag.name[..1] != "!" && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name)))
-                    orderby this._selected.Contains(tag.name) ? 0 : 1, tag.name[..1] == "!" ? tag.name[1..] : tag.name
-                    select tag
-                    :
-                    from tag in ItemSelectionMenu.AllTags
-                    where tag.name[..1] != "!" && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name))
-                    orderby tag.name
-                    select tag);
+                    ? ItemSelectionMenu.AllTags
+                                       .Where(
+                                           cc => this._selected.Contains(cc.name)
+                                              || (cc.name[..1] != "!"
+                                               && this._displayedItems.Items.Any(item => item.HasContextTag(cc.name))))
+                                       .OrderBy(cc => this._selected.Contains(cc.name) ? 0 : 1)
+                                       .ThenBy(cc => cc.name[..1] == "!" ? cc.name[1..] : cc.name)
+                    : ItemSelectionMenu.AllTags
+                                       .Where(
+                                           cc => cc.name[..1] != "!"
+                                              && this._displayedItems.Items.Any(item => item.HasContextTag(cc.name)))
+                                       .OrderBy(cc => cc.name));
             var x = this.inventory.xPositionOnScreen;
             var y = this.inventory.yPositionOnScreen;
             var matched = this._selection.Any();

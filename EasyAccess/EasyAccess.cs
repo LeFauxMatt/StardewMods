@@ -162,13 +162,15 @@ public class EasyAccess : Mod
                 var pos = new Vector2(tX, tY);
 
                 // Big Craftables
-                if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-                 && (obj.Type?.Equals("Crafting") == true || obj.Type?.Equals("interactive") == true)
-                 && obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
+                if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+                 || (obj.Type?.Equals("Crafting") != true && obj.Type?.Equals("interactive") != true)
+                 || !obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
                 {
-                    Game1.player.reduceActiveItemByOne();
-                    Log.Trace($"Dispensed {Game1.player.CurrentItem.DisplayName} into producer {obj.DisplayName}.");
+                    continue;
                 }
+
+                Game1.player.reduceActiveItemByOne();
+                Log.Trace($"Dispensed {Game1.player.CurrentItem.DisplayName} into producer {obj.DisplayName}.");
             }
         }
     }
@@ -195,11 +197,13 @@ public class EasyAccess : Mod
             return;
         }
 
-        if (this.Config.ControlScheme.DispenseItems.JustPressed())
+        if (!this.Config.ControlScheme.DispenseItems.JustPressed())
         {
-            this.DispenseInputs();
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.DispenseItems);
+            return;
         }
+
+        this.DispenseInputs();
+        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.DispenseItems);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -291,22 +295,24 @@ public class EasyAccess : Mod
                 nameof(ModConfig.DoTerrain));
         }
 
-        if (toolbarIcons.IsLoaded)
+        if (!toolbarIcons.IsLoaded)
         {
-            toolbarIcons.API.AddToolbarIcon(
-                "EasyAccess.CollectItems",
-                $"{this.ModManifest.UniqueID}/Icons",
-                new Rectangle(0, 0, 16, 16),
-                I18n.Button_CollectOutputs_Name());
-
-            toolbarIcons.API.AddToolbarIcon(
-                "EasyAccess.DispenseInputs",
-                $"{this.ModManifest.UniqueID}/Icons",
-                new Rectangle(16, 0, 16, 16),
-                I18n.Button_DispenseInputs_Name());
-
-            toolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+            return;
         }
+
+        toolbarIcons.API.AddToolbarIcon(
+            "EasyAccess.CollectItems",
+            $"{this.ModManifest.UniqueID}/Icons",
+            new Rectangle(0, 0, 16, 16),
+            I18n.Button_CollectOutputs_Name());
+
+        toolbarIcons.API.AddToolbarIcon(
+            "EasyAccess.DispenseInputs",
+            $"{this.ModManifest.UniqueID}/Icons",
+            new Rectangle(16, 0, 16, 16),
+            I18n.Button_DispenseInputs_Name());
+
+        toolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     private void OnToolbarIconPressed(object? sender, string id)

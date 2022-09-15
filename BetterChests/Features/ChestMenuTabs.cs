@@ -10,6 +10,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
 
@@ -38,20 +39,19 @@ internal sealed class ChestMenuTabs : IFeature
             () =>
             {
                 return (
-                    from tab in
-                        from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
-                        select (tab.Key, Value: tab.Value.Split('/'))
+                    from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
+                    let span = new SpanSplit(tab.Value, '/')
                     select (
                         tab.Key,
                         Value: new ClickableTextureComponent(
-                            tab.Value[3],
+                            span[3],
                             new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
                             string.Empty,
-                            !string.IsNullOrWhiteSpace(tab.Value[0])
-                                ? tab.Value[0]
+                            !string.IsNullOrWhiteSpace(span[0])
+                                ? span[0]
                                 : helper.Translation.Get($"tabs.{tab.Key}.name").Default(tab.Key),
-                            Game1.content.Load<Texture2D>(tab.Value[1]),
-                            new(16 * int.Parse(tab.Value[2]), 4, 16, 12),
+                            Game1.content.Load<Texture2D>(span[1]),
+                            new(16 * int.Parse(span[2]), 4, 16, 12),
                             Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value);
             });
     }

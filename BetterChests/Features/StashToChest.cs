@@ -28,14 +28,16 @@ internal sealed class StashToChest : IFeature
     }
 
     private static IEnumerable<IStorageObject> Eligible =>
-        from storage in Storages.All
-        where storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-           && storage.StashToChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
-           && !(storage.StashToChestDisableLocations?.Contains("UndergroundMine") == true
-             && Game1.player.currentLocation is MineShaft mineShaft
-             && mineShaft.Name.StartsWith("UndergroundMine"))
-           && storage.StashToChest.WithinRangeOfPlayer(storage.StashToChestDistance, storage.Location, storage.Position)
-        select storage;
+        Storages.All.Where(
+            storage => storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+                    && !storage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+                    && !(storage.StashToChestDisableLocations.Contains("UndergroundMine")
+                      && Game1.player.currentLocation is MineShaft mineShaft
+                      && mineShaft.Name.StartsWith("UndergroundMine"))
+                    && storage.StashToChest.WithinRangeOfPlayer(
+                           storage.StashToChestDistance,
+                           storage.Location,
+                           storage.Position));
 
     /// <summary>
     ///     Initializes <see cref="StashToChest" />.

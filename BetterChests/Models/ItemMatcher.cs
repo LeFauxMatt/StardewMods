@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc cref="StardewMods.Common.Integrations.BetterChests.IItemMatcher" />
@@ -38,9 +38,13 @@ internal sealed class ItemMatcher : ObservableCollection<string>, IItemMatcher
                 return;
             }
 
-            foreach (var item in Regex.Split(value, @"\s+"))
+            var split = new StreamSplit(value);
+            foreach (var text in split)
             {
-                this.Add(item);
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    this.Add(text);
+                }
             }
         }
     }

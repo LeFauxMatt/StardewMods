@@ -14,7 +14,7 @@ using StardewValley.Objects;
 internal sealed class GarbageCan
 {
     private static readonly Lazy<List<Item>> ItemsLazy = new(
-        () => new(from item in new ItemRepository().GetAll() select item.Item));
+        () => new(new ItemRepository().GetAll().Select(item => item.Item)));
 
     private readonly Chest _chest;
     private readonly Lazy<Random> _randomizer;
