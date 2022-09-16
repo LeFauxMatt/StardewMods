@@ -52,11 +52,12 @@ internal static class CommonExtensions
 
         return salable switch
         {
-            ColoredObject cObj when other is not ColoredObject ocObj || !cObj.color.Value.Equals(ocObj.color.Value) =>
-                false,
+            ColoredObject coloredObj when other is not ColoredObject otherColoredObj
+                                       || !coloredObj.color.Value.Equals(otherColoredObj.color.Value) => false,
             SObject obj when other is not SObject otherObj
                           || obj.ParentSheetIndex != otherObj.ParentSheetIndex
                           || obj.bigCraftable.Value != otherObj.bigCraftable.Value
+                          || obj.orderData.Value != otherObj.orderData.Value
                           || obj.Quality != otherObj.Quality
                           || obj.Type != otherObj.Type => false,
             Item item when other is not Item otherItem
