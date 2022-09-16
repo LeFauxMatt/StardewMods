@@ -10,7 +10,7 @@ internal sealed class StackQualityIntegration : ModIntegration<IStackQualityApi>
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public StackQualityIntegration(IModRegistry modRegistry)
-        : base(modRegistry, StackQualityIntegration.ModUniqueId)
+        : base(modRegistry, StackQualityIntegration.ModUniqueId, "1.0.0-beta.6")
     {
         // Nothing
     }
