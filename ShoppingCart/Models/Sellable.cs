@@ -1,6 +1,8 @@
 ﻿namespace StardewMods.ShoppingCart.Models;
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
 using StardewMods.ShoppingCart.Framework;
@@ -61,45 +63,41 @@ internal sealed class Sellable : ISellable
         var quantity = this.Quantity;
         for (var i = 0; i < inventory.Count; ++i)
         {
-            if (inventory[i] is not { } item)
-            {
-                continue;
-            }
+            int toTake;
 
+            // Stack Quality Integration
             if (Integrations.StackQuality.IsLoaded
-             && item is SObject obj
-             && this.Item is SObject otherObj
-             && otherObj.canStackWith(obj))
+             && inventory[i] is SObject obj
+             && Integrations.StackQuality.API.EquivalentObjects(obj, this.Item)
+             && Integrations.StackQuality.API.GetStacks(obj, out var stacks))
             {
-                var stacks = Integrations.StackQuality.API.GetStacks(obj);
-                if (stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality] <= quantity)
+                var quality = ((SObject)this.Item).Quality;
+                toTake = Math.Min(quantity, stacks[quality == 4 ? 3 : quality]);
+                quantity -= toTake;
+                stacks[quality == 4 ? 3 : quality] -= toTake;
+
+                if (stacks.Sum() == 0)
                 {
-                    quantity -= stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality];
-                    stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality] = 0;
-                    Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+                    inventory[i] = null;
                     continue;
                 }
 
-                stacks[otherObj.Quality == 4 ? 3 : otherObj.Quality] -= quantity;
-                quantity = 0;
-                Integrations.StackQuality.API.UpdateQuality(obj, stacks);
+                Integrations.StackQuality.API.UpdateStacks(obj, stacks);
                 continue;
             }
 
-            if (!this.Item.IsEquivalentTo(item))
+            if (inventory[i] is not { } item || !this.Item.IsEquivalentTo(item))
             {
                 continue;
             }
 
-            if (item.Stack <= quantity)
+            toTake = Math.Min(quantity, item.Stack);
+            item.Stack -= toTake;
+            quantity -= toTake;
+            if (item.Stack == 0)
             {
                 inventory[i] = null;
-                quantity -= item.Stack;
-                continue;
             }
-
-            item.Stack -= quantity;
-            quantity = 0;
         }
 
         if (!test)
@@ -113,17 +111,13 @@ internal sealed class Sellable : ISellable
     private static int GetAvailable(ISalable heldItem, IEnumerable<Item?> inventory)
     {
         var obj = heldItem as SObject;
-        var available = 0;
-
-        if (Integrations.StackQuality.IsLoaded && obj is not null)
-        {
-            var stacks = Integrations.StackQuality.API.GetStacks(obj);
-            available += stacks[obj.Quality == 4 ? 3 : obj.Quality];
-        }
-        else
-        {
-            available += heldItem.Stack > 0 ? heldItem.Stack : 1;
-        }
+        var available = obj is not null
+                     && Integrations.StackQuality.IsLoaded
+                     && Integrations.StackQuality.API.GetStacks(obj, out var stacks)
+            ? stacks[obj.Quality == 4 ? 3 : obj.Quality]
+            : heldItem.Stack > 0
+                ? heldItem.Stack
+                : 1;
 
         foreach (var item in inventory)
         {
@@ -132,12 +126,11 @@ internal sealed class Sellable : ISellable
                 continue;
             }
 
-            if (Integrations.StackQuality.IsLoaded
-             && heldItem.canStackWith(item)
-             && obj is not null
-             && item is SObject otherObj)
+            if (obj is not null
+             && Integrations.StackQuality.IsLoaded
+             && Integrations.StackQuality.API.EquivalentObjects(obj, item)
+             && Integrations.StackQuality.API.GetStacks((SObject)item, out stacks))
             {
-                var stacks = Integrations.StackQuality.API.GetStacks(otherObj);
                 available += stacks[obj.Quality == 4 ? 3 : obj.Quality];
                 continue;
             }

@@ -86,24 +86,19 @@ internal sealed class ModPatches
         var component = __instance.inventory.Single(cc => cc.containsPoint(x, y));
         var slotNumber = int.Parse(component.name);
 
-        if (Integrations.StackQuality.IsLoaded && __result is SObject obj)
+        if (__result is SObject obj
+         && Integrations.StackQuality.IsLoaded
+         && Integrations.StackQuality.API.SplitStacks(obj, out var items))
         {
-            var stacks = Integrations.StackQuality.API.GetStacks(obj);
-            for (var i = 0; i < 4; ++i)
+            foreach (var item in items)
             {
-                Item? split = null;
-                var take = new int[4];
-                take[i] = stacks[i];
-                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, take))
+                if (item.Stack > 0)
                 {
-                    continue;
+                    ShoppingCart.CurrentShop.AddToCart(item);
                 }
-
-                ShoppingCart.CurrentShop.AddToCart(split);
             }
 
             // Return item to inventory
-            Integrations.StackQuality.API.UpdateQuality(obj, stacks);
             if (__instance.actualInventory[slotNumber] is SObject otherObj)
             {
                 otherObj.addToStack(obj);
@@ -143,32 +138,22 @@ internal sealed class ModPatches
         var component = __instance.inventory.Single(cc => cc.containsPoint(x, y));
         var slotNumber = int.Parse(component.name);
 
-        if (Integrations.StackQuality.IsLoaded && __result is SObject obj)
+        if (__result is SObject obj
+         && Integrations.StackQuality.IsLoaded
+         && Integrations.StackQuality.API.SplitStacks(obj, out var items))
         {
-            var stacks = Integrations.StackQuality.API.GetStacks(obj);
-            for (var i = 0; i < 4; ++i)
+            foreach (var item in items)
             {
-                Item? split = null;
-                var take = new int[4];
-                take[i] = stacks[i];
-                if (stacks[i] <= 0 || !Integrations.StackQuality.API.SplitStacks(obj, ref split, take))
+                if (item.Stack <= 0)
                 {
                     continue;
                 }
 
-                ShoppingCart.CurrentShop.AddToCart(split);
+                ShoppingCart.CurrentShop.AddToCart(item);
+                __instance.actualInventory[slotNumber].addToStack(item);
             }
 
-            // Return item to inventory
-            Integrations.StackQuality.API.UpdateQuality(obj, stacks);
-            if (__instance.actualInventory[slotNumber] is SObject otherObj)
-            {
-                otherObj.addToStack(obj);
-                __result = null;
-                return;
-            }
-
-            __instance.actualInventory[slotNumber] = obj;
+            __instance.actualInventory[slotNumber] ??= obj;
             __result = null;
             return;
         }

@@ -1,5 +1,11 @@
 # Shopping Cart Change Log
 
+## 1.0.1 (September 16, 2022)
+
+### Changed
+
+* Updated Stack Quality Integration.
+
 ## 1.0.0 (September 15, 2022)
 
 ### Added

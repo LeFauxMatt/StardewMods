@@ -89,8 +89,8 @@ internal sealed class QuantityField
     /// </summary>
     public int Quantity
     {
-        get => this._range.Clamp(string.IsNullOrWhiteSpace(this._textBox.Text) ? 0 : int.Parse(this._textBox.Text));
-        set => this._textBox.Text = value.ToString();
+        get => string.IsNullOrWhiteSpace(this._textBox.Text) ? 0 : int.Parse(this._textBox.Text);
+        set => this._textBox.Text = this._range.Clamp(value).ToString();
     }
 
     /// <summary>
