@@ -1,5 +1,15 @@
 ﻿# Stack Quality Change Log
 
+## 1.0.0-beta.6 (September 16, 2022)
+
+### Fixed
+
+* Fixed items changing quality when right-clicking.
+
+### Changed
+
+* Update API for simpler methods.
+
 ## 1.0.0-beta.5 (September 15, 2022)
 
 ### Fixed

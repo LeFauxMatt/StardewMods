@@ -1,53 +1,57 @@
 ﻿namespace StardewMods.StackQuality.UI;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.StackQuality.Framework;
+using StardewMods.Common.Integrations.StackQuality;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 internal sealed class ItemQualityMenu : IClickableMenu
 {
-    private readonly List<ClickableComponent> _inventory = new();
+    private readonly IStackQualityApi _api;
+    private readonly ClickableComponent[] _inventory = new ClickableComponent[4];
+    private readonly SObject[] _items;
     private readonly SObject _object;
+    private readonly int[] _stacks;
     private readonly int _x;
     private readonly int _y;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemQualityMenu" /> class.
     /// </summary>
+    /// <param name="api">The StackQuality Api.</param>
     /// <param name="obj">The item to display.</param>
+    /// <param name="stacks">The item stacks..</param>
     /// <param name="x">The x-coordinate.</param>
     /// <param name="y">The y-coordinate.</param>
-    public ItemQualityMenu(SObject obj, int x, int y)
+    public ItemQualityMenu(IStackQualityApi api, SObject obj, int[] stacks, int x, int y)
     {
+        this._api = api;
         this._object = obj;
+        this._stacks = stacks;
         this._x = x;
         this._y = y;
 
-        var stacks = this._object.GetStacks();
-        for (var index = 0; index < 4; ++index)
+        if (!this._api.SplitStacks(this._object, out var items))
         {
-            var item = (SObject)this._object.getOne();
-            item.modData.Remove("furyx639.StackQuality/qualities");
-            item.Quality = index == 3 ? 4 : index;
-            item.Stack = stacks[index];
-            this.Items.Add(item);
-            this._inventory.Add(
+            throw new();
+        }
+
+        this._items = items;
+
+        for (var i = 0; i < 4; ++i)
+        {
+            this._inventory[i] = new(
                 new(
-                    new(
-                        this._x + Game1.tileSize * (index % 2),
-                        this._y + Game1.tileSize * (index / 2),
-                        Game1.tileSize,
-                        Game1.tileSize),
-                    index.ToString()));
+                    this._x + Game1.tileSize * (i % 2),
+                    this._y + Game1.tileSize * (i / 2),
+                    Game1.tileSize,
+                    Game1.tileSize),
+                i.ToString());
         }
     }
-
-    private List<SObject> Items { get; } = new();
 
     /// <summary>
     ///     Draws the overlay.
@@ -68,11 +72,11 @@ internal sealed class ItemQualityMenu : IClickableMenu
             false);
 
         // Draw Slots
-        for (var index = 0; index < 4; ++index)
+        for (var i = 0; i < 4; ++i)
         {
             b.Draw(
                 Game1.menuTexture,
-                new(this._x + Game1.tileSize * (index % 2), this._y + Game1.tileSize * (index / 2)),
+                new(this._x + Game1.tileSize * (i % 2), this._y + Game1.tileSize * (i / 2)),
                 Game1.getSourceRectForStandardTileSheet(Game1.menuTexture, 10),
                 Color.White,
                 0f,
@@ -83,20 +87,18 @@ internal sealed class ItemQualityMenu : IClickableMenu
         }
 
         // Draw Items
-        for (var index = 0; index < 4; ++index)
+        for (var i = 0; i < 4; ++i)
         {
-            this.Items[index]
+            this._items[i]
                 .drawInMenu(
                     b,
-                    new(this._x + Game1.tileSize * (index % 2), this._y + Game1.tileSize * (index / 2)),
-                    this.Items[index].Stack == 0 ? 1f : this._inventory[index].scale,
-                    this.Items[index].Stack == 0 ? 0.25f : 1f,
+                    new(this._x + Game1.tileSize * (i % 2), this._y + Game1.tileSize * (i / 2)),
+                    this._stacks[i] == 0 ? 1f : this._inventory[i].scale,
+                    this._stacks[i] == 0 ? 0.25f : 1f,
                     0.865f,
                     StackDrawType.Draw,
                     Color.White,
                     true);
-
-            // Draw Quality
         }
 
         // Draw Mouse
@@ -129,25 +131,20 @@ internal sealed class ItemQualityMenu : IClickableMenu
         }
 
         var slotNumber = int.Parse(component.name);
-        var slot = this.Items[slotNumber];
-        if (slot.Stack == 0)
+        var slot = this._items[slotNumber];
+        if (this._stacks[slotNumber] == 0)
         {
             return;
         }
 
-        var obj = (SObject)slot.getOne();
-        var stacks = new int[4];
-        stacks[obj.Quality == 4 ? 3 : obj.Quality] = slot.Stack;
-        slot.Stack = 0;
-        obj.UpdateQuality(stacks);
-        StackQuality.HeldItem = obj;
+        this._stacks[slotNumber] = 0;
+        StackQuality.HeldItem = slot;
         this.exitThisMenuNoSound();
     }
 
     /// <inheritdoc />
     protected override void cleanupBeforeExit()
     {
-        var stacks = this.Items.Select(item => item.Stack).ToArray();
-        this._object.UpdateQuality(stacks);
+        this._api.UpdateStacks(this._object, this._stacks);
     }
 }

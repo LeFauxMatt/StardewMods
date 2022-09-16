@@ -2,14 +2,18 @@
 
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Integrations.StackQuality;
 using StardewMods.StackQuality.Framework;
 using StardewMods.StackQuality.UI;
 using StardewValley.Menus;
 
 /// <inheritdoc />
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class StackQuality : Mod
 {
-    private static StackQuality? Instance;
+#nullable disable
+    private static StackQuality Instance;
+#nullable enable
 
     /// <summary>
     ///     Gets a value indicating whether the current menu supported StackQuality.
@@ -51,7 +55,7 @@ public class StackQuality : Mod
         StackQuality.Instance = this;
         Log.Monitor = this.Monitor;
         Integrations.Init(this.Helper);
-        ModPatches.Init(this.Helper, this.ModManifest);
+        ModPatches.Init(this.Helper, this.ModManifest, (IStackQualityApi)this.GetApi());
 
         // Events
         this.Helper.Events.Display.RenderedActiveMenu += StackQuality.OnRenderedActiveMenu;

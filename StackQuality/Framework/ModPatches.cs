@@ -3,24 +3,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using HarmonyLib;
-using StardewMods.Common.Helpers.AtraBase.StringHandlers;
+using StardewMods.Common.Integrations.StackQuality;
 using StardewMods.StackQuality.UI;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>
 ///     Harmony Patches for StackQuality.
 /// </summary>
 internal sealed class ModPatches
 {
-    private static ModPatches? Instance;
+#nullable disable
+    private static ModPatches Instance;
+#nullable enable
 
+    private readonly IStackQualityApi _api;
     private readonly IModHelper _helper;
 
-    private ModPatches(IModHelper helper, IManifest manifest)
+    private ModPatches(IModHelper helper, IManifest manifest, IStackQualityApi api)
     {
         this._helper = helper;
+        this._api = api;
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
             AccessTools.Method(
@@ -51,12 +55,6 @@ internal sealed class ModPatches
             AccessTools.Method(typeof(SObject), nameof(SObject.addToStack)),
             new(typeof(ModPatches), nameof(ModPatches.Object_addToStack_prefix)));
         harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.getOne)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_getOne_postfix)));
-        harmony.Patch(
-            AccessTools.PropertyGetter(typeof(SObject), nameof(SObject.Stack)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_StackGetter_postfix)));
-        harmony.Patch(
             AccessTools.PropertySetter(typeof(SObject), nameof(SObject.Stack)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Object_StackSetter_postfix)));
         harmony.Patch(
@@ -66,6 +64,8 @@ internal sealed class ModPatches
             AccessTools.Method(typeof(Utility), nameof(Utility.addItemToInventory)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_addItemToInventory_postfix)));
     }
+
+    private static IStackQualityApi Api => ModPatches.Instance!._api;
 
     private static Item? HoveredItem
     {
@@ -120,10 +120,11 @@ internal sealed class ModPatches
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
+    /// <param name="api">The StackQuality Api.</param>
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
-    public static ModPatches Init(IModHelper helper, IManifest manifest)
+    public static ModPatches Init(IModHelper helper, IManifest manifest, IStackQualityApi api)
     {
-        return ModPatches.Instance ??= new(helper, manifest);
+        return ModPatches.Instance ??= new(helper, manifest, api);
     }
 
     private static IClickableMenu.onExit ExitFunction(IList<Item> inventory, int slotNumber)
@@ -155,14 +156,16 @@ internal sealed class ModPatches
         for (var i = 0; i < __instance.MaxItems; ++i)
         {
             var slot = __instance.Items.ElementAtOrDefault(i);
-            if (slot is not SObject other || !other.canStackWith(obj))
+            if (slot is not SObject other
+             || !ModPatches.Api.EquivalentObjects(other, obj)
+             || !ModPatches.Api.AddToStacks(other, obj, out var remaining))
             {
                 continue;
             }
 
-            var stack = other.addToStack(obj);
+            ModPatches.Api.UpdateStacks(obj, remaining);
             affected_items_list?.Add(slot);
-            if (stack <= 0)
+            if (remaining.Sum() == 0)
             {
                 return false;
             }
@@ -186,6 +189,7 @@ internal sealed class ModPatches
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Farmer_removeItemsFromInventory_prefix(
         Farmer __instance,
@@ -193,49 +197,36 @@ internal sealed class ModPatches
         int index,
         int stack)
     {
-        for (var i = 0; i < __instance.MaxItems; ++i)
+        for (var i = 0; i < Math.Min(__instance.MaxItems, __instance.Items.Count); ++i)
         {
-            var item = __instance.Items.ElementAtOrDefault(i);
-            if (item is not SObject obj || obj.ParentSheetIndex != index)
+            if (__instance.Items[i] is not SObject obj
+             || obj.ParentSheetIndex != index
+             || !ModPatches.Api.GetStacks(obj, out var stacks))
             {
                 continue;
             }
 
-            var stacks = obj.GetStacks();
-            for (var j = 0; j < 4; ++j)
+            for (var j = 3; j >= 0; --j)
             {
-                if (stacks[j] > stack)
-                {
-                    stacks[j] -= stack;
-                    obj.UpdateQuality(stacks);
-                    if (obj.Stack == 0)
-                    {
-                        __instance.Items[i] = null;
-                    }
+                var toTake = Math.Min(stack, stacks[j]);
+                stack -= toTake;
+                stacks[j] -= toTake;
+            }
 
-                    __result = true;
-                    return false;
-                }
+            if (stacks.Sum() == 0)
+            {
+                __instance.Items[i] = null;
+                continue;
+            }
 
-                stack -= stacks[j];
-                stacks[j] = 0;
-
-                if (stack != 0)
-                {
-                    continue;
-                }
-
-                obj.UpdateQuality(stacks);
-                if (obj.Stack == 0)
-                {
-                    __instance.Items[i] = null;
-                }
-
-                __result = true;
-                return false;
+            ModPatches.Api.UpdateStacks(obj, stacks);
+            if (stack == 0)
+            {
+                break;
             }
         }
 
+        __result = stack == 0;
         return false;
     }
 
@@ -263,24 +254,31 @@ internal sealed class ModPatches
 
         var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
-        if (slot is not SObject obj || obj.GetStacks().Any(stack => stack == obj.Stack))
+        if (slot is not SObject obj
+         || !ModPatches.Api.GetStacks(obj, out var stacks)
+         || stacks.Count(stack => stack > 0) <= 1)
         {
             return true;
         }
 
-        if (ModPatches.Input.IsDown(SButton.LeftShift))
+        // Pick up item directly
+        if (ModPatches.Input.IsDown(SButton.LeftShift) || ModPatches.Input.IsDown(SButton.LeftControl))
         {
             if (playSound)
             {
                 Game1.playSound(__instance.moveItemSound);
             }
 
+            // Grab full stack
             __result = Utility.removeItemFromInventory(slotNumber, __instance.actualInventory);
             return false;
         }
 
+        // Show stack overlay
         var overlay = new ItemQualityMenu(
+            ModPatches.Api,
             obj,
+            stacks,
             component.bounds.X - Game1.tileSize / 2,
             component.bounds.Y - Game1.tileSize / 2)
         {
@@ -318,14 +316,14 @@ internal sealed class ModPatches
 
         var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
-        if (slot is not SObject obj || (toAddTo is null && obj.GetStacks().Any(stack => stack == obj.Stack)))
+        if (slot is not SObject obj || !ModPatches.Api.GetStacks(obj, out var stacks))
         {
             return true;
         }
 
-        var take = new int[4];
+        // ShoppingCart Integration
+        var availableStacks = new int[4];
         var existingStacks = new int[4];
-        var stacks = obj.GetStacks();
         if (Integrations.ShoppingCart.IsLoaded)
         {
             if (Integrations.ShoppingCart.API.CurrentShop is not null)
@@ -337,32 +335,41 @@ internal sealed class ModPatches
                         continue;
                     }
 
-                    var cartStacks = cartObj.GetStacks();
-                    for (var i = 0; i < 4; ++i)
-                    {
-                        existingStacks[i] += cartStacks[i];
-                    }
+                    availableStacks[cartObj.Quality == 4 ? 3 : cartObj.Quality] += cartItem.Available;
+                    existingStacks[cartObj.Quality == 4 ? 3 : cartObj.Quality] += cartItem.Quantity;
                 }
             }
         }
 
-        for (var i = 0; i < 4; ++i)
+        var amountToTake = new int[4];
+        var limit = ModPatches.Input.IsDown(SButton.LeftShift) ? (int)Math.Ceiling(stacks.Sum() / 2f) : 1;
+        for (var i = 3; i >= 0; --i)
         {
-            if (stacks[i] <= 0 || existingStacks[i] > 0)
+            if (stacks[i] <= 0 || (availableStacks[i] > 0 && existingStacks[i] >= availableStacks[i]))
             {
                 continue;
             }
 
-            take[i] += ModPatches.Input.IsDown(SButton.LeftShift) ? stacks[i] : 1;
-            break;
+            if (ModPatches.Input.IsDown(SButton.LeftControl))
+            {
+                amountToTake[i] += stacks[i];
+                break;
+            }
+
+            var toTake = Math.Min(limit, (int)Math.Ceiling(stacks[i] / 2f));
+            amountToTake[i] += toTake;
+            limit -= toTake;
+            if (limit <= 0)
+            {
+                break;
+            }
         }
 
-        if (!obj.SplitStacks(ref toAddTo, take))
+        if (amountToTake.Sum() > 0 && !ModPatches.Api.MoveStacks(obj, ref toAddTo, amountToTake))
         {
             return true;
         }
 
-        __result = toAddTo;
         if (obj.Stack == 0)
         {
             __instance.actualInventory[slotNumber] = null;
@@ -373,26 +380,17 @@ internal sealed class ModPatches
             Game1.playSound(__instance.moveItemSound);
         }
 
+        __result = toAddTo;
         return false;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    [HarmonyPriority(1_000)]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable? other)
     {
-        if (__result
-         || __instance is not SObject obj
-         || other is not SObject otherObj
-         || !__instance.Name.Equals(other.Name)
-         || __instance.maximumStackSize() == 1
-         || other.maximumStackSize() == 1
-         || obj.orderData.Value != otherObj.orderData.Value
-         || obj.ParentSheetIndex != otherObj.ParentSheetIndex
-         || obj.bigCraftable.Value != otherObj.bigCraftable.Value
-         || (__instance is ColoredObject && other is not ColoredObject)
-         || (__instance is not ColoredObject && other is ColoredObject)
-         || (__instance is ColoredObject c1 && other is ColoredObject c2 && !c1.color.Value.Equals(c2.color.Value)))
+        if (__result || __instance.maximumStackSize() == 1 || !ModPatches.Api.EquivalentObjects(__instance, other))
         {
             return;
         }
@@ -404,12 +402,11 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_GetContextTags_postfix(Item __instance, ref HashSet<string> __result)
     {
-        if (__instance is not SObject obj)
+        if (__instance is not SObject obj || !ModPatches.Api.GetStacks(obj, out var stacks))
         {
             return;
         }
 
-        var stacks = obj.GetStacks();
         for (var i = 0; i < 4; ++i)
         {
             var tag = Common.IndexToContextTag(i);
@@ -428,92 +425,13 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_addToStack_prefix(SObject __instance, ref int __result, Item otherStack)
     {
-        if (otherStack is not SObject other)
+        if (!ModPatches.Api.AddToStacks(__instance, otherStack, out var remaining))
         {
             return true;
         }
 
-        var maxStack = __instance.maximumStackSize();
-        if (maxStack == 1)
-        {
-            return true;
-        }
-
-        if (__instance.IsSpawnedObject && !other.IsSpawnedObject)
-        {
-            __instance.IsSpawnedObject = false;
-        }
-
-        var stacks = __instance.GetStacks();
-        var otherStacks = other.GetStacks();
-        var stack = stacks.Sum();
-        if (stack < maxStack)
-        {
-            for (var i = 0; i < 4; ++i)
-            {
-                var add = Math.Min(Math.Min(maxStack - stack, otherStacks[i]), maxStack - stacks[i]);
-                stack += add;
-                stacks[i] += add;
-                otherStacks[i] -= add;
-                if (stack >= maxStack)
-                {
-                    break;
-                }
-            }
-        }
-
-        __instance.UpdateQuality(stacks);
-        __result = otherStacks.Sum();
-
-        if (__result > 0)
-        {
-            other.UpdateQuality(otherStacks);
-        }
+        __result = remaining.Sum();
         return false;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_getOne_postfix(ref Item __result)
-    {
-        if (__result is not SObject obj)
-        {
-            return;
-        }
-
-        var stacks = obj.GetStacks();
-        var newStacks = new int[4];
-        for (var i = 0; i < 4; ++i)
-        {
-            if (stacks[i] == 0)
-            {
-                continue;
-            }
-
-            newStacks[i] = 1;
-            break;
-        }
-
-        obj.UpdateQuality(newStacks);
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_StackGetter_postfix(SObject __instance, ref int __result)
-    {
-        if (!__instance.modData.TryGetValue("furyx639.StackQuality/qualities", out var qualities)
-         || string.IsNullOrWhiteSpace(qualities))
-        {
-            return;
-        }
-
-        var qualitiesSpan = new StreamSplit(qualities);
-        __result = 0;
-        foreach (var quality in qualitiesSpan)
-        {
-            __result += int.Parse(quality);
-        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -521,49 +439,32 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_StackSetter_postfix(SObject __instance, int value)
     {
-        if (!__instance.modData.ContainsKey("furyx639.StackQuality/qualities"))
+        if (!__instance.modData.ContainsKey("furyx639.StackQuality/qualities")
+         || !ModPatches.Api.GetStacks(__instance, out var stacks))
         {
             return;
         }
 
-        var stacks = __instance.GetStacks();
-        var stack = stacks.Sum();
-        if (stack == 1)
+        var maxStack = __instance.maximumStackSize();
+        if (value > maxStack)
         {
-            for (var i = 0; i < 4; ++i)
-            {
-                if (stacks[i] == 0)
-                {
-                    continue;
-                }
-
-                stacks[i] = value;
-                __instance.UpdateQuality(stacks, false);
-                return;
-            }
-        }
-
-        var delta = value - stack;
-        if (delta == 0)
-        {
-            __instance.UpdateQuality(stacks, false);
             return;
         }
 
+        var currentStacks = stacks.Sum();
+        var delta = value - currentStacks;
         switch (delta)
         {
+            case 0:
+                return;
+
+            // Reduce stacks to value
             case < 0:
-                for (var i = 0; i < 4; ++i)
+                for (var i = 3; i >= 0; --i)
                 {
-                    if (stacks[i] > -delta)
-                    {
-                        stacks[i] += delta;
-                        break;
-                    }
-
-                    delta += stacks[i];
-                    stacks[i] = 0;
-
+                    var toTake = Math.Min(-delta, stacks[i]);
+                    delta += toTake;
+                    stacks[i] -= toTake;
                     if (delta == 0)
                     {
                         break;
@@ -572,15 +473,14 @@ internal sealed class ModPatches
 
                 break;
 
+            // Increase stacks to value
             case > 0:
-                var maxStack = __instance.maximumStackSize();
-                for (var i = 0; i < 4; ++i)
+                for (var i = Math.Min(3, __instance.Quality); i >= 0; --i)
                 {
-                    var add = Math.Min(Math.Min(maxStack - stack, delta), maxStack - stacks[i]);
-                    stack += add;
-                    stacks[i] += add;
-                    delta -= add;
-                    if (delta <= 0)
+                    var toAdd = Math.Min(delta, maxStack - stacks[i]);
+                    stacks[i] += toAdd;
+                    delta -= toAdd;
+                    if (delta == 0)
                     {
                         break;
                     }
@@ -589,7 +489,25 @@ internal sealed class ModPatches
                 break;
         }
 
-        __instance.UpdateQuality(stacks, false);
+        // Update quality and mod data
+        var quality = 0;
+        var sb = new StringBuilder();
+        for (var i = 0; i < 4; ++i)
+        {
+            sb.Append(stacks[i]);
+            if (i < 3)
+            {
+                sb.Append(' ');
+            }
+
+            if (stacks[i] > 0)
+            {
+                quality = i;
+            }
+        }
+
+        __instance.modData["furyx639.StackQuality/qualities"] = sb.ToString();
+        __instance.Quality = quality == 3 ? 4 : quality;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -603,25 +521,33 @@ internal sealed class ModPatches
         IList<Item> items,
         ItemGrabMenu.behaviorOnItemSelect? onAddFunction)
     {
-        if (__result is not SObject obj
-         || items.ElementAtOrDefault(position) is not SObject otherObj
-         || !obj.canStackWith(otherObj))
+        // item is the originally held object (now in items[position])
+        // __result is the item that was in items[position]
+        if (ReferenceEquals(item, __result)
+         || position >= items.Count
+         || __result is not SObject obj
+         || !ModPatches.Api.EquivalentObjects(obj, item))
         {
             return;
         }
 
         item.HasBeenInInventory = __state;
         Utility.checkItemFirstInventoryAdd(item);
-        var stackLeft = otherObj.addToStack(obj);
-        if (stackLeft <= 0)
+        if (!ModPatches.Api.AddToStacks(obj, item, out var remaining))
+        {
+            return;
+        }
+
+        items[position] = obj;
+        if (remaining.Sum() == 0)
         {
             __result = null;
             return;
         }
 
-        item.Stack = stackLeft;
-        onAddFunction?.Invoke(item, null);
+        ModPatches.Api.UpdateStacks((SObject)item, remaining);
         __result = item;
+        onAddFunction?.Invoke(item, null);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
