@@ -16,7 +16,7 @@ public class StackQuality : Mod
     /// </summary>
     public static bool IsSupported =>
         Game1.activeClickableMenu is JunimoNoteMenu or MenuWithInventory or ShopMenu
-     || (Game1.activeClickableMenu is GameMenu gameMenu && gameMenu.pages[gameMenu.currentTab] is InventoryPage);
+     || (Game1.activeClickableMenu is GameMenu gameMenu && gameMenu.GetCurrentPage() is InventoryPage);
 
     /// <summary>
     ///     Sets the currently held item for the active menu.
@@ -27,7 +27,7 @@ public class StackQuality : Mod
         {
             switch (Game1.activeClickableMenu)
             {
-                case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage:
+                case GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage:
                     Game1.player.CursorSlotItem = value;
                     return;
                 case JunimoNoteMenu junimoNoteMenu:

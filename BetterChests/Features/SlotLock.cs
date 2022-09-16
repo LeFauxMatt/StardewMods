@@ -132,7 +132,7 @@ internal sealed class SlotLock : IFeature
             ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
             ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
                 itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage }
                 => inventoryPage,
             _ => null,
         };
@@ -174,7 +174,7 @@ internal sealed class SlotLock : IFeature
             ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
             ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
                 itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage { inventory: { } inventoryPage }
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage }
                 => inventoryPage,
             _ => null,
         };

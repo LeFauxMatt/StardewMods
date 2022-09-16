@@ -70,7 +70,7 @@ internal sealed class ModPatches
         {
             switch (Game1.activeClickableMenu)
             {
-                case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage inventoryPage:
+                case GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage inventoryPage:
                     ModPatches.Reflection.GetField<Item?>(inventoryPage, "hoveredItem").SetValue(value);
                     return;
                 case JunimoNoteMenu junimoNoteMenu:
@@ -92,7 +92,7 @@ internal sealed class ModPatches
         {
             switch (Game1.activeClickableMenu)
             {
-                case GameMenu gameMenu when gameMenu.pages[gameMenu.currentTab] is InventoryPage inventoryPage:
+                case GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage inventoryPage:
                     ModPatches.Reflection.GetField<string?>(inventoryPage, "hoverText").SetValue(value);
                     return;
                 case JunimoNoteMenu:
