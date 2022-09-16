@@ -1,6 +1,6 @@
 # Shopping Cart Change Log
 
-## 1.0.0-beta.5 (Unreleased)
+## 1.0.0 (September 15, 2022)
 
 ### Added
 
