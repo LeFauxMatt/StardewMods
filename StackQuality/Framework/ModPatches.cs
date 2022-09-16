@@ -42,14 +42,14 @@ internal sealed class ModPatches
             AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
             new(typeof(ModPatches), nameof(ModPatches.InventoryMenu_rightClick_prefix)));
         harmony.Patch(
+            AccessTools.Method(typeof(Item), nameof(Item.addToStack)),
+            new(typeof(ModPatches), nameof(ModPatches.Item_addToStack_prefix)));
+        harmony.Patch(
             AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Item_canStackWith_postfix)));
         harmony.Patch(
             AccessTools.Method(typeof(Item), nameof(Item.GetContextTags)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Item_GetContextTags_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.addToStack)),
-            new(typeof(ModPatches), nameof(ModPatches.Object_addToStack_prefix)));
         harmony.Patch(
             AccessTools.Method(typeof(SObject), nameof(SObject.getOne)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Object_getOne_postfix)));
@@ -59,6 +59,9 @@ internal sealed class ModPatches
         harmony.Patch(
             AccessTools.PropertySetter(typeof(SObject), nameof(SObject.Stack)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Object_StackSetter_postfix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(Utility), nameof(Utility.addItemToInventory)),
+            new(typeof(ModPatches), nameof(ModPatches.Utility_addItemToInventory_prefix)));
         harmony.Patch(
             AccessTools.Method(typeof(Utility), nameof(Utility.addItemToInventory)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_addItemToInventory_postfix)));
@@ -376,6 +379,51 @@ internal sealed class ModPatches
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Item_addToStack_prefix(Item __instance, ref int __result, Item otherStack)
+    {
+        if (__instance is not SObject obj || otherStack is not SObject other)
+        {
+            return true;
+        }
+
+        var maxStack = obj.maximumStackSize();
+        if (maxStack == 1)
+        {
+            return true;
+        }
+
+        if (obj.IsSpawnedObject && !other.IsSpawnedObject)
+        {
+            obj.IsSpawnedObject = false;
+        }
+
+        var stacks = obj.GetStacks();
+        var otherStacks = other.GetStacks();
+        var stack = stacks.Sum();
+        if (stack < maxStack)
+        {
+            for (var i = 0; i < 4; ++i)
+            {
+                var add = Math.Min(Math.Min(maxStack - stack, otherStacks[i]), maxStack - stacks[i]);
+                stack += add;
+                stacks[i] += add;
+                otherStacks[i] -= add;
+                if (stack >= maxStack)
+                {
+                    break;
+                }
+            }
+        }
+
+        obj.UpdateQuality(stacks);
+        other.UpdateQuality(otherStacks);
+        __result = other.Stack;
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable? other)
     {
         if (__result
@@ -418,51 +466,6 @@ internal sealed class ModPatches
 
             __result.Add(tag);
         }
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Object_addToStack_prefix(SObject __instance, ref int __result, Item otherStack)
-    {
-        if (otherStack is not SObject other)
-        {
-            return true;
-        }
-
-        var maxStack = __instance.maximumStackSize();
-        if (maxStack == 1)
-        {
-            return true;
-        }
-
-        if (__instance.IsSpawnedObject && !other.IsSpawnedObject)
-        {
-            __instance.IsSpawnedObject = false;
-        }
-
-        var stacks = __instance.GetStacks();
-        var otherStacks = other.GetStacks();
-        var stack = stacks.Sum();
-        if (stack < maxStack)
-        {
-            for (var i = 0; i < 4; ++i)
-            {
-                var add = Math.Min(Math.Min(maxStack - stack, otherStacks[i]), maxStack - stacks[i]);
-                stack += add;
-                stacks[i] += add;
-                otherStacks[i] -= add;
-                if (stack >= maxStack)
-                {
-                    break;
-                }
-            }
-        }
-
-        __instance.UpdateQuality(stacks);
-        other.UpdateQuality(otherStacks);
-        __result = other.Stack;
-        return false;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -590,6 +593,7 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Utility_addItemToInventory_postfix(
         ref Item? __result,
+        ref bool __state,
         Item item,
         int position,
         IList<Item> items,
@@ -602,6 +606,7 @@ internal sealed class ModPatches
             return;
         }
 
+        item.HasBeenInInventory = __state;
         Utility.checkItemFirstInventoryAdd(item);
         var stackLeft = otherObj.addToStack(obj);
         if (stackLeft <= 0)
@@ -613,5 +618,13 @@ internal sealed class ModPatches
         item.Stack = stackLeft;
         onAddFunction?.Invoke(item, null);
         __result = item;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Utility_addItemToInventory_prefix(ref bool __state, Item item)
+    {
+        __state = item.HasBeenInInventory;
     }
 }

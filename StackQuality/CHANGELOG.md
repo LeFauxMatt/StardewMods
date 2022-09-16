@@ -1,5 +1,11 @@
 ﻿# Stack Quality Change Log
 
+## 1.0.0-beta.5 (Unreleased)
+
+### Fixed
+
+* Fixed items not getting counted towards quests.
+
 ## 1.0.0-beta.4 (September 13, 2022)
 
 ### Added
