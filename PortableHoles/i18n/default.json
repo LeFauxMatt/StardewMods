@@ -5,5 +5,5 @@
   "config.unlock-automatically.name": "Unlock Automatically",
   "config.unlock-automatically.tooltip": "Automatically unlock the Portable Hole recipe.",
   "item.portable-hole.name": "Portable Hole",
-  "item.portable-hole.description": "This is a portable hole."
+  "item.portable-hole.description": "Made from space-age material. Disclaimer: Has no affect whatsoever on roadrunners."
 }

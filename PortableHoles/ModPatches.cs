@@ -6,6 +6,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Locations;
+using StardewValley.Menus;
 
 /// <summary>
 ///     Harmony Patches for PortableHoles.
@@ -20,6 +21,9 @@ internal sealed class ModPatches
     {
         this._config = config;
         var harmony = new Harmony(manifest.UniqueID);
+        harmony.Patch(
+            AccessTools.Method(typeof(CraftingPage), "layoutRecipes"),
+            postfix: new(typeof(ModPatches), nameof(ModPatches.CraftingPage_layoutRecipes_postfix)));
         harmony.Patch(
             AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.CraftingRecipe_createItem_postfix)));
@@ -74,6 +78,12 @@ internal sealed class ModPatches
             AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
             new(typeof(ModPatches), nameof(ModPatches.Object_drawWhenHeld_prefix)));
         harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.getDescription)),
+            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_getDescription_postfix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(SObject), "loadDisplayName"),
+            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_loadDisplayName_postfix)));
+        harmony.Patch(
             AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
             new(typeof(ModPatches), nameof(ModPatches.Object_placementAction_prefix)));
     }
@@ -90,6 +100,25 @@ internal sealed class ModPatches
     public static ModPatches Init(IModHelper helper, IManifest manifest, ModConfig config)
     {
         return ModPatches.Instance ??= new(manifest, config);
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void CraftingPage_layoutRecipes_postfix(CraftingPage __instance)
+    {
+        foreach (var page in __instance.pagesOfCraftingRecipes)
+        {
+            foreach (var (component, recipe) in page)
+            {
+                if (!recipe.name.Equals("Portable Hole"))
+                {
+                    continue;
+                }
+
+                component.texture = Game1.content.Load<Texture2D>("furyx639.PortableHoles/Texture");
+                component.sourceRect = new(0, 0, 16, 32);
+            }
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -276,6 +305,28 @@ internal sealed class ModPatches
             SpriteEffects.None,
             Math.Max(0f, (f.getStandingY() + 3) / 10000f));
         return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_getDescription_postfix(SObject __instance, ref string __result)
+    {
+        if (__instance.modData.ContainsKey("furyx639.PortableHoles/PortableHole"))
+        {
+            __result = I18n.Item_PortableHole_Description();
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_loadDisplayName_postfix(SObject __instance, ref string __result)
+    {
+        if (__instance.modData.ContainsKey("furyx639.PortableHoles/PortableHole"))
+        {
+            __result = I18n.Item_PortableHole_Name();
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

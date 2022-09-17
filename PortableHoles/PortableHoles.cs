@@ -8,9 +8,6 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley.Locations;
 
-// TODO: patch CraftingRecipe.getIndexOfMenuView()
-// TODO: patch CraftingPage.layoutRecipes()
-
 /// <inheritdoc />
 public class PortableHoles : Mod
 {
