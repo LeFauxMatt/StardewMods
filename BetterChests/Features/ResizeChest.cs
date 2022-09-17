@@ -15,7 +15,9 @@ internal sealed class ResizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChest";
 
-    private static ResizeChest? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private bool _isActivated;
 
@@ -37,9 +39,9 @@ internal sealed class ResizeChest : IFeature
     ///     Initializes <see cref="ResizeChest" />.
     /// </summary>
     /// <returns>Returns an instance of the <see cref="ResizeChest" /> class.</returns>
-    public static ResizeChest Init()
+    public static IFeature Init()
     {
-        return ResizeChest.Instance ??= new();
+        return ResizeChest.Instance ??= new ResizeChest();
     }
 
     /// <inheritdoc />

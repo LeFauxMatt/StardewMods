@@ -25,7 +25,9 @@ internal sealed class CarryChest : IFeature
     private const string Id = "furyx639.BetterChests/CarryChest";
     private const int WhichBuff = 69420;
 
-    private static CarryChest? Instance;
+#nullable disable
+    private static CarryChest Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly IModHelper _helper;
@@ -101,7 +103,7 @@ internal sealed class CarryChest : IFeature
             });
     }
 
-    private static ModConfig Config => CarryChest.Instance!._config;
+    private static ModConfig Config => CarryChest.Instance._config;
 
     /// <summary>
     ///     Checks if the player should be overburdened while carrying a chest.
@@ -131,7 +133,7 @@ internal sealed class CarryChest : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="CarryChest" /> class.</returns>
-    public static CarryChest Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
         return CarryChest.Instance ??= new(helper, config);
     }

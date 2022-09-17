@@ -13,6 +13,10 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public class TooManyAnimals : Mod
 {
+#nullable disable
+    private static TooManyAnimals Instance;
+#nullable enable
+
     private readonly PerScreen<int> _currentPage = new();
 
     private readonly PerScreen<ClickableTextureComponent> _nextPage = new(
@@ -36,8 +40,6 @@ public class TooManyAnimals : Mod
         });
 
     private ModConfig? _config;
-
-    private static TooManyAnimals? Instance { get; set; }
 
     private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
@@ -91,7 +93,7 @@ public class TooManyAnimals : Mod
     private static void PurchaseAnimalsMenu_constructor_prefix(ref List<SObject> stock)
     {
         // Get actual stock
-        TooManyAnimals.Instance!.Stock ??= stock;
+        TooManyAnimals.Instance.Stock ??= stock;
 
         // Limit stock
         stock = TooManyAnimals.Instance.Stock

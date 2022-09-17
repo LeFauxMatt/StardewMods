@@ -13,7 +13,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class ModPatches
 {
-    private static ModPatches? Instance;
+#nullable disable
+    private static ModPatches Instance;
+#nullable enable
 
     private readonly ModConfig _config;
 
@@ -88,7 +90,7 @@ internal sealed class ModPatches
             new(typeof(ModPatches), nameof(ModPatches.Object_placementAction_prefix)));
     }
 
-    private static ModConfig Config => ModPatches.Instance!._config;
+    private static ModConfig Config => ModPatches.Instance._config;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.

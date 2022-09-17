@@ -13,8 +13,10 @@ internal static class Formatting
     private static readonly Lazy<Dictionary<string, string>> BlueprintsDataLazy =
         new(() => Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints"));
 
+#nullable disable
     /// <summary>Gets or sets SMAPI helper for providing translations.</summary>
-    public static ITranslationHelper? Translations { get; set; }
+    public static ITranslationHelper Translations { get; set; }
+#nullable enable
 
     private static Dictionary<string, string> BlueprintsData => Formatting.BlueprintsDataLazy.Value;
 
@@ -223,7 +225,7 @@ internal static class Formatting
             case "Fridge":
                 return I18n.Storage_Fridge_Name();
             default:
-                return Formatting.Translations?.Get($"storage.{value}.name").Default(value) ?? value;
+                return Formatting.Translations.Get($"storage.{value}.name").Default(value);
         }
 
         return value;
@@ -260,7 +262,7 @@ internal static class Formatting
             case "Fridge":
                 return I18n.Storage_Fridge_Tooltip();
             default:
-                return Formatting.Translations?.Get($"storage.{value}.tooltip").Default(value) ?? value;
+                return Formatting.Translations.Get($"storage.{value}.tooltip").Default(value);
         }
 
         return value;

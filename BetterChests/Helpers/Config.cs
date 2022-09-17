@@ -23,7 +23,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class Config
 {
-    private static Config? Instance;
+#nullable disable
+    private static Config Instance;
+#nullable enable
 
     private readonly Lazy<ModConfig> _config;
 
@@ -64,17 +66,17 @@ internal sealed class Config
         this._helper.Events.GameLoop.GameLaunched += Config.OnGameLaunched;
     }
 
-    private static Dictionary<IFeature, Func<bool>> Features => Config.Instance!._features;
+    private static Dictionary<IFeature, Func<bool>> Features => Config.Instance._features;
 
     private static IGenericModConfigMenuApi GMCM => Integrations.GMCM.API!;
 
-    private static IInputHelper Input => Config.Instance!._helper.Input;
+    private static IInputHelper Input => Config.Instance._helper.Input;
 
-    private static ModConfig ModConfig => Config.Instance!._config.Value;
+    private static ModConfig ModConfig => Config.Instance._config.Value;
 
-    private static IManifest ModManifest => Config.Instance!._modManifest;
+    private static IManifest ModManifest => Config.Instance._modManifest;
 
-    private static ITranslationHelper Translation => Config.Instance!._helper.Translation;
+    private static ITranslationHelper Translation => Config.Instance._helper.Translation;
 
     /// <summary>
     ///     Initializes <see cref="Helpers.Config" />.
@@ -506,7 +508,7 @@ internal sealed class Config
 
     private static void SaveConfig()
     {
-        Config.Instance!._helper.WriteConfig(Config.ModConfig);
+        Config.Instance._helper.WriteConfig(Config.ModConfig);
         foreach (var (feature, condition) in Config.Features)
         {
             if (condition() && !Integrations.TestConflicts(feature.GetType().Name, out _))

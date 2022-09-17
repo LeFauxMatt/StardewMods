@@ -19,7 +19,9 @@ public class OrdinaryCapsule : Mod
     private static readonly Lazy<List<Item>> ItemsLazy = new(
         () => new(new ItemRepository().GetAll().Select(item => item.Item)));
 
-    private static OrdinaryCapsule? Instance;
+#nullable disable
+    private static OrdinaryCapsule Instance;
+#nullable enable
 
     private ModConfig? _config;
 
@@ -69,7 +71,7 @@ public class OrdinaryCapsule : Mod
                                   .Select(capsuleItem => capsuleItem.ProductionTime)
                                   .FirstOrDefault();
         OrdinaryCapsule.CachedTimes[item.ParentSheetIndex] =
-            minutes > 0 ? minutes : OrdinaryCapsule.Instance!.Config.DefaultProductionTime;
+            minutes > 0 ? minutes : OrdinaryCapsule.Instance.Config.DefaultProductionTime;
         return OrdinaryCapsule.CachedTimes[item.ParentSheetIndex];
     }
 
@@ -86,7 +88,7 @@ public class OrdinaryCapsule : Mod
             return OrdinaryCapsule.GetMinutes(item);
         }
 
-        OrdinaryCapsule.CachedTimes[parentSheetIndex] = OrdinaryCapsule.Instance!.Config.DefaultProductionTime;
+        OrdinaryCapsule.CachedTimes[parentSheetIndex] = OrdinaryCapsule.Instance.Config.DefaultProductionTime;
         return OrdinaryCapsule.CachedTimes[parentSheetIndex];
     }
 
@@ -131,7 +133,7 @@ public class OrdinaryCapsule : Mod
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_minutesElapsed_postfix(SObject __instance, GameLocation environment)
     {
-        if (OrdinaryCapsule.Instance!.Config.BreakChance <= 0
+        if (OrdinaryCapsule.Instance.Config.BreakChance <= 0
          || __instance is not
             {
                 bigCraftable.Value: true,

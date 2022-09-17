@@ -12,7 +12,9 @@ using StardewValley.Tools;
 /// <inheritdoc />
 public class ShoppingCart : Mod
 {
-    private static ShoppingCart? Instance;
+#nullable disable
+    private static ShoppingCart Instance;
+#nullable enable
 
     private readonly PerScreen<ShopMenu?> _currentMenu = new();
     private readonly PerScreen<Shop?> _currentShop = new();
@@ -30,8 +32,8 @@ public class ShoppingCart : Mod
     /// </summary>
     internal static Shop? CurrentShop
     {
-        get => ShoppingCart.Instance!._currentShop.Value;
-        private set => ShoppingCart.Instance!._currentShop.Value = value;
+        get => ShoppingCart.Instance._currentShop.Value;
+        private set => ShoppingCart.Instance._currentShop.Value = value;
     }
 
     /// <summary>
@@ -39,19 +41,19 @@ public class ShoppingCart : Mod
     /// </summary>
     internal static bool MakePurchase
     {
-        get => ShoppingCart.Instance!._makePurchase.Value;
-        set => ShoppingCart.Instance!._makePurchase.Value = value;
+        get => ShoppingCart.Instance._makePurchase.Value;
+        set => ShoppingCart.Instance._makePurchase.Value = value;
     }
 
-    private static string? BoldTitleText => ShoppingCart.Instance!._boldTitleText?.GetValue();
+    private static string? BoldTitleText => ShoppingCart.Instance._boldTitleText?.GetValue();
 
     private static ShopMenu? CurrentMenu
     {
-        get => ShoppingCart.Instance!._currentMenu.Value;
-        set => ShoppingCart.Instance!._currentMenu.Value = value;
+        get => ShoppingCart.Instance._currentMenu.Value;
+        set => ShoppingCart.Instance._currentMenu.Value = value;
     }
 
-    private static string? HoverText => ShoppingCart.Instance!._hoverText?.GetValue();
+    private static string? HoverText => ShoppingCart.Instance._hoverText?.GetValue();
 
     private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
@@ -94,12 +96,12 @@ public class ShoppingCart : Mod
 
     private static int GetHoveredItemExtraItemAmount()
     {
-        return ShoppingCart.Instance!._getHoveredItemExtraItemAmount?.Invoke<int>() ?? -1;
+        return ShoppingCart.Instance._getHoveredItemExtraItemAmount?.Invoke<int>() ?? -1;
     }
 
     private static int GetHoveredItemExtraItemIndex()
     {
-        return ShoppingCart.Instance!._getHoveredItemExtraItemIndex?.Invoke<int>() ?? -1;
+        return ShoppingCart.Instance._getHoveredItemExtraItemIndex?.Invoke<int>() ?? -1;
     }
 
     private static void OnCursorMoved(object? sender, CursorMovedEventArgs e)

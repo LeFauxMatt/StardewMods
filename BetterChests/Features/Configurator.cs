@@ -25,7 +25,9 @@ internal sealed class Configurator : IFeature
 {
     private const string Id = "furyx639.BetterChests/Configurator";
 
-    private static Configurator? Instance;
+#nullable disable
+    private static Configurator Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<ClickableTextureComponent> _configButton;
@@ -71,11 +73,11 @@ internal sealed class Configurator : IFeature
     /// </summary>
     public static event EventHandler<IStorageObject> StorageEdited
     {
-        add => Configurator.Instance!._storageEdited += value;
-        remove => Configurator.Instance!._storageEdited -= value;
+        add => Configurator.Instance._storageEdited += value;
+        remove => Configurator.Instance._storageEdited -= value;
     }
 
-    private static ClickableTextureComponent ConfigButton => Configurator.Instance!._configButton.Value;
+    private static ClickableTextureComponent ConfigButton => Configurator.Instance._configButton.Value;
 
     private ItemGrabMenu? CurrentMenu
     {
@@ -96,7 +98,7 @@ internal sealed class Configurator : IFeature
     /// <param name="config">Mod config data.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <returns>Returns an instance of the <see cref="Configurator" /> class.</returns>
-    public static Configurator Init(IModHelper helper, ModConfig config, IManifest manifest)
+    public static IFeature Init(IModHelper helper, ModConfig config, IManifest manifest)
     {
         return Configurator.Instance ??= new(helper, config, manifest);
     }

@@ -26,7 +26,9 @@ internal sealed class BetterCrafting : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterCrafting";
 
-    private static BetterCrafting? Instance;
+#nullable disable
+    private static BetterCrafting Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<Tuple<CraftingRecipe, int>?> _craft = new();
@@ -87,33 +89,33 @@ internal sealed class BetterCrafting : IFeature
     /// </summary>
     public static event EventHandler<ICraftingStoragesLoadingEventArgs> CraftingStoragesLoading
     {
-        add => BetterCrafting.Instance!._craftingStoragesLoading += value;
-        remove => BetterCrafting.Instance!._craftingStoragesLoading -= value;
+        add => BetterCrafting.Instance._craftingStoragesLoading += value;
+        remove => BetterCrafting.Instance._craftingStoragesLoading -= value;
     }
 
-    private static ModConfig Config => BetterCrafting.Instance!._config;
+    private static ModConfig Config => BetterCrafting.Instance._config;
 
     private static Tuple<CraftingRecipe, int>? Craft
     {
-        get => BetterCrafting.Instance!._craft.Value;
-        set => BetterCrafting.Instance!._craft.Value = value;
+        get => BetterCrafting.Instance._craft.Value;
+        set => BetterCrafting.Instance._craft.Value = value;
     }
 
-    private static IList<IStorageObject> EligibleStorages => BetterCrafting.Instance!._eligibleStorages.Value;
+    private static IList<IStorageObject> EligibleStorages => BetterCrafting.Instance._eligibleStorages.Value;
 
     private static IReflectedField<Item?>? HeldItem
     {
-        get => BetterCrafting.Instance!._heldItem.Value;
-        set => BetterCrafting.Instance!._heldItem.Value = value;
+        get => BetterCrafting.Instance._heldItem.Value;
+        set => BetterCrafting.Instance._heldItem.Value = value;
     }
 
     private static bool InWorkbench
     {
-        get => BetterCrafting.Instance!._inWorkbench.Value;
-        set => BetterCrafting.Instance!._inWorkbench.Value = value;
+        get => BetterCrafting.Instance._inWorkbench.Value;
+        set => BetterCrafting.Instance._inWorkbench.Value = value;
     }
 
-    private static IList<IStorageObject> MaterialStorages => BetterCrafting.Instance!._materialStorages.Value;
+    private static IList<IStorageObject> MaterialStorages => BetterCrafting.Instance._materialStorages.Value;
 
     /// <summary>
     ///     Initializes <see cref="BetterCrafting" />.
@@ -221,7 +223,7 @@ internal sealed class BetterCrafting : IFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void CraftingPage_constructor_postfix(CraftingPage __instance)
     {
-        BetterCrafting.HeldItem = BetterCrafting.Instance!._helper.Reflection.GetField<Item?>(__instance, "heldItem");
+        BetterCrafting.HeldItem = BetterCrafting.Instance._helper.Reflection.GetField<Item?>(__instance, "heldItem");
         BetterCrafting.Instance._craftingStoragesLoading.InvokeAll(
             BetterCrafting.Instance,
             new CraftingStoragesLoadingEventArgs(BetterCrafting.EligibleStorages));
@@ -252,8 +254,8 @@ internal sealed class BetterCrafting : IFeature
         e.AddStorages(
             Storages.All.Where(
                 storage => storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-                        && storage.CraftFromChestDisableLocations?.Contains(Game1.player.currentLocation.Name) != true
-                        && !(storage.CraftFromChestDisableLocations?.Contains("UndergroundMine") == true
+                        && !storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+                        && !(storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
                           && Game1.player.currentLocation is MineShaft mineShaft
                           && mineShaft.Name.StartsWith("UndergroundMine"))
                         && storage.Source is not null
@@ -285,7 +287,7 @@ internal sealed class BetterCrafting : IFeature
 
     private static void OnMenuPopulateContainers(IPopulateContainersEvent e)
     {
-        BetterCrafting.Instance!._craftingStoragesLoading.InvokeAll(
+        BetterCrafting.Instance._craftingStoragesLoading.InvokeAll(
             BetterCrafting.Instance,
             new CraftingStoragesLoadingEventArgs(BetterCrafting.EligibleStorages));
         if (!BetterCrafting.EligibleStorages.Any())
@@ -453,7 +455,7 @@ internal sealed class BetterCrafting : IFeature
         }
 
         BetterCrafting.MaterialStorages.Clear();
-        var amount = BetterCrafting.Instance!._helper.Input.IsDown(SButton.LeftShift)
+        var amount = BetterCrafting.Instance._helper.Input.IsDown(SButton.LeftShift)
                   || BetterCrafting.Instance._helper.Input.IsDown(SButton.RightShift)
             ? 5
             : 1;
@@ -531,8 +533,8 @@ internal sealed class BetterCrafting : IFeature
     private static bool Workbench_checkForAction_prefix(bool justCheckingForActivity)
     {
         if (justCheckingForActivity
-         || BetterCrafting.Instance!._config.CraftFromWorkbench is (FeatureOptionRange.Disabled
-                                                                    or FeatureOptionRange.Default))
+         || BetterCrafting.Instance._config.CraftFromWorkbench is (FeatureOptionRange.Disabled
+                                                                   or FeatureOptionRange.Default))
         {
             return true;
         }

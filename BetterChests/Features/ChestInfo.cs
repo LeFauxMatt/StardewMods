@@ -20,7 +20,9 @@ using StardewValley.Objects;
 /// </summary>
 internal sealed class ChestInfo : IFeature
 {
-    private static ChestInfo? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<IList<Tuple<Point, Point>>> _dims = new(() => new List<Tuple<Point, Point>>());
@@ -47,9 +49,9 @@ internal sealed class ChestInfo : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestInfo" /> class.</returns>
-    public static ChestInfo Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
-        return ChestInfo.Instance ??= new(helper, config);
+        return ChestInfo.Instance ??= new ChestInfo(helper, config);
     }
 
     /// <inheritdoc />

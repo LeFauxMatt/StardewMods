@@ -20,7 +20,9 @@ internal sealed class BetterColorPicker : IFeature
 {
     private const string Id = "furyx639.BetterChests/BetterColorPicker";
 
-    private static BetterColorPicker? Instance;
+#nullable disable
+    private static BetterColorPicker Instance;
+#nullable enable
 
     private readonly PerScreen<HslColorPicker> _colorPicker = new(() => new());
     private readonly ModConfig _config;
@@ -71,7 +73,7 @@ internal sealed class BetterColorPicker : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="BetterColorPicker" /> class.</returns>
-    public static BetterColorPicker Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
         return BetterColorPicker.Instance ??= new(helper, config);
     }
@@ -148,7 +150,7 @@ internal sealed class BetterColorPicker : IFeature
             return;
         }
 
-        BetterColorPicker.Instance?.SetupColorPicker(__instance, colorable);
+        BetterColorPicker.Instance.SetupColorPicker(__instance, colorable);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -162,7 +164,7 @@ internal sealed class BetterColorPicker : IFeature
             return;
         }
 
-        BetterColorPicker.Instance?.SetupColorPicker(__instance, colorable);
+        BetterColorPicker.Instance.SetupColorPicker(__instance, colorable);
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

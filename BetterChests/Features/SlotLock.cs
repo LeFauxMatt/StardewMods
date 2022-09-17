@@ -20,7 +20,9 @@ internal sealed class SlotLock : IFeature
 {
     private const string Id = "furyx639.BetterChests/SlotLock";
 
-    private static SlotLock? Instance;
+#nullable disable
+    private static SlotLock Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly IModHelper _helper;
@@ -58,7 +60,7 @@ internal sealed class SlotLock : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
-    public static SlotLock Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
         return SlotLock.Instance ??= new(helper, config);
     }
@@ -113,7 +115,7 @@ internal sealed class SlotLock : IFeature
     {
         return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
             == true
-            ? SlotLock.Instance!._config.SlotLockColor.ToColor()
+            ? SlotLock.Instance._config.SlotLockColor.ToColor()
             : tint;
     }
 
@@ -132,8 +134,8 @@ internal sealed class SlotLock : IFeature
             ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
             ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
                 itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage }
-                => inventoryPage,
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage } =>
+                inventoryPage,
             _ => null,
         };
 
@@ -174,8 +176,8 @@ internal sealed class SlotLock : IFeature
             ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
             ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
                 itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage }
-                => inventoryPage,
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage } =>
+                inventoryPage,
             _ => null,
         };
 

@@ -16,7 +16,9 @@ internal sealed class OrganizeChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/OrganizeChest";
 
-    private static OrganizeChest? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -42,9 +44,9 @@ internal sealed class OrganizeChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="OrganizeChest" /> class.</returns>
-    public static OrganizeChest Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return OrganizeChest.Instance ??= new(helper);
+        return OrganizeChest.Instance ??= new OrganizeChest(helper);
     }
 
     /// <inheritdoc />

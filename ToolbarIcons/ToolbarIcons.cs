@@ -15,6 +15,8 @@ using StardewMods.ToolbarIcons.ModIntegrations;
 using StardewMods.ToolbarIcons.UI;
 using StardewValley.Menus;
 
+// TODO: Center Toolbar Icons
+
 /// <inheritdoc />
 public class ToolbarIcons : Mod
 {
@@ -261,9 +263,7 @@ public class ToolbarIcons : Mod
             mod =>
             {
                 var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu", false);
-                return buildMenu is not null
-                    ? () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); }
-                    : null;
+                return () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); };
             });
         this.ComplexIntegration.AddCustomAction(
             ToolbarIcons.AlwaysScrollMapId,
@@ -279,11 +279,6 @@ public class ToolbarIcons : Mod
 
                 var enabledIndoors = this.Helper.Reflection.GetField<bool>(config, "EnabledIndoors", false);
                 var enabledOutdoors = this.Helper.Reflection.GetField<bool>(config, "EnabledOutdoors", false);
-                if (enabledIndoors is null || enabledOutdoors is null)
-                {
-                    return null;
-                }
-
                 return () =>
                 {
                     if (Game1.currentLocation.IsOutdoors)

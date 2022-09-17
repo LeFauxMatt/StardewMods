@@ -20,7 +20,9 @@ internal sealed class OpenHeldChest : IFeature
 {
     private const string Id = "furyx639.BetterChests/OpenHeldChest";
 
-    private static OpenHeldChest? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -56,9 +58,9 @@ internal sealed class OpenHeldChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="OpenHeldChest" /> class.</returns>
-    public static OpenHeldChest Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return OpenHeldChest.Instance ??= new(helper);
+        return OpenHeldChest.Instance ??= new OpenHeldChest(helper);
     }
 
     /// <inheritdoc />

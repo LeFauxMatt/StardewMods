@@ -12,9 +12,11 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class ModPatches
 {
-    private static ModPatches? Instance;
-    private readonly ModConfig _config;
+#nullable disable
+    private static ModPatches Instance;
+#nullable enable
 
+    private readonly ModConfig _config;
     private readonly IModHelper _helper;
 
     private ModPatches(IModHelper helper, IManifest manifest, ModConfig config)
@@ -53,9 +55,9 @@ internal sealed class ModPatches
             postfix: new(typeof(ModPatches), nameof(ModPatches.ShopMenu_updatePosition_postfix)));
     }
 
-    private static ModConfig Config => ModPatches.Instance!._config;
+    private static ModConfig Config => ModPatches.Instance._config;
 
-    private static IInputHelper Input => ModPatches.Instance!._helper.Input;
+    private static IInputHelper Input => ModPatches.Instance._helper.Input;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.

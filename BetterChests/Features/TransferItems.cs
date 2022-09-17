@@ -13,7 +13,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class TransferItems : IFeature
 {
-    private static TransferItems? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly PerScreen<ClickableTextureComponent> _downArrow;
     private readonly IModHelper _helper;
@@ -55,9 +57,9 @@ internal sealed class TransferItems : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="TransferItems" /> class.</returns>
-    public static TransferItems Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return TransferItems.Instance ??= new(helper);
+        return TransferItems.Instance ??= new TransferItems(helper);
     }
 
     /// <inheritdoc />

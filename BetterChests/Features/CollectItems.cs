@@ -20,7 +20,9 @@ internal sealed class CollectItems : IFeature
 {
     private const string Id = "furyx639.BetterChests/CollectItems";
 
-    private static CollectItems? Instance;
+#nullable disable
+    private static CollectItems Instance;
+#nullable enable
 
     private readonly PerScreen<List<IStorageObject>> _eligible = new(() => new());
     private readonly IModHelper _helper;
@@ -42,14 +44,14 @@ internal sealed class CollectItems : IFeature
             });
     }
 
-    private static List<IStorageObject> Eligible => CollectItems.Instance!._eligible.Value;
+    private static List<IStorageObject> Eligible => CollectItems.Instance._eligible.Value;
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="CollectItems" /> class.</returns>
-    public static CollectItems Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
         return CollectItems.Instance ??= new(helper);
     }

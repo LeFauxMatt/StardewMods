@@ -22,7 +22,9 @@ internal sealed class SearchItems : IFeature
     private const int ExtraSpace = 24;
     private const int MaxTimeOut = 20;
 
-    private static SearchItems? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
@@ -90,9 +92,9 @@ internal sealed class SearchItems : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SearchItems" /> class.</returns>
-    public static SearchItems Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
-        return SearchItems.Instance ??= new(helper, config);
+        return SearchItems.Instance ??= new SearchItems(helper, config);
     }
 
     /// <inheritdoc />

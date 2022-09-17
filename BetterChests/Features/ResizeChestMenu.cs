@@ -19,7 +19,9 @@ internal sealed class ResizeChestMenu : IFeature
 {
     private const string Id = "furyx639.BetterChests/ResizeChestMenu";
 
-    private static ResizeChestMenu? Instance;
+#nullable disable
+    private static ResizeChestMenu Instance;
+#nullable enable
 
     private readonly PerScreen<int> _extraSpace = new();
     private readonly IModHelper _helper;
@@ -77,8 +79,8 @@ internal sealed class ResizeChestMenu : IFeature
 
     private static int ExtraSpace
     {
-        get => ResizeChestMenu.Instance!._extraSpace.Value;
-        set => ResizeChestMenu.Instance!._extraSpace.Value = value;
+        get => ResizeChestMenu.Instance._extraSpace.Value;
+        set => ResizeChestMenu.Instance._extraSpace.Value = value;
     }
 
     /// <summary>
@@ -86,7 +88,7 @@ internal sealed class ResizeChestMenu : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="ResizeChestMenu" /> class.</returns>
-    public static ResizeChestMenu Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
         return ResizeChestMenu.Instance ??= new(helper);
     }

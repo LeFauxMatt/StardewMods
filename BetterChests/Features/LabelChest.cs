@@ -11,7 +11,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class LabelChest : IFeature
 {
-    private static LabelChest? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -27,9 +29,9 @@ internal sealed class LabelChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="LabelChest" /> class.</returns>
-    public static LabelChest Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return LabelChest.Instance ??= new(helper);
+        return LabelChest.Instance ??= new LabelChest(helper);
     }
 
     /// <inheritdoc />

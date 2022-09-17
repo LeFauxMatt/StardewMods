@@ -8,9 +8,11 @@ using StardewMods.Common.Integrations.StackQuality;
 /// </summary>
 internal sealed class Integrations
 {
-    private static Integrations? Instance;
-    private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
+#nullable disable
+    private static Integrations Instance;
+#nullable enable
 
+    private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
     private readonly StackQualityIntegration _stackQualityIntegration;
 
     private Integrations(IModHelper helper)
@@ -22,12 +24,12 @@ internal sealed class Integrations
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance!._genericModConfigMenu;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance._genericModConfigMenu;
 
     /// <summary>
     ///     Gets Stack Quality integration.
     /// </summary>
-    public static StackQualityIntegration StackQuality => Integrations.Instance!._stackQualityIntegration;
+    public static StackQualityIntegration StackQuality => Integrations.Instance._stackQualityIntegration;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.

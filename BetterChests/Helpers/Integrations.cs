@@ -23,7 +23,9 @@ internal sealed class Integrations
     private const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";
     private const string WearMoreRingsId = "bcmpinc.WearMoreRings";
 
-    private static Integrations? Instance;
+#nullable disable
+    private static Integrations Instance;
+#nullable enable
 
     private readonly AutomateIntegration _automate;
     private readonly BetterCraftingIntegration _betterCrafting;
@@ -46,27 +48,27 @@ internal sealed class Integrations
     /// <summary>
     ///     Gets Automate integration.
     /// </summary>
-    public static AutomateIntegration Automate => Integrations.Instance!._automate;
+    public static AutomateIntegration Automate => Integrations.Instance._automate;
 
     /// <summary>
     ///     Gets Better Craft integration.
     /// </summary>
-    public static BetterCraftingIntegration BetterCrafting => Integrations.Instance!._betterCrafting;
+    public static BetterCraftingIntegration BetterCrafting => Integrations.Instance._betterCrafting;
 
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance!._gmcm;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance._gmcm;
 
     /// <summary>
     ///     Gets Toolbar Icons integration.
     /// </summary>
-    public static ToolbarIconsIntegration ToolbarIcons => Integrations.Instance!._toolbarIcons;
+    public static ToolbarIconsIntegration ToolbarIcons => Integrations.Instance._toolbarIcons;
 
     private static Dictionary<string, HashSet<string>> Incompatibilities =>
-        Integrations.Instance!._incompatibilities;
+        Integrations.Instance._incompatibilities;
 
-    private static IModRegistry ModRegistry => Integrations.Instance!._helper.ModRegistry;
+    private static IModRegistry ModRegistry => Integrations.Instance._helper.ModRegistry;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.

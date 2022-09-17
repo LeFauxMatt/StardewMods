@@ -19,7 +19,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class ChestMenuTabs : IFeature
 {
-    private static ChestMenuTabs? Instance;
+#nullable disable
+    private static ChestMenuTabs Instance;
+#nullable enable
 
     private readonly Lazy<Dictionary<string, ClickableTextureComponent>> _allTabs;
     private readonly ModConfig _config;
@@ -56,7 +58,7 @@ internal sealed class ChestMenuTabs : IFeature
             });
     }
 
-    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.Instance!._allTabs.Value;
+    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.Instance._allTabs.Value;
 
     private List<ClickableTextureComponent> Components => this._tabs.Value;
 
@@ -148,7 +150,7 @@ internal sealed class ChestMenuTabs : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestMenuTabs" /> class.</returns>
-    public static ChestMenuTabs Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
         return ChestMenuTabs.Instance ??= new(helper, config);
     }

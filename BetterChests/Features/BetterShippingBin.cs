@@ -10,7 +10,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class BetterShippingBin : IFeature
 {
-    private static BetterShippingBin? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -26,9 +28,9 @@ internal sealed class BetterShippingBin : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="BetterShippingBin" /> class.</returns>
-    public static BetterShippingBin Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return BetterShippingBin.Instance ??= new(helper);
+        return BetterShippingBin.Instance ??= new BetterShippingBin(helper);
     }
 
     /// <inheritdoc />

@@ -19,7 +19,9 @@ using StardewValley.Objects;
 /// </summary>
 internal sealed class Storages
 {
-    private static Storages? Instance;
+#nullable disable
+    private static Storages Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly Lazy<Dictionary<object, IStorageObject>> _referenceContext;
@@ -154,12 +156,12 @@ internal sealed class Storages
         }
     }
 
-    private static ModConfig Config => Storages.Instance!._config;
+    private static ModConfig Config => Storages.Instance._config;
 
     private static Dictionary<object, IStorageObject> ReferenceContext =>
-        Storages.Instance!._referenceContext.Value;
+        Storages.Instance._referenceContext.Value;
 
-    private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => Storages.Instance!._storageTypes;
+    private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => Storages.Instance._storageTypes;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.

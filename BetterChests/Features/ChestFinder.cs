@@ -21,7 +21,9 @@ internal sealed class ChestFinder : IFeature
 {
     private const int MaxTimeOut = 20;
 
-    private static ChestFinder? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<int> _currentIndex = new();
@@ -78,9 +80,9 @@ internal sealed class ChestFinder : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestFinder" /> class.</returns>
-    public static ChestFinder Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
-        return ChestFinder.Instance ??= new(helper, config);
+        return ChestFinder.Instance ??= new ChestFinder(helper, config);
     }
 
     /// <inheritdoc />

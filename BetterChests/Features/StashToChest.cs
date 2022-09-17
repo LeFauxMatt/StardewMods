@@ -14,7 +14,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class StashToChest : IFeature
 {
-    private static StashToChest? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly IModHelper _helper;
@@ -45,9 +47,9 @@ internal sealed class StashToChest : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="StashToChest" /> class.</returns>
-    public static StashToChest Init(IModHelper helper, ModConfig config)
+    public static IFeature Init(IModHelper helper, ModConfig config)
     {
-        return StashToChest.Instance ??= new(helper, config);
+        return StashToChest.Instance ??= new StashToChest(helper, config);
     }
 
     /// <inheritdoc />

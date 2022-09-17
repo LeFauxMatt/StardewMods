@@ -13,7 +13,9 @@ using StardewValley.Locations;
 /// </summary>
 internal sealed class UnloadChest : IFeature
 {
-    private static UnloadChest? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -29,9 +31,9 @@ internal sealed class UnloadChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="UnloadChest" /> class.</returns>
-    public static UnloadChest Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return UnloadChest.Instance ??= new(helper);
+        return UnloadChest.Instance ??= new UnloadChest(helper);
     }
 
     /// <inheritdoc />

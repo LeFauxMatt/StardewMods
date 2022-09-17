@@ -9,11 +9,13 @@ using StardewMods.Common.Helpers;
 /// <inheritdoc />
 public class SmackDatScarecrow : Mod
 {
-    private static SmackDatScarecrow? Instance;
+#nullable disable
+    private static SmackDatScarecrow Instance;
+#nullable enable
 
     private IReflectedField<Multiplayer>? _multiplayer;
 
-    private static Multiplayer Multiplayer => SmackDatScarecrow.Instance!._multiplayer!.GetValue();
+    private static Multiplayer Multiplayer => SmackDatScarecrow.Instance._multiplayer!.GetValue();
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)

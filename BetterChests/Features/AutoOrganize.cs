@@ -12,7 +12,9 @@ using StardewMods.Common.Helpers;
 /// </summary>
 internal sealed class AutoOrganize : IFeature
 {
-    private static AutoOrganize? Instance;
+#nullable disable
+    private static IFeature Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -28,10 +30,9 @@ internal sealed class AutoOrganize : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="AutoOrganize" /> class.</returns>
-    [MemberNotNull(nameof(AutoOrganize.Instance))]
-    public static AutoOrganize Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
-        return AutoOrganize.Instance ??= new(helper);
+        return AutoOrganize.Instance ??= new AutoOrganize(helper);
     }
 
     /// <inheritdoc />

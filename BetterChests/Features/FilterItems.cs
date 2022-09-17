@@ -19,7 +19,9 @@ internal sealed class FilterItems : IFeature
 {
     private const string Id = "furyx639.BetterChests/FilterItems";
 
-    private static FilterItems? Instance;
+#nullable disable
+    private static FilterItems Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
 
@@ -57,14 +59,14 @@ internal sealed class FilterItems : IFeature
         }
     }
 
-    private static IReflectionHelper Reflection => FilterItems.Instance!._helper.Reflection;
+    private static IReflectionHelper Reflection => FilterItems.Instance._helper.Reflection;
 
     /// <summary>
     ///     Initializes <see cref="FilterItems" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="FilterItems" /> class.</returns>
-    public static FilterItems Init(IModHelper helper)
+    public static IFeature Init(IModHelper helper)
     {
         return FilterItems.Instance ??= new(helper);
     }

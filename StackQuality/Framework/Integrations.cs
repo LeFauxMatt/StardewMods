@@ -7,7 +7,9 @@ using StardewMods.Common.Integrations.ShoppingCart;
 /// </summary>
 internal sealed class Integrations
 {
-    private static Integrations? Instance;
+#nullable disable
+    private static Integrations Instance;
+#nullable enable
 
     private readonly IModHelper _helper;
     private readonly ShoppingCartIntegration _shoppingCartIntegration;
@@ -21,7 +23,7 @@ internal sealed class Integrations
     /// <summary>
     ///     Gets Stack Quality integration.
     /// </summary>
-    public static ShoppingCartIntegration ShoppingCart => Integrations.Instance!._shoppingCartIntegration;
+    public static ShoppingCartIntegration ShoppingCart => Integrations.Instance._shoppingCartIntegration;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.

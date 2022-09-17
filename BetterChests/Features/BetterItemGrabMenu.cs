@@ -49,7 +49,9 @@ internal sealed class BetterItemGrabMenu : IFeature
             typeof(object),
         });
 
-    private static BetterItemGrabMenu? Instance;
+#nullable disable
+    private static BetterItemGrabMenu Instance;
+#nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<IStorageObject?> _context = new();
@@ -186,8 +188,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static event EventHandler<ItemGrabMenu> Constructed
     {
-        add => BetterItemGrabMenu.Instance!._constructed += value;
-        remove => BetterItemGrabMenu.Instance!._constructed -= value;
+        add => BetterItemGrabMenu.Instance._constructed += value;
+        remove => BetterItemGrabMenu.Instance._constructed -= value;
     }
 
     /// <summary>
@@ -195,8 +197,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static event EventHandler<ItemGrabMenu> Constructing
     {
-        add => BetterItemGrabMenu.Instance!._constructing += value;
-        remove => BetterItemGrabMenu.Instance!._constructing -= value;
+        add => BetterItemGrabMenu.Instance._constructing += value;
+        remove => BetterItemGrabMenu.Instance._constructing -= value;
     }
 
     /// <summary>
@@ -204,8 +206,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static event EventHandler<SpriteBatch> DrawingMenu
     {
-        add => BetterItemGrabMenu.Instance!._drawingMenu += value;
-        remove => BetterItemGrabMenu.Instance!._drawingMenu -= value;
+        add => BetterItemGrabMenu.Instance._drawingMenu += value;
+        remove => BetterItemGrabMenu.Instance._drawingMenu -= value;
     }
 
     /// <summary>
@@ -213,8 +215,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static IStorageObject? Context
     {
-        get => BetterItemGrabMenu.Instance!._context.Value;
-        private set => BetterItemGrabMenu.Instance!._context.Value = value;
+        get => BetterItemGrabMenu.Instance._context.Value;
+        private set => BetterItemGrabMenu.Instance._context.Value = value;
     }
 
     /// <summary>
@@ -222,8 +224,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static DisplayedItems? Inventory
     {
-        get => BetterItemGrabMenu.Instance!._inventory.Value;
-        private set => BetterItemGrabMenu.Instance!._inventory.Value = value;
+        get => BetterItemGrabMenu.Instance._inventory.Value;
+        private set => BetterItemGrabMenu.Instance._inventory.Value = value;
     }
 
     /// <summary>
@@ -231,8 +233,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static DisplayedItems? ItemsToGrabMenu
     {
-        get => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value;
-        private set => BetterItemGrabMenu.Instance!._itemsToGrabMenu.Value = value;
+        get => BetterItemGrabMenu.Instance._itemsToGrabMenu.Value;
+        private set => BetterItemGrabMenu.Instance._itemsToGrabMenu.Value = value;
     }
 
     /// <summary>
@@ -240,8 +242,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static bool RefreshInventory
     {
-        get => BetterItemGrabMenu.Instance!._refreshInventory.Value;
-        set => BetterItemGrabMenu.Instance!._refreshInventory.Value = value;
+        get => BetterItemGrabMenu.Instance._refreshInventory.Value;
+        set => BetterItemGrabMenu.Instance._refreshInventory.Value = value;
     }
 
     /// <summary>
@@ -249,8 +251,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static bool RefreshItemsToGrabMenu
     {
-        get => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value;
-        set => BetterItemGrabMenu.Instance!._refreshItemsToGrabMenu.Value = value;
+        get => BetterItemGrabMenu.Instance._refreshItemsToGrabMenu.Value;
+        set => BetterItemGrabMenu.Instance._refreshItemsToGrabMenu.Value = value;
     }
 
     /// <summary>
@@ -258,8 +260,8 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// </summary>
     public static int TopPadding
     {
-        get => BetterItemGrabMenu.Instance!._topPadding.Value;
-        set => BetterItemGrabMenu.Instance!._topPadding.Value = value;
+        get => BetterItemGrabMenu.Instance._topPadding.Value;
+        set => BetterItemGrabMenu.Instance._topPadding.Value = value;
     }
 
     private ItemGrabMenu? CurrentMenu
@@ -276,7 +278,7 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// <param name="menu">The <see cref="StardewValley.Menus.IClickableMenu" /> to add.</param>
     public static void AddOverlay(IClickableMenu menu)
     {
-        BetterItemGrabMenu.Instance!.OverlaidMenus.Push(menu);
+        BetterItemGrabMenu.Instance.OverlaidMenus.Push(menu);
     }
 
     /// <summary>
@@ -296,7 +298,7 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// <param name="b">The sprite batch to draw to.</param>
     public static void InvokeDrawingMenu(SpriteBatch b)
     {
-        BetterItemGrabMenu.Instance!._drawingMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
+        BetterItemGrabMenu.Instance._drawingMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
     }
 
     /// <summary>
@@ -305,7 +307,7 @@ internal sealed class BetterItemGrabMenu : IFeature
     /// <returns>Returns the removed overlay.</returns>
     public static IClickableMenu RemoveOverlay()
     {
-        return BetterItemGrabMenu.Instance!.OverlaidMenus.Pop();
+        return BetterItemGrabMenu.Instance.OverlaidMenus.Pop();
     }
 
     /// <inheritdoc />
@@ -431,7 +433,7 @@ internal sealed class BetterItemGrabMenu : IFeature
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
-            BetterItemGrabMenu.Instance!._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+            BetterItemGrabMenu.Instance._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
             return;
         }
 
@@ -446,7 +448,7 @@ internal sealed class BetterItemGrabMenu : IFeature
         var inventory = new DisplayedItems(__instance.inventory, false);
         var itemsToGrabMenu = new DisplayedItems(__instance.ItemsToGrabMenu, true);
 
-        if (BetterItemGrabMenu.Instance!.CurrentMenu is not null
+        if (BetterItemGrabMenu.Instance.CurrentMenu is not null
          && ReferenceEquals(__instance.context, BetterItemGrabMenu.Instance.CurrentMenu.context))
         {
             inventory.Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0;
@@ -466,13 +468,13 @@ internal sealed class BetterItemGrabMenu : IFeature
         if (context is null || !Storages.TryGetOne(context, out var storage))
         {
             BetterItemGrabMenu.Context = null;
-            BetterItemGrabMenu.Instance!._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+            BetterItemGrabMenu.Instance._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
             return;
         }
 
         __instance.context = context;
         BetterItemGrabMenu.Context = storage;
-        BetterItemGrabMenu.Instance!._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+        BetterItemGrabMenu.Instance._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
     }
 
     /// <summary>Replace assignments to ItemsToGrabMenu with method.</summary>
@@ -597,7 +599,7 @@ internal sealed class BetterItemGrabMenu : IFeature
 
     private static void ItemGrabMenu_organizeItemsInList_postfix(IList<Item> items)
     {
-        if (BetterItemGrabMenu.Instance!.CurrentMenu is null)
+        if (BetterItemGrabMenu.Instance.CurrentMenu is null)
         {
             return;
         }
