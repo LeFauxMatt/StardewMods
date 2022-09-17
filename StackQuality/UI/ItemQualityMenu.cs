@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Integrations.StackQuality;
+using StardewMods.StackQuality.Framework;
 using StardewValley.Menus;
 
 /// <inheritdoc />
@@ -138,7 +139,7 @@ internal sealed class ItemQualityMenu : IClickableMenu
         }
 
         this._stacks[slotNumber] = 0;
-        StackQuality.HeldItem = slot;
+        Helpers.HeldItem = slot;
         this.exitThisMenuNoSound();
     }
 

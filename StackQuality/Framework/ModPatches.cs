@@ -65,7 +65,7 @@ internal sealed class ModPatches
             postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_addItemToInventory_postfix)));
     }
 
-    private static IStackQualityApi Api => ModPatches.Instance!._api;
+    private static IStackQualityApi Api => ModPatches.Instance._api;
 
     private static Item? HoveredItem
     {
@@ -111,9 +111,9 @@ internal sealed class ModPatches
         }
     }
 
-    private static IInputHelper Input => ModPatches.Instance!._helper.Input;
+    private static IInputHelper Input => ModPatches.Instance._helper.Input;
 
-    private static IReflectionHelper Reflection => ModPatches.Instance!._helper.Reflection;
+    private static IReflectionHelper Reflection => ModPatches.Instance._helper.Reflection;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
@@ -241,7 +241,7 @@ internal sealed class ModPatches
         Item? toPlace,
         bool playSound)
     {
-        if (!StackQuality.IsSupported || toPlace is not null)
+        if (!Helpers.IsSupported || toPlace is not null)
         {
             return true;
         }
@@ -303,7 +303,7 @@ internal sealed class ModPatches
         bool playSound,
         bool onlyCheckToolAttachments)
     {
-        if (!StackQuality.IsSupported || onlyCheckToolAttachments)
+        if (!Helpers.IsSupported || onlyCheckToolAttachments)
         {
             return true;
         }
@@ -409,7 +409,14 @@ internal sealed class ModPatches
 
         for (var i = 0; i < 4; ++i)
         {
-            var tag = Common.IndexToContextTag(i);
+            var tag = i switch
+            {
+                3 => "quality_iridium",
+                2 => "quality_gold",
+                1 => "quality_silver",
+                0 or _ => "quality_none",
+            };
+
             if (stacks[i] == 0)
             {
                 __result.Remove(tag);
