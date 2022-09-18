@@ -149,8 +149,13 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     {
         item.resetState();
         this.ClearNulls();
-        foreach (var existingItem in this.Items.OfType<Item>().Where(item.canStackWith))
+        foreach (var existingItem in this.Items)
         {
+            if (existingItem is null || !item.canStackWith(existingItem))
+            {
+                continue;
+            }
+
             item.Stack = existingItem.addToStack(item);
             if (item.Stack <= 0)
             {
@@ -170,7 +175,7 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     /// <inheritdoc />
     public virtual void ClearNulls()
     {
-        for (var index = this.Items.Count - 1; index >= 0; index--)
+        for (var index = this.Items.Count - 1; index >= 0; --index)
         {
             if (this.Items[index] is null)
             {
@@ -180,24 +185,19 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
     }
 
     /// <inheritdoc />
-    public bool Equals(IStorageObject? x, IStorageObject? y)
+    public int CompareTo(IStorageObject? other)
     {
-        if (ReferenceEquals(x, y))
+        if (ReferenceEquals(null, other))
         {
-            return true;
+            return -1;
         }
 
-        if (ReferenceEquals(x, null))
+        if (ReferenceEquals(this, other) || this.StashToChestPriority == other.StashToChestPriority)
         {
-            return false;
+            return 0;
         }
 
-        if (ReferenceEquals(y, null))
-        {
-            return false;
-        }
-
-        return x.GetType() == y.GetType() && x.Context.Equals(y.Context);
+        return -this.StashToChestPriority.CompareTo(other.StashToChestPriority);
     }
 
     /// <inheritdoc />
@@ -209,12 +209,6 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
         }
 
         return !this.FilterItemsList.Any() || this.FilterMatcher.Matches(item);
-    }
-
-    /// <inheritdoc />
-    public int GetHashCode(IStorageObject obj)
-    {
-        return obj.Context.GetHashCode();
     }
 
     /// <inheritdoc />
@@ -270,31 +264,73 @@ internal abstract class BaseStorage : StorageNodeData, IStorageObject
             return;
         }
 
-        var items = this.Items.OfType<Item>()
-                        .OrderBy(
-                            item => this.OrganizeChestGroupBy switch
-                            {
-                                GroupBy.Category => item.GetContextTagsExt()
-                                                        .FirstOrDefault(tag => tag.StartsWith("category_"))
-                                                 ?? string.Empty,
-                                GroupBy.Color => item.GetContextTagsExt()
-                                                     .FirstOrDefault(tag => tag.StartsWith("color_"))
-                                              ?? string.Empty,
-                                GroupBy.Name => item.DisplayName,
-                                GroupBy.Default or _ => string.Empty,
-                            })
-                        .ThenBy(
-                            item => this.OrganizeChestSortBy switch
-                            {
-                                SortBy.Quality when item is SObject obj => obj.Quality,
-                                SortBy.Quantity => item.Stack,
-                                SortBy.Type => item.Category,
-                                SortBy.Default or _ => 0,
-                            })
-                        .ToList();
+        var items = this.Items.ToArray();
+        Array.Sort(
+            items,
+            (i1, i2) =>
+            {
+                if (ReferenceEquals(i2, null))
+                {
+                    return -1;
+                }
+
+                if (ReferenceEquals(i1, null))
+                {
+                    return 1;
+                }
+
+                if (ReferenceEquals(i1, i2))
+                {
+                    return 0;
+                }
+
+                var g1 = this.OrganizeChestGroupBy switch
+                {
+                    GroupBy.Category => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
+                                     ?? string.Empty,
+                    GroupBy.Color => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
+                                  ?? string.Empty,
+                    GroupBy.Name => i1.DisplayName,
+                    GroupBy.Default or _ => string.Empty,
+                };
+
+                var g2 = this.OrganizeChestGroupBy switch
+                {
+                    GroupBy.Category => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
+                                     ?? string.Empty,
+                    GroupBy.Color => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
+                                  ?? string.Empty,
+                    GroupBy.Name => i2.DisplayName,
+                    GroupBy.Default or _ => string.Empty,
+                };
+
+                if (!g1.Equals(g2))
+                {
+                    return string.Compare(g1, g2, StringComparison.OrdinalIgnoreCase);
+                }
+
+                var o1 = this.OrganizeChestSortBy switch
+                {
+                    SortBy.Quality when i1 is SObject obj => obj.Quality,
+                    SortBy.Quantity => i1.Stack,
+                    SortBy.Type => i1.Category,
+                    SortBy.Default or _ => 0,
+                };
+
+                var o2 = this.OrganizeChestSortBy switch
+                {
+                    SortBy.Quality when i2 is SObject obj => obj.Quality,
+                    SortBy.Quantity => i2.Stack,
+                    SortBy.Type => i2.Category,
+                    SortBy.Default or _ => 0,
+                };
+
+                return o1.CompareTo(o2);
+            });
+
         if (descending)
         {
-            items.Reverse();
+            Array.Reverse(items);
         }
 
         this.Items.Clear();

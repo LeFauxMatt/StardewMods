@@ -437,7 +437,7 @@ internal sealed class CarryChest : IFeature
             {
                 if (item.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
                 {
-                    limit--;
+                    --limit;
                 }
 
                 if (limit > 0)

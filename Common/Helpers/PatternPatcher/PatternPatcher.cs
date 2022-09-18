@@ -41,7 +41,7 @@ internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
     {
         this.LastPatch = new(patternBlock, patch, false);
         this.Patches.Enqueue(this.LastPatch);
-        this.TotalPatches++;
+        ++this.TotalPatches;
 
         return this;
     }
@@ -51,7 +51,7 @@ internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
     {
         this.LastPatch = new(patternBlock, patch, true);
         this.Patches.Enqueue(this.LastPatch);
-        this.TotalPatches++;
+        ++this.TotalPatches;
     }
 
     /// <inheritdoc />
@@ -114,7 +114,7 @@ internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
 
         // Complete match so apply patch
         this.CurrentPatch.Patch?.Invoke(this.ItemBuffer);
-        this.AppliedPatches++;
+        ++this.AppliedPatches;
 
         // Reset code position to allow looping
         if (this.CurrentPatch.Loop)
@@ -139,7 +139,7 @@ internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
         while (--repeat >= 0)
         {
             this.Patches.Enqueue(new(this.LastPatch!.Pattern, this.LastPatch.Patch, false));
-            this.TotalPatches++;
+            ++this.TotalPatches;
         }
 
         return this;

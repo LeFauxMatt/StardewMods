@@ -95,7 +95,7 @@ internal sealed class UnloadChest : IFeature
         }
 
         // Stash items into target chest
-        for (var index = Storages.CurrentItem.Items.Count - 1; index >= 0; index--)
+        for (var index = Storages.CurrentItem.Items.Count - 1; index >= 0; --index)
         {
             var item = Storages.CurrentItem.Items[index];
             if (item is null)

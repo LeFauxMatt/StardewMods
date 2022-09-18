@@ -160,7 +160,7 @@ internal sealed class Buyable : IBuyable
             }
             else
             {
-                quantity--;
+                --quantity;
             }
 
             inventory[i] = clone;

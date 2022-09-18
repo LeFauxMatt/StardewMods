@@ -29,17 +29,27 @@ internal sealed class CraftFromChest : IFeature
         this._config = config;
     }
 
-    private static IEnumerable<IStorageObject> Eligible =>
-        Storages.All.Where(
-            storage => storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-                    && !storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-                    && !(storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
-                      && Game1.player.currentLocation is MineShaft mineShaft
-                      && mineShaft.Name.StartsWith("UndergroundMine"))
-                    && storage.CraftFromChest.WithinRangeOfPlayer(
-                           storage.CraftFromChestDistance,
-                           storage.Location,
-                           storage.Position));
+    private static IEnumerable<IStorageObject> Eligible
+    {
+        get
+        {
+            foreach (var storage in Storages.All)
+            {
+                if (storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+                 && !storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+                 && !(storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
+                   && Game1.player.currentLocation is MineShaft mineShaft
+                   && mineShaft.Name.StartsWith("UndergroundMine"))
+                 && storage.CraftFromChest.WithinRangeOfPlayer(
+                        storage.CraftFromChestDistance,
+                        storage.Location,
+                        storage.Position))
+                {
+                    yield return storage;
+                }
+            }
+        }
+    }
 
     /// <summary>
     ///     Initializes <see cref="CraftFromChest" />.

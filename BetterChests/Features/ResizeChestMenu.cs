@@ -124,29 +124,25 @@ internal sealed class ResizeChestMenu : IFeature
     /// <summary>Move backpack down by expanded menu height.</summary>
     private static IEnumerable<CodeInstruction> ItemGrabMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        var patchCount = 0;
+        var patchCount = -1;
 
         foreach (var instruction in instructions)
         {
-            if (instruction.LoadsField(AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
+            yield return instruction;
+            switch (patchCount)
             {
-                patchCount = 3;
-                yield return instruction;
-            }
-            else if (patchCount > 0
-                  && instruction.LoadsField(
-                         AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.yPositionOnScreen))))
-            {
-                patchCount--;
-                yield return instruction;
-                yield return new(
-                    OpCodes.Call,
-                    AccessTools.PropertyGetter(typeof(ResizeChestMenu), nameof(ResizeChestMenu.ExtraSpace)));
-                yield return new(OpCodes.Add);
-            }
-            else
-            {
-                yield return instruction;
+                case -1 when instruction.LoadsField(
+                    AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))):
+                    patchCount = 3;
+                    break;
+                case > 0 when instruction.LoadsField(
+                    AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.yPositionOnScreen))):
+                    --patchCount;
+                    yield return new(
+                        OpCodes.Call,
+                        AccessTools.PropertyGetter(typeof(ResizeChestMenu), nameof(ResizeChestMenu.ExtraSpace)));
+                    yield return new(OpCodes.Add);
+                    break;
             }
         }
     }
@@ -161,7 +157,7 @@ internal sealed class ResizeChestMenu : IFeature
         }
     }
 
-    /// <summary>Move/resize bottom dialogue box by search bar height.</summary>
+    /// <summary>Move/resize bottom dialogue box by expanded menu height.</summary>
     [SuppressMessage(
         "ReSharper",
         "HeapView.BoxingAllocation",

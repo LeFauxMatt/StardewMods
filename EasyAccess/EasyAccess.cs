@@ -82,7 +82,7 @@ public class EasyAccess : Mod
                             obj.Quality = 1;
                         }
 
-                        Game1.stats.ItemsForaged++;
+                        ++Game1.stats.ItemsForaged;
                         if (Game1.currentLocation.isFarmBuildingInterior())
                         {
                             Game1.player.gainExperience(0, 5);

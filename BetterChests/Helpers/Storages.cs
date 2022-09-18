@@ -144,18 +144,6 @@ internal sealed class Storages
     /// </summary>
     public static Dictionary<string, IStorageData> Types { get; } = new();
 
-    /// <summary>
-    ///     Gets all placed storages in the world.
-    /// </summary>
-    public static IEnumerable<IStorageObject> World
-    {
-        get
-        {
-            var excluded = new HashSet<object>();
-            return CommonHelpers.AllLocations.SelectMany(location => Storages.FromLocation(location, excluded));
-        }
-    }
-
     private static ModConfig Config => Storages.Instance._config;
 
     private static Dictionary<object, IStorageObject> ReferenceContext =>

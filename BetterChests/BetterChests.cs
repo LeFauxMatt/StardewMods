@@ -14,7 +14,7 @@ using StardewMods.Common.Integrations.BetterChests;
 /// <inheritdoc />
 public class BetterChests : Mod
 {
-    private readonly Dictionary<IFeature, Func<bool>> _features = new();
+    private readonly IList<Tuple<IFeature, Func<bool>>> _features = new List<Tuple<IFeature, Func<bool>>>();
     private readonly Dictionary<Func<object, bool>, IStorageData> _storageTypes = new();
 
     private ModConfig? _config;
@@ -36,57 +36,53 @@ public class BetterChests : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
         // Features
-        this._features.Add(
-            AutoOrganize.Init(this.Helper),
-            () => this._config.AutoOrganize is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(AutoOrganize.Init(this.Helper), () => this._config.AutoOrganize is not FeatureOption.Disabled);
+        this.AddFeature(
             BetterColorPicker.Init(this.Helper, this._config),
             () => this._config.CustomColorPicker is not FeatureOption.Disabled);
-        this._features.Add(BetterCrafting.Init(this.Helper, this._config), () => true);
-        this._features.Add(BetterItemGrabMenu.Init(this.Helper, this._config), () => true);
-        this._features.Add(BetterShippingBin.Init(this.Helper), () => this._config.BetterShippingBin);
-        this._features.Add(
+        this.AddFeature(BetterCrafting.Init(this.Helper, this._config), () => true);
+        this.AddFeature(BetterItemGrabMenu.Init(this.Helper, this._config), () => true);
+        this.AddFeature(BetterShippingBin.Init(this.Helper), () => this._config.BetterShippingBin);
+        this.AddFeature(
             CarryChest.Init(this.Helper, this._config),
             () => this._config.CarryChest is not FeatureOption.Disabled);
-        this._features.Add(LabelChest.Init(this.Helper), () => this._config.LabelChest is not FeatureOption.Disabled);
-        this._features.Add(ChestFinder.Init(this.Helper, this._config), () => this._config.ChestFinder);
-        this._features.Add(
+        this.AddFeature(LabelChest.Init(this.Helper), () => this._config.LabelChest is not FeatureOption.Disabled);
+        this.AddFeature(ChestFinder.Init(this.Helper, this._config), () => this._config.ChestFinder);
+        this.AddFeature(
             ChestInfo.Init(this.Helper, this._config),
             () => this._config.ChestInfo is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(
             ChestMenuTabs.Init(this.Helper, this._config),
             () => this._config.ChestMenuTabs is not FeatureOption.Disabled);
-        this._features.Add(
-            CollectItems.Init(this.Helper),
-            () => this._config.CollectItems is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(CollectItems.Init(this.Helper), () => this._config.CollectItems is not FeatureOption.Disabled);
+        this.AddFeature(
             Configurator.Init(this.Helper, this._config, this.ModManifest),
             () => this._config.Configurator is not FeatureOption.Disabled && Integrations.GMCM.IsLoaded);
-        this._features.Add(
+        this.AddFeature(
             CraftFromChest.Init(this.Helper, this._config),
             () => this._config.CraftFromChest is not FeatureOptionRange.Disabled);
-        this._features.Add(FilterItems.Init(this.Helper), () => this._config.FilterItems is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(FilterItems.Init(this.Helper), () => this._config.FilterItems is not FeatureOption.Disabled);
+        this.AddFeature(
             OpenHeldChest.Init(this.Helper),
             () => this._config.OpenHeldChest is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(
             OrganizeChest.Init(this.Helper),
             () => this._config.OrganizeChest is not FeatureOption.Disabled);
-        this._features.Add(ResizeChest.Init(), () => this._config.ResizeChest is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(ResizeChest.Init(), () => this._config.ResizeChest is not FeatureOption.Disabled);
+        this.AddFeature(
             ResizeChestMenu.Init(this.Helper),
             () => this._config.ResizeChestMenu is not FeatureOption.Disabled);
-        this._features.Add(
+        this.AddFeature(
             SearchItems.Init(this.Helper, this._config),
             () => this._config.SearchItems is not FeatureOption.Disabled);
-        this._features.Add(SlotLock.Init(this.Helper, this._config), () => this._config.SlotLock);
-        this._features.Add(
+        this.AddFeature(SlotLock.Init(this.Helper, this._config), () => this._config.SlotLock);
+        this.AddFeature(
             StashToChest.Init(this.Helper, this._config),
             () => this._config.StashToChest is not FeatureOptionRange.Disabled);
-        this._features.Add(
+        this.AddFeature(
             TransferItems.Init(this.Helper),
             () => this._config.TransferItems is not FeatureOption.Disabled);
-        this._features.Add(UnloadChest.Init(this.Helper), () => this._config.UnloadChest is not FeatureOption.Disabled);
+        this.AddFeature(UnloadChest.Init(this.Helper), () => this._config.UnloadChest is not FeatureOption.Disabled);
     }
 
     /// <inheritdoc />
@@ -113,6 +109,11 @@ public class BetterChests : Mod
         {
             e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
         }
+    }
+
+    private void AddFeature(IFeature feature, Func<bool> condition)
+    {
+        this._features.Add(new(feature, condition));
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)

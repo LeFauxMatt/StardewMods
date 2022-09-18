@@ -194,13 +194,13 @@ internal sealed class DisplayedItems
     {
         if (this.UpArrow.containsPoint(x, y))
         {
-            this.Offset--;
+            --this.Offset;
             return true;
         }
 
         if (this.DownArrow.containsPoint(x, y))
         {
-            this.Offset++;
+            ++this.Offset;
             return true;
         }
 

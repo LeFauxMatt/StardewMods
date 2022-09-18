@@ -558,41 +558,40 @@ internal sealed class BetterItemGrabMenu : IFeature
 
         foreach (var instruction in instructions)
         {
-            if (patchCount == -1
-             && instruction.LoadsField(AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))))
+            yield return instruction;
+
+            switch (patchCount)
             {
-                patchCount = 3;
-                yield return instruction;
-            }
-            else if (patchCount > 0
-                  && instruction.LoadsField(
-                         AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))))
-            {
-                patchCount--;
-                yield return instruction;
-                yield return new(
-                    OpCodes.Call,
-                    AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding)));
-                yield return new(OpCodes.Add);
-            }
-            else if (instruction.LoadsField(
-                         AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
-            {
-                addPadding = true;
-                yield return instruction;
-            }
-            else if (addPadding)
-            {
-                addPadding = false;
-                yield return instruction;
-                yield return new(
-                    OpCodes.Call,
-                    AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding)));
-                yield return new(instruction.opcode);
-            }
-            else
-            {
-                yield return instruction;
+                case -1 when instruction.LoadsField(
+                    AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.showReceivingMenu))):
+                    patchCount = 3;
+                    break;
+                case > 0 when instruction.LoadsField(
+                    AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.yPositionOnScreen))):
+                    --patchCount;
+                    yield return new(
+                        OpCodes.Call,
+                        AccessTools.PropertyGetter(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.TopPadding)));
+                    yield return new(OpCodes.Add);
+                    break;
+                default:
+                    if (instruction.LoadsField(
+                            AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
+                    {
+                        addPadding = true;
+                    }
+                    else if (addPadding)
+                    {
+                        addPadding = false;
+                        yield return new(
+                            OpCodes.Call,
+                            AccessTools.PropertyGetter(
+                                typeof(BetterItemGrabMenu),
+                                nameof(BetterItemGrabMenu.TopPadding)));
+                        yield return new(instruction.opcode);
+                    }
+
+                    break;
             }
         }
     }

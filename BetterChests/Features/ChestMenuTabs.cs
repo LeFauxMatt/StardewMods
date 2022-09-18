@@ -40,21 +40,26 @@ internal sealed class ChestMenuTabs : IFeature
         this._allTabs = new(
             () =>
             {
-                return (
-                    from tab in Game1.content.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs")
-                    let span = new SpanSplit(tab.Value, '/')
-                    select (
-                        tab.Key,
-                        Value: new ClickableTextureComponent(
-                            span[3],
+                var allTabs = new Dictionary<string, ClickableTextureComponent>();
+                var tabs = this._helper.GameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
+                foreach (var (name, info) in tabs)
+                {
+                    var data = new SpanSplit(info, '/');
+                    allTabs.Add(
+                        name,
+                        new(
+                            data[3],
                             new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
                             string.Empty,
-                            !string.IsNullOrWhiteSpace(span[0])
-                                ? span[0]
-                                : helper.Translation.Get($"tabs.{tab.Key}.name").Default(tab.Key),
-                            Game1.content.Load<Texture2D>(span[1]),
-                            new(16 * int.Parse(span[2]), 4, 16, 12),
-                            Game1.pixelZoom))).ToDictionary(tab => tab.Key, tab => tab.Value);
+                            !string.IsNullOrWhiteSpace(data[0])
+                                ? data[0]
+                                : helper.Translation.Get($"tabs.{name}.name").Default(name),
+                            Game1.content.Load<Texture2D>(data[1]),
+                            new(16 * int.Parse(data[2]), 4, 16, 12),
+                            Game1.pixelZoom));
+                }
+
+                return allTabs;
             });
     }
 
@@ -354,7 +359,7 @@ internal sealed class ChestMenuTabs : IFeature
     {
         var menu = Game1.activeClickableMenu switch
         {
-            { } clickableMenu when clickableMenu.GetChildMenu() is ItemGrabMenu itemGrabMenu => itemGrabMenu,
+            { } parentMenu when parentMenu.GetChildMenu() is ItemGrabMenu itemGrabMenu => itemGrabMenu,
             ItemGrabMenu itemGrabMenu => itemGrabMenu,
             _ => null,
         };
@@ -372,55 +377,55 @@ internal sealed class ChestMenuTabs : IFeature
             return;
         }
 
-        var tabs = BetterItemGrabMenu.Context.ChestMenuTabSet.Any()
-            ? ChestMenuTabs.AllTabs.Where(tab => BetterItemGrabMenu.Context.ChestMenuTabSet.Contains(tab.Key))
-            : ChestMenuTabs.AllTabs;
+        foreach (var (name, tab) in ChestMenuTabs.AllTabs)
+        {
+            if (BetterItemGrabMenu.Context.ChestMenuTabSet.Any()
+             && !BetterItemGrabMenu.Context.ChestMenuTabSet.Contains(name))
+            {
+                continue;
+            }
 
-        this.Components.AddRange(
-            tabs.Select(
-                    (tab, index) =>
-                    {
-                        tab.Value.myID = 69420 + index;
+            if (string.IsNullOrWhiteSpace(tab.hoverText))
+            {
+                tab.hoverText = this._helper.Translation.Get($"tab.{name}.Name").Default(name);
+            }
 
-                        if (string.IsNullOrWhiteSpace(tab.Value.hoverText))
-                        {
-                            tab.Value.hoverText = this._helper.Translation.Get($"tab.{tab.Key}.Name").Default(tab.Key);
-                        }
+            this.Components.Add(tab);
+        }
 
-                        return tab.Value;
-                    })
-                .OrderBy(tab => tab.hoverText));
+        this.Components.Sort(
+            (c1, c2) => string.Compare(c1.hoverText, c2.hoverText, StringComparison.OrdinalIgnoreCase));
 
-        ClickableTextureComponent? prevTab = null;
         var bottomRow = this.CurrentMenu.ItemsToGrabMenu.inventory.TakeLast(12).ToArray();
         var topRow = this.CurrentMenu.inventory.inventory.Take(12).ToArray();
-        for (var index = 0; index < this.Components.Count; ++index)
+        for (var i = 0; i < this.Components.Count; ++i)
         {
-            var tab = this.Components.ElementAt(index);
-            this.CurrentMenu.allClickableComponents.Add(tab);
-            if (prevTab is not null)
+            this.Components[i].myID = 69_420 + i;
+            this.CurrentMenu.allClickableComponents.Add(this.Components[i]);
+            if (i > 0)
             {
-                prevTab.rightNeighborID = tab.myID;
-                tab.leftNeighborID = prevTab.myID;
+                this.Components[i - 1].rightNeighborID = 69_420 + i;
+                this.Components[i].leftNeighborID = 69_419 + i;
             }
 
-            if (index < topRow.Length)
+            if (i < topRow.Length)
             {
-                topRow.ElementAt(index).upNeighborID = tab.myID;
-                tab.downNeighborID = topRow.ElementAt(index).myID;
+                topRow[i].upNeighborID = 69_420 + i;
+                this.Components[i].downNeighborID = topRow.ElementAt(i).myID;
             }
 
-            if (index < bottomRow.Length)
+            if (i < bottomRow.Length)
             {
-                bottomRow.ElementAt(index).downNeighborID = tab.myID;
-                tab.upNeighborID = bottomRow.ElementAt(index).myID;
+                bottomRow[i].downNeighborID = 69_420 + i;
+                this.Components[i].upNeighborID = bottomRow.ElementAt(i).myID;
             }
 
-            tab.bounds.X = prevTab?.bounds.Right ?? this.CurrentMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
-            tab.bounds.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen
-                         + Game1.tileSize * this.CurrentMenu.ItemsToGrabMenu.rows
-                         + IClickableMenu.borderWidth;
-            prevTab = tab;
+            this.Components[i].bounds.X = i > 0
+                ? this.Components[i - 1].bounds.Right
+                : this.CurrentMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
+            this.Components[i].bounds.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen
+                                        + Game1.tileSize * this.CurrentMenu.ItemsToGrabMenu.rows
+                                        + IClickableMenu.borderWidth;
         }
 
         BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterByTab);

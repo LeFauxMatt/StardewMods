@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.Common.Integrations.BetterChests;
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewValley.Menus;
@@ -8,7 +9,7 @@ using StardewValley.Network;
 /// <summary>
 ///     Provides access to storage data and functions.
 /// </summary>
-public interface IStorageObject : IStorageData, IEqualityComparer<IStorageObject>
+public interface IStorageObject : IStorageData, IComparable<IStorageObject>
 {
     /// <summary>
     ///     Gets the actual capacity of the object's storage.

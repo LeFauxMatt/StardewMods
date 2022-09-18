@@ -29,11 +29,11 @@ internal sealed class Config
 
     private readonly Lazy<ModConfig> _config;
 
-    private readonly Dictionary<IFeature, Func<bool>> _features;
+    private readonly IList<Tuple<IFeature, Func<bool>>> _features;
     private readonly IModHelper _helper;
     private readonly IManifest _modManifest;
 
-    private Config(IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
+    private Config(IModHelper helper, IManifest manifest, IList<Tuple<IFeature, Func<bool>>> features)
     {
         this._config = new(
             () =>
@@ -66,7 +66,7 @@ internal sealed class Config
         this._helper.Events.GameLoop.GameLaunched += Config.OnGameLaunched;
     }
 
-    private static Dictionary<IFeature, Func<bool>> Features => Config.Instance._features;
+    private static IEnumerable<Tuple<IFeature, Func<bool>>> Features => Config.Instance._features;
 
     private static IGenericModConfigMenuApi GMCM => Integrations.GMCM.API!;
 
@@ -85,7 +85,7 @@ internal sealed class Config
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="features">Mod features.</param>
     /// <returns>Returns an instance of the <see cref="Helpers.Config" /> class.</returns>
-    public static ModConfig Init(IModHelper helper, IManifest manifest, Dictionary<IFeature, Func<bool>> features)
+    public static ModConfig Init(IModHelper helper, IManifest manifest, IList<Tuple<IFeature, Func<bool>>> features)
     {
         Config.Instance ??= new(helper, manifest, features);
         return Config.ModConfig;

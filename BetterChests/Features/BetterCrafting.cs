@@ -329,7 +329,7 @@ internal sealed class BetterCrafting : IFeature
                 }
 
                 var required = quantity * amount;
-                for (var i = Game1.player.Items.Count - 1; i >= 0; i--)
+                for (var i = Game1.player.Items.Count - 1; i >= 0; --i)
                 {
                     var item = Game1.player.Items[i];
                     if (!IsValid(item))
@@ -361,7 +361,7 @@ internal sealed class BetterCrafting : IFeature
 
                 foreach (var storage in BetterCrafting.MaterialStorages)
                 {
-                    for (var i = storage.Items.Count - 1; i >= 0; i--)
+                    for (var i = storage.Items.Count - 1; i >= 0; --i)
                     {
                         var item = storage.Items[i];
                         if (item is null || !IsValid(item))

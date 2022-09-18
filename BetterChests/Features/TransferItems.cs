@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Features;
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -113,11 +112,10 @@ internal sealed class TransferItems : IFeature
             return;
         }
 
-        var items = new Queue<Item>(storage.Items.OfType<Item>());
-        while (items.Count > 0)
+        var items = storage.Items.ToArray();
+        foreach (var item in items)
         {
-            var item = items.Dequeue();
-            if (item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
+            if (item is null || item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
             {
                 continue;
             }
@@ -139,18 +137,15 @@ internal sealed class TransferItems : IFeature
             return;
         }
 
-        var items = new Queue<Item>(
-            Game1.player.Items.Where(item => item is not null && !ReferenceEquals(item, context)));
-        while (items.Count > 0)
+        var items = Game1.player.Items.ToArray();
+        foreach (var item in items)
         {
-            var item = items.Dequeue();
-            if (item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
+            if (item is null || item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
             {
                 continue;
             }
 
-            var tmp = storage.AddItem(item);
-            if (tmp is null)
+            if (storage.AddItem(item) is null)
             {
                 Game1.player.removeItemFromInventory(item);
             }

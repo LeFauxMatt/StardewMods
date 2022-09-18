@@ -178,17 +178,17 @@ internal sealed class ModPatches
         __instance.UpdateFarmerNearby(environment);
         if (____shippingBinFrameCounter > -1)
         {
-            ____shippingBinFrameCounter--;
+            --____shippingBinFrameCounter;
             if (____shippingBinFrameCounter <= 0)
             {
                 ____shippingBinFrameCounter = 5;
                 switch (____farmerNearby)
                 {
                     case true when ___currentLidFrame < __instance.getLastLidFrame():
-                        ___currentLidFrame++;
+                        ++___currentLidFrame;
                         break;
                     case false when ___currentLidFrame > __instance.startingLidFrame.Value:
-                        ___currentLidFrame--;
+                        --___currentLidFrame;
                         break;
                     default:
                         ____shippingBinFrameCounter = -1;

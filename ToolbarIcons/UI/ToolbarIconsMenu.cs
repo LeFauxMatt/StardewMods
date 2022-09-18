@@ -329,7 +329,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         if (this.DownArrow.containsPoint(x, y))
         {
             this.DownArrow.scale = this.DownArrow.baseScale;
-            this.Index++;
+            ++this.Index;
             Game1.playSound("shwip");
             return;
         }
@@ -337,7 +337,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         if (this.UpArrow.containsPoint(x, y))
         {
             this.UpArrow.scale = this.UpArrow.baseScale;
-            this.Index--;
+            --this.Index;
             Game1.playSound("shwip");
             return;
         }
@@ -420,8 +420,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         switch (direction)
         {
             case > 0:
-                this.Index--;
-                if (index != this.Index)
+                if (index != --this.Index)
                 {
                     Game1.playSound("shwip");
                 }
@@ -429,8 +428,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
                 return;
 
             case < 0:
-                this.Index++;
-                if (index != this.Index)
+                if (index != ++this.Index)
                 {
                     Game1.playSound("shwip");
                 }

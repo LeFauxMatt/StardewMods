@@ -120,12 +120,12 @@ public class TooManyAnimals : Mod
         if (this.NextPage.containsPoint(x, y)
          && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
         {
-            this.CurrentPage++;
+            ++this.CurrentPage;
         }
 
         if (this.PreviousPage.containsPoint(x, y) && this.CurrentPage > 0)
         {
-            this.CurrentPage--;
+            --this.CurrentPage;
         }
     }
 
@@ -139,13 +139,13 @@ public class TooManyAnimals : Mod
         if (this.Config.ControlScheme.NextPage.JustPressed()
          && (this.CurrentPage + 1) * this.Config.AnimalShopLimit < this.Stock.Count)
         {
-            this.CurrentPage++;
+            ++this.CurrentPage;
             return;
         }
 
         if (this.Config.ControlScheme.PreviousPage.JustPressed() && this.CurrentPage > 0)
         {
-            this.CurrentPage--;
+            --this.CurrentPage;
         }
     }
 

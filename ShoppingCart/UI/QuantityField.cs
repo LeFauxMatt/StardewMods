@@ -142,13 +142,13 @@ internal sealed class QuantityField
 
         if (this._minus.containsPoint(x, y))
         {
-            this.Quantity--;
+            --this.Quantity;
             return true;
         }
 
         if (this._plus.containsPoint(x, y))
         {
-            this.Quantity++;
+            ++this.Quantity;
             return true;
         }
 

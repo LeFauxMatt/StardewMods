@@ -27,12 +27,13 @@ internal sealed class ChestFinder : IFeature
 
     private readonly ModConfig _config;
     private readonly PerScreen<int> _currentIndex = new();
+    private readonly PerScreen<IList<IStorageObject>> _foundStorages = new(() => new List<IStorageObject>());
     private readonly IModHelper _helper;
     private readonly PerScreen<IItemMatcher?> _itemMatcher = new();
     private readonly PerScreen<SearchBar> _searchBar = new(() => new());
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
     private readonly PerScreen<bool> _showSearch = new();
-    private readonly PerScreen<List<IStorageObject>> _storages = new(() => new());
+    private readonly PerScreen<IList<object>> _storageContexts = new(() => new List<object>());
     private readonly PerScreen<int> _timeOut = new();
 
     private bool _isActivated;
@@ -48,6 +49,8 @@ internal sealed class ChestFinder : IFeature
         get => this._currentIndex.Value;
         set => this._currentIndex.Value = value;
     }
+
+    private IList<IStorageObject> FoundStorages => this._foundStorages.Value;
 
     private IItemMatcher ItemMatcher =>
         this._itemMatcher.Value ??= new ItemMatcher(false, this._config.SearchTagSymbol.ToString());
@@ -66,7 +69,7 @@ internal sealed class ChestFinder : IFeature
         set => this._showSearch.Value = value;
     }
 
-    private List<IStorageObject> Storages => this._storages.Value;
+    private IList<object> StorageContexts => this._storageContexts.Value;
 
     private int TimeOut
     {
@@ -179,15 +182,15 @@ internal sealed class ChestFinder : IFeature
 
         if (Game1.activeClickableMenu is ItemGrabMenu && this._config.ControlScheme.OpenNextChest.JustPressed())
         {
-            this.CurrentIndex++;
-            if (this.CurrentIndex < 0 || this.CurrentIndex >= this.Storages.Count)
+            ++this.CurrentIndex;
+            if (this.CurrentIndex < 0 || this.CurrentIndex >= this.FoundStorages.Count)
             {
                 this.CurrentIndex = 0;
             }
 
-            if (this.CurrentIndex < this.Storages.Count)
+            if (this.CurrentIndex < this.FoundStorages.Count)
             {
-                this.Storages[this.CurrentIndex].ShowMenu();
+                this.FoundStorages[this.CurrentIndex].ShowMenu();
             }
 
             this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
@@ -204,27 +207,20 @@ internal sealed class ChestFinder : IFeature
             this.ShowSearch = false;
             this.SearchText = string.Empty;
             this.ItemMatcher.Clear();
-            this.Storages.Clear();
+            this.FoundStorages.Clear();
             this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
         }
 
         if (this._config.ControlScheme.OpenFoundChest.JustPressed())
         {
-            var storages = this.Storages.OrderBy(
-                                   storage => Math.Abs(storage.Position.X - Game1.player.getTileX())
-                                            + Math.Abs(storage.Position.Y - Game1.player.getTileY()))
-                               .ToList();
-            this.Storages.Clear();
-            this.Storages.AddRange(storages);
-
-            if (this.CurrentIndex < 0 || this.CurrentIndex >= this.Storages.Count)
+            if (this.CurrentIndex < 0 || this.CurrentIndex >= this.FoundStorages.Count)
             {
                 this.CurrentIndex = 0;
             }
 
-            if (this.CurrentIndex < this.Storages.Count)
+            if (this.CurrentIndex < this.FoundStorages.Count)
             {
-                this.Storages[this.CurrentIndex].ShowMenu();
+                this.FoundStorages[this.CurrentIndex].ShowMenu();
             }
 
             this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
@@ -253,14 +249,14 @@ internal sealed class ChestFinder : IFeature
             this.SearchBar.draw(e.SpriteBatch);
         }
 
-        if (!this.Storages.Any())
+        if (!this.FoundStorages.Any())
         {
             return;
         }
 
         var bounds = Game1.graphics.GraphicsDevice.Viewport.Bounds;
         var srcRect = new Rectangle(412, 495, 5, 4);
-        foreach (var storage in this.Storages)
+        foreach (var storage in this.FoundStorages)
         {
             var pos = (storage.Position + new Vector2(0.5f, -0.75f)) * Game1.tileSize;
             var onScreenPos = default(Vector2);
@@ -382,14 +378,39 @@ internal sealed class ChestFinder : IFeature
 
     private void RefreshStorages()
     {
-        this.Storages.Clear();
+        this.FoundStorages.Clear();
         if (!this.ItemMatcher.Any())
         {
             return;
         }
 
-        this.Storages.AddRange(
-            Helpers.Storages.CurrentLocation.Where(storage => storage.Items.Any(this.ItemMatcher.Matches)).Distinct());
+        var storages = new List<IStorageObject>();
+        foreach (var storage in Storages.CurrentLocation)
+        {
+            if (this.StorageContexts.Contains(storage.Context) || !storage.Items.Any(this.ItemMatcher.Matches))
+            {
+                continue;
+            }
+
+            this.StorageContexts.Add(storage.Context);
+            storages.Add(storage);
+        }
+
+        storages.Sort(
+            (s1, s2) =>
+            {
+                var d1 = Math.Abs(s1.Position.X - Game1.player.getTileX())
+                       + Math.Abs(s1.Position.Y - Game1.player.getTileY());
+                var d2 = Math.Abs(s2.Position.X - Game1.player.getTileX())
+                       + Math.Abs(s2.Position.Y - Game1.player.getTileY());
+                return d1.CompareTo(d2);
+            });
+
+        foreach (var storage in storages)
+        {
+            this.FoundStorages.Add(storage);
+        }
+
         this.CurrentIndex = 0;
     }
 }

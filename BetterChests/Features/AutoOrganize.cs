@@ -1,5 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
+using System;
 using System.Globalization;
 using System.Linq;
 using StardewModdingAPI.Events;
@@ -61,13 +62,17 @@ internal sealed class AutoOrganize : IFeature
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
-        var storages = Storages.All.Where(storage => storage.AutoOrganize is FeatureOption.Enabled)
-                               .OrderByDescending(storage => storage.StashToChestPriority)
-                               .ToList();
+        var storages = Storages.All.ToArray();
+        Array.Sort(storages);
 
         foreach (var fromStorage in storages)
         {
-            for (var index = fromStorage.Items.Count - 1; index >= 0; index--)
+            if (fromStorage.AutoOrganize is not FeatureOption.Enabled)
+            {
+                continue;
+            }
+
+            for (var index = fromStorage.Items.Count - 1; index >= 0; --index)
             {
                 var item = fromStorage.Items[index];
                 if (item is null)
@@ -76,10 +81,14 @@ internal sealed class AutoOrganize : IFeature
                 }
 
                 var stack = item.Stack;
-                foreach (var toStorage in storages.Where(
-                             storage => !ReferenceEquals(fromStorage, storage)
-                                     && storage.StashToChestPriority > fromStorage.StashToChestPriority))
+                foreach (var toStorage in storages)
                 {
+                    if (ReferenceEquals(fromStorage, toStorage)
+                     || fromStorage.StashToChestPriority >= toStorage.StashToChestPriority)
+                    {
+                        continue;
+                    }
+
                     var tmp = toStorage.StashItem(item);
                     if (tmp is null)
                     {

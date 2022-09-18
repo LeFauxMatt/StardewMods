@@ -97,17 +97,15 @@ internal sealed class SlotLock : IFeature
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.opcode == OpCodes.Ldloc_0)
+            yield return instruction;
+            if (instruction.opcode != OpCodes.Ldloc_0)
             {
-                yield return instruction;
-                yield return new(OpCodes.Ldarg_0);
-                yield return new(OpCodes.Ldloc_S, (byte)4);
-                yield return CodeInstruction.Call(typeof(SlotLock), nameof(SlotLock.Tint));
+                continue;
             }
-            else
-            {
-                yield return instruction;
-            }
+
+            yield return new(OpCodes.Ldarg_0);
+            yield return new(OpCodes.Ldloc_S, (byte)4);
+            yield return CodeInstruction.Call(typeof(SlotLock), nameof(SlotLock.Tint));
         }
     }
 

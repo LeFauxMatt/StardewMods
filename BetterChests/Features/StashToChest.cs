@@ -1,6 +1,6 @@
 namespace StardewMods.BetterChests.Features;
 
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
@@ -28,18 +28,6 @@ internal sealed class StashToChest : IFeature
         this._helper = helper;
         this._config = config;
     }
-
-    private static IEnumerable<IStorageObject> Eligible =>
-        Storages.All.Where(
-            storage => storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-                    && !storage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-                    && !(storage.StashToChestDisableLocations.Contains("UndergroundMine")
-                      && Game1.player.currentLocation is MineShaft mineShaft
-                      && mineShaft.Name.StartsWith("UndergroundMine"))
-                    && storage.StashToChest.WithinRangeOfPlayer(
-                           storage.StashToChestDistance,
-                           storage.Location,
-                           storage.Position));
 
     /// <summary>
     ///     Initializes <see cref="StashToChest" />.
@@ -108,11 +96,25 @@ internal sealed class StashToChest : IFeature
 
     private static void StashIntoAll()
     {
-        var storages = StashToChest.Eligible.OrderByDescending(storage => storage.StashToChestPriority).ToList();
         var stashedAny = false;
-        foreach (var unused in storages.Where(StashToChest.StashIntoStorage))
+        var storages = Storages.All.ToArray();
+        Array.Sort(storages);
+
+        foreach (var storage in storages)
         {
-            stashedAny = true;
+            if (storage.StashToChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+             && !storage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+             && !(storage.StashToChestDisableLocations.Contains("UndergroundMine")
+               && Game1.player.currentLocation is MineShaft mineShaft
+               && mineShaft.Name.StartsWith("UndergroundMine"))
+             && storage.StashToChest.WithinRangeOfPlayer(
+                    storage.StashToChestDistance,
+                    storage.Location,
+                    storage.Position)
+             && StashToChest.StashIntoStorage(storage))
+            {
+                stashedAny = true;
+            }
         }
 
         if (stashedAny)
