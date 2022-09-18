@@ -7,7 +7,7 @@ using StardewMods.StackQuality.Framework;
 using StardewMods.StackQuality.UI;
 
 /// <inheritdoc />
-public class StackQuality : Mod
+public sealed class StackQuality : Mod
 {
     /// <inheritdoc />
     public override void Entry(IModHelper helper)

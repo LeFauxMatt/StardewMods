@@ -12,7 +12,7 @@ using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-public class BetterChests : Mod
+public sealed class BetterChests : Mod
 {
     private readonly IList<Tuple<IFeature, Func<bool>>> _features = new List<Tuple<IFeature, Func<bool>>>();
     private readonly Dictionary<Func<object, bool>, IStorageData> _storageTypes = new();

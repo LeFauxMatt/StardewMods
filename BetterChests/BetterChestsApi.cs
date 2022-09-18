@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Models;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-public class BetterChestsApi : IBetterChestsApi
+public sealed class BetterChestsApi : IBetterChestsApi
 {
     private readonly IStorageData _default;
     private readonly Dictionary<Func<object, bool>, IStorageData> _storageTypes;

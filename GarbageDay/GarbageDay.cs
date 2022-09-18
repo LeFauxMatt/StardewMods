@@ -15,7 +15,7 @@ using xTile;
 using xTile.Dimensions;
 
 /// <inheritdoc />
-public class GarbageDay : Mod
+public sealed class GarbageDay : Mod
 {
     private readonly HashSet<IAssetName> _excludedAssets = new();
     private readonly PerScreen<GarbageCan?> _garbageCan = new();

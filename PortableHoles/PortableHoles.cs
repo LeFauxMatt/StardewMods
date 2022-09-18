@@ -9,7 +9,7 @@ using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley.Locations;
 
 /// <inheritdoc />
-public class PortableHoles : Mod
+public sealed class PortableHoles : Mod
 {
     private ModConfig? _config;
 

@@ -19,7 +19,7 @@ using StardewValley.Menus;
 // TODO: Center Toolbar Icons
 
 /// <inheritdoc />
-public class ToolbarIcons : Mod
+public sealed class ToolbarIcons : Mod
 {
     private const string AlwaysScrollMapId = "bcmpinc.AlwaysScrollMap";
     private const string CJBCheatsMenuId = "CJBok.CheatsMenu";

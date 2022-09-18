@@ -9,7 +9,7 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
-public class EasyAccess : Mod
+public sealed class EasyAccess : Mod
 {
     private ModConfig? _config;
 

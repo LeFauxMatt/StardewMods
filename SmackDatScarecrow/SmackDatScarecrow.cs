@@ -7,7 +7,7 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 
 /// <inheritdoc />
-public class SmackDatScarecrow : Mod
+public sealed class SmackDatScarecrow : Mod
 {
 #nullable disable
     private static SmackDatScarecrow Instance;

@@ -3,9 +3,9 @@
 using StardewValley.Menus;
 
 /// <summary>
-///     Common helpers for this mod.
+///     Common helpers for StackQuality.
 /// </summary>
-internal class Helpers
+internal sealed class Helpers
 {
 #nullable disable
     private static Helpers Instance;

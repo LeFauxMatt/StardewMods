@@ -12,7 +12,7 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.OrdinaryCapsule.Models;
 
 /// <inheritdoc />
-public class OrdinaryCapsule : Mod
+public sealed class OrdinaryCapsule : Mod
 {
     private static readonly Dictionary<int, int> CachedTimes = new();
 

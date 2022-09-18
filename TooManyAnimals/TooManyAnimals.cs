@@ -11,7 +11,7 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-public class TooManyAnimals : Mod
+public sealed class TooManyAnimals : Mod
 {
 #nullable disable
     private static TooManyAnimals Instance;

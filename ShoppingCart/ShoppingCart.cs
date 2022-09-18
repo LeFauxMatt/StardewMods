@@ -10,7 +10,7 @@ using StardewValley.Menus;
 using StardewValley.Tools;
 
 /// <inheritdoc />
-public class ShoppingCart : Mod
+public sealed class ShoppingCart : Mod
 {
 #nullable disable
     private static ShoppingCart Instance;
