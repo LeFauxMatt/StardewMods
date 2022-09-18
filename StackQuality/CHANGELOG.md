@@ -1,5 +1,11 @@
 ﻿# Stack Quality Change Log
 
+## 1.0.0-beta.7 (Unreleased)
+
+### Fixed
+
+* Fixed being able to sell stacks at the price of the highest quality.
+
 ## 1.0.0-beta.6 (September 16, 2022)
 
 ### Fixed

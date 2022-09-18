@@ -55,6 +55,9 @@ internal sealed class ModPatches
             AccessTools.Method(typeof(SObject), nameof(SObject.addToStack)),
             new(typeof(ModPatches), nameof(ModPatches.Object_addToStack_prefix)));
         harmony.Patch(
+            AccessTools.Method(typeof(SObject), nameof(SObject.sellToStorePrice)),
+            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_sellToStorePrice_postfix)));
+        harmony.Patch(
             AccessTools.PropertySetter(typeof(SObject), nameof(SObject.Stack)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Object_StackSetter_postfix)));
         harmony.Patch(
@@ -439,6 +442,40 @@ internal sealed class ModPatches
 
         __result = remaining.Sum();
         return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_sellToStorePrice_postfix(SObject __instance, ref int __result, long specificPlayerID)
+    {
+        if (!__instance.modData.ContainsKey("furyx639.StackQuality/qualities")
+         || !ModPatches.Api.GetStacks(__instance, out var stacks)
+         || stacks.Count(stack => stack > 0) <= 1)
+        {
+            return;
+        }
+
+        var totalSalePrice = 0f;
+        for (var i = 0; i < 4; ++i)
+        {
+            var salePrice = __instance.Price * (1f + (i == 3 ? 4 : i) * 0.25f);
+            var getPriceAfterMultipliers = ModPatches.Reflection.GetMethod(__instance, "getPriceAfterMultipliers");
+            salePrice = getPriceAfterMultipliers.Invoke<float>(salePrice, specificPlayerID);
+            if (__instance.ParentSheetIndex == 493)
+            {
+                salePrice /= 2f;
+            }
+
+            if (salePrice > 0)
+            {
+                salePrice = Math.Max(1f, salePrice * Game1.MasterPlayer.difficultyModifier);
+            }
+
+            totalSalePrice += salePrice;
+        }
+
+        totalSalePrice /= __instance.Stack;
+        __result = (int)totalSalePrice;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
