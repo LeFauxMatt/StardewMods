@@ -26,6 +26,19 @@ internal sealed class ComplexIntegration : BaseIntegration
     }
 
     /// <summary>
+    ///     Adds a complex integration for vanilla.
+    /// </summary>
+    /// <param name="index">The index of the mod icon.</param>
+    /// <param name="hoverText">The text to display.</param>
+    /// <param name="action">Function which returns the action to perform.</param>
+    /// <returns>Returns true if the icon was added.</returns>
+    public bool AddCustomAction(int index, string hoverText, Action action)
+    {
+        this.AddIntegration(string.Empty, index, hoverText, action);
+        return true;
+    }
+
+    /// <summary>
     ///     Adds a complex mod integration.
     /// </summary>
     /// <param name="modId">The id of the mod.</param>

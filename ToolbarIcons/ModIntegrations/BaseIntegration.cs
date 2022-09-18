@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Integrations.ToolbarIcons;
 
 /// <summary>
@@ -44,12 +44,14 @@ internal abstract class BaseIntegration
     /// <returns>Returns true if the icon was added.</returns>
     protected bool AddIntegration(string modId, int index, string hoverText, Action action, string? texturePath = null)
     {
+        var texture = this.Helper.GameContent.Load<Texture2D>(texturePath ?? BaseIntegration.IconPath);
+        var cols = texture.Width / 16;
         this.API.AddToolbarIcon(
-            $"{modId}.{index.ToString(CultureInfo.InvariantCulture)}",
+            $"{modId}.{hoverText}",
             texturePath ?? BaseIntegration.IconPath,
-            new(16 * index, 0, 16, 16),
+            new(16 * (index % cols), 16 * (index / cols), 16, 16),
             hoverText);
-        this.Icons.Add($"{modId}.{index.ToString(CultureInfo.InvariantCulture)}", action);
+        this.Icons.Add($"{modId}.{hoverText}", action);
         return true;
     }
 
