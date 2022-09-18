@@ -1,5 +1,21 @@
 # Toolbar Icons Change Log
 
+## 2.5.0 (Unreleased)
+
+### Added
+
+* Added support for To-Dew.
+* Added button for Daily Quests.
+* Added button for Special Orders.
+
+### Changed
+
+* New icons created by [Tai](https://www.nexusmods.com/stardewvalley/users/92060238):
+    * Always Scroll Map
+    * To-Dew
+    * Daily Quests
+    * Special Orders
+
 ## 2.4.0 (September 6, 2022)
 
 ### Added

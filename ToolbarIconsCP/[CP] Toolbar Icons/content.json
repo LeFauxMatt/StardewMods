@@ -37,7 +37,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.DataLayers/Toggle": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsCP\\Icons/3/method/ToggleLayers"
+        "Pathoschild.DataLayers/Toggle": "{{i18n: button.DataLayers}}/furyx639.ToolbarIconsCP\\Icons/1/method/ToggleLayers"
       },
       "When": {
         "HasMod": "Pathoschild.DataLayers"
@@ -48,7 +48,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.DebugMode/Toggle": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsCP\\Icons/4/method/ToggleDebugMenu"
+        "Pathoschild.DebugMode/Toggle": "{{i18n: button.DebugMode}}/furyx639.ToolbarIconsCP\\Icons/2/method/ToggleDebugMenu"
       },
       "When": {
         "HasMod": "Pathoschild.DebugMode"
@@ -59,7 +59,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "shekurika.EventLookup/Lookup": "{{i18n: button.EventLookup}}/furyx639.ToolbarIconsCP\\Icons/13/keybind/{{EventLookupHotkey}}"
+        "shekurika.EventLookup/Lookup": "{{i18n: button.EventLookup}}/furyx639.ToolbarIconsCP\\Icons/3/keybind/{{EventLookupHotkey}}"
       },
       "When": {
         "HasMod": "shekurika.EventLookup"
@@ -70,7 +70,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "PeacefulEnd.FashionSense/ShowMenu": "{{i18n: button.FashionSense}}/furyx639.ToolbarIconsCP\\Icons/17/menu/FashionSense.Framework.UI.HandMirrorMenu"
+        "PeacefulEnd.FashionSense/ShowMenu": "{{i18n: button.FashionSense}}/furyx639.ToolbarIconsCP\\Icons/4/menu/FashionSense.Framework.UI.HandMirrorMenu"
       },
       "When": {
         "HasMod": "PeacefulEnd.FashionSense"
@@ -81,7 +81,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.HorseFluteAnywhere/SummonHorse": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsCP\\Icons/6/method/TryUseHorseFlute"
+        "Pathoschild.HorseFluteAnywhere/SummonHorse": "{{i18n: button.HorseFluteAnywhere}}/furyx639.ToolbarIconsCP\\Icons/5/method/TryUseHorseFlute"
       },
       "When": {
         "HasMod": "Pathoschild.HorseFluteAnywhere"
@@ -92,8 +92,8 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "BitwiseJonMods.InstantBuildings/Build": "{{i18n: button.InstantBuildings.Build}}/furyx639.ToolbarIconsCP\\Icons/5/method/HandleInstantBuildButtonClick",
-        "BitwiseJonMods.InstantBuildings/Upgrade": "{{i18n: button.InstantBuildings.Upgrade}}/furyx639.ToolbarIconsCP\\Icons/9/method/HandleInstantUpgradeButtonClick"
+        "BitwiseJonMods.InstantBuildings/Build": "{{i18n: button.InstantBuildings.Build}}/furyx639.ToolbarIconsCP\\Icons/6/method/HandleInstantBuildButtonClick",
+        "BitwiseJonMods.InstantBuildings/Upgrade": "{{i18n: button.InstantBuildings.Upgrade}}/furyx639.ToolbarIconsCP\\Icons/7/method/HandleInstantUpgradeButtonClick"
       },
       "When": {
         "HasMod": "BitwiseJonMods.InstantBuildings"
@@ -104,7 +104,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.LookupAnything/Search": "{{i18n: button.LookupAnything}}/furyx639.ToolbarIconsCP\\Icons/7/method/TryToggleSearch"
+        "Pathoschild.LookupAnything/Search": "{{i18n: button.LookupAnything}}/furyx639.ToolbarIconsCP\\Icons/8/method/TryToggleSearch"
       },
       "When": {
         "HasMod": "Pathoschild.LookupAnything"
@@ -115,7 +115,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "spacechase0.Magic/ShowMenu": "{{i18n: button.Magic}}/furyx639.ToolbarIconsCP\\Icons/16/menu/Magic.Framework.Game.Interface.MagicMenu"
+        "spacechase0.Magic/ShowMenu": "{{i18n: button.Magic}}/furyx639.ToolbarIconsCP\\Icons/9/menu/Magic.Framework.Game.Interface.MagicMenu"
       },
       "When": {
         "HasMod": "spacechase0.Magic"
@@ -126,7 +126,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "MabelSyrup.ResetTerrainFeatures/Reset": "{{i18n: button.ResetTerrainFeatures}}/furyx639.ToolbarIconsCP\\Icons/12/keybind/{{ResetTerrainFeaturesHotkey}}"
+        "MabelSyrup.ResetTerrainFeatures/Reset": "{{i18n: button.ResetTerrainFeatures}}/furyx639.ToolbarIconsCP\\Icons/10/keybind/{{ResetTerrainFeaturesHotkey}}"
       },
       "When": {
         "HasMod": "MabelSyrup.ResetTerrainFeatures"
@@ -137,7 +137,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "aedenthorn.Screenshot/Take": "{{i18n: button.Screenshot}}/furyx639.ToolbarIconsCP\\Icons/14/keybind/{{ScreenshotHotkey}}"
+        "aedenthorn.Screenshot/Take": "{{i18n: button.Screenshot}}/furyx639.ToolbarIconsCP\\Icons/11/keybind/{{ScreenshotHotkey}}"
       },
       "When": {
         "HasMod": "aedenthorn.Screenshot"
@@ -148,7 +148,7 @@
       "Action": "EditData",
       "Target": "furyx639.ToolbarIcons/Toolbar",
       "Entries": {
-        "Pathoschild.TractorMod/SummonTractor": "{{i18n: button.TractorMod}}/furyx639.ToolbarIconsCP\\Icons/15/method/SummonTractor"
+        "Pathoschild.TractorMod/SummonTractor": "{{i18n: button.TractorMod}}/furyx639.ToolbarIconsCP\\Icons/12/method/SummonTractor"
       },
       "When": {
         "HasMod": "Pathoschild.TractorMod"

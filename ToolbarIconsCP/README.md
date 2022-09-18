@@ -1,4 +1,4 @@
-﻿# Toolbar Icons for FuryCore
+﻿# Toolbar Icons Content Pack
 
 Adds shortcut icons to activate hotkeys/commands from other mods.
 
@@ -6,6 +6,7 @@ Adds shortcut icons to activate hotkeys/commands from other mods.
 
 * [Supported Mods](#supported-mods)
 * [Translations](#translations)
+* [Credits](#credits)
 
 ### Supported Mods
 
@@ -37,3 +38,11 @@ Adds shortcut icons to activate hotkeys/commands from other mods.
 | Russian                                                            | ❌️ Not Translated |          |
 | Spanish                                                            | ❌️ Not Translated |          |
 | Turkish                                                            | ❌️ Not Translated |          |
+
+## Credits
+
+Icons created by [Tai](https://www.nexusmods.com/stardewvalley/users/92060238):
+
+* Reset Terrain Features
+* Simple Screenshots
+* Tractor Mod

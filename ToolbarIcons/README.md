@@ -5,6 +5,7 @@ Framework for adding icons to the toolbar.
 * [API](#api)
 * [Assets](#assets)
 * [Integrations](#integrations)
+* [Credits](#credits)
 
 ## API
 
@@ -103,6 +104,7 @@ Some integrations are handled directly by the Toolbar Icons mod which means icon
 * [Dynamic Game Assets](https://www.nexusmods.com/stardewvalley/mods/9365)
 * [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098)
 * [Stardew Aquarium](https://www.nexusmods.com/stardewvalley/mods/6372)
+* [To-Dew](https://www.nexusmods.com/stardewvalley/mods/7409)
 
 ## Translations
 
@@ -119,3 +121,12 @@ Some integrations are handled directly by the Toolbar Icons mod which means icon
 | Russian                | ❌️ Not Translated |          |
 | Spanish                | ❌️ Not Translated |          |
 | Turkish                | ❌️ Not Translated |          |
+
+## Credits
+
+Icons created by [Tai](https://www.nexusmods.com/stardewvalley/users/92060238):
+
+* Always Scroll Map
+* To-Dew
+* Daily Quests
+* Special Orders

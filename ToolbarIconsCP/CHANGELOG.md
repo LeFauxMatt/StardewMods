@@ -1,5 +1,14 @@
 ﻿# Toolbar Icons for FuryCore Change Log
 
+## 2.5.0 (September 17, 2022)
+
+### Changed
+
+* New icons created by [Tai](https://www.nexusmods.com/stardewvalley/users/92060238):
+    * Reset Terrain Features
+    * Screenshot
+    * Tractor Mod
+
 ## 2.4.2 (September 7, 2022)
 
 ### Fixed
