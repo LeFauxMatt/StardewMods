@@ -55,6 +55,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\IManagedConditions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\IEvenBetterRngApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\ExpandedStorageIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\ICustomStorage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\IExpandedStorageApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\IManagedStorage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />

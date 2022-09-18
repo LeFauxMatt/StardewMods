@@ -52,6 +52,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingCart", "ShoppingCar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackQuality", "StackQuality\StackQuality.csproj", "{27AD68FC-9FCE-423E-99A1-9C232C40793D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpandedStorage", "ExpandedStorage\ExpandedStorage.csproj", "{9DE51A63-31AC-4678-9D40-F9351844BEA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,10 @@ Global
 		{27AD68FC-9FCE-423E-99A1-9C232C40793D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27AD68FC-9FCE-423E-99A1-9C232C40793D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27AD68FC-9FCE-423E-99A1-9C232C40793D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
