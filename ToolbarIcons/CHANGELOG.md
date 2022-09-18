@@ -1,6 +1,6 @@
 # Toolbar Icons Change Log
 
-## 2.5.0 (Unreleased)
+## 2.5.0 (September 17, 2022)
 
 ### Added
 

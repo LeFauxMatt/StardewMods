@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -26,6 +27,7 @@ public class ToolbarIcons : Mod
     private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
     private const string GenericModConfigMenuId = "spacechase0.GenericModConfigMenu";
     private const string StardewAquariumId = "Cherry.StardewAquarium";
+    private const string ToDew = "jltaylor-us.ToDew";
 
     private readonly PerScreen<ToolbarIconsApi?> _api = new();
     private readonly PerScreen<ComponentArea> _area = new(() => ComponentArea.Custom);
@@ -228,7 +230,7 @@ public class ToolbarIcons : Mod
         this.SimpleIntegration = SimpleIntegration.Init(this.Helper, this.Api);
         this.ComplexIntegration = ComplexIntegration.Init(this.Helper, this.Api);
 
-        // Integrations
+        // Stardew Aquarium
         this.ComplexIntegration.AddMethodWithParams(
             ToolbarIcons.StardewAquariumId,
             1,
@@ -236,26 +238,34 @@ public class ToolbarIcons : Mod
             "OpenAquariumCollectionMenu",
             "aquariumprogress",
             Array.Empty<string>());
+
+        // CJB Cheats Menu
         this.ComplexIntegration.AddMethodWithParams(
             ToolbarIcons.CJBCheatsMenuId,
-            4,
+            2,
             I18n.Button_CheatsMenu(),
             "OpenCheatsMenu",
             0,
             true);
+
+        // Dynamic Game Assets
         this.ComplexIntegration.AddMethodWithParams(
             ToolbarIcons.DynamicGameAssetsId,
-            6,
+            3,
             I18n.Button_DynamicGameAssets(),
             "OnStoreCommand",
             "dga_store",
             Array.Empty<string>());
+
+        // Generic Mod Config Menu
         this.ComplexIntegration.AddMethodWithParams(
             ToolbarIcons.GenericModConfigMenuId,
-            13,
+            4,
             I18n.Button_GenericModConfigMenu(),
             "OpenListMenu",
             0);
+
+        // CJB Item Spawner
         this.ComplexIntegration.AddCustomAction(
             ToolbarIcons.CJBItemSpawnerId,
             5,
@@ -265,9 +275,11 @@ public class ToolbarIcons : Mod
                 var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu", false);
                 return () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); };
             });
+
+        // Always Scroll Map
         this.ComplexIntegration.AddCustomAction(
             ToolbarIcons.AlwaysScrollMapId,
-            2,
+            6,
             I18n.Button_AlwaysScrollMap(),
             mod =>
             {
@@ -291,6 +303,63 @@ public class ToolbarIcons : Mod
                     }
                 };
             });
+
+        // To-Dew
+        this.ComplexIntegration.AddCustomAction(
+            ToolbarIcons.ToDew,
+            7,
+            I18n.Button_ToDew(),
+            mod =>
+            {
+                var modType = mod.GetType();
+                var perScreenList = modType.GetField("list", BindingFlags.Instance | BindingFlags.NonPublic)
+                                           ?.GetValue(mod);
+                var toDoMenu = modType.Assembly.GetType("ToDew.ToDoMenu");
+                if (perScreenList is null || toDoMenu is null)
+                {
+                    return null;
+                }
+
+                return () =>
+                {
+                    var value = perScreenList.GetType().GetProperty("Value")?.GetValue(perScreenList);
+                    if (value is null)
+                    {
+                        return;
+                    }
+
+                    var action = toDoMenu.GetConstructor(
+                        new[]
+                        {
+                            modType,
+                            value.GetType(),
+                        });
+                    if (action is null)
+                    {
+                        return;
+                    }
+
+                    var menu = action.Invoke(
+                        new[]
+                        {
+                            mod,
+                            value,
+                        });
+                    Game1.activeClickableMenu = (IClickableMenu)menu;
+                };
+            });
+
+        // Special Orders
+        this.ComplexIntegration.AddCustomAction(
+            8,
+            I18n.Button_SpecialOrders(),
+            () => { Game1.activeClickableMenu = new SpecialOrdersBoard(); });
+
+        // Daily Quests
+        this.ComplexIntegration.AddCustomAction(
+            9,
+            I18n.Button_DailyQuests(),
+            () => { Game1.activeClickableMenu = new Billboard(true); });
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
