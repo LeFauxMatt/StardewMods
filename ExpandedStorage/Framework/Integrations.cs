@@ -31,6 +31,11 @@ internal sealed class Integrations
     /// </summary>
     public static BetterCraftingIntegration BetterCrafting => Integrations.Instance._betterCrafting;
 
+    /// <summary>
+    ///     Initializes <see cref="Integrations" />.
+    /// </summary>
+    /// <param name="modRegistry">SMAPI's mod registry.</param>
+    /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModRegistry modRegistry)
     {
         return Integrations.Instance ??= new(modRegistry);

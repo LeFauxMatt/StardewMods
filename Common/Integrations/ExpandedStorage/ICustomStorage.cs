@@ -34,6 +34,11 @@ public interface ICustomStorage
     int Height { get; set; }
 
     /// <summary>
+    ///     Gets or sets the texture path.
+    /// </summary>
+    string? Image { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating whether the storage is a fridge.
     /// </summary>
     bool IsFridge { get; set; }
@@ -69,11 +74,6 @@ public interface ICustomStorage
     Chest.SpecialChestTypes SpecialChestType { get; set; }
 
     /// <summary>
-    ///     Gets or sets the texture path.
-    /// </summary>
-    string? TexturePath { get; set; }
-
-    /// <summary>
     ///     Gets or sets the pixel width.
     /// </summary>
     int Width { get; set; }
@@ -88,6 +88,7 @@ public interface ICustomStorage
         other.Description = this.Description;
         other.DisplayName = this.DisplayName;
         other.Height = this.Height;
+        other.Image = this.Image;
         other.IsFridge = this.IsFridge;
         other.OpenSound = this.OpenSound;
         other.OpenNearby = this.OpenNearby;
@@ -96,7 +97,6 @@ public interface ICustomStorage
         other.ModData = this.ModData;
         other.PlayerColor = this.PlayerColor;
         other.SpecialChestType = this.SpecialChestType;
-        other.TexturePath = this.TexturePath;
         other.Width = this.Width;
     }
 }

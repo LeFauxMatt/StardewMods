@@ -1,0 +1,12 @@
+{
+  "EntryDll": "ExpandedStorage.dll",
+  "Name": "Expanded Storage",
+  "Author": "furyx639",
+  "Version": "2.0.0",
+  "Description": "Framework for adding new types of chests to the game.",
+  "UniqueID": "furyx639.ExpandedStorage",
+  "MinimumApiVersion": "3.15.0",
+  "UpdateKeys": [
+    "Nexus:7431"
+  ]
+}

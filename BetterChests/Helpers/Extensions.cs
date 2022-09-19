@@ -10,7 +10,7 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>
-///     Extension methods.
+///     Extension methods for Better Chests.
 /// </summary>
 internal static class Extensions
 {
