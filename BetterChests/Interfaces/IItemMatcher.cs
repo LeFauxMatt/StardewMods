@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.BetterChests;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 /// <summary>
 ///     Matches item name/tags against a set of search phrases.
 /// </summary>
-public interface IItemMatcher : IList<string>, INotifyCollectionChanged
+internal interface IItemMatcher : IList<string>, INotifyCollectionChanged
 {
     /// <summary>
     ///     Gets or sets a string representation of all registered search texts.

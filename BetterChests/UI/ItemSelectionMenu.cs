@@ -8,8 +8,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewMods.BetterChests.Features;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.Common.Helpers.ItemRepository;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
 
 /// <summary>

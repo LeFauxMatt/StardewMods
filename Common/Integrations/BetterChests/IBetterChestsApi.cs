@@ -1,7 +1,6 @@
 namespace StardewMods.Common.Integrations.BetterChests;
 
 using System;
-using System.Collections.Generic;
 
 /// <summary>
 ///     API for Better Chests.
@@ -9,19 +8,9 @@ using System.Collections.Generic;
 public interface IBetterChestsApi
 {
     /// <summary>
-    ///     Raised before storages are added to a Crafting Page.
+    ///     Raised when storage data is requested for a storage type.
     /// </summary>
-    public event EventHandler<ICraftingStoragesLoadingEventArgs> CraftingStoragesLoading;
-
-    /// <summary>
-    ///     Gets storages from all locations and farmer inventory in the game.
-    /// </summary>
-    public IEnumerable<IStorageObject> AllStorages { get; }
-
-    /// <summary>
-    ///     Gets the types of storages in the game.
-    /// </summary>
-    public Dictionary<string, IStorageData> StorageTypes { get; }
+    public event EventHandler<IStorageTypeRequestedEventArgs> StorageTypeRequested;
 
     /// <summary>
     ///     Adds all applicable config options to an existing GMCM for this storage data.
@@ -29,38 +18,4 @@ public interface IBetterChestsApi
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="storage">The storage to configure for.</param>
     public void AddConfigOptions(IManifest manifest, IStorageData storage);
-
-    /// <summary>
-    ///     Gets all storages being held by a player.
-    /// </summary>
-    /// <param name="farmer">The farmer to get storages from.</param>
-    /// <returns>Returns the storages.</returns>
-    public IEnumerable<IStorageObject> GetStorages(Farmer farmer);
-
-    /// <summary>
-    ///     Gets all storages placed in a location.
-    /// </summary>
-    /// <param name="location">The location to get storages from.</param>
-    /// <returns>Returns the storages.</returns>
-    public IEnumerable<IStorageObject> GetStorages(GameLocation location);
-
-    /// <summary>
-    ///     Registers a chest type based on any object containing the mod data key-value pair.
-    /// </summary>
-    /// <param name="predicate">A function which returns true for valid storages.</param>
-    /// <param name="storage">The storage data.</param>
-    public void RegisterChest(Func<object, bool> predicate, IStorageData storage);
-
-    /// <summary>
-    ///     Opens the crafting menu.
-    /// </summary>
-    public void ShowCraftingPage();
-
-    /// <summary>
-    ///     Attempts to retrieve a storage based on a context object.
-    /// </summary>
-    /// <param name="context">The context object.</param>
-    /// <param name="storage">The storage object.</param>
-    /// <returns>Returns true if a storage could be found for the context object.</returns>
-    public bool TryGetStorage(object context, [NotNullWhen(true)] out IStorageObject? storage);
 }

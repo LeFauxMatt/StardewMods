@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.BetterChests;
+namespace StardewMods.Common.Integrations.BetterChests;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

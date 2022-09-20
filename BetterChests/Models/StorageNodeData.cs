@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 

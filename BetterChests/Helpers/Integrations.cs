@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.StorageHandlers;
 using StardewMods.Common.Integrations.Automate;

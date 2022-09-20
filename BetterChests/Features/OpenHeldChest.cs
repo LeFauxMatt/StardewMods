@@ -73,6 +73,7 @@ internal sealed class OpenHeldChest : IFeature
 
         this._isActivated = true;
         HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
+        this._helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
@@ -87,6 +88,7 @@ internal sealed class OpenHeldChest : IFeature
         this._isActivated = false;
         HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this._helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
@@ -171,6 +173,14 @@ internal sealed class OpenHeldChest : IFeature
         __result = !ReferenceEquals(itemGrabMenu.context, i);
     }
 
+    private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
+    {
+        if (Game1.player.CurrentItem is Chest chest)
+        {
+            chest.updateWhenCurrentLocation(Game1.currentGameTime, Game1.currentLocation);
+        }
+    }
+
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -182,8 +192,16 @@ internal sealed class OpenHeldChest : IFeature
             return;
         }
 
-        Game1.player.currentLocation.localSound("openChest");
-        Storages.CurrentItem.ShowMenu();
+        if (Game1.player.CurrentItem is Chest chest)
+        {
+            chest.checkForAction(Game1.player);
+        }
+        else
+        {
+            Game1.player.currentLocation.localSound("openChest");
+            Storages.CurrentItem.ShowMenu();
+        }
+
         this._helper.Input.Suppress(e.Button);
     }
 }

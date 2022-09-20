@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
@@ -69,48 +68,6 @@ internal static class Extensions
                                           <= distance => true,
             _ => false,
         };
-    }
-
-    /// <summary>
-    ///     Returns storage with parent type updated.
-    /// </summary>
-    /// <param name="storage">The storage object.</param>
-    /// <param name="storageTypes">The storage types to populate.</param>
-    /// <returns>The storage object with type updated.</returns>
-    public static IStorageObject WithType(
-        this IStorageObject storage,
-        Dictionary<Func<object, bool>, IStorageData> storageTypes)
-    {
-        if (storage is not IStorageNode storageNode)
-        {
-            return storage;
-        }
-
-        foreach (var (predicate, type) in storageTypes)
-        {
-            if (!predicate(storage.Context))
-            {
-                continue;
-            }
-
-            storageNode.Parent = type;
-            break;
-        }
-
-        return storage;
-    }
-
-    /// <summary>
-    ///     Returns storages with parent types updated.
-    /// </summary>
-    /// <param name="storages">List of storages to return from.</param>
-    /// <param name="storageTypes">The storage types to populate.</param>
-    /// <returns>A list of storages with types updated.</returns>
-    public static IEnumerable<IStorageObject> WithTypes(
-        this IEnumerable<IStorageObject> storages,
-        Dictionary<Func<object, bool>, IStorageData> storageTypes)
-    {
-        return storages.Select(storage => storage.WithType(storageTypes));
     }
 
     /// <summary>

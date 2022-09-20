@@ -5,14 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.BetterChests.StorageHandlers;
-using StardewMods.Common.Enums;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
+
+// TODO: Add Auto-Grabber
 
 /// <summary>
 ///     Provides access to all supported storages in the game.
@@ -25,19 +28,12 @@ internal sealed class Storages
 
     private readonly ModConfig _config;
     private readonly Lazy<Dictionary<object, IStorageObject>> _referenceContext;
-    private readonly Dictionary<Func<object, bool>, IStorageData> _storageTypes;
 
-    private Storages(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
+    private EventHandler<IStorageTypeRequestedEventArgs>? _storageTypeRequested;
+
+    private Storages(ModConfig config)
     {
         this._config = config;
-        this._storageTypes = storageTypes;
-
-        foreach (var (predicate, storageData) in Integrations.InitTypes(config.VanillaStorages))
-        {
-            this._storageTypes.Add(predicate, new StorageNodeData(storageData, config));
-        }
-
-        this.InitTypes(config.VanillaStorages, config);
         this._referenceContext = new(
             () =>
             {
@@ -85,6 +81,13 @@ internal sealed class Storages
             });
     }
 
+    public static event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
+    {
+        add => Storages.Instance._storageTypeRequested += value;
+        remove => Storages.Instance._storageTypeRequested -= value;
+    }
+
+
     /// <summary>
     ///     Gets storages from all locations and farmer inventory in the game.
     /// </summary>
@@ -126,7 +129,7 @@ internal sealed class Storages
     /// </summary>
     public static IStorageObject? CurrentItem =>
         Game1.player.CurrentItem is not null && Storages.TryGetOne(Game1.player.CurrentItem, out var storage)
-            ? storage.WithType(Storages.StorageTypes)
+            ? Storages.Instance.GetStorageType(storage)
             : null;
 
     /// <summary>
@@ -139,17 +142,10 @@ internal sealed class Storages
     /// </summary>
     public static IEnumerable<IStorageObject> Inventory => Storages.FromPlayer(Game1.player);
 
-    /// <summary>
-    ///     Gets the types of storages in the game.
-    /// </summary>
-    public static Dictionary<string, IStorageData> Types { get; } = new();
-
     private static ModConfig Config => Storages.Instance._config;
 
     private static Dictionary<object, IStorageObject> ReferenceContext =>
         Storages.Instance._referenceContext.Value;
-
-    private static Dictionary<Func<object, bool>, IStorageData> StorageTypes => Storages.Instance._storageTypes;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.
@@ -238,7 +234,7 @@ internal sealed class Storages
             }
         }
 
-        return GetAll().WithTypes(Storages.StorageTypes);
+        return Storages.Instance.GetStorageTypes(GetAll());
     }
 
     /// <summary>
@@ -284,18 +280,17 @@ internal sealed class Storages
             }
         }
 
-        return GetAll().WithTypes(Storages.StorageTypes);
+        return Storages.Instance.GetStorageTypes(GetAll());
     }
 
     /// <summary>
     ///     Initialized <see cref="Storages" />.
     /// </summary>
     /// <param name="config">Mod config data.</param>
-    /// <param name="storageTypes">A dictionary of all registered storage types.</param>
     /// <returns>Returns an instance of the <see cref="Storages" /> class.</returns>
-    public static Storages Init(ModConfig config, Dictionary<Func<object, bool>, IStorageData> storageTypes)
+    public static Storages Init(ModConfig config)
     {
-        return Storages.Instance ??= new(config, storageTypes);
+        return Storages.Instance ??= new(config);
     }
 
     /// <summary>
@@ -338,7 +333,7 @@ internal sealed class Storages
             return false;
         }
 
-        storage.WithType(Storages.StorageTypes);
+        Storages.Instance.GetStorageType(storage);
         return true;
     }
 
@@ -377,7 +372,7 @@ internal sealed class Storages
             }
         }
 
-        return GetAll().WithTypes(Storages.StorageTypes);
+        return Storages.Instance.GetStorageTypes(GetAll());
     }
 
     private static bool TryGetOne(
@@ -430,122 +425,23 @@ internal sealed class Storages
         }
     }
 
-    private void InitTypes(IDictionary<string, StorageData> vanillaStorages, IStorageData defaultStorage)
+    private IStorageObject GetStorageType(IStorageObject storage)
     {
-        // Chest
-        if (!vanillaStorages.TryGetValue("Chest", out var storageData))
+        if (storage is not IStorageNode storageNode)
         {
-            storageData = new();
-            vanillaStorages.Add("Chest", storageData);
+            return storage;
         }
 
-        this._storageTypes.Add(
-            context => context is Chest
-            {
-                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130,
-            },
-            new StorageNodeData(storageData, defaultStorage));
+        var storageTypes = new List<IStorageData>();
+        var storageTypeRequestedEventArgs = new StorageTypeRequestedEventArgs(storage.Context, storageTypes);
+        this._storageTypeRequested.InvokeAll(this, storageTypeRequestedEventArgs);
+        var storageType = storageTypes.FirstOrDefault();
+        storageNode.Parent = storageType is not null ? new StorageNodeData(storageType, this._config) : this._config;
+        return storage;
+    }
 
-        // Fridge
-        if (!vanillaStorages.TryGetValue("Fridge", out storageData))
-        {
-            storageData = new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            };
-            vanillaStorages.Add("Fridge", storageData);
-        }
-
-        this._storageTypes.Add(
-            context => context is FarmHouse or IslandFarmHouse,
-            new StorageNodeData(storageData, defaultStorage));
-
-        // Junimo Chest
-        if (!vanillaStorages.TryGetValue("Junimo Chest", out storageData))
-        {
-            storageData = new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            };
-            vanillaStorages.Add("Junimo Chest", storageData);
-        }
-
-        this._storageTypes.Add(
-            context => context is Chest
-            {
-                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
-            },
-            new StorageNodeData(storageData, defaultStorage));
-
-        // Junimo Hut
-        if (!vanillaStorages.TryGetValue("Junimo Hut", out storageData))
-        {
-            storageData = new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            };
-            vanillaStorages.Add("Junimo Hut", storageData);
-        }
-
-        this._storageTypes.Add(context => context is JunimoHut, new StorageNodeData(storageData, defaultStorage));
-
-        // Mini-Fridge
-        if (!vanillaStorages.TryGetValue("Mini-Fridge", out storageData))
-        {
-            storageData = new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            };
-            vanillaStorages.Add("Mini-Fridge", storageData);
-        }
-
-        this._storageTypes.Add(
-            context => context is Chest { fridge.Value: true },
-            new StorageNodeData(storageData, defaultStorage));
-
-        // Mini-Shipping Bin
-        if (!vanillaStorages.TryGetValue("Mini-Shipping Bin", out storageData))
-        {
-            storageData = new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            };
-            vanillaStorages.Add("Mini-Shipping Bin", storageData);
-        }
-
-        this._storageTypes.Add(
-            context => context is Chest
-            {
-                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
-            },
-            new StorageNodeData(storageData, defaultStorage));
-
-        // Shipping Bin
-        if (!vanillaStorages.TryGetValue("Shipping Bin", out storageData))
-        {
-            storageData = new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            };
-            vanillaStorages.Add("Shipping Bin", storageData);
-        }
-
-        this._storageTypes.Add(
-            context => context is ShippingBin or Farm or IslandWest,
-            new StorageNodeData(storageData, defaultStorage));
-
-        // Stone Chest
-        if (!vanillaStorages.TryGetValue("Stone Chest", out storageData))
-        {
-            storageData = new();
-            vanillaStorages.Add("Stone Chest", storageData);
-        }
-
-        this._storageTypes.Add(
-            context => context is Chest
-            {
-                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232,
-            },
-            new StorageNodeData(storageData, defaultStorage));
+    private IEnumerable<IStorageObject> GetStorageTypes(IEnumerable<IStorageObject> storages)
+    {
+        return storages.Select(this.GetStorageType);
     }
 }

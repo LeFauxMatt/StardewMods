@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 

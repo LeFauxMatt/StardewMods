@@ -4,8 +4,8 @@ using System;
 using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;
 using StardewValley.Menus;
 

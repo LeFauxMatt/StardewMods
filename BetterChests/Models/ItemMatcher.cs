@@ -5,10 +5,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.Common.Helpers.AtraBase.StringHandlers;
-using StardewMods.Common.Integrations.BetterChests;
 
-/// <inheritdoc cref="StardewMods.Common.Integrations.BetterChests.IItemMatcher" />
+/// <inheritdoc cref="IItemMatcher" />
 internal sealed class ItemMatcher : ObservableCollection<string>, IItemMatcher
 {
     private readonly IDictionary<string, SearchPhrase> _clean = new Dictionary<string, SearchPhrase>();

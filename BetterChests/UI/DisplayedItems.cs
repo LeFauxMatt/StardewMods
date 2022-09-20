@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Features;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
 
 /// <summary>

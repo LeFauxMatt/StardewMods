@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Locations;
 
 /// <summary>

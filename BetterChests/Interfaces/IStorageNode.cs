@@ -1,9 +1,11 @@
-﻿namespace StardewMods.Common.Integrations.BetterChests;
+﻿namespace StardewMods.BetterChests.Interfaces;
+
+using StardewMods.Common.Integrations.BetterChests;
 
 /// <summary>
 ///     Represents <see cref="IStorageData" /> with parent-child relationship.
 /// </summary>
-public interface IStorageNode
+internal interface IStorageNode
 {
     /// <summary>
     ///     Gets or sets the <see cref="IStorageData" />.

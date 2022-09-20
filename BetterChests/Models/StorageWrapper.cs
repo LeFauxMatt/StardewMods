@@ -1,6 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Models;
 
-using StardewMods.Common.Integrations.BetterChests;
+using StardewMods.BetterChests.Interfaces;
 
 /// <summary>
 ///     A wrapper for a Storage Object.

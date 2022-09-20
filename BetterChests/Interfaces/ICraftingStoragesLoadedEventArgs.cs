@@ -1,11 +1,11 @@
-﻿namespace StardewMods.Common.Integrations.BetterChests;
+﻿namespace StardewMods.BetterChests.Interfaces;
 
 using System.Collections.Generic;
 
 /// <summary>
 ///     Event args for the CraftingStoragesLoading event.
 /// </summary>
-public interface ICraftingStoragesLoadingEventArgs
+internal interface ICraftingStoragesLoadingEventArgs
 {
     /// <summary>
     ///     Adds a storage to the crafting page.

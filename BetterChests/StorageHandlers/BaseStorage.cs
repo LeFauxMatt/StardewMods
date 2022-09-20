@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Interfaces;
 using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -16,7 +17,7 @@ using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Objects;
 
-/// <inheritdoc cref="StardewMods.Common.Integrations.BetterChests.IStorageObject" />
+/// <inheritdoc cref="IStorageObject" />
 internal abstract class BaseStorage : StorageNodeData, IStorageObject
 {
     private static readonly IStorageData DefaultStorage = new StorageData();

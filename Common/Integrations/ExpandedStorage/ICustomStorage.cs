@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.Common.Integrations.ExpandedStorage;
 
 using System.Collections.Generic;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Objects;
 
 /// <summary>
@@ -8,6 +9,11 @@ using StardewValley.Objects;
 /// </summary>
 public interface ICustomStorage
 {
+    /// <summary>
+    ///     Gets or sets data for integration with Better Chests.
+    /// </summary>
+    IStorageData? BetterChestsData { get; set; }
+
     /// <summary>
     ///     Gets or sets the sound to play when the lid closing animation plays.
     /// </summary>
@@ -36,12 +42,17 @@ public interface ICustomStorage
     /// <summary>
     ///     Gets or sets the texture path.
     /// </summary>
-    string? Image { get; set; }
+    string Image { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether the storage is a fridge.
     /// </summary>
     bool IsFridge { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether the storage can be placed.
+    /// </summary>
+    bool IsPlaceable { get; set; }
 
     /// <summary>
     ///     Gets or sets additional mod data that will be added to storage when it is created.
@@ -84,12 +95,14 @@ public interface ICustomStorage
     /// <param name="other">The other <see cref="ICustomStorage" /> to copy properties to.</param>
     public void CopyTo(ICustomStorage other)
     {
+        other.BetterChestsData = this.BetterChestsData;
         other.Depth = this.Depth;
         other.Description = this.Description;
         other.DisplayName = this.DisplayName;
         other.Height = this.Height;
         other.Image = this.Image;
         other.IsFridge = this.IsFridge;
+        other.IsPlaceable = this.IsPlaceable;
         other.OpenSound = this.OpenSound;
         other.OpenNearby = this.OpenNearby;
         other.OpenNearbySound = this.OpenNearbySound;
