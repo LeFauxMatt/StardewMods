@@ -1,5 +1,18 @@
 # Expanded Storage Change Log
 
-## 2.0.0
+# 2.0.1 (September 21, 2022)
+
+### Added
+
+* Added config options for each Expanded Storage chest type.
+* Added support for loading Expanded Storage v1 content via Api.
+
+### Fixed
+
+* Fixed recipes not being added to crafting tab after being purchased.
+* Fixed recipes not appearing in the Qi Gems shop.
+* Fixed compatibility with Better Crafting.
+
+## 2.0.0 (September 19, 2022)
 
 * Initial version (of the rewrite)

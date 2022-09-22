@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
@@ -13,6 +14,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 public sealed class ExpandedStorage : Mod
 {
+    private static readonly IDictionary<string, LegacyAsset> LegacyAssets = new Dictionary<string, LegacyAsset>();
     private static readonly IDictionary<string, CachedStorage> StorageCache = new Dictionary<string, CachedStorage>();
     private static readonly IDictionary<string, ICustomStorage> Storages = new Dictionary<string, ICustomStorage>();
 
@@ -25,7 +27,8 @@ public sealed class ExpandedStorage : Mod
         Log.Monitor = this.Monitor;
         Extensions.Init(ExpandedStorage.StorageCache);
         Integrations.Init(this.Helper.ModRegistry);
-        ModPatches.Init(this.Helper, this.ModManifest, ExpandedStorage.Storages);
+        Config.Init(this.Helper, this.ModManifest);
+        ModPatches.Init(this.Helper, this.ModManifest, ExpandedStorage.Storages, ExpandedStorage.StorageCache);
 
         // Events
         this.Helper.Events.Content.AssetRequested += ExpandedStorage.OnAssetRequested;
@@ -36,7 +39,11 @@ public sealed class ExpandedStorage : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new ExpandedStorageApi(ExpandedStorage.Storages);
+        return new ExpandedStorageApi(
+            this.Helper,
+            ExpandedStorage.Storages,
+            ExpandedStorage.StorageCache,
+            ExpandedStorage.LegacyAssets);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -56,6 +63,51 @@ public sealed class ExpandedStorage : Mod
         if (e.Name.IsEquivalentTo("furyx639.ExpandedStorage/Unlock"))
         {
             e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
+            return;
+        }
+
+        if (e.Name.IsEquivalentTo("Data/CraftingRecipes"))
+        {
+            var craftingRecipes = new Dictionary<string, string>();
+            foreach (var (_, legacyAsset) in ExpandedStorage.LegacyAssets)
+            {
+                var (id, recipe) = legacyAsset.CraftingRecipe;
+                if (!string.IsNullOrWhiteSpace(recipe))
+                {
+                    craftingRecipes.Add(id, recipe);
+                }
+            }
+
+            if (craftingRecipes.Any())
+            {
+                e.Edit(
+                    asset =>
+                    {
+                        var data = asset.AsDictionary<string, string>().Data;
+                        foreach (var (key, craftingRecipe) in craftingRecipes)
+                        {
+                            data.Add(key, craftingRecipe);
+                        }
+                    });
+            }
+
+            return;
+        }
+
+        if (!e.Name.IsDirectlyUnderPath("ExpandedStorage/SpriteSheets"))
+        {
+            return;
+        }
+
+        foreach (var (key, legacyAsset) in ExpandedStorage.LegacyAssets)
+        {
+            if (!e.Name.IsEquivalentTo($"ExpandedStorage/SpriteSheets/{key}"))
+            {
+                continue;
+            }
+
+            e.LoadFrom(() => legacyAsset.Texture, AssetLoadPriority.Exclusive);
+            return;
         }
     }
 
@@ -99,12 +151,18 @@ public sealed class ExpandedStorage : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this._wait = 3;
+        this._wait = 1;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
 
         if (Integrations.BetterChests.IsLoaded)
         {
             Integrations.BetterChests.API.StorageTypeRequested += ExpandedStorage.OnStorageTypeRequested;
+        }
+
+        if (Integrations.BetterCrafting.IsLoaded)
+        {
+            Integrations.BetterCrafting.API.AddRecipeProvider(
+                new RecipeProvider(ExpandedStorage.Storages, ExpandedStorage.StorageCache));
         }
     }
 
@@ -125,5 +183,7 @@ public sealed class ExpandedStorage : Mod
         {
             api.RegisterStorage(name, storage);
         }
+
+        Config.SetupConfig(ExpandedStorage.Storages);
     }
 }

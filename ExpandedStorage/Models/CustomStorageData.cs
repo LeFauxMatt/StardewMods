@@ -6,7 +6,7 @@ using StardewMods.Common.Integrations.ExpandedStorage;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal class CustomStorageData : ICustomStorage
+internal sealed class CustomStorageData : ICustomStorage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="CustomStorageData" /> class.
@@ -19,14 +19,6 @@ internal class CustomStorageData : ICustomStorage
     public CustomStorageData(BetterChestsData? betterChestsData)
     {
         this.BetterChestsData = betterChestsData;
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="CustomStorageData" /> class.
-    /// </summary>
-    protected CustomStorageData()
-    {
-        // None
     }
 
     /// <inheritdoc />
@@ -60,7 +52,7 @@ internal class CustomStorageData : ICustomStorage
     public IDictionary<string, string> ModData { get; set; } = new Dictionary<string, string>();
 
     /// <inheritdoc />
-    public float OpenNearby { get; set; } = 0;
+    public float OpenNearby { get; set; }
 
     /// <inheritdoc />
     public string OpenNearbySound { get; set; } = "doorCreak";
@@ -69,7 +61,13 @@ internal class CustomStorageData : ICustomStorage
     public string OpenSound { get; set; } = "openChest";
 
     /// <inheritdoc />
-    public bool PlayerColor { get; set; } = false;
+    public string PlaceSound { get; set; } = "axe";
+
+    /// <inheritdoc />
+    public bool PlayerColor { get; set; }
+
+    /// <inheritdoc />
+    public bool PlayerConfig { get; set; } = true;
 
     /// <inheritdoc />
     public Chest.SpecialChestTypes SpecialChestType { get; set; } = Chest.SpecialChestTypes.None;

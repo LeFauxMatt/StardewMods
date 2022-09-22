@@ -2,6 +2,7 @@
 
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.BetterCrafting;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 
 /// <summary>
 ///     Handles integrations with other mods.
@@ -14,11 +15,13 @@ internal sealed class Integrations
 
     private readonly BetterChestsIntegration _betterChests;
     private readonly BetterCraftingIntegration _betterCrafting;
+    private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
 
     private Integrations(IModRegistry modRegistry)
     {
         this._betterChests = new(modRegistry);
         this._betterCrafting = new(modRegistry);
+        this._genericModConfigMenu = new(modRegistry);
     }
 
     /// <summary>
@@ -30,6 +33,11 @@ internal sealed class Integrations
     ///     Gets Better Crafting Integration.
     /// </summary>
     public static BetterCraftingIntegration BetterCrafting => Integrations.Instance._betterCrafting;
+
+    /// <summary>
+    ///     Gets Generic Mod Config Menu Integration.
+    /// </summary>
+    public static GenericModConfigMenuIntegration GenericModConfigMenu => Integrations.Instance._genericModConfigMenu;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.
