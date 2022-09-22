@@ -17,12 +17,11 @@
         <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="1.0.3"/>
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0"/>
         <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04"/>
-    </ItemGroup>
-    <ItemGroup>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\smapi-internal\Newtonsoft.Json.dll"/>
     </ItemGroup>
     <ItemGroup>
         <Using Include="StardewValley"/>
