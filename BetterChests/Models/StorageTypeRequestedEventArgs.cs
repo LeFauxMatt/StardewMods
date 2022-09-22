@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-internal class StorageTypeRequestedEventArgs : IStorageTypeRequestedEventArgs
+internal sealed class StorageTypeRequestedEventArgs : IStorageTypeRequestedEventArgs
 {
     private readonly List<KeyValuePair<IStorageData, int>> _prioritizedTypes = new();
     private readonly IList<IStorageData> _storageTypes;
