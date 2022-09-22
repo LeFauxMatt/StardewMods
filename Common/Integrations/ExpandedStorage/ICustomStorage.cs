@@ -5,7 +5,7 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Objects;
 
 /// <summary>
-///     Data for an ExpandedStorage chest.
+///     Data for an Expanded Storage chest.
 /// </summary>
 public interface ICustomStorage
 {
@@ -75,9 +75,19 @@ public interface ICustomStorage
     string OpenSound { get; set; }
 
     /// <summary>
+    ///     Gets or sets the sound to play when storage is placed.
+    /// </summary>
+    string PlaceSound { get; set; }
+
+    /// <summary>
     ///     Gets or sets a value indicating whether player color is enabled.
     /// </summary>
     bool PlayerColor { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether player config is enabled.
+    /// </summary>
+    bool PlayerConfig { get; set; }
 
     /// <summary>
     ///     Gets or sets the special chest type.
