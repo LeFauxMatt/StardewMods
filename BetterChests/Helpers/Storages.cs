@@ -81,6 +81,9 @@ internal sealed class Storages
             });
     }
 
+    /// <summary>
+    ///     Event for when a storage type is assigned to a storage object.
+    /// </summary>
     public static event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
     {
         add => Storages.Instance._storageTypeRequested += value;

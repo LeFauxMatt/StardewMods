@@ -146,98 +146,52 @@ public sealed class BetterChests : Mod
     {
         switch (e.Context)
         {
+            // Auto-Grabber
+            case SObject { ParentSheetIndex: 165 }
+                when this.ModConfig.VanillaStorages.TryGetValue("Auto-Grabber", out var autoGrabberData):
+                e.Load(autoGrabberData, -1);
+                return;
+
             // Chest
             case Chest
             {
                 playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130,
-            }:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Chest", out var chestData))
-                {
-                    chestData = new();
-                    this.ModConfig.VanillaStorages.Add("Chest", chestData);
-                }
-
+            } when this.ModConfig.VanillaStorages.TryGetValue("Chest", out var chestData):
                 e.Load(chestData, -1);
                 return;
 
             // Fridge
-            case FarmHouse or IslandFarmHouse:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Fridge", out var fridgeData))
-                {
-                    fridgeData = new();
-                    this.ModConfig.VanillaStorages.Add("Fridge", fridgeData);
-                }
-
+            case FarmHouse or IslandFarmHouse
+                when this.ModConfig.VanillaStorages.TryGetValue("Fridge", out var fridgeData):
                 e.Load(fridgeData, -1);
                 return;
 
             // Junimo Chest
-            case Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest }:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Junimo Chest", out var junimoChestData))
-                {
-                    junimoChestData = new()
-                    {
-                        CustomColorPicker = FeatureOption.Disabled,
-                    };
-                    this.ModConfig.VanillaStorages.Add("Junimo Chest", junimoChestData);
-                }
-
+            case Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+                when this.ModConfig.VanillaStorages.TryGetValue("Junimo Chest", out var junimoChestData):
                 e.Load(junimoChestData, -1);
                 return;
 
             // Junimo Hut
-            case JunimoHut:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Junimo Hut", out var junimoHutData))
-                {
-                    junimoHutData = new()
-                    {
-                        CustomColorPicker = FeatureOption.Disabled,
-                    };
-                    this.ModConfig.VanillaStorages.Add("Junimo Hut", junimoHutData);
-                }
-
+            case JunimoHut when this.ModConfig.VanillaStorages.TryGetValue("Junimo Hut", out var junimoHutData):
                 e.Load(junimoHutData, -1);
                 return;
 
             // Mini-Fridge
-            case Chest { fridge.Value: true, playerChest.Value: true }:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Mini-Fridge", out var miniFridgeData))
-                {
-                    miniFridgeData = new()
-                    {
-                        CustomColorPicker = FeatureOption.Disabled,
-                    };
-                    this.ModConfig.VanillaStorages.Add("Mini-Fridge", miniFridgeData);
-                }
-
+            case Chest { fridge.Value: true, playerChest.Value: true }
+                when this.ModConfig.VanillaStorages.TryGetValue("Mini-Fridge", out var miniFridgeData):
                 e.Load(miniFridgeData, -1);
                 return;
 
             // Mini-Shipping Bin
-            case Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Mini-Shipping Bin", out var miniShippingBinData))
-                {
-                    miniShippingBinData = new()
-                    {
-                        CustomColorPicker = FeatureOption.Disabled,
-                    };
-                    this.ModConfig.VanillaStorages.Add("Mini-Shipping Bin", miniShippingBinData);
-                }
-
+            case Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }
+                when this.ModConfig.VanillaStorages.TryGetValue("Mini-Shipping Bin", out var miniShippingBinData):
                 e.Load(miniShippingBinData, -1);
                 return;
 
             // Shipping Bin
-            case ShippingBin or Farm or IslandWest:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Shipping Bin", out var shippingBinData))
-                {
-                    shippingBinData = new()
-                    {
-                        CustomColorPicker = FeatureOption.Disabled,
-                    };
-                    this.ModConfig.VanillaStorages.Add("Shipping Bin", shippingBinData);
-                }
-
+            case ShippingBin or Farm or IslandWest
+                when this.ModConfig.VanillaStorages.TryGetValue("Shipping Bin", out var shippingBinData):
                 e.Load(shippingBinData, -1);
                 return;
 
@@ -245,13 +199,7 @@ public sealed class BetterChests : Mod
             case Chest
             {
                 playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232,
-            }:
-                if (!this.ModConfig.VanillaStorages.TryGetValue("Stone Chest", out var stoneChestData))
-                {
-                    stoneChestData = new();
-                    this.ModConfig.VanillaStorages.Add("Stone Chest", stoneChestData);
-                }
-
+            } when this.ModConfig.VanillaStorages.TryGetValue("Stone Chest", out var stoneChestData):
                 e.Load(stoneChestData, -1);
                 return;
         }
