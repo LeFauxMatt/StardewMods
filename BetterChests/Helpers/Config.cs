@@ -393,7 +393,7 @@ internal sealed class Config
         Config.GMCM.AddSectionTitle(Config.ModManifest, I18n.Section_Chests_Name);
         Config.GMCM.AddParagraph(Config.ModManifest, I18n.Section_Chests_Description);
 
-        foreach (var (key, _) in Config.ModConfig.VanillaStorages)
+        foreach (var (key, _) in Config.ModConfig.VanillaStorages.OrderBy(kvp => Formatting.StorageName(kvp.Key)))
         {
             Config.GMCM.AddPageLink(
                 Config.ModManifest,
@@ -403,7 +403,7 @@ internal sealed class Config
         }
 
         // Other Chests
-        foreach (var (key, value) in Config.ModConfig.VanillaStorages.OrderBy(kvp => Formatting.StorageName(kvp.Key)))
+        foreach (var (key, value) in Config.ModConfig.VanillaStorages)
         {
             Config.GMCM.AddPage(Config.ModManifest, key, () => Formatting.StorageName(key));
             Config.SetupConfig(Config.ModManifest, value);
