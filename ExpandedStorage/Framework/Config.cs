@@ -49,6 +49,28 @@ internal sealed class Config
     /// <param name="storages">The storages to add to the mod config menu.</param>
     public static void SetupConfig(IDictionary<string, ICustomStorage> storages)
     {
+
+        var configStorages = storages
+                             .Where(storage => storage.Value.PlayerConfig)
+                             .OrderBy(storage => storage.Value.DisplayName)
+                             .ToArray();
+
+        foreach (var (id, storage) in configStorages)
+        {
+            if (storage.BetterChestsData is not BetterChestsData betterChestsData)
+            {
+                continue;
+            }
+
+            if (!Config.ModConfig.Config.TryGetValue(id, out var config))
+            {
+                config = new();
+                Config.ModConfig.Config.Add(id, config);
+            }
+
+            config.BetterChestsData = betterChestsData;
+        }
+
         if (!Integrations.GenericModConfigMenu.IsLoaded)
         {
             return;
@@ -61,20 +83,25 @@ internal sealed class Config
             return;
         }
 
-        var configStorages = storages
-                             .Where(storage => storage.Value.PlayerConfig && storage.Value.BetterChestsData is not null)
-                             .OrderBy(storage => storage.Value.DisplayName)
-                             .ToArray();
-
         foreach (var (id, storage) in configStorages)
         {
+            if (storage.BetterChestsData is null)
+            {
+                continue;
+            }
+
             Config.GMCM.AddPageLink(Config.ModManifest, id, () => storage.DisplayName, () => storage.Description);
         }
 
         foreach (var (id, storage) in configStorages)
         {
+            if (storage.BetterChestsData is null)
+            {
+                continue;
+            }
+
             Config.GMCM.AddPage(Config.ModManifest, id, () => storage.DisplayName);
-            Integrations.BetterChests.API.AddConfigOptions(Config.ModManifest, storage.BetterChestsData!);
+            Integrations.BetterChests.API.AddConfigOptions(Config.ModManifest, storage.BetterChestsData);
         }
     }
 

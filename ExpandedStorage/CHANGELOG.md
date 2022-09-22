@@ -1,5 +1,11 @@
 # Expanded Storage Change Log
 
+# 2.0.3 (September 21, 2022)
+
+### Fixed
+
+* Fixed an issue where storage were unplaceable by default.
+
 # 2.0.2 (September 21, 2022)
 
 ### Fixed

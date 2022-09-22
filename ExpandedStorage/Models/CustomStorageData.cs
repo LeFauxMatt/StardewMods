@@ -43,10 +43,10 @@ internal sealed class CustomStorageData : ICustomStorage
     public string Image { get; set; } = string.Empty;
 
     /// <inheritdoc />
-    public bool IsFridge { get; set; } = false;
+    public bool IsFridge { get; set; }
 
     /// <inheritdoc />
-    public bool IsPlaceable { get; set; }
+    public bool IsPlaceable { get; set; } = true;
 
     /// <inheritdoc />
     public IDictionary<string, string> ModData { get; set; } = new Dictionary<string, string>();
