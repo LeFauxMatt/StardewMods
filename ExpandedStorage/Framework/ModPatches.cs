@@ -28,12 +28,18 @@ internal sealed class ModPatches
 #nullable enable
 
     private readonly IModHelper _helper;
+    private readonly IDictionary<string, CachedStorage> _storageCache;
     private readonly IDictionary<string, ICustomStorage> _storages;
 
-    private ModPatches(IModHelper helper, IManifest manifest, IDictionary<string, ICustomStorage> storages)
+    private ModPatches(
+        IModHelper helper,
+        IManifest manifest,
+        IDictionary<string, ICustomStorage> storages,
+        IDictionary<string, CachedStorage> storageCache)
     {
         this._helper = helper;
         this._storages = storages;
+        this._storageCache = storageCache;
         var harmony = new Harmony(manifest.UniqueID);
 
         // Drawing
@@ -262,6 +268,8 @@ internal sealed class ModPatches
 
     private static IReflectionHelper Reflection => ModPatches.Instance._helper.Reflection;
 
+    private static IDictionary<string, CachedStorage> StorageCache => ModPatches.Instance._storageCache;
+
     private static IDictionary<string, ICustomStorage> Storages => ModPatches.Instance._storages;
 
     /// <summary>
@@ -270,10 +278,15 @@ internal sealed class ModPatches
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="storages">All custom chests currently loaded in the game.</param>
+    /// <param name="storageCache">Cached storage textures and attributes.</param>
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
-    public static ModPatches Init(IModHelper helper, IManifest manifest, IDictionary<string, ICustomStorage> storages)
+    public static ModPatches Init(
+        IModHelper helper,
+        IManifest manifest,
+        IDictionary<string, ICustomStorage> storages,
+        IDictionary<string, CachedStorage> storageCache)
     {
-        return ModPatches.Instance ??= new(helper, manifest, storages);
+        return ModPatches.Instance ??= new(helper, manifest, storages, storageCache);
     }
 
     private static void AddToShopStock(string shop, Dictionary<ISalable, int[]> stock)
@@ -684,12 +697,14 @@ internal sealed class ModPatches
         {
             foreach (var (component, recipe) in page)
             {
-                if (!ModPatches.Storages.TryGetValue(recipe.name, out var storage))
+                var name = recipe.name.EndsWith("Recipe") ? recipe.name[..^6].Trim() : recipe.name;
+                if (!ModPatches.Storages.TryGetValue(name, out var storage))
                 {
                     continue;
                 }
 
-                component.texture = ModPatches.GameContent.Load<Texture2D>(storage.Image);
+                var storageCache = ModPatches.StorageCache.Get(storage);
+                component.texture = storageCache.Texture;
                 component.sourceRect = new(0, 0, storage.Width, storage.Height);
                 component.baseScale *= storage.GetScaleMultiplier();
                 component.scale = component.baseScale;
@@ -699,7 +714,8 @@ internal sealed class ModPatches
 
     private static void CraftingRecipe_constructor_postfix(CraftingRecipe __instance)
     {
-        if (ModPatches.Storages.TryGetValue(__instance.name, out var storage))
+        var name = __instance.name.EndsWith("Recipe") ? __instance.name[..^6].Trim() : __instance.name;
+        if (ModPatches.Storages.TryGetValue(name, out var storage))
         {
             __instance.description = storage.Description;
         }
@@ -707,8 +723,13 @@ internal sealed class ModPatches
 
     private static void CraftingRecipe_createItem_postfix(CraftingRecipe __instance, ref Item __result)
     {
-        if (__result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj
-         || !ModPatches.Storages.TryGetValue(__instance.name, out var storage))
+        if (__result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj)
+        {
+            return;
+        }
+
+        var name = __instance.name.EndsWith("Recipe") ? __instance.name[..^6].Trim() : __instance.name;
+        if (!ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return;
         }
@@ -725,7 +746,7 @@ internal sealed class ModPatches
             __result.modData[key] = value;
         }
 
-        __result.modData["furyx639.ExpandedStorage/Storage"] = __instance.name;
+        __result.modData["furyx639.ExpandedStorage/Storage"] = name;
     }
 
     private static void GameLocation_sandyShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
@@ -1031,16 +1052,22 @@ internal sealed class ModPatches
         // Craft unplaceable storages as Chest
         if (!storage.IsPlaceable && obj is not Chest)
         {
-            __result = new Chest(true, obj.ParentSheetIndex);
-            __result._GetOneFrom(obj);
+            obj = new Chest(true, __instance.ParentSheetIndex);
         }
+
+        obj.IsRecipe = __instance.IsRecipe;
+        obj.name = __instance.name;
+        obj.DisplayName = storage.DisplayName;
+        obj.SpecialVariable = __instance.SpecialVariable;
+        obj._GetOneFrom(__instance);
 
         foreach (var (key, value) in storage.ModData)
         {
-            __result.modData[key] = value;
+            obj.modData[key] = value;
         }
 
-        __result.modData["furyx639.ExpandedStorage/Storage"] = __instance.name;
+        obj.modData["furyx639.ExpandedStorage/Storage"] = __instance.name;
+        __result = obj;
     }
 
     private static void Object_isPlaceable_postfix(SObject __instance, ref bool __result)
@@ -1323,7 +1350,7 @@ internal sealed class ModPatches
         var recipes = ModPatches.GameContent.Load<Dictionary<string, string>>("Data/CraftingRecipes");
         foreach (var (id, entry) in buy)
         {
-            if (entry.ShopId != "QiGems"
+            if (entry.ShopId != "QiGemShop"
              || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
              || !ModPatches.Storages.ContainsKey(id))
             {

@@ -42,11 +42,7 @@ internal static class Extensions
         float scaleSize = 1f,
         float layerDepth = 0.0001f)
     {
-        if (!Extensions.StorageCache.TryGetValue(storage.Image, out var storageCache))
-        {
-            storageCache = new(storage);
-        }
-
+        var storageCache = Extensions.StorageCache.Get(storage);
         var startingLidFrame = (obj as Chest)?.startingLidFrame.Value ?? 0;
         var lastLidFrame = (obj as Chest)?.getLastLidFrame() ?? 1;
         var colored = storage.PlayerColor && (obj as Chest)?.playerChoiceColor.Value.Equals(Color.Black) == false;
@@ -89,6 +85,18 @@ internal static class Extensions
             layerDepth + 1E-05f);
     }
 
+    public static CachedStorage Get(this IDictionary<string, CachedStorage> storageCache, ICustomStorage storage)
+    {
+        if (storageCache.TryGetValue(storage.Image, out var cachedStorage))
+        {
+            return cachedStorage;
+        }
+
+        cachedStorage = new(storage);
+        storageCache.Add(storage.Image, new(storage));
+        return cachedStorage;
+    }
+
     /// <summary>
     ///     Gets the frame count of a custom storage's lid opening animation .
     /// </summary>
@@ -96,12 +104,7 @@ internal static class Extensions
     /// <returns>Returns the frame count.</returns>
     public static int GetFrames(this ICustomStorage storage)
     {
-        if (!Extensions.StorageCache.TryGetValue(storage.Image, out var storageCache))
-        {
-            storageCache = new(storage);
-        }
-
-        return storageCache.Frames;
+        return Extensions.StorageCache.Get(storage).Frames;
     }
 
     /// <summary>
@@ -111,12 +114,7 @@ internal static class Extensions
     /// <returns>Returns the scale multiplier.</returns>
     public static float GetScaleMultiplier(this ICustomStorage storage)
     {
-        if (!Extensions.StorageCache.TryGetValue(storage.Image, out var storageCache))
-        {
-            storageCache = new(storage);
-        }
-
-        return storageCache.ScaleMultiplier;
+        return Extensions.StorageCache.Get(storage).ScaleMultiplier;
     }
 
     /// <summary>
@@ -126,12 +124,7 @@ internal static class Extensions
     /// <returns>Returns the tile depth.</returns>
     public static int GetTileDepth(this ICustomStorage storage)
     {
-        if (!Extensions.StorageCache.TryGetValue(storage.Image, out var storageCache))
-        {
-            storageCache = new(storage);
-        }
-
-        return storageCache.TileDepth;
+        return Extensions.StorageCache.Get(storage).TileDepth;
     }
 
     /// <summary>
@@ -141,12 +134,7 @@ internal static class Extensions
     /// <returns>Returns the tile height.</returns>
     public static int GetTileHeight(this ICustomStorage storage)
     {
-        if (!Extensions.StorageCache.TryGetValue(storage.Image, out var storageCache))
-        {
-            storageCache = new(storage);
-        }
-
-        return storageCache.TileHeight;
+        return Extensions.StorageCache.Get(storage).TileHeight;
     }
 
     /// <summary>
@@ -156,12 +144,7 @@ internal static class Extensions
     /// <returns>Returns the tile width.</returns>
     public static int GetTileWidth(this ICustomStorage storage)
     {
-        if (!Extensions.StorageCache.TryGetValue(storage.Image, out var storageCache))
-        {
-            storageCache = new(storage);
-        }
-
-        return storageCache.TileWidth;
+        return Extensions.StorageCache.Get(storage).TileWidth;
     }
 
     /// <summary>

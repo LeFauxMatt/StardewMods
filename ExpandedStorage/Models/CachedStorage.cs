@@ -9,7 +9,12 @@ using StardewMods.Common.Integrations.ExpandedStorage;
 /// </summary>
 internal sealed class CachedStorage
 {
+    private readonly Lazy<int> _frames;
+    private readonly Lazy<float> _scaleMultiplier;
     private readonly ICustomStorage _storage;
+    private readonly Lazy<int> _tileDepth;
+    private readonly Lazy<int> _tileHeight;
+    private readonly Lazy<int> _tileWidth;
 
     private Texture2D? _texture;
 
@@ -20,22 +25,22 @@ internal sealed class CachedStorage
     public CachedStorage(ICustomStorage storage)
     {
         this._storage = storage;
-        this.Frames = this.Texture.Width / this._storage.Width;
-        this.TileDepth = (int)Math.Ceiling(this._storage.Depth / 16f);
-        this.TileHeight = (int)Math.Ceiling(this._storage.Height / 16f);
-        this.TileWidth = (int)Math.Ceiling(this._storage.Width / 16f);
-        this.ScaleMultiplier = Math.Min(1f / this.TileWidth, 2f / this.TileHeight);
+        this._frames = new(() => this.Texture.Width / this._storage.Width);
+        this._tileDepth = new(() => (int)Math.Ceiling(this._storage.Depth / 16f));
+        this._tileHeight = new(() => (int)Math.Ceiling(this._storage.Height / 16f));
+        this._tileWidth = new(() => (int)Math.Ceiling(this._storage.Width / 16f));
+        this._scaleMultiplier = new(() => Math.Min(1f / this.TileWidth, 2f / this.TileHeight));
     }
 
     /// <summary>
     ///     Gets the animation frames.
     /// </summary>
-    public int Frames { get; }
+    public int Frames => this._frames.Value;
 
     /// <summary>
     ///     Gets scale multiplier for oversizes objects.
     /// </summary>
-    public float ScaleMultiplier { get; }
+    public float ScaleMultiplier => this._scaleMultiplier.Value;
 
     /// <summary>
     ///     Gets the sprite sheet texture.
@@ -45,17 +50,17 @@ internal sealed class CachedStorage
     /// <summary>
     ///     Gets the tile depth.
     /// </summary>
-    public int TileDepth { get; }
+    public int TileDepth => this._tileDepth.Value;
 
     /// <summary>
     ///     Gets the tile height.
     /// </summary>
-    public int TileHeight { get; }
+    public int TileHeight => this._tileHeight.Value;
 
     /// <summary>
     ///     Gets the tile width.
     /// </summary>
-    public int TileWidth { get; }
+    public int TileWidth => this._tileWidth.Value;
 
     /// <summary>
     ///     Resets the cached texture.
