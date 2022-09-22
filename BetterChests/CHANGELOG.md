@@ -1,10 +1,15 @@
 ﻿# Better Chests Change Log
 
-## 2.8.0 (Unreleased)
+## 2.8.0 (September 19, 2022)
 
 ### Added
 
 * Added modifier key to scroll inventory one page at a time.
+* Added support for the Auto-Grabber.
+
+### Changed
+
+* Updated API for Expanded Storage Integration.
 
 ### Fixed
 
