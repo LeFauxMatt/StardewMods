@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json.Linq;
 using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <summary>
-///     The various currency types supported by <see cref="IBetterCraftingApi.CreateCurrencyIngredient(string, int)" />
+///     The various currency types supported by <see cref="IBetterCrafting.CreateCurrencyIngredient(string, int)" />
 /// </summary>
 public enum CurrencyType
 {
@@ -526,6 +527,291 @@ public interface IRecipeProvider
 }
 
 /// <summary>
+///     IDynamicRuleData instances represent all the configuration data associated
+///     with dynamic rules that have been added to categories.
+/// </summary>
+public interface IDynamicRuleData
+{
+    /// <summary>
+    ///     A dictionary of configuration data for this dynamic rule, as parsed
+    ///     by the game's JSON serializer.
+    /// </summary>
+    public IDictionary<string, JToken> Fields { get; }
+
+    /// <summary>
+    ///     The ID of the dynamic rule this data is for.
+    /// </summary>
+    public string Id { get; }
+}
+
+/// <summary>
+///     IDynamicRuleHandler instances handle the logic of determining whether or
+///     not any given <see cref="IRecipe" /> matches a dynamic rule, and thus
+///     whether the recipe should be displayed in a category using rules.
+///     It also handles anything necessary for displaying a user interface to
+///     the user for editing the rule's configuration.
+/// </summary>
+public interface IDynamicRuleHandler
+{
+    /// <summary>
+    ///     Whether or not this dynamic rule should be allowed to be added to a
+    ///     category multiple times.
+    /// </summary>
+    bool AllowMultiple { get; }
+
+    /// <summary>
+    ///     A description of what the dynamic rule matches, to be displayed
+    ///     to the user when hovering over the rule in the interface to
+    ///     add a new rule.
+    /// </summary>
+    string Description { get; }
+
+    /// <summary>
+    ///     The name of the dynamic rule, to be displayed to the user when
+    ///     editing a category.
+    /// </summary>
+    string DisplayName { get; }
+
+    /// <summary>
+    ///     Whether or not this dynamic rule has a custom editor.
+    /// </summary>
+    bool HasEditor { get; }
+
+    /// <summary>
+    ///     The source area for an icon to display alongside this dynamic rule.
+    /// </summary>
+    Rectangle Source { get; }
+
+    /// <summary>
+    ///     The source texture for an icon to display alongside this dynamic rule.
+    /// </summary>
+    Texture2D Texture { get; }
+
+    /// <summary>
+    ///     This method checks whether a recipe matches this dynamic rule or not.
+    /// </summary>
+    /// <param name="recipe">The recipe being checked.</param>
+    /// <param name="item">The item output of the recipe being checked.</param>
+    /// <param name="state">The state object returned from <see cref="ParseState(IDynamicRuleData)" /></param>
+    bool DoesRecipeMatch(IRecipe recipe, Lazy<Item?> item, object? state);
+
+    /// <summary>
+    ///     WIP! This currently does not function. In the future, this will obtain
+    ///     a new editor child menu that will be rendered within the rule editor.
+    /// </summary>
+    /// <param name="parent">The rule editor</param>
+    /// <param name="data">The data of the rule being edited</param>
+    IClickableMenu? GetEditor(IClickableMenu parent, IDynamicRuleData data);
+
+    /// <summary>
+    ///     This method is called before a dynamic rule is executed, allowing the
+    ///     rule to parse its configuration into a state object that can be
+    ///     re-used when checking recipes against the rule.
+    /// </summary>
+    /// <param name="data">The data of the rule</param>
+    /// <returns>A custom state object, or null if no state is required</returns>
+    object? ParseState(IDynamicRuleData data);
+}
+
+/// <summary>
+///     ISimpleInputRuleHandler is an <see cref="IDynamicRuleHandler" /> that only
+///     has a single text input for configuring it. This allows you to create
+///     basic rules without needing to implement a configuration interface.
+/// </summary>
+public interface ISimpleInputRuleHandler : IDynamicRuleHandler
+{
+    /// <summary>
+    ///     If set to a string, this string will be displayed alongside the
+    ///     text editor added to the rule editor for this rule.
+    /// </summary>
+    string? HelpText { get; }
+}
+
+/// <summary>
+///     This class allows you to easily modify any part of an <see cref="IRecipe" />'s
+///     behavior, including its appearance, cost, and the item(s) it produces.
+///     This is primarily meant for customizing how an existing <see cref="CraftingRecipe" />
+///     functions, but can be used for creating new recipes.
+/// </summary>
+public interface IRecipeBuilder
+{
+    /// <summary>
+    ///     Add a new ingredient to the recipe's ingredients list.
+    /// </summary>
+    /// <param name="ingredient">The ingredient to add</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder AddIngredient(IIngredient ingredient);
+
+    /// <summary>
+    ///     Add multiple new ingredients to the recipe's ingredients list.
+    /// </summary>
+    /// <param name="ingredients">The ingredients to add</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder AddIngredients(IEnumerable<IIngredient> ingredients);
+
+    /// <summary>
+    ///     Build this recipe and return it.
+    /// </summary>
+    /// <returns>The built <see cref="IRecipe" /></returns>
+    IRecipe Build();
+
+    /// <summary>
+    ///     Check to see if the given player can currently craft this recipe. See
+    ///     <see cref="IRecipe.CanCraft(Farmer)" /> for more details. Setting this
+    ///     to <c>null</c> will restore the default behavior.
+    /// </summary>
+    /// <param name="canCraft">A method to check if the given player can craft the recipe.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder CanCraft(Func<Farmer, bool>? canCraft);
+
+    /// <summary>
+    ///     Clear a grid size set with a previous call to <see cref="GridSize(int, int)" />.
+    /// </summary>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder ClearGridSize();
+
+    /// <summary>
+    ///     Clear the recipe's ingredients list. Optionally, a predicate can be
+    ///     provided to only clear ingredients from the list that match the predicate.
+    /// </summary>
+    /// <param name="predicate">
+    ///     An optional predicate for selecting which
+    ///     ingredients should be removed.
+    /// </param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder ClearIngredients(Func<IIngredient, bool>? predicate = null);
+
+    /// <summary>
+    ///     Set the recipe's optional description. Setting this to <c>null</c>
+    ///     will restore the default description. The method returning <c>null</c>
+    ///     will result in no description being displayed.
+    /// </summary>
+    /// <param name="description">A method that returns a description.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder Description(Func<string?>? description);
+
+    /// <summary>
+    ///     Set the recipe's display name. Setting this to <c>null</c> will
+    ///     restore the default display name.
+    /// </summary>
+    /// <param name="displayName">A method that returns a display name.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder DisplayName(Func<string>? displayName);
+
+    /// <summary>
+    ///     Get how many times a given player has crafted this recipe. Setting this
+    ///     to <c>null</c> will restore the default behavior.
+    /// </summary>
+    /// <param name="timesCrafted">A method that returns the number of times crafted.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder GetTimesCrafted(Func<Farmer, int>? timesCrafted);
+
+    /// <summary>
+    ///     An optional, extra string to appear on recipe tool-tips. See
+    ///     <see cref="IRecipe.GetTooltipExtra(Farmer)" /> for more details.
+    ///     Setting this to <c>null</c> will restore the default behavior.
+    /// </summary>
+    /// <param name="tooltipExtra">A method returning an optional, extra string to display.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder GetTooltipExtra(Func<Farmer, string?>? tooltipExtra);
+
+    /// <summary>
+    ///     Set a size for the recipe to appear as within UI. By default, this will
+    ///     be calculated based on the aspect ratio of the source rectangle.
+    ///     Please note that you should not use an entry larger than 4x4,
+    ///     and usually not more than 1x2 or 2x2, to ensure the recipe will
+    ///     fit in the user interface correctly.
+    /// </summary>
+    /// <param name="width">The size of the recipe in the grid, defaults to 1 or 2</param>
+    /// <param name="height">The size of the recipe in the grid, defaults to 1 or 2</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder GridSize(int width, int height);
+
+    /// <summary>
+    ///     Check to see whether or not a given player knows this recipe.
+    ///     Setting this to <c>null</c> will restore the default behavior.
+    /// </summary>
+    /// <param name="hasRecipe">
+    ///     A method that checks if the player knows
+    ///     this recipe.
+    /// </param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder HasRecipe(Func<Farmer, bool>? hasRecipe);
+
+    /// <summary>
+    ///     Creates an instance of the <see cref="Item" /> this recipe crafts, if
+    ///     this recipe crafts an item. Return <c>null</c> if the recipe does not
+    ///     create an item (and use your logic in <see cref="OnPerformCraft(Action{IPerformCraftEvent}?)" />).
+    ///     Setting this to <c>null</c> will restore the default behavior.
+    /// </summary>
+    /// <param name="createItem">A method that returns a created <see cref="Item" />, or <c>null</c>.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder Item(Func<Item?>? createItem);
+
+    /// <summary>
+    ///     A method called when performing a craft, which can be used to perform
+    ///     asynchronous actions or other additional logic. See <see cref="IRecipe.PerformCraft(IPerformCraftEvent)" />
+    ///     for more details. Setting this to <c>null</c> will restore the
+    ///     default behavior.
+    /// </summary>
+    /// <param name="action">A method called when performing a craft.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder OnPerformCraft(Action<IPerformCraftEvent>? action);
+
+    /// <summary>
+    ///     The quantity of <see cref="Item" /> produced every time this recipe is
+    ///     crafted. This value overrides the stack size of the item returned from
+    ///     <see cref="Item(Func{Item?}?)" />. Setting this to <c>null</c> will
+    ///     restore the default value, <c>1</c>.
+    /// </summary>
+    /// <param name="quantity">The quantity of item to produce per craft.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder Quantity(int? quantity);
+
+    /// <summary>
+    ///     An additional sorting value to apply to the recipe in the Better Crafting
+    ///     menu. This is applied before other forms of sorting. Setting this to
+    ///     <c>null</c> will restore the default behavior.
+    /// </summary>
+    /// <param name="value">The sorting value. 0 by default.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder SortValue(int? value);
+
+    /// <summary>
+    ///     The source rectangle to use when drawing this recipe in UI. Setting
+    ///     this to <c>null</c> will restore the default source rectangle. If
+    ///     this method returns <c>null</c>, the entire texture will be used.
+    /// </summary>
+    /// <param name="source">A method that returns a <see cref="Rectangle" /> or <c>null</c>.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder Source(Func<Rectangle?>? source);
+
+    /// <summary>
+    ///     Whether or not the <see cref="Item" /> produced by this recipe should be
+    ///     considered stackable, which allows or disallows the use of the bulk
+    ///     crafting menu. Setting this to <c>null</c> will restore the default
+    ///     value, which checks the <see cref="Item.maximumStackSize" /> of this
+    ///     recipe's output item.
+    ///     Please note that this does not make the resulting item unstackable, but
+    ///     only affects how it is handled in the UI.
+    /// </summary>
+    /// <param name="stackable">Whether or not the recipe's output is stackable.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder Stackable(bool? stackable);
+
+    /// <summary>
+    ///     The texture to use when drawing this recipe in UI. Setting this to
+    ///     <c>null</c> will restore the default texture.
+    ///     The result of this function call will be cached as appropriate.
+    ///     If a recipe has no texture, an error icon will be displayed instead
+    ///     for the recipe.
+    /// </summary>
+    /// <param name="texture">A method that returns a <see cref="Texture2D" />.</param>
+    /// <returns>The same <see cref="IRecipeBuilder" /> instance</returns>
+    IRecipeBuilder Texture(Func<Texture2D>? texture);
+}
+
+/// <summary>
 ///     This interface contains a few basic properties on the Better Crafting
 ///     menu that may be useful for other mods.
 /// </summary>
@@ -593,7 +879,7 @@ public interface IBetterCraftingMenu
 }
 
 /// <summary>
-///     This event is emitted by <see cref="IBetterCraftingApi" /> whenever a new
+///     This event is emitted by <see cref="IBetterCrafting" /> whenever a new
 ///     Better Crafting menu is opened, and serves to allow other mods to add
 ///     or remove specific containers from a menu.
 /// </summary>
@@ -607,7 +893,7 @@ public interface IPopulateContainersEvent
     IBetterCraftingMenu Menu { get; }
 }
 
-public interface IBetterCraftingApi
+public interface IBetterCrafting
 {
     /// <summary>
     ///     This event is fired whenever a new Better Crafting menu is opened,
@@ -642,6 +928,8 @@ public interface IBetterCraftingApi
     ///     Consume matching items from a player, and also from a set of
     ///     <see cref="IInventory" /> instances. This is a helper method for
     ///     building custom <see cref="IIngredient" />s.
+    ///     This method is aware of the mod "Stack Quality" and handles merged
+    ///     stacks correctly.
     /// </summary>
     /// <param name="items">
     ///     An enumeration of tuples where the function
@@ -667,6 +955,20 @@ public interface IBetterCraftingApi
         IEnumerable<IInventory>? inventories,
         int maxQuality = int.MaxValue,
         bool lowQualityFirst = false);
+
+    /// <summary>
+    ///     Count the number of <see cref="Item" />s available that match the given
+    ///     predicate, between the given player's inventory and the given enumeration
+    ///     of <see cref="Item" />s.
+    ///     This method is aware of the mod "Stack Quality" and handles merged
+    ///     stacks correctly.
+    /// </summary>
+    /// <param name="predicate">A method for checking whether a given <see cref="Item" /> should be counted.</param>
+    /// <param name="who">An optional player, to include that player's inventory in the search.</param>
+    /// <param name="items">An optional enumeration of <see cref="Item" />s to include in the search.</param>
+    /// <param name="maxQuality">The maximum quality of item to count.</param>
+    /// <returns>The number of matching items.</returns>
+    int CountItem(Func<Item, bool> predicate, Farmer? who, IEnumerable<Item?>? items, int maxQuality = int.MaxValue);
 
     /// <summary>
     ///     Create a simple <see cref="IIngredient" /> that matches an item by ID
@@ -713,15 +1015,9 @@ public interface IBetterCraftingApi
         string categoryId,
         Func<string> Name,
         IEnumerable<string>? recipeNames = null,
-        string? iconRecipe = null);
-
-    [Obsolete("Use the method that takes a function for the display-name instead.")]
-    void CreateDefaultCategory(
-        bool cooking,
-        string categoryId,
-        string Name,
-        IEnumerable<string>? recipeNames = null,
-        string? iconRecipe = null);
+        string? iconRecipe = null,
+        bool useRules = false,
+        IEnumerable<IDynamicRuleData>? rules = null);
 
     /// <summary>
     ///     Create a simple <see cref="IIngredient" /> that does not match anything
@@ -740,6 +1036,14 @@ public interface IBetterCraftingApi
     /// <param name="displayName">The name to display for the ingredient.</param>
     /// <param name="texture">The texture to display the ingredient with.</param>
     /// <param name="source">The source rectangle of the texture to display.</param>
+    IIngredient CreateMatcherIngredient(
+        Func<Item, bool> matcher,
+        int quantity,
+        Func<string> displayName,
+        Func<Texture2D> texture,
+        Rectangle? source = null);
+
+    [Obsolete("Use the method that takes functions instead.")]
     IIngredient CreateMatcherIngredient(
         Func<Item, bool> matcher,
         int quantity,
@@ -764,6 +1068,7 @@ public interface IBetterCraftingApi
     ///     An optional event handler to perform
     ///     additional logic when the item is crafted.
     /// </param>
+    [Obsolete("Use RecipeBuilder instead.")]
     IRecipe CreateRecipeWithIngredients(
         CraftingRecipe recipe,
         IEnumerable<IIngredient> ingredients,
@@ -844,8 +1149,23 @@ public interface IBetterCraftingApi
         Vector2? position = null,
         Rectangle? area = null,
         bool discover_containers = true,
-        IList<Tuple<object, GameLocation>>? containers = null,
+        IList<Tuple<object, GameLocation?>>? containers = null,
         IList<string>? listed_recipes = null);
+
+    /// <summary>
+    ///     Get a new <see cref="IRecipeBuilder" /> for customizing a recipe.
+    /// </summary>
+    /// <param name="recipe">The recipe to customize.</param>
+    IRecipeBuilder RecipeBuilder(CraftingRecipe recipe);
+
+    /// <summary>
+    ///     Get a new <see cref="IRecipeBuilder" /> for creating a new recipe, not
+    ///     based on an existing crafting recipe. If not replacing an existing
+    ///     <see cref="CraftingRecipe" /> then <paramref name="name" /> should be
+    ///     a new, unique string.
+    /// </summary>
+    /// <param name="name">The recipe's name.</param>
+    IRecipeBuilder RecipeBuilder(string name);
 
     /// <summary>
     ///     Register an inventory provider with Better Crafting. Inventory
@@ -856,20 +1176,28 @@ public interface IBetterCraftingApi
     /// <param name="provider"></param>
     void RegisterInventoryProvider(Type type, IInventoryProvider provider);
 
-    [Obsolete("Use RegisterInventoryProvider(Type, IInventoryProvider) instead.")]
-    void RegisterInventoryProvider(
-        Type type,
-        Func<object, GameLocation?, Farmer?, bool>? isValid,
-        Func<object, GameLocation?, Farmer?, bool>? canExtractItems,
-        Func<object, GameLocation?, Farmer?, bool>? canInsertItems,
-        Func<object, GameLocation?, Farmer?, NetMutex?>? getMutex,
-        Func<object, GameLocation?, Farmer?, bool>? isMutexRequired,
-        Func<object, GameLocation?, Farmer?, int>? getActualCapacity,
-        Func<object, GameLocation?, Farmer?, IList<Item?>?>? getItems,
-        Func<object, GameLocation?, Farmer?, Item, bool>? isItemValid,
-        Action<object, GameLocation?, Farmer?>? cleanInventory,
-        Func<object, GameLocation?, Farmer?, Rectangle?>? getMultiTileRegion,
-        Func<object, GameLocation?, Farmer?, Vector2?>? getTilePosition);
+    /// <summary>
+    ///     Register a new dynamic rule handler for use with dynamic categories.
+    /// </summary>
+    /// <param name="manifest">
+    ///     The manifest of the mod (your mod) registering
+    ///     this rule handler.
+    /// </param>
+    /// <param name="id">
+    ///     An ID for the rule handler. This should be unique
+    ///     within your mod, but can overlap with IDs from other mods as rule IDs
+    ///     are prefixed with your mod ID internally.
+    /// </param>
+    /// <param name="handler">The rule handler instance.</param>
+    /// <returns>Whether or not the handler was successfully registered.</returns>
+    bool RegisterRuleHandler(IManifest manifest, string id, IDynamicRuleHandler handler);
+
+    /// <summary>
+    ///     See <see cref="RegisterRuleHandler(IManifest, string, IDynamicRuleHandler)" />
+    ///     for details. This method exists to ensure the API translation layer functions
+    ///     as you would expect.
+    /// </summary>
+    bool RegisterRuleHandler(IManifest manifest, string id, ISimpleInputRuleHandler handler);
 
     /// <summary>
     ///     Unregister a recipe provider. Calling this will also invalidate
@@ -899,4 +1227,16 @@ public interface IBetterCraftingApi
     /// </summary>
     /// <param name="type"></param>
     void UnregisterInventoryProvider(Type type);
+
+    /// <summary>
+    ///     Unregister a dynamic rule handler.
+    /// </summary>
+    /// <param name="manifest">
+    ///     The manifest of the mod (your mod) which
+    ///     previously registered a rule handler.
+    /// </param>
+    /// <param name="id">The ID of the rule handler.</param>
+    /// ///
+    /// <returns>Whether or not the handler was successfully unregistered.</returns>
+    bool UnregisterRuleHandler(IManifest manifest, string id);
 }
