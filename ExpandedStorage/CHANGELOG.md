@@ -1,5 +1,11 @@
 # Expanded Storage Change Log
 
+# 2.0.2 (September 21, 2022)
+
+### Fixed
+
+* Fixed shop items having double the intended price.
+
 # 2.0.1 (September 21, 2022)
 
 ### Added

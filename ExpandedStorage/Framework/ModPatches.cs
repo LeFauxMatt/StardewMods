@@ -317,7 +317,7 @@ internal sealed class ModPatches
                     modData = { ["furyx639.ExpandedStorage/Storage"] = id },
                     Stack = entry.IsRecipe ? 1 : int.MaxValue,
                 },
-                entry.Price);
+                entry.Price / 2);
         }
     }
 
