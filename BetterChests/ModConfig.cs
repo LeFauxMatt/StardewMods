@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Models;
 using StardewMods.Common.Enums;
 
 /// <summary>
-///     Mod config data.
+///     Mod config data for Better Chests.
 /// </summary>
 internal sealed class ModConfig : StorageData
 {
@@ -88,7 +88,7 @@ internal sealed class ModConfig : StorageData
     /// <summary>
     ///     Gets or sets storage data for vanilla storage types.
     /// </summary>
-    public Dictionary<string, StorageData> VanillaStorages { get; set; }
+    public Dictionary<string, StorageData> VanillaStorages { get; set; } = new();
 
     /// <summary>
     ///     Populates all default values with specific values.
@@ -248,6 +248,86 @@ internal sealed class ModConfig : StorageData
         if (this.UnloadChestCombine is FeatureOption.Default)
         {
             this.UnloadChestCombine = FeatureOption.Disabled;
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Auto-Grabber"))
+        {
+            this.VanillaStorages.Add(
+                "Auto-Grabber",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Chest"))
+        {
+            this.VanillaStorages.Add("Chest", new());
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Fridge"))
+        {
+            this.VanillaStorages.Add(
+                "Fridge",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Junimo Chest"))
+        {
+            this.VanillaStorages.Add(
+                "Junimo Chest",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Junimo Hut"))
+        {
+            this.VanillaStorages.Add(
+                "Junimo Hut",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Mini-Fridge"))
+        {
+            this.VanillaStorages.Add(
+                "Mini-Fridge",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Mini-Shipping Bin"))
+        {
+            this.VanillaStorages.Add(
+                "Mini-Shipping Bin",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Shipping Bin"))
+        {
+            this.VanillaStorages.Add(
+                "Shipping Bin",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.VanillaStorages.ContainsKey("Stone Chest"))
+        {
+            this.VanillaStorages.Add("Stone Chest", new());
         }
     }
 

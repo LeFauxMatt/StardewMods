@@ -4,7 +4,7 @@ using System.Text;
 using StardewMods.Common.Enums;
 
 /// <summary>
-///     Mod config data.
+///     Mod config data for Garbage Day.
 /// </summary>
 internal sealed class ModConfig
 {

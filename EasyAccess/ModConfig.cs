@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text;
 
 /// <summary>
-///     Mod config data.
+///     Mod config data for Easy Access.
 /// </summary>
 internal sealed class ModConfig
 {

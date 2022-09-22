@@ -6,7 +6,7 @@ using System.Text;
 using StardewMods.ToolbarIcons.Models;
 
 /// <summary>
-///     Mod config data.
+///     Mod config data for Toolbar Icons.
 /// </summary>
 internal sealed class ModConfig
 {
