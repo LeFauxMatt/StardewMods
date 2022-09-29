@@ -6,5 +6,5 @@ using StardewMods.Common.Integrations.ShoppingCart;
 public sealed class ShoppingCartApi : IShoppingCartApi
 {
     /// <inheritdoc />
-    public IShop? CurrentShop => ShoppingCart.CurrentShop;
+    public IShop? CurrentShop => ModEntry.CurrentShop;
 }

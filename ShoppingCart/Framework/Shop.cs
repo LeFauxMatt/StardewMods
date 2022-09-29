@@ -466,9 +466,9 @@ internal sealed class Shop : IShop
         // Purchase
         if (this._purchase.containsPoint(x, y))
         {
-            if (this.TryCheckout() && ShoppingCart.CurrentShop is not null)
+            if (this.TryCheckout() && ModEntry.CurrentShop is not null)
             {
-                ShoppingCart.CurrentShop.Reset();
+                ModEntry.CurrentShop.Reset();
             }
             else
             {
@@ -762,13 +762,13 @@ internal sealed class Shop : IShop
         }
 
         // Buy items
-        ShoppingCart.MakePurchase = true;
+        ModEntry.MakePurchase = true;
         foreach (var toBuy in this.ToBuy)
         {
             var index = this.Menu.forSale.IndexOf(toBuy.Item);
             if (index == -1)
             {
-                ShoppingCart.MakePurchase = false;
+                ModEntry.MakePurchase = false;
                 return false;
             }
 
@@ -786,7 +786,7 @@ internal sealed class Shop : IShop
 
                 if (this.Menu.heldItem is not null && !Game1.player.addItemToInventoryBool(this.Menu.heldItem as Item))
                 {
-                    ShoppingCart.MakePurchase = false;
+                    ModEntry.MakePurchase = false;
                     return false;
                 }
 
@@ -796,7 +796,7 @@ internal sealed class Shop : IShop
             toBuy.Quantity = 0;
         }
 
-        ShoppingCart.MakePurchase = false;
+        ModEntry.MakePurchase = false;
 
         if (this.ToSell.Any())
         {

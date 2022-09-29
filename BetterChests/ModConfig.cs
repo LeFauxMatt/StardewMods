@@ -3,8 +3,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Models;
+using StardewMods.BetterChests.Framework.Features;
+using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Enums;
 
 /// <summary>
@@ -248,86 +248,6 @@ internal sealed class ModConfig : StorageData
         if (this.UnloadChestCombine is FeatureOption.Default)
         {
             this.UnloadChestCombine = FeatureOption.Disabled;
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Auto-Grabber"))
-        {
-            this.VanillaStorages.Add(
-                "Auto-Grabber",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Chest"))
-        {
-            this.VanillaStorages.Add("Chest", new());
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Fridge"))
-        {
-            this.VanillaStorages.Add(
-                "Fridge",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Junimo Chest"))
-        {
-            this.VanillaStorages.Add(
-                "Junimo Chest",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Junimo Hut"))
-        {
-            this.VanillaStorages.Add(
-                "Junimo Hut",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Mini-Fridge"))
-        {
-            this.VanillaStorages.Add(
-                "Mini-Fridge",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Mini-Shipping Bin"))
-        {
-            this.VanillaStorages.Add(
-                "Mini-Shipping Bin",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Shipping Bin"))
-        {
-            this.VanillaStorages.Add(
-                "Shipping Bin",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
-
-        if (!this.VanillaStorages.ContainsKey("Stone Chest"))
-        {
-            this.VanillaStorages.Add("Stone Chest", new());
         }
     }
 

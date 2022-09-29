@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Features;
-using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Framework;
+using StardewMods.BetterChests.Framework.Features;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
@@ -30,7 +30,7 @@ public sealed class BetterChests : Mod
         Formatting.Translations = this.Helper.Translation;
         CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
-        Integrations.Init(this.Helper);
+        Integrations.Init(this.Helper, this.ModConfig);
         Storages.Init(this.ModConfig);
         ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
 
@@ -140,6 +140,86 @@ public sealed class BetterChests : Mod
         }
 
         Storages.StorageTypeRequested += this.OnStorageTypeRequested;
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Auto-Grabber"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Auto-Grabber",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Chest"))
+        {
+            this.ModConfig.VanillaStorages.Add("Chest", new());
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Fridge"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Fridge",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Junimo Chest"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Junimo Chest",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Junimo Hut"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Junimo Hut",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Mini-Fridge"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Mini-Fridge",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Mini-Shipping Bin"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Mini-Shipping Bin",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Shipping Bin"))
+        {
+            this.ModConfig.VanillaStorages.Add(
+                "Shipping Bin",
+                new()
+                {
+                    CustomColorPicker = FeatureOption.Disabled,
+                });
+        }
+
+        if (!this.ModConfig.VanillaStorages.ContainsKey("Stone Chest"))
+        {
+            this.ModConfig.VanillaStorages.Add("Stone Chest", new());
+        }
     }
 
     private void OnStorageTypeRequested(object? sender, IStorageTypeRequestedEventArgs e)

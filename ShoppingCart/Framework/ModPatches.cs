@@ -80,7 +80,7 @@ internal sealed class ModPatches
         int y,
         Item? toPlace)
     {
-        if (ShoppingCart.CurrentShop is null || toPlace is not null || __result is null)
+        if (ModEntry.CurrentShop is null || toPlace is not null || __result is null)
         {
             return;
         }
@@ -96,7 +96,7 @@ internal sealed class ModPatches
             {
                 if (item.Stack > 0)
                 {
-                    ShoppingCart.CurrentShop.AddToCart(item);
+                    ModEntry.CurrentShop.AddToCart(item);
                 }
             }
 
@@ -113,7 +113,7 @@ internal sealed class ModPatches
             return;
         }
 
-        if (!ShoppingCart.CurrentShop.AddToCart(__result))
+        if (!ModEntry.CurrentShop.AddToCart(__result))
         {
             return;
         }
@@ -132,7 +132,7 @@ internal sealed class ModPatches
         int y,
         Item? toAddTo)
     {
-        if (ShoppingCart.CurrentShop is null || toAddTo is not null || __result is null)
+        if (ModEntry.CurrentShop is null || toAddTo is not null || __result is null)
         {
             return;
         }
@@ -151,7 +151,7 @@ internal sealed class ModPatches
                     continue;
                 }
 
-                ShoppingCart.CurrentShop.AddToCart(item);
+                ModEntry.CurrentShop.AddToCart(item);
                 __instance.actualInventory[slotNumber].addToStack(item);
             }
 
@@ -160,7 +160,7 @@ internal sealed class ModPatches
             return;
         }
 
-        if (!ShoppingCart.CurrentShop.AddToCart(__result))
+        if (!ModEntry.CurrentShop.AddToCart(__result))
         {
             return;
         }
@@ -200,7 +200,7 @@ internal sealed class ModPatches
     private static bool ShopMenu_receiveScrollWheelAction_prefix()
     {
         var (x, y) = Game1.getMousePosition(true);
-        return ShoppingCart.CurrentShop?.Bounds.Contains(x, y) != true;
+        return ModEntry.CurrentShop?.Bounds.Contains(x, y) != true;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -212,10 +212,7 @@ internal sealed class ModPatches
         ISalable? held_item,
         int numberToBuy)
     {
-        if (ShoppingCart.CurrentShop is null
-         || ShoppingCart.MakePurchase
-         || held_item is not null
-         || __instance.readOnly)
+        if (ModEntry.CurrentShop is null || ModEntry.MakePurchase || held_item is not null || __instance.readOnly)
         {
             return true;
         }
@@ -225,7 +222,7 @@ internal sealed class ModPatches
             numberToBuy = ModPatches.Config.ShiftClickQuantity;
         }
 
-        if (!ShoppingCart.CurrentShop.AddToCart(item, numberToBuy))
+        if (!ModEntry.CurrentShop.AddToCart(item, numberToBuy))
         {
             return true;
         }
@@ -252,7 +249,7 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ShopMenu_updatePosition_postfix(ShopMenu __instance)
     {
-        if (!ShoppingCart.IsSupported(__instance))
+        if (!ModEntry.IsSupported(__instance))
         {
             return;
         }

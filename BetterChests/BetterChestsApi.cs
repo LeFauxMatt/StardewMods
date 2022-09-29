@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests;
 
 using System;
-using StardewMods.BetterChests.Helpers;
+using StardewMods.BetterChests.Framework;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
