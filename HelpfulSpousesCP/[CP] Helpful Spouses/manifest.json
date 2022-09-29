@@ -1,0 +1,20 @@
+﻿{
+  "Name": "[CP] Helpful Spouses",
+  "Author": "furyx639",
+  "Version": "2.0.0",
+  "Description": "Adds dialogue for the Helpful Spouses mod.",
+  "UniqueID": "furyx639.HelpfulSpousesCP",
+  "UpdateKeys": [
+    "Nexus:5175@CP"
+  ],
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  },
+  "Dependencies": [
+    {
+      "UniqueID": "furyx639.HelpfulSpouses",
+      "IsRequired": true,
+      "MinimumVersion": "2.0.0"
+    }
+  ]
+}
