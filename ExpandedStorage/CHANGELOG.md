@@ -1,5 +1,15 @@
 # Expanded Storage Change Log
 
+# 2.1.0 (Unreleased)
+
+### Added
+
+* Added a command `xs_shop` to open a Shop Menu with all Expanded Storage chests.
+
+### Fixed
+
+* Fixed Expanded Storage chests unable to be created as Junimo Chests or Mini-Fridges.
+
 # 2.0.3 (September 21, 2022)
 
 ### Fixed

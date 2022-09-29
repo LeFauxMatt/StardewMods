@@ -12,26 +12,28 @@ using StardewMods.ExpandedStorage.Models;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-public sealed class ExpandedStorage : Mod
+public sealed class ModEntry : Mod
 {
     private static readonly IDictionary<string, LegacyAsset> LegacyAssets = new Dictionary<string, LegacyAsset>();
     private static readonly IDictionary<string, CachedStorage> StorageCache = new Dictionary<string, CachedStorage>();
     private static readonly IDictionary<string, ICustomStorage> Storages = new Dictionary<string, ICustomStorage>();
 
-    private int _wait;
+    private bool _wait;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         // Init
         Log.Monitor = this.Monitor;
-        Extensions.Init(ExpandedStorage.StorageCache);
+        I18n.Init(this.Helper.Translation);
+        Extensions.Init(ModEntry.StorageCache);
         Integrations.Init(this.Helper.ModRegistry);
         Config.Init(this.Helper, this.ModManifest);
-        ModPatches.Init(this.Helper, this.ModManifest, ExpandedStorage.Storages, ExpandedStorage.StorageCache);
+        Commands.Init(this.Helper, ModEntry.Storages);
+        ModPatches.Init(this.Helper, this.ModManifest, ModEntry.Storages, ModEntry.StorageCache);
 
         // Events
-        this.Helper.Events.Content.AssetRequested += ExpandedStorage.OnAssetRequested;
+        this.Helper.Events.Content.AssetRequested += ModEntry.OnAssetRequested;
         this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
@@ -39,11 +41,7 @@ public sealed class ExpandedStorage : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new ExpandedStorageApi(
-            this.Helper,
-            ExpandedStorage.Storages,
-            ExpandedStorage.StorageCache,
-            ExpandedStorage.LegacyAssets);
+        return new ExpandedStorageApi(this.Helper, ModEntry.Storages, ModEntry.StorageCache, ModEntry.LegacyAssets);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -69,7 +67,7 @@ public sealed class ExpandedStorage : Mod
         if (e.Name.IsEquivalentTo("Data/CraftingRecipes"))
         {
             var craftingRecipes = new Dictionary<string, string>();
-            foreach (var (_, legacyAsset) in ExpandedStorage.LegacyAssets)
+            foreach (var (_, legacyAsset) in ModEntry.LegacyAssets)
             {
                 var (id, recipe) = legacyAsset.CraftingRecipe;
                 if (!string.IsNullOrWhiteSpace(recipe))
@@ -99,7 +97,7 @@ public sealed class ExpandedStorage : Mod
             return;
         }
 
-        foreach (var (key, legacyAsset) in ExpandedStorage.LegacyAssets)
+        foreach (var (key, legacyAsset) in ModEntry.LegacyAssets)
         {
             if (!e.Name.IsEquivalentTo($"ExpandedStorage/SpriteSheets/{key}"))
             {
@@ -113,7 +111,7 @@ public sealed class ExpandedStorage : Mod
 
     private static void OnStorageTypeRequested(object? sender, IStorageTypeRequestedEventArgs e)
     {
-        foreach (var (name, storage) in ExpandedStorage.Storages)
+        foreach (var (name, storage) in ModEntry.Storages)
         {
             if (storage.BetterChestsData is null
              || e.Context is not Chest chest
@@ -123,7 +121,8 @@ public sealed class ExpandedStorage : Mod
                 continue;
             }
 
-            e.Load(storage.BetterChestsData, 1000);
+            var config = Config.GetConfig(name);
+            e.Load(config?.BetterChestsData ?? storage.BetterChestsData, 1000);
         }
     }
 
@@ -136,14 +135,14 @@ public sealed class ExpandedStorage : Mod
         {
             if (recipes.ContainsKey(name)
              && !Game1.player.craftingRecipes.ContainsKey(name)
-             && ExpandedStorage.Storages.ContainsKey(name))
+             && ModEntry.Storages.ContainsKey(name))
             {
                 Game1.player.craftingRecipes.Add(name, 0);
             }
         }
 
         // Reset cached textures
-        foreach (var (_, cachedStorage) in ExpandedStorage.StorageCache)
+        foreach (var (_, cachedStorage) in ModEntry.StorageCache)
         {
             cachedStorage.ResetCache();
         }
@@ -151,25 +150,26 @@ public sealed class ExpandedStorage : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this._wait = 1;
+        this._wait = true;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
 
         if (Integrations.BetterChests.IsLoaded)
         {
-            Integrations.BetterChests.API.StorageTypeRequested += ExpandedStorage.OnStorageTypeRequested;
+            Integrations.BetterChests.API.StorageTypeRequested += ModEntry.OnStorageTypeRequested;
         }
 
         if (Integrations.BetterCrafting.IsLoaded)
         {
             Integrations.BetterCrafting.API.AddRecipeProvider(
-                new RecipeProvider(ExpandedStorage.Storages, ExpandedStorage.StorageCache));
+                new RecipeProvider(ModEntry.Storages, ModEntry.StorageCache));
         }
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (--this._wait > 0)
+        if (this._wait)
         {
+            this._wait = false;
             return;
         }
 
@@ -184,6 +184,6 @@ public sealed class ExpandedStorage : Mod
             api.RegisterStorage(name, storage);
         }
 
-        Config.SetupConfig(ExpandedStorage.Storages);
+        Config.SetupConfig(ModEntry.Storages);
     }
 }

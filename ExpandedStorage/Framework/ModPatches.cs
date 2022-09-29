@@ -737,8 +737,13 @@ internal sealed class ModPatches
         // Craft unplaceable storages as Chest
         if (!storage.IsPlaceable && obj is not Chest)
         {
-            __result = new Chest(true, obj.ParentSheetIndex);
-            __result._GetOneFrom(obj);
+            var chest = new Chest(true, obj.ParentSheetIndex)
+            {
+                SpecialChestType = storage.SpecialChestType,
+                fridge = { Value = storage.IsFridge },
+            };
+            chest._GetOneFrom(obj);
+            __result = chest;
         }
 
         foreach (var (key, value) in storage.ModData)
@@ -1196,6 +1201,9 @@ internal sealed class ModPatches
         }
 
         chest.modData["furyx639.ExpandedStorage/Storage"] = name;
+        chest.SpecialChestType = storage.SpecialChestType;
+        chest.fridge.Value = storage.IsFridge;
+
         if (storage.GetTileHeight() <= 2 && storage.GetTileWidth() <= 1)
         {
             return;
@@ -1261,7 +1269,12 @@ internal sealed class ModPatches
             return;
         }
 
-        var itemToDrawAsColored = new Chest(true, item.ParentSheetIndex);
+        var itemToDrawAsColored = new Chest(true, item.ParentSheetIndex)
+        {
+            name = name,
+            modData = { ["furyx639.ExpandedStorage/Storage"] = name },
+        };
+
         itemGrabMenu.chestColorPicker = new(
             itemGrabMenu.xPositionOnScreen,
             itemGrabMenu.yPositionOnScreen - Game1.tileSize - IClickableMenu.borderWidth * 2,
