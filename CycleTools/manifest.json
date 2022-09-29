@@ -1,0 +1,12 @@
+{
+  "EntryDll": "CycleTools.dll",
+  "Name": "Cycle Tools",
+  "Author": "furyx639",
+  "Version": "1.0.0",
+  "Description": "Quickly cycle between tools from the active item slot.",
+  "UniqueID": "furyx639.CycleTools",
+  "MinimumApiVersion": "3.15.0",
+  "UpdateKeys": [
+    "Nexus:13973"
+  ]
+}
