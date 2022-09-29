@@ -40,7 +40,7 @@ internal sealed class LegacyRecipe
     /// <summary>
     ///     Represents an item to require or produce.
     /// </summary>
-    public class Item
+    public sealed class Item
     {
         /// <summary>
         ///     Gets or sets the quantity of an item to use or produce.

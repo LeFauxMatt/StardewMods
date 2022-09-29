@@ -18,9 +18,17 @@ internal sealed class ModConfig
     /// <param name="other">The ModConfig instance to copy to.</param>
     public void CopyTo(ModConfig other)
     {
+        var defaultConfig = new StorageConfig();
+
         foreach (var (id, config) in other.Config)
         {
-            other.Config[id] = new();
+            if (this.Config.TryGetValue(id, out var thisConfig))
+            {
+                thisConfig.CopyTo(config);
+                continue;
+            }
+
+            defaultConfig.CopyTo(config);
         }
     }
 }

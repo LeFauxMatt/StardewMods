@@ -33,6 +33,16 @@ internal sealed class Config
     private static IManifest ModManifest => Config.Instance._manifest;
 
     /// <summary>
+    ///     Gets config data for an Expanded Storage chest type.
+    /// </summary>
+    /// <param name="id">The id of the config to get.</param>
+    /// <returns>Returns storage config data.</returns>
+    public static StorageConfig? GetConfig(string id)
+    {
+        return Config.ModConfig.Config.TryGetValue(id, out var config) ? config : null;
+    }
+
+    /// <summary>
     ///     Initializes <see cref="Config" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
@@ -49,26 +59,20 @@ internal sealed class Config
     /// <param name="storages">The storages to add to the mod config menu.</param>
     public static void SetupConfig(IDictionary<string, ICustomStorage> storages)
     {
-
-        var configStorages = storages
-                             .Where(storage => storage.Value.PlayerConfig)
-                             .OrderBy(storage => storage.Value.DisplayName)
-                             .ToArray();
+        var configStorages = storages.Where(storage => storage.Value.PlayerConfig)
+                                     .OrderBy(storage => storage.Value.DisplayName)
+                                     .ToArray();
 
         foreach (var (id, storage) in configStorages)
         {
-            if (storage.BetterChestsData is not BetterChestsData betterChestsData)
+            if (Config.ModConfig.Config.TryGetValue(id, out var config))
             {
                 continue;
             }
 
-            if (!Config.ModConfig.Config.TryGetValue(id, out var config))
-            {
-                config = new();
-                Config.ModConfig.Config.Add(id, config);
-            }
-
-            config.BetterChestsData = betterChestsData;
+            config = new() { BetterChestsData = new() };
+            storage.BetterChestsData?.CopyTo(config.BetterChestsData);
+            Config.ModConfig.Config.Add(id, config);
         }
 
         if (!Integrations.GenericModConfigMenu.IsLoaded)
@@ -100,8 +104,14 @@ internal sealed class Config
                 continue;
             }
 
+            var config = Config.GetConfig(id);
+            if (config?.BetterChestsData is null)
+            {
+                continue;
+            }
+
             Config.GMCM.AddPage(Config.ModManifest, id, () => storage.DisplayName);
-            Integrations.BetterChests.API.AddConfigOptions(Config.ModManifest, storage.BetterChestsData);
+            Integrations.BetterChests.API.AddConfigOptions(Config.ModManifest, config.BetterChestsData);
         }
     }
 

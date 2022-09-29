@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.ExpandedStorage;
 using StardewMods.ExpandedStorage.Models;
 using StardewValley.Objects;
@@ -16,6 +18,164 @@ internal static class Extensions
 #nullable disable
     private static IDictionary<string, CachedStorage> StorageCache;
 #nullable enable
+
+    /// <summary>
+    ///     Copies one instance BetterChestsData to another.
+    /// </summary>
+    /// <param name="storageData">The BetterChestsData instance to copy from.</param>
+    /// <param name="other">The BetterChestsData instance to copy to.</param>
+    public static void CopyTo(this IStorageData storageData, IStorageData other)
+    {
+        if (other.AutoOrganize is FeatureOption.Default)
+        {
+            other.AutoOrganize = storageData.AutoOrganize;
+        }
+
+        if (other.CarryChest is FeatureOption.Default)
+        {
+            other.CarryChest = storageData.CarryChest;
+        }
+
+        if (other.CarryChestSlow is FeatureOption.Default)
+        {
+            other.CarryChestSlow = storageData.CarryChestSlow;
+        }
+
+        if (other.ChestInfo is FeatureOption.Default)
+        {
+            other.ChestInfo = storageData.ChestInfo;
+        }
+
+        if (other.ChestMenuTabs is FeatureOption.Default)
+        {
+            other.ChestMenuTabs = storageData.ChestMenuTabs;
+            other.ChestMenuTabSet = storageData.ChestMenuTabSet;
+        }
+
+        if (other.CollectItems is FeatureOption.Default)
+        {
+            other.CollectItems = storageData.CollectItems;
+        }
+
+        if (other.Configurator is FeatureOption.Default)
+        {
+            other.Configurator = storageData.Configurator;
+        }
+
+        if (other.ConfigureMenu is InGameMenu.Default)
+        {
+            other.ConfigureMenu = storageData.ConfigureMenu;
+        }
+
+        if (other.CraftFromChest is FeatureOptionRange.Default)
+        {
+            other.CraftFromChest = storageData.CraftFromChest;
+            other.CraftFromChestDisableLocations = storageData.CraftFromChestDisableLocations;
+        }
+
+        if (other.CraftFromChestDistance == 0)
+        {
+            other.CraftFromChestDistance = storageData.CraftFromChestDistance;
+        }
+
+        if (other.CustomColorPicker is FeatureOption.Default)
+        {
+            other.CustomColorPicker = storageData.CustomColorPicker;
+        }
+
+        if (other.FilterItems is FeatureOption.Default)
+        {
+            other.FilterItems = storageData.FilterItems;
+            other.FilterItemsList = storageData.FilterItemsList;
+        }
+
+        if (other.HideItems is FeatureOption.Default)
+        {
+            other.HideItems = storageData.HideItems;
+        }
+
+        if (other.LabelChest is FeatureOption.Default)
+        {
+            other.LabelChest = storageData.LabelChest;
+        }
+
+        if (other.OpenHeldChest is FeatureOption.Default)
+        {
+            other.OpenHeldChest = storageData.OpenHeldChest;
+        }
+
+        if (other.OrganizeChest is FeatureOption.Default)
+        {
+            other.OrganizeChest = storageData.OrganizeChest;
+        }
+
+        if (other.OrganizeChestGroupBy is GroupBy.Default)
+        {
+            other.OrganizeChestGroupBy = storageData.OrganizeChestGroupBy;
+        }
+
+        if (other.OrganizeChestSortBy is SortBy.Default)
+        {
+            other.OrganizeChestSortBy = storageData.OrganizeChestSortBy;
+        }
+
+        if (other.ResizeChest is FeatureOption.Default)
+        {
+            other.ResizeChest = storageData.ResizeChest;
+        }
+
+        if (other.ResizeChestCapacity == 0)
+        {
+            other.ResizeChestCapacity = storageData.ResizeChestCapacity;
+        }
+
+        if (other.ResizeChestMenu is FeatureOption.Default)
+        {
+            other.ResizeChestMenu = storageData.ResizeChestMenu;
+        }
+
+        if (other.ResizeChestMenuRows == 0)
+        {
+            other.ResizeChestMenuRows = storageData.ResizeChestMenuRows;
+        }
+
+        if (other.SearchItems is FeatureOption.Default)
+        {
+            other.SearchItems = storageData.SearchItems;
+        }
+
+        if (other.StashToChest is FeatureOptionRange.Default)
+        {
+            other.StashToChest = storageData.StashToChest;
+            other.StashToChestDisableLocations = storageData.StashToChestDisableLocations;
+            other.StashToChestStacks = storageData.StashToChestStacks;
+        }
+
+        if (other.StashToChestDistance == 0)
+        {
+            other.StashToChestDistance = storageData.StashToChestDistance;
+        }
+
+        if (other.StashToChestPriority == 0)
+        {
+            other.StashToChestPriority = storageData.StashToChestPriority;
+        }
+
+        if (other.TransferItems is FeatureOption.Default)
+        {
+            other.TransferItems = storageData.TransferItems;
+        }
+
+        if (other.UnloadChest is FeatureOption.Default)
+        {
+            other.UnloadChest = storageData.UnloadChest;
+        }
+
+        if (other.UnloadChestCombine is FeatureOption.Default)
+        {
+            other.UnloadChestCombine = storageData.UnloadChestCombine;
+        }
+    }
 
     /// <summary>
     ///     Draws an Expanded Storage chest.
