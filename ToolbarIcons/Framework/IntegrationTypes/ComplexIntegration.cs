@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ToolbarIcons.ModIntegrations;
+﻿namespace StardewMods.ToolbarIcons.Framework.IntegrationTypes;
 
 using System;
 using StardewMods.Common.Integrations.ToolbarIcons;

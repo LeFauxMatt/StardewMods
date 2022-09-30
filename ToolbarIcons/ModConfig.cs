@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using StardewMods.ToolbarIcons.Models;
+using StardewMods.ToolbarIcons.Framework.Models;
 
 /// <summary>
 ///     Mod config data for Toolbar Icons.

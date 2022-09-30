@@ -1,11 +1,11 @@
-﻿namespace StardewMods.ToolbarIcons.UI;
+﻿namespace StardewMods.ToolbarIcons.Framework.UI;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.ToolbarIcons.Models;
+using StardewMods.ToolbarIcons.Framework.Models;
 using StardewValley.Menus;
 
 /// <summary>

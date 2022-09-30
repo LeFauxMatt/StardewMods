@@ -3,17 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.ToolbarIcons.ModIntegrations;
-using StardewMods.ToolbarIcons.UI;
+using StardewMods.ToolbarIcons.Framework;
 using StardewValley.Menus;
 
 // TODO: Center Toolbar Icons
@@ -21,15 +17,7 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private const string AlwaysScrollMapId = "bcmpinc.AlwaysScrollMap";
-    private const string CJBCheatsMenuId = "CJBok.CheatsMenu";
-    private const string CJBItemSpawnerId = "CJBok.ItemSpawner";
-    private const string DynamicGameAssetsId = "spacechase0.DynamicGameAssets";
-    private const string GenericModConfigMenuId = "spacechase0.GenericModConfigMenu";
-    private const string StardewAquariumId = "Cherry.StardewAquarium";
-    private const string ToDew = "jltaylor-us.ToDew";
-
-    private readonly PerScreen<ToolbarIconsApi?> _api = new();
+    private readonly PerScreen<Api?> _api = new();
     private readonly PerScreen<ComponentArea> _area = new(() => ComponentArea.Custom);
     private readonly PerScreen<ClickableComponent?> _button = new();
     private readonly PerScreen<string> _hoverText = new();
@@ -37,7 +25,13 @@ public sealed class ModEntry : Mod
 
     private ModConfig? _config;
 
-    private ToolbarIconsApi Api => this._api.Value ??= new(this.Helper, this.Config.Icons, this.Components);
+    private static bool ShowToolbar => Integrations.IsLoaded
+                                    && Game1.displayHUD
+                                    && Context.IsPlayerFree
+                                    && Game1.activeClickableMenu is null
+                                    && Game1.onScreenMenus.OfType<Toolbar>().Any();
+
+    private Api Api => this._api.Value ??= new(this.Helper, this.ModConfig.Icons, this.Components);
 
     private ComponentArea Area
     {
@@ -67,11 +61,7 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private ComplexIntegration? ComplexIntegration { get; set; }
-
     private Dictionary<string, ClickableTextureComponent> Components { get; } = new();
-
-    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private string HoverText
     {
@@ -79,15 +69,7 @@ public sealed class ModEntry : Mod
         set => this._hoverText.Value = value;
     }
 
-    private bool Loaded { get; set; }
-
-    private bool ShowToolbar => this.Loaded
-                             && Game1.displayHUD
-                             && Context.IsPlayerFree
-                             && Game1.activeClickableMenu is null
-                             && Game1.onScreenMenus.OfType<Toolbar>().Any();
-
-    private SimpleIntegration? SimpleIntegration { get; set; }
+    private ModConfig ModConfig => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private Toolbar? Toolbar
     {
@@ -100,16 +82,18 @@ public sealed class ModEntry : Mod
     {
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
+        Integrations.Init(this.Helper, this.Api);
         ThemeHelper.Init(this.Helper, "furyx639.ToolbarIcons/Icons", "furyx639.ToolbarIcons/Arrows");
+        Config.Init(this.Helper, this.ModManifest, this.ModConfig, this.Components);
 
         // Events
         this.Helper.Events.Content.AssetRequested += ModEntry.OnAssetRequested;
-        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.Input.CursorMoved += this.OnCursorMoved;
         this.Helper.Events.Display.RenderedHud += this.OnRenderedHud;
         this.Helper.Events.Display.RenderingHud += this.OnRenderingHud;
-        this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        Integrations.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
+        Config.ToolbarIconsChanged += this.OnToolbarIconsChanged;
     }
 
     /// <inheritdoc />
@@ -138,51 +122,9 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void DrawButton(SpriteBatch b, Vector2 pos)
-    {
-        var label = I18n.Config_OpenMenu_Name();
-        var dims = Game1.dialogueFont.MeasureString(I18n.Config_OpenMenu_Name());
-        var bounds = new Rectangle((int)pos.X, (int)pos.Y, (int)dims.X + Game1.tileSize, Game1.tileSize);
-        if (Game1.activeClickableMenu.GetChildMenu() is null)
-        {
-            var point = Game1.getMousePosition();
-            if (Game1.oldMouseState.LeftButton == ButtonState.Released
-             && Mouse.GetState().LeftButton == ButtonState.Pressed
-             && bounds.Contains(point))
-            {
-                Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this.Config.Icons, this.Components));
-                return;
-            }
-        }
-
-        IClickableMenu.drawTextureBox(
-            b,
-            Game1.mouseCursors,
-            new(432, 439, 9, 9),
-            bounds.X,
-            bounds.Y,
-            bounds.Width,
-            bounds.Height,
-            Color.White,
-            Game1.pixelZoom,
-            false,
-            1f);
-        Utility.drawTextWithShadow(
-            b,
-            label,
-            Game1.dialogueFont,
-            new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f,
-            Game1.textColor,
-            1f,
-            1f,
-            -1,
-            -1,
-            0f);
-    }
-
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.ShowToolbar || this.Helper.Input.IsSuppressed(e.Button))
+        if (!ModEntry.ShowToolbar || this.Helper.Input.IsSuppressed(e.Button))
         {
             return;
         }
@@ -208,7 +150,7 @@ public sealed class ModEntry : Mod
 
     private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
     {
-        if (!this.ShowToolbar)
+        if (!ModEntry.ShowToolbar)
         {
             return;
         }
@@ -225,146 +167,9 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
-    {
-        this.SimpleIntegration = SimpleIntegration.Init(this.Helper, this.Api);
-        this.ComplexIntegration = ComplexIntegration.Init(this.Helper, this.Api);
-
-        // Stardew Aquarium
-        this.ComplexIntegration.AddMethodWithParams(
-            ModEntry.StardewAquariumId,
-            1,
-            I18n.Button_StardewAquarium(),
-            "OpenAquariumCollectionMenu",
-            "aquariumprogress",
-            Array.Empty<string>());
-
-        // CJB Cheats Menu
-        this.ComplexIntegration.AddMethodWithParams(
-            ModEntry.CJBCheatsMenuId,
-            2,
-            I18n.Button_CheatsMenu(),
-            "OpenCheatsMenu",
-            0,
-            true);
-
-        // Dynamic Game Assets
-        this.ComplexIntegration.AddMethodWithParams(
-            ModEntry.DynamicGameAssetsId,
-            3,
-            I18n.Button_DynamicGameAssets(),
-            "OnStoreCommand",
-            "dga_store",
-            Array.Empty<string>());
-
-        // Generic Mod Config Menu
-        this.ComplexIntegration.AddMethodWithParams(
-            ModEntry.GenericModConfigMenuId,
-            4,
-            I18n.Button_GenericModConfigMenu(),
-            "OpenListMenu",
-            0);
-
-        // CJB Item Spawner
-        this.ComplexIntegration.AddCustomAction(
-            ModEntry.CJBItemSpawnerId,
-            5,
-            I18n.Button_ItemSpawner(),
-            mod =>
-            {
-                var buildMenu = this.Helper.Reflection.GetMethod(mod, "BuildMenu", false);
-                return () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); };
-            });
-
-        // Always Scroll Map
-        this.ComplexIntegration.AddCustomAction(
-            ModEntry.AlwaysScrollMapId,
-            6,
-            I18n.Button_AlwaysScrollMap(),
-            mod =>
-            {
-                var config = mod.GetType().GetField("config")?.GetValue(mod);
-                if (config is null)
-                {
-                    return null;
-                }
-
-                var enabledIndoors = this.Helper.Reflection.GetField<bool>(config, "EnabledIndoors", false);
-                var enabledOutdoors = this.Helper.Reflection.GetField<bool>(config, "EnabledOutdoors", false);
-                return () =>
-                {
-                    if (Game1.currentLocation.IsOutdoors)
-                    {
-                        enabledOutdoors.SetValue(!enabledOutdoors.GetValue());
-                    }
-                    else
-                    {
-                        enabledIndoors.SetValue(!enabledIndoors.GetValue());
-                    }
-                };
-            });
-
-        // To-Dew
-        this.ComplexIntegration.AddCustomAction(
-            ModEntry.ToDew,
-            7,
-            I18n.Button_ToDew(),
-            mod =>
-            {
-                var modType = mod.GetType();
-                var perScreenList = modType.GetField("list", BindingFlags.Instance | BindingFlags.NonPublic)
-                                           ?.GetValue(mod);
-                var toDoMenu = modType.Assembly.GetType("ToDew.ToDoMenu");
-                if (perScreenList is null || toDoMenu is null)
-                {
-                    return null;
-                }
-
-                return () =>
-                {
-                    var value = perScreenList.GetType().GetProperty("Value")?.GetValue(perScreenList);
-                    if (value is null)
-                    {
-                        return;
-                    }
-
-                    var action = toDoMenu.GetConstructor(
-                        new[]
-                        {
-                            modType,
-                            value.GetType(),
-                        });
-                    if (action is null)
-                    {
-                        return;
-                    }
-
-                    var menu = action.Invoke(
-                        new[]
-                        {
-                            mod,
-                            value,
-                        });
-                    Game1.activeClickableMenu = (IClickableMenu)menu;
-                };
-            });
-
-        // Special Orders
-        this.ComplexIntegration.AddCustomAction(
-            8,
-            I18n.Button_SpecialOrders(),
-            () => { Game1.activeClickableMenu = new SpecialOrdersBoard(); });
-
-        // Daily Quests
-        this.ComplexIntegration.AddCustomAction(
-            9,
-            I18n.Button_DailyQuests(),
-            () => { Game1.activeClickableMenu = new Billboard(true); });
-    }
-
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!this.ShowToolbar)
+        if (!ModEntry.ShowToolbar)
         {
             return;
         }
@@ -377,7 +182,7 @@ public sealed class ModEntry : Mod
 
     private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
     {
-        if (!this.ShowToolbar)
+        if (!ModEntry.ShowToolbar)
         {
             return;
         }
@@ -401,50 +206,22 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    private void OnToolbarIconsChanged(object? sender, EventArgs e)
     {
-        if (!this.Loaded)
+        foreach (var icon in this.ModConfig.Icons)
         {
-            var toolbarData =
-                this.Helper.GameContent.Load<IDictionary<string, string>>("furyx639.ToolbarIcons/Toolbar");
-            foreach (var (key, data) in toolbarData)
+            if (this.Components.TryGetValue(icon.Id, out var component))
             {
-                var info = data.Split('/');
-                var modId = key.Split('/')[0];
-                var index = int.Parse(info[2]);
-                switch (info[3])
-                {
-                    case "menu":
-                        this.SimpleIntegration?.AddMenu(modId, index, info[0], info[4], info[1]);
-                        break;
-                    case "method":
-                        this.SimpleIntegration?.AddMethod(modId, index, info[0], info[4], info[1]);
-                        break;
-                    case "keybind":
-                        this.SimpleIntegration?.AddKeybind(modId, index, info[0], info[4], info[1]);
-                        break;
-                }
+                component.visible = icon.Enabled;
             }
         }
 
         this.ReorientComponents();
-        this.Loaded = true;
+    }
 
-        var gmcm = new GenericModConfigMenuIntegration(this.Helper.ModRegistry);
-        if (!gmcm.IsLoaded)
-        {
-            return;
-        }
-
-        // Register mod configuration
-        gmcm.Register(this.ModManifest, () => this._config = new(), this.SaveConfig);
-
-        gmcm.API.AddComplexOption(
-            this.ModManifest,
-            I18n.Config_CustomizeToolbar_Name,
-            this.DrawButton,
-            I18n.Config_CustomizeToolbar_Tooltip,
-            height: () => Game1.tileSize);
+    private void OnToolbarIconsLoaded(object? sender, EventArgs e)
+    {
+        this.ReorientComponents();
     }
 
     private void ReorientComponents()
@@ -498,7 +275,7 @@ public sealed class ModEntry : Mod
     private void ReorientComponents(ComponentArea area, int x, int y)
     {
         this.Area = area;
-        foreach (var icon in this.Config.Icons)
+        foreach (var icon in this.ModConfig.Icons)
         {
             if (this.Components.TryGetValue(icon.Id, out var component))
             {
@@ -527,19 +304,5 @@ public sealed class ModEntry : Mod
                 }
             }
         }
-    }
-
-    private void SaveConfig()
-    {
-        foreach (var icon in this.Config.Icons)
-        {
-            if (this.Components.TryGetValue(icon.Id, out var component))
-            {
-                component.visible = icon.Enabled;
-            }
-        }
-
-        this.Helper.WriteConfig(this.Config);
-        this.ReorientComponents();
     }
 }

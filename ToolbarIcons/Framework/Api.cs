@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ToolbarIcons;
+﻿namespace StardewMods.ToolbarIcons.Framework;
 
 using System;
 using System.Collections.Generic;
@@ -7,11 +7,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.ToolbarIcons;
-using StardewMods.ToolbarIcons.Models;
+using StardewMods.ToolbarIcons.Framework.Models;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-public sealed class ToolbarIconsApi : IToolbarIconsApi
+public sealed class Api : IToolbarIconsApi
 {
     private readonly Dictionary<string, ClickableTextureComponent> _components;
     private readonly IModHelper _helper;
@@ -20,15 +20,12 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
     private EventHandler<string>? _toolbarIconPressed;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ToolbarIconsApi" /> class.
+    ///     Initializes a new instance of the <see cref="Api" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="icons">List containing toolbar icons.</param>
     /// <param name="components">Dictionary containing the textures.</param>
-    public ToolbarIconsApi(
-        IModHelper helper,
-        List<ToolbarIcon> icons,
-        Dictionary<string, ClickableTextureComponent> components)
+    public Api(IModHelper helper, List<ToolbarIcon> icons, Dictionary<string, ClickableTextureComponent> components)
     {
         this._helper = helper;
         this._icons = icons;
