@@ -94,28 +94,22 @@ internal sealed class ResizeChestMenu : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(ResizeChestMenu.Id);
+            BetterItemGrabMenu.Constructed += ResizeChestMenu.OnConstructed;
+            this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(ResizeChestMenu.Id);
-        BetterItemGrabMenu.Constructed += ResizeChestMenu.OnConstructed;
-        this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(ResizeChestMenu.Id);
         BetterItemGrabMenu.Constructed -= ResizeChestMenu.OnConstructed;
         this._helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;

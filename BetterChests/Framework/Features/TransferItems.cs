@@ -61,29 +61,23 @@ internal sealed class TransferItems : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
+            this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             return;
         }
 
-        this._isActivated = true;
-        BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         BetterItemGrabMenu.Constructing -= TransferItems.OnConstructing;
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;

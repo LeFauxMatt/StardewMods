@@ -15,13 +15,13 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-public sealed class BetterChests : Mod
+public sealed class ModEntry : Mod
 {
     private readonly IList<Tuple<IFeature, Func<bool>>> _features = new List<Tuple<IFeature, Func<bool>>>();
 
     private ModConfig? _config;
 
-    private ModConfig ModConfig => this._config ??= Config.Init(this.Helper, this.ModManifest, this._features);
+    private ModConfig ModConfig => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -30,12 +30,13 @@ public sealed class BetterChests : Mod
         Formatting.Translations = this.Helper.Translation;
         CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
+        Config.Init(this.Helper, this.ModManifest, this.ModConfig, this._features);
         Integrations.Init(this.Helper, this.ModConfig);
         Storages.Init(this.ModConfig);
         ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
 
         // Events
-        this.Helper.Events.Content.AssetRequested += BetterChests.OnAssetRequested;
+        this.Helper.Events.Content.AssetRequested += ModEntry.OnAssetRequested;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
         // Features
@@ -95,7 +96,7 @@ public sealed class BetterChests : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new BetterChestsApi(this.ModConfig);
+        return new Api(this.ModConfig);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -132,11 +133,10 @@ public sealed class BetterChests : Mod
             {
                 var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
                 Log.Warn(string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{featureName}", modList));
+                continue;
             }
-            else if (condition())
-            {
-                feature.Activate();
-            }
+
+            feature.SetActivated(condition());
         }
 
         Storages.StorageTypeRequested += this.OnStorageTypeRequested;

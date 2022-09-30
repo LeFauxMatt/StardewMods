@@ -33,26 +33,20 @@ internal sealed class BetterShippingBin : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            this._helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
             return;
         }
 
-        this._isActivated = true;
-        this._helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         this._helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
     }
 

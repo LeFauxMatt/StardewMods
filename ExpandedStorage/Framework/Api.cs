@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ExpandedStorage;
+﻿namespace StardewMods.ExpandedStorage.Framework;
 
 using System.Collections.Generic;
 using StardewMods.Common.Helpers;
@@ -6,7 +6,7 @@ using StardewMods.Common.Integrations.ExpandedStorage;
 using StardewMods.ExpandedStorage.Models;
 
 /// <inheritdoc />
-public sealed class ExpandedStorageApi : IExpandedStorageApi
+public sealed class Api : IExpandedStorageApi
 {
     private readonly IModHelper _helper;
     private readonly IDictionary<string, LegacyAsset> _legacyAssets;
@@ -14,13 +14,13 @@ public sealed class ExpandedStorageApi : IExpandedStorageApi
     private readonly IDictionary<string, ICustomStorage> _storages;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ExpandedStorageApi" /> class.
+    ///     Initializes a new instance of the <see cref="Api" /> class.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="storages">All custom chests currently loaded in the game.</param>
     /// <param name="storageCache">Cached storage textures and attributes.</param>
     /// <param name="legacyAssets">Textures for legacy Expanded Storage content packs.</param>
-    internal ExpandedStorageApi(
+    internal Api(
         IModHelper helper,
         IDictionary<string, ICustomStorage> storages,
         IDictionary<string, CachedStorage> storageCache,

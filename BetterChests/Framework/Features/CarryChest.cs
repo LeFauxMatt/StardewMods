@@ -138,29 +138,23 @@ internal sealed class CarryChest : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(CarryChest.Id);
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this._helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+            this._helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(CarryChest.Id);
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-        this._helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(CarryChest.Id);
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;

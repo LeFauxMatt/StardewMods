@@ -40,39 +40,33 @@ internal sealed class StashToChest : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+            if (!Integrations.ToolbarIcons.IsLoaded)
+            {
+                return;
+            }
+
+            Integrations.ToolbarIcons.API.AddToolbarIcon(
+                "BetterChests.StashToChest",
+                "furyx639.BetterChests/Icons",
+                new(16, 0, 16, 16),
+                I18n.Button_StashToChest_Name());
+            Integrations.ToolbarIcons.API.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
             return;
         }
 
-        this._isActivated = true;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-
-        if (!Integrations.ToolbarIcons.IsLoaded)
-        {
-            return;
-        }
-
-        Integrations.ToolbarIcons.API.AddToolbarIcon(
-            "BetterChests.StashToChest",
-            "furyx639.BetterChests/Icons",
-            new(16, 0, 16, 16),
-            I18n.Button_StashToChest_Name());
-        Integrations.ToolbarIcons.API.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
 

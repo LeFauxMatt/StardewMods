@@ -160,31 +160,25 @@ internal sealed class ChestMenuTabs : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
+            this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
+            this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
             return;
         }
 
-        this._isActivated = true;
-        BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-        this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
         this._helper.Events.Content.AssetRequested -= this.OnAssetRequested;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;

@@ -53,29 +53,23 @@ internal sealed class ChestInfo : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
+            this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
             return;
         }
 
-        this._isActivated = true;
-        BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;

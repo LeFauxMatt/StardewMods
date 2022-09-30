@@ -44,26 +44,20 @@ internal sealed class ResizeChest : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(ResizeChest.Id);
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(ResizeChest.Id);
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(ResizeChest.Id);
     }
 

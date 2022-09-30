@@ -210,7 +210,7 @@ internal sealed class BetterItemGrabMenu : IFeature
     }
 
     /// <summary>
-    ///     Gets the current <see cref="IStorageObject" /> context.
+    ///     Gets the current <see cref="BaseStorage" /> context.
     /// </summary>
     public static BaseStorage? Context
     {
@@ -310,35 +310,29 @@ internal sealed class BetterItemGrabMenu : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(BetterItemGrabMenu.Id);
+            this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+            this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
+            this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this._helper.Events.Input.CursorMoved += this.OnCursorMoved;
+            this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+            this._helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
+            this._helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(BetterItemGrabMenu.Id);
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.CursorMoved += this.OnCursorMoved;
-        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-        this._helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
-        this._helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(BetterItemGrabMenu.Id);
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;

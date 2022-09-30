@@ -66,29 +66,21 @@ internal sealed class SlotLock : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(SlotLock.Id);
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
-        HarmonyHelper.UnapplyPatches(SlotLock.Id);
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
     }

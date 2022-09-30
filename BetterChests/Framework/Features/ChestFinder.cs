@@ -88,43 +88,37 @@ internal sealed class ChestFinder : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            this._helper.Events.Display.RenderedHud += this.OnRenderedHud;
+            this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
+            this._helper.Events.Player.Warped += this.OnWarped;
+
+            if (!Integrations.ToolbarIcons.IsLoaded)
+            {
+                return;
+            }
+
+            Integrations.ToolbarIcons.API.AddToolbarIcon(
+                "BetterChests.FindChest",
+                "furyx639.BetterChests/Icons",
+                new(48, 0, 16, 16),
+                I18n.Button_FindChest_Name());
+            Integrations.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
             return;
         }
 
-        this._isActivated = true;
-        this._helper.Events.Display.RenderedHud += this.OnRenderedHud;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
-        this._helper.Events.Player.Warped += this.OnWarped;
-
-        if (!Integrations.ToolbarIcons.IsLoaded)
-        {
-            return;
-        }
-
-        Integrations.ToolbarIcons.API.AddToolbarIcon(
-            "BetterChests.FindChest",
-            "furyx639.BetterChests/Icons",
-            new(48, 0, 16, 16),
-            I18n.Button_FindChest_Name());
-        Integrations.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         this._helper.Events.Display.RenderedHud -= this.OnRenderedHud;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;

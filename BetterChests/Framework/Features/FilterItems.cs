@@ -71,27 +71,21 @@ internal sealed class FilterItems : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(FilterItems.Id);
+            this._helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(FilterItems.Id);
-        this._helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(FilterItems.Id);
         this._helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
     }

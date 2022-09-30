@@ -149,37 +149,31 @@ internal sealed class BetterCrafting : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(BetterCrafting.Id);
+            BetterCrafting.CraftingStoragesLoading += BetterCrafting.OnCraftingStoragesLoading;
+            this._helper.Events.GameLoop.UpdateTicked += BetterCrafting.OnUpdateTicked;
+            this._helper.Events.GameLoop.UpdateTicking += BetterCrafting.OnUpdateTicking;
+            this._helper.Events.Display.MenuChanged += BetterCrafting.OnMenuChanged;
+
+            if (!Integrations.BetterCrafting.IsLoaded)
+            {
+                return;
+            }
+
+            Integrations.BetterCrafting.API.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(BetterCrafting.Id);
-        BetterCrafting.CraftingStoragesLoading += BetterCrafting.OnCraftingStoragesLoading;
-        this._helper.Events.GameLoop.UpdateTicked += BetterCrafting.OnUpdateTicked;
-        this._helper.Events.GameLoop.UpdateTicking += BetterCrafting.OnUpdateTicking;
-        this._helper.Events.Display.MenuChanged += BetterCrafting.OnMenuChanged;
-
-        if (!Integrations.BetterCrafting.IsLoaded)
-        {
-            return;
-        }
-
-        Integrations.BetterCrafting.API.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(BetterCrafting.Id);
         BetterCrafting.CraftingStoragesLoading -= BetterCrafting.OnCraftingStoragesLoading;
         this._helper.Events.GameLoop.UpdateTicked -= BetterCrafting.OnUpdateTicked;

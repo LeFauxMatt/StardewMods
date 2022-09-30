@@ -41,7 +41,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new ExpandedStorageApi(this.Helper, ModEntry.Storages, ModEntry.StorageCache, ModEntry.LegacyAssets);
+        return new Api(this.Helper, ModEntry.Storages, ModEntry.StorageCache, ModEntry.LegacyAssets);
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)

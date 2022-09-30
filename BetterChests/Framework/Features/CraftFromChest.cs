@@ -62,42 +62,39 @@ internal sealed class CraftFromChest : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            BetterCrafting.CraftingStoragesLoading += CraftFromChest.OnCraftingStoragesLoading;
+            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+
+            if (Integrations.ToolbarIcons.IsLoaded)
+            {
+                Integrations.ToolbarIcons.API.AddToolbarIcon(
+                    "BetterChests.CraftFromChest",
+                    "furyx639.BetterChests/Icons",
+                    new(32, 0, 16, 16),
+                    I18n.Button_CraftFromChest_Name());
+                Integrations.ToolbarIcons.API.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
+            }
+
+            if (Integrations.BetterCrafting.IsLoaded)
+            {
+                Integrations.BetterCrafting.API.RegisterInventoryProvider(
+                    typeof(StorageWrapper),
+                    new StorageProvider());
+            }
+
             return;
         }
 
-        this._isActivated = true;
-        BetterCrafting.CraftingStoragesLoading += CraftFromChest.OnCraftingStoragesLoading;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-
-        if (Integrations.ToolbarIcons.IsLoaded)
-        {
-            Integrations.ToolbarIcons.API.AddToolbarIcon(
-                "BetterChests.CraftFromChest",
-                "furyx639.BetterChests/Icons",
-                new(32, 0, 16, 16),
-                I18n.Button_CraftFromChest_Name());
-            Integrations.ToolbarIcons.API.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
-        }
-
-        if (Integrations.BetterCrafting.IsLoaded)
-        {
-            Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(StorageWrapper), new StorageProvider());
-        }
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         BetterCrafting.CraftingStoragesLoading -= CraftFromChest.OnCraftingStoragesLoading;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 

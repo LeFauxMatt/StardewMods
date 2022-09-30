@@ -9,7 +9,7 @@ using StardewValley.Locations;
 using StardewValley.Menus;
 
 /// <summary>
-///     Harmony Patches for PortableHoles.
+///     Harmony Patches for Portable Holes.
 /// </summary>
 internal sealed class ModPatches
 {

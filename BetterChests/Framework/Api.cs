@@ -1,19 +1,18 @@
-﻿namespace StardewMods.BetterChests;
+﻿namespace StardewMods.BetterChests.Framework;
 
 using System;
-using StardewMods.BetterChests.Framework;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-public sealed class BetterChestsApi : IBetterChestsApi
+public sealed class Api : IBetterChestsApi
 {
     private readonly IStorageData _default;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="BetterChestsApi" /> class.
+    ///     Initializes a new instance of the <see cref="Api" /> class.
     /// </summary>
     /// <param name="defaultChest">Default data for any storage.</param>
-    public BetterChestsApi(IStorageData defaultChest)
+    public Api(IStorageData defaultChest)
     {
         this._default = defaultChest;
     }

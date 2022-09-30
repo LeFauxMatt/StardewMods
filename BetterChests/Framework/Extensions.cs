@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using StardewMods.BetterChests.Framework.Features;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Integrations.BetterChests;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
@@ -13,6 +16,136 @@ using StardewValley.Objects;
 /// </summary>
 internal static class Extensions
 {
+    /// <summary>
+    ///     Add a chest capacity option at the current position in the form.
+    /// </summary>
+    /// <param name="gmcm">Integration for GMCM.</param>
+    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="data">The storage data.</param>
+    public static void AddChestCapacityOption(
+        this GenericModConfigMenuIntegration gmcm,
+        IManifest manifest,
+        IStorageData data)
+    {
+        gmcm.API!.AddNumberOption(
+            manifest,
+            data.GetChestCapacity,
+            data.SetChestCapacity,
+            I18n.Config_ResizeChestCapacity_Name,
+            I18n.Config_ResizeChestCapacity_Tooltip,
+            0,
+            8,
+            1,
+            Formatting.ChestCapacity);
+    }
+
+    /// <summary>
+    ///     Add a chest menu rows option at the current position in the form.
+    /// </summary>
+    /// <param name="gmcm">Integration for GMCM.</param>
+    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="data">The storage data.</param>
+    public static void AddChestMenuRowsOption(
+        this GenericModConfigMenuIntegration gmcm,
+        IManifest manifest,
+        IStorageData data)
+    {
+        gmcm.API!.AddNumberOption(
+            manifest,
+            data.GetChestMenuRows,
+            data.SetChestMenuRows,
+            I18n.Config_ResizeChestMenuRows_Name,
+            I18n.Config_ResizeChestMenuRows_Tooltip,
+            0,
+            5,
+            1,
+            Formatting.ChestMenuRows);
+    }
+
+    /// <summary>
+    ///     Add a distance option at the current position in the form.
+    /// </summary>
+    /// <param name="gmcm">Integration for GMCM.</param>
+    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="data">The storage data.</param>
+    /// <param name="featureName">The feature which the distance is associated with.</param>
+    /// <param name="name">The label text to show in the form.</param>
+    /// <param name="tooltip">The tooltip text shown when the cursor hovers on the field.</param>
+    public static void AddDistanceOption(
+        this GenericModConfigMenuIntegration gmcm,
+        IManifest manifest,
+        IStorageData data,
+        string featureName,
+        Func<string> name,
+        Func<string> tooltip)
+    {
+        gmcm.API!.AddNumberOption(
+            manifest,
+            () => data.GetDistance(featureName),
+            value => data.SetDistance(featureName, value),
+            name,
+            tooltip,
+            (int)FeatureOptionRange.Default,
+            (int)FeatureOptionRange.World,
+            1,
+            Formatting.Distance);
+    }
+
+    /// <summary>
+    ///     Add a feature option at the current position in the form.
+    /// </summary>
+    /// <param name="gmcm">Integration for GMCM.</param>
+    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="getValue">Get the current value from the mod config.</param>
+    /// <param name="setValue">Set a new value in the mod config.</param>
+    /// <param name="name">The label text to show in the form.</param>
+    /// <param name="tooltip">The tooltip text shown when the cursor hovers on the field.</param>
+    public static void AddFeatureOption(
+        this GenericModConfigMenuIntegration gmcm,
+        IManifest manifest,
+        Func<FeatureOption> getValue,
+        Action<FeatureOption> setValue,
+        Func<string> name,
+        Func<string> tooltip)
+    {
+        gmcm.API!.AddTextOption(
+            manifest,
+            () => getValue().ToStringFast(),
+            value => setValue(FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default),
+            name,
+            tooltip,
+            FeatureOptionExtensions.GetNames(),
+            Formatting.Option);
+    }
+
+    /// <summary>
+    ///     Add a feature option range at the current position in the form.
+    /// </summary>
+    /// <param name="gmcm">Integration for GMCM.</param>
+    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="getValue">Get the current value from the mod config.</param>
+    /// <param name="setValue">Set a new value in the mod config.</param>
+    /// <param name="name">The label text to show in the form.</param>
+    /// <param name="tooltip">The tooltip text shown when the cursor hovers on the field.</param>
+    public static void AddFeatureOptionRange(
+        this GenericModConfigMenuIntegration gmcm,
+        IManifest manifest,
+        Func<FeatureOptionRange> getValue,
+        Action<FeatureOptionRange> setValue,
+        Func<string> name,
+        Func<string> tooltip)
+    {
+        gmcm.API!.AddTextOption(
+            manifest,
+            () => getValue().ToStringFast(),
+            value => setValue(
+                FeatureOptionRangeExtensions.TryParse(value, out var range) ? range : FeatureOptionRange.Default),
+            name,
+            tooltip,
+            FeatureOptionRangeExtensions.GetNames(),
+            Formatting.Range);
+    }
+
     /// <summary>
     ///     Gets context tags from an <see cref="Item" /> with extended tag set.
     /// </summary>
@@ -92,6 +225,57 @@ internal static class Extensions
         return Game1.locations.OfType<LibraryMuseum>().FirstOrDefault()?.isItemSuitableForDonation(item) ?? false;
     }
 
+    private static int GetChestCapacity(this IStorageData data)
+    {
+        return data.ResizeChestCapacity switch
+        {
+            _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
+            _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+            -1 => 8,
+            _ => (int)FeatureOption.Enabled + data.ResizeChestCapacity / 12 - 1,
+        };
+    }
+
+    private static int GetChestMenuRows(this IStorageData data)
+    {
+        return data.ResizeChestMenuRows switch
+        {
+            _ when data.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
+            _ when data.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+            _ => (int)FeatureOption.Enabled + data.ResizeChestMenuRows - 3,
+        };
+    }
+
+    private static int GetDistance(this IStorageData data, string featureName)
+    {
+        var feature = featureName switch
+        {
+            nameof(CraftFromChest) => data.CraftFromChest,
+            nameof(StashToChest) => data.StashToChest,
+            _ => throw new("Invalid feature"),
+        };
+
+        var distance = featureName switch
+        {
+            nameof(CraftFromChest) => data.CraftFromChestDistance,
+            nameof(StashToChest) => data.StashToChestDistance,
+            _ => 0,
+        };
+
+        return distance switch
+        {
+            _ when feature is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
+            _ when feature is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
+            _ when feature is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
+            _ when feature is FeatureOptionRange.World => (int)FeatureOptionRange.World,
+            >= 2 when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
+                                                              + (int)Math.Ceiling(Math.Log2(distance))
+                                                              - 1,
+            _ when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
+            _ => (int)FeatureOptionRange.Default,
+        };
+    }
+
     /// <summary>
     ///     Checks if the <see cref="Item" /> is an artifact.
     /// </summary>
@@ -110,5 +294,81 @@ internal static class Extensions
     private static bool IsFurniture(this Item item)
     {
         return item is Furniture;
+    }
+
+    private static void SetChestCapacity(this IStorageData data, int value)
+    {
+        data.ResizeChestCapacity = value switch
+        {
+            (int)FeatureOption.Default => 0,
+            (int)FeatureOption.Disabled => 0,
+            8 => -1,
+            >= (int)FeatureOption.Enabled => 12 * (1 + value - (int)FeatureOption.Enabled),
+            _ => 0,
+        };
+
+        data.ResizeChest = value switch
+        {
+            (int)FeatureOption.Default => FeatureOption.Default,
+            (int)FeatureOption.Disabled => FeatureOption.Disabled,
+            _ => FeatureOption.Enabled,
+        };
+    }
+
+    private static void SetChestMenuRows(this IStorageData data, int value)
+    {
+        data.ResizeChestMenuRows = value switch
+        {
+            (int)FeatureOption.Default => 0,
+            (int)FeatureOption.Disabled => 0,
+            _ => 3 + value - (int)FeatureOption.Enabled,
+        };
+
+        data.ResizeChestMenu = value switch
+        {
+            (int)FeatureOption.Default => FeatureOption.Default,
+            (int)FeatureOption.Disabled => FeatureOption.Disabled,
+            _ => FeatureOption.Enabled,
+        };
+    }
+
+    private static void SetDistance(this IStorageData data, string featureName, int value)
+    {
+        var distance = value switch
+        {
+            (int)FeatureOptionRange.Default => 0,
+            (int)FeatureOptionRange.Disabled => 0,
+            (int)FeatureOptionRange.Inventory => 0,
+            (int)FeatureOptionRange.World - 1 => -1,
+            (int)FeatureOptionRange.World => 0,
+            >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location),
+            _ => 0,
+        };
+
+        var range = value switch
+        {
+            (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
+            (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            (int)FeatureOptionRange.Inventory => FeatureOptionRange.Inventory,
+            (int)FeatureOptionRange.World => FeatureOptionRange.World,
+            (int)FeatureOptionRange.World - 1 => FeatureOptionRange.Location,
+            _ => FeatureOptionRange.Location,
+        };
+
+        switch (featureName)
+        {
+            case nameof(CraftFromChest):
+                data.CraftFromChestDistance = distance;
+                data.CraftFromChest = range;
+                return;
+
+            case nameof(StashToChest):
+                data.StashToChestDistance = distance;
+                data.StashToChest = range;
+                return;
+
+            default:
+                throw new("Invalid feature");
+        }
     }
 }

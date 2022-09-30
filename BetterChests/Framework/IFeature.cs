@@ -6,12 +6,8 @@
 internal interface IFeature
 {
     /// <summary>
-    ///     Subscribe to events and apply any Harmony patches.
+    ///     Sets whether the feature is currently activated.
     /// </summary>
-    public void Activate();
-
-    /// <summary>
-    ///     Unsubscribe from events, and reverse any Harmony patches.
-    /// </summary>
-    public void Deactivate();
+    /// <param name="value">A value indicating whether the feature is currently enabled.</param>
+    public void SetActivated(bool value);
 }

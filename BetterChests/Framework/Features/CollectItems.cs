@@ -56,29 +56,23 @@ internal sealed class CollectItems : IFeature
     }
 
     /// <inheritdoc />
-    public void Activate()
+    public void SetActivated(bool value)
     {
+        if (this._isActivated == value)
+        {
+            return;
+        }
+
+        this._isActivated = value;
         if (this._isActivated)
         {
+            HarmonyHelper.ApplyPatches(CollectItems.Id);
+            Configurator.StorageEdited += CollectItems.OnStorageEdited;
+            this._helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
+            this._helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(CollectItems.Id);
-        Configurator.StorageEdited += CollectItems.OnStorageEdited;
-        this._helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
-        this._helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         HarmonyHelper.UnapplyPatches(CollectItems.Id);
         Configurator.StorageEdited -= CollectItems.OnStorageEdited;
         this._helper.Events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
