@@ -12,6 +12,14 @@ All of my mods are available for download on [Nexus Mods](https://www.nexusmods.
 
 Adds enhanced chest features to the game.
 
+## [Cycle Tools](https://www.nexusmods.com/stardewvalley/mods/13973)
+
+( [source](CycleTools)
+| [docs](CycleTools/README.md)
+| [changelog](CycleTools/CHANGELOG.md) )
+
+Quickly cycle between tools from the active item slot.
+
 ## [Easy Access](https://www.nexusmods.com/stardewvalley/mods/11002)
 
 ( [source](EasyAccess)
@@ -19,6 +27,15 @@ Adds enhanced chest features to the game.
 | [changelog](EasyAccess/CHANGELOG.md) )
 
 Provides easier access to machines and producers in the game.
+
+## [Expanded Storage](https://www.nexusmods.com/stardewvalley/mods/7431)
+
+( [source](ExpandedStorage)
+| [docs](ExpandedStorage/README.md)
+| [changelog](ExpandedStorage/CHANGELOG.md)
+| [api](Common/Integrations/ExpandedStorage/IExpandedStorageApi.cs) )
+
+Framework for adding new types of chests to the game.
 
 ## [Garbage Day](https://www.nexusmods.com/stardewvalley/mods/8204)
 
@@ -49,7 +66,8 @@ Adds craftable holes to the game.
 
 ( [source](ShoppingCart)
 | [docs](ShoppingCart/README.md)
-| [changelog](ShoppingCart/CHANGELOG.md) )
+| [changelog](ShoppingCart/CHANGELOG.md)
+| [api](Common/Integrations/ShoppingCart/IShoppingCartApi.cs) )
 
 Adds a shopping cart and checkout to the Shop Menu.
 
@@ -60,6 +78,15 @@ Adds a shopping cart and checkout to the Shop Menu.
 | [changelog](SmackDatScarecrow/CHANGELOG.md) )
 
 Go ahead and do it, they can take it.
+
+## [Stack Quality](https://www.nexusmods.com/stardewvalley/mods/13724)
+
+( [source](StackQuality)
+| [docs](StackQuality/README.md)
+| [changelog](StackQuality/CHANGELOG.md)
+| [api](Common/Integrations/StackQuality/IStackQualityApi.cs) )
+
+Allows multiple qualities of the same item to occupy one stack.
 
 ## [Too Many Animals](https://www.nexusmods.com/stardewvalley/mods/11033)
 
