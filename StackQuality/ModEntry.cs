@@ -25,7 +25,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new StackQualityApi();
+        return new Api();
     }
 
     [EventPriority(EventPriority.Low)]

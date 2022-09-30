@@ -1,4 +1,4 @@
-﻿namespace StardewMods.StackQuality;
+﻿namespace StardewMods.StackQuality.Framework;
 
 using System;
 using System.Linq;
@@ -9,7 +9,7 @@ using StardewValley.Objects;
 using StardewValley.Tools;
 
 /// <inheritdoc />
-public sealed class StackQualityApi : IStackQualityApi
+public sealed class Api : IStackQualityApi
 {
     /// <inheritdoc />
     public bool AddToStacks(SObject obj, Item other, [NotNullWhen(true)] out int[]? remaining)
