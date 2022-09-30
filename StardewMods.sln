@@ -36,8 +36,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PortableHoles", "PortableHo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmackDatScarecrow", "SmackDatScarecrow\SmackDatScarecrow.csproj", "{66F2B279-351B-499C-826B-A885C2255334}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelpfulSpouses", "HelpfulSpouses\HelpfulSpouses.csproj", "{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShoppingCart", "ShoppingCart\ShoppingCart.csproj", "{C9285074-54C5-4923-AFC0-DC3D117C9B0F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StackQuality", "StackQuality\StackQuality.csproj", "{27AD68FC-9FCE-423E-99A1-9C232C40793D}"
@@ -92,10 +90,6 @@ Global
 		{66F2B279-351B-499C-826B-A885C2255334}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66F2B279-351B-499C-826B-A885C2255334}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66F2B279-351B-499C-826B-A885C2255334}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8E547C3-3769-41A7-9898-7B9A6CEBD59F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9285074-54C5-4923-AFC0-DC3D117C9B0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9285074-54C5-4923-AFC0-DC3D117C9B0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9285074-54C5-4923-AFC0-DC3D117C9B0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -135,7 +129,6 @@ Global
 		CommonHarmony\CommonHarmony.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{9de51a63-31ac-4678-9d40-f9351844bea8}*SharedItemsImports = 5
-		Common\Common.projitems*{a8e547c3-3769-41a7-9898-7b9a6cebd59f}*SharedItemsImports = 5
 		Common\Common.projitems*{c9285074-54c5-4923-afc0-dc3d117c9b0f}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
