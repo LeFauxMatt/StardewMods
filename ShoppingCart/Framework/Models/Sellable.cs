@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ShoppingCart.Models;
+﻿namespace StardewMods.ShoppingCart.Framework.Models;
 
 using System;
 using System.Collections.Generic;
@@ -8,8 +8,10 @@ using StardewMods.Common.Integrations.ShoppingCart;
 using StardewMods.ShoppingCart.Framework;
 using StardewValley.Menus;
 
-/// <inheritdoc />
-internal sealed class Sellable : ISellable
+/// <summary>
+///     Represents an item being sold.
+/// </summary>
+internal sealed class Sellable : ICartItem
 {
     private readonly ICartItem _cartItem;
 
@@ -57,7 +59,13 @@ internal sealed class Sellable : ISellable
         return this._cartItem.CompareTo(other);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Attempt to sell an item.
+    /// </summary>
+    /// <param name="inventory">The inventory to sell items from.</param>
+    /// <param name="currency">The shop's currency.</param>
+    /// <param name="test">Indicates whether to test only.</param>
+    /// <returns>Returns true if item can be sold.</returns>
     public bool TrySell(IList<Item?> inventory, int currency, bool test = false)
     {
         var quantity = this.Quantity;

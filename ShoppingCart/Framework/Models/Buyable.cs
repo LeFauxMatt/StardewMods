@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ShoppingCart.Models;
+﻿namespace StardewMods.ShoppingCart.Framework.Models;
 
 using System;
 using System.Collections.Generic;
@@ -6,8 +6,10 @@ using System.Linq;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
 
-/// <inheritdoc />
-internal sealed class Buyable : IBuyable
+/// <summary>
+///     Represents an item being bought.
+/// </summary>
+internal sealed class Buyable : ICartItem
 {
     private readonly ICartItem _cartItem;
 
@@ -33,10 +35,14 @@ internal sealed class Buyable : IBuyable
     /// <inheritdoc />
     public int Available => this._cartItem.Available;
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Gets any extra items required to purchase this item.
+    /// </summary>
     public int ExtraItem { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Gets the quantity of extra items per quantity of item to purchase.
+    /// </summary>
     public int ExtraItemAmount { get; }
 
     /// <inheritdoc />
@@ -61,7 +67,15 @@ internal sealed class Buyable : IBuyable
         return this._cartItem.CompareTo(other);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Tests if an item can be bought.
+    /// </summary>
+    /// <param name="inventory">The inventory to buy items to.</param>
+    /// <param name="qiGems">The number of Qi Gems.</param>
+    /// <param name="walnuts">The number of Golden Walnuts.</param>
+    /// <param name="index">The shop index of the item.</param>
+    /// <param name="canPurchaseCheck">Function to test if item can be purchased..</param>
+    /// <returns>Returns true if item can be bought.</returns>
     public bool TestBuy(
         IList<Item?> inventory,
         ref int qiGems,

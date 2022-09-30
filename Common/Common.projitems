@@ -64,9 +64,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProjectFluent\IFluent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProjectFluent\IProjectFluentApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ProjectFluent\ProjectFluentIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\IBuyable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\ICartItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\ISellable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\IShop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\IShoppingCartApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ShoppingCart\ShoppingCartIntegration.cs" />

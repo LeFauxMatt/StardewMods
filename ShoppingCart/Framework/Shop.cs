@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
-using StardewMods.ShoppingCart.Models;
+using StardewMods.ShoppingCart.Framework.Models;
 using StardewMods.ShoppingCart.UI;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -86,10 +86,10 @@ internal sealed class Shop : IShop
     public ShopMenu Menu { get; }
 
     /// <inheritdoc />
-    public IEnumerable<ICartItem> ToBuy => this._items.OfType<IBuyable>();
+    public IEnumerable<ICartItem> ToBuy => this._items.OfType<Buyable>();
 
     /// <inheritdoc />
-    public IEnumerable<ICartItem> ToSell => this._items.OfType<ISellable>();
+    public IEnumerable<ICartItem> ToSell => this._items.OfType<Sellable>();
 
     private List<TemporaryAnimatedSprite> Animations => this._animations.GetValue();
 
@@ -640,7 +640,7 @@ internal sealed class Shop : IShop
         }
 
         // Simulate selling
-        if (this.ToSell.Any(item => !((ISellable)item).TrySell(inventory, this.Menu.currency, true)))
+        if (this.ToSell.Any(item => !((Sellable)item).TrySell(inventory, this.Menu.currency, true)))
         {
             return false;
         }
@@ -649,7 +649,7 @@ internal sealed class Shop : IShop
         if ((
                 from item in this.ToBuy
                 let index = this.Menu.forSale.IndexOf(item.Item)
-                where !((IBuyable)item).TestBuy(inventory, ref qiGems, ref walnuts, index, this.Menu.canPurchaseCheck)
+                where !((Buyable)item).TestBuy(inventory, ref qiGems, ref walnuts, index, this.Menu.canPurchaseCheck)
                 select item).Any())
         {
             return false;
@@ -666,7 +666,7 @@ internal sealed class Shop : IShop
         var coins = 2;
         foreach (var toSell in this.ToSell)
         {
-            if (!((ISellable)toSell).TrySell(Game1.player.Items, this.Menu.currency))
+            if (!((Sellable)toSell).TrySell(Game1.player.Items, this.Menu.currency))
             {
                 return false;
             }

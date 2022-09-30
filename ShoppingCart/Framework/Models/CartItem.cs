@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ShoppingCart.Models;
+﻿namespace StardewMods.ShoppingCart.Framework.Models;
 
 using System;
 using StardewMods.Common.Integrations.ShoppingCart;
