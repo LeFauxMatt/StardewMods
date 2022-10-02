@@ -96,7 +96,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new Api(this.ModConfig);
+        return new Api();
     }
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
