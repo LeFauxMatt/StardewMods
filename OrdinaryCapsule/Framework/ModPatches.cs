@@ -94,7 +94,7 @@ internal sealed class ModPatches
             {
                 yield return new(OpCodes.Ldarg_0);
                 yield return new(OpCodes.Ldloc_1);
-                yield return CodeInstruction.Call(typeof(ModEntry), nameof(ModPatches.PlaySound));
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.PlaySound));
                 yield return instruction;
             }
             else
