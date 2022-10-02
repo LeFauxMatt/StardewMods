@@ -2,7 +2,6 @@
 
 using System;
 using System.Reflection;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewMods.CycleTools.Framework;
@@ -10,18 +9,10 @@ using StardewMods.CycleTools.Framework;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private static readonly FieldInfo MouseStateField = typeof(InputState).GetField(
-        "_currentMouseState",
-        BindingFlags.Instance | BindingFlags.NonPublic)!;
-
     private static readonly FieldInfo MouseWheelScrolledEventArgsOldValueField =
         typeof(MouseWheelScrolledEventArgs).GetField(
             "<OldValue>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic)!;
-
-    private static readonly FieldInfo ScrollWheelValueField = typeof(MouseState).GetField(
-        "_scrollWheelValue",
-        BindingFlags.Instance | BindingFlags.NonPublic)!;
 
     private ModConfig? _config;
 
@@ -32,6 +23,7 @@ public sealed class ModEntry : Mod
     {
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
+        Integrations.Init(this.Helper);
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
