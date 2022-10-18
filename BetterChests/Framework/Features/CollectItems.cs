@@ -2,81 +2,76 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Handlers;
+using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Objects;
 
 /// <summary>
 ///     Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.
 /// </summary>
-internal sealed class CollectItems : IFeature
+internal sealed class CollectItems : Feature
 {
     private const string Id = "furyx639.BetterChests/CollectItems";
+
+    private static readonly MethodBase DebrisCollect = AccessTools.Method(typeof(Debris), nameof(Debris.collect));
 
 #nullable disable
     private static CollectItems Instance;
 #nullable enable
 
-    private readonly PerScreen<List<BaseStorage>> _eligible = new(() => new());
+    private readonly PerScreen<List<StorageNode>> _eligible = new(() => new());
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private CollectItems(IModHelper helper)
     {
         this._helper = helper;
-        HarmonyHelper.AddPatches(
-            CollectItems.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Debris), nameof(Debris.collect)),
-                    typeof(CollectItems),
-                    nameof(CollectItems.Debris_collect_transpiler),
-                    PatchType.Transpiler),
-            });
+        this._harmony = new(CollectItems.Id);
     }
 
-    private static List<BaseStorage> Eligible => CollectItems.Instance._eligible.Value;
+    private static List<StorageNode> Eligible => CollectItems.Instance._eligible.Value;
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="CollectItems" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return CollectItems.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        Configurator.StorageEdited += CollectItems.OnStorageEdited;
+        this._helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
+        this._helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            HarmonyHelper.ApplyPatches(CollectItems.Id);
-            Configurator.StorageEdited += CollectItems.OnStorageEdited;
-            this._helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
-            this._helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
-            return;
-        }
+        // Patches
+        this._harmony.Patch(
+            CollectItems.DebrisCollect,
+            transpiler: new(typeof(CollectItems), nameof(CollectItems.Debris_collect_transpiler)));
+    }
 
-        HarmonyHelper.UnapplyPatches(CollectItems.Id);
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         Configurator.StorageEdited -= CollectItems.OnStorageEdited;
         this._helper.Events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
         this._helper.Events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
+
+        // Patches
+        this._harmony.Unpatch(
+            CollectItems.DebrisCollect,
+            AccessTools.Method(typeof(CollectItems), nameof(CollectItems.Debris_collect_transpiler)));
     }
 
     private static bool AddItemToInventoryBool(Farmer farmer, Item? item, bool makeActiveObject)
@@ -93,8 +88,13 @@ internal sealed class CollectItems : IFeature
 
         foreach (var storage in CollectItems.Eligible)
         {
+            if (storage is not { Data: Storage storageObject })
+            {
+                continue;
+            }
+
             item.resetState();
-            storage.ClearNulls();
+            storageObject.ClearNulls();
             item = storage.StashItem(item, storage.StashToChestStacks is FeatureOption.Enabled);
 
             if (item is null)
@@ -126,15 +126,22 @@ internal sealed class CollectItems : IFeature
         CollectItems.RefreshEligible();
     }
 
-    private static void OnStorageEdited(object? sender, BaseStorage storage)
+    private static void OnStorageEdited(object? sender, StorageNode storage)
     {
         CollectItems.RefreshEligible();
     }
 
     private static void RefreshEligible()
     {
-        var storages = Storages.FromPlayer(Game1.player, limit: 12);
         CollectItems.Eligible.Clear();
-        CollectItems.Eligible.AddRange(storages.Where(storage => storage.CollectItems is FeatureOption.Enabled));
+        foreach (var storage in Storages.FromPlayer(Game1.player, limit: 12))
+        {
+            if (storage is not { CollectItems: FeatureOption.Enabled })
+            {
+                continue;
+            }
+
+            CollectItems.Eligible.Add(storage);
+        }
     }
 }
