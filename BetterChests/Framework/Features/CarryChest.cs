@@ -3,15 +3,14 @@ namespace StardewMods.BetterChests.Framework.Features;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -19,87 +18,59 @@ using StardewValley.Objects;
 /// <summary>
 ///     Allows a placed chest full of items to be picked up by the farmer.
 /// </summary>
-internal sealed class CarryChest : IFeature
+internal sealed class CarryChest : Feature
 {
     private const string Id = "furyx639.BetterChests/CarryChest";
     private const int WhichBuff = 69420;
+
+    private static readonly MethodBase ChestDrawInMenu = AccessTools.Method(
+        typeof(Chest),
+        nameof(Chest.drawInMenu),
+        new[]
+        {
+            typeof(SpriteBatch),
+            typeof(Vector2),
+            typeof(float),
+            typeof(float),
+            typeof(float),
+            typeof(StackDrawType),
+            typeof(Color),
+            typeof(bool),
+        });
+
+    private static readonly MethodBase InventoryMenuRightClick =
+        AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick));
+
+    private static readonly MethodBase ItemCanBeDropped = AccessTools.Method(typeof(Item), nameof(Item.canBeDropped));
+
+    private static readonly MethodBase ItemCanBeTrashed = AccessTools.Method(typeof(Item), nameof(Item.canBeTrashed));
+
+    private static readonly MethodBase ItemCanStackWith = AccessTools.Method(typeof(Item), nameof(Item.canStackWith));
+
+    private static readonly MethodBase ObjectDrawWhenHeld = AccessTools.Method(
+        typeof(SObject),
+        nameof(SObject.drawWhenHeld));
+
+    private static readonly MethodBase ObjectPlacementAction = AccessTools.Method(
+        typeof(SObject),
+        nameof(SObject.placementAction));
+
+    private static readonly MethodBase UtilityIterateChestsAndStorage =
+        AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage));
 
 #nullable disable
     private static CarryChest Instance;
 #nullable enable
 
     private readonly ModConfig _config;
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private CarryChest(IModHelper helper, ModConfig config)
     {
         this._helper = helper;
         this._config = config;
-        HarmonyHelper.AddPatches(
-            CarryChest.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(
-                        typeof(Chest),
-                        nameof(Chest.drawInMenu),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(Vector2),
-                            typeof(float),
-                            typeof(float),
-                            typeof(float),
-                            typeof(StackDrawType),
-                            typeof(Color),
-                            typeof(bool),
-                        }),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Chest_drawInMenu_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.InventoryMenu_rightClick_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.InventoryMenu_rightClick_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Item), nameof(Item.canBeDropped)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Item_canBeDropped_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Item), nameof(Item.canBeTrashed)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Item_canBeTrashed_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Item_canStackWith_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(SObject), nameof(SObject.drawWhenHeld)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Object_drawWhenHeld_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Object_placementAction_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage)),
-                    typeof(CarryChest),
-                    nameof(CarryChest.Utility_iterateChestsAndStorage_postfix),
-                    PatchType.Postfix),
-            });
+        this._harmony = new(CarryChest.Id);
     }
 
     private static ModConfig Config => CarryChest.Instance._config;
@@ -116,9 +87,15 @@ internal sealed class CarryChest : IFeature
             return;
         }
 
-        if (Storages.Inventory.Where(storage => !excludeCurrent || storage.Context != Game1.player.CurrentItem)
-                    .Any(storage => storage.Items.OfType<Item>().Any()))
+        foreach (var storage in Storages.Inventory)
         {
+            if (storage is not { Data: Storage storageObject }
+             || (excludeCurrent && storageObject.Context == Game1.player.CurrentItem)
+             || storageObject.Items.All(item => item is null))
+            {
+                continue;
+            }
+
             Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(CarryChest.Config.CarryChestSlowAmount));
             return;
         }
@@ -132,33 +109,85 @@ internal sealed class CarryChest : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="CarryChest" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return CarryChest.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+        this._helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            HarmonyHelper.ApplyPatches(CarryChest.Id);
-            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this._helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-            this._helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
-            return;
-        }
+        // Patches
+        this._harmony.Patch(
+            CarryChest.ChestDrawInMenu,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Chest_drawInMenu_postfix)));
+        this._harmony.Patch(
+            CarryChest.InventoryMenuRightClick,
+            new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
+        this._harmony.Patch(
+            CarryChest.InventoryMenuRightClick,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_postfix)));
+        this._harmony.Patch(
+            CarryChest.ItemCanBeDropped,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canBeDropped_postfix)));
+        this._harmony.Patch(
+            CarryChest.ItemCanBeTrashed,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canBeTrashed_postfix)));
+        this._harmony.Patch(
+            CarryChest.ItemCanStackWith,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
+        this._harmony.Patch(
+            CarryChest.ObjectDrawWhenHeld,
+            new(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
+        this._harmony.Patch(
+            CarryChest.ObjectPlacementAction,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+        this._harmony.Patch(
+            CarryChest.UtilityIterateChestsAndStorage,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
+    }
 
-        HarmonyHelper.UnapplyPatches(CarryChest.Id);
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
         this._helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+
+        // Patches
+        this._harmony.Unpatch(
+            CarryChest.ChestDrawInMenu,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Chest_drawInMenu_postfix)));
+        this._harmony.Unpatch(
+            CarryChest.InventoryMenuRightClick,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
+        this._harmony.Unpatch(
+            CarryChest.InventoryMenuRightClick,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_postfix)));
+        this._harmony.Unpatch(
+            CarryChest.ItemCanBeDropped,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canBeDropped_postfix)));
+        this._harmony.Unpatch(
+            CarryChest.ItemCanBeTrashed,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canBeTrashed_postfix)));
+        this._harmony.Unpatch(
+            CarryChest.ItemCanStackWith,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
+        this._harmony.Unpatch(
+            CarryChest.ObjectDrawWhenHeld,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
+        this._harmony.Unpatch(
+            CarryChest.ObjectPlacementAction,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+        this._harmony.Unpatch(
+            CarryChest.UtilityIterateChestsAndStorage,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
