@@ -16,7 +16,7 @@ using StardewValley.Menus;
 /// <summary>
 ///     Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.
 /// </summary>
-internal sealed class ChestMenuTabs : IFeature
+internal sealed class ChestMenuTabs : Feature
 {
 #nullable disable
     private static ChestMenuTabs Instance;
@@ -29,8 +29,6 @@ internal sealed class ChestMenuTabs : IFeature
     private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
     private readonly PerScreen<int> _tabIndex = new(() => -1);
     private readonly PerScreen<List<ClickableTextureComponent>> _tabs = new(() => new());
-
-    private bool _isActivated;
 
     private ChestMenuTabs(IModHelper helper, ModConfig config)
     {
@@ -154,31 +152,27 @@ internal sealed class ChestMenuTabs : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestMenuTabs" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return ChestMenuTabs.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
+        this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+    }
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-            this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
-            this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-            return;
-        }
-
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
         this._helper.Events.Content.AssetRequested -= this.OnAssetRequested;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
