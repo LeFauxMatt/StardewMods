@@ -2,56 +2,46 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 
 /// <summary>
 ///     Locks items in inventory so they cannot be stashed.
 /// </summary>
-internal sealed class SlotLock : IFeature
+internal sealed class SlotLock : Feature
 {
     private const string Id = "furyx639.BetterChests/SlotLock";
+
+    private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(
+        typeof(InventoryMenu),
+        nameof(InventoryMenu.draw),
+        new[]
+        {
+            typeof(SpriteBatch),
+            typeof(int),
+            typeof(int),
+            typeof(int),
+        });
 
 #nullable disable
     private static SlotLock Instance;
 #nullable enable
 
     private readonly ModConfig _config;
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private SlotLock(IModHelper helper, ModConfig config)
     {
         this._helper = helper;
         this._config = config;
-        HarmonyHelper.AddPatches(
-            SlotLock.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(
-                        typeof(InventoryMenu),
-                        nameof(InventoryMenu.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(int),
-                            typeof(int),
-                            typeof(int),
-                        }),
-                    typeof(SlotLock),
-                    nameof(SlotLock.InventoryMenu_draw_transpiler),
-                    PatchType.Transpiler),
-            });
+        this._harmony = new(SlotLock.Id);
     }
 
     /// <summary>
@@ -60,29 +50,35 @@ internal sealed class SlotLock : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return SlotLock.Instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            return;
-        }
+        // Harmony
+        this._harmony.Patch(
+            SlotLock.InventoryMenuDraw,
+            transpiler: new(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
+    }
 
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+
+        // Harmony
+        this._harmony.Unpatch(
+            SlotLock.InventoryMenuDraw,
+            AccessTools.Method(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
