@@ -2,79 +2,63 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 
 /// <summary>
 ///     Adds additional rows to the <see cref="ItemGrabMenu" />.
 /// </summary>
-internal sealed class ResizeChestMenu : IFeature
+internal sealed class ResizeChestMenu : Feature
 {
     private const string Id = "furyx639.BetterChests/ResizeChestMenu";
+
+    private static readonly MethodBase ItemGrabMenuDraw = AccessTools.Method(
+        typeof(ItemGrabMenu),
+        nameof(ItemGrabMenu.draw),
+        new[] { typeof(SpriteBatch) });
+
+    private static readonly MethodBase MenuWithInventoryConstructor = AccessTools.Constructor(
+        typeof(MenuWithInventory),
+        new[]
+        {
+            typeof(InventoryMenu.highlightThisItem),
+            typeof(bool),
+            typeof(bool),
+            typeof(int),
+            typeof(int),
+            typeof(int),
+        });
+
+    private static readonly MethodBase MenuWithInventoryDraw = AccessTools.Method(
+        typeof(MenuWithInventory),
+        nameof(MenuWithInventory.draw),
+        new[]
+        {
+            typeof(SpriteBatch),
+            typeof(bool),
+            typeof(bool),
+            typeof(int),
+            typeof(int),
+            typeof(int),
+        });
 
 #nullable disable
     private static ResizeChestMenu Instance;
 #nullable enable
 
     private readonly PerScreen<int> _extraSpace = new();
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private ResizeChestMenu(IModHelper helper)
     {
         this._helper = helper;
-        HarmonyHelper.AddPatches(
-            ResizeChestMenu.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(
-                        typeof(ItemGrabMenu),
-                        nameof(ItemGrabMenu.draw),
-                        new[] { typeof(SpriteBatch) }),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler),
-                    PatchType.Transpiler),
-                new(
-                    AccessTools.Constructor(
-                        typeof(MenuWithInventory),
-                        new[]
-                        {
-                            typeof(InventoryMenu.highlightThisItem),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(int),
-                            typeof(int),
-                        }),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.MenuWithInventory_constructor_postfix),
-                    PatchType.Postfix),
-                new(
-                    AccessTools.Method(
-                        typeof(MenuWithInventory),
-                        nameof(MenuWithInventory.draw),
-                        new[]
-                        {
-                            typeof(SpriteBatch),
-                            typeof(bool),
-                            typeof(bool),
-                            typeof(int),
-                            typeof(int),
-                            typeof(int),
-                        }),
-                    typeof(ResizeChestMenu),
-                    nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler),
-                    PatchType.Transpiler),
-            });
+        this._harmony = new(ResizeChestMenu.Id);
     }
 
     private static int ExtraSpace
@@ -88,31 +72,47 @@ internal sealed class ResizeChestMenu : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="ResizeChestMenu" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return ResizeChestMenu.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        BetterItemGrabMenu.Constructed += ResizeChestMenu.OnConstructed;
+        this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            HarmonyHelper.ApplyPatches(ResizeChestMenu.Id);
-            BetterItemGrabMenu.Constructed += ResizeChestMenu.OnConstructed;
-            this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
-            return;
-        }
+        // Patches
+        this._harmony.Patch(
+            ResizeChestMenu.ItemGrabMenuDraw,
+            transpiler: new(typeof(ResizeChestMenu), nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler)));
+        this._harmony.Patch(
+            ResizeChestMenu.MenuWithInventoryConstructor,
+            postfix: new(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_constructor_postfix)));
+        this._harmony.Patch(
+            ResizeChestMenu.MenuWithInventoryDraw,
+            transpiler: new(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler)));
+    }
 
-        HarmonyHelper.UnapplyPatches(ResizeChestMenu.Id);
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         BetterItemGrabMenu.Constructed -= ResizeChestMenu.OnConstructed;
         this._helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
+
+        // Patches
+        this._harmony.Unpatch(
+            ResizeChestMenu.ItemGrabMenuDraw,
+            AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler)));
+        this._harmony.Unpatch(
+            ResizeChestMenu.MenuWithInventoryConstructor,
+            AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_constructor_postfix)));
+        this._harmony.Unpatch(
+            ResizeChestMenu.MenuWithInventoryDraw,
+            AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler)));
     }
 
     /// <summary>Move backpack down by expanded menu height.</summary>
