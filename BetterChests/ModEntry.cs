@@ -17,7 +17,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly IList<Tuple<IFeature, Func<bool>>> _features = new List<Tuple<IFeature, Func<bool>>>();
+    private readonly IList<Tuple<Feature, Func<bool>>> _features = new List<Tuple<Feature, Func<bool>>>();
 
     private ModConfig? _config;
 
@@ -119,7 +119,7 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void AddFeature(IFeature feature, Func<bool> condition)
+    private void AddFeature(Feature feature, Func<bool> condition)
     {
         this._features.Add(new(feature, condition));
     }
