@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Integrations.BetterCrafting;
 using StardewValley.Network;
 using StardewValley.Objects;
@@ -24,22 +25,22 @@ internal sealed class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public void CleanInventory(object obj, GameLocation? location, Farmer? who)
     {
-        if (obj is StorageWrapper { Storage: { } storage })
+        if (obj is StorageNode { Data: Storage storageObject })
         {
-            storage.ClearNulls();
+            storageObject.ClearNulls();
         }
     }
 
     /// <inheritdoc />
     public int GetActualCapacity(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper { Storage: { } storage } ? storage.ActualCapacity : Chest.capacity;
+        return obj is StorageNode { Data: Storage storageObject } ? storageObject.ActualCapacity : Chest.capacity;
     }
 
     /// <inheritdoc />
     public IList<Item?>? GetItems(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper { Storage: { } storage } ? storage.Items : default;
+        return obj is StorageNode { Data: Storage storageObject } ? storageObject.Items : default;
     }
 
     /// <inheritdoc />
@@ -51,19 +52,19 @@ internal sealed class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public NetMutex? GetMutex(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper { Storage: { } storage } ? storage.Mutex : default;
+        return obj is StorageNode { Data: Storage storageObject } ? storageObject.Mutex : default;
     }
 
     /// <inheritdoc />
     public Vector2? GetTilePosition(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper { Storage: { } storage } ? storage.Position : default;
+        return obj is StorageNode { Data: Storage storageObject } ? storageObject.Position : default;
     }
 
     /// <inheritdoc />
     public bool IsItemValid(object obj, GameLocation? location, Farmer? who, Item item)
     {
-        return obj is StorageWrapper { Storage: { } storage } && storage.FilterMatches(item);
+        return obj is StorageNode storage && storage.FilterMatches(item);
     }
 
     /// <inheritdoc />
@@ -75,6 +76,6 @@ internal sealed class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public bool IsValid(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageWrapper;
+        return obj is StorageNode;
     }
 }

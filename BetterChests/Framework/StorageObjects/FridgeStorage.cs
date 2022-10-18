@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Framework.Handlers;
+﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal sealed class FridgeStorage : BaseStorage
+internal sealed class FridgeStorage : Storage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="FridgeStorage" /> class.

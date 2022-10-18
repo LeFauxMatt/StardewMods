@@ -2,13 +2,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Features;
+using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewValley.Locations;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
@@ -176,6 +181,160 @@ internal static class Extensions
         }
 
         return tags;
+    }
+
+    /// <summary>
+    ///     Gets storage distance from a player in tiles.
+    /// </summary>
+    /// <param name="storage">The storage to get the distance for.</param>
+    /// <param name="player">The player to get the distance from.</param>
+    /// <returns>Returns the distance in tiles.</returns>
+    public static int GetDistanceToPlayer(this StorageNode storage, Farmer player)
+    {
+        if (storage is not { Data: Storage storageObject })
+        {
+            return 0;
+        }
+
+        return (int)(Math.Abs(storageObject.Position.X - player.getTileX())
+                   + Math.Abs(storageObject.Position.Y - player.getTileY()));
+    }
+
+    /// <summary>
+    ///     Organizes items in a storage.
+    /// </summary>
+    /// <param name="storage">The storage to organize.</param>
+    /// <param name="descending">Sort in descending order.</param>
+    public static void OrganizeItems(this StorageNode storage, bool descending = false)
+    {
+        if (storage is not { Data: Storage storageObject })
+        {
+            return;
+        }
+
+        if (storage.OrganizeChestGroupBy == GroupBy.Default && storage.OrganizeChestSortBy == SortBy.Default)
+        {
+            ItemGrabMenu.organizeItemsInList(storageObject.Items);
+            return;
+        }
+
+        var items = storageObject.Items.ToArray();
+        Array.Sort(
+            items,
+            (i1, i2) =>
+            {
+                if (ReferenceEquals(i2, null))
+                {
+                    return -1;
+                }
+
+                if (ReferenceEquals(i1, null))
+                {
+                    return 1;
+                }
+
+                if (ReferenceEquals(i1, i2))
+                {
+                    return 0;
+                }
+
+                var g1 = storage.OrganizeChestGroupBy switch
+                {
+                    GroupBy.Category => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
+                                     ?? string.Empty,
+                    GroupBy.Color => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
+                                  ?? string.Empty,
+                    GroupBy.Name => i1.DisplayName,
+                    GroupBy.Default or _ => string.Empty,
+                };
+
+                var g2 = storage.OrganizeChestGroupBy switch
+                {
+                    GroupBy.Category => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
+                                     ?? string.Empty,
+                    GroupBy.Color => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
+                                  ?? string.Empty,
+                    GroupBy.Name => i2.DisplayName,
+                    GroupBy.Default or _ => string.Empty,
+                };
+
+                if (!g1.Equals(g2))
+                {
+                    return string.Compare(g1, g2, StringComparison.OrdinalIgnoreCase);
+                }
+
+                var o1 = storage.OrganizeChestSortBy switch
+                {
+                    SortBy.Quality when i1 is SObject obj => obj.Quality,
+                    SortBy.Quantity => i1.Stack,
+                    SortBy.Type => i1.Category,
+                    SortBy.Default or _ => 0,
+                };
+
+                var o2 = storage.OrganizeChestSortBy switch
+                {
+                    SortBy.Quality when i2 is SObject obj => obj.Quality,
+                    SortBy.Quantity => i2.Stack,
+                    SortBy.Type => i2.Category,
+                    SortBy.Default or _ => 0,
+                };
+
+                return o1.CompareTo(o2);
+            });
+
+        if (descending)
+        {
+            Array.Reverse(items);
+        }
+
+        storageObject.Items.Clear();
+        foreach (var item in items)
+        {
+            storageObject.Items.Add(item);
+        }
+    }
+
+    /// <summary>
+    ///     Removes an item from a storage.
+    /// </summary>
+    /// <param name="storage">The storage to remove an item from.</param>
+    /// <param name="item">The item to stash.</param>
+    /// <returns>Returns true if the item could be removed.</returns>
+    public static bool RemoveItem(this StorageNode storage, Item item)
+    {
+        return storage is { Data: Storage storageObject } && storageObject.Items.Remove(item);
+    }
+
+    /// <summary>
+    ///     Stashes an item into storage based on categorization and stack settings.
+    /// </summary>
+    /// <param name="storage">The storage to stash an item into.</param>
+    /// <param name="item">The item to stash.</param>
+    /// <param name="existingStacks">Whether to stash into stackable items or based on categorization.</param>
+    /// <returns>Returns the <see cref="Item" /> if not all could be stashed or null if successful.</returns>
+    public static Item? StashItem(this StorageNode storage, Item item, bool existingStacks = false)
+    {
+        // Disallow stashing of any Chest.
+        if (storage is not { Data: Storage storageObject } || item is Chest or SObject { heldObject.Value: Chest })
+        {
+            return item;
+        }
+
+        var stack = item.Stack;
+        var tmp = (existingStacks && storageObject.Items.Any(otherItem => otherItem?.canStackWith(item) == true))
+               || (storage.FilterItemsList.Any()
+                && !storage.FilterItemsList.All(filter => filter.StartsWith("!"))
+                && storage.FilterMatches(item))
+            ? storageObject.AddItem(item)
+            : item;
+
+        if (tmp is null || stack != item.Stack)
+        {
+            Log.Trace(
+                $"StashItem: {{ Item: {item.Name}, Quantity: {Math.Max(1, stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, To: {storage}");
+        }
+
+        return tmp;
     }
 
     /// <summary>

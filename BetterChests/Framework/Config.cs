@@ -9,8 +9,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Features;
-using StardewMods.BetterChests.Framework.Handlers;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -29,11 +29,11 @@ internal sealed class Config
 
     private readonly ModConfig _config;
 
-    private readonly IList<Tuple<IFeature, Func<bool>>> _features;
+    private readonly IList<Tuple<Feature, Func<bool>>> _features;
     private readonly IModHelper _helper;
     private readonly IManifest _manifest;
 
-    private Config(IModHelper helper, IManifest manifest, ModConfig config, IList<Tuple<IFeature, Func<bool>>> features)
+    private Config(IModHelper helper, IManifest manifest, ModConfig config, IList<Tuple<Feature, Func<bool>>> features)
     {
         this._helper = helper;
         this._manifest = manifest;
@@ -42,7 +42,7 @@ internal sealed class Config
         this._helper.Events.GameLoop.GameLaunched += Config.OnGameLaunched;
     }
 
-    private static IEnumerable<Tuple<IFeature, Func<bool>>> Features => Config.Instance._features;
+    private static IEnumerable<Tuple<Feature, Func<bool>>> Features => Config.Instance._features;
 
     private static IGenericModConfigMenuApi GMCM => Integrations.GMCM.API!;
 
@@ -66,7 +66,7 @@ internal sealed class Config
         IModHelper helper,
         IManifest manifest,
         ModConfig config,
-        IList<Tuple<IFeature, Func<bool>>> features)
+        IList<Tuple<Feature, Func<bool>>> features)
     {
         return Config.Instance ??= new(helper, manifest, config, features);
     }
@@ -406,12 +406,12 @@ internal sealed class Config
         {
             var sb = new StringBuilder();
             sb.AppendLine(" Configure Storage".PadLeft(50, '=')[^50..]);
-            if (storage is BaseStorage baseStorage)
+            if (storage is Storage storageObject)
             {
-                sb.AppendLine(baseStorage.ToString());
-                sb.Append(baseStorage.Data);
+                sb.AppendLine(storageObject.Info);
             }
 
+            sb.AppendLine(storage.ToString());
             Log.Trace(sb.ToString());
         }
 
@@ -428,7 +428,7 @@ internal sealed class Config
         Config.SetupStorageConfig(manifest, storage, register);
     }
 
-    private static Action<SpriteBatch, Vector2> DrawButton(BaseStorage storage, string label)
+    private static Action<SpriteBatch, Vector2> DrawButton(StorageNode storage, string label)
     {
         var dims = Game1.dialogueFont.MeasureString(label);
         return (b, pos) =>
@@ -587,23 +587,23 @@ internal sealed class Config
 
         var data = storage switch
         {
+            StorageNode storageNode => storageNode.Data,
             StorageData storageData => storageData,
-            BaseStorage { Data: { } storageData } => storageData,
             _ => storage,
         };
 
         switch (featureName)
         {
-            case nameof(IStorageData.FilterItemsList) when storage is BaseStorage storageObject:
+            case nameof(IStorageData.FilterItemsList) when storage is StorageNode storageNode:
                 Config.GMCM.AddComplexOption(
                     manifest,
                     I18n.Config_FilterItemsList_Name,
-                    Config.DrawButton(storageObject, I18n.Button_Configure_Name()),
+                    Config.DrawButton(storageNode, I18n.Button_Configure_Name()),
                     I18n.Config_FilterItemsList_Tooltip,
                     height: () => Game1.tileSize);
                 return;
 
-            case nameof(IStorageData.ChestLabel) when storage is BaseStorage:
+            case nameof(IStorageData.ChestLabel) when data is Storage:
                 Integrations.GMCM.API.AddTextOption(
                     manifest,
                     () => data.ChestLabel,

@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Framework.Handlers;
+﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -7,7 +7,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal sealed class JunimoHutStorage : BaseStorage
+internal sealed class JunimoHutStorage : Storage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="JunimoHutStorage" /> class.

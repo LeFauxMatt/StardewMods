@@ -1,15 +1,27 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley.Menus;
+using StardewValley.Objects;
 
 /// <summary>
 ///     Represents <see cref="IStorageData" /> with parent-child relationship.
 /// </summary>
-internal class StorageNode : IStorageData
+internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
 {
+    private readonly HashSet<string> _cachedFilterList = new();
+    private readonly ItemMatcher _filterMatcher = new(true);
+
+    private int _capacity;
+    private int _menuRows;
+    private int _rows;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageNode" /> class.
     /// </summary>
@@ -19,10 +31,27 @@ internal class StorageNode : IStorageData
     {
         this.Data = data;
         this.Parent = parent;
+        if (this.Data is Storage storage)
+        {
+            storage.GetActualCapacity = () => this.ActualCapacity;
+        }
+
+        this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
+    /// <summary>
+    ///     Gets the actual capacity of the object's storage.
+    /// </summary>
+    public int ActualCapacity =>
+        this.ResizeChestCapacity switch
+        {
+            < 0 => int.MaxValue,
+            > 0 => this.ResizeChestCapacity,
+            0 => Chest.capacity,
+        };
+
     /// <inheritdoc />
-    public virtual FeatureOption AutoOrganize
+    public FeatureOption AutoOrganize
     {
         get => this.Data.AutoOrganize switch
         {
@@ -35,7 +64,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption CarryChest
+    public FeatureOption CarryChest
     {
         get => this.Data.CarryChest switch
         {
@@ -48,7 +77,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption CarryChestSlow
+    public FeatureOption CarryChestSlow
     {
         get => this.Data.CarryChestSlow switch
         {
@@ -74,14 +103,14 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual string ChestLabel
+    public string ChestLabel
     {
         get => this.Data.ChestLabel;
         set => this.Data.ChestLabel = value;
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption ChestMenuTabs
+    public FeatureOption ChestMenuTabs
     {
         get => this.Data.ChestMenuTabs switch
         {
@@ -94,14 +123,14 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual HashSet<string> ChestMenuTabSet
+    public HashSet<string> ChestMenuTabSet
     {
         get => this.Data.ChestMenuTabSet.Any() ? this.Data.ChestMenuTabSet : this.Parent.ChestMenuTabSet;
         set => this.Data.ChestMenuTabSet = value;
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption CollectItems
+    public FeatureOption CollectItems
     {
         get => this.Data.CollectItems switch
         {
@@ -114,7 +143,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption Configurator
+    public FeatureOption Configurator
     {
         get => this.Data.Configurator switch
         {
@@ -139,7 +168,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOptionRange CraftFromChest
+    public FeatureOptionRange CraftFromChest
     {
         get => this.Data.CraftFromChest switch
         {
@@ -153,7 +182,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual HashSet<string> CraftFromChestDisableLocations
+    public HashSet<string> CraftFromChestDisableLocations
     {
         get => this.Data.CraftFromChestDisableLocations.Any()
             ? this.Data.CraftFromChestDisableLocations
@@ -162,7 +191,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual int CraftFromChestDistance
+    public int CraftFromChestDistance
     {
         get => this.Data.CraftFromChestDistance != 0
             ? this.Data.CraftFromChestDistance
@@ -171,7 +200,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption CustomColorPicker
+    public FeatureOption CustomColorPicker
     {
         get => this.Data.CustomColorPicker switch
         {
@@ -184,12 +213,12 @@ internal class StorageNode : IStorageData
     }
 
     /// <summary>
-    ///     Gets or sets the <see cref="IStorageData" />.
+    ///     Gets the <see cref="IStorageData" />.
     /// </summary>
-    public IStorageData Data { get; set; }
+    public IStorageData Data { get; }
 
     /// <inheritdoc />
-    public virtual FeatureOption FilterItems
+    public FeatureOption FilterItems
     {
         get => this.Data.FilterItems switch
         {
@@ -202,14 +231,41 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual HashSet<string> FilterItemsList
+    public HashSet<string> FilterItemsList
     {
         get => this.Data.FilterItemsList.Any() ? this.Data.FilterItemsList : this.Parent.FilterItemsList;
         set => this.Data.FilterItemsList = value;
     }
 
+    /// <summary>
+    ///     Gets an ItemMatcher to represent the currently selected filters.
+    /// </summary>
+    public ItemMatcher FilterMatcher
+    {
+        get
+        {
+            if (this._cachedFilterList.SetEquals(this.FilterItemsList))
+            {
+                return this._filterMatcher;
+            }
+
+            this._filterMatcher.CollectionChanged -= this.OnCollectionChanged;
+            this._cachedFilterList.Clear();
+            this._filterMatcher.Clear();
+            foreach (var filter in this.FilterItemsList)
+            {
+                this._cachedFilterList.Add(filter);
+                this._filterMatcher.Add(filter);
+            }
+
+            this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
+
+            return this._filterMatcher;
+        }
+    }
+
     /// <inheritdoc />
-    public virtual FeatureOption HideItems
+    public FeatureOption HideItems
     {
         get => this.Data.HideItems switch
         {
@@ -222,7 +278,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption LabelChest
+    public FeatureOption LabelChest
     {
         get => this.Data.LabelChest switch
         {
@@ -234,8 +290,42 @@ internal class StorageNode : IStorageData
         set => this.Data.LabelChest = value;
     }
 
+    /// <summary>
+    ///     Gets the calculated capacity of the <see cref="InventoryMenu" />.
+    /// </summary>
+    public int MenuCapacity => this.MenuRows * 12;
+
+    /// <summary>
+    ///     Gets the number of rows to display on the <see cref="InventoryMenu" /> based on
+    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
+    /// </summary>
+    public int MenuRows
+    {
+        get
+        {
+            if (this._menuRows > 0
+             && this._capacity == this.ResizeChestCapacity
+             && this._rows == this.ResizeChestMenuRows)
+            {
+                return this._menuRows;
+            }
+
+            this._capacity = this.ResizeChestCapacity;
+            this._rows = this.ResizeChestMenuRows;
+            return this._menuRows = (int)Math.Min(
+                this.ActualCapacity switch
+                {
+                    0 or Chest.capacity => 3,
+                    _ when this.ResizeChestMenuRows <= 0 => 3,
+                    < 0 or >= 72 => this.ResizeChestMenuRows,
+                    < 72 => this.ResizeChestMenuRows,
+                },
+                Math.Ceiling(this.ActualCapacity / 12f));
+        }
+    }
+
     /// <inheritdoc />
-    public virtual FeatureOption OpenHeldChest
+    public FeatureOption OpenHeldChest
     {
         get => this.Data.OpenHeldChest switch
         {
@@ -248,7 +338,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption OrganizeChest
+    public FeatureOption OrganizeChest
     {
         get => this.Data.OrganizeChest switch
         {
@@ -261,7 +351,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual GroupBy OrganizeChestGroupBy
+    public GroupBy OrganizeChestGroupBy
     {
         get => this.Data.OrganizeChestGroupBy switch
         {
@@ -272,7 +362,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual SortBy OrganizeChestSortBy
+    public SortBy OrganizeChestSortBy
     {
         get => this.Data.OrganizeChestSortBy switch
         {
@@ -288,7 +378,7 @@ internal class StorageNode : IStorageData
     public IStorageData Parent { get; set; }
 
     /// <inheritdoc />
-    public virtual FeatureOption ResizeChest
+    public FeatureOption ResizeChest
     {
         get => this.Data.ResizeChest switch
         {
@@ -301,14 +391,14 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual int ResizeChestCapacity
+    public int ResizeChestCapacity
     {
         get => this.Data.ResizeChestCapacity != 0 ? this.Data.ResizeChestCapacity : this.Parent.ResizeChestCapacity;
         set => this.Data.ResizeChestCapacity = value;
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption ResizeChestMenu
+    public FeatureOption ResizeChestMenu
     {
         get => this.Data.ResizeChestMenu switch
         {
@@ -321,14 +411,14 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual int ResizeChestMenuRows
+    public int ResizeChestMenuRows
     {
         get => this.Data.ResizeChestMenuRows != 0 ? this.Data.ResizeChestMenuRows : this.Parent.ResizeChestMenuRows;
         set => this.Data.ResizeChestMenuRows = value;
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption SearchItems
+    public FeatureOption SearchItems
     {
         get => this.Data.SearchItems switch
         {
@@ -341,7 +431,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOptionRange StashToChest
+    public FeatureOptionRange StashToChest
     {
         get => this.Data.StashToChest switch
         {
@@ -355,7 +445,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual HashSet<string> StashToChestDisableLocations
+    public HashSet<string> StashToChestDisableLocations
     {
         get => this.Data.StashToChestDisableLocations.Any()
             ? this.Data.StashToChestDisableLocations
@@ -364,21 +454,21 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual int StashToChestDistance
+    public int StashToChestDistance
     {
         get => this.Data.StashToChestDistance != 0 ? this.Data.StashToChestDistance : this.Parent.StashToChestDistance;
         set => this.Data.StashToChestDistance = value;
     }
 
     /// <inheritdoc />
-    public virtual int StashToChestPriority
+    public int StashToChestPriority
     {
         get => this.Data.StashToChestPriority != 0 ? this.Data.StashToChestPriority : this.Parent.StashToChestPriority;
         set => this.Data.StashToChestPriority = value;
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption StashToChestStacks
+    public FeatureOption StashToChestStacks
     {
         get => this.Data.StashToChestStacks switch
         {
@@ -392,7 +482,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption TransferItems
+    public FeatureOption TransferItems
     {
         get => this.Data.TransferItems switch
         {
@@ -405,7 +495,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption UnloadChest
+    public FeatureOption UnloadChest
     {
         get => this.Data.UnloadChest switch
         {
@@ -418,7 +508,7 @@ internal class StorageNode : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption UnloadChestCombine
+    public FeatureOption UnloadChestCombine
     {
         get => this.Data.UnloadChestCombine switch
         {
@@ -429,5 +519,42 @@ internal class StorageNode : IStorageData
             _ => this.Data.UnloadChestCombine,
         };
         set => this.Data.UnloadChestCombine = value;
+    }
+
+    /// <inheritdoc />
+    public int CompareTo(StorageNode? other)
+    {
+        // Sort this before null values
+        if (ReferenceEquals(null, other))
+        {
+            return -1;
+        }
+
+        if (ReferenceEquals(this, other) || this.StashToChestPriority == other.StashToChestPriority)
+        {
+            return 0;
+        }
+
+        return -this.StashToChestPriority.CompareTo(other.StashToChestPriority);
+    }
+
+    /// <summary>
+    ///     Tests if a <see cref="Item" /> matches the <see cref="IStorageData.FilterItemsList" /> condition.
+    /// </summary>
+    /// <param name="item">The <see cref="Item" /> to test.</param>
+    /// <returns>Returns true if the <see cref="Item" /> matches the filters.</returns>
+    public bool FilterMatches(Item? item)
+    {
+        if (item is null)
+        {
+            return false;
+        }
+
+        return !this.FilterItemsList.Any() || this.FilterMatcher.Matches(item);
+    }
+
+    private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
+    {
+        this.FilterItemsList = new(this._filterMatcher);
     }
 }

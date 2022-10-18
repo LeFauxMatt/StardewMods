@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Handlers;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.Automate;
 using StardewMods.Common.Integrations.BetterChests;
@@ -79,7 +79,7 @@ internal sealed class Integrations
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
-    public static IEnumerable<BaseStorage> FromLocation(GameLocation location, ISet<object>? excluded = null)
+    public static IEnumerable<Storage> FromLocation(GameLocation location, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
 
@@ -107,7 +107,7 @@ internal sealed class Integrations
     /// <param name="player">The farmer to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all held storages in the farmer's inventory.</returns>
-    public static IEnumerable<BaseStorage> FromPlayer(Farmer player, ISet<object>? excluded = null)
+    public static IEnumerable<Storage> FromPlayer(Farmer player, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
 
@@ -152,7 +152,7 @@ internal sealed class Integrations
     /// <param name="context">The context object.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found for the context object.</returns>
-    public static bool TryGetOne(object? context, [NotNullWhen(true)] out BaseStorage? storage)
+    public static bool TryGetOne(object? context, [NotNullWhen(true)] out Storage? storage)
     {
         if (Integrations.HorseOverhaul_TryGetOne(context, out storage))
         {
@@ -163,7 +163,7 @@ internal sealed class Integrations
         return false;
     }
 
-    private static IEnumerable<BaseStorage> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
+    private static IEnumerable<Storage> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
     {
         if (!Integrations.ModRegistry.IsLoaded(Integrations.ExpandedFridgeId)
          || location is not FarmHouse { upgradeLevel: > 0 })
@@ -180,7 +180,7 @@ internal sealed class Integrations
         }
     }
 
-    private static IEnumerable<BaseStorage> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
+    private static IEnumerable<Storage> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
     {
         if (!Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
@@ -217,7 +217,7 @@ internal sealed class Integrations
         }
     }
 
-    private static IEnumerable<BaseStorage> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
+    private static IEnumerable<Storage> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
     {
         if (!Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
@@ -245,7 +245,7 @@ internal sealed class Integrations
         yield return new ChestStorage(chest, Game1.player, player.getTileLocation());
     }
 
-    private static bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out BaseStorage? storage)
+    private static bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out Storage? storage)
     {
         if (!Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId)
          || context is not Chest chest

@@ -1,8 +1,7 @@
-﻿namespace StardewMods.BetterChests.Framework.Handlers;
+﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewValley.Buildings;
@@ -10,7 +9,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <inheritdoc />
-internal sealed class ShippingBinStorage : BaseStorage
+internal sealed class ShippingBinStorage : Storage
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
@@ -49,11 +48,7 @@ internal sealed class ShippingBinStorage : BaseStorage
 
     /// <inheritdoc />
     public override int ActualCapacity =>
-        this.Context switch
-        {
-            GameLocation or ShippingBin => int.MaxValue,
-            _ => base.ActualCapacity,
-        };
+        this.Context is GameLocation or ShippingBin ? int.MaxValue : base.ActualCapacity;
 
     /// <inheritdoc />
     public override IList<Item?> Items =>
@@ -81,36 +76,9 @@ internal sealed class ShippingBinStorage : BaseStorage
             _ => base.UnloadChestCombine,
         };
 
-    /// <inheritdoc />
-    public override Item? AddItem(Item item)
-    {
-        if (!Utility.highlightShippableObjects(item))
-        {
-            return item;
-        }
-
-        item.resetState();
-        this.ClearNulls();
-        foreach (var existingItem in this.Items.Where(
-                     existingItem => existingItem is not null && existingItem.canStackWith(item)))
-        {
-            item.Stack = existingItem!.addToStack(item);
-            if (item.Stack <= 0)
-            {
-                return null;
-            }
-        }
-
-        if (this.Items.Count >= this.ActualCapacity)
-        {
-            return item;
-        }
-
-        this.Items.Add(item);
-        return null;
-    }
-
-    /// <inheritdoc />
+    /// <summary>
+    ///     Creates an <see cref="ItemGrabMenu" /> for this storage container.
+    /// </summary>
     public override void ShowMenu()
     {
         var menu = new ItemGrabMenu(
@@ -130,6 +98,7 @@ internal sealed class ShippingBinStorage : BaseStorage
             null,
             -1,
             this.Context);
+
         if (Game1.options.SnappyMenus
          && Game1.activeClickableMenu is ItemGrabMenu { currentlySnappedComponent: { } currentlySnappedComponent })
         {

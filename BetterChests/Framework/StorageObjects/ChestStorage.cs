@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Framework.Handlers;
+﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -8,8 +8,8 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Network;
 using StardewValley.Objects;
 
-/// <inheritdoc cref="BaseStorage" />
-internal sealed class ChestStorage : BaseStorage, IColorable
+/// <inheritdoc cref="Storage" />
+internal sealed class ChestStorage : Storage, IColorable
 {
     private readonly Chest _chest;
 
@@ -86,11 +86,5 @@ internal sealed class ChestStorage : BaseStorage, IColorable
     public void Draw(SpriteBatch spriteBatch, int x, int y)
     {
         this._chest.draw(spriteBatch, x, y, 1f, true);
-    }
-
-    /// <inheritdoc />
-    public override void ShowMenu()
-    {
-        this.Chest.ShowMenu();
     }
 }
