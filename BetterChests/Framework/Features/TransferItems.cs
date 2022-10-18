@@ -4,22 +4,21 @@ using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewValley.Menus;
 
 /// <summary>
 ///     Transfer all items into or out from a chest.
 /// </summary>
-internal sealed class TransferItems : IFeature
+internal sealed class TransferItems : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly PerScreen<ClickableTextureComponent> _downArrow;
     private readonly IModHelper _helper;
     private readonly PerScreen<ClickableTextureComponent> _upArrow;
-
-    private bool _isActivated;
 
     private TransferItems(IModHelper helper)
     {
@@ -55,29 +54,25 @@ internal sealed class TransferItems : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="TransferItems" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return TransferItems.Instance ??= new TransferItems(helper);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
+        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+    }
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
-            this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-            this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            return;
-        }
-
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         BetterItemGrabMenu.Constructing -= TransferItems.OnConstructing;
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
@@ -100,12 +95,13 @@ internal sealed class TransferItems : IFeature
     private static void TransferDown()
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
-         || !Storages.TryGetOne(context, out var storage))
+         || !Storages.TryGetOne(context, out var storage)
+         || storage is not { Data: Storage storageObject })
         {
             return;
         }
 
-        var items = storage.Items.ToArray();
+        var items = storageObject.Items.ToArray();
         foreach (var item in items)
         {
             if (item is null || item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
@@ -115,17 +111,18 @@ internal sealed class TransferItems : IFeature
 
             if (Game1.player.addItemToInventoryBool(item))
             {
-                storage.Items.Remove(item);
+                storageObject.Items.Remove(item);
             }
         }
 
-        storage.ClearNulls();
+        storageObject.ClearNulls();
     }
 
     private static void TransferUp()
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
-         || !Storages.TryGetOne(context, out var storage))
+         || !Storages.TryGetOne(context, out var storage)
+         || storage is not { Data: Storage storageObject })
         {
             return;
         }
@@ -138,7 +135,7 @@ internal sealed class TransferItems : IFeature
                 continue;
             }
 
-            if (storage.AddItem(item) is null)
+            if (storageObject.AddItem(item) is null)
             {
                 Game1.player.removeItemFromInventory(item);
             }
