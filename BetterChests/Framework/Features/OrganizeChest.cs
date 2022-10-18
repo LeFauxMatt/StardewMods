@@ -1,42 +1,34 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Enums;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 
 /// <summary>
 ///     Sort items in a chest using a customized criteria.
 /// </summary>
-internal sealed class OrganizeChest : IFeature
+internal sealed class OrganizeChest : Feature
 {
     private const string Id = "furyx639.BetterChests/OrganizeChest";
 
+    private static readonly MethodBase ItemGrabMenuOrganizeItemsInList = AccessTools.Method(
+        typeof(ItemGrabMenu),
+        nameof(ItemGrabMenu.organizeItemsInList));
+
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private OrganizeChest(IModHelper helper)
     {
         this._helper = helper;
-        HarmonyHelper.AddPatches(
-            OrganizeChest.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.organizeItemsInList)),
-                    typeof(OrganizeChest),
-                    nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_prefix),
-                    PatchType.Prefix),
-            });
+        this._harmony = new(OrganizeChest.Id);
     }
 
     /// <summary>
@@ -44,27 +36,33 @@ internal sealed class OrganizeChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="OrganizeChest" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return OrganizeChest.Instance ??= new OrganizeChest(helper);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-            return;
-        }
+        // Patches
+        this._harmony.Patch(
+            OrganizeChest.ItemGrabMenuOrganizeItemsInList,
+            new(typeof(OrganizeChest), nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_prefix)));
+    }
 
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+
+        // Patches
+        this._harmony.Unpatch(
+            OrganizeChest.ItemGrabMenuOrganizeItemsInList,
+            AccessTools.Method(typeof(OrganizeChest), nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_prefix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -72,7 +70,7 @@ internal sealed class OrganizeChest : IFeature
     private static bool ItemGrabMenu_organizeItemsInList_prefix(ItemGrabMenu __instance, IList<Item> items)
     {
         if (!ReferenceEquals(__instance.ItemsToGrabMenu.actualInventory, items)
-         || BetterItemGrabMenu.Context?.OrganizeChest is not FeatureOption.Enabled)
+         || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
         {
             return true;
         }
@@ -86,7 +84,7 @@ internal sealed class OrganizeChest : IFeature
     {
         if (e.Button is not SButton.MouseRight
          || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
-         || BetterItemGrabMenu.Context?.OrganizeChest is not FeatureOption.Enabled)
+         || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
         {
             return;
         }
