@@ -8,7 +8,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Handlers;
+using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -16,10 +17,10 @@ using StardewValley.Objects;
 /// <summary>
 ///     Show stats to the side of a chest.
 /// </summary>
-internal sealed class ChestInfo : IFeature
+internal sealed class ChestInfo : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly ModConfig _config;
@@ -28,8 +29,6 @@ internal sealed class ChestInfo : IFeature
 
     private readonly PerScreen<IList<KeyValuePair<string, string>>> _info = new(
         () => new List<KeyValuePair<string, string>>());
-
-    private bool _isActivated;
 
     private ChestInfo(IModHelper helper, ModConfig config)
     {
@@ -47,36 +46,32 @@ internal sealed class ChestInfo : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestInfo" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return ChestInfo.Instance ??= new ChestInfo(helper, config);
     }
 
     /// <inheritdoc />
-    public void SetActivated(bool value)
+    protected override void Activate()
     {
-        if (this._isActivated == value)
-        {
-            return;
-        }
+        // Events
+        BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
+        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+    }
 
-        this._isActivated = value;
-        if (this._isActivated)
-        {
-            BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-            this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-            this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-            this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
-            return;
-        }
-
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
         this._helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
-    private static IEnumerable<KeyValuePair<string, string>> GetChestInfo(BaseStorage storage)
+    private static IEnumerable<KeyValuePair<string, string>> GetChestInfo(StorageNode storage)
     {
         var info = new List<KeyValuePair<string, string>>();
 
@@ -85,15 +80,21 @@ internal sealed class ChestInfo : IFeature
             info.Add(new(I18n.ChestInfo_Name(), storage.ChestLabel));
         }
 
-        switch (storage)
+        if (storage is not { Data: Storage storageObject })
         {
-            case ChestStorage { Chest: { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } }:
+            return info;
+        }
+
+        // Type
+        switch (storageObject)
+        {
+            case ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }:
                 info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Chest")));
                 break;
-            case ChestStorage { Chest: { fridge.Value: true } }:
+            case ChestStorage { Chest.fridge.Value: true }:
                 info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Fridge")));
                 break;
-            case ChestStorage { Chest: { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } }:
+            case ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }:
                 info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Shipping Bin")));
                 break;
             case ChestStorage:
@@ -116,32 +117,39 @@ internal sealed class ChestInfo : IFeature
                 break;
         }
 
-        info.Add(new(I18n.ChestInfo_Location(), storage.Location.Name));
-        if (!storage.Position.Equals(Vector2.Zero))
+        // Location
+        info.Add(new(I18n.ChestInfo_Location(), storageObject.Location.Name));
+
+        // Position
+        if (!storageObject.Position.Equals(Vector2.Zero))
         {
             info.Add(
                 new(
                     I18n.ChestInfo_Position(),
-                    $"({storage.Position.X.ToString(CultureInfo.InvariantCulture)}, {storage.Position.Y.ToString(CultureInfo.InvariantCulture)})"));
+                    $"({storageObject.Position.X.ToString(CultureInfo.InvariantCulture)}, {storageObject.Position.Y.ToString(CultureInfo.InvariantCulture)})"));
         }
 
-        if (storage.Source is Farmer farmer)
+        // Farmer inventory
+        if (storageObject.Source is Farmer farmer)
         {
             info.Add(new(I18n.ChestInfo_Inventory(), farmer.Name));
         }
 
-        if (storage.Items.Any())
+        // Item Stats
+        if (storageObject.Items.Any())
         {
             info.Add(
-                new(I18n.ChestInfo_TotalItems(), $"{storage.Items.OfType<Item>().Sum(item => (long)item.Stack):n0}"));
+                new(
+                    I18n.ChestInfo_TotalItems(),
+                    $"{storageObject.Items.OfType<Item>().Sum(item => (long)item.Stack):n0}"));
             info.Add(
                 new(
                     I18n.ChestInfo_UniqueItems(),
-                    $"{storage.Items.OfType<Item>().Select(item => $"{item.GetType().Name}-{item.ParentSheetIndex.ToString(CultureInfo.InvariantCulture)}").Distinct().Count():n0}"));
+                    $"{storageObject.Items.OfType<Item>().Select(item => $"{item.GetType().Name}-{item.ParentSheetIndex.ToString(CultureInfo.InvariantCulture)}").Distinct().Count():n0}"));
             info.Add(
                 new(
                     I18n.ChestInfo_TotalValue(),
-                    $"{storage.Items.OfType<SObject>().Sum(obj => (long)obj.salePrice() * obj.Stack / 2):n0}"));
+                    $"{storageObject.Items.OfType<SObject>().Sum(obj => (long)obj.salePrice() * obj.Stack / 2):n0}"));
         }
 
         return info;
@@ -236,7 +244,7 @@ internal sealed class ChestInfo : IFeature
         this.RefreshChestInfo(context);
     }
 
-    private void RefreshChestInfo(BaseStorage context)
+    private void RefreshChestInfo(StorageNode context)
     {
         this.Info.Clear();
         this.Dims.Clear();
