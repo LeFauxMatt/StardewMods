@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common.targets" />
+    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <PropertyGroup>
+        <Name>Is It Cake</Name>
+        <Description>Now you can be the cake artist of your dreams.</Description>
+        <Version>1.0.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+        <RootNamespace>StardewMods.IsItCake</RootNamespace>
+        <UniqueId>furyx639.IsItCake</UniqueId>
+        <UpdateKeys>Nexus:9791</UpdateKeys>
+    </PropertyGroup>
+</Project>
