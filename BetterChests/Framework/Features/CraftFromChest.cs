@@ -3,24 +3,22 @@ namespace StardewMods.BetterChests.Framework.Features;
 using System.Collections.Generic;
 using System.Linq;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Handlers;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Locations;
 
 /// <summary>
 ///     Craft using items from placed chests and chests in the farmer's inventory.
 /// </summary>
-internal sealed class CraftFromChest : IFeature
+internal sealed class CraftFromChest : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly ModConfig _config;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private CraftFromChest(IModHelper helper, ModConfig config)
     {
@@ -28,24 +26,27 @@ internal sealed class CraftFromChest : IFeature
         this._config = config;
     }
 
-    private static IEnumerable<BaseStorage> Eligible
+    private static IEnumerable<StorageNode> Eligible
     {
         get
         {
             foreach (var storage in Storages.All)
             {
-                if (storage.CraftFromChest is not (FeatureOptionRange.Disabled or FeatureOptionRange.Default)
-                 && !storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-                 && !(storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
-                   && Game1.player.currentLocation is MineShaft mineShaft
-                   && mineShaft.Name.StartsWith("UndergroundMine"))
-                 && storage.CraftFromChest.WithinRangeOfPlayer(
+                if (storage.CraftFromChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default
+                 || storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+                 || (storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
+                  && Game1.player.currentLocation is MineShaft mineShaft
+                  && mineShaft.Name.StartsWith("UndergroundMine"))
+                 || storage is not { Data: Storage storageObject }
+                 || !storage.CraftFromChest.WithinRangeOfPlayer(
                         storage.CraftFromChestDistance,
-                        storage.Location,
-                        storage.Position))
+                        storageObject.Location,
+                        storageObject.Position))
                 {
-                    yield return storage;
+                    continue;
                 }
+
+                yield return storage;
             }
         }
     }
@@ -56,23 +57,19 @@ internal sealed class CraftFromChest : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="CraftFromChest" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return CraftFromChest.Instance ??= new CraftFromChest(helper, config);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
+        // Events
         BetterCrafting.CraftingStoragesLoading += CraftFromChest.OnCraftingStoragesLoading;
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
+        // Integrations
         if (Integrations.ToolbarIcons.IsLoaded)
         {
             Integrations.ToolbarIcons.API.AddToolbarIcon(
@@ -83,34 +80,38 @@ internal sealed class CraftFromChest : IFeature
             Integrations.ToolbarIcons.API.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
         }
 
-        if (Integrations.BetterCrafting.IsLoaded)
-        {
-            Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(StorageWrapper), new StorageProvider());
-        }
-    }
-
-    /// <inheritdoc />
-    public void Deactivate()
-    {
-        if (!this._isActivated)
+        if (!Integrations.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        this._isActivated = false;
+        Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(StorageNode), new StorageProvider());
+    }
+
+    /// <inheritdoc />
+    protected override void Deactivate()
+    {
+        // Events
         BetterCrafting.CraftingStoragesLoading -= CraftFromChest.OnCraftingStoragesLoading;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
+        // Integrations
         if (Integrations.ToolbarIcons.IsLoaded)
         {
             Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
             Integrations.ToolbarIcons.API.ToolbarIconPressed -= CraftFromChest.OnToolbarIconPressed;
         }
 
-        if (Integrations.BetterCrafting.IsLoaded)
+        if (!Integrations.BetterCrafting.IsLoaded)
         {
-            Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(StorageWrapper));
+            return;
         }
+
+        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(ChestStorage));
+        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(FridgeStorage));
+        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(JunimoHutStorage));
+        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(ObjectStorage));
+        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(ShippingBinStorage));
     }
 
     private static void OnCraftingStoragesLoading(object? sender, CraftingStoragesLoadingEventArgs e)

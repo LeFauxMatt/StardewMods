@@ -96,7 +96,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new ShoppingCartApi();
+        return new Api();
     }
 
     private static int GetHoveredItemExtraItemAmount()

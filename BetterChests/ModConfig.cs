@@ -6,74 +6,148 @@ using System.Text;
 using StardewMods.BetterChests.Framework.Features;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Integrations.BetterChests;
 
 /// <summary>
 ///     Mod config data for Better Chests.
 /// </summary>
-internal sealed class ModConfig : StorageData
+internal sealed class ModConfig : IStorageData
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ModConfig" /> class.
-    /// </summary>
-    public ModConfig()
-    {
-        this.Reset();
-    }
+    /// <inheritdoc />
+    public FeatureOption AutoOrganize { get; set; } = FeatureOption.Disabled;
 
     /// <summary>
     ///     Gets or sets a value indicating whether shipping bin will be relaunched as a regular chest inventory menu.
     /// </summary>
-    public bool BetterShippingBin { get; set; }
+    public bool BetterShippingBin { get; set; } = true;
+
+    /// <inheritdoc />
+    public FeatureOption CarryChest { get; set; } = FeatureOption.Enabled;
 
     /// <summary>
     ///     Gets or sets a value indicating how many chests containing items can be carried at once.
     /// </summary>
-    public int CarryChestLimit { get; set; }
+    public int CarryChestLimit { get; set; } = 1;
+
+    /// <inheritdoc />
+    public FeatureOption CarryChestSlow { get; set; } = FeatureOption.Enabled;
 
     /// <summary>
     ///     Gets or sets a value indicating whether carrying a chest containing items will apply a slowness effect.
     /// </summary>
-    public int CarryChestSlowAmount { get; set; }
+    public int CarryChestSlowAmount { get; set; } = 1;
 
     /// <summary>
     ///     Gets or sets a value indicating whether chests can be searched for.
     /// </summary>
-    public bool ChestFinder { get; set; }
+    public bool ChestFinder { get; set; } = true;
+
+    /// <inheritdoc />
+    public FeatureOption ChestInfo { get; set; } = FeatureOption.Disabled;
+
+    /// <inheritdoc />
+    public string ChestLabel { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    public FeatureOption ChestMenuTabs { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public HashSet<string> ChestMenuTabSet { get; set; } = new();
+
+    /// <inheritdoc />
+    public FeatureOption CollectItems { get; set; } = FeatureOption.Disabled;
+
+    /// <inheritdoc />
+    public FeatureOption Configurator { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public InGameMenu ConfigureMenu { get; set; } = InGameMenu.Simple;
 
     /// <summary>
     ///     Gets or sets the control scheme.
     /// </summary>
-    public Controls ControlScheme { get; set; }
+    public Controls ControlScheme { get; set; } = new();
+
+    /// <inheritdoc />
+    public FeatureOptionRange CraftFromChest { get; set; } = FeatureOptionRange.Location;
+
+    /// <inheritdoc />
+    public HashSet<string> CraftFromChestDisableLocations { get; set; } = new();
+
+    /// <inheritdoc />
+    public int CraftFromChestDistance { get; set; } = -1;
 
     /// <summary>
     ///     Gets or sets a value indicating the range which workbenches will craft from.
     /// </summary>
-    public FeatureOptionRange CraftFromWorkbench { get; set; } = FeatureOptionRange.Default;
+    public FeatureOptionRange CraftFromWorkbench { get; set; } = FeatureOptionRange.Location;
 
     /// <summary>
     ///     Gets or sets a value indicating the distance in tiles that the workbench can be remotely crafted from.
     /// </summary>
-    public int CraftFromWorkbenchDistance { get; set; }
+    public int CraftFromWorkbenchDistance { get; set; } = -1;
+
+    /// <inheritdoc />
+    public FeatureOption CustomColorPicker { get; set; } = FeatureOption.Enabled;
 
     /// <summary>
     ///     Gets or sets the <see cref="ComponentArea" /> that the <see cref="BetterColorPicker" /> will be aligned to.
     /// </summary>
-    public ComponentArea CustomColorPickerArea { get; set; }
+    public ComponentArea CustomColorPickerArea { get; set; } = ComponentArea.Right;
 
     /// <summary>
     ///     Gets or sets a value indicating whether experimental features will be enabled.
     /// </summary>
     public bool Experimental { get; set; }
 
+    /// <inheritdoc />
+    public FeatureOption FilterItems { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public HashSet<string> FilterItemsList { get; set; } = new();
+
+    /// <inheritdoc />
+    public FeatureOption HideItems { get; set; } = FeatureOption.Disabled;
+
+    /// <inheritdoc />
+    public FeatureOption LabelChest { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public FeatureOption OpenHeldChest { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeChest { get; set; } = FeatureOption.Disabled;
+
+    /// <inheritdoc />
+    public GroupBy OrganizeChestGroupBy { get; set; } = GroupBy.Default;
+
+    /// <inheritdoc />
+    public SortBy OrganizeChestSortBy { get; set; } = SortBy.Default;
+
+    /// <inheritdoc />
+    public FeatureOption ResizeChest { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public int ResizeChestCapacity { get; set; } = 60;
+
+    /// <inheritdoc />
+    public FeatureOption ResizeChestMenu { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public int ResizeChestMenuRows { get; set; } = 5;
+
+    /// <inheritdoc />
+    public FeatureOption SearchItems { get; set; } = FeatureOption.Enabled;
+
     /// <summary>
     ///     Gets or sets the symbol used to denote context tags in searches.
     /// </summary>
-    public char SearchTagSymbol { get; set; }
+    public char SearchTagSymbol { get; set; } = '#';
 
     /// <summary>
     ///     Gets or sets a value indicating whether the slot lock feature is enabled.
     /// </summary>
-    public bool SlotLock { get; set; }
+    public bool SlotLock { get; set; } = true;
 
     /// <summary>
     ///     Gets or sets the color of locked slots.
@@ -83,191 +157,36 @@ internal sealed class ModConfig : StorageData
     /// <summary>
     ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
     /// </summary>
-    public bool SlotLockHold { get; set; }
+    public bool SlotLockHold { get; set; } = true;
+
+    /// <inheritdoc />
+    public FeatureOptionRange StashToChest { get; set; } = FeatureOptionRange.Location;
+
+    /// <inheritdoc />
+    public HashSet<string> StashToChestDisableLocations { get; set; } = new();
+
+    /// <inheritdoc />
+    public int StashToChestDistance { get; set; } = -1;
+
+    /// <inheritdoc />
+    public int StashToChestPriority { get; set; }
+
+    /// <inheritdoc />
+    public FeatureOption StashToChestStacks { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public FeatureOption TransferItems { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public FeatureOption UnloadChest { get; set; } = FeatureOption.Disabled;
+
+    /// <inheritdoc />
+    public FeatureOption UnloadChestCombine { get; set; } = FeatureOption.Disabled;
 
     /// <summary>
     ///     Gets or sets storage data for vanilla storage types.
     /// </summary>
     public Dictionary<string, StorageData> VanillaStorages { get; set; } = new();
-
-    /// <summary>
-    ///     Populates all default values with specific values.
-    /// </summary>
-    public void FillDefaults()
-    {
-        if (this.AutoOrganize is FeatureOption.Default)
-        {
-            this.AutoOrganize = FeatureOption.Disabled;
-        }
-
-        if (this.CarryChest is FeatureOption.Default)
-        {
-            this.CarryChest = FeatureOption.Enabled;
-        }
-
-        if (this.CarryChestSlow is FeatureOption.Default)
-        {
-            this.CarryChestSlow = FeatureOption.Enabled;
-        }
-
-        if (this.ChestInfo is FeatureOption.Default)
-        {
-            this.ChestInfo = FeatureOption.Disabled;
-        }
-
-        if (this.ChestMenuTabs is FeatureOption.Default)
-        {
-            this.ChestMenuTabs = FeatureOption.Enabled;
-        }
-
-        if (this.CollectItems is FeatureOption.Default)
-        {
-            this.CollectItems = FeatureOption.Disabled;
-        }
-
-        if (this.Configurator is FeatureOption.Default)
-        {
-            this.Configurator = FeatureOption.Enabled;
-        }
-
-        if (this.ConfigureMenu is InGameMenu.Default)
-        {
-            this.ConfigureMenu = InGameMenu.Simple;
-        }
-
-        if (this.CraftFromChest is FeatureOptionRange.Default)
-        {
-            this.CraftFromChest = FeatureOptionRange.Location;
-        }
-
-        if (this.CraftFromChestDistance == 0)
-        {
-            this.CraftFromChestDistance = -1;
-        }
-
-        if (this.CraftFromWorkbench is FeatureOptionRange.Default)
-        {
-            this.CraftFromWorkbench = FeatureOptionRange.Location;
-        }
-
-        if (this.CraftFromWorkbenchDistance == 0)
-        {
-            this.CraftFromWorkbenchDistance = -1;
-        }
-
-        if (this.CustomColorPicker is FeatureOption.Default)
-        {
-            this.CustomColorPicker = FeatureOption.Enabled;
-        }
-
-        if (this.CustomColorPickerArea is not (ComponentArea.Left or ComponentArea.Right))
-        {
-            this.CustomColorPickerArea = ComponentArea.Right;
-        }
-
-        if (this.FilterItems is FeatureOption.Default)
-        {
-            this.FilterItems = FeatureOption.Enabled;
-        }
-
-        if (this.HideItems is FeatureOption.Default)
-        {
-            this.HideItems = FeatureOption.Disabled;
-        }
-
-        if (this.LabelChest is FeatureOption.Default)
-        {
-            this.LabelChest = FeatureOption.Enabled;
-        }
-
-        if (this.OpenHeldChest is FeatureOption.Default)
-        {
-            this.OpenHeldChest = FeatureOption.Enabled;
-        }
-
-        if (this.OrganizeChest is FeatureOption.Default)
-        {
-            this.OrganizeChest = FeatureOption.Disabled;
-        }
-
-        if (this.ResizeChest is FeatureOption.Default)
-        {
-            this.ResizeChest = FeatureOption.Enabled;
-        }
-
-        if (this.ResizeChestCapacity == 0)
-        {
-            this.ResizeChestCapacity = 60;
-        }
-
-        if (this.ResizeChestMenu is FeatureOption.Default)
-        {
-            this.ResizeChestMenu = FeatureOption.Enabled;
-        }
-
-        if (this.ResizeChestMenuRows == 0)
-        {
-            this.ResizeChestMenuRows = 5;
-        }
-
-        if (this.SearchItems is FeatureOption.Default)
-        {
-            this.SearchItems = FeatureOption.Enabled;
-        }
-
-        if (string.IsNullOrWhiteSpace(this.SearchTagSymbol.ToString()))
-        {
-            this.SearchTagSymbol = '#';
-        }
-
-        if (this.StashToChest is FeatureOptionRange.Default)
-        {
-            this.StashToChest = FeatureOptionRange.Location;
-        }
-
-        if (this.StashToChestDistance == 0)
-        {
-            this.StashToChestDistance = -1;
-        }
-
-        if (this.StashToChestStacks is FeatureOption.Default)
-        {
-            this.StashToChestStacks = FeatureOption.Enabled;
-        }
-
-        if (this.TransferItems is FeatureOption.Default)
-        {
-            this.TransferItems = FeatureOption.Enabled;
-        }
-
-        if (this.UnloadChest is FeatureOption.Default)
-        {
-            this.UnloadChest = FeatureOption.Disabled;
-        }
-
-        if (this.UnloadChestCombine is FeatureOption.Default)
-        {
-            this.UnloadChestCombine = FeatureOption.Disabled;
-        }
-    }
-
-    /// <summary>
-    ///     Resets <see cref="ModConfig" /> to default options.
-    /// </summary>
-    [MemberNotNull(nameof(ModConfig.ControlScheme), nameof(ModConfig.VanillaStorages))]
-    public void Reset()
-    {
-        this.FillDefaults();
-        this.BetterShippingBin = true;
-        this.CarryChestLimit = 1;
-        this.CarryChestSlowAmount = 1;
-        this.ChestFinder = true;
-        this.ControlScheme = new();
-        this.SlotLock = true;
-        this.SlotLockColor = Colors.Red;
-        this.SlotLockHold = true;
-        this.VanillaStorages = new();
-    }
 
     /// <inheritdoc />
     public override string ToString()

@@ -7,8 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Handlers;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
@@ -17,27 +17,25 @@ using StardewValley.Menus;
 /// <summary>
 ///     Adds a search bar to the top of the <see cref="ItemGrabMenu" />.
 /// </summary>
-internal sealed class SearchItems : IFeature
+internal sealed class SearchItems : Feature
 {
     private const int ExtraSpace = 24;
     private const int MaxTimeOut = 20;
 
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
     private readonly IModHelper _helper;
     private readonly PerScreen<ItemMatcher> _itemMatcher;
-    private readonly PerScreen<BaseStorage?> _lastContext = new();
+    private readonly PerScreen<StorageNode?> _lastContext = new();
     private readonly PerScreen<ClickableComponent> _searchArea;
     private readonly PerScreen<TextBox> _searchField;
     private readonly PerScreen<ClickableTextureComponent> _searchIcon;
     private readonly PerScreen<string> _searchText = new(() => string.Empty);
     private readonly PerScreen<int> _timeOut = new();
-
-    private bool _isActivated;
 
     private SearchItems(IModHelper helper, ModConfig config)
     {
@@ -62,7 +60,7 @@ internal sealed class SearchItems : IFeature
 
     private ItemMatcher ItemMatcher => this._itemMatcher.Value;
 
-    private BaseStorage? LastContext
+    private StorageNode? LastContext
     {
         get => this._lastContext.Value;
         set => this._lastContext.Value = value;
@@ -92,20 +90,15 @@ internal sealed class SearchItems : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SearchItems" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return SearchItems.Instance ??= new SearchItems(helper, config);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
+        // Events
         BetterItemGrabMenu.Constructing += SearchItems.OnConstructing;
         this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
@@ -113,14 +106,9 @@ internal sealed class SearchItems : IFeature
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
+        // Events
         BetterItemGrabMenu.Constructing -= SearchItems.OnConstructing;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
@@ -238,14 +226,15 @@ internal sealed class SearchItems : IFeature
         }
 
         this.CurrentMenu = menu;
-        if (BetterItemGrabMenu.Context is null || this.CurrentMenu is null or { shippingBin: true })
+        if (BetterItemGrabMenu.Context is not { Data: Storage storageObject }
+         || this.CurrentMenu is null or { shippingBin: true })
         {
             this.SearchArea.visible = false;
             return;
         }
 
-        if (this.LastContext is not null
-         && !ReferenceEquals(this.LastContext.Context, BetterItemGrabMenu.Context.Context))
+        if (this.LastContext is { Data: Storage lastStorage }
+         && !ReferenceEquals(lastStorage.Context, storageObject.Context))
         {
             this.ItemMatcher.Clear();
             this.SearchField.Text = string.Empty;

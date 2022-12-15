@@ -1,39 +1,25 @@
 ﻿namespace StardewMods.OrdinaryCapsule;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
-using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Helpers.ItemRepository;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.OrdinaryCapsule.Models;
+using StardewMods.OrdinaryCapsule.Framework;
+using StardewMods.OrdinaryCapsule.Framework.Models;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private static readonly Dictionary<int, int> CachedTimes = new();
-
-    private static readonly Lazy<List<Item>> ItemsLazy = new(
-        () => new(new ItemRepository().GetAll().Select(item => item.Item)));
-
-#nullable disable
-    private static ModEntry Instance;
-#nullable enable
-
     private ModConfig? _config;
-
-    private static IEnumerable<Item> AllItems => ModEntry.ItemsLazy.Value;
 
     private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        ModEntry.Instance = this;
         I18n.Init(this.Helper.Translation);
+        ModPatches.Init(this.ModManifest, this.Config);
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
@@ -41,132 +27,12 @@ public sealed class ModEntry : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         this.Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this.Helper.Events.World.ObjectListChanged += ModEntry.OnObjectListChanged;
-
-        // Patches
-        var harmony = new Harmony(this.ModManifest.UniqueID);
-        harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
-            transpiler: new(typeof(ModEntry), nameof(ModEntry.Object_checkForAction_transpiler)));
-        harmony.Patch(
-            AccessTools.Method(typeof(SObject), "getMinutesForCrystalarium"),
-            postfix: new(typeof(ModEntry), nameof(ModEntry.Object_getMinutesForCrystalarium_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.minutesElapsed)),
-            new(typeof(ModEntry), nameof(ModEntry.Object_minutesElapsed_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.minutesElapsed)),
-            postfix: new(typeof(ModEntry), nameof(ModEntry.Object_minutesElapsed_postfix)));
     }
 
     /// <inheritdoc />
     public override object GetApi()
     {
-        return new OrdinaryCapsuleApi(this.Helper);
-    }
-
-    private static int GetMinutes(Item item)
-    {
-        var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
-        var minutes = capsuleItems.Where(capsuleItem => capsuleItem.ContextTags.Any(item.GetContextTags().Contains))
-                                  .Select(capsuleItem => capsuleItem.ProductionTime)
-                                  .FirstOrDefault();
-        ModEntry.CachedTimes[item.ParentSheetIndex] =
-            minutes > 0 ? minutes : ModEntry.Instance.Config.DefaultProductionTime;
-        return ModEntry.CachedTimes[item.ParentSheetIndex];
-    }
-
-    private static int GetMinutes(int parentSheetIndex)
-    {
-        if (ModEntry.CachedTimes.TryGetValue(parentSheetIndex, out var minutes))
-        {
-            return minutes;
-        }
-
-        var item = ModEntry.AllItems.FirstOrDefault(item => item.ParentSheetIndex == parentSheetIndex);
-        if (item is not null)
-        {
-            return ModEntry.GetMinutes(item);
-        }
-
-        ModEntry.CachedTimes[parentSheetIndex] = ModEntry.Instance.Config.DefaultProductionTime;
-        return ModEntry.CachedTimes[parentSheetIndex];
-    }
-
-    private static IEnumerable<CodeInstruction> Object_checkForAction_transpiler(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.Calls(AccessTools.Method(typeof(Game1), nameof(Game1.playSound))))
-            {
-                yield return new(OpCodes.Ldarg_0);
-                yield return new(OpCodes.Ldloc_1);
-                yield return CodeInstruction.Call(typeof(ModEntry), nameof(ModEntry.PlaySound));
-                yield return instruction;
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_getMinutesForCrystalarium_postfix(SObject __instance, ref int __result, int whichGem)
-    {
-        if (__instance is not { bigCraftable.Value: true, ParentSheetIndex: 97 })
-        {
-            return;
-        }
-
-        var minutes = ModEntry.GetMinutes(whichGem);
-        if (minutes == 0)
-        {
-            return;
-        }
-
-        __result = minutes;
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_minutesElapsed_postfix(SObject __instance, GameLocation environment)
-    {
-        if (ModEntry.Instance.Config.BreakChance <= 0
-         || __instance is not
-            {
-                bigCraftable.Value: true,
-                Name: "Crystalarium",
-                ParentSheetIndex: 97,
-                heldObject.Value: not null,
-                MinutesUntilReady: 0,
-            })
-        {
-            return;
-        }
-
-        if (Game1.random.NextDouble() > ModEntry.Instance.Config.BreakChance)
-        {
-            return;
-        }
-
-        __instance.ParentSheetIndex = 98;
-        Game1.createItemDebris(__instance.heldObject.Value.getOne(), __instance.TileLocation * Game1.tileSize, 2);
-        __instance.heldObject.Value = null;
-        environment.localSound("breakingGlass");
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Object_minutesElapsed_prefix(SObject __instance)
-    {
-        if (__instance is not { bigCraftable.Value: true, Name: "Crystalarium", ParentSheetIndex: 97 })
-        {
-            return true;
-        }
-
-        return __instance.heldObject.Value is not null;
+        return new Api(this.Helper);
     }
 
     private static void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
@@ -180,20 +46,6 @@ public sealed class ModEntry : Mod
 
             obj.Name = "Crystalarium";
         }
-    }
-
-    private static string PlaySound(string sound, SObject obj, SObject? heldObj)
-    {
-        if (heldObj is null || obj is not { bigCraftable.Value: true, ParentSheetIndex: 97 })
-        {
-            return sound;
-        }
-
-        var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
-        return capsuleItems.FirstOrDefault(
-                               capsuleItem => capsuleItem.ContextTags.Any(heldObj.GetContextTags().Contains))
-                           ?.Sound
-            ?? sound;
     }
 
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)

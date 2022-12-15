@@ -1,55 +1,44 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
 ///     Allows a chest to be opened while in the farmer's inventory.
 /// </summary>
-internal sealed class OpenHeldChest : IFeature
+internal sealed class OpenHeldChest : Feature
 {
     private const string Id = "furyx639.BetterChests/OpenHeldChest";
 
+    private static readonly MethodBase ChestAddItem = AccessTools.Method(typeof(Chest), nameof(Chest.addItem));
+
+    private static readonly MethodBase ChestPerformToolAction = AccessTools.Method(
+        typeof(Chest),
+        nameof(Chest.performToolAction));
+
+    private static readonly MethodBase InventoryMenuHighlightAllItems = AccessTools.Method(
+        typeof(InventoryMenu),
+        nameof(InventoryMenu.highlightAllItems));
+
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private OpenHeldChest(IModHelper helper)
     {
         this._helper = helper;
-        HarmonyHelper.AddPatches(
-            OpenHeldChest.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                    typeof(OpenHeldChest),
-                    nameof(OpenHeldChest.Chest_addItem_prefix),
-                    PatchType.Prefix),
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-                    typeof(OpenHeldChest),
-                    nameof(OpenHeldChest.Chest_performToolAction_transpiler),
-                    PatchType.Transpiler),
-                new(
-                    AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.highlightAllItems)),
-                    typeof(OpenHeldChest),
-                    nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix),
-                    PatchType.Postfix),
-            });
+        this._harmony = new(OpenHeldChest.Id);
     }
 
     /// <summary>
@@ -57,37 +46,47 @@ internal sealed class OpenHeldChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="OpenHeldChest" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return OpenHeldChest.Instance ??= new OpenHeldChest(helper);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(OpenHeldChest.Id);
+        // Events
         this._helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+        // Patches
+        this._harmony.Patch(
+            OpenHeldChest.ChestAddItem,
+            new(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
+        this._harmony.Patch(
+            OpenHeldChest.ChestPerformToolAction,
+            transpiler: new(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_performToolAction_transpiler)));
+        this._harmony.Patch(
+            OpenHeldChest.InventoryMenuHighlightAllItems,
+            postfix: new(typeof(OpenHeldChest), nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix)));
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
-        HarmonyHelper.UnapplyPatches(OpenHeldChest.Id);
+        // Events
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
+
+        // Patches
+        this._harmony.Unpatch(
+            OpenHeldChest.ChestAddItem,
+            AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
+        this._harmony.Unpatch(
+            OpenHeldChest.ChestPerformToolAction,
+            AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_performToolAction_transpiler)));
+        this._harmony.Unpatch(
+            OpenHeldChest.InventoryMenuHighlightAllItems,
+            AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix)));
     }
 
     /// <summary>Prevent adding chest into itself.</summary>
@@ -195,10 +194,10 @@ internal sealed class OpenHeldChest : IFeature
         {
             chest.checkForAction(Game1.player);
         }
-        else
+        else if (Storages.CurrentItem.Data is Storage storageObject)
         {
             Game1.player.currentLocation.localSound("openChest");
-            Storages.CurrentItem.ShowMenu();
+            storageObject.ShowMenu();
         }
 
         this._helper.Input.Suppress(e.Button);

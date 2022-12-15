@@ -4,58 +4,31 @@ using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Enums;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
 ///     Restricts what items can be added into a chest.
 /// </summary>
-internal sealed class FilterItems : IFeature
+internal sealed class FilterItems : Feature
 {
     private const string Id = "furyx639.BetterChests/FilterItems";
+
+    private static readonly MethodBase ChestAddItem = AccessTools.Method(typeof(Chest), nameof(Chest.addItem));
 
 #nullable disable
     private static FilterItems Instance;
 #nullable enable
 
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
 
-    private bool _isActivated;
+    private MethodBase? _storeMethod;
 
     private FilterItems(IModHelper helper)
     {
         this._helper = helper;
-        HarmonyHelper.AddPatches(
-            FilterItems.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.addItem)),
-                    typeof(FilterItems),
-                    nameof(FilterItems.Chest_addItem_prefix),
-                    PatchType.Prefix),
-            });
-
-        if (!Integrations.Automate.IsLoaded)
-        {
-            return;
-        }
-
-        var storeMethod = this._helper.ModRegistry.Get(Integrations.Automate.UniqueId)
-                              ?.GetType()
-                              .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
-                              ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-        if (storeMethod is not null)
-        {
-            HarmonyHelper.AddPatch(
-                FilterItems.Id,
-                storeMethod,
-                typeof(FilterItems),
-                nameof(FilterItems.Automate_Store_prefix));
-        }
+        this._harmony = new(FilterItems.Id);
     }
 
     private static IReflectionHelper Reflection => FilterItems.Instance._helper.Reflection;
@@ -65,35 +38,56 @@ internal sealed class FilterItems : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="FilterItems" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return FilterItems.Instance ??= new(helper);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
+        // Events
+        this._helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
+
+        // Patches
+        this._harmony.Patch(
+            FilterItems.ChestAddItem,
+            new(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
+
+        // Integrations
+        if (!Integrations.Automate.IsLoaded)
         {
             return;
         }
 
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(FilterItems.Id);
-        this._helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
+        this._storeMethod = this._helper.ModRegistry.Get(Integrations.Automate.UniqueId)
+                                ?.GetType()
+                                .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
+                                ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+        if (this._storeMethod is not null)
+        {
+            this._harmony.Patch(this._storeMethod, new(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));
+        }
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
-        HarmonyHelper.UnapplyPatches(FilterItems.Id);
+        // Events
         this._helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
+
+        // Patches
+        this._harmony.Unpatch(
+            FilterItems.ChestAddItem,
+            AccessTools.Method(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
+
+        // Integrations
+        if (this._storeMethod is not null)
+        {
+            this._harmony.Unpatch(
+                this._storeMethod,
+                AccessTools.Method(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -122,7 +116,7 @@ internal sealed class FilterItems : IFeature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu || BetterItemGrabMenu.Context?.FilterItems is not FeatureOption.Enabled)
+        if (e.NewMenu is not ItemGrabMenu || BetterItemGrabMenu.Context is not { FilterItems: FeatureOption.Enabled })
         {
             return;
         }

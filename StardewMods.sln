@@ -12,8 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = ".Common", "Common\.Common.shproj", "{EECB6271-93FD-4172-BFDD-33E3F169F8E7}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = ".CommonHarmony", "CommonHarmony\.CommonHarmony.shproj", "{0C60294E-C98C-481E-B2D0-FC7953FEC7C2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GarbageDay", "GarbageDay\GarbageDay.csproj", "{DEFCE9F7-0B61-4DB9-A3D5-794190E4B4E0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetterChests", "BetterChests\BetterChests.csproj", "{8CEAB902-D2AB-4802-82E9-F4A6AB718BF4}"

@@ -185,4 +185,47 @@ public interface IStorageData
     ///     Gets or sets a value indicating whether unloaded chests will combine with target chest.
     /// </summary>
     public FeatureOption UnloadChestCombine { get; set; }
+
+    /// <summary>
+    ///     Copies all properties to another instance of <see cref="IStorageData" />.
+    /// </summary>
+    /// <param name="other">The other <see cref="IStorageData" /> to copy properties to.</param>
+    public void CopyTo(IStorageData other)
+    {
+        other.AutoOrganize = this.AutoOrganize;
+        other.CarryChest = this.CarryChest;
+        other.CarryChestSlow = this.CarryChestSlow;
+        other.ChestInfo = this.ChestInfo;
+        other.ChestLabel = this.ChestLabel;
+        other.ChestMenuTabs = this.ChestMenuTabs;
+        other.ChestMenuTabSet = new(this.ChestMenuTabSet);
+        other.CollectItems = this.CollectItems;
+        other.Configurator = this.Configurator;
+        other.ConfigureMenu = this.ConfigureMenu;
+        other.CraftFromChest = this.CraftFromChest;
+        other.CraftFromChestDisableLocations = new(this.CraftFromChestDisableLocations);
+        other.CraftFromChestDistance = this.CraftFromChestDistance;
+        other.CustomColorPicker = this.CustomColorPicker;
+        other.FilterItems = this.FilterItems;
+        other.FilterItemsList = new(this.FilterItemsList);
+        other.HideItems = this.HideItems;
+        other.LabelChest = this.LabelChest;
+        other.OpenHeldChest = this.OpenHeldChest;
+        other.OrganizeChest = this.OrganizeChest;
+        other.OrganizeChestGroupBy = this.OrganizeChestGroupBy;
+        other.OrganizeChestSortBy = this.OrganizeChestSortBy;
+        other.ResizeChest = this.ResizeChest;
+        other.ResizeChestCapacity = this.ResizeChestCapacity;
+        other.ResizeChestMenu = this.ResizeChestMenu;
+        other.ResizeChestMenuRows = this.ResizeChestMenuRows;
+        other.SearchItems = this.SearchItems;
+        other.StashToChest = this.StashToChest;
+        other.StashToChestDisableLocations = new(this.StashToChestDisableLocations);
+        other.StashToChestDistance = this.StashToChestDistance;
+        other.StashToChestPriority = this.StashToChestPriority;
+        other.StashToChestStacks = this.StashToChestStacks;
+        other.TransferItems = this.TransferItems;
+        other.UnloadChest = this.UnloadChest;
+        other.UnloadChestCombine = this.UnloadChestCombine;
+    }
 }

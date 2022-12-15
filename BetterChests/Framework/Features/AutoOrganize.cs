@@ -1,24 +1,25 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 
 /// <summary>
 ///     Automatically organizes items between chests during sleep.
 /// </summary>
-internal sealed class AutoOrganize : IFeature
+internal sealed class AutoOrganize : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private AutoOrganize(IModHelper helper)
     {
@@ -30,32 +31,22 @@ internal sealed class AutoOrganize : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="AutoOrganize" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return AutoOrganize.Instance ??= new AutoOrganize(helper);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
+        // Events
         this._helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
+        // Events
         this._helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
     }
 
@@ -66,49 +57,73 @@ internal sealed class AutoOrganize : IFeature
 
         foreach (var fromStorage in storages)
         {
-            if (fromStorage.AutoOrganize is not FeatureOption.Enabled)
-            {
-                continue;
-            }
-
-            for (var index = fromStorage.Items.Count - 1; index >= 0; --index)
-            {
-                var item = fromStorage.Items[index];
-                if (item is null)
-                {
-                    continue;
-                }
-
-                var stack = item.Stack;
-                foreach (var toStorage in storages)
-                {
-                    if (ReferenceEquals(fromStorage, toStorage)
-                     || fromStorage.StashToChestPriority >= toStorage.StashToChestPriority)
-                    {
-                        continue;
-                    }
-
-                    var tmp = toStorage.StashItem(item);
-                    if (tmp is null)
-                    {
-                        Log.Trace(
-                            $"AutoOrganize: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
-                        fromStorage.Items.Remove(item);
-                        break;
-                    }
-
-                    if (stack != item.Stack)
-                    {
-                        Log.Trace(
-                            $"AutoOrganize: {{ Item: {item.Name}, Quantity: {(stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
-                    }
-                }
-            }
+            AutoOrganize.OrganizeFrom(fromStorage, storages);
         }
 
         foreach (var storage in storages)
         {
             storage.OrganizeItems();
         }
+    }
+
+    private static void OrganizeFrom(StorageNode fromStorage, StorageNode[] storages)
+    {
+        if (fromStorage is not { Data: Storage fromStorageObject, AutoOrganize: FeatureOption.Enabled })
+        {
+            return;
+        }
+
+        for (var index = fromStorageObject.Items.Count - 1; index >= 0; --index)
+        {
+            AutoOrganize.OrganizeTo(fromStorage, storages, fromStorageObject, index);
+        }
+    }
+
+    private static void OrganizeTo(
+        StorageNode fromStorage,
+        IEnumerable<StorageNode> storages,
+        Storage fromStorageObject,
+        int index)
+    {
+        var item = fromStorageObject.Items[index];
+        if (item is null)
+        {
+            return;
+        }
+
+        var stack = item.Stack;
+        foreach (var toStorage in storages)
+        {
+            if (!AutoOrganize.TransferStack(fromStorage, toStorage, item, stack))
+            {
+                break;
+            }
+        }
+    }
+
+    private static bool TransferStack(StorageNode fromStorage, StorageNode toStorage, Item item, int stack)
+    {
+        if (ReferenceEquals(fromStorage, toStorage)
+         || fromStorage.StashToChestPriority >= toStorage.StashToChestPriority)
+        {
+            return true;
+        }
+
+        var tmp = toStorage.StashItem(item);
+        if (tmp is null)
+        {
+            Log.Trace(
+                $"AutoOrganize: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+            fromStorage.RemoveItem(item);
+            return false;
+        }
+
+        if (stack != item.Stack)
+        {
+            Log.Trace(
+                $"AutoOrganize: {{ Item: {item.Name}, Quantity: {(stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, From: {fromStorage}, To: {toStorage}");
+        }
+
+        return false;
     }
 }

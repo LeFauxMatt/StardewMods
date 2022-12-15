@@ -6,6 +6,7 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.PortableHoles.Framework;
 using StardewValley.Locations;
 
 /// <inheritdoc />

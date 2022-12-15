@@ -3,26 +3,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Handlers;
+using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Menus;
 
 /// <summary>
 ///     Configure storages individually.
 /// </summary>
-internal sealed class Configurator : IFeature
+internal sealed class Configurator : Feature
 {
     private const string Id = "furyx639.BetterChests/Configurator";
+
+    private static readonly MethodBase ItemGrabMenuRepositionSideButtons = AccessTools.Method(
+        typeof(ItemGrabMenu),
+        nameof(ItemGrabMenu.RepositionSideButtons));
 
 #nullable disable
     private static Configurator Instance;
@@ -31,18 +34,19 @@ internal sealed class Configurator : IFeature
     private readonly ModConfig _config;
     private readonly PerScreen<ClickableTextureComponent> _configButton;
     private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-    private readonly PerScreen<BaseStorage?> _currentStorage = new();
+    private readonly PerScreen<StorageNode?> _currentStorage = new();
+    private readonly Harmony _harmony;
     private readonly IModHelper _helper;
     private readonly IManifest _modManifest;
 
-    private bool _isActivated;
     private bool _isActive;
-    private EventHandler<BaseStorage>? _storageEdited;
+    private EventHandler<StorageNode>? _storageEdited;
 
     private Configurator(IModHelper helper, ModConfig config, IManifest manifest)
     {
         this._helper = helper;
         this._config = config;
+        this._harmony = new(Configurator.Id);
         this._configButton = new(
             () => new(
                 new(0, 0, Game1.tileSize, Game1.tileSize),
@@ -55,22 +59,12 @@ internal sealed class Configurator : IFeature
                 myID = 42069,
             });
         this._modManifest = manifest;
-        HarmonyHelper.AddPatches(
-            Configurator.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-                    typeof(Configurator),
-                    nameof(Configurator.ItemGrabMenu_RepositionSideButtons_postfix),
-                    PatchType.Postfix),
-            });
     }
 
     /// <summary>
-    ///     Raised after an <see cref="IStorageObject" /> has been edited.
+    ///     Raised after an <see cref="StorageNode" /> has been edited.
     /// </summary>
-    public static event EventHandler<BaseStorage> StorageEdited
+    public static event EventHandler<StorageNode> StorageEdited
     {
         add => Configurator.Instance._storageEdited += value;
         remove => Configurator.Instance._storageEdited -= value;
@@ -84,7 +78,7 @@ internal sealed class Configurator : IFeature
         set => this._currentMenu.Value = value;
     }
 
-    private BaseStorage? CurrentStorage
+    private StorageNode? CurrentStorage
     {
         get => this._currentStorage.Value;
         set => this._currentStorage.Value = value;
@@ -97,41 +91,39 @@ internal sealed class Configurator : IFeature
     /// <param name="config">Mod config data.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <returns>Returns an instance of the <see cref="Configurator" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config, IManifest manifest)
+    public static Feature Init(IModHelper helper, ModConfig config, IManifest manifest)
     {
         return Configurator.Instance ??= new(helper, config, manifest);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(Configurator.Id);
+        // Events
         this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
         this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+
+        // Patches
+        this._harmony.Patch(
+            Configurator.ItemGrabMenuRepositionSideButtons,
+            postfix: new(typeof(Configurator), nameof(Configurator.ItemGrabMenu_RepositionSideButtons_postfix)));
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
-        HarmonyHelper.UnapplyPatches(Configurator.Id);
+        // Events
         this._helper.Events.Display.MenuChanged -= this.OnMenuChanged;
         this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
         this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+
+        // Patches
+        this._harmony.Unpatch(
+            Configurator.ItemGrabMenuRepositionSideButtons,
+            AccessTools.Method(typeof(Configurator), nameof(Configurator.ItemGrabMenu_RepositionSideButtons_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -200,7 +192,7 @@ internal sealed class Configurator : IFeature
             return;
         }
 
-        if (BetterItemGrabMenu.Context.ConfigureMenu is InGameMenu.Categorize)
+        if (BetterItemGrabMenu.Context is { ConfigureMenu: InGameMenu.Categorize })
         {
             Game1.activeClickableMenu = new ItemSelectionMenu(
                 BetterItemGrabMenu.Context,
@@ -258,10 +250,10 @@ internal sealed class Configurator : IFeature
             return;
         }
 
-        if (this.CurrentStorage is not null)
+        if (this.CurrentStorage is { Data: Storage storageObject })
         {
             this._storageEdited.InvokeAll(this, this.CurrentStorage);
-            this.CurrentStorage.ShowMenu();
+            storageObject.ShowMenu();
             this.CurrentStorage = null;
             return;
         }

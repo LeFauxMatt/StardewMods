@@ -7,8 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Handlers;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Helpers;
 using StardewValley.Menus;
@@ -16,17 +16,17 @@ using StardewValley.Menus;
 /// <summary>
 ///     Search for which chests have the item you're looking for.
 /// </summary>
-internal sealed class ChestFinder : IFeature
+internal sealed class ChestFinder : Feature
 {
     private const int MaxTimeOut = 20;
 
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly ModConfig _config;
     private readonly PerScreen<int> _currentIndex = new();
-    private readonly PerScreen<IList<BaseStorage>> _foundStorages = new(() => new List<BaseStorage>());
+    private readonly PerScreen<IList<StorageNode>> _foundStorages = new(() => new List<StorageNode>());
     private readonly IModHelper _helper;
     private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
     private readonly PerScreen<SearchBar> _searchBar = new(() => new());
@@ -34,8 +34,6 @@ internal sealed class ChestFinder : IFeature
     private readonly PerScreen<bool> _showSearch = new();
     private readonly PerScreen<IList<object>> _storageContexts = new(() => new List<object>());
     private readonly PerScreen<int> _timeOut = new();
-
-    private bool _isActivated;
 
     private ChestFinder(IModHelper helper, ModConfig config)
     {
@@ -49,7 +47,7 @@ internal sealed class ChestFinder : IFeature
         set => this._currentIndex.Value = value;
     }
 
-    private IList<BaseStorage> FoundStorages => this._foundStorages.Value;
+    private IList<StorageNode> FoundStorages => this._foundStorages.Value;
 
     private ItemMatcher ItemMatcher =>
         this._itemMatcher.Value ??= new(false, this._config.SearchTagSymbol.ToString());
@@ -82,20 +80,15 @@ internal sealed class ChestFinder : IFeature
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestFinder" /> class.</returns>
-    public static IFeature Init(IModHelper helper, ModConfig config)
+    public static Feature Init(IModHelper helper, ModConfig config)
     {
         return ChestFinder.Instance ??= new ChestFinder(helper, config);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
+        // Events
         this._helper.Events.Display.RenderedHud += this.OnRenderedHud;
         this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -103,6 +96,7 @@ internal sealed class ChestFinder : IFeature
         this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
         this._helper.Events.Player.Warped += this.OnWarped;
 
+        // Integrations
         if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
@@ -117,14 +111,9 @@ internal sealed class ChestFinder : IFeature
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
+        // Events
         this._helper.Events.Display.RenderedHud -= this.OnRenderedHud;
         this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
@@ -132,6 +121,7 @@ internal sealed class ChestFinder : IFeature
         this._helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
         this._helper.Events.Player.Warped -= this.OnWarped;
 
+        // Integrations
         if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
@@ -189,9 +179,10 @@ internal sealed class ChestFinder : IFeature
                 this.CurrentIndex = 0;
             }
 
-            if (this.CurrentIndex < this.FoundStorages.Count)
+            if (this.CurrentIndex < this.FoundStorages.Count
+             && this.FoundStorages[this.CurrentIndex].Data is Storage storageObject)
             {
-                this.FoundStorages[this.CurrentIndex].ShowMenu();
+                storageObject.ShowMenu();
             }
 
             this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
@@ -219,9 +210,10 @@ internal sealed class ChestFinder : IFeature
                 this.CurrentIndex = 0;
             }
 
-            if (this.CurrentIndex < this.FoundStorages.Count)
+            if (this.CurrentIndex < this.FoundStorages.Count
+             && this.FoundStorages[this.CurrentIndex].Data is Storage storageObject)
             {
-                this.FoundStorages[this.CurrentIndex].ShowMenu();
+                storageObject.ShowMenu();
             }
 
             this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
@@ -259,7 +251,12 @@ internal sealed class ChestFinder : IFeature
         var srcRect = new Rectangle(412, 495, 5, 4);
         foreach (var storage in this.FoundStorages)
         {
-            var pos = (storage.Position + new Vector2(0.5f, -0.75f)) * Game1.tileSize;
+            if (storage is not { Data: Storage storageObject })
+            {
+                continue;
+            }
+
+            var pos = (storageObject.Position + new Vector2(0.5f, -0.75f)) * Game1.tileSize;
             var onScreenPos = default(Vector2);
             if (Utility.isOnScreen(pos, 64))
             {
@@ -396,27 +393,21 @@ internal sealed class ChestFinder : IFeature
             return;
         }
 
-        var storages = new List<BaseStorage>();
+        var storages = new List<StorageNode>();
         foreach (var storage in Storages.CurrentLocation)
         {
-            if (this.StorageContexts.Contains(storage.Context) || !storage.Items.Any(this.ItemMatcher.Matches))
+            if (storage is not { Data: Storage storageObject }
+             || this.StorageContexts.Contains(storageObject.Context)
+             || !storageObject.Items.Any(this.ItemMatcher.Matches))
             {
                 continue;
             }
 
-            this.StorageContexts.Add(storage.Context);
+            this.StorageContexts.Add(storageObject.Context);
             storages.Add(storage);
         }
 
-        storages.Sort(
-            (s1, s2) =>
-            {
-                var d1 = Math.Abs(s1.Position.X - Game1.player.getTileX())
-                       + Math.Abs(s1.Position.Y - Game1.player.getTileY());
-                var d2 = Math.Abs(s2.Position.X - Game1.player.getTileX())
-                       + Math.Abs(s2.Position.Y - Game1.player.getTileY());
-                return d1.CompareTo(d2);
-            });
+        storages.Sort((s1, s2) => s1.GetDistanceToPlayer(Game1.player).CompareTo(s2.GetDistanceToPlayer(Game1.player)));
 
         foreach (var storage in storages)
         {

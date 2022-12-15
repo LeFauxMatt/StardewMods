@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\build\common.targets"/>
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
-    <Import Project="..\CommonHarmony\CommonHarmony.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Better Chests</Name>
         <Description>Framework that adds new features to chests.</Description>

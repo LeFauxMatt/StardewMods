@@ -8,15 +8,13 @@ using StardewValley.Menus;
 /// <summary>
 ///     Draw chest label to the screen.
 /// </summary>
-internal sealed class LabelChest : IFeature
+internal sealed class LabelChest : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private LabelChest(IModHelper helper)
     {
@@ -28,33 +26,23 @@ internal sealed class LabelChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="LabelChest" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return LabelChest.Instance ??= new LabelChest(helper);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
+        // Events
         this._helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
         this._helper.Events.Display.RenderedHud += LabelChest.OnRenderedHud;
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
+        // Events
         this._helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
         this._helper.Events.Display.RenderedHud -= LabelChest.OnRenderedHud;
     }

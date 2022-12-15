@@ -1,70 +1,58 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
+using System.Reflection;
 using HarmonyLib;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
-using StardewMods.CommonHarmony.Enums;
-using StardewMods.CommonHarmony.Helpers;
-using StardewMods.CommonHarmony.Models;
 using StardewValley.Objects;
 
 /// <summary>
 ///     Expand the capacity of chests and add scrolling to access extra items.
 /// </summary>
-internal sealed class ResizeChest : IFeature
+internal sealed class ResizeChest : Feature
 {
     private const string Id = "furyx639.BetterChests/ResizeChest";
 
+    private static readonly MethodBase ChestGetActualCapacity = AccessTools.Method(
+        typeof(Chest),
+        nameof(Chest.GetActualCapacity));
+
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
-    private bool _isActivated;
+    private readonly Harmony _harmony;
 
     private ResizeChest()
     {
-        HarmonyHelper.AddPatches(
-            ResizeChest.Id,
-            new SavedPatch[]
-            {
-                new(
-                    AccessTools.Method(typeof(Chest), nameof(Chest.GetActualCapacity)),
-                    typeof(ResizeChest),
-                    nameof(ResizeChest.Chest_GetActualCapacity_postfix),
-                    PatchType.Postfix),
-            });
+        this._harmony = new(ResizeChest.Id);
     }
 
     /// <summary>
     ///     Initializes <see cref="ResizeChest" />.
     /// </summary>
     /// <returns>Returns an instance of the <see cref="ResizeChest" /> class.</returns>
-    public static IFeature Init()
+    public static Feature Init()
     {
         return ResizeChest.Instance ??= new ResizeChest();
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
-        HarmonyHelper.ApplyPatches(ResizeChest.Id);
+        // Patches
+        this._harmony.Patch(
+            ResizeChest.ChestGetActualCapacity,
+            postfix: new(typeof(ResizeChest), nameof(ResizeChest.Chest_GetActualCapacity_postfix)));
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
-        HarmonyHelper.UnapplyPatches(ResizeChest.Id);
+        // Patches
+        this._harmony.Unpatch(
+            ResizeChest.ChestGetActualCapacity,
+            AccessTools.Method(typeof(ResizeChest), nameof(ResizeChest.Chest_GetActualCapacity_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -73,12 +61,14 @@ internal sealed class ResizeChest : IFeature
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
         if (!Storages.TryGetOne(__instance, out var storage)
-         || storage.ResizeChest is not FeatureOption.Enabled
-         || storage.ResizeChestCapacity == 0)
+         || storage is not
+            {
+                Data: Storage storageObject, ResizeChest: FeatureOption.Enabled, ResizeChestCapacity: not 0,
+            })
         {
             return;
         }
 
-        __result = storage.ActualCapacity;
+        __result = storageObject.ActualCapacity;
     }
 }

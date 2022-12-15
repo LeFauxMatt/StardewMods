@@ -1,21 +1,19 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Handlers;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewValley.Menus;
 
 /// <summary>
 ///     Forces the ShippingBin to use a regular ItemGrabMenu.
 /// </summary>
-internal sealed class BetterShippingBin : IFeature
+internal sealed class BetterShippingBin : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private BetterShippingBin(IModHelper helper)
     {
@@ -27,32 +25,20 @@ internal sealed class BetterShippingBin : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="BetterShippingBin" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return BetterShippingBin.Instance ??= new BetterShippingBin(helper);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
         this._helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
         this._helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
     }
 
@@ -61,9 +47,9 @@ internal sealed class BetterShippingBin : IFeature
         // Relaunch as regular ItemGrabMenu
         if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: true }
          && Storages.TryGetOne(context, out var storage)
-         && storage is ShippingBinStorage)
+         && storage is { Data: ShippingBinStorage storageObject })
         {
-            storage.ShowMenu();
+            storageObject.ShowMenu();
         }
     }
 }

@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Features;
 using System.Globalization;
 using System.Linq;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Locations;
@@ -10,15 +11,13 @@ using StardewValley.Locations;
 /// <summary>
 ///     Unload a held chest's contents into another chest.
 /// </summary>
-internal sealed class UnloadChest : IFeature
+internal sealed class UnloadChest : Feature
 {
 #nullable disable
-    private static IFeature Instance;
+    private static Feature Instance;
 #nullable enable
 
     private readonly IModHelper _helper;
-
-    private bool _isActivated;
 
     private UnloadChest(IModHelper helper)
     {
@@ -30,32 +29,22 @@ internal sealed class UnloadChest : IFeature
     /// </summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="UnloadChest" /> class.</returns>
-    public static IFeature Init(IModHelper helper)
+    public static Feature Init(IModHelper helper)
     {
         return UnloadChest.Instance ??= new UnloadChest(helper);
     }
 
     /// <inheritdoc />
-    public void Activate()
+    protected override void Activate()
     {
-        if (this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = true;
+        // Events
         this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
-    public void Deactivate()
+    protected override void Deactivate()
     {
-        if (!this._isActivated)
-        {
-            return;
-        }
-
-        this._isActivated = false;
+        // Events
         this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
@@ -66,7 +55,8 @@ internal sealed class UnloadChest : IFeature
          || !e.Button.IsUseToolButton()
          || this._helper.Input.IsSuppressed(e.Button)
          || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
-         || (!Storages.CurrentItem.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
+         || Storages.CurrentItem.Data is not Storage storageObject
+         || (!storageObject.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
          || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
@@ -74,7 +64,8 @@ internal sealed class UnloadChest : IFeature
 
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-         || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage))
+         || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage)
+         || toStorage is not { Data: Storage toStorageObject })
         {
             return;
         }
@@ -84,8 +75,8 @@ internal sealed class UnloadChest : IFeature
         if (toStorage.UnloadChestCombine is FeatureOption.Enabled
          && Storages.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
         {
-            var currentCapacity = toStorage.ActualCapacity;
-            var addedCapacity = Storages.CurrentItem.ActualCapacity;
+            var currentCapacity = toStorageObject.ActualCapacity;
+            var addedCapacity = storageObject.ActualCapacity;
             if (currentCapacity < int.MaxValue - addedCapacity)
             {
                 combined = true;
@@ -94,16 +85,16 @@ internal sealed class UnloadChest : IFeature
         }
 
         // Stash items into target chest
-        for (var index = Storages.CurrentItem.Items.Count - 1; index >= 0; --index)
+        for (var index = storageObject.Items.Count - 1; index >= 0; --index)
         {
-            var item = Storages.CurrentItem.Items[index];
+            var item = storageObject.Items[index];
             if (item is null)
             {
                 continue;
             }
 
             var stack = item.Stack;
-            var tmp = toStorage.AddItem(item);
+            var tmp = toStorageObject.AddItem(item);
             if (tmp is not null)
             {
                 continue;
@@ -111,17 +102,17 @@ internal sealed class UnloadChest : IFeature
 
             Log.Trace(
                 $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {Storages.CurrentItem}, To: {toStorage}");
-            Storages.CurrentItem.Items[index] = null;
+            storageObject.Items[index] = null;
         }
 
-        if (combined && !Storages.CurrentItem.Items.OfType<Item>().Any())
+        if (combined && !storageObject.Items.OfType<Item>().Any())
         {
             Game1.player.Items[Game1.player.CurrentToolIndex] = null;
             Game1.playSound("Ship");
         }
         else
         {
-            Storages.CurrentItem.ClearNulls();
+            storageObject.ClearNulls();
         }
 
         CarryChest.CheckForOverburdened();

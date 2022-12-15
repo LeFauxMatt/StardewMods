@@ -8,7 +8,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-internal class StorageData : IStorageData
+internal sealed class StorageData : IStorageData
 {
     /// <inheritdoc />
     public FeatureOption AutoOrganize { get; set; } = FeatureOption.Default;

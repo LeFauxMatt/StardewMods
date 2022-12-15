@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Features;
-using StardewMods.BetterChests.Framework.Handlers;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
@@ -24,58 +24,12 @@ internal sealed class Storages
 #nullable enable
 
     private readonly ModConfig _config;
-    private readonly Lazy<Dictionary<object, BaseStorage>> _referenceContext;
 
     private EventHandler<IStorageTypeRequestedEventArgs>? _storageTypeRequested;
 
     private Storages(ModConfig config)
     {
         this._config = config;
-        this._referenceContext = new(
-            () =>
-            {
-                var referenceContext = new Dictionary<object, BaseStorage>();
-                foreach (var location in CommonHelpers.AllLocations)
-                {
-                    switch (location)
-                    {
-                        // Shipping Bin for Chests Anywhere
-                        case Farm farm when !referenceContext.ContainsKey(farm):
-                            var shippingBin = farm.buildings.OfType<ShippingBin>().FirstOrDefault();
-                            if (shippingBin is not null)
-                            {
-                                referenceContext.Add(
-                                    farm,
-                                    new ShippingBinStorage(
-                                        farm,
-                                        new(
-                                            shippingBin.tileX.Value + shippingBin.tilesWide.Value / 2,
-                                            shippingBin.tileY.Value + shippingBin.tilesHigh.Value / 2)));
-                            }
-
-                            break;
-
-                        // Fridge
-                        case FarmHouse { fridge.Value: { } fridge, fridgePosition: var fridgePosition } farmHouse
-                            when !referenceContext.ContainsKey(fridge) && !fridgePosition.Equals(Point.Zero):
-                            referenceContext.Add(fridge, new FridgeStorage(farmHouse, fridgePosition.ToVector2()));
-                            break;
-
-                        // Island Fridge
-                        case IslandFarmHouse
-                            {
-                                fridge.Value: { } islandFridge, fridgePosition: var islandFridgePosition,
-                            } islandFarmHouse when !referenceContext.ContainsKey(islandFridge)
-                                                && !islandFridgePosition.Equals(Point.Zero):
-                            referenceContext.Add(
-                                islandFridge,
-                                new FridgeStorage(islandFarmHouse, islandFridgePosition.ToVector2()));
-                            break;
-                    }
-                }
-
-                return referenceContext;
-            });
     }
 
     /// <summary>
@@ -91,12 +45,12 @@ internal sealed class Storages
     /// <summary>
     ///     Gets storages from all locations and farmer inventory in the game.
     /// </summary>
-    public static IEnumerable<BaseStorage> All
+    public static IEnumerable<StorageNode> All
     {
         get
         {
             var excluded = new HashSet<object>();
-            var storages = new List<BaseStorage>();
+            var storages = new List<StorageNode>();
 
             // Iterate Inventory
             foreach (var storage in Storages.FromPlayer(Game1.player, excluded))
@@ -116,10 +70,17 @@ internal sealed class Storages
             }
 
             // Sub Storage
-            foreach (var storage in storages.SelectMany(
-                         managedStorage => Storages.FromStorage(managedStorage, excluded)))
+            foreach (var storage in storages)
             {
-                yield return storage;
+                if (storage is not { Data: Storage storageObject })
+                {
+                    continue;
+                }
+
+                foreach (var subStorage in Storages.FromStorage(storageObject, excluded))
+                {
+                    yield return subStorage;
+                }
             }
         }
     }
@@ -127,25 +88,22 @@ internal sealed class Storages
     /// <summary>
     ///     Gets the current storage item from the farmer's inventory.
     /// </summary>
-    public static BaseStorage? CurrentItem =>
+    public static StorageNode? CurrentItem =>
         Game1.player.CurrentItem is not null && Storages.TryGetOne(Game1.player.CurrentItem, out var storage)
-            ? Storages.Instance.GetStorageType(storage)
+            ? storage
             : null;
 
     /// <summary>
     ///     Gets all placed storages in the current location.
     /// </summary>
-    public static IEnumerable<BaseStorage> CurrentLocation => Storages.FromLocation(Game1.currentLocation);
+    public static IEnumerable<StorageNode> CurrentLocation => Storages.FromLocation(Game1.currentLocation);
 
     /// <summary>
     ///     Gets storages in the farmer's inventory.
     /// </summary>
-    public static IEnumerable<BaseStorage> Inventory => Storages.FromPlayer(Game1.player);
+    public static IEnumerable<StorageNode> Inventory => Storages.FromPlayer(Game1.player);
 
     private static ModConfig Config => Storages.Instance._config;
-
-    private static Dictionary<object, BaseStorage> ReferenceContext =>
-        Storages.Instance._referenceContext.Value;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.
@@ -153,88 +111,88 @@ internal sealed class Storages
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
-    public static IEnumerable<BaseStorage> FromLocation(GameLocation location, ISet<object>? excluded = null)
+    public static IEnumerable<StorageNode> FromLocation(GameLocation location, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(location))
         {
-            return Array.Empty<BaseStorage>();
+            yield break;
         }
 
         excluded.Add(location);
 
-        IEnumerable<BaseStorage> GetAll()
+        // Mod Integrations
+        foreach (var storage in Integrations.FromLocation(location, excluded))
         {
-            // Mod Integrations
-            foreach (var storage in Integrations.FromLocation(location, excluded))
-            {
-                yield return storage;
-            }
+            yield return Storages.GetStorageType(storage);
+        }
 
-            // Special Locations
-            switch (location)
-            {
-                case FarmHouse { fridge.Value: { } fridge } farmHouse
-                    when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
-                    excluded.Add(fridge);
-                    yield return new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2());
-                    break;
-                case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
-                 && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                    excluded.Add(fridge);
-                    yield return new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2());
-                    break;
-                case IslandWest islandWest:
-                    excluded.Add(islandWest);
-                    yield return new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2());
-                    break;
-            }
+        // Special Locations
+        switch (location)
+        {
+            case FarmHouse { fridge.Value: { } fridge } farmHouse
+                when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
+                excluded.Add(fridge);
+                yield return Storages.GetStorageType(
+                    new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2()));
+                break;
+            case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
+             && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                excluded.Add(fridge);
+                yield return Storages.GetStorageType(
+                    new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2()));
+                break;
+            case IslandWest islandWest:
+                excluded.Add(islandWest);
+                yield return Storages.GetStorageType(
+                    new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2()));
+                break;
+        }
 
-            if (location is BuildableGameLocation buildableGameLocation)
+        if (location is BuildableGameLocation buildableGameLocation)
+        {
+            // Buildings
+            foreach (var building in buildableGameLocation.buildings)
             {
-                // Buildings
-                foreach (var building in buildableGameLocation.buildings)
+                // Special Buildings
+                switch (building)
                 {
-                    // Special Buildings
-                    switch (building)
-                    {
-                        case JunimoHut junimoHut when !excluded.Contains(junimoHut):
-                            excluded.Add(junimoHut);
-                            yield return new JunimoHutStorage(
+                    case JunimoHut junimoHut when !excluded.Contains(junimoHut):
+                        excluded.Add(junimoHut);
+                        yield return Storages.GetStorageType(
+                            new JunimoHutStorage(
                                 junimoHut,
                                 location,
                                 new(
                                     building.tileX.Value + building.tilesWide.Value / 2,
-                                    building.tileY.Value + building.tilesHigh.Value / 2));
-                            break;
-                        case ShippingBin shippingBin when !excluded.Contains(shippingBin):
-                            excluded.Add(shippingBin);
-                            yield return new ShippingBinStorage(
+                                    building.tileY.Value + building.tilesHigh.Value / 2)));
+                        break;
+                    case ShippingBin shippingBin when !excluded.Contains(shippingBin):
+                        excluded.Add(shippingBin);
+                        yield return Storages.GetStorageType(
+                            new ShippingBinStorage(
                                 shippingBin,
                                 location,
                                 new(
                                     building.tileX.Value + building.tilesWide.Value / 2,
-                                    building.tileY.Value + building.tilesHigh.Value / 2));
-                            break;
-                    }
+                                    building.tileY.Value + building.tilesHigh.Value / 2)));
+                        break;
                 }
-            }
-
-            // Objects
-            foreach (var (position, obj) in location.Objects.Pairs)
-            {
-                if (!Storages.TryGetOne(obj, location, position, out var subStorage)
-                 || excluded.Contains(subStorage.Context))
-                {
-                    continue;
-                }
-
-                excluded.Add(subStorage.Context);
-                yield return subStorage;
             }
         }
 
-        return Storages.Instance.GetStorageTypes(GetAll());
+        // Objects
+        foreach (var (position, obj) in location.Objects.Pairs)
+        {
+            if (!Storages.TryGetOne(obj, location, position, out var subStorage)
+             || excluded.Contains(subStorage.Context))
+            {
+                continue;
+            }
+
+            excluded.Add(subStorage.Context);
+            yield return Storages.GetStorageType(subStorage);
+        }
     }
 
     /// <summary>
@@ -244,40 +202,35 @@ internal sealed class Storages
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <param name="limit">Limit the number of items from the farmer's inventory.</param>
     /// <returns>An enumerable of all held storages in the farmer's inventory.</returns>
-    public static IEnumerable<BaseStorage> FromPlayer(Farmer player, ISet<object>? excluded = null, int? limit = null)
+    public static IEnumerable<StorageNode> FromPlayer(Farmer player, ISet<object>? excluded = null, int? limit = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(player))
         {
-            return Array.Empty<BaseStorage>();
+            yield break;
         }
 
         excluded.Add(player);
 
-        IEnumerable<BaseStorage> GetAll()
+        // Mod Integrations
+        foreach (var storage in Integrations.FromPlayer(player, excluded))
         {
-            // Mod Integrations
-            foreach (var storage in Integrations.FromPlayer(player, excluded))
-            {
-                yield return storage;
-            }
-
-            limit ??= player.MaxItems;
-            var position = player.getTileLocation();
-            for (var index = 0; index < limit; ++index)
-            {
-                var item = player.Items[index];
-                if (!Storages.TryGetOne(item, player, position, out var storage) || excluded.Contains(storage.Context))
-                {
-                    continue;
-                }
-
-                excluded.Add(storage.Context);
-                yield return storage;
-            }
+            yield return Storages.GetStorageType(storage);
         }
 
-        return Storages.Instance.GetStorageTypes(GetAll());
+        limit ??= player.MaxItems;
+        var position = player.getTileLocation();
+        for (var index = 0; index < limit; ++index)
+        {
+            var item = player.Items[index];
+            if (!Storages.TryGetOne(item, player, position, out var storage) || excluded.Contains(storage.Context))
+            {
+                continue;
+            }
+
+            excluded.Add(storage.Context);
+            yield return Storages.GetStorageType(storage);
+        }
     }
 
     /// <summary>
@@ -297,11 +250,17 @@ internal sealed class Storages
     /// <param name="pos">The position to get the storage from.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found at the location and position..</returns>
-    public static bool TryGetOne(GameLocation location, Vector2 pos, [NotNullWhen(true)] out BaseStorage? storage)
+    public static bool TryGetOne(GameLocation location, Vector2 pos, [NotNullWhen(true)] out StorageNode? storage)
     {
-        storage = Storages.FromLocation(location)
-                          .FirstOrDefault(locationStorage => locationStorage.Position.Equals(pos));
-        return storage is not null;
+        if (!location.Objects.TryGetValue(pos, out var obj)
+         || !Storages.TryGetOne(obj, location, pos, out var storageObject))
+        {
+            storage = default;
+            return false;
+        }
+
+        storage = Storages.GetStorageType(storageObject);
+        return true;
     }
 
     /// <summary>
@@ -310,84 +269,104 @@ internal sealed class Storages
     /// <param name="context">The context object.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found for the context object.</returns>
-    public static bool TryGetOne(object? context, [NotNullWhen(true)] out BaseStorage? storage)
+    public static bool TryGetOne(object? context, [NotNullWhen(true)] out StorageNode? storage)
     {
-        if (context is BaseStorage baseStorage)
+        switch (context)
         {
-            storage = baseStorage;
-            return true;
+            case StorageNode storageNode:
+                storage = storageNode;
+                return true;
+            case Storage baseStorage:
+                storage = Storages.GetStorageType(baseStorage);
+                return true;
         }
 
-        if (!Integrations.TryGetOne(context, out storage)
-         && !Storages.TryGetOne(context, default, default, out storage))
+        if (!Integrations.TryGetOne(context, out var storageObject)
+         && !Storages.TryGetOne(context, default, default, out storageObject))
         {
+            storage = default;
             return false;
         }
 
-        if (storage is ShippingBinStorage { Context: not Chest }
+        if (storageObject is ShippingBinStorage { Context: not Chest }
          && Integrations.TestConflicts(nameof(BetterShippingBin), out _))
         {
-            storage = null;
+            storage = default;
             return false;
         }
 
-        Storages.Instance.GetStorageType(storage);
+        storage = Storages.GetStorageType(storageObject);
         return true;
     }
 
-    private static IEnumerable<BaseStorage> FromStorage(BaseStorage storage, ISet<object>? excluded = null)
+    private static IEnumerable<StorageNode> FromStorage(Storage storage, ISet<object>? excluded = null)
     {
         excluded ??= new HashSet<object>();
         if (excluded.Contains(storage.Context))
         {
-            return Array.Empty<BaseStorage>();
+            return Array.Empty<StorageNode>();
         }
 
         excluded.Add(storage.Context);
 
-        IEnumerable<BaseStorage> GetAll()
+        var storages = new List<Storage>();
+        foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
         {
-            var managedStorages = new List<BaseStorage>();
-
-            foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
+            if (!Storages.TryGetOne(item, storage.Source, storage.Position, out var storageObject)
+             || excluded.Contains(storageObject.Context))
             {
-                if (!Storages.TryGetOne(item, storage.Source, storage.Position, out var managedStorage)
-                 || excluded.Contains(managedStorage.Context))
-                {
-                    continue;
-                }
-
-                excluded.Add(managedStorage.Context);
-                managedStorages.Add(managedStorage);
-                yield return managedStorage;
+                continue;
             }
 
-            // Sub Storage
-            foreach (var subStorage in managedStorages.SelectMany(
-                         managedStorage => Storages.FromStorage(managedStorage, excluded)))
-            {
-                yield return subStorage;
-            }
+            excluded.Add(storageObject.Context);
+            storages.Add(storageObject);
         }
 
-        return Storages.Instance.GetStorageTypes(GetAll());
+        return Storages.GetStorageTypes(storages)
+                       .Concat(storages.SelectMany(subStorage => Storages.FromStorage(subStorage, excluded)));
+    }
+
+    private static StorageNode GetStorageType(Storage storage)
+    {
+        var storageTypes = new List<IStorageData>();
+        var storageTypeRequestedEventArgs = new StorageTypeRequestedEventArgs(storage.Context, storageTypes);
+        Storages.Instance._storageTypeRequested.InvokeAll(Storages.Instance, storageTypeRequestedEventArgs);
+        var storageType = storageTypes.FirstOrDefault();
+        return new(storage, storageType is not null ? new StorageNode(storageType, Storages.Config) : Storages.Config);
+    }
+
+    private static IEnumerable<StorageNode> GetStorageTypes(IEnumerable<Storage> storages)
+    {
+        return storages.Select(Storages.GetStorageType);
     }
 
     private static bool TryGetOne(
         object? context,
         object? parent,
         Vector2 position,
-        [NotNullWhen(true)] out BaseStorage? storage)
+        [NotNullWhen(true)] out Storage? storage)
     {
-        if (context is not null && Storages.ReferenceContext.TryGetValue(context, out storage))
-        {
-            return true;
-        }
-
         switch (context)
         {
-            case BaseStorage storageObject:
+            case Storage storageObject:
                 storage = storageObject;
+                return true;
+            case Farm farm:
+                var farmShippingBin = farm.buildings.OfType<ShippingBin>().FirstOrDefault();
+                storage = farmShippingBin is not null
+                    ? new ShippingBinStorage(
+                        farm,
+                        new(
+                            farmShippingBin.tileX.Value + farmShippingBin.tilesWide.Value / 2,
+                            farmShippingBin.tileY.Value + farmShippingBin.tilesHigh.Value / 2))
+                    : default;
+                return storage is not null;
+            case FarmHouse { fridge.Value: { } } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
+                storage = new FridgeStorage(farmHouse, position);
+                return true;
+            case IslandFarmHouse { fridge.Value: { } } islandFarmHouse
+                when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                storage = new FridgeStorage(islandFarmHouse, position);
                 return true;
             case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
                 storage = new ObjectStorage(heldObj, parent, position);
@@ -407,13 +386,6 @@ internal sealed class Storages
             case JunimoHut junimoHut:
                 storage = new JunimoHutStorage(junimoHut, parent, position);
                 return true;
-            case FarmHouse { fridge.Value: { } } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
-                storage = new FridgeStorage(farmHouse, position);
-                return true;
-            case IslandFarmHouse { fridge.Value: { } } islandFarmHouse
-                when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                storage = new FridgeStorage(islandFarmHouse, position);
-                return true;
             case IslandWest islandWest:
                 storage = new ShippingBinStorage(islandWest, position);
                 return true;
@@ -421,25 +393,5 @@ internal sealed class Storages
                 storage = default;
                 return false;
         }
-    }
-
-    private BaseStorage GetStorageType(BaseStorage storage)
-    {
-        if (storage is not StorageNode storageNode)
-        {
-            return storage;
-        }
-
-        var storageTypes = new List<IStorageData>();
-        var storageTypeRequestedEventArgs = new StorageTypeRequestedEventArgs(storage.Context, storageTypes);
-        this._storageTypeRequested.InvokeAll(this, storageTypeRequestedEventArgs);
-        var storageType = storageTypes.FirstOrDefault();
-        storageNode.Parent = storageType is not null ? new StorageNode(storageType, this._config) : this._config;
-        return storage;
-    }
-
-    private IEnumerable<BaseStorage> GetStorageTypes(IEnumerable<BaseStorage> storages)
-    {
-        return storages.Select(this.GetStorageType);
     }
 }
