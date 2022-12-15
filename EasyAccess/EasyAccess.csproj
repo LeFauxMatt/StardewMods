@@ -3,14 +3,11 @@
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Easy Access</Name>
-        <Author>furyx639</Author>
         <Description>Provides easier access to producers in the game.</Description>
         <Version>2.0.1</Version>
         <RootNamespace>StardewMods.EasyAccess</RootNamespace>
         <UniqueId>furyx639.EasyAccess</UniqueId>
-        <MinimumApiVersion>3.15.0</MinimumApiVersion>
         <UpdateKeys>Nexus:11002</UpdateKeys>
-        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>

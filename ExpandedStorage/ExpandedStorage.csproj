@@ -3,15 +3,12 @@
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Expanded Storage</Name>
-        <Author>furyx639</Author>
         <Description>Framework for adding new types of chests to the game.</Description>
         <Version>2.0.3</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.ExpandedStorage</RootNamespace>
         <UniqueId>furyx639.ExpandedStorage</UniqueId>
-        <MinimumApiVersion>3.15.0</MinimumApiVersion>
         <UpdateKeys>Nexus:7431</UpdateKeys>
-        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>

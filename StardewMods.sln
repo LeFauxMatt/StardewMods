@@ -44,6 +44,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandedStorage", "Expanded
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CycleTools", "CycleTools\CycleTools.csproj", "{70E86E05-5DD2-4740-85BE-5EDC8B6FF9D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IsItCake", "IsItCake\IsItCake.csproj", "{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,10 @@ Global
 		{70E86E05-5DD2-4740-85BE-5EDC8B6FF9D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70E86E05-5DD2-4740-85BE-5EDC8B6FF9D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70E86E05-5DD2-4740-85BE-5EDC8B6FF9D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

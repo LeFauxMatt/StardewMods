@@ -1,16 +1,19 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
+        <Author>furyx639</Author>
         <Authors>furyx639</Authors>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <TargetFramework>net5.0</TargetFramework>
         <LangVersion>latest</LangVersion>
+        <MinimumApiVersion>3.18.0</MinimumApiVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1"/>

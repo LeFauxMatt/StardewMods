@@ -3,15 +3,12 @@
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Smack Dat Scarecrow</Name>
-        <Author>furyx639</Author>
         <Description>Go ahead and do it, they can take it.</Description>
         <Version>1.0.0</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.SmackDatScarecrow</RootNamespace>
         <UniqueId>furyx639.SmackDatScarecrow</UniqueId>
-        <MinimumApiVersion>3.15.0</MinimumApiVersion>
         <UpdateKeys>Nexus:13528</UpdateKeys>
-        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>

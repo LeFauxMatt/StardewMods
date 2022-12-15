@@ -3,15 +3,12 @@
     <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Too Many Animals</Name>
-        <Author>furyx639</Author>
         <Description>Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.</Description>
         <Version>2.0.1</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.TooManyAnimals</RootNamespace>
         <UniqueId>furyx639.TooManyAnimals</UniqueId>
-        <MinimumApiVersion>3.15.0</MinimumApiVersion>
         <UpdateKeys>Nexus:11033</UpdateKeys>
-        <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
