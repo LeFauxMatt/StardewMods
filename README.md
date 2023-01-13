@@ -45,6 +45,13 @@ Framework for adding new types of chests to the game.
 
 Converts Garbage Cans on the map into storages
 
+## [Is It Cake?](https://www.nexusmods.com/stardewvalley/mods/)
+
+( [source](IsItCake)
+| [changelog](IsItCake/CHANGELOG.md) )
+
+Now you can be the cake artist of your dreams.
+
 ## [Ordinary Capsule](https://www.nexusmods.com/stardewvalley/mods/13489)
 
 ( [source](OrdinaryCapsule)
