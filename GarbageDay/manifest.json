@@ -5,7 +5,7 @@
   "Description": "Turns the town trash cans into chests.",
   "UniqueID": "furyx639.GarbageDay",
   "EntryDll": "GarbageDay.dll",
-  "MinimumApiVersion": "3.15.0",
+  "MinimumApiVersion": "3.18.0",
   "UpdateKeys": [
     "Nexus:8204"
   ]

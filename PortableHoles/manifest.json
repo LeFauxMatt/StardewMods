@@ -5,7 +5,7 @@
   "Version": "1.2.0",
   "Description": "Adds craftable holes to the game.",
   "UniqueID": "furyx639.PortableHoles",
-  "MinimumApiVersion": "3.15.0",
+  "MinimumApiVersion": "3.18.0",
   "UpdateKeys": [
     "Nexus:13471"
   ]

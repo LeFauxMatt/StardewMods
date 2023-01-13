@@ -5,7 +5,7 @@
   "Version": "1.0.1",
   "Description": "Adds a shopping cart and checkout to the Shop Menu.",
   "UniqueID": "furyx639.ShoppingCart",
-  "MinimumApiVersion": "3.15.0",
+  "MinimumApiVersion": "3.18.0",
   "UpdateKeys": [
     "Nexus:13701"
   ]

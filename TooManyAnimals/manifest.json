@@ -5,7 +5,7 @@
   "Description": "Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.",
   "UniqueID": "furyx639.TooManyAnimals",
   "EntryDll": "TooManyAnimals.dll",
-  "MinimumApiVersion": "3.15.0",
+  "MinimumApiVersion": "3.18.0",
   "UpdateKeys": [
     "Nexus:11033"
   ],
