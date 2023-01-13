@@ -56,6 +56,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\IExpandedStorageApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\JsonAssets\IApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\JsonAssets\JsonAssetsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\OrdinaryCapsule\ICapsuleItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\OrdinaryCapsule\IOrdinaryCapsuleApi.cs" />
@@ -76,8 +78,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IColorable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Helpers\AtraBase\LICENSE" />
   </ItemGroup>
 </Project>
