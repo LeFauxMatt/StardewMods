@@ -768,15 +768,27 @@ internal sealed class ModPatches
     {
         if (!__result
          || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 }
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.ContainsKey(name))
+         || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj)
         {
             return;
         }
 
-        if (other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj
-         || !obj.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var otherName)
-         || !name.Equals(otherName, StringComparison.OrdinalIgnoreCase))
+        if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name))
+        {
+            name = __instance.Name;
+        }
+
+        if (!obj.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var otherName))
+        {
+            otherName = obj.Name;
+        }
+
+        if (!ModPatches.Storages.ContainsKey(name) && !ModPatches.Storages.ContainsKey(otherName))
+        {
+            return;
+        }
+
+        if (!name.Equals(otherName, StringComparison.OrdinalIgnoreCase))
         {
             __result = false;
         }
