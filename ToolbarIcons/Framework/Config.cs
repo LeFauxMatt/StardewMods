@@ -117,7 +117,7 @@ internal sealed class Config
         // Register mod configuration
         Integrations.GMCM.Register(this._manifest, this.ResetConfig, this.SaveConfig);
 
-        Integrations.GMCM.API.AddComplexOption(
+        Integrations.GMCM.Api.AddComplexOption(
             this._manifest,
             I18n.Config_CustomizeToolbar_Name,
             this.DrawButton,

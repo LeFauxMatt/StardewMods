@@ -214,7 +214,7 @@ public sealed class ModEntry : Mod
             () => this._config = new(),
             () => this.Helper.WriteConfig(this.Config));
 
-        Integrations.GMCM.API.AddNumberOption(
+        Integrations.GMCM.Api.AddNumberOption(
             this.ModManifest,
             () => this.Config.ShiftClickQuantity,
             value => this.Config.ShiftClickQuantity = value,

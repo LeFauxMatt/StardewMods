@@ -203,7 +203,7 @@ internal sealed class Configurator : Feature
         else
         {
             Config.SetupSpecificConfig(this._modManifest, BetterItemGrabMenu.Context, true);
-            Integrations.GMCM.API!.OpenModMenu(this._modManifest);
+            Integrations.GMCM.Api!.OpenModMenu(this._modManifest);
             this._isActive = true;
         }
 
@@ -221,7 +221,7 @@ internal sealed class Configurator : Feature
 
         this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.Configure);
         Config.SetupSpecificConfig(this._modManifest, Storages.CurrentItem, true);
-        Integrations.GMCM.API!.OpenModMenu(this._modManifest);
+        Integrations.GMCM.Api!.OpenModMenu(this._modManifest);
         this._isActive = true;
     }
 

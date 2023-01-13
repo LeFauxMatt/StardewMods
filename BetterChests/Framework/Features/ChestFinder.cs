@@ -102,12 +102,12 @@ internal sealed class ChestFinder : Feature
             return;
         }
 
-        Integrations.ToolbarIcons.API.AddToolbarIcon(
+        Integrations.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.FindChest",
             "furyx639.BetterChests/Icons",
             new(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
-        Integrations.ToolbarIcons.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -127,8 +127,8 @@ internal sealed class ChestFinder : Feature
             return;
         }
 
-        Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.FindChest");
-        Integrations.ToolbarIcons.API.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

@@ -72,12 +72,12 @@ internal sealed class CraftFromChest : Feature
         // Integrations
         if (Integrations.ToolbarIcons.IsLoaded)
         {
-            Integrations.ToolbarIcons.API.AddToolbarIcon(
+            Integrations.ToolbarIcons.Api.AddToolbarIcon(
                 "BetterChests.CraftFromChest",
                 "furyx639.BetterChests/Icons",
                 new(32, 0, 16, 16),
                 I18n.Button_CraftFromChest_Name());
-            Integrations.ToolbarIcons.API.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
+            Integrations.ToolbarIcons.Api.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
         }
 
         if (!Integrations.BetterCrafting.IsLoaded)
@@ -85,7 +85,7 @@ internal sealed class CraftFromChest : Feature
             return;
         }
 
-        Integrations.BetterCrafting.API.RegisterInventoryProvider(typeof(StorageNode), new StorageProvider());
+        Integrations.BetterCrafting.Api.RegisterInventoryProvider(typeof(StorageNode), new StorageProvider());
     }
 
     /// <inheritdoc />
@@ -98,8 +98,8 @@ internal sealed class CraftFromChest : Feature
         // Integrations
         if (Integrations.ToolbarIcons.IsLoaded)
         {
-            Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.CraftFromChest");
-            Integrations.ToolbarIcons.API.ToolbarIconPressed -= CraftFromChest.OnToolbarIconPressed;
+            Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.CraftFromChest");
+            Integrations.ToolbarIcons.Api.ToolbarIconPressed -= CraftFromChest.OnToolbarIconPressed;
         }
 
         if (!Integrations.BetterCrafting.IsLoaded)
@@ -107,11 +107,11 @@ internal sealed class CraftFromChest : Feature
             return;
         }
 
-        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(ChestStorage));
-        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(FridgeStorage));
-        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(JunimoHutStorage));
-        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(ObjectStorage));
-        Integrations.BetterCrafting.API.UnregisterInventoryProvider(typeof(ShippingBinStorage));
+        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ChestStorage));
+        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(FridgeStorage));
+        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(JunimoHutStorage));
+        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ObjectStorage));
+        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ShippingBinStorage));
     }
 
     private static void OnCraftingStoragesLoading(object? sender, CraftingStoragesLoadingEventArgs e)

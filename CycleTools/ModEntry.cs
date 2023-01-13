@@ -42,7 +42,7 @@ public sealed class ModEntry : Mod
             () => this._config = new(),
             () => this.Helper.WriteConfig(this.Config));
 
-        Integrations.GMCM.API.AddKeybindList(
+        Integrations.GMCM.Api.AddKeybindList(
             this.ModManifest,
             () => this.Config.ModifierKey,
             value => this.Config.ModifierKey = value,

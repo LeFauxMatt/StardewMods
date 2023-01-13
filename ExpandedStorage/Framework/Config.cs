@@ -26,7 +26,7 @@ internal sealed class Config
         this._config = this._helper.ReadConfig<ModConfig>();
     }
 
-    private static IGenericModConfigMenuApi GMCM => Integrations.GenericModConfigMenu.API!;
+    private static IGenericModConfigMenuApi GMCM => Integrations.GenericModConfigMenu.Api!;
 
     private static ModConfig ModConfig => Config.Instance._config;
 
@@ -111,7 +111,7 @@ internal sealed class Config
             }
 
             Config.GMCM.AddPage(Config.ModManifest, id, () => storage.DisplayName);
-            Integrations.BetterChests.API.AddConfigOptions(Config.ModManifest, config.BetterChestsData);
+            Integrations.BetterChests.Api.AddConfigOptions(Config.ModManifest, config.BetterChestsData);
         }
     }
 

@@ -122,7 +122,7 @@ internal sealed class BetterCrafting : Feature
         BetterCrafting.MaterialStorages.Clear();
         if (Integrations.BetterCrafting.IsLoaded)
         {
-            Integrations.BetterCrafting.API.OpenCraftingMenu(false, false, null, null, null, false);
+            Integrations.BetterCrafting.Api.OpenCraftingMenu(false, false, null, null, null, false);
             return true;
         }
 
@@ -162,7 +162,7 @@ internal sealed class BetterCrafting : Feature
             return;
         }
 
-        Integrations.BetterCrafting.API.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
+        Integrations.BetterCrafting.Api.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
     }
 
     /// <inheritdoc />
@@ -196,7 +196,7 @@ internal sealed class BetterCrafting : Feature
             return;
         }
 
-        Integrations.BetterCrafting.API.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
+        Integrations.BetterCrafting.Api.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -297,7 +297,7 @@ internal sealed class BetterCrafting : Feature
     {
         if (e.OldMenu is not (CraftingPage or GameMenu)
          && (!Integrations.BetterCrafting.IsLoaded
-          || e.OldMenu?.GetType() != Integrations.BetterCrafting.API.GetMenuType()))
+          || e.OldMenu?.GetType() != Integrations.BetterCrafting.Api.GetMenuType()))
         {
             return;
         }

@@ -7,7 +7,7 @@ using System;
 internal abstract class ModIntegration<T>
     where T : class
 {
-    private readonly Lazy<T?> _modAPI;
+    private readonly Lazy<T?> _modApi;
 
     /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
@@ -18,14 +18,14 @@ internal abstract class ModIntegration<T>
         this.ModRegistry = modRegistry;
         this.UniqueId = modUniqueId;
         this.Version = string.IsNullOrWhiteSpace(modVersion) ? null : modVersion;
-        this._modAPI = new(() => this.ModRegistry.GetApi<T>(this.UniqueId));
+        this._modApi = new(() => this.ModRegistry.GetApi<T>(this.UniqueId));
     }
 
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
-    protected internal T? API => this.IsLoaded ? this._modAPI.Value : default;
+    protected internal T? Api => this.IsLoaded ? this._modApi.Value : default;
 
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
-    [MemberNotNullWhen(true, nameof(ModIntegration<T>.API), nameof(ModIntegration<T>.ModInfo))]
+    [MemberNotNullWhen(true, nameof(ModIntegration<T>.Api), nameof(ModIntegration<T>.ModInfo))]
     protected internal bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId)
                                      && (this.Version is null
                                       || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version) != true);

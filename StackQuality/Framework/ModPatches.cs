@@ -329,9 +329,9 @@ internal sealed class ModPatches
         var existingStacks = new int[4];
         if (Integrations.ShoppingCart.IsLoaded)
         {
-            if (Integrations.ShoppingCart.API.CurrentShop is not null)
+            if (Integrations.ShoppingCart.Api.CurrentShop is not null)
             {
-                foreach (var cartItem in Integrations.ShoppingCart.API.CurrentShop.ToSell)
+                foreach (var cartItem in Integrations.ShoppingCart.Api.CurrentShop.ToSell)
                 {
                     if (cartItem.Item is not SObject cartObj)
                     {

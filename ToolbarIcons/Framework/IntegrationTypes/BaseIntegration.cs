@@ -20,8 +20,8 @@ internal abstract class BaseIntegration
     protected BaseIntegration(IModHelper helper, IToolbarIconsApi api)
     {
         this.Helper = helper;
-        this.API = api;
-        this.API.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.Api = api;
+        this.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ internal abstract class BaseIntegration
     /// </summary>
     protected IModHelper Helper { get; }
 
-    private IToolbarIconsApi API { get; }
+    private IToolbarIconsApi Api { get; }
 
     private Dictionary<string, Action> Icons { get; } = new();
 
@@ -46,7 +46,7 @@ internal abstract class BaseIntegration
     {
         var texture = this.Helper.GameContent.Load<Texture2D>(texturePath ?? BaseIntegration.IconPath);
         var cols = texture.Width / 16;
-        this.API.AddToolbarIcon(
+        this.Api.AddToolbarIcon(
             $"{modId}.{hoverText}",
             texturePath ?? BaseIntegration.IconPath,
             new(16 * (index % cols), 16 * (index / cols), 16, 16),

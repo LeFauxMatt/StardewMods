@@ -40,7 +40,7 @@ internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericM
     public void Register(IManifest mod, Action reset, Action save, bool titleScreenOnly = false)
     {
         this.Unregister(mod);
-        this.API?.Register(mod, reset, save, titleScreenOnly);
+        this.Api?.Register(mod, reset, save, titleScreenOnly);
         this.Registered.Add(mod.UniqueID);
     }
 
@@ -55,7 +55,7 @@ internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericM
             return;
         }
 
-        this.API?.Unregister(mod);
+        this.Api?.Unregister(mod);
         this.Registered.Remove(mod.UniqueID);
     }
 }

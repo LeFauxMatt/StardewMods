@@ -138,7 +138,7 @@ public sealed class ModEntry : Mod
         gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
 
         // Break Chance
-        gmcm.API.AddNumberOption(
+        gmcm.Api.AddNumberOption(
             this.ModManifest,
             () => this.Config.BreakChance,
             value => this.Config.BreakChance = value,
@@ -148,7 +148,7 @@ public sealed class ModEntry : Mod
             1);
 
         // Production Time
-        gmcm.API.AddNumberOption(
+        gmcm.Api.AddNumberOption(
             this.ModManifest,
             () => this.Config.DefaultProductionTime,
             value => this.Config.DefaultProductionTime = value,
@@ -157,7 +157,7 @@ public sealed class ModEntry : Mod
             0);
 
         // Duplicate Everything
-        gmcm.API.AddBoolOption(
+        gmcm.Api.AddBoolOption(
             this.ModManifest,
             () => this.Config.DuplicateEverything,
             value => this.Config.DuplicateEverything = value,
@@ -165,7 +165,7 @@ public sealed class ModEntry : Mod
             I18n.Config_DuplicateEverything_Name);
 
         // Unlock Automatically
-        gmcm.API.AddBoolOption(
+        gmcm.Api.AddBoolOption(
             this.ModManifest,
             () => this.Config.UnlockAutomatically,
             value => this.Config.UnlockAutomatically = value,

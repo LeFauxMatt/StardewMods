@@ -90,7 +90,7 @@ internal sealed class ModPatches
 
         if (__result is SObject obj
          && Integrations.StackQuality.IsLoaded
-         && Integrations.StackQuality.API.SplitStacks(obj, out var items))
+         && Integrations.StackQuality.Api.SplitStacks(obj, out var items))
         {
             foreach (var item in items)
             {
@@ -142,7 +142,7 @@ internal sealed class ModPatches
 
         if (__result is SObject obj
          && Integrations.StackQuality.IsLoaded
-         && Integrations.StackQuality.API.SplitStacks(obj, out var items))
+         && Integrations.StackQuality.Api.SplitStacks(obj, out var items))
         {
             foreach (var item in items)
             {

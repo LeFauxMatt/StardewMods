@@ -51,12 +51,12 @@ internal sealed class StashToChest : Feature
             return;
         }
 
-        Integrations.ToolbarIcons.API.AddToolbarIcon(
+        Integrations.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.StashToChest",
             "furyx639.BetterChests/Icons",
             new(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
-        Integrations.ToolbarIcons.API.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -72,8 +72,8 @@ internal sealed class StashToChest : Feature
             return;
         }
 
-        Integrations.ToolbarIcons.API.RemoveToolbarIcon("BetterChests.StashToChest");
-        Integrations.ToolbarIcons.API.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.StashToChest");
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
     }
 
     private static void OnToolbarIconPressed(object? sender, string id)

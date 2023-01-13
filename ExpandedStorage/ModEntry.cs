@@ -155,12 +155,12 @@ public sealed class ModEntry : Mod
 
         if (Integrations.BetterChests.IsLoaded)
         {
-            Integrations.BetterChests.API.StorageTypeRequested += ModEntry.OnStorageTypeRequested;
+            Integrations.BetterChests.Api.StorageTypeRequested += ModEntry.OnStorageTypeRequested;
         }
 
         if (Integrations.BetterCrafting.IsLoaded)
         {
-            Integrations.BetterCrafting.API.AddRecipeProvider(
+            Integrations.BetterCrafting.Api.AddRecipeProvider(
                 new RecipeProvider(ModEntry.Storages, ModEntry.StorageCache));
         }
     }

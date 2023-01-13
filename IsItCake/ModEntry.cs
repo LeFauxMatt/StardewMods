@@ -1,11 +1,17 @@
 ﻿namespace StardewMods.IsItCake;
 
+using StardewMods.Common.Helpers;
+using StardewMods.IsItCake.Framework;
+
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
     /// <inheritdoc/>
     public override void Entry(IModHelper helper)
     {
-        throw new System.NotImplementedException();
+        // Init
+        I18n.Init(this.Helper.Translation);
+        Log.Monitor = this.Monitor;
+        ModPatches.Init(this.ModManifest);
     }
 }
