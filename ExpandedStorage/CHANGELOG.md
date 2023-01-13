@@ -9,6 +9,7 @@
 ### Fixed
 
 * Fixed Expanded Storage chests unable to be created as Junimo Chests or Mini-Fridges.
+* Fixed Item.canStackWith logic.
 
 # 2.0.3 (September 21, 2022)
 
