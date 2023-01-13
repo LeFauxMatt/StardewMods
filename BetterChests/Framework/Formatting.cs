@@ -14,8 +14,10 @@ internal static class Formatting
         new(() => Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints"));
 
 #nullable disable
+
     /// <summary>Gets or sets SMAPI helper for providing translations.</summary>
     public static ITranslationHelper Translations { get; set; }
+
 #nullable enable
 
     private static Dictionary<string, string> BlueprintsData => Formatting.BlueprintsDataLazy.Value;

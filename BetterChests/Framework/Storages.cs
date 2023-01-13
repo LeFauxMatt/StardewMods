@@ -41,7 +41,6 @@ internal sealed class Storages
         remove => Storages.Instance._storageTypeRequested -= value;
     }
 
-
     /// <summary>
     ///     Gets storages from all locations and farmer inventory in the game.
     /// </summary>

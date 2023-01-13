@@ -8,9 +8,9 @@ using System.Collections.Generic;
 internal sealed class ModConfig
 {
     /// <summary>
-    ///     Config options for each Expanded Storage chest type.
+    ///     Gets or sets config options for each Expanded Storage chest type.
     /// </summary>
-    public Dictionary<string, StorageConfig> Config = new();
+    public Dictionary<string, StorageConfig> Config { get; set; } = new();
 
     /// <summary>
     ///     Copies all ModConfig data to another ModConfig instance.
