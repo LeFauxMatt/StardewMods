@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ShoppingCart;
-using StardewMods.ShoppingCart.Framework;
 using StardewValley.Menus;
 
 /// <summary>

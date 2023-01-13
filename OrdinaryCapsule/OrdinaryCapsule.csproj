@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets" />
-    <Import Project="..\Common\Common.projitems" Label="Shared" />
+    <Import Project="..\build\common.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Ordinary Capsule</Name>
         <Description>Nothing strange about this capsule.</Description>
@@ -11,6 +11,6 @@
         <UpdateKeys>Nexus:13471</UpdateKeys>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1" />
+        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     </ItemGroup>
 </Project>

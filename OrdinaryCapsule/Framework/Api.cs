@@ -22,7 +22,8 @@ public sealed class Api : IOrdinaryCapsuleApi
     public void RegisterItem(ICapsuleItem item)
     {
         var capsuleItems = this._helper.ModContent.Load<CapsuleItems>("assets/items.json");
-        var existingItem = capsuleItems.FirstOrDefault(capsuleItem => capsuleItem.ContextTags.SetEquals(item.ContextTags));
+        var existingItem =
+            capsuleItems.FirstOrDefault(capsuleItem => capsuleItem.ContextTags.SetEquals(item.ContextTags));
         if (existingItem is not null)
         {
             return;

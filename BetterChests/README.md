@@ -110,7 +110,7 @@ Search for which chest(s) have the item you're looking for.
 
 ### Chest Info
 
-Show stats to the left of the currently opened chest. 
+Show stats to the left of the currently opened chest.
 
 | Config     | Description                                | Default Value | Other Value(s)                        |
 |:-----------|:-------------------------------------------|---------------|:--------------------------------------|

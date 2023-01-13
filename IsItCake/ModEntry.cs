@@ -6,7 +6,7 @@ using StardewMods.IsItCake.Framework;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         // Init

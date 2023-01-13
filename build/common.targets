@@ -24,7 +24,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\smapi-internal\Newtonsoft.Json.dll"/>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Using Include="StardewValley"/>
