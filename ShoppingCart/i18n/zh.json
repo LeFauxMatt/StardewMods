@@ -1,0 +1,18 @@
+{
+  // UI
+  "ui.shopping-cart": "购物车",
+  "ui.available": "可用项",
+  "ui.price": "售价",
+  "ui.quantity": "数量",
+  "ui.buying": "总购买",
+  "ui.selling": "总出售",
+  "ui.total": "全总计",
+  "ui.checkout": "确认交易",
+  "ui.other-category": "其他",
+  // Alerts
+  "alert.money": "没有足够的钱",
+  "alert.inventory": "没有足够的空间",
+  // Config
+  "config.shift-click-quantity.name": "按 SHIFT+Click 增加的数量",
+  "config.shift-click-quantity.tooltip": "SHIFT+单击 时要购买的项目数量"
+}
