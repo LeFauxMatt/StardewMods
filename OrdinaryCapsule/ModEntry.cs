@@ -85,17 +85,17 @@ public sealed class ModEntry : Mod
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
-         || Game1.player.CurrentItem is not SObject { bigCraftable.Value: false }
-         || !e.Button.IsUseToolButton())
+            || Game1.player.CurrentItem is not SObject { bigCraftable.Value: false }
+            || !e.Button.IsUseToolButton())
         {
             return;
         }
 
         var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-         || obj is not { bigCraftable.Value: true, Name: "Crystalarium", ParentSheetIndex: 97 }
-         || obj.heldObject.Value is not null
-         || obj.MinutesUntilReady > 0)
+            || obj is not { bigCraftable.Value: true, Name: "Crystalarium", ParentSheetIndex: 97 }
+            || obj.heldObject.Value is not null
+            || obj.MinutesUntilReady > 0)
         {
             return;
         }
@@ -120,7 +120,7 @@ public sealed class ModEntry : Mod
     private void OnDayStarted(object? sender, DayStartedEventArgs e)
     {
         if (!Game1.player.craftingRecipes.ContainsKey("Ordinary Capsule")
-         && (this.Config.UnlockAutomatically || Game1.MasterPlayer.mailReceived.Contains("Capsule_Broken")))
+            && (this.Config.UnlockAutomatically || Game1.MasterPlayer.mailReceived.Contains("Capsule_Broken")))
         {
             Game1.player.craftingRecipes.Add("Ordinary Capsule", 0);
         }

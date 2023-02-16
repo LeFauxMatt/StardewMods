@@ -160,8 +160,8 @@ internal sealed class ModPatches
         {
             var slot = __instance.Items.ElementAtOrDefault(i);
             if (slot is not SObject other
-             || !ModPatches.Api.EquivalentObjects(other, obj)
-             || !ModPatches.Api.AddToStacks(other, obj, out var remaining))
+                || !ModPatches.Api.EquivalentObjects(other, obj)
+                || !ModPatches.Api.AddToStacks(other, obj, out var remaining))
             {
                 continue;
             }
@@ -203,8 +203,8 @@ internal sealed class ModPatches
         for (var i = 0; i < Math.Min(__instance.MaxItems, __instance.Items.Count); ++i)
         {
             if (__instance.Items[i] is not SObject obj
-             || obj.ParentSheetIndex != index
-             || !ModPatches.Api.GetStacks(obj, out var stacks))
+                || obj.ParentSheetIndex != index
+                || !ModPatches.Api.GetStacks(obj, out var stacks))
             {
                 continue;
             }
@@ -258,8 +258,8 @@ internal sealed class ModPatches
         var slotNumber = int.Parse(component.name);
         var slot = __instance.actualInventory.ElementAtOrDefault(slotNumber);
         if (slot is not SObject obj
-         || !ModPatches.Api.GetStacks(obj, out var stacks)
-         || stacks.Count(stack => stack > 0) <= 1)
+            || !ModPatches.Api.GetStacks(obj, out var stacks)
+            || stacks.Count(stack => stack > 0) <= 1)
         {
             return true;
         }
@@ -449,8 +449,8 @@ internal sealed class ModPatches
     private static void Object_sellToStorePrice_postfix(SObject __instance, ref int __result, long specificPlayerID)
     {
         if (!__instance.modData.ContainsKey("furyx639.StackQuality/qualities")
-         || !ModPatches.Api.GetStacks(__instance, out var stacks)
-         || stacks.Count(stack => stack > 0) <= 1)
+            || !ModPatches.Api.GetStacks(__instance, out var stacks)
+            || stacks.Count(stack => stack > 0) <= 1)
         {
             return;
         }
@@ -484,7 +484,7 @@ internal sealed class ModPatches
     private static void Object_StackSetter_postfix(SObject __instance, int value)
     {
         if (!__instance.modData.ContainsKey("furyx639.StackQuality/qualities")
-         || !ModPatches.Api.GetStacks(__instance, out var stacks))
+            || !ModPatches.Api.GetStacks(__instance, out var stacks))
         {
             return;
         }
@@ -568,9 +568,9 @@ internal sealed class ModPatches
         // item is the originally held object (now in items[position])
         // __result is the item that was in items[position]
         if (ReferenceEquals(item, __result)
-         || position >= items.Count
-         || __result is not SObject obj
-         || !ModPatches.Api.EquivalentObjects(obj, item))
+            || position >= items.Count
+            || __result is not SObject obj
+            || !ModPatches.Api.EquivalentObjects(obj, item))
         {
             return;
         }

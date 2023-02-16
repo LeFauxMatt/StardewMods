@@ -243,8 +243,8 @@ internal sealed class ItemRepository
 
                     // ring
                     else if (id != 801
-                          && fields?.Length >= 4
-                          && fields[3] == "Ring") // 801 = wedding ring, which isn't an equippable ring
+                        && fields?.Length >= 4
+                        && fields[3] == "Ring") // 801 = wedding ring, which isn't an equippable ring
                     {
                         if (ShouldGet(ItemType.Ring))
                         {
@@ -395,7 +395,7 @@ internal sealed class ItemRepository
                                     {
                                         // get input
                                         var input = this.TryCreate(ItemType.Object, pair.Key, p => new SObject(p.ID, 1))
-                                                        ?.Item as SObject;
+                                            ?.Item as SObject;
                                         var inputTags = input?.GetContextTags();
                                         if (inputTags?.Any() != true)
                                         {
@@ -404,7 +404,7 @@ internal sealed class ItemRepository
 
                                         // check if roe-producing fish
                                         if (!inputTags.Any(tag => simpleTags.Contains(tag))
-                                         && !complexTags.Any(set => set.All(tag => input.HasContextTag(tag))))
+                                            && !complexTags.Any(set => set.All(tag => input.HasContextTag(tag))))
                                         {
                                             continue;
                                         }
@@ -436,7 +436,7 @@ internal sealed class ItemRepository
 
                                         // aged roe
                                         if (roe != null
-                                         && pair.Key != 698) // aged sturgeon roe is caviar, which is a separate item
+                                            && pair.Key != 698) // aged sturgeon roe is caviar, which is a separate item
                                         {
                                             yield return this.TryCreate(
                                                 ItemType.Object,

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -296,8 +297,8 @@ internal sealed class ModPatches
         foreach (var (id, entry) in buy)
         {
             if (entry.ShopId != shop
-             || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
-             || !ModPatches.Storages.ContainsKey(id))
+                || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
+                || !ModPatches.Storages.ContainsKey(id))
             {
                 continue;
             }
@@ -324,9 +325,9 @@ internal sealed class ModPatches
     private static bool Chest_chestForAction_prefix(Chest __instance, ref bool __result, bool justCheckingForActivity)
     {
         if (justCheckingForActivity
-         || !__instance.playerChest.Value
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !__instance.playerChest.Value
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return true;
         }
@@ -338,22 +339,22 @@ internal sealed class ModPatches
         }
 
         __instance.GetMutex()
-                  .RequestLock(
-                      () =>
-                      {
-                          if (storage.OpenNearby != 0)
-                          {
-                              Game1.playSound(storage.OpenSound);
-                              __instance.ShowMenu();
-                          }
-                          else
-                          {
-                              __instance.frameCounter.Value = 5;
-                              Game1.playSound(storage.OpenSound);
-                              Game1.player.Halt();
-                              Game1.player.freezePause = 1000;
-                          }
-                      });
+            .RequestLock(
+                () =>
+                {
+                    if (storage.OpenNearby != 0)
+                    {
+                        Game1.playSound(storage.OpenSound);
+                        __instance.ShowMenu();
+                    }
+                    else
+                    {
+                        __instance.frameCounter.Value = 5;
+                        Game1.playSound(storage.OpenSound);
+                        Game1.player.Halt();
+                        Game1.player.freezePause = 1000;
+                    }
+                });
 
         __result = true;
         return false;
@@ -368,8 +369,8 @@ internal sealed class ModPatches
         float alpha)
     {
         if (!__instance.playerChest.Value
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return true;
         }
@@ -418,8 +419,8 @@ internal sealed class ModPatches
         bool local)
     {
         if (!__instance.playerChest.Value
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return true;
         }
@@ -442,8 +443,8 @@ internal sealed class ModPatches
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
     {
         if (!__instance.playerChest.Value
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return;
         }
@@ -454,11 +455,11 @@ internal sealed class ModPatches
     private static bool Chest_performToolAction_prefix(Chest __instance, Tool? t, GameLocation location)
     {
         if (t?.getLastFarmerToUse() != Game1.player
-         || t is MeleeWeapon
-         || !t.isHeavyHitter()
-         || !__instance.playerChest.Value
-         || !__instance.isEmpty()
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out _))
+            || t is MeleeWeapon
+            || !t.isHeavyHitter()
+            || !__instance.playerChest.Value
+            || !__instance.isEmpty()
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out _))
         {
             return true;
         }
@@ -489,46 +490,44 @@ internal sealed class ModPatches
         }
 
         __instance.GetMutex()
-                  .RequestLock(
-                      () =>
-                      {
-                          __instance.clearNulls();
-                          if (__instance.isEmpty())
-                          {
-                              __instance.performRemoveAction(__instance.TileLocation, location);
-                              if (location.Objects.Remove(c))
-                              {
-                                  var newChest = new Chest(true, Vector2.Zero, __instance.ParentSheetIndex)
-                                  {
-                                      Name = __instance.Name,
-                                      SpecialChestType = __instance.SpecialChestType,
-                                      fridge = { Value = __instance.fridge.Value },
-                                      lidFrameCount = { Value = __instance.lidFrameCount.Value },
-                                      playerChoiceColor = { Value = __instance.playerChoiceColor.Value },
-                                  };
+            .RequestLock(
+                () =>
+                {
+                    __instance.clearNulls();
+                    if (__instance.isEmpty())
+                    {
+                        __instance.performRemoveAction(__instance.TileLocation, location);
+                        if (location.Objects.Remove(c))
+                        {
+                            var newChest = new Chest(true, Vector2.Zero, __instance.ParentSheetIndex)
+                            {
+                                Name = __instance.Name,
+                                SpecialChestType = __instance.SpecialChestType,
+                                fridge = { Value = __instance.fridge.Value },
+                                lidFrameCount = { Value = __instance.lidFrameCount.Value },
+                                playerChoiceColor = { Value = __instance.playerChoiceColor.Value },
+                            };
 
-                                  // Copy properties
-                                  newChest._GetOneFrom(__instance);
+                            // Copy properties
+                            newChest._GetOneFrom(__instance);
 
-                                  // Remove tile location
-                                  newChest.modData.Remove("furyx639.ExpandedStorage/X");
-                                  newChest.modData.Remove("furyx639.ExpandedStorage/Y");
+                            // Remove tile location
+                            newChest.modData.Remove("furyx639.ExpandedStorage/X");
+                            newChest.modData.Remove("furyx639.ExpandedStorage/Y");
 
-                                  location.debris.Add(
-                                      new(
-                                          __instance.ParentSheetIndex,
-                                          Game1.player.GetToolLocation(),
-                                          new(
-                                              Game1.player.GetBoundingBox().Center.X,
-                                              Game1.player.GetBoundingBox().Center.Y))
-                                      {
-                                          item = newChest,
-                                      });
-                              }
-                          }
+                            location.debris.Add(
+                                new(
+                                    __instance.ParentSheetIndex,
+                                    Game1.player.GetToolLocation(),
+                                    new(Game1.player.GetBoundingBox().Center.X, Game1.player.GetBoundingBox().Center.Y))
+                                {
+                                    item = newChest,
+                                });
+                        }
+                    }
 
-                          __instance.GetMutex().ReleaseLock();
-                      });
+                    __instance.GetMutex().ReleaseLock();
+                });
 
         return false;
     }
@@ -542,31 +541,20 @@ internal sealed class ModPatches
         bool animate)
     {
         if (!__instance.playerChest.Value
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage)
-         || storage.OpenNearby == 0)
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage)
+            || storage.OpenNearby == 0)
         {
             return true;
         }
 
-        var shouldOpen = false;
         var bounds = new Rectangle(
             (int)__instance.TileLocation.X * Game1.tileSize,
             (int)__instance.TileLocation.Y * Game1.tileSize,
             storage.GetTileWidth() * Game1.tileSize,
             storage.GetTileHeight() * Game1.tileSize);
         bounds.Inflate(storage.OpenNearby * Game1.tileSize, storage.OpenNearby * Game1.tileSize);
-        foreach (var farmer in location.farmers)
-        {
-            if (!farmer.GetBoundingBox().Intersects(bounds))
-            {
-                continue;
-            }
-
-            shouldOpen = true;
-            break;
-        }
-
+        var shouldOpen = location.farmers.Any(farmer => farmer.GetBoundingBox().Intersects(bounds));
         if (shouldOpen == ____farmerNearby)
         {
             return false;
@@ -598,9 +586,9 @@ internal sealed class ModPatches
         GameLocation environment)
     {
         if (!__instance.playerChest.Value
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage)
-         || storage.OpenNearby == 0)
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage)
+            || storage.OpenNearby == 0)
         {
             return true;
         }
@@ -617,8 +605,8 @@ internal sealed class ModPatches
                 if (__instance.kickProgress == 0f)
                 {
                     if (Utility.isOnScreen(
-                            (__instance.localKickStartTile.Value + new Vector2(0.5f, 0.5f)) * Game1.tileSize,
-                            Game1.tileSize))
+                        (__instance.localKickStartTile.Value + new Vector2(0.5f, 0.5f)) * Game1.tileSize,
+                        Game1.tileSize))
                     {
                         Game1.playSound("clubhit");
                     }
@@ -767,8 +755,8 @@ internal sealed class ModPatches
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result
-         || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 }
-         || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj)
+            || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 }
+            || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj)
         {
             return;
         }
@@ -816,9 +804,9 @@ internal sealed class ModPatches
         bool justCheckingForActivity)
     {
         if (justCheckingForActivity
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out _)
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y))
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out _)
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y))
         {
             return;
         }
@@ -835,13 +823,13 @@ internal sealed class ModPatches
     private static bool Object_draw_prefix(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return true;
         }
 
         if (__instance.modData.ContainsKey("furyx639.ExpandedStorage/X")
-         || __instance.modData.ContainsKey("furyx639.ExpandedStorage/Y"))
+            || __instance.modData.ContainsKey("furyx639.ExpandedStorage/Y"))
         {
             return false;
         }
@@ -870,7 +858,7 @@ internal sealed class ModPatches
         Color color)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return true;
         }
@@ -917,17 +905,17 @@ internal sealed class ModPatches
         switch (__instance.IsRecipe)
         {
             case false when drawStackNumber is StackDrawType.Draw
-                         && __instance.Stack > 1
-                         && __instance.Stack != int.MaxValue
-                         && scaleSize > 0.3:
+                && __instance.Stack > 1
+                && __instance.Stack != int.MaxValue
+                && scaleSize > 0.3:
                 Utility.drawTinyDigits(
                     __instance.Stack,
                     spriteBatch,
                     location
-                  + new Vector2(
+                    + new Vector2(
                         Game1.tileSize
-                      - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
-                      + 3f * scaleSize,
+                        - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
+                        + 3f * scaleSize,
                         Game1.tileSize - 18f * scaleSize + 2f),
                     3f * scaleSize,
                     1f,
@@ -956,9 +944,9 @@ internal sealed class ModPatches
         GameLocation location)
     {
         if (!__instance.isPlaceable()
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage)
-         || (storage.GetTileHeight() == 1 && storage.GetTileWidth() == 1))
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage)
+            || (storage.GetTileHeight() == 1 && storage.GetTileWidth() == 1))
         {
             return true;
         }
@@ -980,8 +968,8 @@ internal sealed class ModPatches
         }
 
         var canPlaceHere = Utility.playerCanPlaceItemHere(location, __instance, x, y, Game1.player)
-                        || (Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
-                         && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player));
+            || (Utility.isThereAnObjectHereWhichAcceptsThisItem(location, __instance, x, y)
+                && Utility.withinRadiusOfPlayer(x, y, 1, Game1.player));
         Game1.isCheckingNonMousePlacement = false;
         for (var x_offset = 0; x_offset < storage.GetTileWidth(); ++x_offset)
         {
@@ -1013,7 +1001,7 @@ internal sealed class ModPatches
         Farmer f)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return true;
         }
@@ -1052,7 +1040,7 @@ internal sealed class ModPatches
     private static void Object_getDescription_postfix(SObject __instance, ref string __result)
     {
         if (__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         && ModPatches.Storages.TryGetValue(name, out var storage))
+            && ModPatches.Storages.TryGetValue(name, out var storage))
         {
             __result = storage.Description;
         }
@@ -1061,7 +1049,7 @@ internal sealed class ModPatches
     private static void Object_getOne_postfix(SObject __instance, ref Item __result)
     {
         if (__result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj
-         || !ModPatches.Storages.TryGetValue(__instance.name, out var storage))
+            || !ModPatches.Storages.TryGetValue(__instance.name, out var storage))
         {
             return;
         }
@@ -1090,9 +1078,9 @@ internal sealed class ModPatches
     private static void Object_isPlaceable_postfix(SObject __instance, ref bool __result)
     {
         if (__result
-         && __instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         && ModPatches.Storages.TryGetValue(name, out var storage)
-         && !storage.IsPlaceable)
+            && __instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            && ModPatches.Storages.TryGetValue(name, out var storage)
+            && !storage.IsPlaceable)
         {
             __result = false;
         }
@@ -1101,7 +1089,7 @@ internal sealed class ModPatches
     private static void Object_loadDisplayName_postfix(SObject __instance, ref string __result)
     {
         if (__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         && ModPatches.Storages.TryGetValue(name, out var storage))
+            && ModPatches.Storages.TryGetValue(name, out var storage))
         {
             __result = storage.DisplayName;
         }
@@ -1110,15 +1098,15 @@ internal sealed class ModPatches
     private static void Object_performRemoveAction_postfix(SObject __instance, GameLocation environment)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return;
         }
 
         var c = __instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
-             && __instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y)
-            ? new(int.Parse(x), int.Parse(y))
-            : __instance.TileLocation;
+            && __instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y)
+                ? new(int.Parse(x), int.Parse(y))
+                : __instance.TileLocation;
 
         if (c.X == 0f && c.Y == 0f)
         {
@@ -1164,9 +1152,9 @@ internal sealed class ModPatches
         GameLocation location)
     {
         if (__instance is Chest
-         || !__instance.modData.ContainsKey("furyx639.ExpandedStorage/Storage")
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
-         || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y))
+            || !__instance.modData.ContainsKey("furyx639.ExpandedStorage/Storage")
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
+            || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y))
         {
             return true;
         }
@@ -1191,9 +1179,9 @@ internal sealed class ModPatches
     {
         var tile = new Vector2(x / Game1.tileSize, y / Game1.tileSize);
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage)
-         || !location.Objects.TryGetValue(tile, out var placed)
-         || placed is not Chest chest)
+            || !ModPatches.Storages.TryGetValue(name, out var storage)
+            || !location.Objects.TryGetValue(tile, out var placed)
+            || placed is not Chest chest)
         {
             return;
         }
@@ -1263,11 +1251,11 @@ internal sealed class ModPatches
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)
     {
         if (itemGrabMenu.context is not Chest chest
-         || sourceItem is not Chest item
-         || !chest.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage)
-         || (storage.PlayerColor && itemGrabMenu.chestColorPicker is not null)
-         || (!storage.PlayerColor && itemGrabMenu.chestColorPicker is null))
+            || sourceItem is not Chest item
+            || !chest.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage)
+            || (storage.PlayerColor && itemGrabMenu.chestColorPicker is not null)
+            || (!storage.PlayerColor && itemGrabMenu.chestColorPicker is null))
         {
             return;
         }
@@ -1376,8 +1364,8 @@ internal sealed class ModPatches
         foreach (var (id, entry) in buy)
         {
             if (entry.ShopId != "QiGemShop"
-             || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
-             || !ModPatches.Storages.ContainsKey(id))
+                || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
+                || !ModPatches.Storages.ContainsKey(id))
             {
                 continue;
             }
@@ -1424,9 +1412,9 @@ internal sealed class ModPatches
     private static void Utility_isWithinTileWithLeeway_postfix(ref bool __result, int x, int y, Item item)
     {
         if (__result
-         || !item.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage)
-         || (storage.GetTileHeight() == 2 && storage.GetTileWidth() == 1))
+            || !item.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage)
+            || (storage.GetTileHeight() == 2 && storage.GetTileWidth() == 1))
         {
             return;
         }
@@ -1453,8 +1441,8 @@ internal sealed class ModPatches
         int y)
     {
         if (!__result
-         || !item.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
-         || !ModPatches.Storages.TryGetValue(name, out var storage))
+            || !item.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
+            || !ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return;
         }
@@ -1467,11 +1455,11 @@ internal sealed class ModPatches
             {
                 var currentTile = tile + new Vector2(xOffset, yOffset);
                 if (!location.Objects.ContainsKey(currentTile)
-                 && location.getLargeTerrainFeatureAt((int)currentTile.X, (int)currentTile.Y) is null
-                 && (!location.terrainFeatures.ContainsKey(currentTile)
-                  || location.terrainFeatures[currentTile] is not Tree)
-                 && !location.isTerrainFeatureAt((int)currentTile.X, (int)currentTile.Y)
-                 && item.canBePlacedHere(location, currentTile))
+                    && location.getLargeTerrainFeatureAt((int)currentTile.X, (int)currentTile.Y) is null
+                    && (!location.terrainFeatures.ContainsKey(currentTile)
+                        || location.terrainFeatures[currentTile] is not Tree)
+                    && !location.isTerrainFeatureAt((int)currentTile.X, (int)currentTile.Y)
+                    && item.canBePlacedHere(location, currentTile))
                 {
                     continue;
                 }
@@ -1486,22 +1474,17 @@ internal sealed class ModPatches
             (int)tile.Y * Game1.tileSize,
             storage.Width,
             storage.Height);
-        foreach (var farmer in location.farmers)
+        if (location.farmers.Any(farmer => farmer.GetBoundingBox().Intersects(boundingBox)))
         {
-            if (farmer.GetBoundingBox().Intersects(boundingBox))
-            {
-                __result = false;
-                return;
-            }
+            __result = false;
+            return;
         }
 
-        foreach (var character in location.characters)
+        if (!location.characters.Any(character => character.GetBoundingBox().Intersects(boundingBox)))
         {
-            if (character.GetBoundingBox().Intersects(boundingBox))
-            {
-                __result = false;
-                return;
-            }
+            return;
         }
+
+        __result = false;
     }
 }

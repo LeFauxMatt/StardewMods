@@ -70,7 +70,7 @@ internal sealed class OrganizeChest : Feature
     private static bool ItemGrabMenu_organizeItemsInList_prefix(ItemGrabMenu __instance, IList<Item> items)
     {
         if (!ReferenceEquals(__instance.ItemsToGrabMenu.actualInventory, items)
-         || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
+            || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
         {
             return true;
         }
@@ -83,8 +83,8 @@ internal sealed class OrganizeChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseRight
-         || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
-         || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
+            || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+            || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
         {
             return;
         }

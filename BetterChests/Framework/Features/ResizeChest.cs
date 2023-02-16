@@ -61,7 +61,7 @@ internal sealed class ResizeChest : Feature
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
         if (!Storages.TryGetOne(__instance, out var storage)
-         || storage is not
+            || storage is not
             {
                 Data: Storage storageObject, ResizeChest: FeatureOption.Enabled, ResizeChestCapacity: not 0,
             })

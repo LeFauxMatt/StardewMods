@@ -82,9 +82,9 @@ internal sealed class TransferItems : Feature
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
     {
         if (BetterItemGrabMenu.TopPadding > 0
-         || itemGrabMenu.context is null
-         || itemGrabMenu.shippingBin
-         || !Storages.TryGetOne(itemGrabMenu.context, out _))
+            || itemGrabMenu.context is null
+            || itemGrabMenu.shippingBin
+            || !Storages.TryGetOne(itemGrabMenu.context, out _))
         {
             return;
         }
@@ -95,8 +95,8 @@ internal sealed class TransferItems : Feature
     private static void TransferDown()
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
-         || !Storages.TryGetOne(context, out var storage)
-         || storage is not { Data: Storage storageObject })
+            || !Storages.TryGetOne(context, out var storage)
+            || storage is not { Data: Storage storageObject })
         {
             return;
         }
@@ -121,8 +121,8 @@ internal sealed class TransferItems : Feature
     private static void TransferUp()
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
-         || !Storages.TryGetOne(context, out var storage)
-         || storage is not { Data: Storage storageObject })
+            || !Storages.TryGetOne(context, out var storage)
+            || storage is not { Data: Storage storageObject })
         {
             return;
         }
@@ -145,8 +145,8 @@ internal sealed class TransferItems : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu
-         || !this.DownArrow.visible
-         || e.Button is not SButton.MouseLeft)
+            || !this.DownArrow.visible
+            || e.Button is not SButton.MouseLeft)
         {
             return;
         }
@@ -172,7 +172,7 @@ internal sealed class TransferItems : Feature
             {
                 context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false,
             }
-         || !Storages.TryGetOne(context, out _))
+            || !Storages.TryGetOne(context, out _))
         {
             this.DownArrow.visible = false;
             this.UpArrow.visible = false;

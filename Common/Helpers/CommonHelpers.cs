@@ -41,7 +41,7 @@ internal static class CommonHelpers
                     }
 
                     var indoors = buildableGameLocation.buildings.Select(building => building.indoors.Value)
-                                                       .Where(indoors => indoors is not null);
+                        .Where(indoors => indoors is not null);
                     foreach (var indoor in IterateLocations(indoors, excluded))
                     {
                         yield return indoor;

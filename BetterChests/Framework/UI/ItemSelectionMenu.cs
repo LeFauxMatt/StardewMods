@@ -31,9 +31,9 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
             foreach (var tag in ItemSelectionMenu.Items.SelectMany(item => item.GetContextTagsExt()))
             {
                 if (ItemSelectionMenu.LocalTags.ContainsKey(tag)
-                 || tag.StartsWith("id_")
-                 || tag.StartsWith("item_")
-                 || tag.StartsWith("preserve_"))
+                    || tag.StartsWith("id_")
+                    || tag.StartsWith("item_")
+                    || tag.StartsWith("preserve_"))
                 {
                     continue;
                 }
@@ -121,28 +121,28 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
 
         Game1.drawDialogueBox(
             this.ItemsToGrabMenu.xPositionOnScreen
-          - ItemSelectionMenu.borderWidth
-          - ItemSelectionMenu.spaceToClearSideBorder,
+            - ItemSelectionMenu.borderWidth
+            - ItemSelectionMenu.spaceToClearSideBorder,
             this.ItemsToGrabMenu.yPositionOnScreen
-          - ItemSelectionMenu.borderWidth
-          - ItemSelectionMenu.spaceToClearTopBorder
-          - 24,
+            - ItemSelectionMenu.borderWidth
+            - ItemSelectionMenu.spaceToClearTopBorder
+            - 24,
             this.ItemsToGrabMenu.width
-          + ItemSelectionMenu.borderWidth * 2
-          + ItemSelectionMenu.spaceToClearSideBorder * 2,
+            + ItemSelectionMenu.borderWidth * 2
+            + ItemSelectionMenu.spaceToClearSideBorder * 2,
             this.ItemsToGrabMenu.height
-          + ItemSelectionMenu.spaceToClearTopBorder
-          + ItemSelectionMenu.borderWidth * 2
-          + 24,
+            + ItemSelectionMenu.spaceToClearTopBorder
+            + ItemSelectionMenu.borderWidth * 2
+            + 24,
             false,
             true);
 
         Game1.drawDialogueBox(
             this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
             this.inventory.yPositionOnScreen
-          - ItemSelectionMenu.borderWidth
-          - ItemSelectionMenu.spaceToClearTopBorder
-          + 24,
+            - ItemSelectionMenu.borderWidth
+            - ItemSelectionMenu.spaceToClearTopBorder
+            + 24,
             this.inventory.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
             this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 - 24,
             false,
@@ -152,9 +152,9 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
         this.okButton.draw(b);
 
         foreach (var tag in this._displayedTags.Where(
-                     cc => this.inventory.isWithinBounds(
-                         cc.bounds.X,
-                         cc.bounds.Bottom - this._offset * ItemSelectionMenu.LineHeight)))
+            cc => this.inventory.isWithinBounds(
+                cc.bounds.X,
+                cc.bounds.Bottom - this._offset * ItemSelectionMenu.LineHeight)))
         {
             var localTag = ItemSelectionMenu.Translation!.Get($"tag.{tag.name}").Default(tag.name);
             var color = !this._selected.Contains(tag.name)
@@ -248,10 +248,10 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
         // Left click an item slot to add individual item tag to filters
         var itemSlot = this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
         if (itemSlot is not null
-         && int.TryParse(itemSlot.name, out var slotNumber)
-         && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item
-         && item.GetContextTagsExt().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
-         && !string.IsNullOrWhiteSpace(tag))
+            && int.TryParse(itemSlot.name, out var slotNumber)
+            && this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is { } item
+            && item.GetContextTagsExt().FirstOrDefault(contextTag => contextTag.StartsWith("item_")) is { } tag
+            && !string.IsNullOrWhiteSpace(tag))
         {
             this.AddTag(tag);
             return;
@@ -276,8 +276,8 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
 
         // Right click an item slot to display dropdown with item's context tags
         if (this.ItemsToGrabMenu.inventory.FirstOrDefault(slot => slot.containsPoint(x, y)) is not { } itemSlot
-         || !int.TryParse(itemSlot.name, out var slotNumber)
-         || this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is not { } item)
+            || !int.TryParse(itemSlot.name, out var slotNumber)
+            || this.ItemsToGrabMenu.actualInventory.ElementAtOrDefault(slotNumber) is not { } item)
         {
             return;
         }
@@ -322,9 +322,9 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
                 --this._offset;
                 return;
             case < 0 when this._displayedTags.Last().bounds.Bottom
-                        - this._offset * ItemSelectionMenu.LineHeight
-                        - this.inventory.yPositionOnScreen
-                       >= this.inventory.height:
+                - this._offset * ItemSelectionMenu.LineHeight
+                - this.inventory.yPositionOnScreen
+                >= this.inventory.height:
                 ++this._offset;
                 return;
             default:
@@ -337,9 +337,9 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     public override void update(GameTime time)
     {
         if (this._suppressInput
-         && (this._parentMenu is null
-          || (Game1.oldMouseState.LeftButton is ButtonState.Pressed
-           && Mouse.GetState().LeftButton is ButtonState.Released)))
+            && (this._parentMenu is null
+                || (Game1.oldMouseState.LeftButton is ButtonState.Pressed
+                    && Mouse.GetState().LeftButton is ButtonState.Released)))
         {
             this._suppressInput = false;
         }
@@ -368,8 +368,8 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
                 ItemSelectionMenu.AllTags.Where(
                     tag => (this._selected.Any() && this._selected.Contains(tag.name))
                         || (tag.name[..1] != "!"
-                         && !this._selected.Contains($"!{tag.name}")
-                         && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name)))));
+                            && !this._selected.Contains($"!{tag.name}")
+                            && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name)))));
             this._displayedTags.Sort(
                 (t1, t2) =>
                 {
@@ -403,7 +403,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
                     y += ItemSelectionMenu.LineHeight;
                 }
                 else if (x + tag.bounds.Width + ItemSelectionMenu.HorizontalTagSpacing
-                      >= this.inventory.xPositionOnScreen + this.inventory.width)
+                    >= this.inventory.xPositionOnScreen + this.inventory.width)
                 {
                     x = this.inventory.xPositionOnScreen;
                     y += ItemSelectionMenu.LineHeight;

@@ -61,9 +61,9 @@ internal sealed class FilterItems : Feature
         }
 
         this._storeMethod = this._helper.ModRegistry.Get(Integrations.Automate.UniqueId)
-                                ?.GetType()
-                                .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
-                                ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+            ?.GetType()
+            .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
+            ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
         if (this._storeMethod is not null)
         {
             this._harmony.Patch(this._storeMethod, new(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));

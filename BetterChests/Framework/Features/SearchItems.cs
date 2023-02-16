@@ -227,14 +227,14 @@ internal sealed class SearchItems : Feature
 
         this.CurrentMenu = menu;
         if (BetterItemGrabMenu.Context is not { Data: Storage storageObject }
-         || this.CurrentMenu is null or { shippingBin: true })
+            || this.CurrentMenu is null or { shippingBin: true })
         {
             this.SearchArea.visible = false;
             return;
         }
 
         if (this.LastContext is { Data: Storage lastStorage }
-         && !ReferenceEquals(lastStorage.Context, storageObject.Context))
+            && !ReferenceEquals(lastStorage.Context, storageObject.Context))
         {
             this.ItemMatcher.Clear();
             this.SearchField.Text = string.Empty;

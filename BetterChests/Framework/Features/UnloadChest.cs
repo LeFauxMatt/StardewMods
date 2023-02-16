@@ -52,20 +52,20 @@ internal sealed class UnloadChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
-         || !e.Button.IsUseToolButton()
-         || this._helper.Input.IsSuppressed(e.Button)
-         || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
-         || Storages.CurrentItem.Data is not Storage storageObject
-         || (!storageObject.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
-         || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+            || !e.Button.IsUseToolButton()
+            || this._helper.Input.IsSuppressed(e.Button)
+            || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
+            || Storages.CurrentItem.Data is not Storage storageObject
+            || (!storageObject.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
+            || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
 
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-         || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage)
-         || toStorage is not { Data: Storage toStorageObject })
+            || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage)
+            || toStorage is not { Data: Storage toStorageObject })
         {
             return;
         }
@@ -73,7 +73,7 @@ internal sealed class UnloadChest : Feature
         // Add source capacity to target
         var combined = false;
         if (toStorage.UnloadChestCombine is FeatureOption.Enabled
-         && Storages.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
+            && Storages.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
         {
             var currentCapacity = toStorageObject.ActualCapacity;
             var addedCapacity = storageObject.ActualCapacity;

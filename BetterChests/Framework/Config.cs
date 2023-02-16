@@ -160,11 +160,11 @@ internal sealed class Config
                         .World,
                     >= 2 when Config.ModConfig.CraftFromWorkbench is FeatureOptionRange.Location =>
                         (int)FeatureOptionRange.Location
-                      + (int)Math.Ceiling(Math.Log2(Config.ModConfig.CraftFromWorkbenchDistance))
-                      - 1,
+                        + (int)Math.Ceiling(Math.Log2(Config.ModConfig.CraftFromWorkbenchDistance))
+                        - 1,
                     _ when Config.ModConfig.CraftFromWorkbench is FeatureOptionRange.Location => (int)FeatureOptionRange
                             .World
-                      - 1,
+                        - 1,
                     _ => (int)FeatureOptionRange.Default,
                 },
                 value =>
@@ -438,8 +438,8 @@ internal sealed class Config
             {
                 var point = Game1.getMousePosition();
                 if (Game1.oldMouseState.LeftButton == ButtonState.Released
-                 && Mouse.GetState().LeftButton == ButtonState.Pressed
-                 && bounds.Contains(point))
+                    && Mouse.GetState().LeftButton == ButtonState.Pressed
+                    && bounds.Contains(point))
                 {
                     Game1.activeClickableMenu.SetChildMenu(
                         new ItemSelectionMenu(storage, storage.FilterMatcher, Config.Input, Config.Translation));

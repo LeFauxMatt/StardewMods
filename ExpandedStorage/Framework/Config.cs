@@ -60,8 +60,8 @@ internal sealed class Config
     public static void SetupConfig(IDictionary<string, ICustomStorage> storages)
     {
         var configStorages = storages.Where(storage => storage.Value.PlayerConfig)
-                                     .OrderBy(storage => storage.Value.DisplayName)
-                                     .ToArray();
+            .OrderBy(storage => storage.Value.DisplayName)
+            .ToArray();
 
         foreach (var (id, storage) in configStorages)
         {

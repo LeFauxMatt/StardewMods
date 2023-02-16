@@ -162,7 +162,7 @@ internal sealed class ResizeChestMenu : Feature
         foreach (var instruction in instructions)
         {
             if (instruction.LoadsField(
-                    AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
+                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
             {
                 yield return instruction;
                 yield return new(
@@ -218,8 +218,8 @@ internal sealed class ResizeChestMenu : Feature
             {
                 shippingBin: false, ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow,
             }
-         || BetterItemGrabMenu.Context is null
-         || BetterItemGrabMenu.Context.ResizeChestMenuRows == 3)
+            || BetterItemGrabMenu.Context is null
+            || BetterItemGrabMenu.Context.ResizeChestMenuRows == 3)
         {
             return;
         }

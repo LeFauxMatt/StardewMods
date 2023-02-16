@@ -26,10 +26,10 @@ public sealed class ModEntry : Mod
     private ModConfig? _config;
 
     private static bool ShowToolbar => Integrations.IsLoaded
-                                    && Game1.displayHUD
-                                    && Context.IsPlayerFree
-                                    && Game1.activeClickableMenu is null
-                                    && Game1.onScreenMenus.OfType<Toolbar>().Any();
+        && Game1.displayHUD
+        && Context.IsPlayerFree
+        && Game1.activeClickableMenu is null
+        && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
     private Api Api => this._api.Value ??= new(this.Helper, this.ModConfig.Icons, this.Components);
 
@@ -130,7 +130,7 @@ public sealed class ModEntry : Mod
         }
 
         if (e.Button is not SButton.MouseLeft or SButton.MouseRight
-         && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
+            && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }

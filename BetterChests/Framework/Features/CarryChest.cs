@@ -90,8 +90,8 @@ internal sealed class CarryChest : Feature
         foreach (var storage in Storages.Inventory)
         {
             if (storage is not { Data: Storage storageObject }
-             || (excludeCurrent && storageObject.Context == Game1.player.CurrentItem)
-             || storageObject.Items.All(item => item is null))
+                || (excludeCurrent && storageObject.Context == Game1.player.CurrentItem)
+                || storageObject.Items.All(item => item is null))
             {
                 continue;
             }
@@ -208,7 +208,7 @@ internal sealed class CarryChest : Feature
                 items,
                 spriteBatch,
                 location
-              + new Vector2(
+                + new Vector2(
                     Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize,
                     2f * scaleSize),
                 3f * scaleSize,
@@ -302,7 +302,7 @@ internal sealed class CarryChest : Feature
         }
 
         if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-         && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+            && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
         }
@@ -318,7 +318,7 @@ internal sealed class CarryChest : Feature
         }
 
         if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-         && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+            && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
         }
@@ -329,7 +329,7 @@ internal sealed class CarryChest : Feature
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if ((__instance is Chest chest && chest.items.OfType<Item>().Any())
-         || (other is Chest otherChest && otherChest.items.OfType<Item>().Any()))
+            || (other is Chest otherChest && otherChest.items.OfType<Item>().Any()))
         {
             __result = false;
         }
@@ -360,19 +360,19 @@ internal sealed class CarryChest : Feature
         ref bool __result)
     {
         if (!__result
-         || __instance is not Chest held
-         || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
-         || obj is not Chest placed)
+            || __instance is not Chest held
+            || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
+            || obj is not Chest placed)
         {
             return;
         }
 
         // Only copy items from regular chest types
         if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-         && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+            && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
-                  .CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+                .CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
         // Copy properties
@@ -434,19 +434,19 @@ internal sealed class CarryChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
-         || Game1.player.CurrentItem is Tool
-         || !e.Button.IsUseToolButton()
-         || this._helper.Input.IsSuppressed(e.Button)
-         || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+            || Game1.player.CurrentItem is Tool
+            || !e.Button.IsUseToolButton()
+            || this._helper.Input.IsSuppressed(e.Button)
+            || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
         }
 
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-         || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-         || !Storages.TryGetOne(obj, out var storage)
-         || storage.CarryChest is not FeatureOption.Enabled)
+            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+            || !Storages.TryGetOne(obj, out var storage)
+            || storage.CarryChest is not FeatureOption.Enabled)
         {
             return;
         }

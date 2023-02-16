@@ -222,12 +222,12 @@ internal sealed class HslColorPicker
         else
         {
             var hueValues = HslColorPicker.Colors
-                                          .Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this._hslColor.H)))
-                                          .ToList();
+                .Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this._hslColor.H)))
+                .ToList();
             var minDiff = hueValues.Min(item => item.Diff);
             this._hueCoord = hueValues.First(item => Math.Abs(item.Diff - minDiff) == 0)
-                                      .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
-                                      .Remap(HslColorPicker.UnitRange, this._hueTrack);
+                .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
+                .Remap(HslColorPicker.UnitRange, this._hueTrack);
             this._lightnessCoord = this._hslColor.L.Remap(HslColorPicker.UnitRange, this._lightnessTrack);
             this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
         }
@@ -340,7 +340,7 @@ internal sealed class HslColorPicker
             case Thumb.Hue:
                 this._hueCoord = this._hueTrack.Clamp(y);
                 var index = this._hueCoord.Remap(this._hueTrack, HslColorPicker.UnitRange)
-                                .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack);
+                    .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack);
                 var hslColor = HslColorPicker.Colors[index];
                 this._hslColor.H = hslColor.H;
                 if (this.Color == Color.Black)

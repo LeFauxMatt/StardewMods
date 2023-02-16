@@ -79,8 +79,8 @@ internal sealed class ModPatches
     {
         var capsuleItems = Game1.content.Load<List<CapsuleItem>>("furyx639.OrdinaryCapsule/CapsuleItems");
         var minutes = capsuleItems.Where(capsuleItem => capsuleItem.ContextTags.Any(item.GetContextTags().Contains))
-                                  .Select(capsuleItem => capsuleItem.ProductionTime)
-                                  .FirstOrDefault();
+            .Select(capsuleItem => capsuleItem.ProductionTime)
+            .FirstOrDefault();
         ModPatches.CachedTimes[item.ParentSheetIndex] = minutes > 0 ? minutes : ModPatches.Config.DefaultProductionTime;
         return ModPatches.CachedTimes[item.ParentSheetIndex];
     }
@@ -127,7 +127,7 @@ internal sealed class ModPatches
     private static void Object_minutesElapsed_postfix(SObject __instance, GameLocation environment)
     {
         if (ModPatches.Config.BreakChance <= 0
-         || __instance is not
+            || __instance is not
             {
                 bigCraftable.Value: true,
                 Name: "Crystalarium",
@@ -171,8 +171,8 @@ internal sealed class ModPatches
 
         var capsuleItems = Game1.content.Load<CapsuleItems>("furyx639.OrdinaryCapsule/CapsuleItems");
         return capsuleItems.FirstOrDefault(
-                               capsuleItem => capsuleItem.ContextTags.Any(heldObj.GetContextTags().Contains))
-                           ?.Sound
+                    capsuleItem => capsuleItem.ContextTags.Any(heldObj.GetContextTags().Contains))
+                ?.Sound
             ?? sound;
     }
 }

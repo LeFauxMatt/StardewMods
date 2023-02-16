@@ -44,6 +44,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CycleTools", "CycleTools\Cy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsItCake", "IsItCake\IsItCake.csproj", "{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PocketSlimes", "PocketSlimes\PocketSlimes.csproj", "{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +110,10 @@ Global
 		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED82AB33-DDCE-424B-BA4E-ABD7F8A2A5F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +128,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Common\Common.projitems*{1f7a6349-0a3a-45ca-9170-588de3b5c13e}*SharedItemsImports = 5
 		Common\Common.projitems*{27ad68fc-9fce-423e-99a1-9c232c40793d}*SharedItemsImports = 5
+		Common\Common.projitems*{2f90b9e9-58c9-45b2-87e8-547bfb4d0a39}*SharedItemsImports = 5
 		Common\Common.projitems*{4a2026ed-bc33-4bd3-800a-b4c7c2eba1fa}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{66f2b279-351b-499c-826b-a885c2255334}*SharedItemsImports = 5

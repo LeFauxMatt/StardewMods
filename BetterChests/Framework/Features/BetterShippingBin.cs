@@ -46,8 +46,8 @@ internal sealed class BetterShippingBin : Feature
     {
         // Relaunch as regular ItemGrabMenu
         if (e.NewMenu is ItemGrabMenu { context: { } context, shippingBin: true }
-         && Storages.TryGetOne(context, out var storage)
-         && storage is { Data: ShippingBinStorage storageObject })
+            && Storages.TryGetOne(context, out var storage)
+            && storage is { Data: ShippingBinStorage storageObject })
         {
             storageObject.ShowMenu();
         }

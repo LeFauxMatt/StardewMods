@@ -484,7 +484,7 @@ internal sealed class BetterItemGrabMenu : Feature
         var itemsToGrabMenu = new DisplayedItems(__instance.ItemsToGrabMenu, true);
 
         if (BetterItemGrabMenu.Instance.CurrentMenu is not null
-         && ReferenceEquals(__instance.context, BetterItemGrabMenu.Instance.CurrentMenu.context))
+            && ReferenceEquals(__instance.context, BetterItemGrabMenu.Instance.CurrentMenu.context))
         {
             inventory.Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0;
             itemsToGrabMenu.Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0;
@@ -527,7 +527,7 @@ internal sealed class BetterItemGrabMenu : Feature
             if (newObj is not null)
             {
                 if (instruction.StoresField(
-                        AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))))
+                    AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))))
                 {
                     yield return new(OpCodes.Ldarg_0);
                     yield return new(
@@ -595,7 +595,7 @@ internal sealed class BetterItemGrabMenu : Feature
                     break;
                 default:
                     if (instruction.LoadsField(
-                            AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
+                        AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
                     {
                         addPadding = true;
                     }
@@ -646,7 +646,7 @@ internal sealed class BetterItemGrabMenu : Feature
         foreach (var instruction in instructions)
         {
             if (instruction.LoadsField(
-                    AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
+                AccessTools.Field(typeof(IClickableMenu), nameof(IClickableMenu.spaceToClearTopBorder))))
             {
                 yield return instruction;
                 yield return new(
@@ -709,8 +709,8 @@ internal sealed class BetterItemGrabMenu : Feature
 
         var displayedItems =
             BetterItemGrabMenu.Inventory is not null
-         && this.CurrentMenu.currentlySnappedComponent is not null
-         && BetterItemGrabMenu.Inventory.Menu.inventory.Contains(this.CurrentMenu.currentlySnappedComponent)
+            && this.CurrentMenu.currentlySnappedComponent is not null
+            && BetterItemGrabMenu.Inventory.Menu.inventory.Contains(this.CurrentMenu.currentlySnappedComponent)
                 ? BetterItemGrabMenu.Inventory
                 : BetterItemGrabMenu.ItemsToGrabMenu;
         if (displayedItems is null)
@@ -720,8 +720,8 @@ internal sealed class BetterItemGrabMenu : Feature
 
         var offset = displayedItems.Offset;
         if (this._config.ControlScheme.ScrollUp.JustPressed()
-         && (this.CurrentMenu.currentlySnappedComponent is null
-          || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
+            && (this.CurrentMenu.currentlySnappedComponent is null
+                || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
             displayedItems.Offset -= this._config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
             if (offset != displayedItems.Offset)
@@ -731,8 +731,8 @@ internal sealed class BetterItemGrabMenu : Feature
         }
 
         if (this._config.ControlScheme.ScrollDown.JustPressed()
-         && (this.CurrentMenu.currentlySnappedComponent is null
-          || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
+            && (this.CurrentMenu.currentlySnappedComponent is null
+                || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
             displayedItems.Offset += this._config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
             if (offset != displayedItems.Offset)

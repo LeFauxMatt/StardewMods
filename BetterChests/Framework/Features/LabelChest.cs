@@ -50,7 +50,7 @@ internal sealed class LabelChest : Feature
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
-         || string.IsNullOrWhiteSpace(BetterItemGrabMenu.Context?.ChestLabel))
+            || string.IsNullOrWhiteSpace(BetterItemGrabMenu.Context?.ChestLabel))
         {
             return;
         }
@@ -63,9 +63,9 @@ internal sealed class LabelChest : Feature
             Game1.smallFont,
             overrideX: itemGrabMenu.xPositionOnScreen - bounds.X - IClickableMenu.borderWidth,
             overrideY: itemGrabMenu.yPositionOnScreen
-                     - IClickableMenu.borderWidth
-                     - BetterItemGrabMenu.TopPadding
-                     - Game1.tileSize);
+            - IClickableMenu.borderWidth
+            - BetterItemGrabMenu.TopPadding
+            - Game1.tileSize);
     }
 
     private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)
@@ -77,9 +77,9 @@ internal sealed class LabelChest : Feature
 
         var pos = CommonHelpers.GetCursorTile();
         if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-          && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
-         || !Storages.TryGetOne(obj, out var storage)
-         || string.IsNullOrWhiteSpace(storage.ChestLabel))
+                && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
+            || !Storages.TryGetOne(obj, out var storage)
+            || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
             return;
         }

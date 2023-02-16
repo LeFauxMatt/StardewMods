@@ -165,7 +165,7 @@ internal sealed class Integrations
             {
                 var modType = mod.GetType();
                 var perScreenList = modType.GetField("list", BindingFlags.Instance | BindingFlags.NonPublic)
-                                           ?.GetValue(mod);
+                    ?.GetValue(mod);
                 var toDoMenu = modType.Assembly.GetType("ToDew.ToDoMenu");
                 if (perScreenList is null || toDoMenu is null)
                 {

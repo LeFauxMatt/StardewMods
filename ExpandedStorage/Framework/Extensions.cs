@@ -209,7 +209,7 @@ internal static class Extensions
         var tint = (obj as Chest)?.Tint ?? Color.White;
         var frame = new Rectangle(
             Math.Min(startingLidFrame + lastLidFrame - 1, Math.Max(0, currentLidFrame - startingLidFrame))
-          * storage.Width,
+            * storage.Width,
             colored ? storage.Height : 0,
             storage.Width,
             storage.Height);

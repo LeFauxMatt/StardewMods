@@ -104,7 +104,7 @@ internal sealed class AutoOrganize : Feature
     private static bool TransferStack(StorageNode fromStorage, StorageNode toStorage, Item item, int stack)
     {
         if (ReferenceEquals(fromStorage, toStorage)
-         || fromStorage.StashToChestPriority >= toStorage.StashToChestPriority)
+            || fromStorage.StashToChestPriority >= toStorage.StashToChestPriority)
         {
             return true;
         }

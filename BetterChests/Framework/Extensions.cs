@@ -197,7 +197,7 @@ internal static class Extensions
         }
 
         return (int)(Math.Abs(storageObject.Position.X - player.getTileX())
-                   + Math.Abs(storageObject.Position.Y - player.getTileY()));
+            + Math.Abs(storageObject.Position.Y - player.getTileY()));
     }
 
     /// <summary>
@@ -241,9 +241,9 @@ internal static class Extensions
                 var g1 = storage.OrganizeChestGroupBy switch
                 {
                     GroupBy.Category => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
-                                     ?? string.Empty,
+                        ?? string.Empty,
                     GroupBy.Color => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
-                                  ?? string.Empty,
+                        ?? string.Empty,
                     GroupBy.Name => i1.DisplayName,
                     GroupBy.Default or _ => string.Empty,
                 };
@@ -251,9 +251,9 @@ internal static class Extensions
                 var g2 = storage.OrganizeChestGroupBy switch
                 {
                     GroupBy.Category => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
-                                     ?? string.Empty,
+                        ?? string.Empty,
                     GroupBy.Color => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
-                                  ?? string.Empty,
+                        ?? string.Empty,
                     GroupBy.Name => i2.DisplayName,
                     GroupBy.Default or _ => string.Empty,
                 };
@@ -322,11 +322,11 @@ internal static class Extensions
 
         var stack = item.Stack;
         var tmp = (existingStacks && storageObject.Items.Any(otherItem => otherItem?.canStackWith(item) == true))
-               || (storage.FilterItemsList.Any()
+            || (storage.FilterItemsList.Any()
                 && !storage.FilterItemsList.All(filter => filter.StartsWith("!"))
                 && storage.FilterMatches(item))
-            ? storageObject.AddItem(item)
-            : item;
+                ? storageObject.AddItem(item)
+                : item;
 
         if (tmp is null || stack != item.Stack)
         {
@@ -356,8 +356,8 @@ internal static class Extensions
                 => false,
             FeatureOptionRange.Location when distance == -1 => true,
             FeatureOptionRange.Location when Math.Abs(position.X - Game1.player.getTileX())
-                                           + Math.Abs(position.Y - Game1.player.getTileY())
-                                          <= distance => true,
+                + Math.Abs(position.Y - Game1.player.getTileY())
+                <= distance => true,
             _ => false,
         };
     }
@@ -371,7 +371,7 @@ internal static class Extensions
     {
         return item is SObject obj
             && (Game1.locations.OfType<CommunityCenter>().FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
-             ?? false);
+                ?? false);
     }
 
     /// <summary>
@@ -428,8 +428,8 @@ internal static class Extensions
             _ when feature is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
             _ when feature is FeatureOptionRange.World => (int)FeatureOptionRange.World,
             >= 2 when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
-                                                              + (int)Math.Ceiling(Math.Log2(distance))
-                                                              - 1,
+                + (int)Math.Ceiling(Math.Log2(distance))
+                - 1,
             _ when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
             _ => (int)FeatureOptionRange.Default,
         };

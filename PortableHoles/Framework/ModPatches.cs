@@ -128,7 +128,7 @@ internal sealed class ModPatches
     private static void CraftingRecipe_createItem_postfix(CraftingRecipe __instance, ref Item __result)
     {
         if (!__instance.name.Equals("Portable Hole")
-         || __result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 71 } obj)
+            || __result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 71 } obj)
         {
             return;
         }
@@ -141,14 +141,14 @@ internal sealed class ModPatches
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result
-         || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 71 } obj
-         || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 71 } otherObj)
+            || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 71 } obj
+            || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 71 } otherObj)
         {
             return;
         }
 
         if (obj.modData.ContainsKey("furyx639.PortableHoles/PortableHole")
-          ^ otherObj.modData.ContainsKey("furyx639.PortableHoles/PortableHole"))
+            ^ otherObj.modData.ContainsKey("furyx639.PortableHoles/PortableHole"))
         {
             __result = false;
         }
@@ -232,10 +232,10 @@ internal sealed class ModPatches
                 __instance.Stack,
                 spriteBatch,
                 location
-              + new Vector2(
+                + new Vector2(
                     Game1.tileSize
-                  - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
-                  + 3f * scaleSize,
+                    - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
+                    + 3f * scaleSize,
                     Game1.tileSize - 18f * scaleSize + 2f),
                 3f * scaleSize,
                 1f,

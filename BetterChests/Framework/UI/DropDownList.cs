@@ -33,20 +33,20 @@ internal sealed class DropDownList : IClickableMenu
             value => value,
             value => translation.Get($"tag.{value}").Default(value).ToString());
         var textBounds = this._localValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint())
-                             .ToList();
+            .ToList();
         var textHeight = textBounds.Max(textBound => textBound.Y);
         this.width = textBounds.Max(textBound => textBound.X) + 16;
         this.height = textBounds.Sum(textBound => textBound.Y) + 16;
         this._bounds = new(x, y, this.width, this.height);
         this._values = values.Select(
-                                 (value, index) => new ClickableComponent(
-                                     new(
-                                         this._bounds.X + 8,
-                                         this._bounds.Y + 8 + textHeight * index,
-                                         this._bounds.Width,
-                                         textBounds[index].Y),
-                                     value))
-                             .ToList();
+                (value, index) => new ClickableComponent(
+                    new(
+                        this._bounds.X + 8,
+                        this._bounds.Y + 8 + textHeight * index,
+                        this._bounds.Width,
+                        textBounds[index].Y),
+                    value))
+            .ToList();
     }
 
     /// <inheritdoc />

@@ -132,7 +132,7 @@ internal sealed class ModPatches
 
         var shouldOpen = location.farmers.Any(
             farmer => Math.Abs(farmer.getTileX() - __instance.TileLocation.X) <= 1f
-                   && Math.Abs(farmer.getTileY() - __instance.TileLocation.Y) <= 1f);
+                && Math.Abs(farmer.getTileY() - __instance.TileLocation.Y) <= 1f);
         if (shouldOpen == ____farmerNearby)
         {
             return false;

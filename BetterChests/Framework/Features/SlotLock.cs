@@ -101,15 +101,15 @@ internal sealed class SlotLock : Feature
     {
         return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
             == true
-            ? SlotLock.Instance._config.SlotLockColor.ToColor()
-            : tint;
+                ? SlotLock.Instance._config.SlotLockColor.ToColor()
+                : tint;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!this._config.SlotLockHold
-         || e.Button is not SButton.MouseLeft
-         || !this._config.ControlScheme.LockSlot.IsDown())
+            || e.Button is not SButton.MouseLeft
+            || !this._config.ControlScheme.LockSlot.IsDown())
         {
             return;
         }

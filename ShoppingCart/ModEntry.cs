@@ -72,7 +72,7 @@ public sealed class ModEntry : Mod
         return menu is ShopMenu { currency: 0, storeContext: not ("Dresser" or "FishTank") } shopMenu
             && shopMenu.forSale.OfType<Item>().Any()
             && !(shopMenu.portraitPerson?.Equals(Game1.getCharacterFromName("Clint")) == true
-              && shopMenu.forSale.Any(forSale => forSale is Axe or WateringCan or Pickaxe or Hoe or GenericTool));
+                && shopMenu.forSale.Any(forSale => forSale is Axe or WateringCan or Pickaxe or Hoe or GenericTool));
     }
 
     /// <inheritdoc />
@@ -183,7 +183,7 @@ public sealed class ModEntry : Mod
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (ModEntry.CurrentShop is null
-         || (!e.Button.IsActionButton() && e.Button is not (SButton.MouseLeft or SButton.MouseRight)))
+            || (!e.Button.IsActionButton() && e.Button is not (SButton.MouseLeft or SButton.MouseRight)))
         {
             return;
         }

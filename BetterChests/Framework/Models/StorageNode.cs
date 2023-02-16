@@ -304,8 +304,8 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
         get
         {
             if (this._menuRows > 0
-             && this._capacity == this.ResizeChestCapacity
-             && this._rows == this.ResizeChestMenuRows)
+                && this._capacity == this.ResizeChestCapacity
+                && this._rows == this.ResizeChestMenuRows)
             {
                 return this._menuRows;
             }

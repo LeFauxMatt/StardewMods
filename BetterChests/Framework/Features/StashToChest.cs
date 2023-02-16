@@ -93,16 +93,16 @@ internal sealed class StashToChest : Feature
         foreach (var storage in storages)
         {
             if (storage.StashToChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default
-             || storage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-             || (storage.StashToChestDisableLocations.Contains("UndergroundMine")
-              && Game1.player.currentLocation is MineShaft mineShaft
-              && mineShaft.Name.StartsWith("UndergroundMine"))
-             || storage is not { Data: Storage storageObject }
-             || !storage.StashToChest.WithinRangeOfPlayer(
+                || storage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+                || (storage.StashToChestDisableLocations.Contains("UndergroundMine")
+                    && Game1.player.currentLocation is MineShaft mineShaft
+                    && mineShaft.Name.StartsWith("UndergroundMine"))
+                || storage is not { Data: Storage storageObject }
+                || !storage.StashToChest.WithinRangeOfPlayer(
                     storage.StashToChestDistance,
                     storageObject.Location,
                     storageObject.Position)
-             || !StashToChest.StashIntoStorage(storage))
+                || !StashToChest.StashIntoStorage(storage))
             {
                 continue;
             }
@@ -126,7 +126,7 @@ internal sealed class StashToChest : Feature
         for (var index = 0; index < Game1.player.MaxItems; ++index)
         {
             if (Game1.player.Items[index] is null
-             || Game1.player.Items[index].modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
+                || Game1.player.Items[index].modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
             {
                 continue;
             }
@@ -147,12 +147,12 @@ internal sealed class StashToChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
-         || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
-         || BetterItemGrabMenu.Context is not
+            || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+            || BetterItemGrabMenu.Context is not
             {
                 StashToChest: FeatureOptionRange.Inventory
-                              or FeatureOptionRange.Location
-                              or FeatureOptionRange.World,
+                or FeatureOptionRange.Location
+                or FeatureOptionRange.World,
             })
         {
             return;
@@ -185,11 +185,11 @@ internal sealed class StashToChest : Feature
         }
 
         if (Game1.activeClickableMenu is not ItemGrabMenu
-         || BetterItemGrabMenu.Context is not
+            || BetterItemGrabMenu.Context is not
             {
                 StashToChest: FeatureOptionRange.Inventory
-                              or FeatureOptionRange.Location
-                              or FeatureOptionRange.World,
+                or FeatureOptionRange.Location
+                or FeatureOptionRange.World,
             })
         {
             return;

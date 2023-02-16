@@ -33,12 +33,12 @@ internal sealed class CraftFromChest : Feature
             foreach (var storage in Storages.All)
             {
                 if (storage.CraftFromChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default
-                 || storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-                 || (storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
-                  && Game1.player.currentLocation is MineShaft mineShaft
-                  && mineShaft.Name.StartsWith("UndergroundMine"))
-                 || storage is not { Data: Storage storageObject }
-                 || !storage.CraftFromChest.WithinRangeOfPlayer(
+                    || storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+                    || (storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
+                        && Game1.player.currentLocation is MineShaft mineShaft
+                        && mineShaft.Name.StartsWith("UndergroundMine"))
+                    || storage is not { Data: Storage storageObject }
+                    || !storage.CraftFromChest.WithinRangeOfPlayer(
                         storage.CraftFromChestDistance,
                         storageObject.Location,
                         storageObject.Position))

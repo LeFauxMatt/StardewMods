@@ -78,16 +78,16 @@ internal static class CommonExtensions
         return salable switch
         {
             ColoredObject coloredObj when other is not ColoredObject otherColoredObj
-                                       || !coloredObj.color.Value.Equals(otherColoredObj.color.Value) => false,
+                || !coloredObj.color.Value.Equals(otherColoredObj.color.Value) => false,
             SObject obj when other is not SObject otherObj
-                          || obj.ParentSheetIndex != otherObj.ParentSheetIndex
-                          || obj.bigCraftable.Value != otherObj.bigCraftable.Value
-                          || obj.orderData.Value != otherObj.orderData.Value
-                          || obj.Quality != otherObj.Quality
-                          || obj.Type != otherObj.Type => false,
+                || obj.ParentSheetIndex != otherObj.ParentSheetIndex
+                || obj.bigCraftable.Value != otherObj.bigCraftable.Value
+                || obj.orderData.Value != otherObj.orderData.Value
+                || obj.Quality != otherObj.Quality
+                || obj.Type != otherObj.Type => false,
             Item item when other is not Item otherItem
-                        || item.Category != otherItem.Category
-                        || item.ParentSheetIndex != otherItem.ParentSheetIndex => false,
+                || item.Category != otherItem.Category
+                || item.ParentSheetIndex != otherItem.ParentSheetIndex => false,
             Stackable stackable when other is not Stackable otherStackable || !stackable.canStackWith(otherStackable) =>
                 false,
             Tool when other is not Tool => false,
@@ -121,8 +121,8 @@ internal static class CommonExtensions
     {
         return targetRange.Clamp(
             targetRange.Minimum
-          + (targetRange.Maximum - targetRange.Minimum)
-          * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)));
+            + (targetRange.Maximum - targetRange.Minimum)
+            * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)));
     }
 
     /// <summary>Rounds an int up to the next int by an interval.</summary>

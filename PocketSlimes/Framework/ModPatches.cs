@@ -1,4 +1,4 @@
-﻿namespace StardewMods.IsItCake.Framework;
+﻿namespace StardewMods.PocketSlimes.Framework;
 
 using System;
 using HarmonyLib;
@@ -6,9 +6,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 /// <summary>
-///     Harmony Patches for Is It Cake.
+///     Harmony Patches for Pocket Slimes.
 /// </summary>
-internal sealed class ModPatches
+public class ModPatches
 {
 #nullable disable
     private static ModPatches Instance;
@@ -17,9 +17,6 @@ internal sealed class ModPatches
     private ModPatches(IManifest manifest)
     {
         var harmony = new Harmony(manifest.UniqueID);
-        harmony.Patch(
-            AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.CraftingRecipe_createItem_postfix)));
         harmony.Patch(
             AccessTools.Method(typeof(Item), nameof(Item.canStackWith)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Item_canStackWith_postfix)));
@@ -84,40 +81,70 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void CraftingRecipe_createItem_postfix(CraftingRecipe __instance, ref Item __result)
-    {
-        if (Game1.player.CurrentItem is not SObject { bigCraftable.Value: false } item
-            || !(__instance.name.Equals("Chocolate Cake") || __instance.name.Equals("Pink Cake"))
-            || __result is not SObject { bigCraftable.Value: false, ParentSheetIndex: 220 or 221 } obj)
-        {
-            return;
-        }
-
-        obj.modData["furyx639.IsItCake/ParentSheetIndex"] = item.ParentSheetIndex.ToString();
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result
-            || __instance is not SObject { bigCraftable.Value: false, ParentSheetIndex: 220 or 221 } obj
-            || other is not SObject { bigCraftable.Value: false, ParentSheetIndex: 220 or 221 } otherObj)
+            || __instance is not SObject
+            {
+                bigCraftable.Value: false, ParentSheetIndex: 413 or 437 or 439 or 680 or 857,
+            } obj
+            || other is not SObject
+            {
+                bigCraftable.Value: false, ParentSheetIndex: 413 or 437 or 439 or 680 or 857,
+            } otherObj)
         {
             return;
         }
 
-        if (!obj.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var id))
+        // Slime type
+        if (!obj.modData.TryGetValue("furyx639.PocketSlimes/Name", out var name))
         {
-            id = obj.ParentSheetIndex.ToString();
+            name = obj.Name;
         }
 
-        if (!otherObj.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var otherId))
+        if (!otherObj.modData.TryGetValue("furyx639.PocketSlimes/Name", out var otherName))
         {
-            otherId = otherObj.ParentSheetIndex.ToString();
+            otherName = obj.Name;
         }
 
-        __result = id == otherId;
+        if (name != otherName)
+        {
+            __result = false;
+            return;
+        }
+
+        // Slime color
+        if (!obj.modData.TryGetValue("furyx639.PocketSlimes/Color", out var color))
+        {
+            color = string.Empty;
+        }
+
+        if (!otherObj.modData.TryGetValue("furyx639.PocketSlimes/Color", out var otherColor))
+        {
+            otherColor = string.Empty;
+        }
+
+        if (color != otherColor)
+        {
+            __result = false;
+            return;
+        }
+
+        // Slime cute
+        if (!obj.modData.TryGetValue("furyx639.PocketSlimes/Cute", out var cute))
+        {
+            cute = string.Empty;
+        }
+
+        if (!otherObj.modData.TryGetValue("furyx639.PocketSlimes/Cute", out var otherCute))
+        {
+            otherCute = string.Empty;
+        }
+
+        if (cute != otherCute)
+        {
+            __result = false;
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -125,7 +152,7 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_draw_prefix(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
     {
-        if (!__instance.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var id)
+        if (!__instance.modData.TryGetValue("furyx639.PocketSlimes/Name", out var id)
             || !int.TryParse(id, out var parentSheetIndex))
         {
             return true;
@@ -155,7 +182,7 @@ internal sealed class ModPatches
         float layerDepth,
         Color color)
     {
-        if (!__instance.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var id)
+        if (!__instance.modData.TryGetValue("furyx639.PocketSlimes/Name", out var id)
             || !int.TryParse(id, out var parentSheetIndex))
         {
             return true;
@@ -201,7 +228,7 @@ internal sealed class ModPatches
         float layerDepth,
         float alpha = 1f)
     {
-        if (!__instance.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var id)
+        if (!__instance.modData.TryGetValue("furyx639.PocketSlimes/Name", out var id)
             || !int.TryParse(id, out var parentSheetIndex))
         {
             return true;
@@ -236,7 +263,7 @@ internal sealed class ModPatches
         Vector2 objectPosition,
         Farmer f)
     {
-        if (!__instance.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var id)
+        if (!__instance.modData.TryGetValue("furyx639.PocketSlimes/Name", out var id)
             || !int.TryParse(id, out var parentSheetIndex))
         {
             return true;
@@ -260,13 +287,8 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_getDescription_postfix(SObject __instance, ref string __result)
     {
-        if (!__instance.modData.TryGetValue("furyx639.IsItCake/ParentSheetIndex", out var id)
+        if (!__instance.modData.TryGetValue("furyx639.PocketSlimes/Name", out var id)
             || !int.TryParse(id, out var parentSheetIndex)
-            || parentSheetIndex == __instance.ParentSheetIndex)
-        {
-            return;
-        }
-
-        __result = I18n.Object_Cake_Description();
+            || parentSheetIndex == __instance.ParentSheetIndex) { }
     }
 }

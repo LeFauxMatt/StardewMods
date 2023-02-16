@@ -226,8 +226,8 @@ public sealed class ModEntry : Mod
 
                         // Remove base tile
                         if (layer.Tiles[x, y] is not null
-                         && layer.Tiles[x, y].TileSheet.Id == "Town"
-                         && layer.Tiles[x, y].TileIndex == 78)
+                            && layer.Tiles[x, y].TileSheet.Id == "Town"
+                            && layer.Tiles[x, y].TileIndex == 78)
                         {
                             layer.Tiles[x, y] = null;
                         }
@@ -235,16 +235,16 @@ public sealed class ModEntry : Mod
                         // Remove Lid tile
                         layer = map.GetLayer("Front");
                         if (layer.Tiles[x, y - 1] is not null
-                         && layer.Tiles[x, y - 1].TileSheet.Id == "Town"
-                         && layer.Tiles[x, y - 1].TileIndex == 46)
+                            && layer.Tiles[x, y - 1].TileSheet.Id == "Town"
+                            && layer.Tiles[x, y - 1].TileIndex == 46)
                         {
                             layer.Tiles[x, y - 1] = null;
                         }
 
                         // Add NoPath to tile
                         map.GetLayer("Back")
-                           .PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size)
-                           ?.Properties.Add("NoPath", string.Empty);
+                            .PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size)
+                            ?.Properties.Add("NoPath", string.Empty);
                     }
                 }
             },
@@ -260,10 +260,10 @@ public sealed class ModEntry : Mod
 
         var pos = CommonHelpers.GetCursorTile(1);
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-         || obj is not Chest chest
-         || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-         || !this._garbageCans.TryGetValue(whichCan, out var garbageCan)
-         || garbageCan.Value is null)
+            || obj is not Chest chest
+            || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
+            || !this._garbageCans.TryGetValue(whichCan, out var garbageCan)
+            || garbageCan.Value is null)
         {
             return;
         }
@@ -370,8 +370,8 @@ public sealed class ModEntry : Mod
             foreach (var (tile, obj) in location.Objects.Pairs)
             {
                 if (obj is not Chest chest
-                 || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-                 || this._garbageCans.ContainsKey(whichCan))
+                    || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
+                    || this._garbageCans.ContainsKey(whichCan))
                 {
                     continue;
                 }

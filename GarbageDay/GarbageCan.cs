@@ -32,7 +32,7 @@ internal sealed class GarbageCan
         this.Location = location;
         this._chest = chest;
         if (!this.ModData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-         || !int.TryParse(whichCan, out var vanillaCan))
+            || !int.TryParse(whichCan, out var vanillaCan))
         {
             vanillaCan = 0;
         }
@@ -99,7 +99,7 @@ internal sealed class GarbageCan
             var localLoot = vanillaCan switch
             {
                 3 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => this.Randomizer.NextDouble()
-                  < 0.05
+                    < 0.05
                         ? 749
                         : 535,
                 4 when this.Randomizer.NextDouble() < 0.2 + Game1.player.DailyLuck => 378 + this.Randomizer.Next(3) * 2,
@@ -109,7 +109,7 @@ internal sealed class GarbageCan
                 7 when this.Randomizer.NextDouble() < 0.2 => !Utility.HasAnyPlayerSeenEvent(191393)
                     ? 167
                     : Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheater")
-                   && !Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheaterJoja")
+                    && !Utility.doesMasterPlayerHaveMailReceivedButNotMailForTomorrow("ccMovieTheaterJoja")
                         ? !(this.Randomizer.NextDouble() < 0.25) ? 270 : 809
                         : -1,
                 _ => -1,
@@ -188,9 +188,8 @@ internal sealed class GarbageCan
             }
 
             var items = GarbageCan.AllItems.Where(
-                                      item => item.GetContextTags()
-                                                  .Any(tag => tag.Equals(itemTag, StringComparison.OrdinalIgnoreCase)))
-                                  .ToList();
+                    item => item.GetContextTags().Any(tag => tag.Equals(itemTag, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
             if (!items.Any())
             {
                 continue;
@@ -288,8 +287,8 @@ internal sealed class GarbageCan
     private void UpdateColor()
     {
         var colorTags = this.Items.SelectMany(item => item.GetContextTags())
-                            .Where(tag => tag.StartsWith("color"))
-                            .ToList();
+            .Where(tag => tag.StartsWith("color"))
+            .ToList();
         if (!colorTags.Any())
         {
             this._chest.playerChoiceColor.Value = Color.Gray;

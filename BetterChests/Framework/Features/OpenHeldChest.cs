@@ -110,15 +110,15 @@ internal sealed class OpenHeldChest : Feature
         foreach (var instruction in instructions)
         {
             if (instruction.Is(
-                    OpCodes.Newobj,
-                    AccessTools.Constructor(
-                        typeof(Debris),
-                        new[]
-                        {
-                            typeof(int),
-                            typeof(Vector2),
-                            typeof(Vector2),
-                        })))
+                OpCodes.Newobj,
+                AccessTools.Constructor(
+                    typeof(Debris),
+                    new[]
+                    {
+                        typeof(int),
+                        typeof(Vector2),
+                        typeof(Vector2),
+                    })))
             {
                 yield return new(OpCodes.Ldarg_0);
                 yield return CodeInstruction.Call(typeof(OpenHeldChest), nameof(OpenHeldChest.GetDebris));
@@ -147,10 +147,10 @@ internal sealed class OpenHeldChest : Feature
 
         // Copy items from regular chest types
         if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
-         && !newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
+            && !newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
-                    .CopyFrom(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+                .CopyFrom(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
         return new(objectIndex, debrisOrigin, playerPosition)
@@ -183,9 +183,9 @@ internal sealed class OpenHeldChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
-         || !e.Button.IsActionButton()
-         || Storages.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled }
-         || Game1.player.CurrentItem.Stack > 1)
+            || !e.Button.IsActionButton()
+            || Storages.CurrentItem is null or { OpenHeldChest: not FeatureOption.Enabled }
+            || Game1.player.CurrentItem.Stack > 1)
         {
             return;
         }

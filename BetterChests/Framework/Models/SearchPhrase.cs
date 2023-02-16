@@ -49,8 +49,8 @@ internal sealed class SearchPhrase
     public bool Matches(Item item)
     {
         return (this.TagMatch
-                   ? item.GetContextTagsExt().Any(this.Matches)
-                   : this.Matches(item.DisplayName) || this.Matches(item.Name))
+                ? item.GetContextTagsExt().Any(this.Matches)
+                : this.Matches(item.DisplayName) || this.Matches(item.Name))
             != this.NotMatch;
     }
 
@@ -65,7 +65,7 @@ internal sealed class SearchPhrase
 
         var localMatch = this.Translation.Get($"tag.{match}").Default(string.Empty).ToString();
         if (!string.IsNullOrWhiteSpace(localMatch)
-         && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
+            && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
         {
             return true;
         }

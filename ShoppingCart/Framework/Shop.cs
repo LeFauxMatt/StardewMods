@@ -61,9 +61,9 @@ internal sealed class Shop : IShop
             this.Menu.yPositionOnScreen + IClickableMenu.borderWidth / 2,
             Shop.MenuWidth - IClickableMenu.borderWidth * 2,
             this.Menu.inventory.yPositionOnScreen
-          - this.Menu.yPositionOnScreen
-          + this.Menu.inventory.height
-          - IClickableMenu.borderWidth);
+            - this.Menu.yPositionOnScreen
+            + this.Menu.inventory.height
+            - IClickableMenu.borderWidth);
 
         const int minWidth = 128;
         this._dims.Add(I18n.Ui_ShoppingCart(), Game1.dialogueFont.MeasureString(I18n.Ui_ShoppingCart()).ToPoint());
@@ -130,8 +130,8 @@ internal sealed class Shop : IShop
         }
 
         var field = this._quantityFields.Where(item => item.Key.Item.IsEquivalentTo(toBuy))
-                        .Select(item => item.Value)
-                        .FirstOrDefault();
+            .Select(item => item.Value)
+            .FirstOrDefault();
         if (field is not null)
         {
             field.Quantity += quantity;
@@ -152,8 +152,8 @@ internal sealed class Shop : IShop
         }
 
         var field = this._quantityFields.Where(item => item.Key.Item.IsEquivalentTo(toSell))
-                        .Select(item => item.Value)
-                        .FirstOrDefault();
+            .Select(item => item.Value)
+            .FirstOrDefault();
         if (field is not null)
         {
             field.Quantity += toSell.Stack;
@@ -228,16 +228,16 @@ internal sealed class Shop : IShop
             {
                 prevCategory = category;
                 if (!this.DrawRow(
-                        Shop.LineHeight,
-                        y =>
-                        {
-                            Utility.drawTextWithShadow(
-                                b,
-                                category,
-                                Game1.smallFont,
-                                new(this.Bounds.X, y),
-                                Game1.textColor);
-                        }))
+                    Shop.LineHeight,
+                    y =>
+                    {
+                        Utility.drawTextWithShadow(
+                            b,
+                            category,
+                            Game1.smallFont,
+                            new(this.Bounds.X, y),
+                            Game1.textColor);
+                    }))
                 {
                     this._bottomY = this._currentY + Shop.LineHeight;
                     return;
@@ -272,24 +272,24 @@ internal sealed class Shop : IShop
 
         // Draw Total Buying
         if (!this.DrawRow(
-                Shop.LineHeight * 2,
-                y =>
-                {
-                    var text = $"{this.BuyTotal:n0}G";
-                    var width = (int)Game1.smallFont.MeasureString(text).X;
-                    Utility.drawTextWithShadow(
-                        b,
-                        I18n.Ui_Buying(),
-                        Game1.smallFont,
-                        new(this.Bounds.X, y),
-                        Game1.textColor);
-                    Utility.drawTextWithShadow(
-                        b,
-                        text,
-                        Game1.smallFont,
-                        new(this.Bounds.X + this._cols[1] - width, y),
-                        Game1.textColor);
-                }))
+            Shop.LineHeight * 2,
+            y =>
+            {
+                var text = $"{this.BuyTotal:n0}G";
+                var width = (int)Game1.smallFont.MeasureString(text).X;
+                Utility.drawTextWithShadow(
+                    b,
+                    I18n.Ui_Buying(),
+                    Game1.smallFont,
+                    new(this.Bounds.X, y),
+                    Game1.textColor);
+                Utility.drawTextWithShadow(
+                    b,
+                    text,
+                    Game1.smallFont,
+                    new(this.Bounds.X + this._cols[1] - width, y),
+                    Game1.textColor);
+            }))
         {
             this._bottomY = this._currentY + Shop.LineHeight;
             return;
@@ -309,16 +309,16 @@ internal sealed class Shop : IShop
             {
                 prevCategory = category;
                 if (!this.DrawRow(
-                        Shop.LineHeight,
-                        y =>
-                        {
-                            Utility.drawTextWithShadow(
-                                b,
-                                category,
-                                Game1.smallFont,
-                                new(this.Bounds.X, y),
-                                Game1.textColor);
-                        }))
+                    Shop.LineHeight,
+                    y =>
+                    {
+                        Utility.drawTextWithShadow(
+                            b,
+                            category,
+                            Game1.smallFont,
+                            new(this.Bounds.X, y),
+                            Game1.textColor);
+                    }))
                 {
                     this._bottomY = this._currentY + Shop.LineHeight;
                     return;
@@ -353,24 +353,24 @@ internal sealed class Shop : IShop
 
         // Draw Total Selling
         if (!this.DrawRow(
-                Shop.LineHeight * 2,
-                y =>
-                {
-                    var text = $"{Math.Abs(this.SellTotal):n0}G";
-                    var width = (int)Game1.smallFont.MeasureString(text).X;
-                    Utility.drawTextWithShadow(
-                        b,
-                        I18n.Ui_Selling(),
-                        Game1.smallFont,
-                        new(this.Bounds.X, y),
-                        Game1.textColor);
-                    Utility.drawTextWithShadow(
-                        b,
-                        text,
-                        Game1.smallFont,
-                        new(this.Bounds.X + this._cols[1] - width, y),
-                        Game1.textColor);
-                }))
+            Shop.LineHeight * 2,
+            y =>
+            {
+                var text = $"{Math.Abs(this.SellTotal):n0}G";
+                var width = (int)Game1.smallFont.MeasureString(text).X;
+                Utility.drawTextWithShadow(
+                    b,
+                    I18n.Ui_Selling(),
+                    Game1.smallFont,
+                    new(this.Bounds.X, y),
+                    Game1.textColor);
+                Utility.drawTextWithShadow(
+                    b,
+                    text,
+                    Game1.smallFont,
+                    new(this.Bounds.X + this._cols[1] - width, y),
+                    Game1.textColor);
+            }))
         {
             this._bottomY = this._currentY + Shop.LineHeight;
             return;
@@ -378,24 +378,19 @@ internal sealed class Shop : IShop
 
         // Draw Grand Total
         if (!this.DrawRow(
-                Shop.LineHeight,
-                y =>
-                {
-                    var text = $"{this.GrandTotal:n0}G";
-                    var width = (int)Game1.smallFont.MeasureString(text).X;
-                    Utility.drawTextWithShadow(
-                        b,
-                        I18n.Ui_Total(),
-                        Game1.smallFont,
-                        new(this.Bounds.X, y),
-                        Game1.textColor);
-                    Utility.drawTextWithShadow(
-                        b,
-                        text,
-                        Game1.smallFont,
-                        new(this.Bounds.X + this._cols[1] - width, y),
-                        Game1.textColor);
-                }))
+            Shop.LineHeight,
+            y =>
+            {
+                var text = $"{this.GrandTotal:n0}G";
+                var width = (int)Game1.smallFont.MeasureString(text).X;
+                Utility.drawTextWithShadow(b, I18n.Ui_Total(), Game1.smallFont, new(this.Bounds.X, y), Game1.textColor);
+                Utility.drawTextWithShadow(
+                    b,
+                    text,
+                    Game1.smallFont,
+                    new(this.Bounds.X + this._cols[1] - width, y),
+                    Game1.textColor);
+            }))
         {
             this._bottomY = this._currentY + Shop.LineHeight;
             return;
@@ -480,7 +475,7 @@ internal sealed class Shop : IShop
 
         // Check for Quantity update
         var cartItem = this._quantityFields.Values.FirstOrDefault(quantityField => quantityField.LeftClick(x, y))
-                           ?.CartItem;
+            ?.CartItem;
         if (cartItem is null)
         {
             return true;

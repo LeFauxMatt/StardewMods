@@ -46,8 +46,8 @@ internal sealed class LegacyAsset
             foreach (var item in content)
             {
                 if (item.Ingredients is null
-                 || item.Result?.Value is not string strValue
-                 || !strValue.EndsWith(this._id))
+                    || item.Result?.Value is not string strValue
+                    || !strValue.EndsWith(this._id))
                 {
                     continue;
                 }

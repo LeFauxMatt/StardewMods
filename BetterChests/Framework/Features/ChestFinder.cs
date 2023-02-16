@@ -180,7 +180,7 @@ internal sealed class ChestFinder : Feature
             }
 
             if (this.CurrentIndex < this.FoundStorages.Count
-             && this.FoundStorages[this.CurrentIndex].Data is Storage storageObject)
+                && this.FoundStorages[this.CurrentIndex].Data is Storage storageObject)
             {
                 storageObject.ShowMenu();
             }
@@ -211,7 +211,7 @@ internal sealed class ChestFinder : Feature
             }
 
             if (this.CurrentIndex < this.FoundStorages.Count
-             && this.FoundStorages[this.CurrentIndex].Data is Storage storageObject)
+                && this.FoundStorages[this.CurrentIndex].Data is Storage storageObject)
             {
                 storageObject.ShowMenu();
             }
@@ -397,8 +397,8 @@ internal sealed class ChestFinder : Feature
         foreach (var storage in Storages.CurrentLocation)
         {
             if (storage is not { Data: Storage storageObject }
-             || this.StorageContexts.Contains(storageObject.Context)
-             || !storageObject.Items.Any(this.ItemMatcher.Matches))
+                || this.StorageContexts.Contains(storageObject.Context)
+                || !storageObject.Items.Any(this.ItemMatcher.Matches))
             {
                 continue;
             }

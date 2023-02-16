@@ -136,7 +136,7 @@ internal sealed class Storages
                     new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2()));
                 break;
             case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
-             && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+                && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
                 excluded.Add(fridge);
                 yield return Storages.GetStorageType(
                     new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2()));
@@ -184,7 +184,7 @@ internal sealed class Storages
         foreach (var (position, obj) in location.Objects.Pairs)
         {
             if (!Storages.TryGetOne(obj, location, position, out var subStorage)
-             || excluded.Contains(subStorage.Context))
+                || excluded.Contains(subStorage.Context))
             {
                 continue;
             }
@@ -252,7 +252,7 @@ internal sealed class Storages
     public static bool TryGetOne(GameLocation location, Vector2 pos, [NotNullWhen(true)] out StorageNode? storage)
     {
         if (!location.Objects.TryGetValue(pos, out var obj)
-         || !Storages.TryGetOne(obj, location, pos, out var storageObject))
+            || !Storages.TryGetOne(obj, location, pos, out var storageObject))
         {
             storage = default;
             return false;
@@ -281,14 +281,14 @@ internal sealed class Storages
         }
 
         if (!Integrations.TryGetOne(context, out var storageObject)
-         && !Storages.TryGetOne(context, default, default, out storageObject))
+            && !Storages.TryGetOne(context, default, default, out storageObject))
         {
             storage = default;
             return false;
         }
 
         if (storageObject is ShippingBinStorage { Context: not Chest }
-         && Integrations.TestConflicts(nameof(BetterShippingBin), out _))
+            && Integrations.TestConflicts(nameof(BetterShippingBin), out _))
         {
             storage = default;
             return false;
@@ -312,7 +312,7 @@ internal sealed class Storages
         foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
         {
             if (!Storages.TryGetOne(item, storage.Source, storage.Position, out var storageObject)
-             || excluded.Contains(storageObject.Context))
+                || excluded.Contains(storageObject.Context))
             {
                 continue;
             }
@@ -322,7 +322,7 @@ internal sealed class Storages
         }
 
         return Storages.GetStorageTypes(storages)
-                       .Concat(storages.SelectMany(subStorage => Storages.FromStorage(subStorage, excluded)));
+            .Concat(storages.SelectMany(subStorage => Storages.FromStorage(subStorage, excluded)));
     }
 
     private static StorageNode GetStorageType(Storage storage)

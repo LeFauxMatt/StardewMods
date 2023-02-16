@@ -100,7 +100,7 @@ internal sealed class ShippingBinStorage : Storage
             this.Context);
 
         if (Game1.options.SnappyMenus
-         && Game1.activeClickableMenu is ItemGrabMenu { currentlySnappedComponent: { } currentlySnappedComponent })
+            && Game1.activeClickableMenu is ItemGrabMenu { currentlySnappedComponent: { } currentlySnappedComponent })
         {
             menu.setCurrentlySnappedComponentTo(currentlySnappedComponent.myID);
             menu.snapCursorToCurrentSnappedComponent();

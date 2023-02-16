@@ -135,8 +135,8 @@ public ref struct StreamSplit
             {
                 // special case - the windows newline.
                 if (this.splitchars is null
-                 && this.remainder.Length > index + 2
-                 && this.remainder.Slice(index, 2).Equals("\r\n", StringComparison.Ordinal))
+                    && this.remainder.Length > index + 2
+                    && this.remainder.Slice(index, 2).Equals("\r\n", StringComparison.Ordinal))
                 {
                     splitchar = this.remainder.Slice(index, 2);
                     word = this.remainder[..Math.Max(0, index)];

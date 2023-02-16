@@ -74,8 +74,8 @@ internal sealed class Config
         {
             var point = Game1.getMousePosition();
             if (Game1.oldMouseState.LeftButton == ButtonState.Released
-             && Mouse.GetState().LeftButton == ButtonState.Pressed
-             && bounds.Contains(point))
+                && Mouse.GetState().LeftButton == ButtonState.Pressed
+                && bounds.Contains(point))
             {
                 Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this._config.Icons, this._components));
                 return;

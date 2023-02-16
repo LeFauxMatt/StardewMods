@@ -48,7 +48,7 @@ internal sealed class Helpers
     /// </summary>
     public static bool IsSupported =>
         Game1.activeClickableMenu is JunimoNoteMenu or MenuWithInventory or ShopMenu
-     || (Game1.activeClickableMenu as GameMenu)?.GetCurrentPage() is InventoryPage;
+        || (Game1.activeClickableMenu as GameMenu)?.GetCurrentPage() is InventoryPage;
 
     private static IReflectionHelper Reflection => Helpers.Instance._helper.Reflection;
 
