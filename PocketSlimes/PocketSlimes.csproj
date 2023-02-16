@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\build\common.targets"/>
+    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <PropertyGroup>
+        <Name>Pocket Slimes</Name>
+        <Description>Nothing strange about this capsule.</Description>
+        <Version>1.0.0</Version>
+        <EnableHarmony>true</EnableHarmony>
+        <RootNamespace>StardewMods.PocketSlimes</RootNamespace>
+        <UniqueId>furyx639.PocketSlimes</UniqueId>
+        <UpdateKeys>Nexus:13471</UpdateKeys>
+    </PropertyGroup>
+</Project>
