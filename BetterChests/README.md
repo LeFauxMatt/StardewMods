@@ -300,7 +300,7 @@ Hit a configurable key to instantly stash items from your inventory into nearby 
 | StashToChestDisableLocations | A list of locations that stashing will not be allowed in. | `[]`          | The locations to block.<sup>4</sup>                                           |
 | StashToChestDistance         | Limits the distance that a chest can be stashed into.     | -1            | Any positive integer or `-1`.<sup>5</sup>                                     |
 | StashToChestPriority         | Prioritize certain chests over others.                    | 0             | Any integer value.                                                            |
-| StashToChestStacks           | Allow stashing items to existing stacks.                  | `true`        | `true`, `false`                                                               |
+| StashToChestStacks           | Allow stashing items to existing stacks.                  | `"Enabled"`   | `"Disabled"`                                                                  |
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
@@ -314,7 +314,7 @@ Adds buttons that transfer all items into or out of the currently opened chest.
 
 | Config        | Description                         | Default Value | Other Value(s)  |
 |:--------------|:------------------------------------|:--------------|:----------------|
-| TransferItems | Enables the Transfer Items feature. | `true`        | `true', 'false' |
+| TransferItems | Enables the Transfer Items feature. | `"Enabled"`   | `"Disabled"`    |
 
 ### Unload Chest
 
@@ -322,9 +322,9 @@ While carrying a chest and facing another chest, hit the Use Tool button to unlo
 placed chest.
 
 | Config Option      | Description                       | Default Value | Other Value(s)                        |
-|:-------------------|:----------------------------------|:--------------|:--------------------------------------|
-| UnloadChest        | Enables the Unload Chest feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| UnloadChestCombine | Combine source chest with target  | false         | `true`                                |
+|:-------------------|:----------------------------------|:---------------|:-------------------------------------|
+| UnloadChest        | Enables the Unload Chest feature. | `"Disabled"`   | `"Enabled"`, `"Default"`<sup>1</sup> |
+| UnloadChestCombine | Combine source chest with target  | `"Disabled"`   | `"Enabled"`                          |
 
 1. See [Option Values](#option-values).
 
