@@ -67,10 +67,24 @@ internal sealed class OrganizeChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool ItemGrabMenu_organizeItemsInList_prefix(ItemGrabMenu __instance, IList<Item> items)
+    private static bool ItemGrabMenu_organizeItemsInList_prefix(ItemGrabMenu? __instance, IList<Item> items)
     {
-        if (!ReferenceEquals(__instance.ItemsToGrabMenu.actualInventory, items)
-            || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
+        if (BetterItemGrabMenu.Context?.OrganizeChest != FeatureOption.Enabled)
+        {
+            return true;
+        }
+
+        __instance ??= Game1.activeClickableMenu as ItemGrabMenu;
+
+        if (__instance?.ItemsToGrabMenu.actualInventory != items)
+        {
+            return true;
+        }
+
+        var groupBy = BetterItemGrabMenu.Context.OrganizeChestGroupBy;
+        var sortBy = BetterItemGrabMenu.Context.OrganizeChestSortBy;
+
+        if (groupBy == GroupBy.Default && sortBy == SortBy.Default)
         {
             return true;
         }
@@ -83,8 +97,8 @@ internal sealed class OrganizeChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseRight
-            || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
-            || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
+         || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+         || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
         {
             return;
         }
