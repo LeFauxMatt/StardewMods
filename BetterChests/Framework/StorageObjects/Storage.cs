@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
+using StardewValley.Mods;
 using StardewValley.Network;
 using StardewValley.Objects;
 

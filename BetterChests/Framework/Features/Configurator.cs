@@ -28,26 +28,26 @@ internal sealed class Configurator : Feature
         nameof(ItemGrabMenu.RepositionSideButtons));
 
 #nullable disable
-    private static Configurator Instance;
+    private static Configurator instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly PerScreen<ClickableTextureComponent> _configButton;
-    private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-    private readonly PerScreen<StorageNode?> _currentStorage = new();
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
-    private readonly IManifest _modManifest;
+    private readonly ModConfig config;
+    private readonly PerScreen<ClickableTextureComponent> configButton;
+    private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
+    private readonly PerScreen<StorageNode?> currentStorage = new();
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
+    private readonly IManifest modManifest;
 
-    private bool _isActive;
-    private EventHandler<StorageNode>? _storageEdited;
+    private bool isActive;
+    private EventHandler<StorageNode>? storageEdited;
 
     private Configurator(IModHelper helper, ModConfig config, IManifest manifest)
     {
-        this._helper = helper;
-        this._config = config;
-        this._harmony = new(Configurator.Id);
-        this._configButton = new(
+        this.helper = helper;
+        this.config = config;
+        this.harmony = new(Configurator.Id);
+        this.configButton = new(
             () => new(
                 new(0, 0, Game1.tileSize, Game1.tileSize),
                 helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
@@ -58,7 +58,7 @@ internal sealed class Configurator : Feature
                 hoverText = I18n.Button_Configure_Name(),
                 myID = 42069,
             });
-        this._modManifest = manifest;
+        this.modManifest = manifest;
     }
 
     /// <summary>
@@ -66,22 +66,22 @@ internal sealed class Configurator : Feature
     /// </summary>
     public static event EventHandler<StorageNode> StorageEdited
     {
-        add => Configurator.Instance._storageEdited += value;
-        remove => Configurator.Instance._storageEdited -= value;
+        add => Configurator.instance.storageEdited += value;
+        remove => Configurator.instance.storageEdited -= value;
     }
 
-    private static ClickableTextureComponent ConfigButton => Configurator.Instance._configButton.Value;
+    private static ClickableTextureComponent ConfigButton => Configurator.instance.configButton.Value;
 
     private ItemGrabMenu? CurrentMenu
     {
-        get => this._currentMenu.Value;
-        set => this._currentMenu.Value = value;
+        get => this.currentMenu.Value;
+        set => this.currentMenu.Value = value;
     }
 
     private StorageNode? CurrentStorage
     {
-        get => this._currentStorage.Value;
-        set => this._currentStorage.Value = value;
+        get => this.currentStorage.Value;
+        set => this.currentStorage.Value = value;
     }
 
     /// <summary>
@@ -93,20 +93,20 @@ internal sealed class Configurator : Feature
     /// <returns>Returns an instance of the <see cref="Configurator" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config, IManifest manifest)
     {
-        return Configurator.Instance ??= new(helper, config, manifest);
+        return Configurator.instance ??= new(helper, config, manifest);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             Configurator.ItemGrabMenuRepositionSideButtons,
             postfix: new(typeof(Configurator), nameof(Configurator.ItemGrabMenu_RepositionSideButtons_postfix)));
     }
@@ -115,13 +115,13 @@ internal sealed class Configurator : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Display.MenuChanged -= this.OnMenuChanged;
+        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             Configurator.ItemGrabMenuRepositionSideButtons,
             AccessTools.Method(typeof(Configurator), nameof(Configurator.ItemGrabMenu_RepositionSideButtons_postfix)));
     }
@@ -150,7 +150,7 @@ internal sealed class Configurator : Feature
 
         var yOffset = buttons.Count switch
         {
-            <= 3 => __instance.yPositionOnScreen + __instance.height / 3,
+            <= 3 => __instance.yPositionOnScreen + (__instance.height / 3),
             _ => __instance.ItemsToGrabMenu.yPositionOnScreen + __instance.ItemsToGrabMenu.height,
         };
 
@@ -175,13 +175,13 @@ internal sealed class Configurator : Feature
             }
 
             button.bounds.X = __instance.xPositionOnScreen + __instance.width;
-            button.bounds.Y = yOffset - Game1.tileSize - stepSize * index;
+            button.bounds.Y = yOffset - Game1.tileSize - (stepSize * index);
         }
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (this.CurrentMenu is null || e.Button is not SButton.MouseLeft or SButton.ControllerA)
+        if (this.CurrentMenu is null || e.Button is not (SButton.MouseLeft or SButton.ControllerA))
         {
             return;
         }
@@ -197,32 +197,32 @@ internal sealed class Configurator : Feature
             Game1.activeClickableMenu = new ItemSelectionMenu(
                 BetterItemGrabMenu.Context,
                 BetterItemGrabMenu.Context.FilterMatcher,
-                this._helper.Input,
-                this._helper.Translation);
+                this.helper.Input,
+                this.helper.Translation);
         }
         else
         {
-            Config.SetupSpecificConfig(this._modManifest, BetterItemGrabMenu.Context, true);
-            Integrations.GMCM.Api!.OpenModMenu(this._modManifest);
-            this._isActive = true;
+            Config.SetupSpecificConfig(this.modManifest, BetterItemGrabMenu.Context, true);
+            Integrations.GMCM.Api!.OpenModMenu(this.modManifest);
+            this.isActive = true;
         }
 
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (!Context.IsPlayerFree
-            || !this._config.ControlScheme.Configure.JustPressed()
+            || !this.config.ControlScheme.Configure.JustPressed()
             || Storages.CurrentItem is null)
         {
             return;
         }
 
-        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.Configure);
-        Config.SetupSpecificConfig(this._modManifest, Storages.CurrentItem, true);
-        Integrations.GMCM.Api!.OpenModMenu(this._modManifest);
-        this._isActive = true;
+        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.Configure);
+        Config.SetupSpecificConfig(this.modManifest, Storages.CurrentItem, true);
+        Integrations.GMCM.Api!.OpenModMenu(this.modManifest);
+        this.isActive = true;
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
@@ -237,12 +237,12 @@ internal sealed class Configurator : Feature
         }
 
         this.CurrentMenu = null;
-        if (!this._isActive || e.OldMenu?.GetType().Name != "SpecificModConfigMenu")
+        if (!this.isActive || e.OldMenu?.GetType().Name != "SpecificModConfigMenu")
         {
             return;
         }
 
-        this._isActive = false;
+        this.isActive = false;
         Config.SetupMainConfig();
 
         if (e.NewMenu?.GetType().Name != "ModConfigMenu")
@@ -252,7 +252,7 @@ internal sealed class Configurator : Feature
 
         if (this.CurrentStorage is { Data: Storage storageObject })
         {
-            this._storageEdited.InvokeAll(this, this.CurrentStorage);
+            this.storageEdited.InvokeAll(this, this.CurrentStorage);
             storageObject.ShowMenu();
             this.CurrentStorage = null;
             return;
@@ -273,8 +273,8 @@ internal sealed class Configurator : Feature
         e.SpriteBatch.Draw(
             Configurator.ConfigButton.texture,
             new(
-                Configurator.ConfigButton.bounds.X + 8 * Game1.pixelZoom,
-                Configurator.ConfigButton.bounds.Y + 8 * Game1.pixelZoom),
+                Configurator.ConfigButton.bounds.X + (8 * Game1.pixelZoom),
+                Configurator.ConfigButton.bounds.Y + (8 * Game1.pixelZoom)),
             new(64, 0, 16, 16),
             Color.White,
             0f,

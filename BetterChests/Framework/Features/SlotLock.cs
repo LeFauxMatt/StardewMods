@@ -30,18 +30,18 @@ internal sealed class SlotLock : Feature
         });
 
 #nullable disable
-    private static SlotLock Instance;
+    private static SlotLock instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
     private SlotLock(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._harmony = new(SlotLock.Id);
+        this.helper = helper;
+        this.config = config;
+        this.harmony = new(SlotLock.Id);
     }
 
     /// <summary>
@@ -52,18 +52,18 @@ internal sealed class SlotLock : Feature
     /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return SlotLock.Instance ??= new(helper, config);
+        return SlotLock.instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Harmony
-        this._harmony.Patch(
+        this.harmony.Patch(
             SlotLock.InventoryMenuDraw,
             transpiler: new(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
     }
@@ -72,11 +72,11 @@ internal sealed class SlotLock : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Harmony
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             SlotLock.InventoryMenuDraw,
             AccessTools.Method(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
     }
@@ -101,15 +101,15 @@ internal sealed class SlotLock : Feature
     {
         return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
             == true
-                ? SlotLock.Instance._config.SlotLockColor.ToColor()
+                ? SlotLock.instance.config.SlotLockColor.ToColor()
                 : tint;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this._config.SlotLockHold
+        if (!this.config.SlotLockHold
             || e.Button is not SButton.MouseLeft
-            || !this._config.ControlScheme.LockSlot.IsDown())
+            || !this.config.ControlScheme.LockSlot.IsDown())
         {
             return;
         }
@@ -146,12 +146,12 @@ internal sealed class SlotLock : Feature
             item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
         }
 
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this._config.SlotLockHold || !this._config.ControlScheme.LockSlot.JustPressed())
+        if (this.config.SlotLockHold || !this.config.ControlScheme.LockSlot.JustPressed())
         {
             return;
         }
@@ -188,6 +188,6 @@ internal sealed class SlotLock : Feature
             item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
         }
 
-        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.LockSlot);
+        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.LockSlot);
     }
 }

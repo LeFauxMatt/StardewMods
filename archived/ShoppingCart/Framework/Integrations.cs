@@ -9,27 +9,27 @@ using StardewMods.Common.Integrations.StackQuality;
 internal sealed class Integrations
 {
 #nullable disable
-    private static Integrations Instance;
+    private static Integrations instance;
 #nullable enable
 
-    private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
-    private readonly StackQualityIntegration _stackQualityIntegration;
+    private readonly GenericModConfigMenuIntegration genericModConfigMenu;
+    private readonly StackQualityIntegration stackQualityIntegration;
 
     private Integrations(IModHelper helper)
     {
-        this._genericModConfigMenu = new(helper.ModRegistry);
-        this._stackQualityIntegration = new(helper.ModRegistry);
+        this.genericModConfigMenu = new(helper.ModRegistry);
+        this.stackQualityIntegration = new(helper.ModRegistry);
     }
 
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance._genericModConfigMenu;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.instance.genericModConfigMenu;
 
     /// <summary>
     ///     Gets Stack Quality integration.
     /// </summary>
-    public static StackQualityIntegration StackQuality => Integrations.Instance._stackQualityIntegration;
+    public static StackQualityIntegration StackQuality => Integrations.instance.stackQualityIntegration;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.
@@ -38,6 +38,6 @@ internal sealed class Integrations
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModHelper helper)
     {
-        return Integrations.Instance ??= new(helper);
+        return Integrations.instance ??= new(helper);
     }
 }

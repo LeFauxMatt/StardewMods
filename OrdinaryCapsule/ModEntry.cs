@@ -11,9 +11,9 @@ using StardewMods.OrdinaryCapsule.Framework.Models;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private ModConfig? _config;
+    private ModConfig? config;
 
-    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -135,7 +135,7 @@ public sealed class ModEntry : Mod
         }
 
         // Register mod configuration
-        gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
+        gmcm.Register(this.ModManifest, () => this.config = new(), () => this.Helper.WriteConfig(this.Config));
 
         // Break Chance
         gmcm.Api.AddNumberOption(

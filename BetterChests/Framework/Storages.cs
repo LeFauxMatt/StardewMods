@@ -20,16 +20,16 @@ using StardewValley.Objects;
 internal sealed class Storages
 {
 #nullable disable
-    private static Storages Instance;
+    private static Storages instance;
 #nullable enable
 
-    private readonly ModConfig _config;
+    private readonly ModConfig config;
 
-    private EventHandler<IStorageTypeRequestedEventArgs>? _storageTypeRequested;
+    private EventHandler<IStorageTypeRequestedEventArgs>? storageTypeRequested;
 
     private Storages(ModConfig config)
     {
-        this._config = config;
+        this.config = config;
     }
 
     /// <summary>
@@ -37,8 +37,8 @@ internal sealed class Storages
     /// </summary>
     public static event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
     {
-        add => Storages.Instance._storageTypeRequested += value;
-        remove => Storages.Instance._storageTypeRequested -= value;
+        add => Storages.instance.storageTypeRequested += value;
+        remove => Storages.instance.storageTypeRequested -= value;
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ internal sealed class Storages
     /// </summary>
     public static IEnumerable<StorageNode> Inventory => Storages.FromPlayer(Game1.player);
 
-    private static ModConfig Config => Storages.Instance._config;
+    private static ModConfig Config => Storages.instance.config;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.
@@ -148,10 +148,10 @@ internal sealed class Storages
                 break;
         }
 
-        if (location is BuildableGameLocation buildableGameLocation)
+        if (location.IsBuildableLocation())
         {
             // Buildings
-            foreach (var building in buildableGameLocation.buildings)
+            foreach (var building in location.buildings)
             {
                 // Special Buildings
                 switch (building)
@@ -163,8 +163,8 @@ internal sealed class Storages
                                 junimoHut,
                                 location,
                                 new(
-                                    building.tileX.Value + building.tilesWide.Value / 2,
-                                    building.tileY.Value + building.tilesHigh.Value / 2)));
+                                    building.tileX.Value + (building.tilesWide.Value / 2),
+                                    building.tileY.Value + (building.tilesHigh.Value / 2))));
                         break;
                     case ShippingBin shippingBin when !excluded.Contains(shippingBin):
                         excluded.Add(shippingBin);
@@ -173,8 +173,8 @@ internal sealed class Storages
                                 shippingBin,
                                 location,
                                 new(
-                                    building.tileX.Value + building.tilesWide.Value / 2,
-                                    building.tileY.Value + building.tilesHigh.Value / 2)));
+                                    building.tileX.Value + (building.tilesWide.Value / 2),
+                                    building.tileY.Value + (building.tilesHigh.Value / 2))));
                         break;
                 }
             }
@@ -183,7 +183,9 @@ internal sealed class Storages
         // Objects
         foreach (var (position, obj) in location.Objects.Pairs)
         {
-            if (!Storages.TryGetOne(obj, location, position, out var subStorage)
+            if (position.X < 0
+                || position.Y < 0
+                || !Storages.TryGetOne(obj, location, position, out var subStorage)
                 || excluded.Contains(subStorage.Context))
             {
                 continue;
@@ -218,7 +220,7 @@ internal sealed class Storages
         }
 
         limit ??= player.MaxItems;
-        var position = player.getTileLocation();
+        var position = player.Tile;
         for (var index = 0; index < limit; ++index)
         {
             var item = player.Items[index];
@@ -239,7 +241,7 @@ internal sealed class Storages
     /// <returns>Returns an instance of the <see cref="Storages" /> class.</returns>
     public static Storages Init(ModConfig config)
     {
-        return Storages.Instance ??= new(config);
+        return Storages.instance ??= new(config);
     }
 
     /// <summary>
@@ -329,7 +331,7 @@ internal sealed class Storages
     {
         var storageTypes = new List<IStorageData>();
         var storageTypeRequestedEventArgs = new StorageTypeRequestedEventArgs(storage.Context, storageTypes);
-        Storages.Instance._storageTypeRequested.InvokeAll(Storages.Instance, storageTypeRequestedEventArgs);
+        Storages.instance.storageTypeRequested.InvokeAll(Storages.instance, storageTypeRequestedEventArgs);
         var storageType = storageTypes.FirstOrDefault();
         return new(storage, storageType is not null ? new StorageNode(storageType, Storages.Config) : Storages.Config);
     }
@@ -356,8 +358,8 @@ internal sealed class Storages
                     ? new ShippingBinStorage(
                         farm,
                         new(
-                            farmShippingBin.tileX.Value + farmShippingBin.tilesWide.Value / 2,
-                            farmShippingBin.tileY.Value + farmShippingBin.tilesHigh.Value / 2))
+                            farmShippingBin.tileX.Value + (farmShippingBin.tilesWide.Value / 2),
+                            farmShippingBin.tileY.Value + (farmShippingBin.tilesHigh.Value / 2)))
                     : default;
                 return storage is not null;
             case FarmHouse { fridge.Value: { } } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):

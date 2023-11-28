@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewValley.Locations;
+using StardewValley.Mods;
 using StardewValley.Network;
 using StardewValley.Objects;
 

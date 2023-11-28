@@ -14,14 +14,14 @@ using StardewValley.Locations;
 internal sealed class UnloadChest : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     private UnloadChest(IModHelper helper)
     {
-        this._helper = helper;
+        this.helper = helper;
     }
 
     /// <summary>
@@ -31,21 +31,21 @@ internal sealed class UnloadChest : Feature
     /// <returns>Returns an instance of the <see cref="UnloadChest" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return UnloadChest.Instance ??= new UnloadChest(helper);
+        return UnloadChest.instance ??= new UnloadChest(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     [EventPriority(EventPriority.Normal + 10)]
@@ -53,7 +53,7 @@ internal sealed class UnloadChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
-            || this._helper.Input.IsSuppressed(e.Button)
+            || this.helper.Input.IsSuppressed(e.Button)
             || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
             || Storages.CurrentItem.Data is not Storage storageObject
             || (!storageObject.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
@@ -116,6 +116,6 @@ internal sealed class UnloadChest : Feature
         }
 
         CarryChest.CheckForOverburdened();
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
     }
 }

@@ -5,7 +5,7 @@
   "Version": "1.0.0",
   "Description": "Go ahead and do it, they can take it.",
   "UniqueID": "furyx639.SmackDatScarecrow",
-  "MinimumApiVersion": "3.18.0",
+  "MinimumApiVersion": "4.0.0",
   "UpdateKeys": [
     "Nexus:13528"
   ]

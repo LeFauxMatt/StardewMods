@@ -5,14 +5,13 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 
 /// <summary>
 ///     Matches item name/tags against a set of search phrases.
 /// </summary>
 internal sealed class ItemMatcher : ObservableCollection<string>
 {
-    private readonly IDictionary<string, SearchPhrase> _clean = new Dictionary<string, SearchPhrase>();
+    private readonly IDictionary<string, SearchPhrase> clean = new Dictionary<string, SearchPhrase>();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemMatcher" /> class.
@@ -41,7 +40,7 @@ internal sealed class ItemMatcher : ObservableCollection<string>
                 return;
             }
 
-            var split = new StreamSplit(value);
+            var split = value.Split(' ');
             foreach (var text in split)
             {
                 if (!string.IsNullOrWhiteSpace(text))
@@ -76,11 +75,11 @@ internal sealed class ItemMatcher : ObservableCollection<string>
         }
 
         var matchesAny = false;
-        foreach (var searchPhrase in this._clean.Values)
+        foreach (var searchPhrase in this.clean.Values)
         {
             if (searchPhrase.Matches(item))
             {
-                if (!searchPhrase.NotMatch || this._clean.Values.All(p => p.NotMatch))
+                if (!searchPhrase.NotMatch || this.clean.Values.All(p => p.NotMatch))
                 {
                     matchesAny = true;
                 }
@@ -106,12 +105,12 @@ internal sealed class ItemMatcher : ObservableCollection<string>
     /// <inheritdoc />
     protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {
-        var added = this.Except(this._clean.Keys);
-        var removed = this._clean.Keys.Except(this);
+        var added = this.Except(this.clean.Keys);
+        var removed = this.clean.Keys.Except(this);
 
         foreach (var item in removed)
         {
-            this._clean.Remove(item);
+            this.clean.Remove(item);
         }
 
         foreach (var item in added)
@@ -119,7 +118,7 @@ internal sealed class ItemMatcher : ObservableCollection<string>
             var clean = this.ParseString(item);
             if (clean is not null)
             {
-                this._clean.Add(item, clean);
+                this.clean.Add(item, clean);
             }
         }
 

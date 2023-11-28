@@ -15,7 +15,7 @@ using StardewValley.Menus;
 internal sealed class HslColorPicker
 {
     private const int BarHeight = (HslColorPicker.Height - HslColorPicker.Gap - 36) / 2;
-    private const int BarWidth = HslColorPicker.Width / 2 - HslColorPicker.Gap;
+    private const int BarWidth = (HslColorPicker.Width / 2) - HslColorPicker.Gap;
     private const int Cells = 16;
     private const int CellSize = HslColorPicker.BarHeight / HslColorPicker.Cells;
     private const int Gap = 6;
@@ -31,32 +31,32 @@ internal sealed class HslColorPicker
     private static readonly Rectangle SelectRect = new(412, 495, 5, 4);
     private static readonly Range<float> UnitRange = new(0, 1);
 
-    private readonly Range<int> _hueTrack = new();
-    private readonly Rectangle[] _lightnessBar = new Rectangle[HslColorPicker.Cells];
-    private readonly Color[] _lightnessShade = new Color[HslColorPicker.Cells];
-    private readonly Range<int> _lightnessTrack = new();
+    private readonly Range<int> hueTrack = new();
+    private readonly Rectangle[] lightnessBar = new Rectangle[HslColorPicker.Cells];
+    private readonly Color[] lightnessShade = new Color[HslColorPicker.Cells];
+    private readonly Range<int> lightnessTrack = new();
 
-    private readonly ClickableTextureComponent _noColor = new(
+    private readonly ClickableTextureComponent noColor = new(
         new(0, 0, 7, 7),
         Game1.mouseCursors,
         new(295, 503, 7, 7),
         Game1.pixelZoom);
 
-    private readonly Rectangle[] _saturationBar = new Rectangle[HslColorPicker.Cells];
-    private readonly Color[] _saturationShade = new Color[HslColorPicker.Cells];
-    private readonly Range<int> _saturationTrack = new();
+    private readonly Rectangle[] saturationBar = new Rectangle[HslColorPicker.Cells];
+    private readonly Color[] saturationShade = new Color[HslColorPicker.Cells];
+    private readonly Range<int> saturationTrack = new();
 
-    private IColorable? _colorable;
-    private Thumb _held = Thumb.None;
-    private HslColor _hslColor;
-    private Rectangle _hueBarArea = new(0, 0, HslColorPicker.BarWidth, HslColorPicker.Height - 36);
-    private int _hueCoord;
-    private bool _lastDown;
-    private int _lightnessCoord;
-    private Rectangle _noColorArea = new(0, 0, 36, 36);
-    private int _saturationCoord;
-    private int _x;
-    private int _y;
+    private IColorable? itemToColor;
+    private Thumb held = Thumb.None;
+    private HslColor currentHslColor;
+    private Rectangle hueBarArea = new(0, 0, HslColorPicker.BarWidth, HslColorPicker.Height - 36);
+    private int hueCoord;
+    private bool lastDown;
+    private int lightnessCoord;
+    private Rectangle noColorArea = new(0, 0, 36, 36);
+    private int saturationCoord;
+    private int menuX;
+    private int menuY;
 
     private enum Thumb
     {
@@ -90,25 +90,25 @@ internal sealed class HslColorPicker
         // Background
         IClickableMenu.drawTextureBox(
             b,
-            this._x - IClickableMenu.borderWidth / 2,
-            this._y - IClickableMenu.borderWidth / 2,
+            this.menuX - (IClickableMenu.borderWidth / 2),
+            this.menuY - (IClickableMenu.borderWidth / 2),
             HslColorPicker.Width + IClickableMenu.borderWidth,
             HslColorPicker.Height + IClickableMenu.borderWidth,
             Color.LightGray);
 
         // No Color Button
-        this._noColor.draw(b);
+        this.noColor.draw(b);
 
         // Hue Bar
-        b.Draw(HslColorPicker.HueBar, this._hueBarArea, Color.White);
+        b.Draw(HslColorPicker.HueBar, this.hueBarArea, Color.White);
 
         for (var i = 0; i < HslColorPicker.Cells; ++i)
         {
             // Lightness Bar
-            b.Draw(Game1.staminaRect, this._lightnessBar[i], this._lightnessShade[i]);
+            b.Draw(Game1.staminaRect, this.lightnessBar[i], this.lightnessShade[i]);
 
             // Saturation Bar
-            b.Draw(Game1.staminaRect, this._saturationBar[i], this._saturationShade[i]);
+            b.Draw(Game1.staminaRect, this.saturationBar[i], this.saturationShade[i]);
         }
 
         // Item
@@ -120,23 +120,23 @@ internal sealed class HslColorPicker
                 b,
                 Game1.mouseCursors,
                 new(375, 357, 3, 3),
-                this._noColorArea.Left,
-                this._noColorArea.Top,
-                this._noColorArea.Width,
-                this._noColorArea.Height,
+                this.noColorArea.Left,
+                this.noColorArea.Top,
+                this.noColorArea.Width,
+                this.noColorArea.Height,
                 Color.Black,
                 Game1.pixelZoom,
                 false);
 
             // Colorable object
-            this._colorable?.Draw(b, this._x, this._y - Game1.tileSize - IClickableMenu.borderWidth / 2);
+            this.itemToColor?.Draw(b, this.menuX, this.menuY - Game1.tileSize - (IClickableMenu.borderWidth / 2));
             return;
         }
 
         // Hue Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this._hueBarArea.Left - 8, this._hueCoord, 20, 16),
+            new(this.hueBarArea.Left - 8, this.hueCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
@@ -147,7 +147,7 @@ internal sealed class HslColorPicker
         // Lightness Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this._lightnessBar[0].Left - 8, this._lightnessCoord, 20, 16),
+            new(this.lightnessBar[0].Left - 8, this.lightnessCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
@@ -158,7 +158,7 @@ internal sealed class HslColorPicker
         // Saturation Selection
         b.Draw(
             Game1.mouseCursors,
-            new(this._saturationBar[0].Left - 8, this._saturationCoord, 20, 16),
+            new(this.saturationBar[0].Left - 8, this.saturationCoord, 20, 16),
             HslColorPicker.SelectRect,
             Color.White,
             MathHelper.PiOver2,
@@ -167,7 +167,7 @@ internal sealed class HslColorPicker
             1);
 
         // Colorable object
-        this._colorable?.Draw(b, this._x, this._y - Game1.tileSize - IClickableMenu.borderWidth / 2);
+        this.itemToColor?.Draw(b, this.menuX, this.menuY - Game1.tileSize - (IClickableMenu.borderWidth / 2));
     }
 
     /// <summary>
@@ -178,78 +178,78 @@ internal sealed class HslColorPicker
     /// <param name="colorable">The object to draw.</param>
     public void Init(int x, int y, IColorable? colorable = default)
     {
-        this._x = x;
-        this._y = y;
-        var centerX = this._x + HslColorPicker.Width / 2;
-        var top = this._y + 36;
+        this.menuX = x;
+        this.menuY = y;
+        var centerX = this.menuX + (HslColorPicker.Width / 2);
+        var top = this.menuY + 36;
 
-        this._hueBarArea.X = this._x;
-        this._hueBarArea.Y = top;
-        this._noColor.bounds.X = this._x - 2;
-        this._noColor.bounds.Y = this._y;
-        this._noColorArea.X = this._x - 6;
-        this._noColorArea.Y = this._y - 4;
-        this._hueTrack.Minimum = this._hueBarArea.Top;
-        this._hueTrack.Maximum = this._hueBarArea.Bottom;
+        this.hueBarArea.X = this.menuX;
+        this.hueBarArea.Y = top;
+        this.noColor.bounds.X = this.menuX - 2;
+        this.noColor.bounds.Y = this.menuY;
+        this.noColorArea.X = this.menuX - 6;
+        this.noColorArea.Y = this.menuY - 4;
+        this.hueTrack.Minimum = this.hueBarArea.Top;
+        this.hueTrack.Maximum = this.hueBarArea.Bottom;
         for (var cell = 0; cell < HslColorPicker.Cells; ++cell)
         {
-            this._lightnessBar[cell] = new(
-                centerX + HslColorPicker.Gap / 2,
-                top + cell * HslColorPicker.CellSize,
+            this.lightnessBar[cell] = new(
+                centerX + (HslColorPicker.Gap / 2),
+                top + (cell * HslColorPicker.CellSize),
                 HslColorPicker.BarWidth,
                 HslColorPicker.CellSize);
-            this._saturationBar[cell] = new(
-                this._lightnessBar[cell].X,
-                this._lightnessBar[cell].Y + HslColorPicker.BarHeight + HslColorPicker.Gap,
+            this.saturationBar[cell] = new(
+                this.lightnessBar[cell].X,
+                this.lightnessBar[cell].Y + HslColorPicker.BarHeight + HslColorPicker.Gap,
                 HslColorPicker.BarWidth,
                 HslColorPicker.CellSize);
         }
 
-        this._lightnessTrack.Minimum = this._lightnessBar[0].Top;
-        this._lightnessTrack.Maximum = this._lightnessBar[HslColorPicker.Cells - 1].Bottom;
-        this._saturationTrack.Minimum = this._saturationBar[0].Top;
-        this._saturationTrack.Maximum = this._saturationBar[HslColorPicker.Cells - 1].Bottom;
+        this.lightnessTrack.Minimum = this.lightnessBar[0].Top;
+        this.lightnessTrack.Maximum = this.lightnessBar[HslColorPicker.Cells - 1].Bottom;
+        this.saturationTrack.Minimum = this.saturationBar[0].Top;
+        this.saturationTrack.Maximum = this.saturationBar[HslColorPicker.Cells - 1].Bottom;
 
-        this._colorable = colorable;
-        this.Color = this._colorable?.Color ?? Color.Black;
-        this._hslColor = HslColor.FromColor(this.Color);
+        this.itemToColor = colorable;
+        this.Color = this.itemToColor?.Color ?? Color.Black;
+        this.currentHslColor = HslColor.FromColor(this.Color);
         if (this.Color == Color.Black)
         {
-            this._hueCoord = this._hueTrack.Minimum;
-            this._lightnessCoord = this._lightnessTrack.Minimum;
-            this._saturationCoord = this._saturationTrack.Minimum;
+            this.hueCoord = this.hueTrack.Minimum;
+            this.lightnessCoord = this.lightnessTrack.Minimum;
+            this.saturationCoord = this.saturationTrack.Minimum;
         }
         else
         {
             var hueValues = HslColorPicker.Colors
-                .Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this._hslColor.H)))
+                .Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this.currentHslColor.H)))
                 .ToList();
             var minDiff = hueValues.Min(item => item.Diff);
-            this._hueCoord = hueValues.First(item => Math.Abs(item.Diff - minDiff) == 0)
+            this.hueCoord = hueValues.First(item => Math.Abs(item.Diff - minDiff) == 0)
                 .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
-                .Remap(HslColorPicker.UnitRange, this._hueTrack);
-            this._lightnessCoord = this._hslColor.L.Remap(HslColorPicker.UnitRange, this._lightnessTrack);
-            this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
+                .Remap(HslColorPicker.UnitRange, this.hueTrack);
+            this.lightnessCoord = this.currentHslColor.L.Remap(HslColorPicker.UnitRange, this.lightnessTrack);
+            this.saturationCoord = this.currentHslColor.S.Remap(HslColorPicker.UnitRange, this.saturationTrack);
         }
 
         for (var i = 0; i < HslColorPicker.Cells; ++i)
         {
             var value = (float)i / HslColorPicker.Cells;
-            this._lightnessShade[i] = new HslColor
+            this.lightnessShade[i] = new HslColor
             {
-                H = this._hslColor.H,
-                S = this.Color == Color.Black ? 0 : this._hslColor.S,
+                H = this.currentHslColor.H,
+                S = this.Color == Color.Black ? 0 : this.currentHslColor.S,
                 L = value,
             }.ToRgbColor();
-            this._saturationShade[i] = new HslColor
+            this.saturationShade[i] = new HslColor
             {
-                H = this._hslColor.H,
+                H = this.currentHslColor.H,
                 S = this.Color == Color.Black ? 0 : value,
-                L = this.Color == Color.Black ? value : Math.Max(0.01f, this._hslColor.L),
+                L = this.Color == Color.Black ? value : Math.Max(0.01f, this.currentHslColor.L),
             }.ToRgbColor();
         }
 
-        this._held = Thumb.None;
+        this.held = Thumb.None;
     }
 
     /// <summary>
@@ -264,15 +264,15 @@ internal sealed class HslColorPicker
         }
 
         var isDown = input.IsDown(SButton.MouseLeft);
-        switch (this._lastDown)
+        switch (this.lastDown)
         {
             case true when !isDown:
-                this._held = Thumb.None;
-                this._lastDown = false;
+                this.held = Thumb.None;
+                this.lastDown = false;
                 return;
             case false when isDown:
                 this.MouseDown();
-                this._lastDown = true;
+                this.lastDown = true;
                 return;
             default:
                 this.MouseMove();
@@ -293,72 +293,72 @@ internal sealed class HslColorPicker
     private void MouseDown()
     {
         var (x, y) = Game1.getMousePosition(true);
-        if (this._noColorArea.Contains(x, y))
+        if (this.noColorArea.Contains(x, y))
         {
-            this._held = Thumb.NoColor;
-            this._hslColor = new(0, 0, 0);
+            this.held = Thumb.NoColor;
+            this.currentHslColor = new(0, 0, 0);
             this.Color = Color.Black;
-            this._hueCoord = this._hueTrack.Minimum;
-            this._lightnessCoord = this._lightnessTrack.Minimum;
-            this._saturationCoord = this._saturationTrack.Minimum;
+            this.hueCoord = this.hueTrack.Minimum;
+            this.lightnessCoord = this.lightnessTrack.Minimum;
+            this.saturationCoord = this.saturationTrack.Minimum;
             Game1.playSound("coin");
             return;
         }
 
-        if (this._hueBarArea.Contains(x, y))
+        if (this.hueBarArea.Contains(x, y))
         {
-            this._held = Thumb.Hue;
+            this.held = Thumb.Hue;
             Game1.playSound("coin");
             this.MouseMove();
             return;
         }
 
-        if (this._lightnessBar.Any(area => area.Contains(x, y)))
+        if (this.lightnessBar.Any(area => area.Contains(x, y)))
         {
-            this._held = Thumb.Lightness;
+            this.held = Thumb.Lightness;
             Game1.playSound("coin");
             this.MouseMove();
             return;
         }
 
-        if (this._saturationBar.Any(area => area.Contains(x, y)))
+        if (this.saturationBar.Any(area => area.Contains(x, y)))
         {
-            this._held = Thumb.Saturation;
+            this.held = Thumb.Saturation;
             Game1.playSound("coin");
             this.MouseMove();
             return;
         }
 
-        this._held = Thumb.None;
+        this.held = Thumb.None;
     }
 
     private void MouseMove()
     {
         var (_, y) = Game1.getMousePosition(true);
-        switch (this._held)
+        switch (this.held)
         {
             case Thumb.Hue:
-                this._hueCoord = this._hueTrack.Clamp(y);
-                var index = this._hueCoord.Remap(this._hueTrack, HslColorPicker.UnitRange)
+                this.hueCoord = this.hueTrack.Clamp(y);
+                var index = this.hueCoord.Remap(this.hueTrack, HslColorPicker.UnitRange)
                     .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack);
                 var hslColor = HslColorPicker.Colors[index];
-                this._hslColor.H = hslColor.H;
+                this.currentHslColor.H = hslColor.H;
                 if (this.Color == Color.Black)
                 {
-                    this._hslColor.L = hslColor.L;
-                    this._hslColor.S = hslColor.S;
-                    this._lightnessCoord = this._hslColor.L.Remap(HslColorPicker.UnitRange, this._lightnessTrack);
-                    this._saturationCoord = this._hslColor.S.Remap(HslColorPicker.UnitRange, this._saturationTrack);
+                    this.currentHslColor.L = hslColor.L;
+                    this.currentHslColor.S = hslColor.S;
+                    this.lightnessCoord = this.currentHslColor.L.Remap(HslColorPicker.UnitRange, this.lightnessTrack);
+                    this.saturationCoord = this.currentHslColor.S.Remap(HslColorPicker.UnitRange, this.saturationTrack);
                 }
 
                 break;
             case Thumb.Lightness:
-                this._lightnessCoord = this._lightnessTrack.Clamp(y);
-                this._hslColor.L = this._lightnessCoord.Remap(this._lightnessTrack, HslColorPicker.UnitRange);
+                this.lightnessCoord = this.lightnessTrack.Clamp(y);
+                this.currentHslColor.L = this.lightnessCoord.Remap(this.lightnessTrack, HslColorPicker.UnitRange);
                 break;
             case Thumb.Saturation:
-                this._saturationCoord = this._saturationTrack.Clamp(y);
-                this._hslColor.S = this._saturationCoord.Remap(this._saturationTrack, HslColorPicker.UnitRange);
+                this.saturationCoord = this.saturationTrack.Clamp(y);
+                this.currentHslColor.S = this.saturationCoord.Remap(this.saturationTrack, HslColorPicker.UnitRange);
                 break;
             case Thumb.NoColor:
                 break;
@@ -367,21 +367,21 @@ internal sealed class HslColorPicker
                 return;
         }
 
-        this.Color = this._hslColor.ToRgbColor();
+        this.Color = this.currentHslColor.ToRgbColor();
         for (var i = 0; i < HslColorPicker.Cells; ++i)
         {
             var value = (float)i / HslColorPicker.Cells;
-            this._lightnessShade[i] = new HslColor
+            this.lightnessShade[i] = new HslColor
             {
-                H = this._hslColor.H,
-                S = this.Color == Color.Black ? 0 : this._hslColor.S,
+                H = this.currentHslColor.H,
+                S = this.Color == Color.Black ? 0 : this.currentHslColor.S,
                 L = value,
             }.ToRgbColor();
-            this._saturationShade[i] = new HslColor
+            this.saturationShade[i] = new HslColor
             {
-                H = this._hslColor.H,
+                H = this.currentHslColor.H,
                 S = this.Color == Color.Black ? 0 : value,
-                L = this.Color == Color.Black ? value : Math.Max(0.01f, this._hslColor.L),
+                L = this.Color == Color.Black ? value : Math.Max(0.01f, this.currentHslColor.L),
             }.ToRgbColor();
         }
     }

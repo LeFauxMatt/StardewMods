@@ -24,54 +24,54 @@ internal sealed class Integrations
     private const string WearMoreRingsId = "bcmpinc.WearMoreRings";
 
 #nullable disable
-    private static Integrations Instance;
+    private static Integrations instance;
 #nullable enable
 
-    private readonly AutomateIntegration _automate;
-    private readonly BetterCraftingIntegration _betterCrafting;
-    private readonly ModConfig _config;
-    private readonly GenericModConfigMenuIntegration _gmcm;
-    private readonly IModHelper _helper;
-    private readonly Dictionary<string, HashSet<string>> _incompatibilities;
-    private readonly ToolbarIconsIntegration _toolbarIcons;
+    private readonly AutomateIntegration automate;
+    private readonly BetterCraftingIntegration betterCrafting;
+    private readonly ModConfig config;
+    private readonly GenericModConfigMenuIntegration gmcm;
+    private readonly IModHelper helper;
+    private readonly Dictionary<string, HashSet<string>> incompatibilities;
+    private readonly ToolbarIconsIntegration toolbarIcons;
 
     private Integrations(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._automate = new(helper.ModRegistry);
-        this._betterCrafting = new(helper.ModRegistry);
-        this._gmcm = new(helper.ModRegistry);
-        this._toolbarIcons = new(helper.ModRegistry);
-        this._incompatibilities =
-            this._helper.ModContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
-        this._helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        this.helper = helper;
+        this.config = config;
+        this.automate = new(helper.ModRegistry);
+        this.betterCrafting = new(helper.ModRegistry);
+        this.gmcm = new(helper.ModRegistry);
+        this.toolbarIcons = new(helper.ModRegistry);
+        this.incompatibilities =
+            this.helper.ModContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
+        this.helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
     /// <summary>
     ///     Gets Automate integration.
     /// </summary>
-    public static AutomateIntegration Automate => Integrations.Instance._automate;
+    public static AutomateIntegration Automate => Integrations.instance.automate;
 
     /// <summary>
     ///     Gets Better Craft integration.
     /// </summary>
-    public static BetterCraftingIntegration BetterCrafting => Integrations.Instance._betterCrafting;
+    public static BetterCraftingIntegration BetterCrafting => Integrations.instance.betterCrafting;
 
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance._gmcm;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.instance.gmcm;
 
     /// <summary>
     ///     Gets Toolbar Icons integration.
     /// </summary>
-    public static ToolbarIconsIntegration ToolbarIcons => Integrations.Instance._toolbarIcons;
+    public static ToolbarIconsIntegration ToolbarIcons => Integrations.instance.toolbarIcons;
 
     private static Dictionary<string, HashSet<string>> Incompatibilities =>
-        Integrations.Instance._incompatibilities;
+        Integrations.instance.incompatibilities;
 
-    private static IModRegistry ModRegistry => Integrations.Instance._helper.ModRegistry;
+    private static IModRegistry ModRegistry => Integrations.instance.helper.ModRegistry;
 
     /// <summary>
     ///     Gets all storages placed in a particular location.
@@ -125,7 +125,7 @@ internal sealed class Integrations
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModHelper helper, ModConfig config)
     {
-        return Integrations.Instance ??= new(helper, config);
+        return Integrations.instance ??= new(helper, config);
     }
 
     /// <summary>
@@ -203,7 +203,7 @@ internal sealed class Integrations
             if (horse?.HorseId == stable.HorseId && Game1.player.currentLocation.Equals(location))
             {
                 excluded.Add(chest);
-                yield return new ChestStorage(chest, horse, Game1.player.getTileLocation());
+                yield return new ChestStorage(chest, horse, Game1.player.Tile);
             }
 
             horse = stable.getStableHorse();
@@ -213,7 +213,7 @@ internal sealed class Integrations
             }
 
             excluded.Add(chest);
-            yield return new ChestStorage(chest, horse, horse.getTileLocation());
+            yield return new ChestStorage(chest, horse, horse.Tile);
         }
     }
 
@@ -242,7 +242,7 @@ internal sealed class Integrations
         }
 
         excluded.Add(chest);
-        yield return new ChestStorage(chest, Game1.player, player.getTileLocation());
+        yield return new ChestStorage(chest, Game1.player, player.Tile);
     }
 
     private static bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out Storage? storage)
@@ -269,7 +269,7 @@ internal sealed class Integrations
             var horse = Game1.player.mount;
             if (horse?.HorseId == stable.HorseId)
             {
-                storage = new ChestStorage(chest, Game1.player, horse.getTileLocation());
+                storage = new ChestStorage(chest, Game1.player, horse.Tile);
                 return true;
             }
 
@@ -279,7 +279,7 @@ internal sealed class Integrations
                 continue;
             }
 
-            storage = new ChestStorage(chest, horse, horse.getTileLocation());
+            storage = new ChestStorage(chest, horse, horse.Tile);
             return true;
         }
 
@@ -292,9 +292,9 @@ internal sealed class Integrations
         Storages.StorageTypeRequested += this.OnStorageTypeRequested;
 
         if (Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId)
-            && !this._config.VanillaStorages.ContainsKey("SaddleBag"))
+            && !this.config.VanillaStorages.ContainsKey("SaddleBag"))
         {
-            this._config.VanillaStorages.Add(
+            this.config.VanillaStorages.Add(
                 "SaddleBag",
                 new()
                 {
@@ -309,7 +309,7 @@ internal sealed class Integrations
         {
             case Chest chest when Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId)
                 && chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag")
-                && this._config.VanillaStorages.TryGetValue("SaddleBag", out var saddleBagData):
+                && this.config.VanillaStorages.TryGetValue("SaddleBag", out var saddleBagData):
                 e.Load(saddleBagData, -1);
                 return;
         }

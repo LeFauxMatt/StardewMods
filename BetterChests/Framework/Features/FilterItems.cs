@@ -17,21 +17,21 @@ internal sealed class FilterItems : Feature
     private static readonly MethodBase ChestAddItem = AccessTools.Method(typeof(Chest), nameof(Chest.addItem));
 
 #nullable disable
-    private static FilterItems Instance;
+    private static FilterItems instance;
 #nullable enable
 
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
-    private MethodBase? _storeMethod;
+    private MethodBase? storeMethod;
 
     private FilterItems(IModHelper helper)
     {
-        this._helper = helper;
-        this._harmony = new(FilterItems.Id);
+        this.helper = helper;
+        this.harmony = new(FilterItems.Id);
     }
 
-    private static IReflectionHelper Reflection => FilterItems.Instance._helper.Reflection;
+    private static IReflectionHelper Reflection => FilterItems.instance.helper.Reflection;
 
     /// <summary>
     ///     Initializes <see cref="FilterItems" />.
@@ -40,17 +40,17 @@ internal sealed class FilterItems : Feature
     /// <returns>Returns an instance of the <see cref="FilterItems" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return FilterItems.Instance ??= new(helper);
+        return FilterItems.instance ??= new(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
+        this.helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             FilterItems.ChestAddItem,
             new(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
 
@@ -60,13 +60,13 @@ internal sealed class FilterItems : Feature
             return;
         }
 
-        this._storeMethod = this._helper.ModRegistry.Get(Integrations.Automate.UniqueId)
+        this.storeMethod = this.helper.ModRegistry.Get(Integrations.Automate.UniqueId)
             ?.GetType()
             .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
             ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
-        if (this._storeMethod is not null)
+        if (this.storeMethod is not null)
         {
-            this._harmony.Patch(this._storeMethod, new(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));
+            this.harmony.Patch(this.storeMethod, new(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));
         }
     }
 
@@ -74,18 +74,18 @@ internal sealed class FilterItems : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
+        this.helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             FilterItems.ChestAddItem,
             AccessTools.Method(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
 
         // Integrations
-        if (this._storeMethod is not null)
+        if (this.storeMethod is not null)
         {
-            this._harmony.Unpatch(
-                this._storeMethod,
+            this.harmony.Unpatch(
+                this.storeMethod,
                 AccessTools.Method(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));
         }
     }

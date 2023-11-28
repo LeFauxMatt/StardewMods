@@ -46,26 +46,26 @@ internal sealed class BetterCrafting : Feature
         AccessTools.Method(typeof(Workbench), nameof(Workbench.checkForAction));
 
 #nullable disable
-    private static BetterCrafting Instance;
+    private static BetterCrafting instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly PerScreen<Tuple<CraftingRecipe, int>?> _craft = new();
-    private readonly PerScreen<IList<StorageNode>> _eligibleStorages = new(() => new List<StorageNode>());
-    private readonly Harmony _harmony;
-    private readonly PerScreen<IReflectedField<Item?>?> _heldItem = new();
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly PerScreen<Tuple<CraftingRecipe, int>?> craft = new();
+    private readonly PerScreen<IList<StorageNode>> eligibleStorages = new(() => new List<StorageNode>());
+    private readonly Harmony harmony;
+    private readonly PerScreen<IReflectedField<Item?>?> heldItem = new();
+    private readonly IModHelper helper;
 
-    private readonly PerScreen<bool> _inWorkbench = new();
-    private readonly PerScreen<IList<StorageNode>> _materialStorages = new(() => new List<StorageNode>());
+    private readonly PerScreen<bool> inWorkbench = new();
+    private readonly PerScreen<IList<StorageNode>> materialStorages = new(() => new List<StorageNode>());
 
-    private EventHandler<CraftingStoragesLoadingEventArgs>? _craftingStoragesLoading;
+    private EventHandler<CraftingStoragesLoadingEventArgs>? craftingStoragesLoading;
 
     private BetterCrafting(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._harmony = new(BetterCrafting.Id);
+        this.helper = helper;
+        this.config = config;
+        this.harmony = new(BetterCrafting.Id);
     }
 
     /// <summary>
@@ -73,33 +73,33 @@ internal sealed class BetterCrafting : Feature
     /// </summary>
     public static event EventHandler<CraftingStoragesLoadingEventArgs> CraftingStoragesLoading
     {
-        add => BetterCrafting.Instance._craftingStoragesLoading += value;
-        remove => BetterCrafting.Instance._craftingStoragesLoading -= value;
+        add => BetterCrafting.instance.craftingStoragesLoading += value;
+        remove => BetterCrafting.instance.craftingStoragesLoading -= value;
     }
 
-    private static ModConfig Config => BetterCrafting.Instance._config;
+    private static ModConfig Config => BetterCrafting.instance.config;
 
     private static Tuple<CraftingRecipe, int>? Craft
     {
-        get => BetterCrafting.Instance._craft.Value;
-        set => BetterCrafting.Instance._craft.Value = value;
+        get => BetterCrafting.instance.craft.Value;
+        set => BetterCrafting.instance.craft.Value = value;
     }
 
-    private static IList<StorageNode> EligibleStorages => BetterCrafting.Instance._eligibleStorages.Value;
+    private static IList<StorageNode> EligibleStorages => BetterCrafting.instance.eligibleStorages.Value;
 
     private static IReflectedField<Item?>? HeldItem
     {
-        get => BetterCrafting.Instance._heldItem.Value;
-        set => BetterCrafting.Instance._heldItem.Value = value;
+        get => BetterCrafting.instance.heldItem.Value;
+        set => BetterCrafting.instance.heldItem.Value = value;
     }
 
     private static bool InWorkbench
     {
-        get => BetterCrafting.Instance._inWorkbench.Value;
-        set => BetterCrafting.Instance._inWorkbench.Value = value;
+        get => BetterCrafting.instance.inWorkbench.Value;
+        set => BetterCrafting.instance.inWorkbench.Value = value;
     }
 
-    private static IList<StorageNode> MaterialStorages => BetterCrafting.Instance._materialStorages.Value;
+    private static IList<StorageNode> MaterialStorages => BetterCrafting.instance.materialStorages.Value;
 
     /// <summary>
     ///     Initializes <see cref="BetterCrafting" />.
@@ -109,7 +109,7 @@ internal sealed class BetterCrafting : Feature
     /// <returns>Returns an instance of the <see cref="BetterCrafting" /> class.</returns>
     public static BetterCrafting Init(IModHelper helper, ModConfig config)
     {
-        return BetterCrafting.Instance ??= new(helper, config);
+        return BetterCrafting.instance ??= new(helper, config);
     }
 
     /// <summary>
@@ -126,8 +126,8 @@ internal sealed class BetterCrafting : Feature
             return true;
         }
 
-        var width = 800 + IClickableMenu.borderWidth * 2;
-        var height = 600 + IClickableMenu.borderWidth * 2;
+        var width = 800 + (IClickableMenu.borderWidth * 2);
+        var height = 600 + (IClickableMenu.borderWidth * 2);
         var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height).ToPoint();
         Game1.activeClickableMenu = new CraftingPage(x, y, width, height, false, true);
         return true;
@@ -138,21 +138,21 @@ internal sealed class BetterCrafting : Feature
     {
         // Events
         BetterCrafting.CraftingStoragesLoading += BetterCrafting.OnCraftingStoragesLoading;
-        this._helper.Events.GameLoop.UpdateTicked += BetterCrafting.OnUpdateTicked;
-        this._helper.Events.GameLoop.UpdateTicking += BetterCrafting.OnUpdateTicking;
-        this._helper.Events.Display.MenuChanged += BetterCrafting.OnMenuChanged;
+        this.helper.Events.GameLoop.UpdateTicked += BetterCrafting.OnUpdateTicked;
+        this.helper.Events.GameLoop.UpdateTicking += BetterCrafting.OnUpdateTicking;
+        this.helper.Events.Display.MenuChanged += BetterCrafting.OnMenuChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterCrafting.CraftingPageConstructor,
             postfix: new(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_constructor_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterCrafting.CraftingPageClickCraftingRecipe,
             new(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_clickCraftingRecipe_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterCrafting.CraftingPageGetContainerContents,
             postfix: new(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_getContainerContents_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterCrafting.WorkbenchCheckForAction,
             new(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
 
@@ -170,23 +170,23 @@ internal sealed class BetterCrafting : Feature
     {
         // Events
         BetterCrafting.CraftingStoragesLoading -= BetterCrafting.OnCraftingStoragesLoading;
-        this._helper.Events.GameLoop.UpdateTicked -= BetterCrafting.OnUpdateTicked;
-        this._helper.Events.GameLoop.UpdateTicking -= BetterCrafting.OnUpdateTicking;
-        this._helper.Events.Display.MenuChanged -= BetterCrafting.OnMenuChanged;
+        this.helper.Events.GameLoop.UpdateTicked -= BetterCrafting.OnUpdateTicked;
+        this.helper.Events.GameLoop.UpdateTicking -= BetterCrafting.OnUpdateTicking;
+        this.helper.Events.Display.MenuChanged -= BetterCrafting.OnMenuChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterCrafting.CraftingPageConstructor,
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_constructor_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterCrafting.CraftingPageClickCraftingRecipe,
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_clickCraftingRecipe_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterCrafting.CraftingPageGetContainerContents,
             AccessTools.Method(
                 typeof(BetterCrafting),
                 nameof(BetterCrafting.CraftingPage_getContainerContents_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterCrafting.WorkbenchCheckForAction,
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
 
@@ -227,9 +227,9 @@ internal sealed class BetterCrafting : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void CraftingPage_constructor_postfix(CraftingPage __instance)
     {
-        BetterCrafting.HeldItem = BetterCrafting.Instance._helper.Reflection.GetField<Item?>(__instance, "heldItem");
-        BetterCrafting.Instance._craftingStoragesLoading.InvokeAll(
-            BetterCrafting.Instance,
+        BetterCrafting.HeldItem = BetterCrafting.instance.helper.Reflection.GetField<Item?>(__instance, "heldItem");
+        BetterCrafting.instance.craftingStoragesLoading.InvokeAll(
+            BetterCrafting.instance,
             new(BetterCrafting.EligibleStorages));
     }
 
@@ -322,8 +322,8 @@ internal sealed class BetterCrafting : Feature
 
     private static void OnMenuPopulateContainers(IPopulateContainersEvent e)
     {
-        BetterCrafting.Instance._craftingStoragesLoading.InvokeAll(
-            BetterCrafting.Instance,
+        BetterCrafting.instance.craftingStoragesLoading.InvokeAll(
+            BetterCrafting.instance,
             new(BetterCrafting.EligibleStorages));
         if (!BetterCrafting.EligibleStorages.Any())
         {
@@ -367,19 +367,11 @@ internal sealed class BetterCrafting : Feature
         {
             foreach (var (id, quantity) in recipe.recipeList)
             {
-                bool IsValid(Item? item)
-                {
-                    return item is SObject { bigCraftable.Value: false } obj
-                        && (item.ParentSheetIndex == id
-                            || item.Category == id
-                            || CraftingRecipe.isThereSpecialIngredientRule(obj, id));
-                }
-
                 var required = quantity * amount;
                 for (var i = Game1.player.Items.Count - 1; i >= 0; --i)
                 {
                     var item = Game1.player.Items[i];
-                    if (!IsValid(item))
+                    if (!CraftingRecipe.ItemMatchesForCrafting(item, id))
                     {
                         continue;
                     }
@@ -416,7 +408,7 @@ internal sealed class BetterCrafting : Feature
                     for (var i = storageObject.Items.Count - 1; i >= 0; --i)
                     {
                         var item = storageObject.Items[i];
-                        if (item is null || !IsValid(item))
+                        if (item is null || !CraftingRecipe.ItemMatchesForCrafting(item, id))
                         {
                             continue;
                         }
@@ -517,31 +509,23 @@ internal sealed class BetterCrafting : Feature
         }
 
         BetterCrafting.MaterialStorages.Clear();
-        var amount = BetterCrafting.Instance._helper.Input.IsDown(SButton.LeftShift)
-            || BetterCrafting.Instance._helper.Input.IsDown(SButton.RightShift)
+        var amount = BetterCrafting.instance.helper.Input.IsDown(SButton.LeftShift)
+            || BetterCrafting.instance.helper.Input.IsDown(SButton.RightShift)
                 ? 5
                 : 1;
         var crafted = recipe.createItem();
         if (heldItem is not null
             && (!heldItem.Name.Equals(crafted.Name)
                 || !heldItem.getOne().canStackWith(crafted.getOne())
-                || heldItem.Stack + recipe.numberProducedPerCraft * amount > heldItem.maximumStackSize()))
+                || heldItem.Stack + (recipe.numberProducedPerCraft * amount) > heldItem.maximumStackSize()))
         {
             return false;
         }
 
         foreach (var (id, quantity) in recipe.recipeList)
         {
-            bool IsValid(Item? item)
-            {
-                return item is SObject { bigCraftable.Value: false } obj
-                    && (item.ParentSheetIndex == id
-                        || item.Category == id
-                        || CraftingRecipe.isThereSpecialIngredientRule(obj, id));
-            }
-
             var required = quantity * amount;
-            foreach (var item in Game1.player.Items.Where(IsValid))
+            foreach (var item in Game1.player.Items.Where(item => CraftingRecipe.ItemMatchesForCrafting(item, id)))
             {
                 required -= item.Stack;
                 if (required <= 0)
@@ -562,7 +546,7 @@ internal sealed class BetterCrafting : Feature
                     continue;
                 }
 
-                foreach (var item in storageObject.Items.Where(IsValid))
+                foreach (var item in storageObject.Items.Where(item => CraftingRecipe.ItemMatchesForCrafting(item, id)))
                 {
                     BetterCrafting.MaterialStorages.Add(storage);
                     required -= item!.Stack;
@@ -605,7 +589,7 @@ internal sealed class BetterCrafting : Feature
     private static bool Workbench_checkForAction_prefix(bool justCheckingForActivity)
     {
         if (justCheckingForActivity
-            || BetterCrafting.Instance._config.CraftFromWorkbench is (FeatureOptionRange.Disabled
+            || BetterCrafting.instance.config.CraftFromWorkbench is (FeatureOptionRange.Disabled
                 or FeatureOptionRange.Default))
         {
             return true;

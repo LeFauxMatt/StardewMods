@@ -11,14 +11,14 @@ using StardewValley.Menus;
 internal sealed class LabelChest : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     private LabelChest(IModHelper helper)
     {
-        this._helper = helper;
+        this.helper = helper;
     }
 
     /// <summary>
@@ -28,23 +28,23 @@ internal sealed class LabelChest : Feature
     /// <returns>Returns an instance of the <see cref="LabelChest" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return LabelChest.Instance ??= new LabelChest(helper);
+        return LabelChest.instance ??= new LabelChest(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
-        this._helper.Events.Display.RenderedHud += LabelChest.OnRenderedHud;
+        this.helper.Events.Display.RenderedActiveMenu += LabelChest.OnRenderedActiveMenu;
+        this.helper.Events.Display.RenderedHud += LabelChest.OnRenderedHud;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
-        this._helper.Events.Display.RenderedHud -= LabelChest.OnRenderedHud;
+        this.helper.Events.Display.RenderedActiveMenu -= LabelChest.OnRenderedActiveMenu;
+        this.helper.Events.Display.RenderedHud -= LabelChest.OnRenderedHud;
     }
 
     private static void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -56,16 +56,16 @@ internal sealed class LabelChest : Feature
         }
 
         var bounds = Game1.smallFont.MeasureString(BetterItemGrabMenu.Context.ChestLabel).ToPoint();
-
+        var overrideY = itemGrabMenu.yPositionOnScreen
+            - IClickableMenu.borderWidth
+            - BetterItemGrabMenu.TopPadding
+            - Game1.tileSize;
         IClickableMenu.drawHoverText(
             e.SpriteBatch,
             BetterItemGrabMenu.Context.ChestLabel,
             Game1.smallFont,
             overrideX: itemGrabMenu.xPositionOnScreen - bounds.X - IClickableMenu.borderWidth,
-            overrideY: itemGrabMenu.yPositionOnScreen
-            - IClickableMenu.borderWidth
-            - BetterItemGrabMenu.TopPadding
-            - Game1.tileSize);
+            overrideY: overrideY);
     }
 
     private static void OnRenderedHud(object? sender, RenderedHudEventArgs e)

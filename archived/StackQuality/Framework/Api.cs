@@ -3,10 +3,8 @@
 using System;
 using System.Linq;
 using System.Text;
-using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 using StardewMods.Common.Integrations.StackQuality;
 using StardewValley.Objects;
-using StardewValley.Tools;
 
 /// <inheritdoc />
 public sealed class Api : IStackQualityApi

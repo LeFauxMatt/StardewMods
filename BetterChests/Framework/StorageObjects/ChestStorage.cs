@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley.Mods;
 using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc cref="Storage" />
 internal sealed class ChestStorage : Storage, IColorable
 {
-    private readonly Chest _chest;
+    private readonly Chest chest;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChestStorage" /> class.
@@ -23,14 +25,14 @@ internal sealed class ChestStorage : Storage, IColorable
         : base(chest, source, position)
     {
         this.Chest = chest;
-        this._chest = new(true, this.Chest.ParentSheetIndex)
+        this.chest = new(true, this.Chest.ItemId)
         {
             Name = this.Chest.Name,
             playerChoiceColor = { Value = this.Chest.playerChoiceColor.Value },
         };
 
-        this._chest._GetOneFrom(this.Chest);
-        this._chest.resetLidFrame();
+        this.chest.CopyFrom(this.Chest);
+        this.chest.resetLidFrame();
     }
 
     /// <inheritdoc />
@@ -52,7 +54,7 @@ internal sealed class ChestStorage : Storage, IColorable
         get => this.Chest.playerChoiceColor.Value;
         set
         {
-            this._chest.playerChoiceColor.Value = value;
+            this.chest.playerChoiceColor.Value = value;
             this.Chest.playerChoiceColor.Value = value;
         }
     }
@@ -85,6 +87,6 @@ internal sealed class ChestStorage : Storage, IColorable
     /// <inheritdoc />
     public void Draw(SpriteBatch spriteBatch, int x, int y)
     {
-        this._chest.draw(spriteBatch, x, y, 1f, true);
+        this.chest.draw(spriteBatch, x, y, 1f, true);
     }
 }

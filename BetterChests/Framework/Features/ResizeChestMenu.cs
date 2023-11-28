@@ -48,23 +48,23 @@ internal sealed class ResizeChestMenu : Feature
         });
 
 #nullable disable
-    private static ResizeChestMenu Instance;
+    private static ResizeChestMenu instance;
 #nullable enable
 
-    private readonly PerScreen<int> _extraSpace = new();
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly PerScreen<int> extraSpace = new();
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
     private ResizeChestMenu(IModHelper helper)
     {
-        this._helper = helper;
-        this._harmony = new(ResizeChestMenu.Id);
+        this.helper = helper;
+        this.harmony = new(ResizeChestMenu.Id);
     }
 
     private static int ExtraSpace
     {
-        get => ResizeChestMenu.Instance._extraSpace.Value;
-        set => ResizeChestMenu.Instance._extraSpace.Value = value;
+        get => ResizeChestMenu.instance.extraSpace.Value;
+        set => ResizeChestMenu.instance.extraSpace.Value = value;
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ internal sealed class ResizeChestMenu : Feature
     /// <returns>Returns an instance of the <see cref="ResizeChestMenu" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return ResizeChestMenu.Instance ??= new(helper);
+        return ResizeChestMenu.instance ??= new(helper);
     }
 
     /// <inheritdoc />
@@ -82,16 +82,16 @@ internal sealed class ResizeChestMenu : Feature
     {
         // Events
         BetterItemGrabMenu.Constructed += ResizeChestMenu.OnConstructed;
-        this._helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
+        this.helper.Events.Display.MenuChanged += ResizeChestMenu.OnMenuChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             ResizeChestMenu.ItemGrabMenuDraw,
             transpiler: new(typeof(ResizeChestMenu), nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             ResizeChestMenu.MenuWithInventoryConstructor,
             postfix: new(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_constructor_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             ResizeChestMenu.MenuWithInventoryDraw,
             transpiler: new(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler)));
     }
@@ -101,16 +101,16 @@ internal sealed class ResizeChestMenu : Feature
     {
         // Events
         BetterItemGrabMenu.Constructed -= ResizeChestMenu.OnConstructed;
-        this._helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
+        this.helper.Events.Display.MenuChanged -= ResizeChestMenu.OnMenuChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             ResizeChestMenu.ItemGrabMenuDraw,
             AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.ItemGrabMenu_draw_transpiler)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             ResizeChestMenu.MenuWithInventoryConstructor,
             AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_constructor_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             ResizeChestMenu.MenuWithInventoryDraw,
             AccessTools.Method(typeof(ResizeChestMenu), nameof(ResizeChestMenu.MenuWithInventory_draw_transpiler)));
     }
@@ -214,10 +214,9 @@ internal sealed class ResizeChestMenu : Feature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu
-            {
-                shippingBin: false, ItemsToGrabMenu.inventory: { } topRow, inventory.inventory: { } bottomRow,
-            }
+        if (e.NewMenu is not ItemGrabMenu { shippingBin: false } itemGrabMenu
+            || itemGrabMenu.ItemsToGrabMenu?.inventory is null
+            || itemGrabMenu.inventory?.inventory is null
             || BetterItemGrabMenu.Context is null
             || BetterItemGrabMenu.Context.ResizeChestMenuRows == 3)
         {
@@ -225,8 +224,8 @@ internal sealed class ResizeChestMenu : Feature
         }
 
         // Set upNeighborId for first row of player inventory
-        bottomRow = bottomRow.TakeLast(12).ToList();
-        topRow = topRow.Take(12).ToList();
+        var bottomRow = itemGrabMenu.inventory.inventory.TakeLast(12).ToList();
+        var topRow = itemGrabMenu.ItemsToGrabMenu.inventory.Take(12).ToList();
         for (var index = 0; index < 12; ++index)
         {
             var bottomSlot = bottomRow.ElementAtOrDefault(index);

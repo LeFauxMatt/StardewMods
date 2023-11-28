@@ -8,10 +8,10 @@ using StardewMods.ExpandedStorage.Models;
 /// <inheritdoc />
 public sealed class Api : IExpandedStorageApi
 {
-    private readonly IModHelper _helper;
-    private readonly IDictionary<string, LegacyAsset> _legacyAssets;
-    private readonly IDictionary<string, CachedStorage> _storageCache;
-    private readonly IDictionary<string, ICustomStorage> _storages;
+    private readonly IModHelper helper;
+    private readonly IDictionary<string, LegacyAsset> legacyAssets;
+    private readonly IDictionary<string, CachedStorage> storageCache;
+    private readonly IDictionary<string, ICustomStorage> storages;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Api" /> class.
@@ -26,16 +26,16 @@ public sealed class Api : IExpandedStorageApi
         IDictionary<string, CachedStorage> storageCache,
         IDictionary<string, LegacyAsset> legacyAssets)
     {
-        this._helper = helper;
-        this._storages = storages;
-        this._storageCache = storageCache;
-        this._legacyAssets = legacyAssets;
+        this.helper = helper;
+        this.storages = storages;
+        this.storageCache = storageCache;
+        this.legacyAssets = legacyAssets;
     }
 
     /// <inheritdoc />
     public bool LoadContentPack(IManifest manifest, string path)
     {
-        var contentPack = this._helper.ContentPacks.CreateTemporary(
+        var contentPack = this.helper.ContentPacks.CreateTemporary(
             path,
             manifest.UniqueID,
             manifest.Name,
@@ -60,7 +60,7 @@ public sealed class Api : IExpandedStorageApi
         var loadedAny = false;
         foreach (var (id, legacyStorage) in storages)
         {
-            if (this._storages.ContainsKey(id))
+            if (this.storages.ContainsKey(id))
             {
                 Log.Warn($"A storage has already been loaded with the id {id}");
                 return false;
@@ -80,7 +80,7 @@ public sealed class Api : IExpandedStorageApi
                 continue;
             }
 
-            this._legacyAssets.Add(id, new(id, contentPack, path));
+            this.legacyAssets.Add(id, new(id, contentPack, path));
             storage.DisplayName = contentPack.Translation.Get($"big-craftable.{id}.name");
             storage.Description = contentPack.Translation.Get($"big-craftable.{id}.description");
             storage.Image = $"ExpandedStorage/SpriteSheets/{id}";
@@ -99,14 +99,14 @@ public sealed class Api : IExpandedStorageApi
     /// <inheritdoc />
     public bool RegisterStorage(string id, ICustomStorage storage)
     {
-        if (this._storages.ContainsKey(id))
+        if (this.storages.ContainsKey(id))
         {
             Log.Warn($"A storage has already been loaded with the id {id}");
             return false;
         }
 
-        this._storages.Add(id, storage);
-        this._storageCache.Add(storage.Image, new(storage));
+        this.storages.Add(id, storage);
+        this.storageCache.Add(storage.Image, new(storage));
         return true;
     }
 }

@@ -10,7 +10,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Helpers.AtraBase.StringHandlers;
 using StardewValley.Menus;
 
 /// <summary>
@@ -19,63 +18,64 @@ using StardewValley.Menus;
 internal sealed class ChestMenuTabs : Feature
 {
 #nullable disable
-    private static ChestMenuTabs Instance;
+    private static ChestMenuTabs instance;
 #nullable enable
 
-    private readonly Lazy<Dictionary<string, ClickableTextureComponent>> _allTabs;
-    private readonly ModConfig _config;
-    private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-    private readonly IModHelper _helper;
-    private readonly PerScreen<ItemMatcher> _itemMatcher = new(() => new(true));
-    private readonly PerScreen<int> _tabIndex = new(() => -1);
-    private readonly PerScreen<List<ClickableTextureComponent>> _tabs = new(() => new());
+    private readonly Lazy<Dictionary<string, ClickableTextureComponent>> allTabs;
+    private readonly ModConfig config;
+    private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
+    private readonly IModHelper helper;
+    private readonly PerScreen<ItemMatcher> itemMatcher = new(() => new(true));
+    private readonly PerScreen<int> tabIndex = new(() => -1);
+    private readonly PerScreen<List<ClickableTextureComponent>> tabs = new(() => new());
 
     private ChestMenuTabs(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._allTabs = new(
+        this.helper = helper;
+        this.config = config;
+        this.allTabs = new(
             () =>
             {
-                var allTabs = new Dictionary<string, ClickableTextureComponent>();
-                var tabs = this._helper.GameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
-                foreach (var (name, info) in tabs)
+                var allTabData = new Dictionary<string, ClickableTextureComponent>();
+                var tabData = this.helper.GameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
+                foreach (var (name, info) in tabData)
                 {
-                    var data = new SpanSplit(info, '/');
-                    allTabs.Add(
+                    var data = info.Split('/');
+                    var hoverText = !string.IsNullOrWhiteSpace(data[0])
+                        ? data[0]
+                        : helper.Translation.Get($"tabs.{name}.name").Default(name);
+                    allTabData.Add(
                         name,
                         new(
                             data[3],
                             new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
                             string.Empty,
-                            !string.IsNullOrWhiteSpace(data[0])
-                                ? data[0]
-                                : helper.Translation.Get($"tabs.{name}.name").Default(name),
+                            hoverText,
                             Game1.content.Load<Texture2D>(data[1]),
                             new(16 * int.Parse(data[2]), 4, 16, 12),
                             Game1.pixelZoom));
                 }
 
-                return allTabs;
+                return allTabData;
             });
     }
 
-    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.Instance._allTabs.Value;
+    private static Dictionary<string, ClickableTextureComponent> AllTabs => ChestMenuTabs.instance.allTabs.Value;
 
-    private List<ClickableTextureComponent> Components => this._tabs.Value;
+    private List<ClickableTextureComponent> Components => this.tabs.Value;
 
     private ItemGrabMenu? CurrentMenu
     {
-        get => this._currentMenu.Value;
-        set => this._currentMenu.Value = value;
+        get => this.currentMenu.Value;
+        set => this.currentMenu.Value = value;
     }
 
     private int Index
     {
-        get => this._tabIndex.Value;
+        get => this.tabIndex.Value;
         set
         {
-            this._tabIndex.Value = value;
+            this.tabIndex.Value = value;
             this.ItemMatcher.Clear();
             if (value == -1 || !this.Components.Any())
             {
@@ -96,53 +96,53 @@ internal sealed class ChestMenuTabs : Feature
         }
     }
 
-    private ItemMatcher ItemMatcher => this._itemMatcher.Value;
+    private ItemMatcher ItemMatcher => this.itemMatcher.Value;
 
     private Dictionary<string, string> Tabs
     {
         get
         {
-            var tabs = this._helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
-            if (tabs is not null && tabs.Any())
+            var tabData = this.helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
+            if (tabData is not null && tabData.Any())
             {
-                return tabs;
+                return tabData;
             }
 
-            tabs = new()
+            tabData = new()
             {
                 {
-                    "Clothing", "/furyx639.BetterChests\\Tabs\\Texture/0/category_clothing category_boots category_hat"
+                    "Clothing", @"/furyx639.BetterChests\Tabs\Texture/0/category_clothing category_boots category_hat"
                 },
                 {
                     "Cooking",
-                    "/furyx639.BetterChests\\Tabs\\Texture/1/category_syrup category_artisan_goods category_ingredients category_sell_at_pierres_and_marnies category_sell_at_pierres category_meat category_cooking category_milk category_egg"
+                    @"/furyx639.BetterChests\\Tabs\\Texture/1/category_syrup category_artisan_goods category_ingredients category_sell_at_pierres_and_marnies category_sell_at_pierres category_meat category_cooking category_milk category_egg"
                 },
                 {
                     "Crops",
-                    "/furyx639.BetterChests\\Tabs\\Texture/2/category_greens category_flowers category_fruits category_vegetable"
+                    @"/furyx639.BetterChests\\Tabs\\Texture/2/category_greens category_flowers category_fruits category_vegetable"
                 },
                 {
                     "Equipment",
-                    "/furyx639.BetterChests\\Tabs\\Texture/3/category_equipment category_ring category_tool category_weapon"
+                    @"/furyx639.BetterChests\\Tabs\\Texture/3/category_equipment category_ring category_tool category_weapon"
                 },
                 {
                     "Fishing",
-                    "/furyx639.BetterChests\\Tabs\\Texture/4/category_bait category_fish category_tackle category_sell_at_fish_shop"
+                    @"/furyx639.BetterChests\\Tabs\\Texture/4/category_bait category_fish category_tackle category_sell_at_fish_shop"
                 },
                 {
                     "Materials",
-                    "/furyx639.BetterChests\\Tabs\\Texture/5/category_monster_loot category_metal_resources category_building_resources category_minerals category_crafting category_gem"
+                    @"/furyx639.BetterChests\\Tabs\\Texture/5/category_monster_loot category_metal_resources category_building_resources category_minerals category_crafting category_gem"
                 },
                 {
                     "Misc",
-                    "/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk"
+                    @"/furyx639.BetterChests\\Tabs\\Texture/6/category_big_craftable category_furniture category_junk"
                 },
-                { "Seeds", "/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer" },
+                { "Seeds", @"/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer" },
             };
 
-            this._helper.Data.WriteJsonFile("assets/tabs.json", tabs);
+            this.helper.Data.WriteJsonFile("assets/tabs.json", tabData);
 
-            return tabs;
+            return tabData;
         }
     }
 
@@ -154,7 +154,7 @@ internal sealed class ChestMenuTabs : Feature
     /// <returns>Returns an instance of the <see cref="ChestMenuTabs" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return ChestMenuTabs.Instance ??= new(helper, config);
+        return ChestMenuTabs.instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
@@ -162,11 +162,11 @@ internal sealed class ChestMenuTabs : Feature
     {
         // Events
         BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-        this._helper.Events.Content.AssetRequested += this.OnAssetRequested;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this.helper.Events.Content.AssetRequested += this.OnAssetRequested;
+        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
@@ -174,16 +174,16 @@ internal sealed class ChestMenuTabs : Feature
     {
         // Events
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
-        this._helper.Events.Content.AssetRequested -= this.OnAssetRequested;
-        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this._helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this.helper.Events.Content.AssetRequested -= this.OnAssetRequested;
+        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
     {
-        if (this._config.HideItems is FeatureOption.Enabled)
+        if (this.config.HideItems is FeatureOption.Enabled)
         {
             return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
         }
@@ -218,7 +218,7 @@ internal sealed class ChestMenuTabs : Feature
                 return;
         }
 
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -228,16 +228,16 @@ internal sealed class ChestMenuTabs : Feature
             return;
         }
 
-        if (this._config.ControlScheme.PreviousTab.JustPressed())
+        if (this.config.ControlScheme.PreviousTab.JustPressed())
         {
             this.Index = this.Index == -1 ? this.Components.Count - 1 : this.Index - 1;
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.PreviousTab);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.PreviousTab);
         }
 
-        if (this._config.ControlScheme.NextTab.JustPressed())
+        if (this.config.ControlScheme.NextTab.JustPressed())
         {
             this.Index = this.Index == this.Components.Count - 1 ? -1 : this.Index + 1;
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.NextTab);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.NextTab);
         }
     }
 
@@ -269,7 +269,7 @@ internal sealed class ChestMenuTabs : Feature
                     Game1.pixelZoom,
                     SpriteEffects.None,
                     0.86f);
-                tab.draw(b, Color.White, 0.86f + tab.bounds.Y / 20000f);
+                tab.draw(b, Color.White, 0.86f + (tab.bounds.Y / 20000f));
 
                 // draw texture
                 var bounds = Game1.smallFont.MeasureString(tab.hoverText).ToPoint();
@@ -280,7 +280,7 @@ internal sealed class ChestMenuTabs : Feature
                     this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize - 8,
                     tab.bounds.Y - 12,
                     bounds.X + 32,
-                    bounds.Y + Game1.tileSize / 3,
+                    bounds.Y + (Game1.tileSize / 3),
                     Color.White,
                     drawShadow: false);
 
@@ -305,7 +305,7 @@ internal sealed class ChestMenuTabs : Feature
                 Game1.pixelZoom,
                 SpriteEffects.None,
                 0.86f);
-            tab.draw(b, Color.Gray, 0.86f + tab.bounds.Y / 20000f);
+            tab.draw(b, Color.Gray, 0.86f + (tab.bounds.Y / 20000f));
         }
 
         var (x, y) = Game1.getMousePosition(true);
@@ -374,7 +374,7 @@ internal sealed class ChestMenuTabs : Feature
 
             if (string.IsNullOrWhiteSpace(tab.hoverText))
             {
-                tab.hoverText = this._helper.Translation.Get($"tab.{name}.Name").Default(name);
+                tab.hoverText = this.helper.Translation.Get($"tab.{name}.Name").Default(name);
             }
 
             this.Components.Add(tab);
@@ -411,7 +411,7 @@ internal sealed class ChestMenuTabs : Feature
                 ? this.Components[i - 1].bounds.Right
                 : this.CurrentMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
             this.Components[i].bounds.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen
-                + Game1.tileSize * this.CurrentMenu.ItemsToGrabMenu.rows
+                + (Game1.tileSize * this.CurrentMenu.ItemsToGrabMenu.rows)
                 + IClickableMenu.borderWidth;
         }
 

@@ -12,7 +12,7 @@ using StardewValley.Objects;
 /// </summary>
 internal sealed class ModPatches
 {
-    private static ModPatches? Instance;
+    private static ModPatches? instance;
 
     private ModPatches(IManifest manifest)
     {
@@ -47,7 +47,7 @@ internal sealed class ModPatches
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IManifest manifest)
     {
-        return ModPatches.Instance ??= new(manifest);
+        return ModPatches.instance ??= new(manifest);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -67,7 +67,7 @@ internal sealed class ModPatches
 
         var texture = Game1.content.Load<Texture2D>("furyx639.GarbageDay/Texture");
         var currentLidFrame = ___currentLidFrame % 3;
-        var layerDepth = Math.Max(0.0f, ((y + 1f) * 64f - 24f) / 10000f) + x * 1E-05f;
+        var layerDepth = Math.Max(0.0f, (((y + 1f) * 64f) - 24f) / 10000f) + (x * 1E-05f);
         if (__instance.playerChoiceColor.Value.Equals(Color.Black))
         {
             spriteBatch.Draw(
@@ -79,7 +79,7 @@ internal sealed class ModPatches
                 Vector2.Zero,
                 Game1.pixelZoom,
                 SpriteEffects.None,
-                layerDepth + (1 + layerDepth) * 1E-05f);
+                layerDepth + ((1 + layerDepth) * 1E-05f));
             return false;
         }
 
@@ -131,8 +131,8 @@ internal sealed class ModPatches
         }
 
         var shouldOpen = location.farmers.Any(
-            farmer => Math.Abs(farmer.getTileX() - __instance.TileLocation.X) <= 1f
-                && Math.Abs(farmer.getTileY() - __instance.TileLocation.Y) <= 1f);
+            farmer => Math.Abs(farmer.Tile.X - __instance.TileLocation.X) <= 1f
+                && Math.Abs(farmer.Tile.Y - __instance.TileLocation.Y) <= 1f);
         if (shouldOpen == ____farmerNearby)
         {
             return false;
@@ -175,7 +175,7 @@ internal sealed class ModPatches
 
         __instance.mutex.Update(environment);
 
-        __instance.UpdateFarmerNearby(environment);
+        __instance.UpdateFarmerNearby();
         if (____shippingBinFrameCounter > -1)
         {
             --____shippingBinFrameCounter;

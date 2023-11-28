@@ -11,13 +11,13 @@ using StardewValley.Menus;
 /// <inheritdoc />
 internal sealed class ItemQualityMenu : IClickableMenu
 {
-    private readonly IStackQualityApi _api;
-    private readonly ClickableComponent[] _inventory = new ClickableComponent[4];
-    private readonly SObject[] _items;
-    private readonly SObject _object;
-    private readonly int[] _stacks;
-    private readonly int _x;
-    private readonly int _y;
+    private readonly IStackQualityApi api;
+    private readonly ClickableComponent[] inventory = new ClickableComponent[4];
+    private readonly SObject[] items;
+    private readonly SObject @object;
+    private readonly int[] stacks;
+    private readonly int x;
+    private readonly int y;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemQualityMenu" /> class.
@@ -29,25 +29,25 @@ internal sealed class ItemQualityMenu : IClickableMenu
     /// <param name="y">The y-coordinate.</param>
     public ItemQualityMenu(IStackQualityApi api, SObject obj, int[] stacks, int x, int y)
     {
-        this._api = api;
-        this._object = obj;
-        this._stacks = stacks;
-        this._x = x;
-        this._y = y;
+        this.api = api;
+        this.@object = obj;
+        this.stacks = stacks;
+        this.x = x;
+        this.y = y;
 
-        if (!this._api.SplitStacks(this._object, out var items))
+        if (!this.api.SplitStacks(this.@object, out var itemStacks))
         {
             throw new();
         }
 
-        this._items = items;
+        this.items = itemStacks;
 
         for (var i = 0; i < 4; ++i)
         {
-            this._inventory[i] = new(
+            this.inventory[i] = new(
                 new(
-                    this._x + Game1.tileSize * (i % 2),
-                    this._y + Game1.tileSize * (i / 2),
+                    this.x + (Game1.tileSize * (i % 2)),
+                    this.y + (Game1.tileSize * (i / 2)),
                     Game1.tileSize,
                     Game1.tileSize),
                 i.ToString());
@@ -62,10 +62,10 @@ internal sealed class ItemQualityMenu : IClickableMenu
     {
         // Draw Background
         Game1.drawDialogueBox(
-            this._x - ItemQualityMenu.borderWidth,
-            this._y - ItemQualityMenu.spaceToClearTopBorder,
-            Game1.tileSize * 2 + ItemQualityMenu.borderWidth * 2,
-            Game1.tileSize * 2 + ItemQualityMenu.spaceToClearTopBorder + ItemQualityMenu.borderWidth,
+            this.x - ItemQualityMenu.borderWidth,
+            this.y - ItemQualityMenu.spaceToClearTopBorder,
+            (Game1.tileSize * 2) + (ItemQualityMenu.borderWidth * 2),
+            (Game1.tileSize * 2) + ItemQualityMenu.spaceToClearTopBorder + ItemQualityMenu.borderWidth,
             false,
             true,
             null,
@@ -77,7 +77,7 @@ internal sealed class ItemQualityMenu : IClickableMenu
         {
             b.Draw(
                 Game1.menuTexture,
-                new(this._x + Game1.tileSize * (i % 2), this._y + Game1.tileSize * (i / 2)),
+                new(this.x + (Game1.tileSize * (i % 2)), this.y + (Game1.tileSize * (i / 2))),
                 Game1.getSourceRectForStandardTileSheet(Game1.menuTexture, 10),
                 Color.White,
                 0f,
@@ -90,12 +90,12 @@ internal sealed class ItemQualityMenu : IClickableMenu
         // Draw Items
         for (var i = 0; i < 4; ++i)
         {
-            this._items[i]
+            this.items[i]
                 .drawInMenu(
                     b,
-                    new(this._x + Game1.tileSize * (i % 2), this._y + Game1.tileSize * (i / 2)),
-                    this._stacks[i] == 0 ? 1f : this._inventory[i].scale,
-                    this._stacks[i] == 0 ? 0.25f : 1f,
+                    new(this.x + (Game1.tileSize * (i % 2)), this.y + (Game1.tileSize * (i / 2))),
+                    this.stacks[i] == 0 ? 1f : this.inventory[i].scale,
+                    this.stacks[i] == 0 ? 0.25f : 1f,
                     0.865f,
                     StackDrawType.Draw,
                     Color.White,
@@ -108,13 +108,13 @@ internal sealed class ItemQualityMenu : IClickableMenu
     }
 
     /// <inheritdoc />
-    public override void performHoverAction(int x, int y)
+    public override void performHoverAction(int hoverX, int hoverY)
     {
-        foreach (var cc in this._inventory)
+        foreach (var cc in this.inventory)
         {
             cc.scale = Math.Max(1f, cc.scale - 0.025f);
 
-            if (cc.containsPoint(x, y))
+            if (cc.containsPoint(hoverX, hoverY))
             {
                 cc.scale = Math.Min(cc.scale + 0.05f, 1.1f);
             }
@@ -122,9 +122,9 @@ internal sealed class ItemQualityMenu : IClickableMenu
     }
 
     /// <inheritdoc />
-    public override void receiveLeftClick(int x, int y, bool playSound = true)
+    public override void receiveLeftClick(int clickX, int clickY, bool playSound = true)
     {
-        var component = this._inventory.FirstOrDefault(cc => cc.containsPoint(x, y));
+        var component = this.inventory.FirstOrDefault(cc => cc.containsPoint(clickX, clickY));
         if (component is null)
         {
             this.exitThisMenuNoSound();
@@ -132,13 +132,13 @@ internal sealed class ItemQualityMenu : IClickableMenu
         }
 
         var slotNumber = int.Parse(component.name);
-        var slot = this._items[slotNumber];
-        if (this._stacks[slotNumber] == 0)
+        var slot = this.items[slotNumber];
+        if (this.stacks[slotNumber] == 0)
         {
             return;
         }
 
-        this._stacks[slotNumber] = 0;
+        this.stacks[slotNumber] = 0;
         Helpers.HeldItem = slot;
         this.exitThisMenuNoSound();
     }
@@ -146,6 +146,6 @@ internal sealed class ItemQualityMenu : IClickableMenu
     /// <inheritdoc />
     protected override void cleanupBeforeExit()
     {
-        this._api.UpdateStacks(this._object, this._stacks);
+        this.api.UpdateStacks(this.@object, this.stacks);
     }
 }

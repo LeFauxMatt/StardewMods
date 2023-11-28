@@ -7,9 +7,9 @@ using StardewMods.Common.Models;
 /// <inheritdoc />
 internal sealed class CartItem : ICartItem
 {
-    private readonly Range<int> _range;
+    private readonly Range<int> range;
 
-    private int _quantity;
+    private int quantity;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CartItem" /> class.
@@ -20,14 +20,14 @@ internal sealed class CartItem : ICartItem
     /// <param name="available">The quantity of the item available.</param>
     public CartItem(ISalable item, int quantity, int price, int available)
     {
-        this._range = new(0, available);
+        this.range = new(0, available);
         this.Item = item;
         this.Price = price;
         this.Quantity = Math.Max(1, quantity);
     }
 
     /// <inheritdoc />
-    public int Available => this._range.Maximum;
+    public int Available => this.range.Maximum;
 
     /// <inheritdoc />
     public ISalable Item { get; }
@@ -38,8 +38,8 @@ internal sealed class CartItem : ICartItem
     /// <inheritdoc />
     public int Quantity
     {
-        get => this._quantity;
-        set => this._quantity = this._range.Clamp(value);
+        get => this.quantity;
+        set => this.quantity = this.range.Clamp(value);
     }
 
     /// <inheritdoc />

@@ -18,27 +18,27 @@ public sealed class ModEntry : Mod
             BindingFlags.Instance | BindingFlags.NonPublic)!;
 
 #nullable disable
-    private static ModEntry Instance;
+    private static ModEntry instance;
 #nullable enable
 
-    private readonly PerScreen<ShopMenu?> _currentMenu = new();
-    private readonly PerScreen<Shop?> _currentShop = new();
-    private readonly PerScreen<bool> _makePurchase = new();
+    private readonly PerScreen<ShopMenu?> currentMenu = new();
+    private readonly PerScreen<Shop?> currentShop = new();
+    private readonly PerScreen<bool> makePurchase = new();
 
-    private IReflectedField<string?>? _boldTitleText;
-    private ModConfig? _config;
-    private IReflectedMethod? _getHoveredItemExtraItemAmount;
-    private IReflectedMethod? _getHoveredItemExtraItemIndex;
+    private IReflectedField<string?>? boldTitleText;
+    private ModConfig? config;
+    private IReflectedMethod? getHoveredItemExtraItemAmount;
+    private IReflectedMethod? getHoveredItemExtraItemIndex;
 
-    private IReflectedField<string?>? _hoverText;
+    private IReflectedField<string?>? hoverText;
 
     /// <summary>
     ///     Gets the current instance of VirtualShop.
     /// </summary>
     internal static Shop? CurrentShop
     {
-        get => ModEntry.Instance._currentShop.Value;
-        private set => ModEntry.Instance._currentShop.Value = value;
+        get => ModEntry.instance.currentShop.Value;
+        private set => ModEntry.instance.currentShop.Value = value;
     }
 
     /// <summary>
@@ -46,21 +46,21 @@ public sealed class ModEntry : Mod
     /// </summary>
     internal static bool MakePurchase
     {
-        get => ModEntry.Instance._makePurchase.Value;
-        set => ModEntry.Instance._makePurchase.Value = value;
+        get => ModEntry.instance.makePurchase.Value;
+        set => ModEntry.instance.makePurchase.Value = value;
     }
 
-    private static string? BoldTitleText => ModEntry.Instance._boldTitleText?.GetValue();
+    private static string? BoldTitleText => ModEntry.instance.boldTitleText?.GetValue();
 
     private static ShopMenu? CurrentMenu
     {
-        get => ModEntry.Instance._currentMenu.Value;
-        set => ModEntry.Instance._currentMenu.Value = value;
+        get => ModEntry.instance.currentMenu.Value;
+        set => ModEntry.instance.currentMenu.Value = value;
     }
 
-    private static string? HoverText => ModEntry.Instance._hoverText?.GetValue();
+    private static string? HoverText => ModEntry.instance.hoverText?.GetValue();
 
-    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     /// <summary>
     ///     Check if current menu supports ShoppingCart.
@@ -69,16 +69,16 @@ public sealed class ModEntry : Mod
     /// <returns>Returns true if menu is supported.</returns>
     public static bool IsSupported(IClickableMenu? menu)
     {
-        return menu is ShopMenu { currency: 0, storeContext: not ("Dresser" or "FishTank") } shopMenu
+        return menu is ShopMenu { currency: 0, ShopId: not ("Dresser" or "FishTank") } shopMenu
             && shopMenu.forSale.OfType<Item>().Any()
-            && !(shopMenu.portraitPerson?.Equals(Game1.getCharacterFromName("Clint")) == true
+            && !(shopMenu.Owners?.Equals(Game1.getCharacterFromName("Clint")) == true
                 && shopMenu.forSale.Any(forSale => forSale is Axe or WateringCan or Pickaxe or Hoe or GenericTool));
     }
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        ModEntry.Instance = this;
+        ModEntry.instance = this;
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
         Integrations.Init(this.Helper);
@@ -101,12 +101,12 @@ public sealed class ModEntry : Mod
 
     private static int GetHoveredItemExtraItemAmount()
     {
-        return ModEntry.Instance._getHoveredItemExtraItemAmount?.Invoke<int>() ?? -1;
+        return ModEntry.instance.getHoveredItemExtraItemAmount?.Invoke<int>() ?? -1;
     }
 
     private static int GetHoveredItemExtraItemIndex()
     {
-        return ModEntry.Instance._getHoveredItemExtraItemIndex?.Invoke<int>() ?? -1;
+        return ModEntry.instance.getHoveredItemExtraItemIndex?.Invoke<int>() ?? -1;
     }
 
     private static void OnCursorMoved(object? sender, CursorMovedEventArgs e)
@@ -211,7 +211,7 @@ public sealed class ModEntry : Mod
 
         Integrations.GMCM.Register(
             this.ModManifest,
-            () => this._config = new(),
+            () => this.config = new(),
             () => this.Helper.WriteConfig(this.Config));
 
         Integrations.GMCM.Api.AddNumberOption(
@@ -236,12 +236,12 @@ public sealed class ModEntry : Mod
         ModEntry.MakePurchase = false;
         ModEntry.CurrentMenu = (ShopMenu)e.NewMenu!;
         ModEntry.CurrentShop = new(this.Helper, ModEntry.CurrentMenu);
-        this._hoverText = this.Helper.Reflection.GetField<string?>(ModEntry.CurrentMenu, "hoverText");
-        this._boldTitleText = this.Helper.Reflection.GetField<string?>(ModEntry.CurrentMenu, "boldTitleText");
-        this._getHoveredItemExtraItemIndex = this.Helper.Reflection.GetMethod(
+        this.hoverText = this.Helper.Reflection.GetField<string?>(ModEntry.CurrentMenu, "hoverText");
+        this.boldTitleText = this.Helper.Reflection.GetField<string?>(ModEntry.CurrentMenu, "boldTitleText");
+        this.getHoveredItemExtraItemIndex = this.Helper.Reflection.GetMethod(
             ModEntry.CurrentMenu,
             "getHoveredItemExtraItemIndex");
-        this._getHoveredItemExtraItemAmount = this.Helper.Reflection.GetMethod(
+        this.getHoveredItemExtraItemAmount = this.Helper.Reflection.GetMethod(
             ModEntry.CurrentMenu,
             "getHoveredItemExtraItemAmount");
     }

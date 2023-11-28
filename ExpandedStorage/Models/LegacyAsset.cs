@@ -11,17 +11,17 @@ using Microsoft.Xna.Framework.Graphics;
 /// </summary>
 internal sealed class LegacyAsset
 {
-    private readonly IContentPack _contentPack;
-    private readonly string _id;
-    private readonly string _path;
+    private readonly IContentPack contentPack;
+    private readonly string id;
+    private readonly string path;
 
-    private Tuple<string, string>? _craftingRecipe;
+    private Tuple<string, string>? craftingRecipe;
 
     public LegacyAsset(string id, IContentPack contentPack, string path)
     {
-        this._id = id;
-        this._contentPack = contentPack;
-        this._path = path;
+        this.id = id;
+        this.contentPack = contentPack;
+        this.path = path;
     }
 
     /// <summary>
@@ -31,23 +31,23 @@ internal sealed class LegacyAsset
     {
         get
         {
-            if (this._craftingRecipe is not null)
+            if (this.craftingRecipe is not null)
             {
-                return this._craftingRecipe;
+                return this.craftingRecipe;
             }
 
             // Get Recipe in DGA Format
-            if (!this._contentPack.HasFile("content.json"))
+            if (!this.contentPack.HasFile("content.json"))
             {
-                return this._craftingRecipe = new(string.Empty, string.Empty);
+                return this.craftingRecipe = new(string.Empty, string.Empty);
             }
 
-            var content = this._contentPack.ModContent.Load<List<LegacyRecipe>>("content.json");
+            var content = this.contentPack.ModContent.Load<List<LegacyRecipe>>("content.json");
             foreach (var item in content)
             {
                 if (item.Ingredients is null
                     || item.Result?.Value is not string strValue
-                    || !strValue.EndsWith(this._id))
+                    || !strValue.EndsWith(this.id))
                 {
                     continue;
                 }
@@ -73,16 +73,16 @@ internal sealed class LegacyAsset
                 }
 
                 sb.Append("/Home/232/true/null/");
-                sb.Append(this._contentPack.Translation.Get($"big-craftable.{this._id}.name"));
-                return this._craftingRecipe = new(item.ID, sb.ToString());
+                sb.Append(this.contentPack.Translation.Get($"big-craftable.{this.id}.name"));
+                return this.craftingRecipe = new(item.Id, sb.ToString());
             }
 
-            return this._craftingRecipe = new(string.Empty, string.Empty);
+            return this.craftingRecipe = new(string.Empty, string.Empty);
         }
     }
 
     /// <summary>
     ///     Gets the texture from the content pack's mod content.
     /// </summary>
-    public Texture2D Texture => this._contentPack.ModContent.Load<Texture2D>(this._path);
+    public Texture2D Texture => this.contentPack.ModContent.Load<Texture2D>(this.path);
 }

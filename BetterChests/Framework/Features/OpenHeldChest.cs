@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Extensions;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -29,16 +30,16 @@ internal sealed class OpenHeldChest : Feature
         nameof(InventoryMenu.highlightAllItems));
 
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
     private OpenHeldChest(IModHelper helper)
     {
-        this._helper = helper;
-        this._harmony = new(OpenHeldChest.Id);
+        this.helper = helper;
+        this.harmony = new(OpenHeldChest.Id);
     }
 
     /// <summary>
@@ -48,24 +49,24 @@ internal sealed class OpenHeldChest : Feature
     /// <returns>Returns an instance of the <see cref="OpenHeldChest" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return OpenHeldChest.Instance ??= new OpenHeldChest(helper);
+        return OpenHeldChest.instance ??= new OpenHeldChest(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             OpenHeldChest.ChestAddItem,
             new(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             OpenHeldChest.ChestPerformToolAction,
             transpiler: new(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_performToolAction_transpiler)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             OpenHeldChest.InventoryMenuHighlightAllItems,
             postfix: new(typeof(OpenHeldChest), nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix)));
     }
@@ -74,17 +75,17 @@ internal sealed class OpenHeldChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             OpenHeldChest.ChestAddItem,
             AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             OpenHeldChest.ChestPerformToolAction,
             AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_performToolAction_transpiler)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             OpenHeldChest.InventoryMenuHighlightAllItems,
             AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix)));
     }
@@ -133,7 +134,7 @@ internal sealed class OpenHeldChest : Feature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static Debris GetDebris(Chest chest, int objectIndex, Vector2 debrisOrigin, Vector2 playerPosition)
     {
-        var newChest = new Chest(true, Vector2.Zero, chest.ParentSheetIndex)
+        var newChest = new Chest(true, Vector2.Zero, chest.ItemId)
         {
             Name = chest.Name,
             SpecialChestType = chest.SpecialChestType,
@@ -143,14 +144,14 @@ internal sealed class OpenHeldChest : Feature
         };
 
         // Copy properties
-        newChest._GetOneFrom(chest);
+        newChest.CopyFrom(chest);
 
         // Copy items from regular chest types
         if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
             && !newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             newChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
-                .CopyFrom(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+                .OverwriteWith(chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
         return new(objectIndex, debrisOrigin, playerPosition)
@@ -175,7 +176,7 @@ internal sealed class OpenHeldChest : Feature
     {
         if (Game1.player.CurrentItem is Chest chest)
         {
-            chest.updateWhenCurrentLocation(Game1.currentGameTime, Game1.currentLocation);
+            chest.updateWhenCurrentLocation(Game1.currentGameTime);
         }
     }
 
@@ -200,6 +201,6 @@ internal sealed class OpenHeldChest : Feature
             storageObject.ShowMenu();
         }
 
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
     }
 }

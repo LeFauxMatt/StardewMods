@@ -15,16 +15,16 @@ using StardewValley.Menus;
 internal sealed class StashToChest : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly IModHelper helper;
 
     private StashToChest(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
+        this.helper = helper;
+        this.config = config;
     }
 
     /// <summary>
@@ -35,15 +35,15 @@ internal sealed class StashToChest : Feature
     /// <returns>Returns an instance of the <see cref="StashToChest" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return StashToChest.Instance ??= new StashToChest(helper, config);
+        return StashToChest.instance ??= new StashToChest(helper, config);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Integrations
         if (!Integrations.ToolbarIcons.IsLoaded)
@@ -63,8 +63,8 @@ internal sealed class StashToChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Integrations
         if (!Integrations.ToolbarIcons.IsLoaded)
@@ -164,14 +164,14 @@ internal sealed class StashToChest : Feature
             return;
         }
 
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
         StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
         Game1.playSound("Ship");
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!this._config.ControlScheme.StashItems.JustPressed())
+        if (!this.config.ControlScheme.StashItems.JustPressed())
         {
             return;
         }
@@ -180,7 +180,7 @@ internal sealed class StashToChest : Feature
         if (Context.IsPlayerFree)
         {
             StashToChest.StashIntoAll();
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.StashItems);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.StashItems);
             return;
         }
 
@@ -196,7 +196,7 @@ internal sealed class StashToChest : Feature
         }
 
         // Stash to Current
-        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.StashItems);
+        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.StashItems);
         StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
         Game1.playSound("Ship");
     }

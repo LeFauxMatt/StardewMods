@@ -17,11 +17,11 @@ using StardewValley.Objects;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly IList<Tuple<Feature, Func<bool>>> _features = new List<Tuple<Feature, Func<bool>>>();
+    private readonly IList<Tuple<Feature, Func<bool>>> features = new List<Tuple<Feature, Func<bool>>>();
 
-    private ModConfig? _config;
+    private ModConfig? config;
 
-    private ModConfig ModConfig => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig ModConfig => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -30,7 +30,7 @@ public sealed class ModEntry : Mod
         Formatting.Translations = this.Helper.Translation;
         CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
-        Config.Init(this.Helper, this.ModManifest, this.ModConfig, this._features);
+        Config.Init(this.Helper, this.ModManifest, this.ModConfig, this.features);
         Integrations.Init(this.Helper, this.ModConfig);
         Storages.Init(this.ModConfig);
         ThemeHelper.Init(this.Helper, "furyx639.BetterChests/Icons", "furyx639.BetterChests/Tabs/Texture");
@@ -121,12 +121,12 @@ public sealed class ModEntry : Mod
 
     private void AddFeature(Feature feature, Func<bool> condition)
     {
-        this._features.Add(new(feature, condition));
+        this.features.Add(new(feature, condition));
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        foreach (var (feature, condition) in this._features)
+        foreach (var (feature, condition) in this.features)
         {
             var featureName = feature.GetType().Name;
             if (Integrations.TestConflicts(featureName, out var mods))
@@ -141,85 +141,44 @@ public sealed class ModEntry : Mod
 
         Storages.StorageTypeRequested += this.OnStorageTypeRequested;
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Auto-Grabber"))
+        this.ModConfig.VanillaStorages.TryAdd("Auto-Grabber", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Auto-Grabber",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Chest"))
-        {
-            this.ModConfig.VanillaStorages.Add("Chest", new());
-        }
+        this.ModConfig.VanillaStorages.TryAdd("Chest", new());
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Fridge"))
+        this.ModConfig.VanillaStorages.TryAdd("Fridge", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Fridge",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Junimo Chest"))
+        this.ModConfig.VanillaStorages.TryAdd("Junimo Chest", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Junimo Chest",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Junimo Hut"))
+        this.ModConfig.VanillaStorages.TryAdd("Junimo Hut", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Junimo Hut",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Mini-Fridge"))
+        this.ModConfig.VanillaStorages.TryAdd("Mini-Fridge", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Mini-Fridge",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Mini-Shipping Bin"))
+        this.ModConfig.VanillaStorages.TryAdd("Mini-Shipping Bin", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Mini-Shipping Bin",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Shipping Bin"))
+        this.ModConfig.VanillaStorages.TryAdd("Shipping Bin", new()
         {
-            this.ModConfig.VanillaStorages.Add(
-                "Shipping Bin",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
-        }
+            CustomColorPicker = FeatureOption.Disabled,
+        });
 
-        if (!this.ModConfig.VanillaStorages.ContainsKey("Stone Chest"))
-        {
-            this.ModConfig.VanillaStorages.Add("Stone Chest", new());
-        }
+        this.ModConfig.VanillaStorages.TryAdd("Stone Chest", new());
     }
 
     private void OnStorageTypeRequested(object? sender, IStorageTypeRequestedEventArgs e)
@@ -233,10 +192,8 @@ public sealed class ModEntry : Mod
                 return;
 
             // Chest
-            case Chest
-            {
-                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130,
-            } when this.ModConfig.VanillaStorages.TryGetValue("Chest", out var chestData):
+            case Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 130 }
+                when this.ModConfig.VanillaStorages.TryGetValue("Chest", out var chestData):
                 e.Load(chestData, -1);
                 return;
 
@@ -276,10 +233,8 @@ public sealed class ModEntry : Mod
                 return;
 
             // Stone Chest
-            case Chest
-            {
-                playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232,
-            } when this.ModConfig.VanillaStorages.TryGetValue("Stone Chest", out var stoneChestData):
+            case Chest { playerChest.Value: true, SpecialChestType: Chest.SpecialChestTypes.None, ParentSheetIndex: 232 }
+                when this.ModConfig.VanillaStorages.TryGetValue("Stone Chest", out var stoneChestData):
                 e.Load(stoneChestData, -1);
                 return;
         }

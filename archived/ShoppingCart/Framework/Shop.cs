@@ -22,19 +22,19 @@ internal sealed class Shop : IShop
 
     private const int LineHeight = 48;
 
-    private readonly IReflectedField<List<TemporaryAnimatedSprite>> _animations;
-    private readonly int[] _cols;
-    private readonly Dictionary<string, Point> _dims = new();
-    private readonly List<ICartItem> _items = new();
-    private readonly ClickableTextureComponent _purchase;
-    private readonly IDictionary<ICartItem, QuantityField> _quantityFields = new Dictionary<ICartItem, QuantityField>();
-    private readonly IReflectedField<float> _sellPercentage;
-    private readonly IReflectedMethod _tryToPurchaseItem;
+    private readonly IReflectedField<List<TemporaryAnimatedSprite>> animations;
+    private readonly int[] cols;
+    private readonly Dictionary<string, Point> dims = new();
+    private readonly List<ICartItem> items = new();
+    private readonly ClickableTextureComponent purchase;
+    private readonly IDictionary<ICartItem, QuantityField> quantityFields = new Dictionary<ICartItem, QuantityField>();
+    private readonly IReflectedField<float> sellPercentage;
+    private readonly IReflectedMethod tryToPurchaseItem;
 
-    private int _bottomY;
-    private int _currentY;
-    private int _offset;
-    private int _topY;
+    private int bottomY;
+    private int currentY;
+    private int offset;
+    private int topY;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Shop" /> class.
@@ -44,10 +44,10 @@ internal sealed class Shop : IShop
     public Shop(IModHelper helper, ShopMenu menu)
     {
         this.Menu = menu;
-        this._animations = helper.Reflection.GetField<List<TemporaryAnimatedSprite>>(this.Menu, "animations");
-        this._sellPercentage = helper.Reflection.GetField<float>(this.Menu, "sellPercentage");
-        this._tryToPurchaseItem = helper.Reflection.GetMethod(this.Menu, "tryToPurchaseItem");
-        this._purchase = new(
+        this.animations = helper.Reflection.GetField<List<TemporaryAnimatedSprite>>(this.Menu, "animations");
+        this.sellPercentage = helper.Reflection.GetField<float>(this.Menu, "sellPercentage");
+        this.tryToPurchaseItem = helper.Reflection.GetMethod(this.Menu, "tryToPurchaseItem");
+        this.purchase = new(
             new(0, 0, 15 * Game1.pixelZoom, 14 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(280, 412, 15, 14),
@@ -56,27 +56,28 @@ internal sealed class Shop : IShop
             visible = false,
         };
 
-        this.Bounds = new(
-            this.Menu.xPositionOnScreen + this.Menu.width + Game1.tileSize + IClickableMenu.borderWidth,
-            this.Menu.yPositionOnScreen + IClickableMenu.borderWidth / 2,
-            Shop.MenuWidth - IClickableMenu.borderWidth * 2,
-            this.Menu.inventory.yPositionOnScreen
+        var height = this.Menu.inventory.yPositionOnScreen
             - this.Menu.yPositionOnScreen
             + this.Menu.inventory.height
-            - IClickableMenu.borderWidth);
+            - IClickableMenu.borderWidth;
+        this.Bounds = new(
+            this.Menu.xPositionOnScreen + this.Menu.width + Game1.tileSize + IClickableMenu.borderWidth,
+            this.Menu.yPositionOnScreen + (IClickableMenu.borderWidth / 2),
+            Shop.MenuWidth - (IClickableMenu.borderWidth * 2),
+            height);
 
         const int minWidth = 128;
-        this._dims.Add(I18n.Ui_ShoppingCart(), Game1.dialogueFont.MeasureString(I18n.Ui_ShoppingCart()).ToPoint());
-        this._dims.Add(I18n.Ui_Available(), Game1.smallFont.MeasureString(I18n.Ui_Available()).ToPoint());
-        this._dims.Add(I18n.Ui_Price(), Game1.smallFont.MeasureString(I18n.Ui_Price()).ToPoint());
-        this._dims.Add(I18n.Ui_Quantity(), Game1.smallFont.MeasureString(I18n.Ui_Quantity()).ToPoint());
-        this._dims.Add(I18n.Ui_Total(), Game1.smallFont.MeasureString(I18n.Ui_Total()).ToPoint());
-        this._dims.Add(I18n.Ui_Checkout(), Game1.smallFont.MeasureString(I18n.Ui_Checkout()).ToPoint());
+        this.dims.Add(I18n.Ui_ShoppingCart(), Game1.dialogueFont.MeasureString(I18n.Ui_ShoppingCart()).ToPoint());
+        this.dims.Add(I18n.Ui_Available(), Game1.smallFont.MeasureString(I18n.Ui_Available()).ToPoint());
+        this.dims.Add(I18n.Ui_Price(), Game1.smallFont.MeasureString(I18n.Ui_Price()).ToPoint());
+        this.dims.Add(I18n.Ui_Quantity(), Game1.smallFont.MeasureString(I18n.Ui_Quantity()).ToPoint());
+        this.dims.Add(I18n.Ui_Total(), Game1.smallFont.MeasureString(I18n.Ui_Total()).ToPoint());
+        this.dims.Add(I18n.Ui_Checkout(), Game1.smallFont.MeasureString(I18n.Ui_Checkout()).ToPoint());
 
-        this._cols = new int[3];
-        this._cols[0] = Game1.tileSize / 2 + Math.Max(this._dims[I18n.Ui_Available()].X + 8, minWidth);
-        this._cols[2] = this.Bounds.Width;
-        this._cols[1] = this._cols[2] - Math.Max(this._dims[I18n.Ui_Quantity()].X + 8, minWidth + Game1.tileSize);
+        this.cols = new int[3];
+        this.cols[0] = (Game1.tileSize / 2) + Math.Max(this.dims[I18n.Ui_Available()].X + 8, minWidth);
+        this.cols[2] = this.Bounds.Width;
+        this.cols[1] = this.cols[2] - Math.Max(this.dims[I18n.Ui_Quantity()].X + 8, minWidth + Game1.tileSize);
     }
 
     /// <inheritdoc />
@@ -86,12 +87,12 @@ internal sealed class Shop : IShop
     public ShopMenu Menu { get; }
 
     /// <inheritdoc />
-    public IEnumerable<ICartItem> ToBuy => this._items.OfType<Buyable>();
+    public IEnumerable<ICartItem> ToBuy => this.items.OfType<Buyable>();
 
     /// <inheritdoc />
-    public IEnumerable<ICartItem> ToSell => this._items.OfType<Sellable>();
+    public IEnumerable<ICartItem> ToSell => this.items.OfType<Sellable>();
 
-    private List<TemporaryAnimatedSprite> Animations => this._animations.GetValue();
+    private List<TemporaryAnimatedSprite> Animations => this.animations.GetValue();
 
     private long BuyTotal => this.ToBuy.Sum(item => item.Total);
 
@@ -101,23 +102,23 @@ internal sealed class Shop : IShop
     {
         get
         {
-            if (this._offset > this._bottomY - this._topY - this.Bounds.Height + this.Bounds.Top)
+            if (this.offset > this.bottomY - this.topY - this.Bounds.Height + this.Bounds.Top)
             {
-                this._offset = this._bottomY == 0
+                this.offset = this.bottomY == 0
                     ? 0
-                    : Math.Max(0, this._bottomY - this._topY - this.Bounds.Height + this.Bounds.Top);
+                    : Math.Max(0, this.bottomY - this.topY - this.Bounds.Height + this.Bounds.Top);
             }
-            else if (this._offset < 0)
+            else if (this.offset < 0)
             {
-                this._offset = 0;
+                this.offset = 0;
             }
 
-            return this._offset;
+            return this.offset;
         }
-        set => this._offset = value;
+        set => this.offset = value;
     }
 
-    private float SellPercentage => this._sellPercentage.GetValue();
+    private float SellPercentage => this.sellPercentage.GetValue();
 
     private long SellTotal => this.ToSell.Sum(item => item.Total);
 
@@ -129,7 +130,7 @@ internal sealed class Shop : IShop
             return false;
         }
 
-        var field = this._quantityFields.Where(item => item.Key.Item.IsEquivalentTo(toBuy))
+        var field = this.quantityFields.Where(item => item.Key.Item.canStackWith(toBuy))
             .Select(item => item.Value)
             .FirstOrDefault();
         if (field is not null)
@@ -138,8 +139,8 @@ internal sealed class Shop : IShop
             return true;
         }
 
-        this._items.Add(new Buyable(toBuy, quantity, priceAndStock));
-        this._items.Sort();
+        this.items.Add(new Buyable(toBuy, quantity, priceAndStock));
+        this.items.Sort();
         return true;
     }
 
@@ -151,7 +152,7 @@ internal sealed class Shop : IShop
             return false;
         }
 
-        var field = this._quantityFields.Where(item => item.Key.Item.IsEquivalentTo(toSell))
+        var field = this.quantityFields.Where(item => item.Key.Item.canStackWith(toSell))
             .Select(item => item.Value)
             .FirstOrDefault();
         if (field is not null)
@@ -160,8 +161,8 @@ internal sealed class Shop : IShop
             return true;
         }
 
-        this._items.Add(new Sellable(toSell, this.SellPercentage, Game1.player.Items));
-        this._items.Sort();
+        this.items.Add(new Sellable(toSell, this.SellPercentage, Game1.player.Items));
+        this.items.Sort();
         return true;
     }
 
@@ -171,12 +172,12 @@ internal sealed class Shop : IShop
     /// <param name="b">The SpriteBatch to draw to.</param>
     public void Draw(SpriteBatch b)
     {
-        this._currentY = this.Bounds.Y;
+        this.currentY = this.Bounds.Y;
 
         Game1.drawDialogueBox(
             this.Bounds.X - IClickableMenu.borderWidth,
             this.Bounds.Y - IClickableMenu.spaceToClearTopBorder,
-            this.Bounds.Width + IClickableMenu.borderWidth * 2,
+            this.Bounds.Width + (IClickableMenu.borderWidth * 2),
             this.Bounds.Height + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth,
             false,
             true);
@@ -185,34 +186,34 @@ internal sealed class Shop : IShop
             b,
             I18n.Ui_ShoppingCart(),
             Game1.dialogueFont,
-            new(this.Bounds.Center.X - this._dims[I18n.Ui_ShoppingCart()].X / 2, this._currentY),
+            new(this.Bounds.Center.X - (this.dims[I18n.Ui_ShoppingCart()].X / 2), this.currentY),
             Game1.textColor);
-        this._currentY += this._dims[I18n.Ui_ShoppingCart()].Y;
+        this.currentY += this.dims[I18n.Ui_ShoppingCart()].Y;
 
         // Draw Header
         Utility.drawTextWithShadow(
             b,
             I18n.Ui_Available(),
             Game1.smallFont,
-            new(this.Bounds.X + Game1.tileSize / 2 + 8, this._currentY),
+            new(this.Bounds.X + (Game1.tileSize / 2) + 8, this.currentY),
             Game1.textColor);
 
         Utility.drawTextWithShadow(
             b,
             I18n.Ui_Price(),
             Game1.smallFont,
-            new(this.Bounds.X + this._cols[1] - this._dims[I18n.Ui_Price()].X, this._currentY),
+            new(this.Bounds.X + this.cols[1] - this.dims[I18n.Ui_Price()].X, this.currentY),
             Game1.textColor);
 
         Utility.drawTextWithShadow(
             b,
             I18n.Ui_Quantity(),
             Game1.smallFont,
-            new(this.Bounds.X + this._cols[2] - this._dims[I18n.Ui_Quantity()].X - 32, this._currentY),
+            new(this.Bounds.X + this.cols[2] - this.dims[I18n.Ui_Quantity()].X - 32, this.currentY),
             Game1.textColor);
 
-        this._currentY += Shop.LineHeight;
-        this._topY = this._currentY;
+        this.currentY += Shop.LineHeight;
+        this.topY = this.currentY;
 
         // Draw Buying
         var prevCategory = string.Empty;
@@ -239,15 +240,15 @@ internal sealed class Shop : IShop
                             Game1.textColor);
                     }))
                 {
-                    this._bottomY = this._currentY + Shop.LineHeight;
+                    this.bottomY = this.currentY + Shop.LineHeight;
                     return;
                 }
             }
 
-            if (!this._quantityFields.TryGetValue(toBuy, out var quantityField))
+            if (!this.quantityFields.TryGetValue(toBuy, out var quantityField))
             {
                 quantityField = new(toBuy);
-                this._quantityFields.Add(toBuy, quantityField);
+                this.quantityFields.Add(toBuy, quantityField);
             }
 
             quantityField.IsVisible = this.DrawRow(
@@ -255,9 +256,9 @@ internal sealed class Shop : IShop
                 y =>
                 {
                     quantityField.Bounds = new(
-                        this.Bounds.X + this._cols[1] + Game1.tileSize / 2,
+                        this.Bounds.X + this.cols[1] + (Game1.tileSize / 2),
                         y - 4,
-                        this._cols[2] - this._cols[1] - Game1.tileSize,
+                        this.cols[2] - this.cols[1] - Game1.tileSize,
                         Shop.LineHeight);
                     quantityField.Draw(b);
                     this.DrawItem(toBuy, b, this.Bounds.X, y);
@@ -265,7 +266,7 @@ internal sealed class Shop : IShop
 
             if (!quantityField.IsVisible)
             {
-                this._bottomY = this._currentY + Shop.LineHeight;
+                this.bottomY = this.currentY + Shop.LineHeight;
                 return;
             }
         }
@@ -287,11 +288,11 @@ internal sealed class Shop : IShop
                     b,
                     text,
                     Game1.smallFont,
-                    new(this.Bounds.X + this._cols[1] - width, y),
+                    new(this.Bounds.X + this.cols[1] - width, y),
                     Game1.textColor);
             }))
         {
-            this._bottomY = this._currentY + Shop.LineHeight;
+            this.bottomY = this.currentY + Shop.LineHeight;
             return;
         }
 
@@ -320,15 +321,15 @@ internal sealed class Shop : IShop
                             Game1.textColor);
                     }))
                 {
-                    this._bottomY = this._currentY + Shop.LineHeight;
+                    this.bottomY = this.currentY + Shop.LineHeight;
                     return;
                 }
             }
 
-            if (!this._quantityFields.TryGetValue(toSell, out var quantityField))
+            if (!this.quantityFields.TryGetValue(toSell, out var quantityField))
             {
                 quantityField = new(toSell);
-                this._quantityFields.Add(toSell, quantityField);
+                this.quantityFields.Add(toSell, quantityField);
             }
 
             quantityField.IsVisible = this.DrawRow(
@@ -336,19 +337,21 @@ internal sealed class Shop : IShop
                 y =>
                 {
                     quantityField.Bounds = new(
-                        this.Bounds.X + this._cols[1] + Game1.tileSize / 2,
+                        this.Bounds.X + this.cols[1] + (Game1.tileSize / 2),
                         y - 4,
-                        this._cols[2] - this._cols[1] - Game1.tileSize,
+                        this.cols[2] - this.cols[1] - Game1.tileSize,
                         Shop.LineHeight);
                     quantityField.Draw(b);
                     this.DrawItem(toSell, b, this.Bounds.X, y);
                 });
 
-            if (!quantityField.IsVisible)
+            if (quantityField.IsVisible)
             {
-                this._bottomY = this._currentY + Shop.LineHeight;
-                return;
+                continue;
             }
+
+            this.bottomY = this.currentY + Shop.LineHeight;
+            return;
         }
 
         // Draw Total Selling
@@ -368,11 +371,11 @@ internal sealed class Shop : IShop
                     b,
                     text,
                     Game1.smallFont,
-                    new(this.Bounds.X + this._cols[1] - width, y),
+                    new(this.Bounds.X + this.cols[1] - width, y),
                     Game1.textColor);
             }))
         {
-            this._bottomY = this._currentY + Shop.LineHeight;
+            this.bottomY = this.currentY + Shop.LineHeight;
             return;
         }
 
@@ -388,33 +391,33 @@ internal sealed class Shop : IShop
                     b,
                     text,
                     Game1.smallFont,
-                    new(this.Bounds.X + this._cols[1] - width, y),
+                    new(this.Bounds.X + this.cols[1] - width, y),
                     Game1.textColor);
             }))
         {
-            this._bottomY = this._currentY + Shop.LineHeight;
+            this.bottomY = this.currentY + Shop.LineHeight;
             return;
         }
 
         // Draw purchase
-        this._purchase.visible = false;
+        this.purchase.visible = false;
         this.DrawRow(
             Shop.LineHeight,
             y =>
             {
                 var width = (int)Game1.smallFont.MeasureString(I18n.Ui_Checkout()).X;
-                this._purchase.bounds.X = this.Bounds.X + this._cols[2] - 15 * Game1.pixelZoom - 8;
-                this._purchase.bounds.Y = y;
-                this._purchase.visible = true;
+                this.purchase.bounds.X = this.Bounds.X + this.cols[2] - (15 * Game1.pixelZoom) - 8;
+                this.purchase.bounds.Y = y;
+                this.purchase.visible = true;
                 Utility.drawTextWithShadow(
                     b,
                     I18n.Ui_Checkout(),
                     Game1.smallFont,
-                    new(this.Bounds.X + this._cols[2] - 15 * Game1.pixelZoom - width - 12, y + 12),
+                    new(this.Bounds.X + this.cols[2] - (15 * Game1.pixelZoom) - width - 12, y + 12),
                     Game1.textColor);
-                this._purchase.draw(b);
+                this.purchase.draw(b);
             });
-        this._bottomY = this._currentY;
+        this.bottomY = this.currentY;
     }
 
     /// <summary>
@@ -430,7 +433,7 @@ internal sealed class Shop : IShop
         }
 
         var remove = new List<ICartItem>();
-        foreach (var (cartItem, quantityField) in this._quantityFields)
+        foreach (var (cartItem, quantityField) in this.quantityFields)
         {
             if (!quantityField.Hover(x, y) && cartItem.Quantity == 0)
             {
@@ -440,8 +443,8 @@ internal sealed class Shop : IShop
 
         foreach (var cartItem in remove)
         {
-            this._items.Remove(cartItem);
-            this._quantityFields.Remove(cartItem);
+            this.items.Remove(cartItem);
+            this.quantityFields.Remove(cartItem);
         }
     }
 
@@ -459,7 +462,7 @@ internal sealed class Shop : IShop
         }
 
         // Purchase
-        if (this._purchase.containsPoint(x, y))
+        if (this.purchase.containsPoint(x, y))
         {
             if (this.TryCheckout() && ModEntry.CurrentShop is not null)
             {
@@ -474,7 +477,7 @@ internal sealed class Shop : IShop
         }
 
         // Check for Quantity update
-        var cartItem = this._quantityFields.Values.FirstOrDefault(quantityField => quantityField.LeftClick(x, y))
+        var cartItem = this.quantityFields.Values.FirstOrDefault(quantityField => quantityField.LeftClick(x, y))
             ?.CartItem;
         if (cartItem is null)
         {
@@ -487,8 +490,8 @@ internal sealed class Shop : IShop
             return true;
         }
 
-        this._items.Remove(cartItem);
-        this._quantityFields.Remove(cartItem);
+        this.items.Remove(cartItem);
+        this.quantityFields.Remove(cartItem);
         return true;
     }
 
@@ -497,8 +500,8 @@ internal sealed class Shop : IShop
     /// </summary>
     public void Reset()
     {
-        this._items.Clear();
-        this._quantityFields.Clear();
+        this.items.Clear();
+        this.quantityFields.Clear();
     }
 
     /// <summary>
@@ -515,7 +518,7 @@ internal sealed class Shop : IShop
         }
 
         // Check for Quantity update
-        foreach (var quantityField in this._quantityFields.Values)
+        foreach (var quantityField in this.quantityFields.Values)
         {
             if (quantityField.RightClick(x, y))
             {
@@ -564,8 +567,8 @@ internal sealed class Shop : IShop
         {
             b.Draw(
                 Game1.mouseCursors,
-                new Vector2(x + Game1.tileSize / 2 + 8, y - 8) + new Vector2(0, 26f),
-                obj.Quality < 4 ? new(338 + (obj.Quality - 1) * 8, 400, 8, 8) : new(346, 392, 8, 8),
+                new Vector2(x + (Game1.tileSize / 2) + 8, y - 8) + new Vector2(0, 26f),
+                obj.Quality < 4 ? new(338 + ((obj.Quality - 1) * 8), 400, 8, 8) : new(346, 392, 8, 8),
                 Color.White,
                 0f,
                 new(4f, 4f),
@@ -577,30 +580,30 @@ internal sealed class Shop : IShop
         // Draw Price
         var text = $"{Math.Abs(cartItem.Total):n0}G";
         var width = (int)Game1.smallFont.MeasureString(text).X;
-        b.DrawString(Game1.smallFont, text, new(x + this._cols[1] - width, y), Game1.textColor);
+        b.DrawString(Game1.smallFont, text, new(x + this.cols[1] - width, y), Game1.textColor);
 
         // Draw Available
         if (cartItem.Item.IsInfiniteStock() || cartItem.Available == int.MaxValue)
         {
             width = (int)Game1.smallFont.MeasureString("-").X;
-            b.DrawString(Game1.smallFont, "-", new(x + this._cols[0] - width, y), Game1.textColor);
+            b.DrawString(Game1.smallFont, "-", new(x + this.cols[0] - width, y), Game1.textColor);
             return;
         }
 
         text = $"{cartItem.Available:n0}";
         width = (int)Game1.smallFont.MeasureString(text).X;
-        b.DrawString(Game1.smallFont, text, new(x + this._cols[0] - width, y), Game1.textColor);
+        b.DrawString(Game1.smallFont, text, new(x + this.cols[0] - width, y), Game1.textColor);
     }
 
     private bool DrawRow(int lineHeight, Action<int> draw)
     {
-        if (this._currentY - this.Offset >= this._topY)
+        if (this.currentY - this.Offset >= this.topY)
         {
-            draw.Invoke(this._currentY - this.Offset);
+            draw.Invoke(this.currentY - this.Offset);
         }
 
-        this._currentY += lineHeight;
-        return this._currentY - this.Offset + Shop.LineHeight <= this.Bounds.Bottom;
+        this.currentY += lineHeight;
+        return this.currentY - this.Offset + Shop.LineHeight <= this.Bounds.Bottom;
     }
 
     private bool TryCheckout(bool test = false)
@@ -655,7 +658,7 @@ internal sealed class Shop : IShop
             return true;
         }
 
-        var snappedPosition = new Vector2(this._purchase.bounds.X, this._purchase.bounds.Y);
+        var snappedPosition = new Vector2(this.purchase.bounds.X, this.purchase.bounds.Y);
 
         // Sell items
         var coins = 2;
@@ -691,9 +694,9 @@ internal sealed class Shop : IShop
             clone.Stack = toSell.Quantity;
             clone._GetOneFrom(obj);
             toSell.Quantity = 0;
-            if (buyBackItem is not null && this.Menu.buyBackItemsToResellTomorrow.ContainsKey(buyBackItem))
+            if (buyBackItem is not null && this.Menu.buyBackItemsToResellTomorrow.TryGetValue(buyBackItem, out var value))
             {
-                this.Menu.buyBackItemsToResellTomorrow[buyBackItem].Stack += clone.Stack;
+                value.Stack += clone.Stack;
             }
             else if (Game1.currentLocation is ShopLocation shopLocation)
             {
@@ -773,7 +776,7 @@ internal sealed class Shop : IShop
             {
                 var stack = Math.Min(maxStack, quantity);
                 quantity -= stack;
-                if (this._tryToPurchaseItem.Invoke<bool>(toBuy.Item, this.Menu.heldItem, stack, 0, 0, index))
+                if (this.tryToPurchaseItem.Invoke<bool>(toBuy.Item, this.Menu.heldItem, stack, 0, 0, index))
                 {
                     this.Menu.itemPriceAndStock.Remove(toBuy.Item);
                     this.Menu.forSale.RemoveAt(index);

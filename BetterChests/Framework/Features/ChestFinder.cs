@@ -21,57 +21,57 @@ internal sealed class ChestFinder : Feature
     private const int MaxTimeOut = 20;
 
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly PerScreen<int> _currentIndex = new();
-    private readonly PerScreen<IList<StorageNode>> _foundStorages = new(() => new List<StorageNode>());
-    private readonly IModHelper _helper;
-    private readonly PerScreen<ItemMatcher?> _itemMatcher = new();
-    private readonly PerScreen<SearchBar> _searchBar = new(() => new());
-    private readonly PerScreen<string> _searchText = new(() => string.Empty);
-    private readonly PerScreen<bool> _showSearch = new();
-    private readonly PerScreen<IList<object>> _storageContexts = new(() => new List<object>());
-    private readonly PerScreen<int> _timeOut = new();
+    private readonly ModConfig config;
+    private readonly PerScreen<int> currentIndex = new();
+    private readonly PerScreen<IList<StorageNode>> foundStorages = new(() => new List<StorageNode>());
+    private readonly IModHelper helper;
+    private readonly PerScreen<ItemMatcher?> itemMatcher = new();
+    private readonly PerScreen<SearchBar> searchBar = new(() => new());
+    private readonly PerScreen<string> searchText = new(() => string.Empty);
+    private readonly PerScreen<bool> showSearch = new();
+    private readonly PerScreen<IList<object>> storageContexts = new(() => new List<object>());
+    private readonly PerScreen<int> timeOut = new();
 
     private ChestFinder(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
+        this.helper = helper;
+        this.config = config;
     }
 
     private int CurrentIndex
     {
-        get => this._currentIndex.Value;
-        set => this._currentIndex.Value = value;
+        get => this.currentIndex.Value;
+        set => this.currentIndex.Value = value;
     }
 
-    private IList<StorageNode> FoundStorages => this._foundStorages.Value;
+    private IList<StorageNode> FoundStorages => this.foundStorages.Value;
 
     private ItemMatcher ItemMatcher =>
-        this._itemMatcher.Value ??= new(false, this._config.SearchTagSymbol.ToString());
+        this.itemMatcher.Value ??= new(false, this.config.SearchTagSymbol.ToString());
 
-    private SearchBar SearchBar => this._searchBar.Value;
+    private SearchBar SearchBar => this.searchBar.Value;
 
     private string SearchText
     {
-        get => this._searchText.Value;
-        set => this._searchText.Value = value;
+        get => this.searchText.Value;
+        set => this.searchText.Value = value;
     }
 
     private bool ShowSearch
     {
-        get => this._showSearch.Value && Game1.displayHUD && Context.IsPlayerFree && Game1.activeClickableMenu is null;
-        set => this._showSearch.Value = value;
+        get => this.showSearch.Value && Game1.displayHUD && Context.IsPlayerFree && Game1.activeClickableMenu is null;
+        set => this.showSearch.Value = value;
     }
 
-    private IList<object> StorageContexts => this._storageContexts.Value;
+    private IList<object> StorageContexts => this.storageContexts.Value;
 
     private int TimeOut
     {
-        get => this._timeOut.Value;
-        set => this._timeOut.Value = value;
+        get => this.timeOut.Value;
+        set => this.timeOut.Value = value;
     }
 
     /// <summary>
@@ -82,19 +82,19 @@ internal sealed class ChestFinder : Feature
     /// <returns>Returns an instance of the <see cref="ChestFinder" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return ChestFinder.Instance ??= new ChestFinder(helper, config);
+        return ChestFinder.instance ??= new ChestFinder(helper, config);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Display.RenderedHud += this.OnRenderedHud;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
-        this._helper.Events.Player.Warped += this.OnWarped;
+        this.helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
+        this.helper.Events.Player.Warped += this.OnWarped;
 
         // Integrations
         if (!Integrations.ToolbarIcons.IsLoaded)
@@ -114,12 +114,12 @@ internal sealed class ChestFinder : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Display.RenderedHud -= this.OnRenderedHud;
-        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this._helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
-        this._helper.Events.Player.Warped -= this.OnWarped;
+        this.helper.Events.Display.RenderedHud -= this.OnRenderedHud;
+        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
+        this.helper.Events.Player.Warped -= this.OnWarped;
 
         // Integrations
         if (!Integrations.ToolbarIcons.IsLoaded)
@@ -153,13 +153,13 @@ internal sealed class ChestFinder : Feature
 
         if (Game1.activeClickableMenu is SearchBar)
         {
-            this._helper.Input.Suppress(e.Button);
+            this.helper.Input.Suppress(e.Button);
         }
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (Context.IsPlayerFree && this._config.ControlScheme.FindChest.JustPressed())
+        if (Context.IsPlayerFree && this.config.ControlScheme.FindChest.JustPressed())
         {
             this.ShowSearch = true;
             if (this.ShowSearch)
@@ -167,11 +167,11 @@ internal sealed class ChestFinder : Feature
                 this.SearchBar.SetFocus();
             }
 
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.FindChest);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.FindChest);
             return;
         }
 
-        if (Game1.activeClickableMenu is ItemGrabMenu && this._config.ControlScheme.OpenNextChest.JustPressed())
+        if (Game1.activeClickableMenu is ItemGrabMenu && this.config.ControlScheme.OpenNextChest.JustPressed())
         {
             ++this.CurrentIndex;
             if (this.CurrentIndex < 0 || this.CurrentIndex >= this.FoundStorages.Count)
@@ -185,7 +185,7 @@ internal sealed class ChestFinder : Feature
                 storageObject.ShowMenu();
             }
 
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
         }
 
         if (!this.ShowSearch && Game1.activeClickableMenu != this.SearchBar)
@@ -193,17 +193,17 @@ internal sealed class ChestFinder : Feature
             return;
         }
 
-        if (this._config.ControlScheme.CloseChestFinder.JustPressed())
+        if (this.config.ControlScheme.CloseChestFinder.JustPressed())
         {
             this.SearchBar.exitThisMenuNoSound();
             this.ShowSearch = false;
             this.SearchText = string.Empty;
             this.ItemMatcher.Clear();
             this.FoundStorages.Clear();
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
         }
 
-        if (this._config.ControlScheme.OpenFoundChest.JustPressed())
+        if (this.config.ControlScheme.OpenFoundChest.JustPressed())
         {
             if (this.CurrentIndex < 0 || this.CurrentIndex >= this.FoundStorages.Count)
             {
@@ -216,7 +216,7 @@ internal sealed class ChestFinder : Feature
                 storageObject.ShowMenu();
             }
 
-            this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.CloseChestFinder);
+            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
         }
     }
 

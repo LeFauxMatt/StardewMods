@@ -16,14 +16,14 @@ using StardewMods.Common.Helpers;
 internal sealed class AutoOrganize : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     private AutoOrganize(IModHelper helper)
     {
-        this._helper = helper;
+        this.helper = helper;
     }
 
     /// <summary>
@@ -33,21 +33,21 @@ internal sealed class AutoOrganize : Feature
     /// <returns>Returns an instance of the <see cref="AutoOrganize" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return AutoOrganize.Instance ??= new AutoOrganize(helper);
+        return AutoOrganize.instance ??= new AutoOrganize(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
+        this.helper.Events.GameLoop.DayEnding += AutoOrganize.OnDayEnding;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
+        this.helper.Events.GameLoop.DayEnding -= AutoOrganize.OnDayEnding;
     }
 
     private static void OnDayEnding(object? sender, DayEndingEventArgs e)

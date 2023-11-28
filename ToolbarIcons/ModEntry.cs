@@ -17,13 +17,13 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly PerScreen<Api?> _api = new();
-    private readonly PerScreen<ComponentArea> _area = new(() => ComponentArea.Custom);
-    private readonly PerScreen<ClickableComponent?> _button = new();
-    private readonly PerScreen<string> _hoverText = new();
-    private readonly PerScreen<Toolbar?> _toolbar = new();
+    private readonly PerScreen<Api?> api = new();
+    private readonly PerScreen<ComponentArea> area = new(() => ComponentArea.Custom);
+    private readonly PerScreen<ClickableComponent?> button = new();
+    private readonly PerScreen<string> hoverText = new();
+    private readonly PerScreen<Toolbar?> toolbar = new();
 
-    private ModConfig? _config;
+    private ModConfig? config;
 
     private static bool ShowToolbar => Integrations.IsLoaded
         && Game1.displayHUD
@@ -31,12 +31,12 @@ public sealed class ModEntry : Mod
         && Game1.activeClickableMenu is null
         && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
-    private Api Api => this._api.Value ??= new(this.Helper, this.ModConfig.Icons, this.Components);
+    private Api Api => this.api.Value ??= new(this.Helper, this.ModConfig.Icons, this.Components);
 
     private ComponentArea Area
     {
-        get => this._area.Value;
-        set => this._area.Value = value;
+        get => this.area.Value;
+        set => this.area.Value = value;
     }
 
     private ClickableComponent? Button
@@ -46,7 +46,7 @@ public sealed class ModEntry : Mod
             var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
             if (this.Toolbar is not null && ReferenceEquals(toolbar, this.Toolbar))
             {
-                return this._button.Value;
+                return this.button.Value;
             }
 
             if (toolbar is null)
@@ -56,8 +56,8 @@ public sealed class ModEntry : Mod
 
             this.Toolbar = toolbar;
             var buttons = this.Helper.Reflection.GetField<List<ClickableComponent>>(toolbar, "buttons").GetValue();
-            this._button.Value = buttons.First();
-            return this._button.Value;
+            this.button.Value = buttons.First();
+            return this.button.Value;
         }
     }
 
@@ -65,16 +65,16 @@ public sealed class ModEntry : Mod
 
     private string HoverText
     {
-        get => this._hoverText.Value;
-        set => this._hoverText.Value = value;
+        get => this.hoverText.Value;
+        set => this.hoverText.Value = value;
     }
 
-    private ModConfig ModConfig => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig ModConfig => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private Toolbar? Toolbar
     {
-        get => this._toolbar.Value;
-        set => this._toolbar.Value = value;
+        get => this.toolbar.Value;
+        set => this.toolbar.Value = value;
     }
 
     /// <inheritdoc />

@@ -15,16 +15,16 @@ using StardewValley.Menus;
 internal sealed class ModPatches
 {
 #nullable disable
-    private static ModPatches Instance;
+    private static ModPatches instance;
 #nullable enable
 
-    private readonly IStackQualityApi _api;
-    private readonly IModHelper _helper;
+    private readonly IStackQualityApi api;
+    private readonly IModHelper helper;
 
     private ModPatches(IModHelper helper, IManifest manifest, IStackQualityApi api)
     {
-        this._helper = helper;
-        this._api = api;
+        this.helper = helper;
+        this.api = api;
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
             AccessTools.Method(
@@ -68,7 +68,7 @@ internal sealed class ModPatches
             postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_addItemToInventory_postfix)));
     }
 
-    private static IStackQualityApi Api => ModPatches.Instance._api;
+    private static IStackQualityApi Api => ModPatches.instance.api;
 
     private static Item? HoveredItem
     {
@@ -114,9 +114,9 @@ internal sealed class ModPatches
         }
     }
 
-    private static IInputHelper Input => ModPatches.Instance._helper.Input;
+    private static IInputHelper Input => ModPatches.instance.helper.Input;
 
-    private static IReflectionHelper Reflection => ModPatches.Instance._helper.Reflection;
+    private static IReflectionHelper Reflection => ModPatches.instance.helper.Reflection;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
@@ -127,7 +127,7 @@ internal sealed class ModPatches
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IModHelper helper, IManifest manifest, IStackQualityApi api)
     {
-        return ModPatches.Instance ??= new(helper, manifest, api);
+        return ModPatches.instance ??= new(helper, manifest, api);
     }
 
     private static IClickableMenu.onExit ExitFunction(IList<Item> inventory, int slotNumber)
@@ -282,8 +282,8 @@ internal sealed class ModPatches
             ModPatches.Api,
             obj,
             stacks,
-            component.bounds.X - Game1.tileSize / 2,
-            component.bounds.Y - Game1.tileSize / 2)
+            component.bounds.X - (Game1.tileSize / 2),
+            component.bounds.Y - (Game1.tileSize / 2))
         {
             exitFunction = ModPatches.ExitFunction(__instance.actualInventory, slotNumber),
         };
@@ -417,7 +417,7 @@ internal sealed class ModPatches
                 3 => "quality_iridium",
                 2 => "quality_gold",
                 1 => "quality_silver",
-                0 or _ => "quality_none",
+                _ => "quality_none",
             };
 
             if (stacks[i] == 0)
@@ -458,7 +458,7 @@ internal sealed class ModPatches
         var totalSalePrice = 0f;
         for (var i = 0; i < 4; ++i)
         {
-            var salePrice = __instance.Price * (1f + (i == 3 ? 4 : i) * 0.25f);
+            var salePrice = __instance.Price * (1f + ((i == 3 ? 4 : i) * 0.25f));
             var getPriceAfterMultipliers = ModPatches.Reflection.GetMethod(__instance, "getPriceAfterMultipliers");
             salePrice = getPriceAfterMultipliers.Invoke<float>(salePrice, specificPlayerID);
             if (__instance.ParentSheetIndex == 493)

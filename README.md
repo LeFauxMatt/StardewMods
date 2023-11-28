@@ -61,6 +61,14 @@ Now you can be the cake artist of your dreams.
 
 Nothing strange about this capsule.
 
+## [Pocket Slimes]()
+
+( [source](PocketSlimes)
+| [docs](PocketSlimes/README.md)
+| [changelog](PocketSlimes/CHANGELOG.md) )
+
+
+
 ## [Portable Holes](https://www.nexusmods.com/stardewvalley/mods/13471)
 
 ( [source](PortableHoles)

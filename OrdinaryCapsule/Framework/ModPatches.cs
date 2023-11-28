@@ -19,14 +19,14 @@ internal sealed class ModPatches
         () => new(new ItemRepository().GetAll().Select(item => item.Item)));
 
 #nullable disable
-    private static ModPatches Instance;
+    private static ModPatches instance;
 #nullable enable
 
-    private readonly ModConfig _config;
+    private readonly ModConfig config;
 
     private ModPatches(IManifest manifest, ModConfig config)
     {
-        this._config = config;
+        this.config = config;
 
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
@@ -45,7 +45,7 @@ internal sealed class ModPatches
 
     private static IEnumerable<Item> AllItems => ModPatches.ItemsLazy.Value;
 
-    private static ModConfig Config => ModPatches.Instance._config;
+    private static ModConfig Config => ModPatches.instance.config;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
@@ -55,7 +55,7 @@ internal sealed class ModPatches
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IManifest manifest, ModConfig config)
     {
-        return ModPatches.Instance ??= new(manifest, config);
+        return ModPatches.instance ??= new(manifest, config);
     }
 
     private static int GetMinutes(int parentSheetIndex)

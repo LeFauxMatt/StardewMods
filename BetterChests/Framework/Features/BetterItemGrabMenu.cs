@@ -118,30 +118,30 @@ internal sealed class BetterItemGrabMenu : Feature
         });
 
 #nullable disable
-    private static BetterItemGrabMenu Instance;
+    private static BetterItemGrabMenu instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly PerScreen<StorageNode?> _context = new();
-    private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
-    private readonly PerScreen<DisplayedItems?> _inventory = new();
-    private readonly PerScreen<DisplayedItems?> _itemsToGrabMenu = new();
-    private readonly PerScreen<Stack<IClickableMenu>> _overlaidMenus = new(() => new());
-    private readonly PerScreen<bool> _refreshInventory = new();
-    private readonly PerScreen<bool> _refreshItemsToGrabMenu = new();
-    private readonly PerScreen<int> _topPadding = new();
+    private readonly ModConfig config;
+    private readonly PerScreen<StorageNode?> perScreenContext = new();
+    private readonly PerScreen<ItemGrabMenu?> perScreenCurrentMenu = new();
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
+    private readonly PerScreen<DisplayedItems?> perScreenInventory = new();
+    private readonly PerScreen<DisplayedItems?> perScreenItemsToGrabMenu = new();
+    private readonly PerScreen<Stack<IClickableMenu>> perScreenOverlaidMenus = new(() => new());
+    private readonly PerScreen<bool> perScreenRefreshInventory = new();
+    private readonly PerScreen<bool> perScreenRefreshItemsToGrabMenu = new();
+    private readonly PerScreen<int> perScreenTopPadding = new();
 
-    private EventHandler<ItemGrabMenu>? _constructed;
-    private EventHandler<ItemGrabMenu>? _constructing;
-    private EventHandler<SpriteBatch>? _drawingMenu;
+    private EventHandler<ItemGrabMenu>? constructed;
+    private EventHandler<ItemGrabMenu>? constructing;
+    private EventHandler<SpriteBatch>? drawingMenu;
 
     private BetterItemGrabMenu(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._harmony = new(BetterItemGrabMenu.Id);
+        this.helper = helper;
+        this.config = config;
+        this.harmony = new(BetterItemGrabMenu.Id);
     }
 
     /// <summary>
@@ -149,8 +149,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static event EventHandler<ItemGrabMenu> Constructed
     {
-        add => BetterItemGrabMenu.Instance._constructed += value;
-        remove => BetterItemGrabMenu.Instance._constructed -= value;
+        add => BetterItemGrabMenu.instance.constructed += value;
+        remove => BetterItemGrabMenu.instance.constructed -= value;
     }
 
     /// <summary>
@@ -158,8 +158,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static event EventHandler<ItemGrabMenu> Constructing
     {
-        add => BetterItemGrabMenu.Instance._constructing += value;
-        remove => BetterItemGrabMenu.Instance._constructing -= value;
+        add => BetterItemGrabMenu.instance.constructing += value;
+        remove => BetterItemGrabMenu.instance.constructing -= value;
     }
 
     /// <summary>
@@ -167,8 +167,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static event EventHandler<SpriteBatch> DrawingMenu
     {
-        add => BetterItemGrabMenu.Instance._drawingMenu += value;
-        remove => BetterItemGrabMenu.Instance._drawingMenu -= value;
+        add => BetterItemGrabMenu.instance.drawingMenu += value;
+        remove => BetterItemGrabMenu.instance.drawingMenu -= value;
     }
 
     /// <summary>
@@ -176,8 +176,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static StorageNode? Context
     {
-        get => BetterItemGrabMenu.Instance._context.Value;
-        private set => BetterItemGrabMenu.Instance._context.Value = value;
+        get => BetterItemGrabMenu.instance.perScreenContext.Value;
+        private set => BetterItemGrabMenu.instance.perScreenContext.Value = value;
     }
 
     /// <summary>
@@ -185,8 +185,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static DisplayedItems? Inventory
     {
-        get => BetterItemGrabMenu.Instance._inventory.Value;
-        private set => BetterItemGrabMenu.Instance._inventory.Value = value;
+        get => BetterItemGrabMenu.instance.perScreenInventory.Value;
+        private set => BetterItemGrabMenu.instance.perScreenInventory.Value = value;
     }
 
     /// <summary>
@@ -194,8 +194,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static DisplayedItems? ItemsToGrabMenu
     {
-        get => BetterItemGrabMenu.Instance._itemsToGrabMenu.Value;
-        private set => BetterItemGrabMenu.Instance._itemsToGrabMenu.Value = value;
+        get => BetterItemGrabMenu.instance.perScreenItemsToGrabMenu.Value;
+        private set => BetterItemGrabMenu.instance.perScreenItemsToGrabMenu.Value = value;
     }
 
     /// <summary>
@@ -203,8 +203,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static bool RefreshInventory
     {
-        get => BetterItemGrabMenu.Instance._refreshInventory.Value;
-        set => BetterItemGrabMenu.Instance._refreshInventory.Value = value;
+        get => BetterItemGrabMenu.instance.perScreenRefreshInventory.Value;
+        set => BetterItemGrabMenu.instance.perScreenRefreshInventory.Value = value;
     }
 
     /// <summary>
@@ -212,8 +212,8 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static bool RefreshItemsToGrabMenu
     {
-        get => BetterItemGrabMenu.Instance._refreshItemsToGrabMenu.Value;
-        set => BetterItemGrabMenu.Instance._refreshItemsToGrabMenu.Value = value;
+        get => BetterItemGrabMenu.instance.perScreenRefreshItemsToGrabMenu.Value;
+        set => BetterItemGrabMenu.instance.perScreenRefreshItemsToGrabMenu.Value = value;
     }
 
     /// <summary>
@@ -221,17 +221,17 @@ internal sealed class BetterItemGrabMenu : Feature
     /// </summary>
     public static int TopPadding
     {
-        get => BetterItemGrabMenu.Instance._topPadding.Value;
-        set => BetterItemGrabMenu.Instance._topPadding.Value = value;
+        get => BetterItemGrabMenu.instance.perScreenTopPadding.Value;
+        set => BetterItemGrabMenu.instance.perScreenTopPadding.Value = value;
     }
 
     private ItemGrabMenu? CurrentMenu
     {
-        get => this._currentMenu.Value;
-        set => this._currentMenu.Value = value;
+        get => this.perScreenCurrentMenu.Value;
+        set => this.perScreenCurrentMenu.Value = value;
     }
 
-    private Stack<IClickableMenu> OverlaidMenus => this._overlaidMenus.Value;
+    private Stack<IClickableMenu> OverlaidMenus => this.perScreenOverlaidMenus.Value;
 
     /// <summary>
     ///     Adds an overlay to the current <see cref="StardewValley.Menus.ItemGrabMenu" />.
@@ -239,7 +239,7 @@ internal sealed class BetterItemGrabMenu : Feature
     /// <param name="menu">The <see cref="StardewValley.Menus.IClickableMenu" /> to add.</param>
     public static void AddOverlay(IClickableMenu menu)
     {
-        BetterItemGrabMenu.Instance.OverlaidMenus.Push(menu);
+        BetterItemGrabMenu.instance.OverlaidMenus.Push(menu);
     }
 
     /// <summary>
@@ -250,7 +250,7 @@ internal sealed class BetterItemGrabMenu : Feature
     /// <returns>Returns an instance of the <see cref="BetterItemGrabMenu" /> class.</returns>
     public static BetterItemGrabMenu Init(IModHelper helper, ModConfig config)
     {
-        return BetterItemGrabMenu.Instance ??= new(helper, config);
+        return BetterItemGrabMenu.instance ??= new(helper, config);
     }
 
     /// <summary>
@@ -259,7 +259,7 @@ internal sealed class BetterItemGrabMenu : Feature
     /// <param name="b">The sprite batch to draw to.</param>
     public static void InvokeDrawingMenu(SpriteBatch b)
     {
-        BetterItemGrabMenu.Instance._drawingMenu.InvokeAll(BetterItemGrabMenu.Instance, b);
+        BetterItemGrabMenu.instance.drawingMenu.InvokeAll(BetterItemGrabMenu.instance, b);
     }
 
     /// <summary>
@@ -268,59 +268,59 @@ internal sealed class BetterItemGrabMenu : Feature
     /// <returns>Returns the removed overlay.</returns>
     public static IClickableMenu RemoveOverlay()
     {
-        return BetterItemGrabMenu.Instance.OverlaidMenus.Pop();
+        return BetterItemGrabMenu.instance.OverlaidMenus.Pop();
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Input.CursorMoved += this.OnCursorMoved;
-        this._helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-        this._helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
-        this._helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
+        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu_Low;
+        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Input.CursorMoved += this.OnCursorMoved;
+        this.helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this.helper.Events.Player.InventoryChanged += BetterItemGrabMenu.OnInventoryChanged;
+        this.helper.Events.World.ChestInventoryChanged += BetterItemGrabMenu.OnChestInventoryChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.InventoryMenuDraw,
             transpiler: new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[0],
             postfix: new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[1],
             postfix: new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[0],
             new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[1],
             new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[0],
             transpiler: new(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_transpiler)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuDraw,
             new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_draw_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuDraw,
             transpiler: new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_draw_transpiler)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuOrganizeItemsInList,
             postfix: new(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.ItemGrabMenu_organizeItemsInList_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.MenuWithInventoryConstructor,
             postfix: new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.MenuWithInventory_constructor_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             BetterItemGrabMenu.MenuWithInventoryDraw,
             transpiler: new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.MenuWithInventory_draw_transpiler)));
     }
@@ -329,58 +329,58 @@ internal sealed class BetterItemGrabMenu : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
-        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this._helper.Events.Input.CursorMoved -= this.OnCursorMoved;
-        this._helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-        this._helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
-        this._helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
+        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu_Low;
+        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Input.CursorMoved -= this.OnCursorMoved;
+        this.helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this.helper.Events.Player.InventoryChanged -= BetterItemGrabMenu.OnInventoryChanged;
+        this.helper.Events.World.ChestInventoryChanged -= BetterItemGrabMenu.OnChestInventoryChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.InventoryMenuDraw,
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.InventoryMenu_draw_transpiler)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[0],
             AccessTools.Method(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[1],
             AccessTools.Method(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[0],
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[1],
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuConstructor[0],
             AccessTools.Method(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_transpiler)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuDraw,
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_draw_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuDraw,
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_draw_transpiler)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuOrganizeItemsInList,
             AccessTools.Method(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.ItemGrabMenu_organizeItemsInList_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.MenuWithInventoryConstructor,
             AccessTools.Method(
                 typeof(BetterItemGrabMenu),
                 nameof(BetterItemGrabMenu.MenuWithInventory_constructor_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             BetterItemGrabMenu.MenuWithInventoryDraw,
             AccessTools.Method(
                 typeof(BetterItemGrabMenu),
@@ -429,7 +429,7 @@ internal sealed class BetterItemGrabMenu : Feature
         }
 
         return new(
-            menu.xPositionOnScreen + Game1.tileSize / 2,
+            menu.xPositionOnScreen + (Game1.tileSize / 2),
             menu.yPositionOnScreen,
             playerInventory,
             actualInventory,
@@ -468,7 +468,7 @@ internal sealed class BetterItemGrabMenu : Feature
         {
             BetterItemGrabMenu.Inventory = null;
             BetterItemGrabMenu.ItemsToGrabMenu = null;
-            BetterItemGrabMenu.Instance._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+            BetterItemGrabMenu.instance.constructed.InvokeAll(BetterItemGrabMenu.instance, __instance);
             return;
         }
 
@@ -483,17 +483,17 @@ internal sealed class BetterItemGrabMenu : Feature
         var inventory = new DisplayedItems(__instance.inventory, false);
         var itemsToGrabMenu = new DisplayedItems(__instance.ItemsToGrabMenu, true);
 
-        if (BetterItemGrabMenu.Instance.CurrentMenu is not null
-            && ReferenceEquals(__instance.context, BetterItemGrabMenu.Instance.CurrentMenu.context))
+        if (BetterItemGrabMenu.instance.CurrentMenu is not null
+            && ReferenceEquals(__instance.context, BetterItemGrabMenu.instance.CurrentMenu.context))
         {
             inventory.Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0;
             itemsToGrabMenu.Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0;
         }
 
-        BetterItemGrabMenu.Instance.CurrentMenu = __instance;
+        BetterItemGrabMenu.instance.CurrentMenu = __instance;
         BetterItemGrabMenu.Inventory = inventory;
         BetterItemGrabMenu.ItemsToGrabMenu = itemsToGrabMenu;
-        BetterItemGrabMenu.Instance._constructed.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+        BetterItemGrabMenu.instance.constructed.InvokeAll(BetterItemGrabMenu.instance, __instance);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -503,13 +503,13 @@ internal sealed class BetterItemGrabMenu : Feature
         if (context is null || !Storages.TryGetOne(context, out var storage))
         {
             BetterItemGrabMenu.Context = null;
-            BetterItemGrabMenu.Instance._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+            BetterItemGrabMenu.instance.constructing.InvokeAll(BetterItemGrabMenu.instance, __instance);
             return;
         }
 
         __instance.context = context;
         BetterItemGrabMenu.Context = storage;
-        BetterItemGrabMenu.Instance._constructing.InvokeAll(BetterItemGrabMenu.Instance, __instance);
+        BetterItemGrabMenu.instance.constructing.InvokeAll(BetterItemGrabMenu.instance, __instance);
     }
 
     /// <summary>Replace assignments to ItemsToGrabMenu with method.</summary>
@@ -617,16 +617,16 @@ internal sealed class BetterItemGrabMenu : Feature
 
     private static void ItemGrabMenu_organizeItemsInList_postfix(IList<Item> items)
     {
-        if (BetterItemGrabMenu.Instance.CurrentMenu is null)
+        if (BetterItemGrabMenu.instance.CurrentMenu is null)
         {
             return;
         }
 
         BetterItemGrabMenu.RefreshInventory |= ReferenceEquals(
-            BetterItemGrabMenu.Instance.CurrentMenu.inventory.actualInventory,
+            BetterItemGrabMenu.instance.CurrentMenu.inventory.actualInventory,
             items);
         BetterItemGrabMenu.RefreshItemsToGrabMenu |= ReferenceEquals(
-            BetterItemGrabMenu.Instance.CurrentMenu.ItemsToGrabMenu.actualInventory,
+            BetterItemGrabMenu.instance.CurrentMenu.ItemsToGrabMenu.actualInventory,
             items);
     }
 
@@ -697,7 +697,7 @@ internal sealed class BetterItemGrabMenu : Feature
                 return;
         }
 
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -719,25 +719,25 @@ internal sealed class BetterItemGrabMenu : Feature
         }
 
         var offset = displayedItems.Offset;
-        if (this._config.ControlScheme.ScrollUp.JustPressed()
+        if (this.config.ControlScheme.ScrollUp.JustPressed()
             && (this.CurrentMenu.currentlySnappedComponent is null
                 || displayedItems.Menu.inventory.Take(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
-            displayedItems.Offset -= this._config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
+            displayedItems.Offset -= this.config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
             if (offset != displayedItems.Offset)
             {
-                this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ScrollUp);
+                this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.ScrollUp);
             }
         }
 
-        if (this._config.ControlScheme.ScrollDown.JustPressed()
+        if (this.config.ControlScheme.ScrollDown.JustPressed()
             && (this.CurrentMenu.currentlySnappedComponent is null
                 || displayedItems.Menu.inventory.TakeLast(12).Contains(this.CurrentMenu.currentlySnappedComponent)))
         {
-            displayedItems.Offset += this._config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
+            displayedItems.Offset += this.config.ControlScheme.ScrollPage.IsDown() ? displayedItems.Menu.rows : 1;
             if (offset != displayedItems.Offset)
             {
-                this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ScrollDown);
+                this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.ScrollDown);
             }
         }
     }
@@ -776,13 +776,13 @@ internal sealed class BetterItemGrabMenu : Feature
 
         if (BetterItemGrabMenu.Inventory?.Menu.isWithinBounds(x, y) == true)
         {
-            var scroll = this._config.ControlScheme.ScrollPage.IsDown() ? BetterItemGrabMenu.Inventory.Menu.rows : 1;
+            var scroll = this.config.ControlScheme.ScrollPage.IsDown() ? BetterItemGrabMenu.Inventory.Menu.rows : 1;
             BetterItemGrabMenu.Inventory.Offset += e.Delta > 0 ? -scroll : scroll;
         }
 
         if (BetterItemGrabMenu.ItemsToGrabMenu?.Menu.isWithinBounds(x, y) == true)
         {
-            var scroll = this._config.ControlScheme.ScrollPage.IsDown()
+            var scroll = this.config.ControlScheme.ScrollPage.IsDown()
                 ? BetterItemGrabMenu.ItemsToGrabMenu.Menu.rows
                 : 1;
             BetterItemGrabMenu.ItemsToGrabMenu.Offset += e.Delta > 0 ? -scroll : scroll;
@@ -840,7 +840,7 @@ internal sealed class BetterItemGrabMenu : Feature
                     true,
                     -1,
                     0,
-                    -1,
+                    null,
                     -1,
                     null,
                     this.CurrentMenu.hoverAmount);

@@ -8,8 +8,8 @@ using StardewMods.ExpandedStorage.Framework;
 /// <inheritdoc />
 internal sealed class RecipeProvider : IRecipeProvider
 {
-    private readonly IDictionary<string, CachedStorage> _storageCache;
-    private readonly IDictionary<string, ICustomStorage> _storages;
+    private readonly IDictionary<string, CachedStorage> storageCache;
+    private readonly IDictionary<string, ICustomStorage> storages;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RecipeProvider" /> class.
@@ -18,8 +18,8 @@ internal sealed class RecipeProvider : IRecipeProvider
     /// <param name="storageCache">Cached storage textures and attributes.</param>
     public RecipeProvider(IDictionary<string, ICustomStorage> storages, IDictionary<string, CachedStorage> storageCache)
     {
-        this._storages = storages;
-        this._storageCache = storageCache;
+        this.storages = storages;
+        this.storageCache = storageCache;
     }
 
     /// <inheritdoc />
@@ -38,12 +38,12 @@ internal sealed class RecipeProvider : IRecipeProvider
     public IRecipe? GetRecipe(CraftingRecipe recipe)
     {
         var name = recipe.name.EndsWith("Recipe") ? recipe.name[..^6].Trim() : recipe.name;
-        if (!this._storages.TryGetValue(name, out var storage))
+        if (!this.storages.TryGetValue(name, out var storage))
         {
             return null;
         }
 
-        var cachedStorage = this._storageCache.Get(storage);
+        var cachedStorage = this.storageCache.Get(storage);
         return Integrations.BetterCrafting.Api!.RecipeBuilder(recipe)
             .DisplayName(() => storage.DisplayName)
             .Description(() => storage.Description)

@@ -12,25 +12,25 @@ using StardewMods.ExpandedStorage.Models;
 internal sealed class Config
 {
 #nullable disable
-    private static Config Instance;
+    private static Config instance;
 #nullable enable
-    private readonly ModConfig _config;
+    private readonly ModConfig config;
 
-    private readonly IModHelper _helper;
-    private readonly IManifest _manifest;
+    private readonly IModHelper helper;
+    private readonly IManifest manifest;
 
     private Config(IModHelper helper, IManifest manifest)
     {
-        this._helper = helper;
-        this._manifest = manifest;
-        this._config = this._helper.ReadConfig<ModConfig>();
+        this.helper = helper;
+        this.manifest = manifest;
+        this.config = this.helper.ReadConfig<ModConfig>();
     }
 
     private static IGenericModConfigMenuApi GMCM => Integrations.GenericModConfigMenu.Api!;
 
-    private static ModConfig ModConfig => Config.Instance._config;
+    private static ModConfig ModConfig => Config.instance.config;
 
-    private static IManifest ModManifest => Config.Instance._manifest;
+    private static IManifest ModManifest => Config.instance.manifest;
 
     /// <summary>
     ///     Gets config data for an Expanded Storage chest type.
@@ -50,7 +50,7 @@ internal sealed class Config
     /// <returns>Returns an instance of the <see cref="Config" /> class.</returns>
     public static Config Init(IModHelper helper, IManifest manifest)
     {
-        return Config.Instance ??= new(helper, manifest);
+        return Config.instance ??= new(helper, manifest);
     }
 
     /// <summary>
@@ -123,6 +123,6 @@ internal sealed class Config
 
     private static void Save()
     {
-        Config.Instance._helper.WriteConfig(Config.ModConfig);
+        Config.instance.helper.WriteConfig(Config.ModConfig);
     }
 }

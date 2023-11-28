@@ -196,8 +196,8 @@ internal static class Extensions
             return 0;
         }
 
-        return (int)(Math.Abs(storageObject.Position.X - player.getTileX())
-            + Math.Abs(storageObject.Position.Y - player.getTileY()));
+        return (int)(Math.Abs(storageObject.Position.X - player.Tile.X)
+            + Math.Abs(storageObject.Position.Y - player.Tile.Y));
     }
 
     /// <summary>
@@ -245,7 +245,7 @@ internal static class Extensions
                     GroupBy.Color => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
                         ?? string.Empty,
                     GroupBy.Name => i1.DisplayName,
-                    GroupBy.Default or _ => string.Empty,
+                    _ => string.Empty,
                 };
 
                 var g2 = storage.OrganizeChestGroupBy switch
@@ -255,7 +255,7 @@ internal static class Extensions
                     GroupBy.Color => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
                         ?? string.Empty,
                     GroupBy.Name => i2.DisplayName,
-                    GroupBy.Default or _ => string.Empty,
+                    _ => string.Empty,
                 };
 
                 if (!g1.Equals(g2))
@@ -268,7 +268,7 @@ internal static class Extensions
                     SortBy.Quality when i1 is SObject obj => obj.Quality,
                     SortBy.Quantity => i1.Stack,
                     SortBy.Type => i1.Category,
-                    SortBy.Default or _ => 0,
+                    _ => 0,
                 };
 
                 var o2 = storage.OrganizeChestSortBy switch
@@ -276,7 +276,7 @@ internal static class Extensions
                     SortBy.Quality when i2 is SObject obj => obj.Quality,
                     SortBy.Quantity => i2.Stack,
                     SortBy.Type => i2.Category,
-                    SortBy.Default or _ => 0,
+                    _ => 0,
                 };
 
                 return o1.CompareTo(o2);
@@ -355,8 +355,8 @@ internal static class Extensions
             FeatureOptionRange.Location when parent is GameLocation location && !location.Equals(Game1.currentLocation)
                 => false,
             FeatureOptionRange.Location when distance == -1 => true,
-            FeatureOptionRange.Location when Math.Abs(position.X - Game1.player.getTileX())
-                + Math.Abs(position.Y - Game1.player.getTileY())
+            FeatureOptionRange.Location when Math.Abs(position.X - Game1.player.Tile.X)
+                + Math.Abs(position.Y - Game1.player.Tile.Y)
                 <= distance => true,
             _ => false,
         };
@@ -391,7 +391,7 @@ internal static class Extensions
             _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
             _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
             -1 => 8,
-            _ => (int)FeatureOption.Enabled + data.ResizeChestCapacity / 12 - 1,
+            _ => (int)FeatureOption.Enabled + (data.ResizeChestCapacity / 12) - 1,
         };
     }
 

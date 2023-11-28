@@ -23,65 +23,65 @@ internal sealed class SearchItems : Feature
     private const int MaxTimeOut = 20;
 
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly PerScreen<ItemGrabMenu?> _currentMenu = new();
-    private readonly IModHelper _helper;
-    private readonly PerScreen<ItemMatcher> _itemMatcher;
-    private readonly PerScreen<StorageNode?> _lastContext = new();
-    private readonly PerScreen<ClickableComponent> _searchArea;
-    private readonly PerScreen<TextBox> _searchField;
-    private readonly PerScreen<ClickableTextureComponent> _searchIcon;
-    private readonly PerScreen<string> _searchText = new(() => string.Empty);
-    private readonly PerScreen<int> _timeOut = new();
+    private readonly ModConfig config;
+    private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
+    private readonly IModHelper helper;
+    private readonly PerScreen<ItemMatcher> itemMatcher;
+    private readonly PerScreen<StorageNode?> lastContext = new();
+    private readonly PerScreen<ClickableComponent> searchArea;
+    private readonly PerScreen<TextBox> searchField;
+    private readonly PerScreen<ClickableTextureComponent> searchIcon;
+    private readonly PerScreen<string> searchText = new(() => string.Empty);
+    private readonly PerScreen<int> timeOut = new();
 
     private SearchItems(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._itemMatcher = new(() => new(false, config.SearchTagSymbol.ToString(), helper.Translation));
-        this._searchArea = new(() => new(Rectangle.Empty, string.Empty));
-        this._searchField = new(
+        this.helper = helper;
+        this.config = config;
+        this.itemMatcher = new(() => new(false, config.SearchTagSymbol.ToString(), helper.Translation));
+        this.searchArea = new(() => new(Rectangle.Empty, string.Empty));
+        this.searchField = new(
             () => new(
                 helper.GameContent.Load<Texture2D>("LooseSprites\\textBox"),
                 null,
                 Game1.smallFont,
                 Game1.textColor));
-        this._searchIcon = new(() => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
+        this.searchIcon = new(() => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
     }
 
     private ItemGrabMenu? CurrentMenu
     {
-        get => this._currentMenu.Value;
-        set => this._currentMenu.Value = value;
+        get => this.currentMenu.Value;
+        set => this.currentMenu.Value = value;
     }
 
-    private ItemMatcher ItemMatcher => this._itemMatcher.Value;
+    private ItemMatcher ItemMatcher => this.itemMatcher.Value;
 
     private StorageNode? LastContext
     {
-        get => this._lastContext.Value;
-        set => this._lastContext.Value = value;
+        get => this.lastContext.Value;
+        set => this.lastContext.Value = value;
     }
 
-    private ClickableComponent SearchArea => this._searchArea.Value;
+    private ClickableComponent SearchArea => this.searchArea.Value;
 
-    private TextBox SearchField => this._searchField.Value;
+    private TextBox SearchField => this.searchField.Value;
 
-    private ClickableTextureComponent SearchIcon => this._searchIcon.Value;
+    private ClickableTextureComponent SearchIcon => this.searchIcon.Value;
 
     private string SearchText
     {
-        get => this._searchText.Value;
-        set => this._searchText.Value = value;
+        get => this.searchText.Value;
+        set => this.searchText.Value = value;
     }
 
     private int TimeOut
     {
-        get => this._timeOut.Value;
-        set => this._timeOut.Value = value;
+        get => this.timeOut.Value;
+        set => this.timeOut.Value = value;
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ internal sealed class SearchItems : Feature
     /// <returns>Returns an instance of the <see cref="SearchItems" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return SearchItems.Instance ??= new SearchItems(helper, config);
+        return SearchItems.instance ??= new SearchItems(helper, config);
     }
 
     /// <inheritdoc />
@@ -100,9 +100,9 @@ internal sealed class SearchItems : Feature
     {
         // Events
         BetterItemGrabMenu.Constructing += SearchItems.OnConstructing;
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this._helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
@@ -110,9 +110,9 @@ internal sealed class SearchItems : Feature
     {
         // Events
         BetterItemGrabMenu.Constructing -= SearchItems.OnConstructing;
-        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this._helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
@@ -137,7 +137,7 @@ internal sealed class SearchItems : Feature
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
     {
-        if (this._config.HideItems is FeatureOption.Enabled)
+        if (this.config.HideItems is FeatureOption.Enabled)
         {
             return this.ItemMatcher.Any() ? items.Where(this.ItemMatcher.Matches) : items;
         }
@@ -169,7 +169,7 @@ internal sealed class SearchItems : Feature
             case SButton.Escape when this.CurrentMenu.readyToClose():
                 Game1.playSound("bigDeSelect");
                 this.CurrentMenu.exitThisMenu();
-                this._helper.Input.Suppress(e.Button);
+                this.helper.Input.Suppress(e.Button);
                 return;
             case SButton.Escape:
                 return;
@@ -177,7 +177,7 @@ internal sealed class SearchItems : Feature
 
         if (this.SearchField.Selected)
         {
-            this._helper.Input.Suppress(e.Button);
+            this.helper.Input.Suppress(e.Button);
         }
     }
 
@@ -242,9 +242,9 @@ internal sealed class SearchItems : Feature
 
         this.LastContext = BetterItemGrabMenu.Context;
         this.SearchField.X = this.CurrentMenu.ItemsToGrabMenu.xPositionOnScreen;
-        this.SearchField.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen - 14 * Game1.pixelZoom;
+        this.SearchField.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen - (14 * Game1.pixelZoom);
         this.SearchField.Width =
-            this._config.TransferItems is FeatureOption.Enabled && this.CurrentMenu is not ItemSelectionMenu
+            this.config.TransferItems is FeatureOption.Enabled && this.CurrentMenu is not ItemSelectionMenu
                 ? this.CurrentMenu.ItemsToGrabMenu.width - Game1.tileSize - 4
                 : this.CurrentMenu.ItemsToGrabMenu.width;
         this.SearchField.Selected = false;

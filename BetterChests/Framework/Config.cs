@@ -24,35 +24,35 @@ using StardewValley.Menus;
 internal sealed class Config
 {
 #nullable disable
-    private static Config Instance;
+    private static Config instance;
 #nullable enable
 
-    private readonly ModConfig _config;
+    private readonly ModConfig config;
 
-    private readonly IList<Tuple<Feature, Func<bool>>> _features;
-    private readonly IModHelper _helper;
-    private readonly IManifest _manifest;
+    private readonly IList<Tuple<Feature, Func<bool>>> features;
+    private readonly IModHelper helper;
+    private readonly IManifest manifest;
 
     private Config(IModHelper helper, IManifest manifest, ModConfig config, IList<Tuple<Feature, Func<bool>>> features)
     {
-        this._helper = helper;
-        this._manifest = manifest;
-        this._config = config;
-        this._features = features;
-        this._helper.Events.GameLoop.GameLaunched += Config.OnGameLaunched;
+        this.helper = helper;
+        this.manifest = manifest;
+        this.config = config;
+        this.features = features;
+        this.helper.Events.GameLoop.GameLaunched += Config.OnGameLaunched;
     }
 
-    private static IEnumerable<Tuple<Feature, Func<bool>>> Features => Config.Instance._features;
+    private static IEnumerable<Tuple<Feature, Func<bool>>> Features => Config.instance.features;
 
     private static IGenericModConfigMenuApi GMCM => Integrations.GMCM.Api!;
 
-    private static IInputHelper Input => Config.Instance._helper.Input;
+    private static IInputHelper Input => Config.instance.helper.Input;
 
-    private static IManifest Manifest => Config.Instance._manifest;
+    private static IManifest Manifest => Config.instance.manifest;
 
-    private static ModConfig ModConfig => Config.Instance._config;
+    private static ModConfig ModConfig => Config.instance.config;
 
-    private static ITranslationHelper Translation => Config.Instance._helper.Translation;
+    private static ITranslationHelper Translation => Config.instance.helper.Translation;
 
     /// <summary>
     ///     Initializes <see cref="Config" />.
@@ -68,7 +68,7 @@ internal sealed class Config
         ModConfig config,
         IList<Tuple<Feature, Func<bool>>> features)
     {
-        return Config.Instance ??= new(helper, manifest, config, features);
+        return Config.instance ??= new(helper, manifest, config, features);
     }
 
     /// <summary>
@@ -528,7 +528,7 @@ internal sealed class Config
 
     private static void SaveConfig()
     {
-        Config.Instance._helper.WriteConfig(Config.ModConfig);
+        Config.instance.helper.WriteConfig(Config.ModConfig);
         foreach (var (feature, condition) in Config.Features)
         {
             feature.SetActivated(condition() && !Integrations.TestConflicts(feature.GetType().Name, out _));

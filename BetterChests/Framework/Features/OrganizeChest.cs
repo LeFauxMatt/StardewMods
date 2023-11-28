@@ -19,16 +19,16 @@ internal sealed class OrganizeChest : Feature
         nameof(ItemGrabMenu.organizeItemsInList));
 
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
     private OrganizeChest(IModHelper helper)
     {
-        this._helper = helper;
-        this._harmony = new(OrganizeChest.Id);
+        this.helper = helper;
+        this.harmony = new(OrganizeChest.Id);
     }
 
     /// <summary>
@@ -38,17 +38,17 @@ internal sealed class OrganizeChest : Feature
     /// <returns>Returns an instance of the <see cref="OrganizeChest" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return OrganizeChest.Instance ??= new OrganizeChest(helper);
+        return OrganizeChest.instance ??= new OrganizeChest(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             OrganizeChest.ItemGrabMenuOrganizeItemsInList,
             new(typeof(OrganizeChest), nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_prefix)));
     }
@@ -57,10 +57,10 @@ internal sealed class OrganizeChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             OrganizeChest.ItemGrabMenuOrganizeItemsInList,
             AccessTools.Method(typeof(OrganizeChest), nameof(OrganizeChest.ItemGrabMenu_organizeItemsInList_prefix)));
     }
@@ -110,7 +110,7 @@ internal sealed class OrganizeChest : Feature
         }
 
         BetterItemGrabMenu.Context.OrganizeItems(true);
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
         BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         Game1.playSound("Ship");
     }

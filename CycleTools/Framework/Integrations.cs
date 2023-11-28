@@ -8,22 +8,22 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 internal sealed class Integrations
 {
 #nullable disable
-    private static Integrations Instance;
+    private static Integrations instance;
 #nullable enable
-    private readonly GenericModConfigMenuIntegration _gmcm;
+    private readonly GenericModConfigMenuIntegration gmcm;
 
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     private Integrations(IModHelper helper)
     {
-        this._helper = helper;
-        this._gmcm = new(helper.ModRegistry);
+        this.helper = helper;
+        this.gmcm = new(helper.ModRegistry);
     }
 
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance._gmcm;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.instance.gmcm;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.
@@ -32,6 +32,6 @@ internal sealed class Integrations
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModHelper helper)
     {
-        return Integrations.Instance ??= new(helper);
+        return Integrations.instance ??= new(helper);
     }
 }

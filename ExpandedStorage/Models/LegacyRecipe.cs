@@ -10,7 +10,7 @@ internal sealed class LegacyRecipe
     /// <summary>
     ///     Gets or sets the Id of the recipe.
     /// </summary>
-    public string ID { get; set; } = string.Empty;
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     ///     Gets or sets the ingredients used to craft the recipe.

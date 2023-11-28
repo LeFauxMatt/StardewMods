@@ -16,7 +16,7 @@ using StardewValley.Objects;
 internal static class Extensions
 {
 #nullable disable
-    private static IDictionary<string, CachedStorage> StorageCache;
+    private static IDictionary<string, CachedStorage> storageCache;
 #nullable enable
 
     /// <summary>
@@ -202,7 +202,7 @@ internal static class Extensions
         float scaleSize = 1f,
         float layerDepth = 0.0001f)
     {
-        var storageCache = Extensions.StorageCache.Get(storage);
+        var cachedStorage = Extensions.storageCache.Get(storage);
         var startingLidFrame = (obj as Chest)?.startingLidFrame.Value ?? 0;
         var lastLidFrame = (obj as Chest)?.getLastLidFrame() ?? 1;
         var colored = storage.PlayerColor && (obj as Chest)?.playerChoiceColor.Value.Equals(Color.Black) == false;
@@ -216,7 +216,7 @@ internal static class Extensions
 
         // Draw Base Layer
         b.Draw(
-            storageCache.Texture,
+            cachedStorage.Texture,
             pos + (obj.shakeTimer > 0 ? new(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
             frame,
             (color ?? tint) * alpha,
@@ -234,7 +234,7 @@ internal static class Extensions
 
         // Draw Top Layer
         b.Draw(
-            storageCache.Texture,
+            cachedStorage.Texture,
             pos + (obj.shakeTimer > 0 ? new(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
             frame,
             tint * alpha,
@@ -245,15 +245,21 @@ internal static class Extensions
             layerDepth + 1E-05f);
     }
 
-    public static CachedStorage Get(this IDictionary<string, CachedStorage> storageCache, ICustomStorage storage)
+    /// <summary>
+    /// Gets or adds a storage from cache.
+    /// </summary>
+    /// <param name="cachedStorages">The storage cache to get from.</param>
+    /// <param name="storage">The storage to get from cache.</param>
+    /// <returns>Returns the cached storage.</returns>
+    public static CachedStorage Get(this IDictionary<string, CachedStorage> cachedStorages, ICustomStorage storage)
     {
-        if (storageCache.TryGetValue(storage.Image, out var cachedStorage))
+        if (cachedStorages.TryGetValue(storage.Image, out var cachedStorage))
         {
             return cachedStorage;
         }
 
         cachedStorage = new(storage);
-        storageCache.Add(storage.Image, new(storage));
+        cachedStorages.Add(storage.Image, new(storage));
         return cachedStorage;
     }
 
@@ -264,7 +270,7 @@ internal static class Extensions
     /// <returns>Returns the frame count.</returns>
     public static int GetFrames(this ICustomStorage storage)
     {
-        return Extensions.StorageCache.Get(storage).Frames;
+        return Extensions.storageCache.Get(storage).Frames;
     }
 
     /// <summary>
@@ -274,7 +280,7 @@ internal static class Extensions
     /// <returns>Returns the scale multiplier.</returns>
     public static float GetScaleMultiplier(this ICustomStorage storage)
     {
-        return Extensions.StorageCache.Get(storage).ScaleMultiplier;
+        return Extensions.storageCache.Get(storage).ScaleMultiplier;
     }
 
     /// <summary>
@@ -284,7 +290,7 @@ internal static class Extensions
     /// <returns>Returns the tile depth.</returns>
     public static int GetTileDepth(this ICustomStorage storage)
     {
-        return Extensions.StorageCache.Get(storage).TileDepth;
+        return Extensions.storageCache.Get(storage).TileDepth;
     }
 
     /// <summary>
@@ -294,7 +300,7 @@ internal static class Extensions
     /// <returns>Returns the tile height.</returns>
     public static int GetTileHeight(this ICustomStorage storage)
     {
-        return Extensions.StorageCache.Get(storage).TileHeight;
+        return Extensions.storageCache.Get(storage).TileHeight;
     }
 
     /// <summary>
@@ -304,15 +310,15 @@ internal static class Extensions
     /// <returns>Returns the tile width.</returns>
     public static int GetTileWidth(this ICustomStorage storage)
     {
-        return Extensions.StorageCache.Get(storage).TileWidth;
+        return Extensions.storageCache.Get(storage).TileWidth;
     }
 
     /// <summary>
     ///     Initialized <see cref="Extensions" />.
     /// </summary>
-    /// <param name="storageCache">Cached storage textures and attributes.</param>
-    public static void Init(IDictionary<string, CachedStorage> storageCache)
+    /// <param name="cachedStorages">Cached storage textures and attributes.</param>
+    public static void Init(IDictionary<string, CachedStorage> cachedStorages)
     {
-        Extensions.StorageCache = storageCache;
+        Extensions.storageCache = cachedStorages;
     }
 }

@@ -2,9 +2,9 @@
 
 #region License
 
-// MIT License
+// The MIT License (MIT)
 //
-// Copyright (c) 2018 CJBok
+// Copyright 2016–2021 Jesse Plamondon-Willard (Pathoschild)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 //     of this software and associated documentation files (the "Software"), to deal
@@ -36,62 +36,60 @@
 namespace StardewMods.Common.Helpers.ItemRepository;
 
 using System;
+using StardewValley;
+using StardewValley.ItemTypeDefinitions;
 
 /// <summary>A game item with metadata.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>
 internal sealed class SearchableItem
 {
     /*********
-    ** Public methods
+    ** Accessors
     *********/
-    /// <summary>Construct an instance.</summary>
-    /// <param name="type">The item type.</param>
-    /// <param name="id">The unique ID (if different from the item's parent sheet index).</param>
-    /// <param name="createItem">Create an item instance.</param>
-    public SearchableItem(ItemType type, int id, Func<SearchableItem, Item> createItem)
-    {
-        this.Type = type;
-        this.ID = id;
-        this.CreateItem = () => createItem(this);
-        this.Item = createItem(this);
-    }
-
-    /// <summary>Construct an instance.</summary>
-    /// <param name="item">The item metadata to copy.</param>
-    public SearchableItem(SearchableItem item)
-    {
-        this.Type = item.Type;
-        this.ID = item.ID;
-        this.CreateItem = item.CreateItem;
-        this.Item = item.Item;
-    }
-
-    /// <summary>Create an item instance.</summary>
-    public Func<Item> CreateItem { get; }
-
-    /// <summary>The item's display name for the current language.</summary>
-    public string DisplayName => this.Item.DisplayName;
-
-    /// <summary>The item's unique ID for its type.</summary>
-    public int ID { get; }
+    /// <summary>The <see cref="IItemDataDefinition.Identifier"/> value for the item type.</summary>
+    public string Type { get; }
 
     /// <summary>A sample item instance.</summary>
     public Item Item { get; }
 
+    /// <summary>Create an item instance.</summary>
+    public Func<Item> CreateItem { get; }
+
+    /// <summary>The unqualified item ID.</summary>
+    public string Id { get; }
+
+    /// <summary>The qualified item ID.</summary>
+    public string QualifiedItemId { get; }
+
     /// <summary>The item's default name.</summary>
     public string Name => this.Item.Name;
 
+    /// <summary>The item's display name for the current language.</summary>
+    public string DisplayName => this.Item.DisplayName;
+
+
     /*********
-    ** Accessors
+    ** Public methods
     *********/
-    /// <summary>The item type.</summary>
-    public ItemType Type { get; }
+    /// <summary>Construct an instance.</summary>
+    /// <param name="type">The item type.</param>
+    /// <param name="id">The unqualified item ID.</param>
+    /// <param name="createItem">Create an item instance.</param>
+    public SearchableItem(string type, string id, Func<SearchableItem, Item> createItem)
+    {
+        this.Type = type;
+        this.Id = id;
+        this.QualifiedItemId = this.Type + this.Id;
+        this.CreateItem = () => createItem(this);
+        this.Item = createItem(this);
+    }
 
     /// <summary>Get whether the item name contains a case-insensitive substring.</summary>
     /// <param name="substring">The substring to find.</param>
     public bool NameContains(string substring)
     {
-        return this.Name.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1
+        return
+            this.Name.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1
             || this.DisplayName.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1;
     }
 
@@ -99,7 +97,8 @@ internal sealed class SearchableItem
     /// <param name="name">The substring to find.</param>
     public bool NameEquivalentTo(string name)
     {
-        return this.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+        return
+            this.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
             || this.DisplayName.Equals(name, StringComparison.OrdinalIgnoreCase);
     }
 }

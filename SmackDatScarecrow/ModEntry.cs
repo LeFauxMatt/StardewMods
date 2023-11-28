@@ -10,17 +10,17 @@ using StardewMods.Common.Helpers;
 public sealed class ModEntry : Mod
 {
 #nullable disable
-    private static ModEntry Instance;
+    private static ModEntry instance;
 #nullable enable
 
-    private IReflectedField<Multiplayer>? _multiplayer;
+    private IReflectedField<Multiplayer>? multiplayer;
 
-    private static Multiplayer Multiplayer => ModEntry.Instance._multiplayer!.GetValue();
+    private static Multiplayer Multiplayer => ModEntry.instance.multiplayer!.GetValue();
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        ModEntry.Instance = this;
+        ModEntry.instance = this;
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
 
@@ -66,14 +66,14 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        foreach (var (pos, obj) in farm.Objects.Pairs)
+        foreach (var (_, obj) in farm.Objects.Pairs)
         {
             if (obj is not { bigCraftable.Value: true } || !obj.IsScarecrow() || who is null)
             {
                 continue;
             }
 
-            var monsterBox = obj.getBoundingBox(pos);
+            var monsterBox = obj.GetBoundingBox();
             if (!monsterBox.Intersects(areaOfEffect))
             {
                 continue;
@@ -94,14 +94,14 @@ public sealed class ModEntry : Mod
             if (maxDamage >= 0)
             {
                 damageAmount = Game1.random.Next(minDamage, maxDamage + 1);
-                if (Game1.random.NextDouble() < critChance + who.LuckLevel * (critChance / 40f))
+                if (Game1.random.NextDouble() < critChance + (who.LuckLevel * (critChance / 40f)))
                 {
                     crit = true;
                     farm.playSound("crit");
                 }
 
                 damageAmount = crit ? (int)(damageAmount * critMultiplier) : damageAmount;
-                damageAmount = Math.Max(1, damageAmount + who.attack * 3);
+                damageAmount = Math.Max(1, damageAmount + (who.Attack * 3));
 
                 if (who.professions.Contains(24))
                 {
@@ -125,7 +125,7 @@ public sealed class ModEntry : Mod
                     nonSpriteChunkColor = { Value = crit ? Color.Yellow : new(255, 130, 0) },
                 };
 
-                debris.Chunks[0].scale = Math.Min(2f, Math.Max(1f, crit ? 1f + damageAmount / 300f : 1f));
+                debris.Chunks[0].scale = Math.Min(2f, Math.Max(1f, crit ? 1f + (damageAmount / 300f) : 1f));
                 debris.Chunks[0].xVelocity.Value = Game1.random.Next(-1, 2);
                 farm.debris.Add(debris);
             }
@@ -233,6 +233,6 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this._multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer");
+        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer");
     }
 }

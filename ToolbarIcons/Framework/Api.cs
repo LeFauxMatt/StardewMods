@@ -13,11 +13,11 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public sealed class Api : IToolbarIconsApi
 {
-    private readonly Dictionary<string, ClickableTextureComponent> _components;
-    private readonly IModHelper _helper;
-    private readonly List<ToolbarIcon> _icons;
+    private readonly Dictionary<string, ClickableTextureComponent> components;
+    private readonly IModHelper helper;
+    private readonly List<ToolbarIcon> icons;
 
-    private EventHandler<string>? _toolbarIconPressed;
+    private EventHandler<string>? toolbarIconPressed;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Api" /> class.
@@ -27,9 +27,9 @@ public sealed class Api : IToolbarIconsApi
     /// <param name="components">Dictionary containing the textures.</param>
     public Api(IModHelper helper, List<ToolbarIcon> icons, Dictionary<string, ClickableTextureComponent> components)
     {
-        this._helper = helper;
-        this._icons = icons;
-        this._components = components;
+        this.helper = helper;
+        this.icons = icons;
+        this.components = components;
     }
 
     /// <summary>
@@ -37,31 +37,31 @@ public sealed class Api : IToolbarIconsApi
     /// </summary>
     public event EventHandler<string> ToolbarIconPressed
     {
-        add => this._toolbarIconPressed += value;
-        remove => this._toolbarIconPressed -= value;
+        add => this.toolbarIconPressed += value;
+        remove => this.toolbarIconPressed -= value;
     }
 
     /// <inheritdoc />
     public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText)
     {
-        var icon = this._icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        var icon = this.icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (icon is null)
         {
             icon = new(id);
-            this._icons.Add(icon);
+            this.icons.Add(icon);
         }
 
-        if (this._components.ContainsKey(id))
+        if (this.components.ContainsKey(id))
         {
             return;
         }
 
         Log.Trace($"Adding icon: {id}");
-        this._components.Add(
+        this.components.Add(
             id,
             new(
                 new(0, 0, 32, 32),
-                this._helper.GameContent.Load<Texture2D>(texturePath),
+                this.helper.GameContent.Load<Texture2D>(texturePath),
                 sourceRect ?? new(0, 0, 16, 16),
                 2f)
             {
@@ -75,15 +75,15 @@ public sealed class Api : IToolbarIconsApi
     public void RemoveToolbarIcon(string id)
     {
         var toolbarIcon =
-            this._icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            this.icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (toolbarIcon is null)
         {
             return;
         }
 
         Log.Trace($"Removing icon: {id}");
-        this._icons.Remove(toolbarIcon);
-        this._components.Remove(id);
+        this.icons.Remove(toolbarIcon);
+        this.components.Remove(id);
     }
 
     /// <summary>
@@ -92,12 +92,12 @@ public sealed class Api : IToolbarIconsApi
     /// <param name="id">The id of the toolbar icon pressed.</param>
     internal void Invoke(string id)
     {
-        if (this._toolbarIconPressed is null)
+        if (this.toolbarIconPressed is null)
         {
             return;
         }
 
-        foreach (var handler in this._toolbarIconPressed.GetInvocationList())
+        foreach (var handler in this.toolbarIconPressed.GetInvocationList())
         {
             try
             {

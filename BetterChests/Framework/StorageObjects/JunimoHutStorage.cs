@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewValley.Buildings;
+using StardewValley.Mods;
 using StardewValley.Network;
 using StardewValley.Objects;
 
@@ -35,5 +36,5 @@ internal sealed class JunimoHutStorage : Storage
     /// <inheritdoc />
     public override NetMutex? Mutex => this.Chest.GetMutex();
 
-    private Chest Chest => this.JunimoHut.output.Value;
+    private Chest Chest => this.JunimoHut.GetOutputChest();
 }

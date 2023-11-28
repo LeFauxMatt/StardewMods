@@ -13,17 +13,17 @@ using StardewValley.Menus;
 internal sealed class TransferItems : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly PerScreen<ClickableTextureComponent> _downArrow;
-    private readonly IModHelper _helper;
-    private readonly PerScreen<ClickableTextureComponent> _upArrow;
+    private readonly PerScreen<ClickableTextureComponent> downArrow;
+    private readonly IModHelper helper;
+    private readonly PerScreen<ClickableTextureComponent> upArrow;
 
     private TransferItems(IModHelper helper)
     {
-        this._helper = helper;
-        this._downArrow = new(
+        this.helper = helper;
+        this.downArrow = new(
             () => new(
                 new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
                 helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
@@ -33,7 +33,7 @@ internal sealed class TransferItems : Feature
                 hoverText = I18n.Button_TransferDown_Name(),
                 myID = 5318010,
             });
-        this._upArrow = new(
+        this.upArrow = new(
             () => new(
                 new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
                 helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
@@ -45,9 +45,9 @@ internal sealed class TransferItems : Feature
             });
     }
 
-    private ClickableTextureComponent DownArrow => this._downArrow.Value;
+    private ClickableTextureComponent DownArrow => this.downArrow.Value;
 
-    private ClickableTextureComponent UpArrow => this._upArrow.Value;
+    private ClickableTextureComponent UpArrow => this.upArrow.Value;
 
     /// <summary>
     ///     Initializes <see cref="TransferItems" />.
@@ -56,7 +56,7 @@ internal sealed class TransferItems : Feature
     /// <returns>Returns an instance of the <see cref="TransferItems" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return TransferItems.Instance ??= new TransferItems(helper);
+        return TransferItems.instance ??= new TransferItems(helper);
     }
 
     /// <inheritdoc />
@@ -64,9 +64,9 @@ internal sealed class TransferItems : Feature
     {
         // Events
         BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
@@ -74,9 +74,9 @@ internal sealed class TransferItems : Feature
     {
         // Events
         BetterItemGrabMenu.Constructing -= TransferItems.OnConstructing;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
@@ -155,23 +155,20 @@ internal sealed class TransferItems : Feature
         if (this.DownArrow.containsPoint(x, y))
         {
             TransferItems.TransferDown();
-            this._helper.Input.Suppress(e.Button);
+            this.helper.Input.Suppress(e.Button);
             return;
         }
 
         if (this.UpArrow.containsPoint(x, y))
         {
             TransferItems.TransferUp();
-            this._helper.Input.Suppress(e.Button);
+            this.helper.Input.Suppress(e.Button);
         }
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu
-            {
-                context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false,
-            }
+        if (e.NewMenu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false }
             || !Storages.TryGetOne(context, out _))
         {
             this.DownArrow.visible = false;

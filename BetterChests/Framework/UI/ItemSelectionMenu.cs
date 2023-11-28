@@ -38,7 +38,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
                     continue;
                 }
 
-                ItemSelectionMenu.LocalTags[tag] = ItemSelectionMenu.Translation.Get($"tag.{tag}").Default(tag);
+                ItemSelectionMenu.LocalTags[tag] = ItemSelectionMenu.translation.Get($"tag.{tag}").Default(tag);
                 var (tagWidth, tagHeight) = Game1.smallFont.MeasureString(ItemSelectionMenu.LocalTags[tag]).ToPoint();
                 components.Add(new(new(0, 0, tagWidth, tagHeight), tag));
             }
@@ -55,21 +55,20 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     private static readonly Lazy<int> LineHeightLazy = new(
         () => ItemSelectionMenu.AllTags.Max(tag => tag.bounds.Height) + ItemSelectionMenu.VerticalTagSpacing);
 
-
 #nullable disable
-    private static ITranslationHelper Translation;
+    private static ITranslationHelper translation;
 #nullable enable
 
-    private readonly DisplayedItems _displayedItems;
-    private readonly List<ClickableComponent> _displayedTags = new();
-    private readonly IInputHelper _input;
-    private readonly HashSet<string> _selected;
-    private readonly ItemMatcher _selection;
+    private readonly DisplayedItems displayedItems;
+    private readonly List<ClickableComponent> displayedTags = new();
+    private readonly IInputHelper input;
+    private readonly HashSet<string> selected;
+    private readonly ItemMatcher selection;
 
-    private DropDownList? _dropDown;
-    private int _offset;
-    private bool _refreshItems;
-    private bool _suppressInput = true;
+    private DropDownList? dropDown;
+    private int offset;
+    private bool refreshItems;
+    private bool suppressInput = true;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ItemSelectionMenu" /> class.
@@ -91,16 +90,16 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
             source: ItemSelectionMenu.source_none,
             context: context)
     {
-        ItemSelectionMenu.Translation ??= translation;
-        this._input = input;
-        this._selected = new(matcher);
-        this._selection = matcher;
+        ItemSelectionMenu.translation ??= translation;
+        this.input = input;
+        this.selected = new(matcher);
+        this.selection = matcher;
         this.ItemsToGrabMenu.actualInventory = ItemSelectionMenu.Items;
-        this._displayedItems = BetterItemGrabMenu.ItemsToGrabMenu!;
-        this._displayedItems.AddHighlighter(this._selection);
-        this._displayedItems.AddTransformer(this.SortBySelection);
-        this._displayedItems.ItemsRefreshed += this.OnItemsRefreshed;
-        this._displayedItems.RefreshItems();
+        this.displayedItems = BetterItemGrabMenu.ItemsToGrabMenu!;
+        this.displayedItems.AddHighlighter(this.selection);
+        this.displayedItems.AddTransformer(this.SortBySelection);
+        this.displayedItems.ItemsRefreshed += this.OnItemsRefreshed;
+        this.displayedItems.RefreshItems();
     }
 
     private static List<ClickableComponent> AllTags => ItemSelectionMenu.TagsLazy.Value;
@@ -119,45 +118,46 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
 
         BetterItemGrabMenu.InvokeDrawingMenu(b);
 
-        Game1.drawDialogueBox(
-            this.ItemsToGrabMenu.xPositionOnScreen
+        var x = this.ItemsToGrabMenu.xPositionOnScreen
             - ItemSelectionMenu.borderWidth
-            - ItemSelectionMenu.spaceToClearSideBorder,
-            this.ItemsToGrabMenu.yPositionOnScreen
+            - ItemSelectionMenu.spaceToClearSideBorder;
+        var y = this.ItemsToGrabMenu.yPositionOnScreen
             - ItemSelectionMenu.borderWidth
             - ItemSelectionMenu.spaceToClearTopBorder
-            - 24,
-            this.ItemsToGrabMenu.width
-            + ItemSelectionMenu.borderWidth * 2
-            + ItemSelectionMenu.spaceToClearSideBorder * 2,
-            this.ItemsToGrabMenu.height
+            - 24;
+        var boxWidth = this.ItemsToGrabMenu.width
+            + (ItemSelectionMenu.borderWidth * 2)
+            + (ItemSelectionMenu.spaceToClearSideBorder * 2);
+        var boxHeight = this.ItemsToGrabMenu.height
             + ItemSelectionMenu.spaceToClearTopBorder
-            + ItemSelectionMenu.borderWidth * 2
-            + 24,
-            false,
-            true);
+            + (ItemSelectionMenu.borderWidth * 2)
+            + 24;
+        Game1.drawDialogueBox(x, y, boxWidth, boxHeight, false, true);
 
-        Game1.drawDialogueBox(
-            this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder,
-            this.inventory.yPositionOnScreen
+        x = this.inventory.xPositionOnScreen - ItemSelectionMenu.borderWidth - ItemSelectionMenu.spaceToClearSideBorder;
+        y = this.inventory.yPositionOnScreen
             - ItemSelectionMenu.borderWidth
             - ItemSelectionMenu.spaceToClearTopBorder
-            + 24,
-            this.inventory.width + ItemSelectionMenu.borderWidth * 2 + ItemSelectionMenu.spaceToClearSideBorder * 2,
-            this.inventory.height + ItemSelectionMenu.spaceToClearTopBorder + ItemSelectionMenu.borderWidth * 2 - 24,
-            false,
-            true);
+            + 24;
+        boxWidth = this.inventory.width
+            + (ItemSelectionMenu.borderWidth * 2)
+            + (ItemSelectionMenu.spaceToClearSideBorder * 2);
+        boxHeight = this.inventory.height
+            + ItemSelectionMenu.spaceToClearTopBorder
+            + (ItemSelectionMenu.borderWidth * 2)
+            - 24;
+        Game1.drawDialogueBox(x, y, boxWidth, boxHeight, false, true);
 
         this.ItemsToGrabMenu.draw(b);
         this.okButton.draw(b);
 
-        foreach (var tag in this._displayedTags.Where(
+        foreach (var tag in this.displayedTags.Where(
             cc => this.inventory.isWithinBounds(
                 cc.bounds.X,
-                cc.bounds.Bottom - this._offset * ItemSelectionMenu.LineHeight)))
+                cc.bounds.Bottom - (this.offset * ItemSelectionMenu.LineHeight))))
         {
-            var localTag = ItemSelectionMenu.Translation!.Get($"tag.{tag.name}").Default(tag.name);
-            var color = !this._selected.Contains(tag.name)
+            var localTag = ItemSelectionMenu.translation!.Get($"tag.{tag.name}").Default(tag.name);
+            var color = !this.selected.Contains(tag.name)
                 ? Game1.unselectedOptionColor
                 : tag.name[..1] == "!"
                     ? Color.DarkRed
@@ -168,7 +168,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
                     b,
                     localTag,
                     Game1.smallFont,
-                    new(tag.bounds.X, tag.bounds.Y - this._offset * ItemSelectionMenu.LineHeight),
+                    new(tag.bounds.X, tag.bounds.Y - (this.offset * ItemSelectionMenu.LineHeight)),
                     color,
                     1f,
                     0.1f);
@@ -178,7 +178,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
                 b.DrawString(
                     Game1.smallFont,
                     localTag,
-                    new(tag.bounds.X, tag.bounds.Y - this._offset * ItemSelectionMenu.LineHeight),
+                    new(tag.bounds.X, tag.bounds.Y - (this.offset * ItemSelectionMenu.LineHeight)),
                     color);
             }
         }
@@ -189,7 +189,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void performHoverAction(int x, int y)
     {
-        if (this._suppressInput)
+        if (this.suppressInput)
         {
             return;
         }
@@ -211,8 +211,8 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
 
         if (this.inventory.isWithinBounds(x, y))
         {
-            var cc = this._displayedTags.FirstOrDefault(
-                slot => slot.containsPoint(x, y + this._offset * ItemSelectionMenu.LineHeight));
+            var cc = this.displayedTags.FirstOrDefault(
+                slot => slot.containsPoint(x, y + (this.offset * ItemSelectionMenu.LineHeight)));
             if (cc is not null)
             {
                 this.hoveredItem = null;
@@ -228,7 +228,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        if (this._suppressInput)
+        if (this.suppressInput)
         {
             return;
         }
@@ -258,8 +258,8 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
         }
 
         // Left click a tag on bottom menu
-        itemSlot = this._displayedTags.FirstOrDefault(
-            slot => slot.containsPoint(x, y + this._offset * ItemSelectionMenu.LineHeight));
+        itemSlot = this.displayedTags.FirstOrDefault(
+            slot => slot.containsPoint(x, y + (this.offset * ItemSelectionMenu.LineHeight)));
         if (itemSlot is not null && !string.IsNullOrWhiteSpace(itemSlot.name))
         {
             this.AddOrRemoveTag(itemSlot.name);
@@ -269,7 +269,7 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void receiveRightClick(int x, int y, bool playSound = true)
     {
-        if (this._suppressInput)
+        if (this.suppressInput)
         {
             return;
         }
@@ -293,19 +293,19 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
             tags.Add("quality_iridium");
         }
 
-        if (this._dropDown is not null)
+        if (this.dropDown is not null)
         {
             BetterItemGrabMenu.RemoveOverlay();
         }
 
-        this._dropDown = new(tags.ToList(), x, y, this.Callback, ItemSelectionMenu.Translation!);
-        BetterItemGrabMenu.AddOverlay(this._dropDown);
+        this.dropDown = new(tags.ToList(), x, y, this.Callback, ItemSelectionMenu.translation!);
+        BetterItemGrabMenu.AddOverlay(this.dropDown);
     }
 
     /// <inheritdoc />
     public override void receiveScrollWheelAction(int direction)
     {
-        if (this._suppressInput)
+        if (this.suppressInput)
         {
             return;
         }
@@ -318,14 +318,14 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
 
         switch (direction)
         {
-            case > 0 when this._offset >= 1:
-                --this._offset;
+            case > 0 when this.offset >= 1:
+                --this.offset;
                 return;
-            case < 0 when this._displayedTags.Last().bounds.Bottom
-                - this._offset * ItemSelectionMenu.LineHeight
+            case < 0 when this.displayedTags.Last().bounds.Bottom
+                - (this.offset * ItemSelectionMenu.LineHeight)
                 - this.inventory.yPositionOnScreen
                 >= this.inventory.height:
-                ++this._offset;
+                ++this.offset;
                 return;
             default:
                 base.receiveScrollWheelAction(direction);
@@ -336,67 +336,66 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
     /// <inheritdoc />
     public override void update(GameTime time)
     {
-        if (this._suppressInput
+        if (this.suppressInput
             && (this._parentMenu is null
                 || (Game1.oldMouseState.LeftButton is ButtonState.Pressed
                     && Mouse.GetState().LeftButton is ButtonState.Released)))
         {
-            this._suppressInput = false;
+            this.suppressInput = false;
         }
 
-        if (this._refreshItems)
+        if (this.refreshItems)
         {
-            this._refreshItems = false;
-            foreach (var tag in this._selected.Where(tag => !ItemSelectionMenu.LocalTags.ContainsKey(tag)))
+            this.refreshItems = false;
+            foreach (var tag in this.selected.Where(tag => !ItemSelectionMenu.LocalTags.ContainsKey(tag)))
             {
                 if (tag[..1] == "!")
                 {
                     ItemSelectionMenu.LocalTags[tag] =
-                        "!" + ItemSelectionMenu.Translation.Get($"tag.{tag[1..]}").Default(tag);
+                        "!" + ItemSelectionMenu.translation.Get($"tag.{tag[1..]}").Default(tag);
                 }
                 else
                 {
-                    ItemSelectionMenu.LocalTags[tag] = ItemSelectionMenu.Translation.Get($"tag.{tag}").Default(tag);
+                    ItemSelectionMenu.LocalTags[tag] = ItemSelectionMenu.translation.Get($"tag.{tag}").Default(tag);
                 }
 
                 var (tagWidth, tagHeight) = Game1.smallFont.MeasureString(ItemSelectionMenu.LocalTags[tag]).ToPoint();
                 ItemSelectionMenu.AllTags.Add(new(new(0, 0, tagWidth, tagHeight), tag));
             }
 
-            this._displayedTags.Clear();
-            this._displayedTags.AddRange(
+            this.displayedTags.Clear();
+            this.displayedTags.AddRange(
                 ItemSelectionMenu.AllTags.Where(
-                    tag => (this._selected.Any() && this._selected.Contains(tag.name))
+                    tag => (this.selected.Any() && this.selected.Contains(tag.name))
                         || (tag.name[..1] != "!"
-                            && !this._selected.Contains($"!{tag.name}")
-                            && this._displayedItems.Items.Any(item => item.HasContextTag(tag.name)))));
-            this._displayedTags.Sort(
+                            && !this.selected.Contains($"!{tag.name}")
+                            && this.displayedItems.Items.Any(item => item.HasContextTag(tag.name)))));
+            this.displayedTags.Sort(
                 (t1, t2) =>
                 {
-                    var s1 = this._selected.Contains(t1.name);
-                    var s2 = this._selected.Contains(t2.name);
+                    var s1 = this.selected.Contains(t1.name);
+                    var s2 = this.selected.Contains(t2.name);
+                    var strA = ItemSelectionMenu.LocalTags[t1.name][..1] == "!"
+                        ? ItemSelectionMenu.LocalTags[t1.name][1..]
+                        : ItemSelectionMenu.LocalTags[t1.name];
+                    var strB = ItemSelectionMenu.LocalTags[t2.name][..1] == "!"
+                        ? ItemSelectionMenu.LocalTags[t2.name][1..]
+                        : ItemSelectionMenu.LocalTags[t2.name];
                     return s1 switch
                     {
                         true when !s2 => -1,
                         false when s2 => 1,
-                        _ => string.Compare(
-                            ItemSelectionMenu.LocalTags[t1.name][..1] == "!"
-                                ? ItemSelectionMenu.LocalTags[t1.name][1..]
-                                : ItemSelectionMenu.LocalTags[t1.name],
-                            ItemSelectionMenu.LocalTags[t2.name][..1] == "!"
-                                ? ItemSelectionMenu.LocalTags[t2.name][1..]
-                                : ItemSelectionMenu.LocalTags[t2.name],
-                            StringComparison.OrdinalIgnoreCase),
+                        _ => string.Compare(strA, strB, StringComparison.OrdinalIgnoreCase),
                     };
                 });
 
             var x = this.inventory.xPositionOnScreen;
             var y = this.inventory.yPositionOnScreen;
-            var matched = this._selection.Any();
+            var matched = this.selection.Any();
 
-            foreach (var tag in this._displayedTags)
+            foreach (var tag in this.displayedTags)
             {
-                if (matched && !this._selected.Contains(tag.name))
+                if (matched && !this.selected.Contains(tag.name))
                 {
                     matched = false;
                     x = this.inventory.xPositionOnScreen;
@@ -415,66 +414,63 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
             }
         }
 
-        if (this._selected.SetEquals(this._selection))
+        if (this.selected.SetEquals(this.selection))
         {
             return;
         }
 
-        var added = this._selected.Except(this._selection).ToList();
-        var removed = this._selection.Except(this._selected).ToList();
+        var added = this.selected.Except(this.selection).ToList();
+        var removed = this.selection.Except(this.selected).ToList();
         foreach (var tag in added)
         {
-            this._selection.Add(tag);
+            this.selection.Add(tag);
         }
 
         foreach (var tag in removed)
         {
-            this._selection.Remove(tag);
+            this.selection.Remove(tag);
         }
 
-        this._displayedItems.RefreshItems();
+        this.displayedItems.RefreshItems();
     }
 
     private void AddOrRemoveTag(string tag)
     {
         var oppositeTag = tag[..1] == "!" ? tag[1..] : $"!{tag}";
-        if (this._input.IsDown(SButton.LeftShift) || this._input.IsDown(SButton.RightShift))
+        if (this.input.IsDown(SButton.LeftShift) || this.input.IsDown(SButton.RightShift))
         {
             (tag, oppositeTag) = (oppositeTag, tag);
         }
 
-        if (this._selected.Contains(oppositeTag))
+        if (this.selected.Contains(oppositeTag))
         {
-            this._selected.Remove(oppositeTag);
+            this.selected.Remove(oppositeTag);
         }
 
-        if (this._selected.Contains(tag))
+        if (this.selected.Contains(tag))
         {
-            this._selected.Remove(tag);
+            this.selected.Remove(tag);
         }
         else
         {
-            this._selected.Add(tag);
+            this.selected.Add(tag);
         }
     }
 
     private void AddTag(string tag)
     {
         var oppositeTag = tag[..1] == "!" ? tag[1..] : $"!{tag}";
-        if (this._input.IsDown(SButton.LeftShift) || this._input.IsDown(SButton.RightShift))
+        if (this.input.IsDown(SButton.LeftShift) || this.input.IsDown(SButton.RightShift))
         {
             (tag, oppositeTag) = (oppositeTag, tag);
         }
 
-        if (this._selected.Contains(oppositeTag))
+        if (this.selected.Contains(oppositeTag))
         {
-            this._selected.Remove(oppositeTag);
+            this.selected.Remove(oppositeTag);
         }
 
-        if (!this._selected.Contains(tag))
-        {
-            this._selected.Add(tag);
-        }
+        this.selected.Add(tag);
     }
 
     private void Callback(string? tag)
@@ -485,16 +481,16 @@ internal sealed class ItemSelectionMenu : ItemGrabMenu
         }
 
         BetterItemGrabMenu.RemoveOverlay();
-        this._dropDown = null;
+        this.dropDown = null;
     }
 
     private void OnItemsRefreshed(object? sender, List<Item> items)
     {
-        this._refreshItems = true;
+        this.refreshItems = true;
     }
 
     private IEnumerable<Item> SortBySelection(IEnumerable<Item> items)
     {
-        return this._selection.Any() ? items.OrderBy(item => this._selection.Matches(item) ? 0 : 1) : items;
+        return this.selection.Any() ? items.OrderBy(item => this.selection.Matches(item) ? 0 : 1) : items;
     }
 }

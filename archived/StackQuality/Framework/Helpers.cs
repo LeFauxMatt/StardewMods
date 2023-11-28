@@ -8,14 +8,14 @@ using StardewValley.Menus;
 internal sealed class Helpers
 {
 #nullable disable
-    private static Helpers Instance;
+    private static Helpers instance;
 #nullable enable
 
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     private Helpers(IModHelper helper)
     {
-        this._helper = helper;
+        this.helper = helper;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ internal sealed class Helpers
         Game1.activeClickableMenu is JunimoNoteMenu or MenuWithInventory or ShopMenu
         || (Game1.activeClickableMenu as GameMenu)?.GetCurrentPage() is InventoryPage;
 
-    private static IReflectionHelper Reflection => Helpers.Instance._helper.Reflection;
+    private static IReflectionHelper Reflection => Helpers.instance.helper.Reflection;
 
     /// <summary>
     ///     Initializes <see cref="Helpers" />.
@@ -59,6 +59,6 @@ internal sealed class Helpers
     /// <returns>Returns an instance of the <see cref="Helpers" /> class.</returns>
     public static Helpers Init(IModHelper helper)
     {
-        return Helpers.Instance ??= new(helper);
+        return Helpers.instance ??= new(helper);
     }
 }

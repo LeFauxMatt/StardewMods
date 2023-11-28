@@ -15,15 +15,15 @@ using StardewValley.Menus;
 internal sealed class Config
 {
 #nullable disable
-    private static Config Instance;
+    private static Config instance;
 #nullable enable
 
-    private readonly Dictionary<string, ClickableTextureComponent> _components;
-    private readonly ModConfig _config;
-    private readonly IModHelper _helper;
-    private readonly IManifest _manifest;
+    private readonly Dictionary<string, ClickableTextureComponent> components;
+    private readonly ModConfig config;
+    private readonly IModHelper helper;
+    private readonly IManifest manifest;
 
-    private EventHandler? _toolbarIconsChanged;
+    private EventHandler? toolbarIconsChanged;
 
     private Config(
         IModHelper helper,
@@ -31,10 +31,10 @@ internal sealed class Config
         ModConfig config,
         Dictionary<string, ClickableTextureComponent> components)
     {
-        this._helper = helper;
-        this._manifest = manifest;
-        this._config = config;
-        this._components = components;
+        this.helper = helper;
+        this.manifest = manifest;
+        this.config = config;
+        this.components = components;
 
         Integrations.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
     }
@@ -44,8 +44,8 @@ internal sealed class Config
     /// </summary>
     public static event EventHandler ToolbarIconsChanged
     {
-        add => Config.Instance._toolbarIconsChanged += value;
-        remove => Config.Instance._toolbarIconsChanged -= value;
+        add => Config.instance.toolbarIconsChanged += value;
+        remove => Config.instance.toolbarIconsChanged -= value;
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ internal sealed class Config
         ModConfig config,
         Dictionary<string, ClickableTextureComponent> components)
     {
-        return Config.Instance ??= new(helper, manifest, config, components);
+        return Config.instance ??= new(helper, manifest, config, components);
     }
 
     private void DrawButton(SpriteBatch b, Vector2 pos)
@@ -77,7 +77,7 @@ internal sealed class Config
                 && Mouse.GetState().LeftButton == ButtonState.Pressed
                 && bounds.Contains(point))
             {
-                Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this._config.Icons, this._components));
+                Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this.config.Icons, this.components));
                 return;
             }
         }
@@ -115,10 +115,10 @@ internal sealed class Config
         }
 
         // Register mod configuration
-        Integrations.GMCM.Register(this._manifest, this.ResetConfig, this.SaveConfig);
+        Integrations.GMCM.Register(this.manifest, this.ResetConfig, this.SaveConfig);
 
         Integrations.GMCM.Api.AddComplexOption(
-            this._manifest,
+            this.manifest,
             I18n.Config_CustomizeToolbar_Name,
             this.DrawButton,
             I18n.Config_CustomizeToolbar_Tooltip,
@@ -127,19 +127,19 @@ internal sealed class Config
 
     private void ResetConfig()
     {
-        this._config.Scale = 2;
-        foreach (var icon in this._config.Icons)
+        this.config.Scale = 2;
+        foreach (var icon in this.config.Icons)
         {
             icon.Enabled = true;
         }
 
-        this._config.Icons.Sort((i1, i2) => string.Compare(i1.Id, i2.Id, StringComparison.OrdinalIgnoreCase));
-        this._toolbarIconsChanged.InvokeAll(this);
+        this.config.Icons.Sort((i1, i2) => string.Compare(i1.Id, i2.Id, StringComparison.OrdinalIgnoreCase));
+        this.toolbarIconsChanged.InvokeAll(this);
     }
 
     private void SaveConfig()
     {
-        this._helper.WriteConfig(this._config);
-        this._toolbarIconsChanged.InvokeAll(this);
+        this.helper.WriteConfig(this.config);
+        this.toolbarIconsChanged.InvokeAll(this);
     }
 }

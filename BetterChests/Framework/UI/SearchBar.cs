@@ -11,9 +11,9 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class SearchBar : IClickableMenu
 {
-    private readonly ClickableComponent _searchArea;
-    private readonly TextBox _searchField;
-    private readonly ClickableTextureComponent _searchIcon;
+    private readonly ClickableComponent searchArea;
+    private readonly TextBox searchField;
+    private readonly ClickableTextureComponent searchIcon;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SearchBar" /> class.
@@ -28,7 +28,7 @@ internal sealed class SearchBar : IClickableMenu
         this.xPositionOnScreen = (int)origin.X;
         this.yPositionOnScreen = Game1.tileSize;
 
-        this._searchField = new(texture, null, Game1.smallFont, Game1.textColor)
+        this.searchField = new(texture, null, Game1.smallFont, Game1.textColor)
         {
             X = this.xPositionOnScreen,
             Y = this.yPositionOnScreen,
@@ -36,28 +36,28 @@ internal sealed class SearchBar : IClickableMenu
             Selected = true,
         };
 
-        this._searchArea = new(Rectangle.Empty, string.Empty)
+        this.searchArea = new(Rectangle.Empty, string.Empty)
         {
             visible = true,
-            bounds = new(this._searchField.X, this._searchField.Y, this._searchField.Width, this._searchField.Height),
+            bounds = new(this.searchField.X, this.searchField.Y, this.searchField.Width, this.searchField.Height),
         };
 
-        this._searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
+        this.searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
         {
-            bounds = new(this._searchField.X + this._searchField.Width - 38, this._searchField.Y + 6, 32, 32),
+            bounds = new(this.searchField.X + this.searchField.Width - 38, this.searchField.Y + 6, 32, 32),
         };
     }
 
     /// <summary>
     ///     Gets the current search text.
     /// </summary>
-    public string SearchText => this._searchField.Text;
+    public string SearchText => this.searchField.Text;
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        this._searchField.Draw(b);
-        this._searchIcon.draw(b);
+        this.searchField.Draw(b);
+        this.searchIcon.draw(b);
         this.drawMouse(b);
     }
 
@@ -70,7 +70,7 @@ internal sealed class SearchBar : IClickableMenu
                 this.exitThisMenuNoSound();
                 return;
             case Keys.Escape:
-                this._searchField.Text = string.Empty;
+                this.searchField.Text = string.Empty;
                 this.exitThisMenuNoSound();
                 return;
             default:
@@ -81,27 +81,27 @@ internal sealed class SearchBar : IClickableMenu
     /// <inheritdoc />
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        if (this._searchArea.containsPoint(x, y))
+        if (this.searchArea.containsPoint(x, y))
         {
             this.SetFocus();
             return;
         }
 
-        this._searchField.Selected = false;
+        this.searchField.Selected = false;
         this.exitThisMenuNoSound();
     }
 
     /// <inheritdoc />
     public override void receiveRightClick(int x, int y, bool playSound = true)
     {
-        if (this._searchArea.containsPoint(x, y))
+        if (this.searchArea.containsPoint(x, y))
         {
             this.SetFocus();
-            this._searchField.Text = string.Empty;
+            this.searchField.Text = string.Empty;
             return;
         }
 
-        this._searchField.Selected = false;
+        this.searchField.Selected = false;
         this.exitThisMenuNoSound();
     }
 
@@ -111,6 +111,6 @@ internal sealed class SearchBar : IClickableMenu
     public void SetFocus()
     {
         Game1.activeClickableMenu = this;
-        this._searchField.Selected = true;
+        this.searchField.Selected = true;
     }
 }

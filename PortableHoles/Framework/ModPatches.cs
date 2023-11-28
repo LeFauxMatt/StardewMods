@@ -14,14 +14,14 @@ using StardewValley.Menus;
 internal sealed class ModPatches
 {
 #nullable disable
-    private static ModPatches Instance;
+    private static ModPatches instance;
 #nullable enable
 
-    private readonly ModConfig _config;
+    private readonly ModConfig config;
 
     private ModPatches(IManifest manifest, ModConfig config)
     {
-        this._config = config;
+        this.config = config;
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
             AccessTools.Method(typeof(CraftingPage), "layoutRecipes"),
@@ -90,7 +90,7 @@ internal sealed class ModPatches
             new(typeof(ModPatches), nameof(ModPatches.Object_placementAction_prefix)));
     }
 
-    private static ModConfig Config => ModPatches.Instance._config;
+    private static ModConfig Config => ModPatches.instance.config;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
@@ -101,7 +101,7 @@ internal sealed class ModPatches
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IModHelper helper, IManifest manifest, ModConfig config)
     {
-        return ModPatches.Instance ??= new(manifest, config);
+        return ModPatches.instance ??= new(manifest, config);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -188,7 +188,7 @@ internal sealed class ModPatches
             Vector2.Zero,
             __instance.getScale() * Game1.pixelZoom,
             SpriteEffects.None,
-            Math.Max(0f, ((y + 1) * Game1.tileSize + 2) / 10000f) + x / 1000000f);
+            Math.Max(0f, (((y + 1) * Game1.tileSize) + 2) / 10000f) + (x / 1000000f));
         return false;
     }
 
@@ -226,21 +226,24 @@ internal sealed class ModPatches
             SpriteEffects.None,
             layerDepth);
 
-        if (__instance.Stack > 1)
+        if (__instance.Stack <= 1)
         {
-            Utility.drawTinyDigits(
-                __instance.Stack,
-                spriteBatch,
-                location
-                + new Vector2(
-                    Game1.tileSize
-                    - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
-                    + 3f * scaleSize,
-                    Game1.tileSize - 18f * scaleSize + 2f),
-                3f * scaleSize,
-                1f,
-                color);
+            return false;
         }
+
+        var position = location
+            + new Vector2(
+                Game1.tileSize
+                - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
+                + (3f * scaleSize),
+                Game1.tileSize - (18f * scaleSize) + 2f);
+        Utility.drawTinyDigits(
+            __instance.Stack,
+            spriteBatch,
+            position,
+            3f * scaleSize,
+            1f,
+            color);
 
         return false;
     }
@@ -265,10 +268,10 @@ internal sealed class ModPatches
         scaleFactor *= Game1.pixelZoom;
         var position = Game1.GlobalToLocal(Game1.viewport, new Vector2(xNonTile, yNonTile));
         var destination = new Rectangle(
-            (int)(position.X - scaleFactor.X / 2f),
-            (int)(position.Y - scaleFactor.Y / 2f),
+            (int)(position.X - (scaleFactor.X / 2f)),
+            (int)(position.Y - (scaleFactor.Y / 2f)),
             (int)(Game1.tileSize + scaleFactor.X),
-            (int)(Game1.tileSize * 2 + scaleFactor.Y / 2f));
+            (int)((Game1.tileSize * 2) + (scaleFactor.Y / 2f)));
         spriteBatch.Draw(
             texture,
             destination,
@@ -305,7 +308,7 @@ internal sealed class ModPatches
             Vector2.Zero,
             Game1.pixelZoom,
             SpriteEffects.None,
-            Math.Max(0f, (f.getStandingY() + 3) / 10000f));
+            Math.Max(0f, (f.Tile.Y + 3) / 10000f));
         return false;
     }
 

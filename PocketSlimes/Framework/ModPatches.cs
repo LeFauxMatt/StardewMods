@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 public class ModPatches
 {
 #nullable disable
-    private static ModPatches Instance;
+    private static ModPatches instance;
 #nullable enable
 
     private ModPatches(IManifest manifest)
@@ -76,7 +76,7 @@ public class ModPatches
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IManifest manifest)
     {
-        return ModPatches.Instance ??= new(manifest);
+        return ModPatches.instance ??= new(manifest);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -84,14 +84,8 @@ public class ModPatches
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result
-            || __instance is not SObject
-            {
-                bigCraftable.Value: false, ParentSheetIndex: 413 or 437 or 439 or 680 or 857,
-            } obj
-            || other is not SObject
-            {
-                bigCraftable.Value: false, ParentSheetIndex: 413 or 437 or 439 or 680 or 857,
-            } otherObj)
+            || __instance is not SObject { bigCraftable.Value: false, ParentSheetIndex: 413 or 437 or 439 or 680 or 857 } obj
+            || other is not SObject { bigCraftable.Value: false, ParentSheetIndex: 413 or 437 or 439 or 680 or 857 } otherObj)
         {
             return;
         }
@@ -167,11 +161,12 @@ public class ModPatches
             Vector2.Zero,
             __instance.getScale() * Game1.pixelZoom,
             SpriteEffects.None,
-            Math.Max(0f, ((y + 1) * Game1.tileSize + 2) / 10000f) + x / 1000000f);
+            Math.Max(0f, (((y + 1) * Game1.tileSize) + 2) / 10000f) + (x / 1000000f));
         return false;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_drawInMenu_prefix(
         SObject __instance,
@@ -199,21 +194,24 @@ public class ModPatches
             SpriteEffects.None,
             layerDepth);
 
-        if (__instance.Stack > 1)
+        if (__instance.Stack <= 1)
         {
-            Utility.drawTinyDigits(
-                __instance.Stack,
-                spriteBatch,
-                location
-                + new Vector2(
-                    Game1.tileSize
-                    - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
-                    + 3f * scaleSize,
-                    Game1.tileSize - 18f * scaleSize + 2f),
-                3f * scaleSize,
-                1f,
-                color);
+            return false;
         }
+
+        var position = location
+            + new Vector2(
+                Game1.tileSize
+                - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
+                + (3f * scaleSize),
+                Game1.tileSize - (18f * scaleSize) + 2f);
+        Utility.drawTinyDigits(
+            __instance.Stack,
+            spriteBatch,
+            position,
+            3f * scaleSize,
+            1f,
+            color);
 
         return false;
     }
@@ -238,10 +236,10 @@ public class ModPatches
         scaleFactor *= Game1.pixelZoom;
         var position = Game1.GlobalToLocal(Game1.viewport, new Vector2(xNonTile, yNonTile));
         var destination = new Rectangle(
-            (int)(position.X - scaleFactor.X / 2f),
-            (int)(position.Y - scaleFactor.Y / 2f),
+            (int)(position.X - (scaleFactor.X / 2f)),
+            (int)(position.Y - (scaleFactor.Y / 2f)),
             (int)(Game1.tileSize + scaleFactor.X),
-            (int)(Game1.tileSize * 2 + scaleFactor.Y / 2f));
+            (int)((Game1.tileSize * 2) + (scaleFactor.Y / 2f)));
         spriteBatch.Draw(
             Game1.objectSpriteSheet,
             destination,
@@ -278,7 +276,7 @@ public class ModPatches
             Vector2.Zero,
             Game1.pixelZoom,
             SpriteEffects.None,
-            Math.Max(0f, (f.getStandingY() + 3) / 10000f));
+            Math.Max(0f, (f.StandingPixel.Y + 3) / 10000f));
         return false;
     }
 
@@ -289,6 +287,8 @@ public class ModPatches
     {
         if (!__instance.modData.TryGetValue("furyx639.PocketSlimes/Name", out var id)
             || !int.TryParse(id, out var parentSheetIndex)
-            || parentSheetIndex == __instance.ParentSheetIndex) { }
+            || parentSheetIndex == __instance.ParentSheetIndex)
+        {
+        }
     }
 }

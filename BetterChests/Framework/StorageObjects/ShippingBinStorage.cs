@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewValley.Buildings;
 using StardewValley.Menus;
+using StardewValley.Mods;
 using StardewValley.Objects;
 
 /// <inheritdoc />

@@ -20,25 +20,25 @@ using StardewValley.Objects;
 internal sealed class ChestInfo : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly PerScreen<IList<Tuple<Point, Point>>> _dims = new(() => new List<Tuple<Point, Point>>());
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly PerScreen<IList<Tuple<Point, Point>>> dims = new(() => new List<Tuple<Point, Point>>());
+    private readonly IModHelper helper;
 
-    private readonly PerScreen<IList<KeyValuePair<string, string>>> _info = new(
+    private readonly PerScreen<IList<KeyValuePair<string, string>>> info = new(
         () => new List<KeyValuePair<string, string>>());
 
     private ChestInfo(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
+        this.helper = helper;
+        this.config = config;
     }
 
-    private IList<Tuple<Point, Point>> Dims => this._dims.Value;
+    private IList<Tuple<Point, Point>> Dims => this.dims.Value;
 
-    private IList<KeyValuePair<string, string>> Info => this._info.Value;
+    private IList<KeyValuePair<string, string>> Info => this.info.Value;
 
     /// <summary>
     ///     Initializes <see cref="ChestInfo" />.
@@ -48,7 +48,7 @@ internal sealed class ChestInfo : Feature
     /// <returns>Returns an instance of the <see cref="ChestInfo" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return ChestInfo.Instance ??= new ChestInfo(helper, config);
+        return ChestInfo.instance ??= new ChestInfo(helper, config);
     }
 
     /// <inheritdoc />
@@ -56,9 +56,9 @@ internal sealed class ChestInfo : Feature
     {
         // Events
         BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this._helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc />
@@ -66,9 +66,9 @@ internal sealed class ChestInfo : Feature
     {
         // Events
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
-        this._helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this._helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
     private static IEnumerable<KeyValuePair<string, string>> GetChestInfo(StorageNode storage)
@@ -157,14 +157,14 @@ internal sealed class ChestInfo : Feature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!this._config.ControlScheme.ToggleInfo.JustPressed())
+        if (!this.config.ControlScheme.ToggleInfo.JustPressed())
         {
             return;
         }
 
         if (Game1.activeClickableMenu is not ItemGrabMenu
             || BetterItemGrabMenu.Context is null
-            || this._config.ChestInfo is FeatureOption.Disabled)
+            || this.config.ChestInfo is FeatureOption.Disabled)
         {
             return;
         }
@@ -173,7 +173,7 @@ internal sealed class ChestInfo : Feature
             ? FeatureOption.Enabled
             : FeatureOption.Disabled;
 
-        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.ToggleInfo);
+        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.ToggleInfo);
     }
 
     private void OnDrawingMenu(object? sender, SpriteBatch b)
@@ -183,19 +183,19 @@ internal sealed class ChestInfo : Feature
             return;
         }
 
-        var x = itemGrabMenu.xPositionOnScreen - IClickableMenu.borderWidth / 2 - 384;
+        var x = itemGrabMenu.xPositionOnScreen - (IClickableMenu.borderWidth / 2) - 384;
         var y = itemGrabMenu.yPositionOnScreen;
         if (BetterItemGrabMenu.Context?.CustomColorPicker is FeatureOption.Enabled
-            && this._config.CustomColorPickerArea is ComponentArea.Left)
+            && this.config.CustomColorPickerArea is ComponentArea.Left)
         {
             x -= 2 * Game1.tileSize;
         }
 
         Game1.drawDialogueBox(
             x - IClickableMenu.borderWidth,
-            y - IClickableMenu.borderWidth / 2 - IClickableMenu.spaceToClearTopBorder,
+            y - (IClickableMenu.borderWidth / 2) - IClickableMenu.spaceToClearTopBorder,
             384,
-            this.Dims.Sum(dim => dim.Item1.Y) + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth * 2,
+            this.Dims.Sum(dim => dim.Item1.Y) + IClickableMenu.spaceToClearTopBorder + (IClickableMenu.borderWidth * 2),
             false,
             true);
 

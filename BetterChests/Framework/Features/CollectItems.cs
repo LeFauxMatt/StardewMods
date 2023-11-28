@@ -21,20 +21,20 @@ internal sealed class CollectItems : Feature
     private static readonly MethodBase DebrisCollect = AccessTools.Method(typeof(Debris), nameof(Debris.collect));
 
 #nullable disable
-    private static CollectItems Instance;
+    private static CollectItems instance;
 #nullable enable
 
-    private readonly PerScreen<List<StorageNode>> _eligible = new(() => new());
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly PerScreen<List<StorageNode>> eligible = new(() => new());
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
     private CollectItems(IModHelper helper)
     {
-        this._helper = helper;
-        this._harmony = new(CollectItems.Id);
+        this.helper = helper;
+        this.harmony = new(CollectItems.Id);
     }
 
-    private static List<StorageNode> Eligible => CollectItems.Instance._eligible.Value;
+    private static List<StorageNode> Eligible => CollectItems.instance.eligible.Value;
 
     /// <summary>
     ///     Initializes <see cref="CollectItems" />.
@@ -43,7 +43,7 @@ internal sealed class CollectItems : Feature
     /// <returns>Returns an instance of the <see cref="CollectItems" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return CollectItems.Instance ??= new(helper);
+        return CollectItems.instance ??= new(helper);
     }
 
     /// <inheritdoc />
@@ -51,11 +51,11 @@ internal sealed class CollectItems : Feature
     {
         // Events
         Configurator.StorageEdited += CollectItems.OnStorageEdited;
-        this._helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
-        this._helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
+        this.helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
+        this.helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             CollectItems.DebrisCollect,
             transpiler: new(typeof(CollectItems), nameof(CollectItems.Debris_collect_transpiler)));
     }
@@ -65,11 +65,11 @@ internal sealed class CollectItems : Feature
     {
         // Events
         Configurator.StorageEdited -= CollectItems.OnStorageEdited;
-        this._helper.Events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
-        this._helper.Events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
+        this.helper.Events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
+        this.helper.Events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CollectItems.DebrisCollect,
             AccessTools.Method(typeof(CollectItems), nameof(CollectItems.Debris_collect_transpiler)));
     }

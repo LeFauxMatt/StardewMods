@@ -5,7 +5,7 @@
   "Version": "2.5.0",
   "Description": "Adds icons above or below the toolbar.",
   "UniqueID": "furyx639.ToolbarIcons",
-  "MinimumApiVersion": "3.18.0",
+  "MinimumApiVersion": "4.0.0",
   "UpdateKeys": [
     "Nexus:11026@SMAPI"
   ]

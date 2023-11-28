@@ -78,9 +78,9 @@ internal sealed class ThemeHelper
         Game1.mouseCursors.GetData(colors);
         foreach (var (point, color) in this.VanillaPalette)
         {
-            if (!color.Equals(colors[point.X + point.Y * Game1.mouseCursors.Width]))
+            if (!color.Equals(colors[point.X + (point.Y * Game1.mouseCursors.Width)]))
             {
-                this.PaletteSwap[color] = colors[point.X + point.Y * Game1.mouseCursors.Width];
+                this.PaletteSwap[color] = colors[point.X + (point.Y * Game1.mouseCursors.Width)];
             }
         }
 

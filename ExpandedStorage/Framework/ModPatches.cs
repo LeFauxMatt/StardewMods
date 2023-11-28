@@ -7,10 +7,9 @@ using System.Linq;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.Common.Helpers.AtraBase.StringHandlers;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ExpandedStorage;
 using StardewMods.ExpandedStorage.Models;
-using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
@@ -25,12 +24,12 @@ using StardewValley.Tools;
 internal sealed class ModPatches
 {
 #nullable disable
-    private static ModPatches Instance;
+    private static ModPatches modInstance;
 #nullable enable
 
-    private readonly IModHelper _helper;
-    private readonly IDictionary<string, CachedStorage> _storageCache;
-    private readonly IDictionary<string, ICustomStorage> _storages;
+    private readonly IModHelper helper;
+    private readonly IDictionary<string, CachedStorage> storageCache;
+    private readonly IDictionary<string, ICustomStorage> storages;
 
     private ModPatches(
         IModHelper helper,
@@ -38,9 +37,9 @@ internal sealed class ModPatches
         IDictionary<string, ICustomStorage> storages,
         IDictionary<string, CachedStorage> storageCache)
     {
-        this._helper = helper;
-        this._storages = storages;
-        this._storageCache = storageCache;
+        this.helper = helper;
+        this.storages = storages;
+        this.storageCache = storageCache;
         var harmony = new Harmony(manifest.UniqueID);
 
         // Drawing
@@ -203,75 +202,15 @@ internal sealed class ModPatches
 
         // Buying
         harmony.Patch(
-            AccessTools.Method(typeof(GameLocation), "sandyShopStock"),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.GameLocation_sandyShopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(IslandNorth), nameof(IslandNorth.getIslandMerchantTradeStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.IslandNorth_getIslandMerchantTradeStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(SeedShop), nameof(SeedShop.shopStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.SeedShop_shopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Sewer), nameof(Sewer.getShadowShopStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Sewer_getShadowShopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Constructor(
-                typeof(ShopMenu),
-                new[]
-                {
-                    typeof(Dictionary<ISalable, int[]>),
-                    typeof(int),
-                    typeof(string),
-                    typeof(Func<ISalable, Farmer, int, bool>),
-                    typeof(Func<ISalable, bool>),
-                    typeof(string),
-                }),
-            new(typeof(ModPatches), nameof(ModPatches.ShopMenu_constructor_prefix)));
-        harmony.Patch(
             AccessTools.Method(typeof(SObject), nameof(SObject.getOne)),
             postfix: new(typeof(ModPatches), nameof(ModPatches.Object_getOne_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getAdventureShopStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getAdventureShopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getBlacksmithStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getBlacksmithStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getCarpenterStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getCarpenterStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getDwarfShopStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getDwarfShopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getFishShopStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getFishShopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getHospitalStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getHospitalStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getJojaStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getJojaStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.GetQiChallengeRewardStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_GetQiChallengeRewardStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getQiShopStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getQiShopStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getSaloonStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getSaloonStock_postfix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Utility), nameof(Utility.getTravelingMerchantStock)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Utility_getTravelingMerchantStock_postfix)));
     }
 
-    private static IGameContentHelper GameContent => ModPatches.Instance._helper.GameContent;
+    private static IReflectionHelper Reflection => ModPatches.modInstance.helper.Reflection;
 
-    private static IReflectionHelper Reflection => ModPatches.Instance._helper.Reflection;
+    private static IDictionary<string, CachedStorage> StorageCache => ModPatches.modInstance.storageCache;
 
-    private static IDictionary<string, CachedStorage> StorageCache => ModPatches.Instance._storageCache;
-
-    private static IDictionary<string, ICustomStorage> Storages => ModPatches.Instance._storages;
+    private static IDictionary<string, ICustomStorage> Storages => ModPatches.modInstance.storages;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
@@ -287,39 +226,7 @@ internal sealed class ModPatches
         IDictionary<string, ICustomStorage> storages,
         IDictionary<string, CachedStorage> storageCache)
     {
-        return ModPatches.Instance ??= new(helper, manifest, storages, storageCache);
-    }
-
-    private static void AddToShopStock(string shop, Dictionary<ISalable, int[]> stock)
-    {
-        var buy = ModPatches.GameContent.Load<Dictionary<string, ShopEntry>>("furyx639.ExpandedStorage/Buy");
-        var recipes = ModPatches.GameContent.Load<Dictionary<string, string>>("Data/CraftingRecipes");
-        foreach (var (id, entry) in buy)
-        {
-            if (entry.ShopId != shop
-                || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
-                || !ModPatches.Storages.ContainsKey(id))
-            {
-                continue;
-            }
-
-            var parentSheetIndex = 232;
-            if (recipes.TryGetValue(id, out var recipeData))
-            {
-                var recipe = new SpanSplit(recipeData, '/');
-                parentSheetIndex = int.Parse(recipe[2]);
-            }
-
-            Utility.AddStock(
-                stock,
-                new SObject(Vector2.Zero, parentSheetIndex, entry.IsRecipe)
-                {
-                    name = id,
-                    modData = { ["furyx639.ExpandedStorage/Storage"] = id },
-                    Stack = entry.IsRecipe ? 1 : int.MaxValue,
-                },
-                entry.Price / 2);
-        }
+        return ModPatches.modInstance ??= new(helper, manifest, storages, storageCache);
     }
 
     private static bool Chest_chestForAction_prefix(Chest __instance, ref bool __result, bool justCheckingForActivity)
@@ -394,18 +301,19 @@ internal sealed class ModPatches
             drawY -= (float)Math.Sin(__instance.kickProgress * Math.PI) * 0.5f;
         }
 
+        var color = storage.PlayerColor && !__instance.playerChoiceColor.Value.Equals(Color.Black)
+            ? __instance.playerChoiceColor.Value
+            : __instance.Tint;
         storage.Draw(
             __instance,
             ___currentLidFrame,
             spriteBatch,
             Game1.GlobalToLocal(
                 Game1.viewport,
-                new Vector2(drawX, drawY - (storage.Height - storage.Depth - 16) / 16f - 1) * Game1.tileSize),
-            storage.PlayerColor && !__instance.playerChoiceColor.Value.Equals(Color.Black)
-                ? __instance.playerChoiceColor.Value
-                : __instance.Tint,
+                new Vector2(drawX, drawY - ((storage.Height - storage.Depth - 16) / 16f) - 1) * Game1.tileSize),
+            color,
             alpha: alpha,
-            layerDepth: Math.Max(0f, ((drawY + 1f) * Game1.tileSize - 24f) / 10_000f) + drawX * 1E-05f);
+            layerDepth: Math.Max(0f, (((drawY + 1f) * Game1.tileSize) - 24f) / 10_000f) + (drawX * 1E-05f));
         return false;
     }
 
@@ -425,18 +333,20 @@ internal sealed class ModPatches
             return true;
         }
 
+        var pos = local
+            ? new(x, y - storage.GetTileHeight() + 1)
+            : Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize);
+        var color = storage.PlayerColor && !__instance.playerChoiceColor.Value.Equals(Color.Black)
+            ? __instance.playerChoiceColor.Value
+            : __instance.Tint;
         storage.Draw(
             __instance,
             ___currentLidFrame,
             spriteBatch,
-            local
-                ? new(x, y - storage.GetTileHeight() + 1)
-                : Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize),
-            storage.PlayerColor && !__instance.playerChoiceColor.Value.Equals(Color.Black)
-                ? __instance.playerChoiceColor.Value
-                : __instance.Tint,
+            pos,
+            color,
             alpha: alpha,
-            layerDepth: local ? 0.89f : (y * Game1.tileSize + 4f) / 10_000f);
+            layerDepth: local ? 0.89f : ((y * Game1.tileSize) + 4f) / 10_000f);
         return false;
     }
 
@@ -496,10 +406,10 @@ internal sealed class ModPatches
                     __instance.clearNulls();
                     if (__instance.isEmpty())
                     {
-                        __instance.performRemoveAction(__instance.TileLocation, location);
+                        __instance.performRemoveAction();
                         if (location.Objects.Remove(c))
                         {
-                            var newChest = new Chest(true, Vector2.Zero, __instance.ParentSheetIndex)
+                            var newChest = new Chest(true, Vector2.Zero, __instance.ItemId)
                             {
                                 Name = __instance.Name,
                                 SpecialChestType = __instance.SpecialChestType,
@@ -509,7 +419,7 @@ internal sealed class ModPatches
                             };
 
                             // Copy properties
-                            newChest._GetOneFrom(__instance);
+                            newChest.CopyFrom(__instance);
 
                             // Remove tile location
                             newChest.modData.Remove("furyx639.ExpandedStorage/X");
@@ -650,7 +560,7 @@ internal sealed class ModPatches
             }
         }
 
-        __instance.UpdateFarmerNearby(environment);
+        __instance.UpdateFarmerNearby();
         if (____shippingBinFrameCounter <= -1)
         {
             return false;
@@ -725,12 +635,12 @@ internal sealed class ModPatches
         // Craft unplaceable storages as Chest
         if (!storage.IsPlaceable && obj is not Chest)
         {
-            var chest = new Chest(true, obj.ParentSheetIndex)
+            var chest = new Chest(true, obj.ItemId)
             {
                 SpecialChestType = storage.SpecialChestType,
                 fridge = { Value = storage.IsFridge },
             };
-            chest._GetOneFrom(obj);
+            chest.CopyFrom(obj);
             __result = chest;
         }
 
@@ -740,16 +650,6 @@ internal sealed class ModPatches
         }
 
         __result.modData["furyx639.ExpandedStorage/Storage"] = name;
-    }
-
-    private static void GameLocation_sandyShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Sandy", __result);
-    }
-
-    private static void IslandNorth_getIslandMerchantTradeStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("IslandTrade", __result);
     }
 
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
@@ -840,9 +740,9 @@ internal sealed class ModPatches
             spriteBatch,
             Game1.GlobalToLocal(
                 Game1.viewport,
-                new Vector2(x, y - (storage.Height - storage.Depth - 16) / 16f - 1) * Game1.tileSize),
+                new Vector2(x, y - ((storage.Height - storage.Depth - 16) / 16f) - 1) * Game1.tileSize),
             alpha: alpha,
-            layerDepth: Math.Max(0f, ((y + 1f) * Game1.tileSize - 24f) / 10_000f) + x * 1E-05f);
+            layerDepth: Math.Max(0f, (((y + 1f) * Game1.tileSize) - 24f) / 10_000f) + (x * 1E-05f));
         return false;
     }
 
@@ -869,21 +769,23 @@ internal sealed class ModPatches
             scaleSize *= 0.75f;
         }
 
+        var adjustedScaleSize = storage.GetScaleMultiplier() * scaleSize < 0.2
+            ? storage.GetScaleMultiplier() * scaleSize
+            : storage.GetScaleMultiplier() * scaleSize / 2f;
         switch (__instance)
         {
             case Chest chest:
+                var adjustedColor = storage.PlayerColor && !chest.playerChoiceColor.Value.Equals(Color.Black)
+                    ? chest.playerChoiceColor.Value
+                    : chest.Tint;
                 storage.Draw(
                     __instance,
                     0,
                     spriteBatch,
                     location + new Vector2(32f, 32f),
-                    storage.PlayerColor && !chest.playerChoiceColor.Value.Equals(Color.Black)
-                        ? chest.playerChoiceColor.Value
-                        : chest.Tint,
+                    adjustedColor,
                     new(storage.Width / 2, storage.Height / 2),
-                    scaleSize: storage.GetScaleMultiplier() * scaleSize < 0.2
-                        ? storage.GetScaleMultiplier() * scaleSize
-                        : storage.GetScaleMultiplier() * scaleSize / 2f,
+                    scaleSize: adjustedScaleSize,
                     layerDepth: layerDepth);
                 break;
 
@@ -895,9 +797,7 @@ internal sealed class ModPatches
                     location + new Vector2(32f, 32f),
                     color * transparency,
                     new(storage.Width / 2, storage.Height / 2),
-                    scaleSize: storage.GetScaleMultiplier() * scaleSize < 0.2
-                        ? storage.GetScaleMultiplier() * scaleSize
-                        : storage.GetScaleMultiplier() * scaleSize / 2f,
+                    scaleSize: adjustedScaleSize,
                     layerDepth: layerDepth);
                 break;
         }
@@ -908,15 +808,16 @@ internal sealed class ModPatches
                 && __instance.Stack > 1
                 && __instance.Stack != int.MaxValue
                 && scaleSize > 0.3:
-                Utility.drawTinyDigits(
-                    __instance.Stack,
-                    spriteBatch,
-                    location
+                var textPosition = location
                     + new Vector2(
                         Game1.tileSize
                         - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
-                        + 3f * scaleSize,
-                        Game1.tileSize - 18f * scaleSize + 2f),
+                        + (3f * scaleSize),
+                        Game1.tileSize - (18f * scaleSize) + 2f);
+                Utility.drawTinyDigits(
+                    __instance.Stack,
+                    spriteBatch,
+                    textPosition,
                     3f * scaleSize,
                     1f,
                     color);
@@ -978,8 +879,8 @@ internal sealed class ModPatches
                 spriteBatch.Draw(
                     Game1.mouseCursors,
                     new(
-                        (x / Game1.tileSize + x_offset) * Game1.tileSize - Game1.viewport.X,
-                        (y / Game1.tileSize + y_offset) * Game1.tileSize - Game1.viewport.Y),
+                        (((x / Game1.tileSize) + x_offset) * Game1.tileSize) - Game1.viewport.X,
+                        (((y / Game1.tileSize) + y_offset) * Game1.tileSize) - Game1.viewport.Y),
                     new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
                     Color.White,
                     0f,
@@ -1013,15 +914,16 @@ internal sealed class ModPatches
         switch (__instance)
         {
             case Chest chest:
+                var adjustedColor = storage.PlayerColor && !chest.playerChoiceColor.Value.Equals(Color.Black)
+                    ? chest.playerChoiceColor.Value
+                    : chest.Tint;
                 storage.Draw(
                     __instance,
                     ModPatches.Reflection.GetField<int>(chest, "currentLidFrame").GetValue(),
                     spriteBatch,
                     objectPosition - posAdj,
-                    storage.PlayerColor && !chest.playerChoiceColor.Value.Equals(Color.Black)
-                        ? chest.playerChoiceColor.Value
-                        : chest.Tint,
-                    layerDepth: Math.Max(0f, (f.getStandingY() + 3) / 10_000f));
+                    adjustedColor,
+                    layerDepth: Math.Max(0f, (f.StandingPixel.Y + 3) / 10_000f));
                 break;
 
             default:
@@ -1030,7 +932,7 @@ internal sealed class ModPatches
                     0,
                     spriteBatch,
                     objectPosition - posAdj,
-                    layerDepth: Math.Max(0f, (f.getStandingY() + 3) / 10_000f));
+                    layerDepth: Math.Max(0f, (f.StandingPixel.Y + 3) / 10_000f));
                 break;
         }
 
@@ -1057,14 +959,14 @@ internal sealed class ModPatches
         // Craft unplaceable storages as Chest
         if (!storage.IsPlaceable && obj is not Chest)
         {
-            obj = new Chest(true, __instance.ParentSheetIndex);
+            obj = new Chest(true, __instance.ItemId);
         }
 
         obj.IsRecipe = __instance.IsRecipe;
         obj.name = __instance.name;
-        obj.DisplayName = storage.DisplayName;
+        obj.displayName = storage.DisplayName;
         obj.SpecialVariable = __instance.SpecialVariable;
-        obj._GetOneFrom(__instance);
+        obj.CopyFrom(__instance);
 
         foreach (var (key, value) in storage.ModData)
         {
@@ -1165,7 +1067,7 @@ internal sealed class ModPatches
             return true;
         }
 
-        __result = chest.performToolAction(t, location);
+        __result = chest.performToolAction(t);
         return false;
     }
 
@@ -1194,7 +1096,7 @@ internal sealed class ModPatches
             return;
         }
 
-        chest._GetOneFrom(__instance);
+        chest.CopyFrom(__instance);
         foreach (var (key, value) in storage.ModData)
         {
             chest.modData[key] = value;
@@ -1217,8 +1119,8 @@ internal sealed class ModPatches
                 var currentTile = tile + new Vector2(xOffset, yOffset);
                 if (!location.Objects.TryGetValue(currentTile, out var obj))
                 {
-                    obj = new(currentTile, __instance.ParentSheetIndex);
-                    obj._GetOneFrom(__instance);
+                    obj = new(currentTile, __instance.ItemId);
+                    obj.CopyFrom(__instance);
                     location.Objects[currentTile] = obj;
                 }
 
@@ -1226,26 +1128,6 @@ internal sealed class ModPatches
                 obj.modData["furyx639.ExpandedStorage/Y"] = tile.Y.ToString(CultureInfo.InvariantCulture);
             }
         }
-    }
-
-    private static void SeedShop_shopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("SeedShop", __result);
-    }
-
-    private static void Sewer_getShadowShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("ShadowShop", __result);
-    }
-
-    private static void ShopMenu_constructor_prefix(Dictionary<ISalable, int[]> itemPriceAndStock, string who)
-    {
-        if (who != "VolcanoShop")
-        {
-            return;
-        }
-
-        ModPatches.AddToShopStock("VolcanoShop", itemPriceAndStock);
     }
 
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)
@@ -1269,7 +1151,7 @@ internal sealed class ModPatches
             return;
         }
 
-        var itemToDrawAsColored = new Chest(true, item.ParentSheetIndex)
+        var itemToDrawAsColored = new Chest(true, item.ItemId)
         {
             name = name,
             modData = { ["furyx639.ExpandedStorage/Storage"] = name },
@@ -1277,7 +1159,7 @@ internal sealed class ModPatches
 
         itemGrabMenu.chestColorPicker = new(
             itemGrabMenu.xPositionOnScreen,
-            itemGrabMenu.yPositionOnScreen - Game1.tileSize - IClickableMenu.borderWidth * 2,
+            itemGrabMenu.yPositionOnScreen - Game1.tileSize - (IClickableMenu.borderWidth * 2),
             0,
             itemToDrawAsColored);
 
@@ -1289,7 +1171,7 @@ internal sealed class ModPatches
         itemGrabMenu.colorPickerToggleButton = new(
             new(
                 itemGrabMenu.xPositionOnScreen + itemGrabMenu.width,
-                itemGrabMenu.yPositionOnScreen + itemGrabMenu.height / 3 - Game1.tileSize - 160,
+                itemGrabMenu.yPositionOnScreen + (itemGrabMenu.height / 3) - Game1.tileSize - 160,
                 Game1.tileSize,
                 Game1.tileSize),
             Game1.mouseCursors,
@@ -1305,8 +1187,8 @@ internal sealed class ModPatches
             itemGrabMenu.discreteColorPickerCC.Add(
                 new(
                     new(
-                        itemGrabMenu.chestColorPicker.xPositionOnScreen + IClickableMenu.borderWidth / 2 + i * 9 * 4,
-                        itemGrabMenu.chestColorPicker.yPositionOnScreen + IClickableMenu.borderWidth / 2,
+                        itemGrabMenu.chestColorPicker.xPositionOnScreen + (IClickableMenu.borderWidth / 2) + (i * 9 * 4),
+                        itemGrabMenu.chestColorPicker.yPositionOnScreen + (IClickableMenu.borderWidth / 2),
                         36,
                         28),
                     string.Empty)
@@ -1320,93 +1202,6 @@ internal sealed class ModPatches
                             : 0,
                 });
         }
-    }
-
-    private static void Utility_getAdventureShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("AdventureShop", __result);
-    }
-
-    private static void Utility_getBlacksmithStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Blacksmith", __result);
-    }
-
-    private static void Utility_getCarpenterStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Carpenter", __result);
-    }
-
-    private static void Utility_getDwarfShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Dwarf", __result);
-    }
-
-    private static void Utility_getFishShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("FishShop", __result);
-    }
-
-    private static void Utility_getHospitalStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Hospital", __result);
-    }
-
-    private static void Utility_getJojaStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Joja", __result);
-    }
-
-    private static void Utility_GetQiChallengeRewardStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        var buy = ModPatches.GameContent.Load<Dictionary<string, ShopEntry>>("furyx639.ExpandedStorage/Buy");
-        var recipes = ModPatches.GameContent.Load<Dictionary<string, string>>("Data/CraftingRecipes");
-        foreach (var (id, entry) in buy)
-        {
-            if (entry.ShopId != "QiGemShop"
-                || (entry.IsRecipe && Game1.player.craftingRecipes.ContainsKey(id))
-                || !ModPatches.Storages.ContainsKey(id))
-            {
-                continue;
-            }
-
-            var parentSheetIndex = 232;
-            if (recipes.TryGetValue(id, out var recipeData))
-            {
-                var recipe = new SpanSplit(recipeData, '/');
-                parentSheetIndex = int.Parse(recipe[2]);
-            }
-
-            __result.Add(
-                new SObject(Vector2.Zero, parentSheetIndex, entry.IsRecipe)
-                {
-                    name = id,
-                    modData = { ["furyx639.ExpandedStorage/Storage"] = id },
-                    Stack = entry.IsRecipe ? 1 : int.MaxValue,
-                },
-                new[]
-                {
-                    0,
-                    entry.IsRecipe ? 1 : int.MaxValue,
-                    858,
-                    entry.Price,
-                });
-        }
-    }
-
-    private static void Utility_getQiShopStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Casino", __result);
-    }
-
-    private static void Utility_getSaloonStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Saloon", __result);
-    }
-
-    private static void Utility_getTravelingMerchantStock_postfix(ref Dictionary<ISalable, int[]> __result)
-    {
-        ModPatches.AddToShopStock("Traveler", __result);
     }
 
     private static void Utility_isWithinTileWithLeeway_postfix(ref bool __result, int x, int y, Item item)

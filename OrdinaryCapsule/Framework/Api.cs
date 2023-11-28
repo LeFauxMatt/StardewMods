@@ -7,7 +7,7 @@ using StardewMods.OrdinaryCapsule.Framework.Models;
 /// <inheritdoc />
 public sealed class Api : IOrdinaryCapsuleApi
 {
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Api" /> class.
@@ -15,13 +15,13 @@ public sealed class Api : IOrdinaryCapsuleApi
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     public Api(IModHelper helper)
     {
-        this._helper = helper;
+        this.helper = helper;
     }
 
     /// <inheritdoc />
     public void RegisterItem(ICapsuleItem item)
     {
-        var capsuleItems = this._helper.ModContent.Load<CapsuleItems>("assets/items.json");
+        var capsuleItems = this.helper.ModContent.Load<CapsuleItems>("assets/items.json");
         var existingItem =
             capsuleItems.FirstOrDefault(capsuleItem => capsuleItem.ContextTags.SetEquals(item.ContextTags));
         if (existingItem is not null)
@@ -30,6 +30,6 @@ public sealed class Api : IOrdinaryCapsuleApi
         }
 
         capsuleItems.Add(item);
-        this._helper.Data.WriteJsonFile("assets/items.json", capsuleItems);
+        this.helper.Data.WriteJsonFile("assets/items.json", capsuleItems);
     }
 }

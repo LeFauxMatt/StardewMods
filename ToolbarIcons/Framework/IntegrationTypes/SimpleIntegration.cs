@@ -9,7 +9,7 @@ using StardewValley.Menus;
 /// <inheritdoc />
 internal sealed class SimpleIntegration : BaseIntegration
 {
-    private MethodInfo? _overrideButtonReflected;
+    private MethodInfo? overrideButtonReflected;
 
     private SimpleIntegration(IModHelper helper, IToolbarIconsApi api)
         : base(helper, api)
@@ -20,7 +20,7 @@ internal sealed class SimpleIntegration : BaseIntegration
     private static SimpleIntegration? Instance { get; set; }
 
     private MethodInfo OverrideButtonReflected =>
-        this._overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
+        this.overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
 
     /// <summary>
     ///     Initializes <see cref="SimpleIntegration" />.

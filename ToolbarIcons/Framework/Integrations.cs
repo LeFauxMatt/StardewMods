@@ -24,23 +24,23 @@ internal sealed class Integrations
     private const string ToDew = "jltaylor-us.ToDew";
 
 #nullable disable
-    private static Integrations Instance;
+    private static Integrations instance;
 #nullable enable
 
-    private readonly IToolbarIconsApi _api;
-    private readonly GenericModConfigMenuIntegration _gmcm;
-    private readonly IModHelper _helper;
+    private readonly IToolbarIconsApi api;
+    private readonly GenericModConfigMenuIntegration gmcm;
+    private readonly IModHelper helper;
 
-    private ComplexIntegration? _complexIntegration;
-    private SimpleIntegration? _simpleIntegration;
-    private EventHandler? _toolbarIconsLoaded;
+    private ComplexIntegration? complexIntegration;
+    private SimpleIntegration? simpleIntegration;
+    private EventHandler? toolbarIconsLoaded;
 
     private Integrations(IModHelper helper, IToolbarIconsApi api)
     {
-        this._helper = helper;
-        this._api = api;
+        this.helper = helper;
+        this.api = api;
 
-        this._gmcm = new(helper.ModRegistry);
+        this.gmcm = new(helper.ModRegistry);
 
         // Events
         helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -52,14 +52,14 @@ internal sealed class Integrations
     /// </summary>
     public static event EventHandler ToolbarIconsLoaded
     {
-        add => Integrations.Instance._toolbarIconsLoaded += value;
-        remove => Integrations.Instance._toolbarIconsLoaded -= value;
+        add => Integrations.instance.toolbarIconsLoaded += value;
+        remove => Integrations.instance.toolbarIconsLoaded -= value;
     }
 
     /// <summary>
     ///     Gets Generic Mod Config Menu integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GMCM => Integrations.Instance._gmcm;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.instance.gmcm;
 
     /// <summary>
     ///     Gets a value indicating whether the toolbar icons have been loaded.
@@ -74,16 +74,16 @@ internal sealed class Integrations
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModHelper helper, IToolbarIconsApi api)
     {
-        return Integrations.Instance ??= new(helper, api);
+        return Integrations.instance ??= new(helper, api);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this._simpleIntegration = SimpleIntegration.Init(this._helper, this._api);
-        this._complexIntegration = ComplexIntegration.Init(this._helper, this._api);
+        this.simpleIntegration = SimpleIntegration.Init(this.helper, this.api);
+        this.complexIntegration = ComplexIntegration.Init(this.helper, this.api);
 
         // Stardew Aquarium
-        this._complexIntegration.AddMethodWithParams(
+        this.complexIntegration.AddMethodWithParams(
             Integrations.StardewAquariumId,
             1,
             I18n.Button_StardewAquarium(),
@@ -92,7 +92,7 @@ internal sealed class Integrations
             Array.Empty<string>());
 
         // CJB Cheats Menu
-        this._complexIntegration.AddMethodWithParams(
+        this.complexIntegration.AddMethodWithParams(
             Integrations.CJBCheatsMenuId,
             2,
             I18n.Button_CheatsMenu(),
@@ -101,7 +101,7 @@ internal sealed class Integrations
             true);
 
         // Dynamic Game Assets
-        this._complexIntegration.AddMethodWithParams(
+        this.complexIntegration.AddMethodWithParams(
             Integrations.DynamicGameAssetsId,
             3,
             I18n.Button_DynamicGameAssets(),
@@ -110,7 +110,7 @@ internal sealed class Integrations
             Array.Empty<string>());
 
         // Generic Mod Config Menu
-        this._complexIntegration.AddMethodWithParams(
+        this.complexIntegration.AddMethodWithParams(
             Integrations.GenericModConfigMenuId,
             4,
             I18n.Button_GenericModConfigMenu(),
@@ -118,18 +118,18 @@ internal sealed class Integrations
             0);
 
         // CJB Item Spawner
-        this._complexIntegration.AddCustomAction(
+        this.complexIntegration.AddCustomAction(
             Integrations.CJBItemSpawnerId,
             5,
             I18n.Button_ItemSpawner(),
             mod =>
             {
-                var buildMenu = this._helper.Reflection.GetMethod(mod, "BuildMenu", false);
+                var buildMenu = this.helper.Reflection.GetMethod(mod, "BuildMenu", false);
                 return () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); };
             });
 
         // Always Scroll Map
-        this._complexIntegration.AddCustomAction(
+        this.complexIntegration.AddCustomAction(
             Integrations.AlwaysScrollMapId,
             6,
             I18n.Button_AlwaysScrollMap(),
@@ -141,8 +141,8 @@ internal sealed class Integrations
                     return null;
                 }
 
-                var enabledIndoors = this._helper.Reflection.GetField<bool>(config, "EnabledIndoors", false);
-                var enabledOutdoors = this._helper.Reflection.GetField<bool>(config, "EnabledOutdoors", false);
+                var enabledIndoors = this.helper.Reflection.GetField<bool>(config, "EnabledIndoors", false);
+                var enabledOutdoors = this.helper.Reflection.GetField<bool>(config, "EnabledOutdoors", false);
                 return () =>
                 {
                     if (Game1.currentLocation.IsOutdoors)
@@ -157,7 +157,7 @@ internal sealed class Integrations
             });
 
         // To-Dew
-        this._complexIntegration.AddCustomAction(
+        this.complexIntegration.AddCustomAction(
             Integrations.ToDew,
             7,
             I18n.Button_ToDew(),
@@ -202,13 +202,13 @@ internal sealed class Integrations
             });
 
         // Special Orders
-        this._complexIntegration.AddCustomAction(
+        this.complexIntegration.AddCustomAction(
             8,
             I18n.Button_SpecialOrders(),
             () => { Game1.activeClickableMenu = new SpecialOrdersBoard(); });
 
         // Daily Quests
-        this._complexIntegration.AddCustomAction(
+        this.complexIntegration.AddCustomAction(
             9,
             I18n.Button_DailyQuests(),
             () => { Game1.activeClickableMenu = new Billboard(true); });
@@ -219,7 +219,7 @@ internal sealed class Integrations
         if (!Integrations.IsLoaded)
         {
             var toolbarData =
-                this._helper.GameContent.Load<IDictionary<string, string>>("furyx639.ToolbarIcons/Toolbar");
+                this.helper.GameContent.Load<IDictionary<string, string>>("furyx639.ToolbarIcons/Toolbar");
             foreach (var (key, data) in toolbarData)
             {
                 var info = data.Split('/');
@@ -228,19 +228,19 @@ internal sealed class Integrations
                 switch (info[3])
                 {
                     case "menu":
-                        this._simpleIntegration?.AddMenu(modId, index, info[0], info[4], info[1]);
+                        this.simpleIntegration?.AddMenu(modId, index, info[0], info[4], info[1]);
                         break;
                     case "method":
-                        this._simpleIntegration?.AddMethod(modId, index, info[0], info[4], info[1]);
+                        this.simpleIntegration?.AddMethod(modId, index, info[0], info[4], info[1]);
                         break;
                     case "keybind":
-                        this._simpleIntegration?.AddKeybind(modId, index, info[0], info[4], info[1]);
+                        this.simpleIntegration?.AddKeybind(modId, index, info[0], info[4], info[1]);
                         break;
                 }
             }
         }
 
         Integrations.IsLoaded = true;
-        this._toolbarIconsLoaded.InvokeAll(this);
+        this.toolbarIconsLoaded.InvokeAll(this);
     }
 }

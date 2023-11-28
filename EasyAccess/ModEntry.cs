@@ -11,9 +11,9 @@ using StardewMods.Common.Integrations.ToolbarIcons;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private ModConfig? _config;
+    private ModConfig? config;
 
-    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -29,7 +29,7 @@ public sealed class ModEntry : Mod
 
     private void CollectItems()
     {
-        var (pX, pY) = Game1.player.getTileLocation();
+        var (pX, pY) = Game1.player.Tile;
         for (var tY = (int)(pY - this.Config.CollectOutputDistance);
             tY <= (int)(pY + this.Config.CollectOutputDistance);
             ++tY)
@@ -61,14 +61,14 @@ public sealed class ModEntry : Mod
                     }
 
                     // Big Craftables
-                    if (this.Config.DoForage && obj.IsSpawnedObject && obj.isForage(Game1.currentLocation))
+                    if (this.Config.DoForage && obj.IsSpawnedObject && obj.isForage())
                     {
                         // Vanilla Logic
                         var r = new Random(
-                            (int)Game1.uniqueIDForThisGame / 2
+                            ((int)Game1.uniqueIDForThisGame / 2)
                             + (int)Game1.stats.DaysPlayed
                             + (int)pos.X
-                            + (int)pos.Y * 777);
+                            + ((int)pos.Y * 777));
                         if (Game1.player.professions.Contains(16))
                         {
                             obj.Quality = 4;
@@ -92,18 +92,19 @@ public sealed class ModEntry : Mod
                             Game1.player.gainExperience(2, 7);
                         }
 
+                        var direction = tY < pY
+                            ? 0
+                            : tX > pX
+                                ? 1
+                                : tY > pY
+                                    ? 2
+                                    : tX < pX
+                                        ? 3
+                                        : -1;
                         Game1.createItemDebris(
                             obj,
                             Game1.tileSize * pos,
-                            tY < pY
-                                ? 0
-                                : tX > pX
-                                    ? 1
-                                    : tY > pY
-                                        ? 2
-                                        : tX < pX
-                                            ? 3
-                                            : -1,
+                            direction,
                             Game1.currentLocation);
                         Game1.currentLocation.Objects.Remove(pos);
                         Log.Info($"Dropped {obj.DisplayName} from forage.");
@@ -128,12 +129,12 @@ public sealed class ModEntry : Mod
                 // Terrain Features
                 if (Game1.currentLocation.terrainFeatures.TryGetValue(pos, out var terrainFeature))
                 {
-                    terrainFeature.performUseAction(pos, Game1.currentLocation);
+                    terrainFeature.performUseAction(pos);
                 }
 
                 // Large Terrain Features
                 terrainFeature = Game1.currentLocation.getLargeTerrainFeatureAt((int)pos.X, (int)pos.Y);
-                terrainFeature?.performUseAction(pos, Game1.currentLocation);
+                terrainFeature?.performUseAction(pos);
             }
         }
     }
@@ -145,7 +146,7 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        var (pX, pY) = Game1.player.getTileLocation();
+        var (pX, pY) = Game1.player.Tile;
         for (var tY = (int)(pY - this.Config.DispenseInputDistance);
             tY <= (int)(pY + this.Config.DispenseInputDistance);
             ++tY)
@@ -214,7 +215,7 @@ public sealed class ModEntry : Mod
         if (gmcm.IsLoaded)
         {
             // Register mod configuration
-            gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
+            gmcm.Register(this.ModManifest, () => this.config = new(), () => this.Helper.WriteConfig(this.Config));
 
             // Collect Items
             gmcm.Api.AddKeybindList(

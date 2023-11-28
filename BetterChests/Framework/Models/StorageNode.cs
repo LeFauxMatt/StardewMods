@@ -15,12 +15,12 @@ using StardewValley.Objects;
 /// </summary>
 internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
 {
-    private readonly HashSet<string> _cachedFilterList = new();
-    private readonly ItemMatcher _filterMatcher = new(true);
+    private readonly HashSet<string> cachedFilterList = new();
+    private readonly ItemMatcher filterMatcher = new(true);
 
-    private int _capacity;
-    private int _menuRows;
-    private int _rows;
+    private int capacity;
+    private int menuRows;
+    private int rows;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageNode" /> class.
@@ -36,7 +36,7 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
             storage.GetActualCapacity = () => this.ActualCapacity;
         }
 
-        this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
+        this.filterMatcher.CollectionChanged += this.OnCollectionChanged;
     }
 
     /// <summary>
@@ -244,23 +244,23 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
     {
         get
         {
-            if (this._cachedFilterList.SetEquals(this.FilterItemsList))
+            if (this.cachedFilterList.SetEquals(this.FilterItemsList))
             {
-                return this._filterMatcher;
+                return this.filterMatcher;
             }
 
-            this._filterMatcher.CollectionChanged -= this.OnCollectionChanged;
-            this._cachedFilterList.Clear();
-            this._filterMatcher.Clear();
+            this.filterMatcher.CollectionChanged -= this.OnCollectionChanged;
+            this.cachedFilterList.Clear();
+            this.filterMatcher.Clear();
             foreach (var filter in this.FilterItemsList)
             {
-                this._cachedFilterList.Add(filter);
-                this._filterMatcher.Add(filter);
+                this.cachedFilterList.Add(filter);
+                this.filterMatcher.Add(filter);
             }
 
-            this._filterMatcher.CollectionChanged += this.OnCollectionChanged;
+            this.filterMatcher.CollectionChanged += this.OnCollectionChanged;
 
-            return this._filterMatcher;
+            return this.filterMatcher;
         }
     }
 
@@ -303,16 +303,16 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
     {
         get
         {
-            if (this._menuRows > 0
-                && this._capacity == this.ResizeChestCapacity
-                && this._rows == this.ResizeChestMenuRows)
+            if (this.menuRows > 0
+                && this.capacity == this.ResizeChestCapacity
+                && this.rows == this.ResizeChestMenuRows)
             {
-                return this._menuRows;
+                return this.menuRows;
             }
 
-            this._capacity = this.ResizeChestCapacity;
-            this._rows = this.ResizeChestMenuRows;
-            return this._menuRows = (int)Math.Min(
+            this.capacity = this.ResizeChestCapacity;
+            this.rows = this.ResizeChestMenuRows;
+            return this.menuRows = (int)Math.Min(
                 this.ActualCapacity switch
                 {
                     0 or Chest.capacity => 3,
@@ -555,6 +555,6 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
 
     private void OnCollectionChanged(object? source, NotifyCollectionChangedEventArgs? e)
     {
-        this.FilterItemsList = new(this._filterMatcher);
+        this.FilterItemsList = new(this.filterMatcher);
     }
 }

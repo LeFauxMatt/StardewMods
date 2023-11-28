@@ -121,13 +121,14 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{E6085D20-0427-4196-954A-8958DE22ACC9} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
+		{C9285074-54C5-4923-AFC0-DC3D117C9B0F} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
+		{27AD68FC-9FCE-423E-99A1-9C232C40793D} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Common\Common.projitems*{1f7a6349-0a3a-45ca-9170-588de3b5c13e}*SharedItemsImports = 5
-		Common\Common.projitems*{27ad68fc-9fce-423e-99a1-9c232c40793d}*SharedItemsImports = 5
 		Common\Common.projitems*{2f90b9e9-58c9-45b2-87e8-547bfb4d0a39}*SharedItemsImports = 5
 		Common\Common.projitems*{4a2026ed-bc33-4bd3-800a-b4c7c2eba1fa}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
@@ -136,7 +137,6 @@ Global
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{9de51a63-31ac-4678-9d40-f9351844bea8}*SharedItemsImports = 5
-		Common\Common.projitems*{c9285074-54c5-4923-afc0-dc3d117c9b0f}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
 		Common\Common.projitems*{ed82ab33-ddce-424b-ba4e-abd7f8a2a5f6}*SharedItemsImports = 5

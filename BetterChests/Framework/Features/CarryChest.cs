@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Helpers;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -21,7 +22,7 @@ using StardewValley.Objects;
 internal sealed class CarryChest : Feature
 {
     private const string Id = "furyx639.BetterChests/CarryChest";
-    private const int WhichBuff = 69420;
+    private const string BuffId = "furyx639.BetterChests/Overburdened";
 
     private static readonly MethodBase ChestDrawInMenu = AccessTools.Method(
         typeof(Chest),
@@ -59,21 +60,21 @@ internal sealed class CarryChest : Feature
         AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage));
 
 #nullable disable
-    private static CarryChest Instance;
+    private static CarryChest instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly Harmony _harmony;
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly Harmony harmony;
+    private readonly IModHelper helper;
 
     private CarryChest(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
-        this._harmony = new(CarryChest.Id);
+        this.helper = helper;
+        this.config = config;
+        this.harmony = new(CarryChest.Id);
     }
 
-    private static ModConfig Config => CarryChest.Instance._config;
+    private static ModConfig Config => CarryChest.instance.config;
 
     /// <summary>
     ///     Checks if the player should be overburdened while carrying a chest.
@@ -83,7 +84,7 @@ internal sealed class CarryChest : Feature
     {
         if (CarryChest.Config.CarryChestSlowAmount == 0)
         {
-            Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
+            Game1.player.buffs.Remove(CarryChest.BuffId);
             return;
         }
 
@@ -96,11 +97,11 @@ internal sealed class CarryChest : Feature
                 continue;
             }
 
-            Game1.buffsDisplay.addOtherBuff(CarryChest.GetOverburdened(CarryChest.Config.CarryChestSlowAmount));
+            Game1.player.buffs.Apply(CarryChest.GetOverburdened(CarryChest.Config.CarryChestSlowAmount));
             return;
         }
 
-        Game1.buffsDisplay.removeOtherBuff(CarryChest.WhichBuff);
+        Game1.player.buffs.Remove(CarryChest.BuffId);
     }
 
     /// <summary>
@@ -111,43 +112,43 @@ internal sealed class CarryChest : Feature
     /// <returns>Returns an instance of the <see cref="CarryChest" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return CarryChest.Instance ??= new(helper, config);
+        return CarryChest.instance ??= new(helper, config);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this._helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-        this._helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+        this.helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
 
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.ChestDrawInMenu,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Chest_drawInMenu_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.InventoryMenuRightClick,
             new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.InventoryMenuRightClick,
             postfix: new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.ItemCanBeDropped,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canBeDropped_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.ItemCanBeTrashed,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canBeTrashed_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.ItemCanStackWith,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.ObjectDrawWhenHeld,
             new(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.ObjectPlacementAction,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
-        this._harmony.Patch(
+        this.harmony.Patch(
             CarryChest.UtilityIterateChestsAndStorage,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
     }
@@ -156,36 +157,36 @@ internal sealed class CarryChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this._helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this._helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
-        this._helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
+        this.helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
 
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.ChestDrawInMenu,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Chest_drawInMenu_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.InventoryMenuRightClick,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.InventoryMenuRightClick,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.ItemCanBeDropped,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canBeDropped_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.ItemCanBeTrashed,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canBeTrashed_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.ItemCanStackWith,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.ObjectDrawWhenHeld,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.ObjectPlacementAction,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             CarryChest.UtilityIterateChestsAndStorage,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
     }
@@ -202,28 +203,36 @@ internal sealed class CarryChest : Feature
     {
         // Draw Items count
         var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
-        if (items > 0)
+        if (items <= 0)
         {
-            Utility.drawTinyDigits(
-                items,
-                spriteBatch,
-                location
-                + new Vector2(
-                    Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - 3f * scaleSize,
-                    2f * scaleSize),
-                3f * scaleSize,
-                1f,
-                color);
+            return;
         }
+
+        var position = location
+            + new Vector2(
+                Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize),
+                2f * scaleSize);
+        Utility.drawTinyDigits(
+            items,
+            spriteBatch,
+            position,
+            3f * scaleSize,
+            1f,
+            color);
     }
 
     private static Buff GetOverburdened(int speed)
     {
-        return new(0, 0, 0, 0, 0, 0, 0, 0, 0, -speed, 0, 0, int.MaxValue / 700, string.Empty, string.Empty)
-        {
-            description = string.Format(I18n.Effect_CarryChestSlow_Description(), speed.ToString()),
-            which = CarryChest.WhichBuff,
-        };
+        return new(
+            id: CarryChest.BuffId,
+            displayName: string.Format(I18n.Effect_CarryChestSlow_Description(), speed.ToString()),
+            duration: int.MaxValue / 700,
+            iconTexture: Game1.buffsIcons,
+            iconSheetIndex: 13,
+            effects: new()
+            {
+                Speed = { -speed },
+            });
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -245,7 +254,7 @@ internal sealed class CarryChest : Feature
             return;
         }
 
-        if (item.ParentSheetIndex != __result.ParentSheetIndex)
+        if (item.ItemId != __result.ItemId)
         {
             return;
         }
@@ -256,7 +265,7 @@ internal sealed class CarryChest : Feature
                 __result = item;
                 return;
             case Chest { SpecialChestType: not Chest.SpecialChestTypes.JunimoChest } chest:
-                __result = new Chest(true, chest.ParentSheetIndex)
+                __result = new Chest(true, chest.ItemId)
                 {
                     Name = chest.Name,
                     SpecialChestType = chest.SpecialChestType,
@@ -265,7 +274,7 @@ internal sealed class CarryChest : Feature
                     playerChoiceColor = { Value = chest.playerChoiceColor.Value },
                 };
 
-                __result._GetOneFrom(chest);
+                __result.CopyFrom(chest);
                 return;
         }
     }
@@ -328,8 +337,8 @@ internal sealed class CarryChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
-        if ((__instance is Chest chest && chest.items.OfType<Item>().Any())
-            || (other is Chest otherChest && otherChest.items.OfType<Item>().Any()))
+        if ((__instance is Chest chest && chest.Items.Any(item => item is not null))
+            || (other is Chest otherChest && otherChest.Items.Any(item => item is not null)))
         {
             __result = false;
         }
@@ -372,11 +381,11 @@ internal sealed class CarryChest : Feature
             && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
-                .CopyFrom(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
+                .OverwriteWith(held.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
         }
 
         // Copy properties
-        placed._GetOneFrom(held);
+        placed.CopyFrom(held);
         placed.Name = held.Name;
         placed.SpecialChestType = held.SpecialChestType;
         placed.fridge.Value = held.fridge.Value;
@@ -436,7 +445,7 @@ internal sealed class CarryChest : Feature
         if (!Context.IsPlayerFree
             || Game1.player.CurrentItem is Tool
             || !e.Button.IsUseToolButton()
-            || this._helper.Input.IsSuppressed(e.Button)
+            || this.helper.Input.IsSuppressed(e.Button)
             || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
@@ -452,7 +461,7 @@ internal sealed class CarryChest : Feature
         }
 
         // Already carrying the limit
-        var limit = this._config.CarryChestLimit;
+        var limit = this.config.CarryChestLimit;
         if (limit > 0)
         {
             foreach (var item in Game1.player.Items.OfType<Chest>())
@@ -468,7 +477,7 @@ internal sealed class CarryChest : Feature
                 }
 
                 Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
-                this._helper.Input.Suppress(e.Button);
+                this.helper.Input.Suppress(e.Button);
                 return;
             }
         }
@@ -481,7 +490,7 @@ internal sealed class CarryChest : Feature
 
         Game1.playSound("pickUpItem");
         Game1.currentLocation.Objects.Remove(pos);
-        this._helper.Input.Suppress(e.Button);
+        this.helper.Input.Suppress(e.Button);
         CarryChest.CheckForOverburdened();
     }
 }

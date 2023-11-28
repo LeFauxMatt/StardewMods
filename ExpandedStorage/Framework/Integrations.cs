@@ -10,34 +10,34 @@ using StardewMods.Common.Integrations.GenericModConfigMenu;
 internal sealed class Integrations
 {
 #nullable disable
-    private static Integrations Instance;
+    private static Integrations instance;
 #nullable enable
 
-    private readonly BetterChestsIntegration _betterChests;
-    private readonly BetterCraftingIntegration _betterCrafting;
-    private readonly GenericModConfigMenuIntegration _genericModConfigMenu;
+    private readonly BetterChestsIntegration betterChests;
+    private readonly BetterCraftingIntegration betterCrafting;
+    private readonly GenericModConfigMenuIntegration genericModConfigMenu;
 
     private Integrations(IModRegistry modRegistry)
     {
-        this._betterChests = new(modRegistry);
-        this._betterCrafting = new(modRegistry);
-        this._genericModConfigMenu = new(modRegistry);
+        this.betterChests = new(modRegistry);
+        this.betterCrafting = new(modRegistry);
+        this.genericModConfigMenu = new(modRegistry);
     }
 
     /// <summary>
     ///     Gets Better Chests Integration.
     /// </summary>
-    public static BetterChestsIntegration BetterChests => Integrations.Instance._betterChests;
+    public static BetterChestsIntegration BetterChests => Integrations.instance.betterChests;
 
     /// <summary>
     ///     Gets Better Crafting Integration.
     /// </summary>
-    public static BetterCraftingIntegration BetterCrafting => Integrations.Instance._betterCrafting;
+    public static BetterCraftingIntegration BetterCrafting => Integrations.instance.betterCrafting;
 
     /// <summary>
     ///     Gets Generic Mod Config Menu Integration.
     /// </summary>
-    public static GenericModConfigMenuIntegration GenericModConfigMenu => Integrations.Instance._genericModConfigMenu;
+    public static GenericModConfigMenuIntegration GenericModConfigMenu => Integrations.instance.genericModConfigMenu;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.
@@ -46,6 +46,6 @@ internal sealed class Integrations
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModRegistry modRegistry)
     {
-        return Integrations.Instance ??= new(modRegistry);
+        return Integrations.instance ??= new(modRegistry);
     }
 }

@@ -18,7 +18,7 @@ public sealed class ModEntry : Mod
     private static readonly IDictionary<string, CachedStorage> StorageCache = new Dictionary<string, CachedStorage>();
     private static readonly IDictionary<string, ICustomStorage> Storages = new Dictionary<string, ICustomStorage>();
 
-    private bool _wait;
+    private bool wait;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -29,7 +29,6 @@ public sealed class ModEntry : Mod
         Extensions.Init(ModEntry.StorageCache);
         Integrations.Init(this.Helper.ModRegistry);
         Config.Init(this.Helper, this.ModManifest);
-        Commands.Init(this.Helper, ModEntry.Storages);
         ModPatches.Init(this.Helper, this.ModManifest, ModEntry.Storages, ModEntry.StorageCache);
 
         // Events
@@ -49,12 +48,6 @@ public sealed class ModEntry : Mod
         if (e.Name.IsEquivalentTo("furyx639.ExpandedStorage/Storages"))
         {
             e.LoadFrom(() => new Dictionary<string, CustomStorageData>(), AssetLoadPriority.Exclusive);
-            return;
-        }
-
-        if (e.Name.IsEquivalentTo("furyx639.ExpandedStorage/Buy"))
-        {
-            e.LoadFrom(() => new Dictionary<string, ShopEntry>(), AssetLoadPriority.Exclusive);
             return;
         }
 
@@ -150,7 +143,7 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this._wait = true;
+        this.wait = true;
         this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
 
         if (Integrations.BetterChests.IsLoaded)
@@ -167,9 +160,9 @@ public sealed class ModEntry : Mod
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        if (this._wait)
+        if (this.wait)
         {
-            this._wait = false;
+            this.wait = false;
             return;
         }
 

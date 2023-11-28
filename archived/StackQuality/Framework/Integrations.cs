@@ -8,22 +8,22 @@ using StardewMods.Common.Integrations.ShoppingCart;
 internal sealed class Integrations
 {
 #nullable disable
-    private static Integrations Instance;
+    private static Integrations instance;
 #nullable enable
 
-    private readonly IModHelper _helper;
-    private readonly ShoppingCartIntegration _shoppingCartIntegration;
+    private readonly IModHelper helper;
+    private readonly ShoppingCartIntegration shoppingCartIntegration;
 
     private Integrations(IModHelper helper)
     {
-        this._helper = helper;
-        this._shoppingCartIntegration = new(helper.ModRegistry);
+        this.helper = helper;
+        this.shoppingCartIntegration = new(helper.ModRegistry);
     }
 
     /// <summary>
     ///     Gets Stack Quality integration.
     /// </summary>
-    public static ShoppingCartIntegration ShoppingCart => Integrations.Instance._shoppingCartIntegration;
+    public static ShoppingCartIntegration ShoppingCart => Integrations.instance.shoppingCartIntegration;
 
     /// <summary>
     ///     Initializes <see cref="Integrations" />.
@@ -32,6 +32,6 @@ internal sealed class Integrations
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
     public static Integrations Init(IModHelper helper)
     {
-        return Integrations.Instance ??= new(helper);
+        return Integrations.instance ??= new(helper);
     }
 }

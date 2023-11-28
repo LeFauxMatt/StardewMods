@@ -14,12 +14,12 @@ using StardewValley.Menus;
 public sealed class ModEntry : Mod
 {
 #nullable disable
-    private static ModEntry Instance;
+    private static ModEntry modInstance;
 #nullable enable
 
-    private readonly PerScreen<int> _currentPage = new();
+    private readonly PerScreen<int> currentPage = new();
 
-    private readonly PerScreen<ClickableTextureComponent> _nextPage = new(
+    private readonly PerScreen<ClickableTextureComponent> nextPage = new(
         () => new(
             new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
             Game1.mouseCursors,
@@ -29,7 +29,7 @@ public sealed class ModEntry : Mod
             myID = 69420,
         });
 
-    private readonly PerScreen<ClickableTextureComponent> _previousPage = new(
+    private readonly PerScreen<ClickableTextureComponent> previousPage = new(
         () => new(
             new(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
             Game1.mouseCursors,
@@ -39,28 +39,28 @@ public sealed class ModEntry : Mod
             myID = 69421,
         });
 
-    private ModConfig? _config;
+    private ModConfig? config;
 
-    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private int CurrentPage
     {
-        get => this._currentPage.Value;
+        get => this.currentPage.Value;
         set
         {
-            if (this._currentPage.Value == value)
+            if (this.currentPage.Value == value)
             {
                 return;
             }
 
-            this._currentPage.Value = value;
+            this.currentPage.Value = value;
             Game1.activeClickableMenu = new PurchaseAnimalsMenu(this.Stock);
         }
     }
 
-    private ClickableTextureComponent NextPage => this._nextPage.Value;
+    private ClickableTextureComponent NextPage => this.nextPage.Value;
 
-    private ClickableTextureComponent PreviousPage => this._previousPage.Value;
+    private ClickableTextureComponent PreviousPage => this.previousPage.Value;
 
     [MemberNotNullWhen(true, nameof(ModEntry.Stock))]
     private bool ShowOverlay => Game1.activeClickableMenu is PurchaseAnimalsMenu
@@ -72,7 +72,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        ModEntry.Instance = this;
+        ModEntry.modInstance = this;
         Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
 
@@ -93,11 +93,11 @@ public sealed class ModEntry : Mod
     private static void PurchaseAnimalsMenu_constructor_prefix(ref List<SObject> stock)
     {
         // Get actual stock
-        ModEntry.Instance.Stock ??= stock;
+        ModEntry.modInstance.Stock ??= stock;
 
         // Limit stock
-        stock = ModEntry.Instance.Stock.Skip(ModEntry.Instance.CurrentPage * ModEntry.Instance.Config.AnimalShopLimit)
-            .Take(ModEntry.Instance.Config.AnimalShopLimit)
+        stock = ModEntry.modInstance.Stock.Skip(ModEntry.modInstance.CurrentPage * ModEntry.modInstance.Config.AnimalShopLimit)
+            .Take(ModEntry.modInstance.Config.AnimalShopLimit)
             .ToList();
     }
 
@@ -108,7 +108,7 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        if (e.Button is not SButton.MouseLeft or SButton.MouseRight
+        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight)
             && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
@@ -156,7 +156,7 @@ public sealed class ModEntry : Mod
         }
 
         // Register mod configuration
-        gmcm.Register(this.ModManifest, () => this._config = new(), () => this.Helper.WriteConfig(this.Config));
+        gmcm.Register(this.ModManifest, () => this.config = new(), () => this.Helper.WriteConfig(this.Config));
 
         gmcm.Api.AddSectionTitle(this.ModManifest, I18n.Section_General_Name, I18n.Section_General_Description);
 
@@ -196,7 +196,7 @@ public sealed class ModEntry : Mod
         if (e.NewMenu is not PurchaseAnimalsMenu menu)
         {
             this.Stock = null;
-            this._currentPage.Value = 0;
+            this.currentPage.Value = 0;
             return;
         }
 
@@ -210,11 +210,11 @@ public sealed class ModEntry : Mod
 
         for (var index = 0; index < menu.animalsToPurchase.Count; ++index)
         {
-            var i = index + this.CurrentPage * this.Config.AnimalShopLimit;
+            var i = index + (this.CurrentPage * this.Config.AnimalShopLimit);
             if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors))
             {
-                menu.animalsToPurchase[index].sourceRect.X = i % 3 * 16 * 2;
-                menu.animalsToPurchase[index].sourceRect.Y = 448 + i / 3 * 16;
+                menu.animalsToPurchase[index].sourceRect.X = (i % 3) * 16 * 2;
+                menu.animalsToPurchase[index].sourceRect.Y = 448 + (i / 3 * 16);
             }
 
             if (!ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
@@ -222,7 +222,7 @@ public sealed class ModEntry : Mod
                 continue;
             }
 
-            menu.animalsToPurchase[index].sourceRect.X = 128 + i % 3 * 16 * 2;
+            menu.animalsToPurchase[index].sourceRect.X = 128 + ((i % 3) * 16 * 2);
             menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
         }
 
@@ -239,7 +239,7 @@ public sealed class ModEntry : Mod
             .myID;
         foreach (var component in bottomComponents)
         {
-            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + menu.width / 2
+            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + (menu.width / 2)
                 ? this.PreviousPage.myID
                 : this.NextPage.myID;
         }

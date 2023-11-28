@@ -11,7 +11,7 @@ using StardewMods.Common.Integrations.ShoppingCart;
 /// </summary>
 internal sealed class Buyable : ICartItem
 {
-    private readonly ICartItem _cartItem;
+    private readonly ICartItem cartItem;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Buyable" /> class.
@@ -21,7 +21,7 @@ internal sealed class Buyable : ICartItem
     /// <param name="priceAndStock">The shop prices and stock.</param>
     public Buyable(ISalable item, int quantity, IReadOnlyList<int> priceAndStock)
     {
-        this._cartItem = new CartItem(item, quantity, priceAndStock[0], priceAndStock[1]);
+        this.cartItem = new CartItem(item, quantity, priceAndStock[0], priceAndStock[1]);
 
         if (priceAndStock.Count <= 2)
         {
@@ -33,7 +33,7 @@ internal sealed class Buyable : ICartItem
     }
 
     /// <inheritdoc />
-    public int Available => this._cartItem.Available;
+    public int Available => this.cartItem.Available;
 
     /// <summary>
     ///     Gets any extra items required to purchase this item.
@@ -46,25 +46,25 @@ internal sealed class Buyable : ICartItem
     public int ExtraItemAmount { get; }
 
     /// <inheritdoc />
-    public ISalable Item => this._cartItem.Item;
+    public ISalable Item => this.cartItem.Item;
 
     /// <inheritdoc />
-    public int Price => this._cartItem.Price;
+    public int Price => this.cartItem.Price;
 
     /// <inheritdoc />
     public int Quantity
     {
-        get => this._cartItem.Quantity;
-        set => this._cartItem.Quantity = value;
+        get => this.cartItem.Quantity;
+        set => this.cartItem.Quantity = value;
     }
 
     /// <inheritdoc />
-    public long Total => this._cartItem.Total;
+    public long Total => this.cartItem.Total;
 
     /// <inheritdoc />
     public int CompareTo(ICartItem? other)
     {
-        return this._cartItem.CompareTo(other);
+        return this.cartItem.CompareTo(other);
     }
 
     /// <summary>
@@ -140,7 +140,7 @@ internal sealed class Buyable : ICartItem
         // Add to existing stacks
         if (maxStack > 1)
         {
-            foreach (var item in inventory.OfType<Item>().Where(this.Item.IsEquivalentTo))
+            foreach (var item in inventory.OfType<Item>().Where(this.Item.canStackWith))
             {
                 if (item.Stack + quantity <= maxStack)
                 {

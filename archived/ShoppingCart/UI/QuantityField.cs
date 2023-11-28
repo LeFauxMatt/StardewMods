@@ -11,12 +11,12 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class QuantityField
 {
-    private readonly ClickableTextureComponent _minus;
-    private readonly ClickableTextureComponent _plus;
-    private readonly Range<int> _range;
-    private readonly TextBox _textBox;
+    private readonly ClickableTextureComponent minus;
+    private readonly ClickableTextureComponent plus;
+    private readonly Range<int> range;
+    private readonly TextBox textBox;
 
-    private Rectangle _bounds = Rectangle.Empty;
+    private Rectangle bounds = Rectangle.Empty;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QuantityField" /> class.
@@ -25,21 +25,21 @@ internal sealed class QuantityField
     public QuantityField(ICartItem cartItem)
     {
         this.CartItem = cartItem;
-        this._range = new(0, this.CartItem.Available);
+        this.range = new(0, this.CartItem.Available);
 
-        this._minus = new(
+        this.minus = new(
             new(0, 0, 7 * Game1.pixelZoom, 8 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(177, 345, 7, 8),
             Game1.pixelZoom);
 
-        this._plus = new(
+        this.plus = new(
             new(0, 0, 7 * Game1.pixelZoom, 8 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(184, 345, 7, 8),
             Game1.pixelZoom);
 
-        this._textBox = new(
+        this.textBox = new(
             Game1.content.Load<Texture2D>("LooseSprites/textBox"),
             null,
             Game1.smallFont,
@@ -55,22 +55,22 @@ internal sealed class QuantityField
     /// </summary>
     public Rectangle Bounds
     {
-        get => this._bounds;
+        get => this.bounds;
         set
         {
-            if (this._bounds.Equals(value))
+            if (this.bounds.Equals(value))
             {
                 return;
             }
 
-            this._bounds = value;
-            this._textBox.X = value.X;
-            this._textBox.Y = value.Y;
-            this._textBox.Width = value.Width;
-            this._minus.bounds.X = value.X - 24;
-            this._minus.bounds.Y = value.Y + 4;
-            this._plus.bounds.X = value.X + value.Width + 2;
-            this._plus.bounds.Y = value.Y + 4;
+            this.bounds = value;
+            this.textBox.X = value.X;
+            this.textBox.Y = value.Y;
+            this.textBox.Width = value.Width;
+            this.minus.bounds.X = value.X - 24;
+            this.minus.bounds.Y = value.Y + 4;
+            this.plus.bounds.X = value.X + value.Width + 2;
+            this.plus.bounds.Y = value.Y + 4;
         }
     }
 
@@ -89,8 +89,8 @@ internal sealed class QuantityField
     /// </summary>
     public int Quantity
     {
-        get => string.IsNullOrWhiteSpace(this._textBox.Text) ? 0 : int.Parse(this._textBox.Text);
-        set => this._textBox.Text = this._range.Clamp(value).ToString();
+        get => string.IsNullOrWhiteSpace(this.textBox.Text) ? 0 : int.Parse(this.textBox.Text);
+        set => this.textBox.Text = this.range.Clamp(value).ToString();
     }
 
     /// <summary>
@@ -104,9 +104,9 @@ internal sealed class QuantityField
             this.CartItem.Quantity = this.Quantity;
         }
 
-        this._textBox.Draw(b, false);
-        this._minus.draw(b);
-        this._plus.draw(b);
+        this.textBox.Draw(b, false);
+        this.minus.draw(b);
+        this.plus.draw(b);
     }
 
     /// <summary>
@@ -119,11 +119,11 @@ internal sealed class QuantityField
     {
         if (!this.IsVisible || !this.Bounds.Contains(x, y))
         {
-            this._textBox.Selected = false;
+            this.textBox.Selected = false;
             return false;
         }
 
-        this._textBox.SelectMe();
+        this.textBox.SelectMe();
         return true;
     }
 
@@ -140,13 +140,13 @@ internal sealed class QuantityField
             return false;
         }
 
-        if (this._minus.containsPoint(x, y))
+        if (this.minus.containsPoint(x, y))
         {
             --this.Quantity;
             return true;
         }
 
-        if (this._plus.containsPoint(x, y))
+        if (this.plus.containsPoint(x, y))
         {
             ++this.Quantity;
             return true;
@@ -168,7 +168,7 @@ internal sealed class QuantityField
             return false;
         }
 
-        this._textBox.Text = string.Empty;
+        this.textBox.Text = string.Empty;
         return true;
     }
 }

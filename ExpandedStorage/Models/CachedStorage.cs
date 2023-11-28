@@ -9,14 +9,14 @@ using StardewMods.Common.Integrations.ExpandedStorage;
 /// </summary>
 internal sealed class CachedStorage
 {
-    private readonly Lazy<int> _frames;
-    private readonly Lazy<float> _scaleMultiplier;
-    private readonly ICustomStorage _storage;
-    private readonly Lazy<int> _tileDepth;
-    private readonly Lazy<int> _tileHeight;
-    private readonly Lazy<int> _tileWidth;
+    private readonly Lazy<int> frames;
+    private readonly Lazy<float> scaleMultiplier;
+    private readonly ICustomStorage storage;
+    private readonly Lazy<int> tileDepth;
+    private readonly Lazy<int> tileHeight;
+    private readonly Lazy<int> tileWidth;
 
-    private Texture2D? _texture;
+    private Texture2D? texture;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CachedStorage" /> class.
@@ -24,49 +24,49 @@ internal sealed class CachedStorage
     /// <param name="storage">The custom storage.</param>
     public CachedStorage(ICustomStorage storage)
     {
-        this._storage = storage;
-        this._frames = new(() => this.Texture.Width / this._storage.Width);
-        this._tileDepth = new(() => (int)Math.Ceiling(this._storage.Depth / 16f));
-        this._tileHeight = new(() => (int)Math.Ceiling(this._storage.Height / 16f));
-        this._tileWidth = new(() => (int)Math.Ceiling(this._storage.Width / 16f));
-        this._scaleMultiplier = new(() => Math.Min(1f / this.TileWidth, 2f / this.TileHeight));
+        this.storage = storage;
+        this.frames = new(() => this.Texture.Width / this.storage.Width);
+        this.tileDepth = new(() => (int)Math.Ceiling(this.storage.Depth / 16f));
+        this.tileHeight = new(() => (int)Math.Ceiling(this.storage.Height / 16f));
+        this.tileWidth = new(() => (int)Math.Ceiling(this.storage.Width / 16f));
+        this.scaleMultiplier = new(() => Math.Min(1f / this.TileWidth, 2f / this.TileHeight));
     }
 
     /// <summary>
     ///     Gets the animation frames.
     /// </summary>
-    public int Frames => this._frames.Value;
+    public int Frames => this.frames.Value;
 
     /// <summary>
     ///     Gets scale multiplier for oversizes objects.
     /// </summary>
-    public float ScaleMultiplier => this._scaleMultiplier.Value;
+    public float ScaleMultiplier => this.scaleMultiplier.Value;
 
     /// <summary>
     ///     Gets the sprite sheet texture.
     /// </summary>
-    public Texture2D Texture => this._texture ??= Game1.content.Load<Texture2D>(this._storage.Image);
+    public Texture2D Texture => this.texture ??= Game1.content.Load<Texture2D>(this.storage.Image);
 
     /// <summary>
     ///     Gets the tile depth.
     /// </summary>
-    public int TileDepth => this._tileDepth.Value;
+    public int TileDepth => this.tileDepth.Value;
 
     /// <summary>
     ///     Gets the tile height.
     /// </summary>
-    public int TileHeight => this._tileHeight.Value;
+    public int TileHeight => this.tileHeight.Value;
 
     /// <summary>
     ///     Gets the tile width.
     /// </summary>
-    public int TileWidth => this._tileWidth.Value;
+    public int TileWidth => this.tileWidth.Value;
 
     /// <summary>
     ///     Resets the cached texture.
     /// </summary>
     public void ResetCache()
     {
-        this._texture = null;
+        this.texture = null;
     }
 }

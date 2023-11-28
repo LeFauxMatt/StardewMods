@@ -10,14 +10,14 @@ using StardewValley.Menus;
 internal sealed class BetterShippingBin : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly IModHelper _helper;
+    private readonly IModHelper helper;
 
     private BetterShippingBin(IModHelper helper)
     {
-        this._helper = helper;
+        this.helper = helper;
     }
 
     /// <summary>
@@ -27,19 +27,19 @@ internal sealed class BetterShippingBin : Feature
     /// <returns>Returns an instance of the <see cref="BetterShippingBin" /> class.</returns>
     public static Feature Init(IModHelper helper)
     {
-        return BetterShippingBin.Instance ??= new BetterShippingBin(helper);
+        return BetterShippingBin.instance ??= new BetterShippingBin(helper);
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
-        this._helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
+        this.helper.Events.Display.MenuChanged += BetterShippingBin.OnMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
-        this._helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
+        this.helper.Events.Display.MenuChanged -= BetterShippingBin.OnMenuChanged;
     }
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)

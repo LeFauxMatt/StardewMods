@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using StardewValley.Locations;
 
 /// <summary>
 ///     Commonly used helpers for utility methods.
@@ -12,12 +11,19 @@ using StardewValley.Locations;
 internal static class CommonHelpers
 {
     /// <summary>
-    ///     Gets all accessible game locations and sub-locations
+    ///     Gets all accessible game locations and sub-locations.
     /// </summary>
     public static IEnumerable<GameLocation> AllLocations
     {
         get
         {
+            foreach (var location in IterateLocations())
+            {
+                yield return location;
+            }
+
+            yield break;
+
             IEnumerable<GameLocation> IterateLocations(
                 IEnumerable<GameLocation>? locations = null,
                 HashSet<GameLocation>? excluded = null)
@@ -35,23 +41,18 @@ internal static class CommonHelpers
                     excluded.Add(location);
                     yield return location;
 
-                    if (location is not BuildableGameLocation buildableGameLocation)
+                    if (!location.IsBuildableLocation())
                     {
                         continue;
                     }
 
-                    var indoors = buildableGameLocation.buildings.Select(building => building.indoors.Value)
+                    var indoors = location.buildings.Select(building => building.indoors.Value)
                         .Where(indoors => indoors is not null);
                     foreach (var indoor in IterateLocations(indoors, excluded))
                     {
                         yield return indoor;
                     }
                 }
-            }
-
-            foreach (var location in IterateLocations())
-            {
-                yield return location;
             }
         }
     }

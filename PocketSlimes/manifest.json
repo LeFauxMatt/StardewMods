@@ -5,7 +5,7 @@
   "Version": "1.0.0",
   "Description": "Nothing strange about this capsule.",
   "UniqueID": "furyx639.PocketSlimes",
-  "MinimumApiVersion": "3.18.0",
+  "MinimumApiVersion": "4.0.0",
   "UpdateKeys": [
     "Nexus:13471"
   ]

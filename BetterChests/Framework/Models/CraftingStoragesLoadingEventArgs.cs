@@ -7,7 +7,7 @@ using System.Collections.Generic;
 /// </summary>
 internal sealed class CraftingStoragesLoadingEventArgs
 {
-    private readonly IList<StorageNode> _storages;
+    private readonly IList<StorageNode> storages;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CraftingStoragesLoadingEventArgs" /> class.
@@ -15,7 +15,7 @@ internal sealed class CraftingStoragesLoadingEventArgs
     /// <param name="storages">The storages to add.</param>
     public CraftingStoragesLoadingEventArgs(IList<StorageNode> storages)
     {
-        this._storages = storages;
+        this.storages = storages;
     }
 
     /// <summary>
@@ -24,9 +24,9 @@ internal sealed class CraftingStoragesLoadingEventArgs
     /// <param name="storage">The storage to add.</param>
     public void AddStorage(StorageNode storage)
     {
-        if (!this._storages.Contains(storage))
+        if (!this.storages.Contains(storage))
         {
-            this._storages.Add(storage);
+            this.storages.Add(storage);
         }
     }
 

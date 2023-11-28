@@ -11,6 +11,48 @@ using StardewValley.Tools;
 internal static class CommonExtensions
 {
     /// <summary>
+    /// Performs the equivalent of item.GetOneCopyFrom and Object.GetOneCopyFrom.
+    /// </summary>
+    /// <param name="item">The item to copy attributes into.</param>
+    /// <param name="source">The chest to copy attributes from.</param>
+    public static void CopyFrom(this Item item, SObject source)
+    {
+        // item.GetOneCopyFrom
+        item.ItemId = source.ItemId;
+        item.IsRecipe = source.IsRecipe;
+        item.Quality = source.Quality;
+        item.Stack = 1;
+        item.modData.Clear();
+        foreach (var (key, value) in source.modData.Pairs)
+        {
+            item.modData[key] = value;
+        }
+
+        if (item is not SObject obj)
+        {
+            return;
+        }
+
+        // Object.GetOneCopyFrom
+        obj.scale = source.scale;
+        obj.IsSpawnedObject = source.IsSpawnedObject;
+        obj.SpecialVariable = source.SpecialVariable;
+        obj.Price = source.Price;
+        obj.name = source.name;
+        obj.displayNameFormat = source.displayNameFormat;
+        obj.HasBeenInInventory = source.HasBeenInInventory;
+        obj.HasBeenPickedUpByFarmer = source.HasBeenPickedUpByFarmer;
+        obj.TileLocation = source.TileLocation;
+        obj.uses.Value = source.uses.Value;
+        obj.questItem.Value = source.questItem.Value;
+        obj.questId.Value = source.questId.Value;
+        obj.preserve.Value = source.preserve.Value;
+        obj.preservedParentSheetIndex.Value = source.preservedParentSheetIndex.Value;
+        obj.orderData.Value = source.orderData.Value;
+        obj.owner.Value = source.owner.Value;
+    }
+
+    /// <summary>
     ///     Invokes all event handlers for an event.
     /// </summary>
     /// <param name="eventHandler">The event.</param>
@@ -63,39 +105,6 @@ internal static class CommonExtensions
     }
 
     /// <summary>
-    ///     Test if an item is equivalent to another item.
-    /// </summary>
-    /// <param name="salable">The item to test.</param>
-    /// <param name="other">The other item to test against.</param>
-    /// <returns>Returns true if the items are equivalent.</returns>
-    public static bool IsEquivalentTo(this ISalable salable, ISalable? other)
-    {
-        if (other is null || !salable.Name.Equals(other.Name))
-        {
-            return false;
-        }
-
-        return salable switch
-        {
-            ColoredObject coloredObj when other is not ColoredObject otherColoredObj
-                || !coloredObj.color.Value.Equals(otherColoredObj.color.Value) => false,
-            SObject obj when other is not SObject otherObj
-                || obj.ParentSheetIndex != otherObj.ParentSheetIndex
-                || obj.bigCraftable.Value != otherObj.bigCraftable.Value
-                || obj.orderData.Value != otherObj.orderData.Value
-                || obj.Quality != otherObj.Quality
-                || obj.Type != otherObj.Type => false,
-            Item item when other is not Item otherItem
-                || item.Category != otherItem.Category
-                || item.ParentSheetIndex != otherItem.ParentSheetIndex => false,
-            Stackable stackable when other is not Stackable otherStackable || !stackable.canStackWith(otherStackable) =>
-                false,
-            Tool when other is not Tool => false,
-            _ => true,
-        };
-    }
-
-    /// <summary>
     ///     Maps a float value from one range to the same proportional value in another integer range.
     /// </summary>
     /// <param name="value">The float value to map.</param>
@@ -104,10 +113,7 @@ internal static class CommonExtensions
     /// <returns>The integer value.</returns>
     public static int Remap(this float value, Range<float> sourceRange, Range<int> targetRange)
     {
-        return targetRange.Clamp(
-            (int)(targetRange.Minimum
-                + (targetRange.Maximum - targetRange.Minimum)
-                * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
+        return targetRange.Clamp((int)(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)))));
     }
 
     /// <summary>
@@ -121,8 +127,8 @@ internal static class CommonExtensions
     {
         return targetRange.Clamp(
             targetRange.Minimum
-            + (targetRange.Maximum - targetRange.Minimum)
-            * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)));
+            + ((targetRange.Maximum - targetRange.Minimum)
+            * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
     }
 
     /// <summary>Rounds an int up to the next int by an interval.</summary>

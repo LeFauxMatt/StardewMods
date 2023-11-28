@@ -13,16 +13,16 @@ using StardewValley.Menus;
 internal sealed class ModPatches
 {
 #nullable disable
-    private static ModPatches Instance;
+    private static ModPatches instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly IModHelper helper;
 
     private ModPatches(IModHelper helper, IManifest manifest, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
+        this.helper = helper;
+        this.config = config;
 
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
@@ -55,9 +55,9 @@ internal sealed class ModPatches
             postfix: new(typeof(ModPatches), nameof(ModPatches.ShopMenu_updatePosition_postfix)));
     }
 
-    private static ModConfig Config => ModPatches.Instance._config;
+    private static ModConfig Config => ModPatches.instance.config;
 
-    private static IInputHelper Input => ModPatches.Instance._helper.Input;
+    private static IInputHelper Input => ModPatches.instance.helper.Input;
 
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
@@ -68,7 +68,7 @@ internal sealed class ModPatches
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IModHelper helper, IManifest manifest, ModConfig config)
     {
-        return ModPatches.Instance ??= new(helper, manifest, config);
+        return ModPatches.instance ??= new(helper, manifest, config);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -241,7 +241,7 @@ internal sealed class ModPatches
         }
 
         shopMenu.xPositionOnScreen += Shop.MenuWidth / 2;
-        shopMenu.upperRightCloseButton.bounds.X -= Shop.MenuWidth / 2 + Game1.tileSize;
+        shopMenu.upperRightCloseButton.bounds.X -= (Shop.MenuWidth / 2) + Game1.tileSize;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -255,6 +255,6 @@ internal sealed class ModPatches
         }
 
         __instance.xPositionOnScreen -= Shop.MenuWidth / 2;
-        __instance.upperRightCloseButton.bounds.X += Shop.MenuWidth / 2 + Game1.tileSize;
+        __instance.upperRightCloseButton.bounds.X += (Shop.MenuWidth / 2) + Game1.tileSize;
     }
 }

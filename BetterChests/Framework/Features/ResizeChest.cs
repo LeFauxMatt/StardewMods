@@ -18,14 +18,14 @@ internal sealed class ResizeChest : Feature
         nameof(Chest.GetActualCapacity));
 
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly Harmony _harmony;
+    private readonly Harmony harmony;
 
     private ResizeChest()
     {
-        this._harmony = new(ResizeChest.Id);
+        this.harmony = new(ResizeChest.Id);
     }
 
     /// <summary>
@@ -34,14 +34,14 @@ internal sealed class ResizeChest : Feature
     /// <returns>Returns an instance of the <see cref="ResizeChest" /> class.</returns>
     public static Feature Init()
     {
-        return ResizeChest.Instance ??= new ResizeChest();
+        return ResizeChest.instance ??= new ResizeChest();
     }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Patches
-        this._harmony.Patch(
+        this.harmony.Patch(
             ResizeChest.ChestGetActualCapacity,
             postfix: new(typeof(ResizeChest), nameof(ResizeChest.Chest_GetActualCapacity_postfix)));
     }
@@ -50,7 +50,7 @@ internal sealed class ResizeChest : Feature
     protected override void Deactivate()
     {
         // Patches
-        this._harmony.Unpatch(
+        this.harmony.Unpatch(
             ResizeChest.ChestGetActualCapacity,
             AccessTools.Method(typeof(ResizeChest), nameof(ResizeChest.Chest_GetActualCapacity_postfix)));
     }

@@ -1,11 +1,11 @@
 {
   "Name": "Better Chests",
   "Author": "furyx639",
-  "Version": "2.8.0",
+  "Version": "2.8.1-beta.1",
   "Description": "Framework that adds new features to chests.",
   "UniqueID": "furyx639.BetterChests",
   "EntryDll": "BetterChests.dll",
-  "MinimumApiVersion": "3.18.0",
+  "MinimumApiVersion": "4.0.0",
   "UpdateKeys": [
     "Nexus:9791"
   ],

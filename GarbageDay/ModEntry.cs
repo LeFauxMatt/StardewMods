@@ -17,29 +17,28 @@ using xTile.Dimensions;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly HashSet<IAssetName> _excludedAssets = new();
-    private readonly PerScreen<GarbageCan?> _garbageCan = new();
-    private readonly Dictionary<string, Lazy<GarbageCan?>> _garbageCans = new();
-    private readonly PerScreen<NPC?> _npc = new();
+    private readonly PerScreen<GarbageCan?> perScreenGarbageCan = new();
+    private readonly Dictionary<string, Lazy<GarbageCan?>> garbageCans = new();
+    private readonly PerScreen<NPC?> perScreenNpc = new();
 
-    private ModConfig? _config;
-    private Multiplayer? _multiplayer;
+    private ModConfig? config;
+    private Multiplayer? multiplayer;
 
-    private ModConfig Config => this._config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private GarbageCan? GarbageCan
     {
-        get => this._garbageCan.Value;
-        set => this._garbageCan.Value = value;
+        get => this.perScreenGarbageCan.Value;
+        set => this.perScreenGarbageCan.Value = value;
     }
 
     private IEnumerable<GarbageCan> GarbageCans =>
-        this._garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
+        this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
 
     private NPC? NPC
     {
-        get => this._npc.Value;
-        set => this._npc.Value = value;
+        get => this.perScreenNpc.Value;
+        set => this.perScreenNpc.Value = value;
     }
 
     /// <inheritdoc />
@@ -97,7 +96,7 @@ public sealed class ModEntry : Mod
             location.Objects.Remove(tile);
         }
 
-        this._garbageCans.Clear();
+        this.garbageCans.Clear();
     }
 
     private void GarbageFill(string command, string[] args)
@@ -118,20 +117,12 @@ public sealed class ModEntry : Mod
 
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (e.Name.IsEquivalentTo("furyx639.GarbageDay/Loot"))
-        {
-            e.LoadFromModFile<Dictionary<string, Dictionary<string, float>>>(
-                "assets/loot.json",
-                AssetLoadPriority.Exclusive);
-            return;
-        }
-
         if (e.Name.IsEquivalentTo("furyx639.GarbageDay/Texture"))
         {
             e.LoadFromModFile<Texture2D>("assets/GarbageCan.png", AssetLoadPriority.Exclusive);
         }
 
-        if (e.DataType != typeof(Map) || this._excludedAssets.Contains(e.Name))
+        if (e.DataType != typeof(Map))
         {
             return;
         }
@@ -140,17 +131,6 @@ public sealed class ModEntry : Mod
             asset =>
             {
                 var map = asset.AsMap().Data;
-                if (!map.Properties.TryGetValue("GarbageDay", out var lootKey))
-                {
-                    if (!asset.Name.IsEquivalentTo(@"Maps\Town"))
-                    {
-                        this._excludedAssets.Add(asset.Name);
-                        return;
-                    }
-
-                    lootKey = "Town";
-                }
-
                 for (var x = 0; x < map.Layers[0].LayerWidth; ++x)
                 {
                     for (var y = 0; y < map.Layers[0].LayerHeight; ++y)
@@ -169,8 +149,8 @@ public sealed class ModEntry : Mod
                             continue;
                         }
 
-                        var parts = property.ToString().Split(' ');
-                        if (parts.Length != 2 || parts[0] != "Garbage")
+                        var parts = ArgUtility.SplitBySpace(property);
+                        if (parts[0] != "Garbage")
                         {
                             continue;
                         }
@@ -181,10 +161,10 @@ public sealed class ModEntry : Mod
                             continue;
                         }
 
-                        if (!this._garbageCans.ContainsKey(whichCan))
+                        if (!this.garbageCans.ContainsKey(whichCan))
                         {
                             var pos = new Vector2(x, y);
-                            this._garbageCans.Add(
+                            this.garbageCans.Add(
                                 whichCan,
                                 new(
                                     () =>
@@ -205,7 +185,6 @@ public sealed class ModEntry : Mod
                                                 modData =
                                                 {
                                                     ["furyx639.GarbageDay/WhichCan"] = whichCan,
-                                                    ["furyx639.GarbageDay/LootKey"] = lootKey,
                                                     ["Pathoschild.ChestsAnywhere/IsIgnored"] = "true",
                                                 },
                                             };
@@ -262,7 +241,7 @@ public sealed class ModEntry : Mod
         if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
             || obj is not Chest chest
             || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-            || !this._garbageCans.TryGetValue(whichCan, out var garbageCan)
+            || !this.garbageCans.TryGetValue(whichCan, out var garbageCan)
             || garbageCan.Value is null)
         {
             return;
@@ -281,7 +260,7 @@ public sealed class ModEntry : Mod
         }
 
         this.NPC = npc;
-        this._multiplayer?.globalChatInfoMessage("TrashCan", Game1.player.Name, npc.Name);
+        this.multiplayer?.globalChatInfoMessage("TrashCan", Game1.player.Name, npc.Name);
         if (npc.Name.Equals("Linus"))
         {
             npc.doEmote(32);
@@ -290,7 +269,7 @@ public sealed class ModEntry : Mod
                 true,
                 true);
             Game1.player.changeFriendship(5, npc);
-            this._multiplayer?.globalChatInfoMessage("LinusTrashCan");
+            this.multiplayer?.globalChatInfoMessage("LinusTrashCan");
         }
         else
         {
@@ -342,7 +321,7 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this._multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
@@ -371,7 +350,7 @@ public sealed class ModEntry : Mod
             {
                 if (obj is not Chest chest
                     || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-                    || this._garbageCans.ContainsKey(whichCan))
+                    || this.garbageCans.ContainsKey(whichCan))
                 {
                     continue;
                 }

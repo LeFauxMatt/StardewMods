@@ -12,7 +12,7 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class Sellable : ICartItem
 {
-    private readonly ICartItem _cartItem;
+    private readonly ICartItem cartItem;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Sellable" /> class.
@@ -22,40 +22,41 @@ internal sealed class Sellable : ICartItem
     /// <param name="inventory">The player's inventory selling the item.</param>
     public Sellable(ISalable item, float sellPercentage, IEnumerable<Item?> inventory)
     {
-        this._cartItem = new CartItem(
+        var itemPrice = item switch
+        {
+            SObject obj => (int)(obj.sellToStorePrice() * sellPercentage),
+            _ => (int)(item.salePrice() / 2f * sellPercentage),
+        };
+        this.cartItem = new CartItem(
             item.GetSalableInstance(),
             item.Stack,
-            item switch
-            {
-                SObject obj => (int)(obj.sellToStorePrice() * sellPercentage),
-                _ => (int)(item.salePrice() / 2f * sellPercentage),
-            },
+            itemPrice,
             Sellable.GetAvailable(item, inventory));
     }
 
     /// <inheritdoc />
-    public int Available => this._cartItem.Available;
+    public int Available => this.cartItem.Available;
 
     /// <inheritdoc />
-    public ISalable Item => this._cartItem.Item;
+    public ISalable Item => this.cartItem.Item;
 
     /// <inheritdoc />
-    public int Price => this._cartItem.Price;
+    public int Price => this.cartItem.Price;
 
     /// <inheritdoc />
     public int Quantity
     {
-        get => this._cartItem.Quantity;
-        set => this._cartItem.Quantity = value;
+        get => this.cartItem.Quantity;
+        set => this.cartItem.Quantity = value;
     }
 
     /// <inheritdoc />
-    public long Total => this._cartItem.Total;
+    public long Total => this.cartItem.Total;
 
     /// <inheritdoc />
     public int CompareTo(ICartItem? other)
     {
-        return this._cartItem.CompareTo(other);
+        return this.cartItem.CompareTo(other);
     }
 
     /// <summary>
@@ -93,7 +94,7 @@ internal sealed class Sellable : ICartItem
                 continue;
             }
 
-            if (inventory[i] is not { } item || !this.Item.IsEquivalentTo(item))
+            if (inventory[i] is not { } item || !this.Item.canStackWith(item))
             {
                 continue;
             }
@@ -142,7 +143,7 @@ internal sealed class Sellable : ICartItem
                 continue;
             }
 
-            if (heldItem.IsEquivalentTo(item))
+            if (heldItem.canStackWith(item))
             {
                 available += item.Stack > 0 ? item.Stack : 1;
             }

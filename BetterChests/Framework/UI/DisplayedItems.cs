@@ -14,30 +14,30 @@ using StardewValley.Menus;
 /// </summary>
 internal sealed class DisplayedItems
 {
-    private readonly int _columns;
+    private readonly int columns;
 
-    private readonly Lazy<ClickableTextureComponent> _downArrow = new(
+    private readonly Lazy<ClickableTextureComponent> downArrow = new(
         () => new(
             new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(421, 472, 11, 12),
             Game1.pixelZoom) { myID = 5318008 });
 
-    private readonly List<ItemMatcher> _highlighters = new();
-    private readonly InventoryMenu.highlightThisItem _highlightMethod;
-    private readonly List<Item> _items = new();
-    private readonly bool _topMenu;
-    private readonly List<Func<IEnumerable<Item>, IEnumerable<Item>>> _transformers = new();
+    private readonly List<ItemMatcher> highlighters = new();
+    private readonly InventoryMenu.highlightThisItem highlightMethod;
+    private readonly List<Item> items = new();
+    private readonly bool topMenu;
+    private readonly List<Func<IEnumerable<Item>, IEnumerable<Item>>> transformers = new();
 
-    private readonly Lazy<ClickableTextureComponent> _upArrow = new(
+    private readonly Lazy<ClickableTextureComponent> upArrow = new(
         () => new(
             new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
             Game1.mouseCursors,
             new(421, 459, 11, 12),
             Game1.pixelZoom) { myID = 5318009 });
 
-    private EventHandler<List<Item>>? _itemsRefreshed;
-    private int _offset;
+    private EventHandler<List<Item>>? itemsRefreshed;
+    private int offset;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="DisplayedItems" /> class.
@@ -47,19 +47,19 @@ internal sealed class DisplayedItems
     public DisplayedItems(InventoryMenu menu, bool topMenu)
     {
         this.Menu = menu;
-        this._topMenu = topMenu;
-        this._columns = this.Menu.capacity / this.Menu.rows;
-        this._highlightMethod = this.Menu.highlightMethod;
+        this.topMenu = topMenu;
+        this.columns = this.Menu.capacity / this.Menu.rows;
+        this.highlightMethod = this.Menu.highlightMethod;
 
         this.Menu.highlightMethod = this.Highlight;
 
         // Reposition Arrows
-        var topSlot = this._columns - 1;
+        var topSlot = this.columns - 1;
         var bottomSlot = this.Menu.capacity - 1;
         this.UpArrow.bounds.X = this.Menu.xPositionOnScreen + this.Menu.width + 8;
-        this.UpArrow.bounds.Y = this.Menu.inventory[topSlot].bounds.Center.Y - 6 * Game1.pixelZoom;
+        this.UpArrow.bounds.Y = this.Menu.inventory[topSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
         this.DownArrow.bounds.X = this.UpArrow.bounds.X;
-        this.DownArrow.bounds.Y = this.Menu.inventory[bottomSlot].bounds.Center.Y - 6 * Game1.pixelZoom;
+        this.DownArrow.bounds.Y = this.Menu.inventory[bottomSlot].bounds.Center.Y - (6 * Game1.pixelZoom);
 
         // Assign Neighbor Ids
         this.UpArrow.leftNeighborID = this.Menu.inventory[topSlot].myID;
@@ -77,14 +77,14 @@ internal sealed class DisplayedItems
     /// </summary>
     public event EventHandler<List<Item>> ItemsRefreshed
     {
-        add => this._itemsRefreshed += value;
-        remove => this._itemsRefreshed -= value;
+        add => this.itemsRefreshed += value;
+        remove => this.itemsRefreshed -= value;
     }
 
     /// <summary>
     ///     Gets the items displayed in the inventory menu.
     /// </summary>
-    public IList<Item> Items => this.ActualInventory.Any() ? this._items : Array.Empty<Item>();
+    public IList<Item> Items => this.ActualInventory.Any() ? this.items : Array.Empty<Item>();
 
     /// <summary>
     ///     Gets the inventory menu.
@@ -96,33 +96,33 @@ internal sealed class DisplayedItems
     /// </summary>
     public int Offset
     {
-        get => this._offset;
+        get => this.offset;
         set
         {
             if (value < 0)
             {
-                this._offset = 0;
+                this.offset = 0;
                 this.RefreshItems();
                 return;
             }
 
-            if (value * this._columns + this.Menu.capacity > this.ActualInventory.Count.RoundUp(12))
+            if ((value * this.columns) + this.Menu.capacity > this.ActualInventory.Count.RoundUp(12))
             {
-                this._offset = (this.ActualInventory.Count.RoundUp(12) - this.Menu.capacity) / this._columns;
+                this.offset = (this.ActualInventory.Count.RoundUp(12) - this.Menu.capacity) / this.columns;
                 this.RefreshItems();
                 return;
             }
 
-            this._offset = value;
+            this.offset = value;
             this.RefreshItems();
         }
     }
 
     private IList<Item> ActualInventory => this.Menu.actualInventory;
 
-    private ClickableTextureComponent DownArrow => this._downArrow.Value;
+    private ClickableTextureComponent DownArrow => this.downArrow.Value;
 
-    private ClickableTextureComponent UpArrow => this._upArrow.Value;
+    private ClickableTextureComponent UpArrow => this.upArrow.Value;
 
     /// <summary>
     ///     Adds a <see cref="ItemMatcher" /> to highlight inventory.
@@ -130,7 +130,7 @@ internal sealed class DisplayedItems
     /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
     public void AddHighlighter(ItemMatcher matcher)
     {
-        this._highlighters.Add(matcher);
+        this.highlighters.Add(matcher);
     }
 
     /// <summary>
@@ -139,9 +139,9 @@ internal sealed class DisplayedItems
     /// <param name="transformer">The function to add.</param>
     public void AddTransformer(Func<IEnumerable<Item>, IEnumerable<Item>> transformer)
     {
-        this._transformers.Add(transformer);
+        this.transformers.Add(transformer);
 
-        if (this._topMenu)
+        if (this.topMenu)
         {
             BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         }
@@ -162,7 +162,7 @@ internal sealed class DisplayedItems
             this.UpArrow.draw(spriteBatch);
         }
 
-        if (this.Offset * this._columns + this.Menu.capacity < this.ActualInventory.Count.RoundUp(12))
+        if ((this.Offset * this.columns) + this.Menu.capacity < this.ActualInventory.Count.RoundUp(12))
         {
             this.DownArrow.draw(spriteBatch);
         }
@@ -211,36 +211,36 @@ internal sealed class DisplayedItems
     /// </summary>
     public void RefreshItems()
     {
-        var items = this.ActualInventory.AsEnumerable();
-        items = this._transformers.Aggregate(items, (current, transformer) => transformer(current)).ToList();
-        if (!items.Any())
+        var actualInventory = this.ActualInventory.AsEnumerable();
+        actualInventory = this.transformers.Aggregate(actualInventory, (current, transformer) => transformer(current)).ToList();
+        if (!actualInventory.Any())
         {
-            this._items.Clear();
-            this._items.AddRange(items.Skip(this.Offset * this._columns).Take(this.Menu.capacity));
+            this.items.Clear();
+            this.items.AddRange(actualInventory.Skip(this.Offset * this.columns).Take(this.Menu.capacity));
         }
         else
         {
             do
             {
-                this._items.Clear();
-                this._items.AddRange(items.Skip(this.Offset * this._columns).Take(this.Menu.capacity));
+                this.items.Clear();
+                this.items.AddRange(actualInventory.Skip(this.Offset * this.columns).Take(this.Menu.capacity));
             }
-            while (!this._items.Any() && --this.Offset > 0);
+            while (!this.items.Any() && --this.Offset > 0);
         }
 
         for (var index = 0; index < this.Menu.inventory.Count; ++index)
         {
-            this.Menu.inventory[index].name = (index < this._items.Count
-                ? this.Menu.actualInventory.IndexOf(this._items[index])
+            this.Menu.inventory[index].name = (index < this.items.Count
+                ? this.Menu.actualInventory.IndexOf(this.items[index])
                 : int.MaxValue).ToString();
         }
 
-        this._itemsRefreshed.InvokeAll(this, this._items);
+        this.itemsRefreshed.InvokeAll(this, this.items);
     }
 
     private bool Highlight(Item item)
     {
-        return this._highlightMethod(item)
-            && (!this._highlighters.Any() || this._highlighters.All(matcher => matcher.Matches(item)));
+        return this.highlightMethod(item)
+            && (!this.highlighters.Any() || this.highlighters.All(matcher => matcher.Matches(item)));
     }
 }

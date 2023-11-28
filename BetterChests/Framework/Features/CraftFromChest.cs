@@ -14,16 +14,16 @@ using StardewValley.Locations;
 internal sealed class CraftFromChest : Feature
 {
 #nullable disable
-    private static Feature Instance;
+    private static Feature instance;
 #nullable enable
 
-    private readonly ModConfig _config;
-    private readonly IModHelper _helper;
+    private readonly ModConfig config;
+    private readonly IModHelper helper;
 
     private CraftFromChest(IModHelper helper, ModConfig config)
     {
-        this._helper = helper;
-        this._config = config;
+        this.helper = helper;
+        this.config = config;
     }
 
     private static IEnumerable<StorageNode> Eligible
@@ -59,7 +59,7 @@ internal sealed class CraftFromChest : Feature
     /// <returns>Returns an instance of the <see cref="CraftFromChest" /> class.</returns>
     public static Feature Init(IModHelper helper, ModConfig config)
     {
-        return CraftFromChest.Instance ??= new CraftFromChest(helper, config);
+        return CraftFromChest.instance ??= new CraftFromChest(helper, config);
     }
 
     /// <inheritdoc />
@@ -67,7 +67,7 @@ internal sealed class CraftFromChest : Feature
     {
         // Events
         BetterCrafting.CraftingStoragesLoading += CraftFromChest.OnCraftingStoragesLoading;
-        this._helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Integrations
         if (Integrations.ToolbarIcons.IsLoaded)
@@ -93,7 +93,7 @@ internal sealed class CraftFromChest : Feature
     {
         // Events
         BetterCrafting.CraftingStoragesLoading -= CraftFromChest.OnCraftingStoragesLoading;
-        this._helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Integrations
         if (Integrations.ToolbarIcons.IsLoaded)
@@ -137,12 +137,12 @@ internal sealed class CraftFromChest : Feature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this._config.ControlScheme.OpenCrafting.JustPressed())
+        if (!Context.IsPlayerFree || !this.config.ControlScheme.OpenCrafting.JustPressed())
         {
             return;
         }
 
-        this._helper.Input.SuppressActiveKeybinds(this._config.ControlScheme.OpenCrafting);
+        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.OpenCrafting);
         if (!CraftFromChest.Eligible.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
