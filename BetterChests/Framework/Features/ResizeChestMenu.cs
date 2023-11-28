@@ -32,6 +32,8 @@ internal sealed class ResizeChestMenu : Feature
             typeof(int),
             typeof(int),
             typeof(int),
+            typeof(ItemExitBehavior),
+            typeof(bool),
         });
 
     private static readonly MethodBase MenuWithInventoryDraw = AccessTools.Method(

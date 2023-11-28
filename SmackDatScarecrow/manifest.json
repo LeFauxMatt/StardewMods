@@ -1,11 +1,19 @@
 {
-  "EntryDll": "SmackDatScarecrow.dll",
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.SmackDatScarecrow",
   "Name": "Smack Dat Scarecrow",
   "Author": "furyx639",
   "Version": "1.0.0",
   "Description": "Go ahead and do it, they can take it.",
-  "UniqueID": "furyx639.SmackDatScarecrow",
-  "MinimumApiVersion": "4.0.0",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
+  "EntryDll": "SmackDatScarecrow.dll",
   "UpdateKeys": [
     "Nexus:13528"
   ]

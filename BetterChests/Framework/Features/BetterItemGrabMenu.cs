@@ -73,6 +73,8 @@ internal sealed class BetterItemGrabMenu : Feature
                 typeof(Item),
                 typeof(int),
                 typeof(object),
+                typeof(ItemExitBehavior),
+                typeof(bool),
             }),
         AccessTools.Constructor(
             typeof(ItemGrabMenu),
@@ -102,6 +104,8 @@ internal sealed class BetterItemGrabMenu : Feature
             typeof(int),
             typeof(int),
             typeof(int),
+            typeof(ItemExitBehavior),
+            typeof(bool),
         });
 
     private static readonly MethodBase MenuWithInventoryDraw = AccessTools.Method(

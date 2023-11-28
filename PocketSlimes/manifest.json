@@ -1,11 +1,19 @@
 {
-  "EntryDll": "PocketSlimes.dll",
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.PocketSlimes",
   "Name": "Pocket Slimes",
   "Author": "furyx639",
   "Version": "1.0.0",
   "Description": "Nothing strange about this capsule.",
-  "UniqueID": "furyx639.PocketSlimes",
-  "MinimumApiVersion": "4.0.0",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
+  "EntryDll": "PocketSlimes.dll",
   "UpdateKeys": [
     "Nexus:13471"
   ]

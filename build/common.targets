@@ -7,7 +7,7 @@
         <RepositoryType>git</RepositoryType>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <MinimumApiVersion>4.0.0</MinimumApiVersion>
+        <MinimumApiVersion>4.0.0-alpha.20231101</MinimumApiVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
         <ModZipPath>$(SolutionDir)\releases</ModZipPath>
@@ -17,13 +17,11 @@
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
-        <PackageReference Update="FastExpressionCompiler.LightExpression" Version="3.3.3" />
-        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1"/>
-        <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="1.0.3"/>
+        <PackageReference Update="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
+        <PackageReference Update="Leclair.Stardew.ModManifestBuilder" Version="2.1.0" />
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0"/>
-        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta04"/>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
+        <PackageReference Update="NetEscapades.EnumGenerators" Version="1.0.0-beta08" />
+        <PackageReference Update="StyleCop.Analyzers" Version="1.2.0-beta.507">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

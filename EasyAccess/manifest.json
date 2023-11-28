@@ -1,18 +1,26 @@
 {
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.EasyAccess",
   "Name": "Easy Access",
   "Author": "furyx639",
   "Version": "2.0.1",
   "Description": "Provides easier access to producers in the game.",
-  "UniqueID": "furyx639.EasyAccess",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "EasyAccess.dll",
-  "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": [
-    "Nexus:11002"
-  ],
   "Dependencies": [
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "IsRequired": false
     }
+  ],
+  "UpdateKeys": [
+    "Nexus:11002"
   ]
 }

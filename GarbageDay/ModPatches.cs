@@ -122,7 +122,6 @@ internal sealed class ModPatches
         ref bool ____farmerNearby,
         ref int ____shippingBinFrameCounter,
         ref int ___currentLidFrame,
-        GameLocation location,
         bool animate)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
@@ -130,6 +129,7 @@ internal sealed class ModPatches
             return true;
         }
 
+        var location = __instance.Location;
         var shouldOpen = location.farmers.Any(
             farmer => Math.Abs(farmer.Tile.X - __instance.TileLocation.X) <= 1f
                 && Math.Abs(farmer.Tile.Y - __instance.TileLocation.Y) <= 1f);
@@ -160,8 +160,7 @@ internal sealed class ModPatches
         Chest __instance,
         ref int ____shippingBinFrameCounter,
         ref bool ____farmerNearby,
-        ref int ___currentLidFrame,
-        GameLocation environment)
+        ref int ___currentLidFrame)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {
@@ -173,6 +172,7 @@ internal sealed class ModPatches
             __instance.openChestEvent.Poll();
         }
 
+        var environment = __instance.Location;
         __instance.mutex.Update(environment);
 
         __instance.UpdateFarmerNearby();

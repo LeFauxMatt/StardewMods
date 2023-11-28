@@ -79,7 +79,7 @@ public sealed class ModEntry : Mod
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
         harmony.Patch(
-            AccessTools.Constructor(typeof(PurchaseAnimalsMenu), new[] { typeof(List<SObject>) }),
+            AccessTools.Constructor(typeof(PurchaseAnimalsMenu), new[] { typeof(List<SObject>), typeof(GameLocation) }),
             new(typeof(ModEntry), nameof(ModEntry.PurchaseAnimalsMenu_constructor_prefix)));
 
         // Events

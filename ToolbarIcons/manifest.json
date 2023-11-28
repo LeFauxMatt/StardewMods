@@ -1,11 +1,19 @@
 {
-  "EntryDll": "ToolbarIcons.dll",
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.ToolbarIcons",
   "Name": "Toolbar Icons",
   "Author": "furyx639",
   "Version": "2.5.0",
   "Description": "Adds icons above or below the toolbar.",
-  "UniqueID": "furyx639.ToolbarIcons",
-  "MinimumApiVersion": "4.0.0",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
+  "EntryDll": "ToolbarIcons.dll",
   "UpdateKeys": [
     "Nexus:11026@SMAPI"
   ]

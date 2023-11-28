@@ -24,9 +24,18 @@ internal sealed class CarryChest : Feature
     private const string Id = "furyx639.BetterChests/CarryChest";
     private const string BuffId = "furyx639.BetterChests/Overburdened";
 
-    private static readonly MethodBase ChestDrawInMenu = AccessTools.Method(
-        typeof(Chest),
-        nameof(Chest.drawInMenu),
+    private static readonly MethodBase InventoryMenuRightClick =
+        AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick));
+
+    private static readonly MethodBase ItemCanBeDropped = AccessTools.Method(typeof(Item), nameof(Item.canBeDropped));
+
+    private static readonly MethodBase ItemCanBeTrashed = AccessTools.Method(typeof(Item), nameof(Item.canBeTrashed));
+
+    private static readonly MethodBase ItemCanStackWith = AccessTools.Method(typeof(Item), nameof(Item.canStackWith));
+
+    private static readonly MethodBase ObjectDrawInMenu = AccessTools.Method(
+        typeof(SObject),
+        nameof(SObject.drawInMenu),
         new[]
         {
             typeof(SpriteBatch),
@@ -38,15 +47,6 @@ internal sealed class CarryChest : Feature
             typeof(Color),
             typeof(bool),
         });
-
-    private static readonly MethodBase InventoryMenuRightClick =
-        AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick));
-
-    private static readonly MethodBase ItemCanBeDropped = AccessTools.Method(typeof(Item), nameof(Item.canBeDropped));
-
-    private static readonly MethodBase ItemCanBeTrashed = AccessTools.Method(typeof(Item), nameof(Item.canBeTrashed));
-
-    private static readonly MethodBase ItemCanStackWith = AccessTools.Method(typeof(Item), nameof(Item.canStackWith));
 
     private static readonly MethodBase ObjectDrawWhenHeld = AccessTools.Method(
         typeof(SObject),
@@ -125,9 +125,6 @@ internal sealed class CarryChest : Feature
 
         // Patches
         this.harmony.Patch(
-            CarryChest.ChestDrawInMenu,
-            postfix: new(typeof(CarryChest), nameof(CarryChest.Chest_drawInMenu_postfix)));
-        this.harmony.Patch(
             CarryChest.InventoryMenuRightClick,
             new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
         this.harmony.Patch(
@@ -142,6 +139,9 @@ internal sealed class CarryChest : Feature
         this.harmony.Patch(
             CarryChest.ItemCanStackWith,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
+        this.harmony.Patch(
+            CarryChest.ObjectDrawInMenu,
+            postfix: new(typeof(CarryChest), nameof(CarryChest.Object_drawInMenu_postfix)));
         this.harmony.Patch(
             CarryChest.ObjectDrawWhenHeld,
             new(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
@@ -163,8 +163,8 @@ internal sealed class CarryChest : Feature
 
         // Patches
         this.harmony.Unpatch(
-            CarryChest.ChestDrawInMenu,
-            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Chest_drawInMenu_postfix)));
+            CarryChest.ObjectDrawInMenu,
+            AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_drawInMenu_postfix)));
         this.harmony.Unpatch(
             CarryChest.InventoryMenuRightClick,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
@@ -189,36 +189,6 @@ internal sealed class CarryChest : Feature
         this.harmony.Unpatch(
             CarryChest.UtilityIterateChestsAndStorage,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
-    }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Chest_drawInMenu_postfix(
-        Chest __instance,
-        SpriteBatch spriteBatch,
-        Vector2 location,
-        float scaleSize,
-        Color color)
-    {
-        // Draw Items count
-        var items = __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
-        if (items <= 0)
-        {
-            return;
-        }
-
-        var position = location
-            + new Vector2(
-                Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize),
-                2f * scaleSize);
-        Utility.drawTinyDigits(
-            items,
-            spriteBatch,
-            position,
-            3f * scaleSize,
-            1f,
-            color);
     }
 
     private static Buff GetOverburdened(int speed)
@@ -342,6 +312,41 @@ internal sealed class CarryChest : Feature
         {
             __result = false;
         }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Object_drawInMenu_postfix(
+        SObject __instance,
+        SpriteBatch spriteBatch,
+        Vector2 location,
+        float scaleSize,
+        Color color)
+    {
+        if (__instance is not Chest chest)
+        {
+            return;
+        }
+
+        // Draw Items count
+        var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+        if (items <= 0)
+        {
+            return;
+        }
+
+        var position = location
+            + new Vector2(
+                Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize),
+                2f * scaleSize);
+        Utility.drawTinyDigits(
+            items,
+            spriteBatch,
+            position,
+            3f * scaleSize,
+            1f,
+            color);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

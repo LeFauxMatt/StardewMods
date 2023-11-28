@@ -1,11 +1,19 @@
 {
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.GarbageDay",
   "Name": "Garbage Day",
   "Author": "furyx639",
   "Version": "3.0.2",
   "Description": "Turns the town trash cans into chests.",
-  "UniqueID": "furyx639.GarbageDay",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "GarbageDay.dll",
-  "MinimumApiVersion": "4.0.0",
   "UpdateKeys": [
     "Nexus:8204"
   ]

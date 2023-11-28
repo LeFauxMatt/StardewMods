@@ -1,18 +1,26 @@
 {
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.BetterChests",
   "Name": "Better Chests",
   "Author": "furyx639",
   "Version": "2.8.1-beta.1",
   "Description": "Framework that adds new features to chests.",
-  "UniqueID": "furyx639.BetterChests",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "BetterChests.dll",
-  "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": [
-    "Nexus:9791"
-  ],
   "Dependencies": [
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "IsRequired": false
     }
+  ],
+  "UpdateKeys": [
+    "Nexus:9791"
   ]
 }

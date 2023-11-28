@@ -191,6 +191,8 @@ internal sealed class ModPatches
                     typeof(Item),
                     typeof(int),
                     typeof(object),
+                    typeof(ItemExitBehavior),
+                    typeof(bool),
                 }),
             postfix: new(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)));
         harmony.Patch(
@@ -202,8 +204,8 @@ internal sealed class ModPatches
 
         // Buying
         harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.getOne)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_getOne_postfix)));
+            AccessTools.Method(typeof(SObject), "GetOneNew"),
+            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_GetOneNew_postfix)));
     }
 
     private static IReflectionHelper Reflection => ModPatches.modInstance.helper.Reflection;
@@ -362,7 +364,7 @@ internal sealed class ModPatches
         __result = __instance.startingLidFrame.Value + storage.GetFrames() - 1;
     }
 
-    private static bool Chest_performToolAction_prefix(Chest __instance, Tool? t, GameLocation location)
+    private static bool Chest_performToolAction_prefix(Chest __instance, Tool? t)
     {
         if (t?.getLastFarmerToUse() != Game1.player
             || t is MeleeWeapon
@@ -374,6 +376,7 @@ internal sealed class ModPatches
             return true;
         }
 
+        var location = __instance.Location;
         var c = __instance.TileLocation;
         if (c.X == 0f && c.Y == 0f)
         {
@@ -447,7 +450,6 @@ internal sealed class ModPatches
         ref bool ____farmerNearby,
         ref int ____shippingBinFrameCounter,
         ref int ___currentLidFrame,
-        GameLocation location,
         bool animate)
     {
         if (!__instance.playerChest.Value
@@ -464,6 +466,7 @@ internal sealed class ModPatches
             storage.GetTileWidth() * Game1.tileSize,
             storage.GetTileHeight() * Game1.tileSize);
         bounds.Inflate(storage.OpenNearby * Game1.tileSize, storage.OpenNearby * Game1.tileSize);
+        var location = __instance.Location;
         var shouldOpen = location.farmers.Any(farmer => farmer.GetBoundingBox().Intersects(bounds));
         if (shouldOpen == ____farmerNearby)
         {
@@ -492,8 +495,7 @@ internal sealed class ModPatches
         ref bool ____farmerNearby,
         ref int ___currentLidFrame,
         ref int ___health,
-        GameTime time,
-        GameLocation environment)
+        GameTime time)
     {
         if (!__instance.playerChest.Value
             || !__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
@@ -508,6 +510,7 @@ internal sealed class ModPatches
             __instance.openChestEvent.Poll();
         }
 
+        var environment = __instance.Location;
         if (__instance.localKickStartTile.HasValue)
         {
             if (Game1.currentLocation.Equals(environment))
@@ -948,7 +951,7 @@ internal sealed class ModPatches
         }
     }
 
-    private static void Object_getOne_postfix(SObject __instance, ref Item __result)
+    private static void Object_GetOneNew_postfix(SObject __instance, ref Item __result)
     {
         if (__result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj
             || !ModPatches.Storages.TryGetValue(__instance.name, out var storage))
@@ -997,7 +1000,7 @@ internal sealed class ModPatches
         }
     }
 
-    private static void Object_performRemoveAction_postfix(SObject __instance, GameLocation environment)
+    private static void Object_performRemoveAction_postfix(SObject __instance)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
             || !ModPatches.Storages.TryGetValue(name, out var storage))
@@ -1005,12 +1008,13 @@ internal sealed class ModPatches
             return;
         }
 
+        var environment = __instance.Location;
         var c = __instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
             && __instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y)
                 ? new(int.Parse(x), int.Parse(y))
                 : __instance.TileLocation;
 
-        if (c.X == 0f && c.Y == 0f)
+        if (c is { X: 0f, Y: 0f })
         {
             var found = false;
             foreach (var (pos, obj) in environment.Objects.Pairs)
@@ -1050,8 +1054,7 @@ internal sealed class ModPatches
     private static bool Object_performToolAction_prefix(
         SObject __instance,
         ref bool __result,
-        Tool t,
-        GameLocation location)
+        Tool t)
     {
         if (__instance is Chest
             || !__instance.modData.ContainsKey("furyx639.ExpandedStorage/Storage")
@@ -1061,6 +1064,7 @@ internal sealed class ModPatches
             return true;
         }
 
+        var location = __instance.Location;
         var tile = new Vector2(int.Parse(x), int.Parse(y));
         if (!location.Objects.TryGetValue(tile, out var obj) || obj is not Chest chest)
         {
