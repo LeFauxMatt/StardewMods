@@ -92,7 +92,7 @@ internal sealed class CarryChest : Feature
         {
             if (storage is not { Data: Storage storageObject }
                 || (excludeCurrent && storageObject.Context == Game1.player.CurrentItem)
-                || storageObject.Items.All(item => item is null))
+                || !storageObject.Inventory.HasAny())
             {
                 continue;
             }

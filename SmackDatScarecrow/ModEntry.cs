@@ -5,6 +5,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
+using StardewValley.Extensions;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
@@ -68,7 +69,7 @@ public sealed class ModEntry : Mod
 
         foreach (var (_, obj) in farm.Objects.Pairs)
         {
-            if (obj is not { bigCraftable.Value: true } || !obj.IsScarecrow() || who is null)
+            if (!obj.HasTypeBigCraftable() || !obj.IsScarecrow() || who is null)
             {
                 continue;
             }

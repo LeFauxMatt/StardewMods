@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <Import Project="$(SolutionDir)\build\common.targets"/>
+    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Pocket Slimes</Name>
         <Description>Nothing strange about this capsule.</Description>

@@ -11,6 +11,7 @@ using StardewMods.Common.Integrations.BetterCrafting;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
 using StardewValley.Buildings;
+using StardewValley.Extensions;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
@@ -173,7 +174,7 @@ internal sealed class Integrations
 
         foreach (var (pos, obj) in location.Objects.Pairs)
         {
-            if ((int)pos.Y == -300 && obj is Chest { bigCraftable.Value: true, ParentSheetIndex: 216 } chest)
+            if ((int)pos.Y == -300 && obj is Chest chest && obj.HasTypeBigCraftable() && obj.ParentSheetIndex == 216)
             {
                 excluded.Add(chest);
             }

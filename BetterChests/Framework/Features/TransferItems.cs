@@ -101,7 +101,7 @@ internal sealed class TransferItems : Feature
             return;
         }
 
-        var items = storageObject.Items.ToArray();
+        var items = storageObject.Inventory.ToArray();
         foreach (var item in items)
         {
             if (item is null || item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
@@ -111,7 +111,7 @@ internal sealed class TransferItems : Feature
 
             if (Game1.player.addItemToInventoryBool(item))
             {
-                storageObject.Items.Remove(item);
+                storageObject.Inventory.Remove(item);
             }
         }
 

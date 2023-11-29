@@ -9,7 +9,6 @@
     <Import_RootNamespace>Common</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Enums\Colors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\DayOfWeek.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\InGameMenu.cs" />
@@ -22,7 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\IPatternPatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ColorHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemType.cs" />

@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewValley.Buildings;
+using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Network;
 using StardewValley.Objects;
@@ -23,7 +24,7 @@ internal sealed class JunimoHutStorage : Storage
     }
 
     /// <inheritdoc />
-    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    public override IInventory Inventory => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <summary>
     ///     Gets the Junimo Hut building.

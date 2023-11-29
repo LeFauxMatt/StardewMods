@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewValley.Buildings;
+using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Objects;
@@ -52,7 +53,7 @@ internal sealed class ShippingBinStorage : Storage
         this.Context is GameLocation or ShippingBin ? int.MaxValue : base.ActualCapacity;
 
     /// <inheritdoc />
-    public override IList<Item?> Items =>
+    public override IInventory Inventory =>
         this.Context switch
         {
             Chest chest => chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID),
@@ -83,7 +84,7 @@ internal sealed class ShippingBinStorage : Storage
     public override void ShowMenu()
     {
         var menu = new ItemGrabMenu(
-            this.Items,
+            this.Inventory,
             false,
             true,
             Utility.highlightShippableObjects,

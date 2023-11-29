@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Network;
 using StardewValley.Objects;
@@ -68,7 +69,7 @@ internal sealed class ChestStorage : Storage, IColorable
         };
 
     /// <inheritdoc />
-    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    public override IInventory Inventory => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Chest.modData;

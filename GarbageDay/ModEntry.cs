@@ -46,7 +46,6 @@ public sealed class ModEntry : Mod
     {
         // Init
         Log.Monitor = this.Monitor;
-        CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
         ModPatches.Init(this.ModManifest);
 
@@ -78,18 +77,21 @@ public sealed class ModEntry : Mod
     private void GarbageClear(string command, string[] args)
     {
         var objectsToRemove = new List<(GameLocation, Vector2)>();
-        foreach (var location in CommonHelpers.AllLocations)
-        {
-            foreach (var (tile, obj) in location.Objects.Pairs)
+        Utility.ForEachLocation(
+            location =>
             {
-                if (obj is not Chest chest || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out _))
+                foreach (var (tile, obj) in location.Objects.Pairs)
                 {
-                    continue;
+                    if (obj is not Chest chest || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out _))
+                    {
+                        continue;
+                    }
+
+                    objectsToRemove.Add((location, tile));
                 }
 
-                objectsToRemove.Add((location, tile));
-            }
-        }
+                return true;
+            });
 
         foreach (var (location, tile) in objectsToRemove)
         {
@@ -169,37 +171,43 @@ public sealed class ModEntry : Mod
                                 new(
                                     () =>
                                     {
-                                        var location = CommonHelpers.AllLocations.FirstOrDefault(
-                                            location => asset.Name.IsEquivalentTo(location.mapPath.Value));
-                                        if (location is null)
-                                        {
-                                            return null;
-                                        }
-
-                                        if (!location.Objects.TryGetValue(pos, out var obj))
-                                        {
-                                            obj = new Chest(true, pos)
+                                        var garbageCan = default(GarbageCan);
+                                        Utility.ForEachLocation(
+                                            location =>
                                             {
-                                                Name = "Garbage Can",
-                                                playerChoiceColor = { Value = Color.DarkGray },
-                                                modData =
+                                                if (!asset.Name.IsEquivalentTo(location.mapPath.Value))
                                                 {
-                                                    ["furyx639.GarbageDay/WhichCan"] = whichCan,
-                                                    ["Pathoschild.ChestsAnywhere/IsIgnored"] = "true",
-                                                },
-                                            };
+                                                    return true;
+                                                }
 
-                                            location.Objects.Add(pos, obj);
-                                        }
+                                                if (!location.Objects.TryGetValue(pos, out var obj))
+                                                {
+                                                    obj = new Chest(true, pos)
+                                                    {
+                                                        Name = "Garbage Can",
+                                                        playerChoiceColor = { Value = Color.DarkGray },
+                                                        modData =
+                                                        {
+                                                            ["furyx639.GarbageDay/WhichCan"] = whichCan,
+                                                            ["Pathoschild.ChestsAnywhere/IsIgnored"] = "true",
+                                                        },
+                                                    };
 
-                                        if (obj is not Chest chest)
-                                        {
-                                            return null;
-                                        }
+                                                    location.Objects.Add(pos, obj);
+                                                }
 
-                                        chest.startingLidFrame.Value = 0;
-                                        chest.lidFrameCount.Value = 3;
-                                        return new(location, chest);
+                                                if (obj is not Chest chest)
+                                                {
+                                                    return false;
+                                                }
+
+                                                chest.startingLidFrame.Value = 0;
+                                                chest.lidFrameCount.Value = 3;
+                                                garbageCan = new(location, chest);
+                                                return false;
+                                            });
+
+                                        return garbageCan;
                                     }));
                         }
 
@@ -344,20 +352,23 @@ public sealed class ModEntry : Mod
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
         var objectsToRemove = new List<(GameLocation, Vector2)>();
-        foreach (var location in CommonHelpers.AllLocations)
-        {
-            foreach (var (tile, obj) in location.Objects.Pairs)
+        Utility.ForEachLocation(
+            location =>
             {
-                if (obj is not Chest chest
-                    || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-                    || this.garbageCans.ContainsKey(whichCan))
+                foreach (var (tile, obj) in location.Objects.Pairs)
                 {
-                    continue;
+                    if (obj is not Chest chest
+                        || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
+                        || this.garbageCans.ContainsKey(whichCan))
+                    {
+                        continue;
+                    }
+
+                    objectsToRemove.Add((location, tile));
                 }
 
-                objectsToRemove.Add((location, tile));
-            }
-        }
+                return true;
+            });
 
         foreach (var (location, tile) in objectsToRemove)
         {

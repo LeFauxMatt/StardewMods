@@ -398,7 +398,7 @@ internal sealed class ChestFinder : Feature
         {
             if (storage is not { Data: Storage storageObject }
                 || this.StorageContexts.Contains(storageObject.Context)
-                || !storageObject.Items.Any(this.ItemMatcher.Matches))
+                || !storageObject.Inventory.Any(this.ItemMatcher.Matches))
             {
                 continue;
             }

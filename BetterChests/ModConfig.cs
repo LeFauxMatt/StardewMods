@@ -152,7 +152,7 @@ internal sealed class ModConfig : IStorageData
     /// <summary>
     ///     Gets or sets the color of locked slots.
     /// </summary>
-    public Colors SlotLockColor { get; set; } = Colors.Red;
+    public string SlotLockColor { get; set; } = "Red";
 
     /// <summary>
     ///     Gets or sets a value indicating whether the slot lock button needs to be held down.
@@ -198,12 +198,11 @@ internal sealed class ModConfig : IStorageData
         sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"ChestFinder: {this.ChestFinder.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CraftFromWorkbench: {this.CraftFromWorkbench.ToStringFast()}");
-        sb.AppendLine(
-            $"CraftFromWorkbenchDistance: {this.CraftFromWorkbenchDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine($"CraftFromWorkbenchDistance: {this.CraftFromWorkbenchDistance.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CustomColorPickerArea: {this.CustomColorPickerArea.ToStringFast()}");
         sb.AppendLine($"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"SlotLock: {this.SlotLock.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine($"SlotLockColor: {this.SlotLockColor.ToStringFast()}");
+        sb.AppendLine($"SlotLockColor: {this.SlotLockColor}");
         sb.AppendLine($"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
 
         sb.AppendLine(" Control Scheme".PadLeft(50, '=')[^50..]);

@@ -1,8 +1,6 @@
 ﻿namespace StardewMods.Common.Helpers;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 
 /// <summary>
@@ -10,56 +8,6 @@ using Microsoft.Xna.Framework;
 /// </summary>
 internal static class CommonHelpers
 {
-    /// <summary>
-    ///     Gets all accessible game locations and sub-locations.
-    /// </summary>
-    public static IEnumerable<GameLocation> AllLocations
-    {
-        get
-        {
-            foreach (var location in IterateLocations())
-            {
-                yield return location;
-            }
-
-            yield break;
-
-            IEnumerable<GameLocation> IterateLocations(
-                IEnumerable<GameLocation>? locations = null,
-                HashSet<GameLocation>? excluded = null)
-            {
-                locations ??= Context.IsMainPlayer ? Game1.locations : CommonHelpers.Multiplayer!.GetActiveLocations();
-                excluded ??= new();
-
-                foreach (var location in locations)
-                {
-                    if (excluded.Contains(location))
-                    {
-                        continue;
-                    }
-
-                    excluded.Add(location);
-                    yield return location;
-
-                    if (!location.IsBuildableLocation())
-                    {
-                        continue;
-                    }
-
-                    var indoors = location.buildings.Select(building => building.indoors.Value)
-                        .Where(indoors => indoors is not null);
-                    foreach (var indoor in IterateLocations(indoors, excluded))
-                    {
-                        yield return indoor;
-                    }
-                }
-            }
-        }
-    }
-
-    /// <inheritdoc cref="IMultiplayerHelper" />
-    public static IMultiplayerHelper? Multiplayer { get; set; }
-
     /// <summary>
     ///     Gets or initializes ModConfig.
     /// </summary>

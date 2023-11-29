@@ -251,7 +251,7 @@ internal sealed class BetterCrafting : Feature
                 continue;
             }
 
-            foreach (var item in storageObject.Items)
+            foreach (var item in storageObject.Inventory)
             {
                 if (item is not null)
                 {
@@ -405,9 +405,9 @@ internal sealed class BetterCrafting : Feature
                         continue;
                     }
 
-                    for (var i = storageObject.Items.Count - 1; i >= 0; --i)
+                    for (var i = storageObject.Inventory.Count - 1; i >= 0; --i)
                     {
-                        var item = storageObject.Items[i];
+                        var item = storageObject.Inventory[i];
                         if (item is null || !CraftingRecipe.ItemMatchesForCrafting(item, id))
                         {
                             continue;
@@ -421,7 +421,7 @@ internal sealed class BetterCrafting : Feature
                         else
                         {
                             required -= item.Stack;
-                            storageObject.Items[i] = null;
+                            storageObject.Inventory[i] = null;
                         }
 
                         if (required <= 0)
@@ -546,7 +546,7 @@ internal sealed class BetterCrafting : Feature
                     continue;
                 }
 
-                foreach (var item in storageObject.Items.Where(item => CraftingRecipe.ItemMatchesForCrafting(item, id)))
+                foreach (var item in storageObject.Inventory.Where(item => CraftingRecipe.ItemMatchesForCrafting(item, id)))
                 {
                     BetterCrafting.MaterialStorages.Add(storage);
                     required -= item!.Stack;

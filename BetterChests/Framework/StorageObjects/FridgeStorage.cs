@@ -1,8 +1,8 @@
 ﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using StardewValley.Inventories;
 using StardewValley.Locations;
 using StardewValley.Mods;
 using StardewValley.Network;
@@ -23,7 +23,7 @@ internal sealed class FridgeStorage : Storage
     }
 
     /// <inheritdoc />
-    public override IList<Item?> Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    public override IInventory Inventory => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <summary>
     ///     Gets the location of the fridge.

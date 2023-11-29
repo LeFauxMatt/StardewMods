@@ -171,16 +171,14 @@ internal sealed class GarbageCan
     /// </summary>
     private void UpdateColor()
     {
-        var colorTags = this.Items.SelectMany(item => item.GetContextTags())
-            .Where(tag => tag.StartsWith("color"))
-            .ToList();
-        if (!colorTags.Any())
+        var colors = this.Items.Select(ItemContextTagManager.GetColorFromTags).OfType<Color>().ToList();
+        if (!colors.Any())
         {
             this.chest.playerChoiceColor.Value = Color.Gray;
             return;
         }
 
-        var index = this.random.Next(colorTags.Count);
-        this.chest.playerChoiceColor.Value = ColorHelper.FromTag(colorTags[index]);
+        var index = this.random.Next(colors.Count);
+        this.chest.playerChoiceColor.Value = colors[index];
     }
 }

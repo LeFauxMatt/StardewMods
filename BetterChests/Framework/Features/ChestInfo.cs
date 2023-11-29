@@ -136,20 +136,20 @@ internal sealed class ChestInfo : Feature
         }
 
         // Item Stats
-        if (storageObject.Items.Any())
+        if (storageObject.Inventory.HasAny())
         {
             info.Add(
                 new(
                     I18n.ChestInfo_TotalItems(),
-                    $"{storageObject.Items.OfType<Item>().Sum(item => (long)item.Stack):n0}"));
+                    $"{storageObject.Inventory.Where(item => item is not null).Sum(item => (long)item.Stack):n0}"));
             info.Add(
                 new(
                     I18n.ChestInfo_UniqueItems(),
-                    $"{storageObject.Items.OfType<Item>().Select(item => $"{item.GetType().Name}-{item.ParentSheetIndex.ToString(CultureInfo.InvariantCulture)}").Distinct().Count():n0}"));
+                    $"{storageObject.Inventory.Where(item => item is not null).Select(item => item.ItemId).Distinct().Count():n0}"));
             info.Add(
                 new(
                     I18n.ChestInfo_TotalValue(),
-                    $"{storageObject.Items.OfType<SObject>().Sum(obj => (long)obj.salePrice() * obj.Stack / 2):n0}"));
+                    $"{storageObject.Inventory.Sum(item => (long)item.sellToStorePrice(Game1.player.UniqueMultiplayerID) * item.Stack):n0}"));
         }
 
         return info;

@@ -73,7 +73,7 @@ internal sealed class AutoOrganize : Feature
             return;
         }
 
-        for (var index = fromStorageObject.Items.Count - 1; index >= 0; --index)
+        for (var index = fromStorageObject.Inventory.Count - 1; index >= 0; --index)
         {
             AutoOrganize.OrganizeTo(fromStorage, storages, fromStorageObject, index);
         }
@@ -85,7 +85,7 @@ internal sealed class AutoOrganize : Feature
         Storage fromStorageObject,
         int index)
     {
-        var item = fromStorageObject.Items[index];
+        var item = fromStorageObject.Inventory[index];
         if (item is null)
         {
             return;

@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+    <Import Project="$(SolutionDir)\build\common.targets"/>
+    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
     <PropertyGroup>
         <Name>Better Chests</Name>
         <Description>Framework that adds new features to chests.</Description>
-        <Version>2.8.1-beta.1</Version>
+        <Version>2.9.0-alpha.1</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.BetterChests</RootNamespace>
         <UniqueId>furyx639.BetterChests</UniqueId>
         <UpdateKeys>Nexus:9791</UpdateKeys>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+	    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     </ItemGroup>
 </Project>

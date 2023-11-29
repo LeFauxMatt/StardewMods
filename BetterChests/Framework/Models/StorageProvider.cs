@@ -40,7 +40,7 @@ internal sealed class StorageProvider : IInventoryProvider
     /// <inheritdoc />
     public IList<Item?>? GetItems(object obj, GameLocation? location, Farmer? who)
     {
-        return obj is StorageNode { Data: Storage storageObject } ? storageObject.Items : default;
+        return obj is StorageNode { Data: Storage storageObject } ? storageObject.Inventory : default;
     }
 
     /// <inheritdoc />

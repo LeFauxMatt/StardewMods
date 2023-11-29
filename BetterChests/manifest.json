@@ -10,7 +10,7 @@
   "UniqueID": "furyx639.BetterChests",
   "Name": "Better Chests",
   "Author": "furyx639",
-  "Version": "2.8.1-beta.1",
+  "Version": "2.9.0-alpha.1",
   "Description": "Framework that adds new features to chests.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "BetterChests.dll",

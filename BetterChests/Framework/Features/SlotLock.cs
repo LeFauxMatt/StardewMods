@@ -92,7 +92,7 @@ internal sealed class SlotLock : Feature
             }
 
             yield return new(OpCodes.Ldarg_0);
-            yield return new(OpCodes.Ldloc_S, (byte)4);
+            yield return new(OpCodes.Ldloc_S, (byte)5);
             yield return CodeInstruction.Call(typeof(SlotLock), nameof(SlotLock.Tint));
         }
     }
@@ -101,7 +101,7 @@ internal sealed class SlotLock : Feature
     {
         return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
             == true
-                ? SlotLock.instance.config.SlotLockColor.ToColor()
+                ? Utility.StringToColor(SlotLock.instance.config.SlotLockColor) ?? tint
                 : tint;
     }
 

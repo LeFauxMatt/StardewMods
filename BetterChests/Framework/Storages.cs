@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Framework.Features;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
 using StardewValley.Locations;
@@ -59,13 +58,18 @@ internal sealed class Storages
             }
 
             // Iterate Locations
-            foreach (var location in CommonHelpers.AllLocations)
-            {
-                foreach (var storage in Storages.FromLocation(location, excluded))
+            var locations = new List<GameLocation>();
+            Utility.ForEachLocation(
+                location =>
                 {
-                    storages.Add(storage);
-                    yield return storage;
-                }
+                    locations.Add(location);
+                    return true;
+                });
+
+            foreach (var storage in locations.SelectMany(location => Storages.FromLocation(location, excluded)))
+            {
+                storages.Add(storage);
+                yield return storage;
             }
 
             // Sub Storage
@@ -126,26 +130,21 @@ internal sealed class Storages
             yield return Storages.GetStorageType(storage);
         }
 
-        // Special Locations
-        switch (location)
+        // Get Fridge
+        var fridge = location.GetFridge();
+        if (fridge is not null && !excluded.Contains(fridge))
         {
-            case FarmHouse { fridge.Value: { } fridge } farmHouse
-                when !excluded.Contains(fridge) && !farmHouse.fridgePosition.Equals(Point.Zero):
-                excluded.Add(fridge);
-                yield return Storages.GetStorageType(
-                    new FridgeStorage(farmHouse, farmHouse.fridgePosition.ToVector2()));
-                break;
-            case IslandFarmHouse { fridge.Value: { } fridge } islandFarmHouse when !excluded.Contains(fridge)
-                && !islandFarmHouse.fridgePosition.Equals(Point.Zero):
-                excluded.Add(fridge);
-                yield return Storages.GetStorageType(
-                    new FridgeStorage(islandFarmHouse, islandFarmHouse.fridgePosition.ToVector2()));
-                break;
-            case IslandWest islandWest:
-                excluded.Add(islandWest);
-                yield return Storages.GetStorageType(
-                    new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2()));
-                break;
+            excluded.Add(fridge);
+            var fridgePosition = location.GetFridgePosition() ?? Point.Zero;
+            yield return Storages.GetStorageType(new FridgeStorage(location, fridgePosition.ToVector2()));
+        }
+
+        // Get Shipping Bin
+        if (location is IslandWest islandWest)
+        {
+            excluded.Add(islandWest);
+            yield return Storages.GetStorageType(
+                new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2()));
         }
 
         if (location.IsBuildableLocation())
@@ -311,7 +310,7 @@ internal sealed class Storages
         excluded.Add(storage.Context);
 
         var storages = new List<Storage>();
-        foreach (var item in storage.Items.Where(item => item is not null && !excluded.Contains(item)))
+        foreach (var item in storage.Inventory.Where(item => item is not null && !excluded.Contains(item)))
         {
             if (!Storages.TryGetOne(item, storage.Source, storage.Position, out var storageObject)
                 || excluded.Contains(storageObject.Context))
@@ -362,10 +361,10 @@ internal sealed class Storages
                             farmShippingBin.tileY.Value + (farmShippingBin.tilesHigh.Value / 2)))
                     : default;
                 return storage is not null;
-            case FarmHouse { fridge.Value: { } } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
+            case FarmHouse { fridge.Value: not null } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(farmHouse, position);
                 return true;
-            case IslandFarmHouse { fridge.Value: { } } islandFarmHouse
+            case IslandFarmHouse { fridge.Value: not null } islandFarmHouse
                 when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(islandFarmHouse, position);
                 return true;

@@ -17,11 +17,10 @@
         <Version_AppendConfiguration>false</Version_AppendConfiguration>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Update="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
-        <PackageReference Update="Leclair.Stardew.ModManifestBuilder" Version="2.1.0" />
-        <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0"/>
-        <PackageReference Update="NetEscapades.EnumGenerators" Version="1.0.0-beta08" />
-        <PackageReference Update="StyleCop.Analyzers" Version="1.2.0-beta.507">
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
+        <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.1.0" />
+        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -31,7 +30,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="..\build\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+        <Compile Include="$(SolutionDir)\build\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
         <Using Include="StardewValley"/>
         <Using Include="StardewModdingAPI"/>
         <Using Include="System.Diagnostics.CodeAnalysis"/>

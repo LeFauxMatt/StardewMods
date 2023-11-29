@@ -56,7 +56,7 @@ internal sealed class UnloadChest : Feature
             || this.helper.Input.IsSuppressed(e.Button)
             || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
             || Storages.CurrentItem.Data is not Storage storageObject
-            || (!storageObject.Items.Any() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
+            || (!storageObject.Inventory.HasAny() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
             || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
         {
             return;
@@ -85,9 +85,9 @@ internal sealed class UnloadChest : Feature
         }
 
         // Stash items into target chest
-        for (var index = storageObject.Items.Count - 1; index >= 0; --index)
+        for (var index = storageObject.Inventory.Count - 1; index >= 0; --index)
         {
-            var item = storageObject.Items[index];
+            var item = storageObject.Inventory[index];
             if (item is null)
             {
                 continue;
@@ -102,10 +102,10 @@ internal sealed class UnloadChest : Feature
 
             Log.Trace(
                 $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {Storages.CurrentItem}, To: {toStorage}");
-            storageObject.Items[index] = null;
+            storageObject.Inventory[index] = null;
         }
 
-        if (combined && !storageObject.Items.OfType<Item>().Any())
+        if (combined && !storageObject.Inventory.HasAny())
         {
             Game1.player.Items[Game1.player.CurrentToolIndex] = null;
             Game1.playSound("Ship");

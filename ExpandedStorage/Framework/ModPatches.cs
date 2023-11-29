@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.ExpandedStorage;
 using StardewMods.ExpandedStorage.Models;
+using StardewValley.Extensions;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
@@ -624,7 +625,7 @@ internal sealed class ModPatches
 
     private static void CraftingRecipe_createItem_postfix(CraftingRecipe __instance, ref Item __result)
     {
-        if (__result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj)
+        if (__result is not SObject obj || !obj.HasTypeBigCraftable() || obj.ParentSheetIndex is not (216 or 232 or 248 or 256))
         {
             return;
         }
@@ -658,8 +659,12 @@ internal sealed class ModPatches
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result
-            || __instance is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 }
-            || other is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj)
+            || __instance is not SObject
+            || !__instance.HasTypeBigCraftable()
+            || __instance.ParentSheetIndex is not (216 or 232 or 248 or 256)
+            || other is not SObject obj
+            || !obj.HasTypeBigCraftable()
+            || obj.ParentSheetIndex is not (216 or 232 or 248 or 256))
         {
             return;
         }
@@ -953,7 +958,9 @@ internal sealed class ModPatches
 
     private static void Object_GetOneNew_postfix(SObject __instance, ref Item __result)
     {
-        if (__result is not SObject { bigCraftable.Value: true, ParentSheetIndex: 216 or 232 or 248 or 256 } obj
+        if (__result is not SObject obj
+            || !obj.HasTypeBigCraftable()
+            || obj.ParentSheetIndex is not (216 or 232 or 248 or 256)
             || !ModPatches.Storages.TryGetValue(__instance.name, out var storage))
         {
             return;

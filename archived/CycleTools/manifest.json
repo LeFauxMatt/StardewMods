@@ -10,7 +10,7 @@
   "UniqueID": "furyx639.CycleTools",
   "Name": "Cycle Tools",
   "Author": "furyx639",
-  "Version": "1.0.0",
+  "Version": "1.1.0-alpha.1",
   "Description": "Quickly cycle between tools from the active item slot.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "CycleTools.dll",

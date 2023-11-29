@@ -60,18 +60,18 @@ internal sealed class SearchPhrase
         {
             return this.ExactMatch
                 ? this.Value.Equals(match, StringComparison.OrdinalIgnoreCase)
-                : match.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1;
+                : match.Contains(this.Value, StringComparison.OrdinalIgnoreCase);
         }
 
         var localMatch = this.Translation.Get($"tag.{match}").Default(string.Empty).ToString();
         if (!string.IsNullOrWhiteSpace(localMatch)
-            && localMatch.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1)
+            && localMatch.Contains(this.Value, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
         return this.ExactMatch
             ? this.Value.Equals(match, StringComparison.OrdinalIgnoreCase)
-            : match.IndexOf(this.Value, StringComparison.OrdinalIgnoreCase) != -1;
+            : match.Contains(this.Value, StringComparison.OrdinalIgnoreCase);
     }
 }

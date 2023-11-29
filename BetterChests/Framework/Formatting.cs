@@ -1,7 +1,6 @@
 namespace StardewMods.BetterChests.Framework;
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using StardewMods.Common.Enums;
 
@@ -10,17 +9,12 @@ using StardewMods.Common.Enums;
 /// </summary>
 internal static class Formatting
 {
-    private static readonly Lazy<Dictionary<string, string>> BlueprintsDataLazy =
-        new(() => Game1.content.Load<Dictionary<string, string>>("Data\\Blueprints"));
-
 #nullable disable
 
     /// <summary>Gets or sets SMAPI helper for providing translations.</summary>
     public static ITranslationHelper Translations { get; set; }
 
 #nullable enable
-
-    private static Dictionary<string, string> BlueprintsData => Formatting.BlueprintsDataLazy.Value;
 
     /// <summary>
     ///     Formats an area value using localized text when available.
@@ -205,16 +199,11 @@ internal static class Formatting
     {
         return value switch
         {
-            "Chest" when Game1.bigCraftableData.TryGetValue("130", out var bigCraftableData) => bigCraftableData
-                .DisplayName,
-            "Mini-Fridge" when Game1.bigCraftableData.TryGetValue("215", out var bigCraftableData) => bigCraftableData
-                .DisplayName,
-            "Stone Chest" when Game1.bigCraftableData.TryGetValue("232", out var bigCraftableData) => bigCraftableData
-                .DisplayName,
-            "Mini-Shipping Bin" when Game1.bigCraftableData.TryGetValue("248", out var bigCraftableData) =>
-                bigCraftableData.DisplayName,
-            "Junimo Chest" when Game1.bigCraftableData.TryGetValue("256", out var bigCraftableData) => bigCraftableData
-                .DisplayName,
+            "Chest" => ItemRegistry.GetData("(BC)130").DisplayName,
+            "Mini-Fridge" => ItemRegistry.GetData("(BC)215").DisplayName,
+            "Stone Chest" => ItemRegistry.GetData("(BC)232").DisplayName,
+            "Mini-Shipping Bin" => ItemRegistry.GetData("(BC)248").DisplayName,
+            "Junimo Chest" => ItemRegistry.GetData("(BC)256").DisplayName,
             "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) => buildingData.Name,
             "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => buildingData
                 .Name,
@@ -232,16 +221,11 @@ internal static class Formatting
     {
         return value switch
         {
-            "Chest" when Game1.bigCraftableData.TryGetValue("130", out var bigCraftableData) => bigCraftableData
-                .Description,
-            "Mini-Fridge" when Game1.bigCraftableData.TryGetValue("215", out var bigCraftableData) => bigCraftableData
-                .Description,
-            "Stone Chest" when Game1.bigCraftableData.TryGetValue("232", out var bigCraftableData) => bigCraftableData
-                .Description,
-            "Mini-Shipping Bin" when Game1.bigCraftableData.TryGetValue("248", out var bigCraftableData) =>
-                bigCraftableData.Description,
-            "Junimo Chest" when Game1.bigCraftableData.TryGetValue("256", out var bigCraftableData) => bigCraftableData
-                .Description,
+            "Chest" => ItemRegistry.GetData("(BC)130").Description,
+            "Mini-Fridge" => ItemRegistry.GetData("(BC)215").Description,
+            "Stone Chest" => ItemRegistry.GetData("(BC)232").Description,
+            "Mini-Shipping Bin" => ItemRegistry.GetData("(BC)248").Description,
+            "Junimo Chest" => ItemRegistry.GetData("(BC)256").Description,
             "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) => buildingData
                 .Description,
             "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => buildingData

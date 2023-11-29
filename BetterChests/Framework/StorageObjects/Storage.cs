@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
+using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Network;
@@ -301,7 +302,7 @@ internal abstract class Storage : IStorageData
     /// <summary>
     ///     Gets the items in the object's storage.
     /// </summary>
-    public abstract IList<Item?> Items { get; }
+    public abstract IInventory Inventory { get; }
 
     /// <inheritdoc />
     public virtual FeatureOption LabelChest
@@ -543,7 +544,7 @@ internal abstract class Storage : IStorageData
     {
         item.resetState();
         this.ClearNulls();
-        foreach (var existingItem in this.Items)
+        foreach (var existingItem in this.Inventory)
         {
             if (existingItem is null || !item.canStackWith(existingItem))
             {
@@ -557,12 +558,12 @@ internal abstract class Storage : IStorageData
             }
         }
 
-        if (this.Items.Count >= this.ActualCapacity)
+        if (this.Inventory.Count >= this.ActualCapacity)
         {
             return item;
         }
 
-        this.Items.Add(item);
+        this.Inventory.Add(item);
         return null;
     }
 
@@ -571,11 +572,11 @@ internal abstract class Storage : IStorageData
     /// </summary>
     public void ClearNulls()
     {
-        for (var index = this.Items.Count - 1; index >= 0; --index)
+        for (var index = this.Inventory.Count - 1; index >= 0; --index)
         {
-            if (this.Items[index] is null)
+            if (this.Inventory[index] is null)
             {
-                this.Items.RemoveAt(index);
+                this.Inventory.RemoveAt(index);
             }
         }
     }
@@ -586,7 +587,7 @@ internal abstract class Storage : IStorageData
     public virtual void ShowMenu()
     {
         var menu = new ItemGrabMenu(
-            this.Items,
+            this.Inventory,
             false,
             true,
             InventoryMenu.highlightAllItems,
@@ -660,7 +661,7 @@ internal abstract class Storage : IStorageData
             return;
         }
 
-        this.Items.Remove(item);
+        this.Inventory.Remove(item);
         this.ClearNulls();
         this.ShowMenu();
     }

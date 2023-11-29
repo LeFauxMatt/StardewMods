@@ -28,7 +28,6 @@ public sealed class ModEntry : Mod
     {
         Log.Monitor = this.Monitor;
         Formatting.Translations = this.Helper.Translation;
-        CommonHelpers.Multiplayer = this.Helper.Multiplayer;
         I18n.Init(this.Helper.Translation);
         Config.Init(this.Helper, this.ModManifest, this.ModConfig, this.features);
         Integrations.Init(this.Helper, this.ModConfig);

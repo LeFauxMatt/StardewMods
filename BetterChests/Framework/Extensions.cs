@@ -214,11 +214,11 @@ internal static class Extensions
 
         if (storage.OrganizeChestGroupBy == GroupBy.Default && storage.OrganizeChestSortBy == SortBy.Default)
         {
-            ItemGrabMenu.organizeItemsInList(storageObject.Items);
+            ItemGrabMenu.organizeItemsInList(storageObject.Inventory);
             return;
         }
 
-        var items = storageObject.Items.ToArray();
+        var items = storageObject.Inventory.ToArray();
         Array.Sort(
             items,
             (i1, i2) =>
@@ -287,10 +287,10 @@ internal static class Extensions
             Array.Reverse(items);
         }
 
-        storageObject.Items.Clear();
+        storageObject.Inventory.Clear();
         foreach (var item in items)
         {
-            storageObject.Items.Add(item);
+            storageObject.Inventory.Add(item);
         }
     }
 
@@ -302,7 +302,7 @@ internal static class Extensions
     /// <returns>Returns true if the item could be removed.</returns>
     public static bool RemoveItem(this StorageNode storage, Item item)
     {
-        return storage is { Data: Storage storageObject } && storageObject.Items.Remove(item);
+        return storage is { Data: Storage storageObject } && storageObject.Inventory.Remove(item);
     }
 
     /// <summary>
@@ -321,7 +321,7 @@ internal static class Extensions
         }
 
         var stack = item.Stack;
-        var tmp = (existingStacks && storageObject.Items.Any(otherItem => otherItem?.canStackWith(item) == true))
+        var tmp = (existingStacks && storageObject.Inventory.Any(otherItem => otherItem?.canStackWith(item) == true))
             || (storage.FilterItemsList.Any()
                 && !storage.FilterItemsList.All(filter => filter.StartsWith("!"))
                 && storage.FilterMatches(item))

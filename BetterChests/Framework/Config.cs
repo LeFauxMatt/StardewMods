@@ -238,12 +238,10 @@ internal sealed class Config
 
             Config.GMCM.AddTextOption(
                 Config.Manifest,
-                () => Config.ModConfig.SlotLockColor.ToStringFast(),
-                value => Config.ModConfig.SlotLockColor =
-                    ColorsExtensions.TryParse(value, out var color) ? color : Colors.Gray,
+                () => Config.ModConfig.SlotLockColor,
+                value => Config.ModConfig.SlotLockColor = value,
                 I18n.Config_SlotLockColor_Name,
-                I18n.Config_SlotLockColor_Tooltip,
-                ColorsExtensions.GetNames());
+                I18n.Config_SlotLockColor_Tooltip);
 
             Config.GMCM.AddBoolOption(
                 Config.Manifest,
