@@ -292,15 +292,12 @@ internal sealed class Integrations
     {
         Storages.StorageTypeRequested += this.OnStorageTypeRequested;
 
-        if (Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId)
-            && !this.config.VanillaStorages.ContainsKey("SaddleBag"))
+        if (Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
-            this.config.VanillaStorages.Add(
-                "SaddleBag",
-                new()
-                {
-                    CustomColorPicker = FeatureOption.Disabled,
-                });
+            this.config.VanillaStorages.TryAdd("SaddleBag", new()
+            {
+                CustomColorPicker = FeatureOption.Disabled,
+            });
         }
     }
 

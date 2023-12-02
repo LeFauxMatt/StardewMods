@@ -4,7 +4,7 @@
     <PropertyGroup>
         <Name>Expanded Storage</Name>
         <Description>Framework for adding new types of chests to the game.</Description>
-        <Version>2.1.0-alpha.1</Version>
+        <Version>2.1.0-alpha.2</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.ExpandedStorage</RootNamespace>
         <UniqueId>furyx639.ExpandedStorage</UniqueId>
@@ -13,4 +13,9 @@
     <ItemGroup>
 	    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     </ItemGroup>
+	<ItemGroup>
+		<SMAPIDependency Include="furyx639.BetterChests" required="false" />
+		<SMAPIDependency Include="spacechase0.GenericModConfigMenu" required="false" />
+		<SMAPIDependency Include="leclair.bettercrafting" required="false" />
+	</ItemGroup>
 </Project>

@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Enums;

@@ -10,7 +10,7 @@ internal sealed class ProjectFluentIntegration : ModIntegration<IProjectFluentAp
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public ProjectFluentIntegration(IModRegistry modRegistry)
-        : base(modRegistry, ProjectFluentIntegration.ModUniqueId)
+        : base(modRegistry, ProjectFluentIntegration.ModUniqueId, "2.0.0-alpha.20230814")
     {
         // Nothing
     }

@@ -47,7 +47,7 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
         {
             < 0 => int.MaxValue,
             > 0 => this.ResizeChestCapacity,
-            0 => Chest.capacity,
+            _ => Chest.capacity,
         };
 
     /// <inheritdoc />

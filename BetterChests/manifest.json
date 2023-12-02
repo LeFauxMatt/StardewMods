@@ -16,6 +16,18 @@
   "EntryDll": "BetterChests.dll",
   "Dependencies": [
     {
+      "UniqueID": "furyx639.ToolbarIcons",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "leclair.bettercrafting",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "Pathoschild.Automate",
+      "IsRequired": false
+    },
+    {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "IsRequired": false
     }

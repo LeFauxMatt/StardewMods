@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewValley.Inventories;
 using StardewValley.Mods;

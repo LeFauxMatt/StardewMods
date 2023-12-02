@@ -8,7 +8,6 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
 /// <summary>

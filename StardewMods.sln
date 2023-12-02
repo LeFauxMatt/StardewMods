@@ -18,10 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetterChests", "BetterChest
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "archived", "archived", "{5A0DE782-3A1A-411F-948C-7C96DC9FDF95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSAlternativeTextures", "archived\XSAlternativeTextures\XSAlternativeTextures.csproj", "{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XSLite", "archived\XSLite\XSLite.csproj", "{E6085D20-0427-4196-954A-8958DE22ACC9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\EasyAccess.csproj", "{774ACD31-6138-4707-A747-8C8E35519FC3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TooManyAnimals", "TooManyAnimals\TooManyAnimals.csproj", "{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}"
@@ -46,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsItCake", "archived\IsItCa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PocketSlimes", "archived\PocketSlimes\PocketSlimes.csproj", "{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelpfulSpouses", "HelpfulSpouses\HelpfulSpouses.csproj", "{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,12 +58,6 @@ Global
 		{8CEAB902-D2AB-4802-82E9-F4A6AB718BF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CEAB902-D2AB-4802-82E9-F4A6AB718BF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CEAB902-D2AB-4802-82E9-F4A6AB718BF4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6085D20-0427-4196-954A-8958DE22ACC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6085D20-0427-4196-954A-8958DE22ACC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6085D20-0427-4196-954A-8958DE22ACC9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{774ACD31-6138-4707-A747-8C8E35519FC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{774ACD31-6138-4707-A747-8C8E35519FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{774ACD31-6138-4707-A747-8C8E35519FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -108,13 +100,15 @@ Global
 		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F90B9E9-58C9-45B2-87E8-547BFB4D0A39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7CBD720D-02C8-4BC3-BB0C-72C14EAD8502} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
-		{E6085D20-0427-4196-954A-8958DE22ACC9} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{4A2026ED-BC33-4BD3-800A-B4C7C2EBA1FA} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{1F7A6349-0A3A-45CA-9170-588DE3B5C13E} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
 		{C9285074-54C5-4923-AFC0-DC3D117C9B0F} = {5A0DE782-3A1A-411F-948C-7C96DC9FDF95}
@@ -134,6 +128,7 @@ Global
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{9de51a63-31ac-4678-9d40-f9351844bea8}*SharedItemsImports = 5
+		Common\Common.projitems*{aa4cef05-e3da-45b8-80ad-e54ba33ce950}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
 		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13

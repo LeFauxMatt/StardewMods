@@ -1,7 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Globalization;
-using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;

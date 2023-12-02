@@ -14,6 +14,12 @@
   "Description": "Turns the town trash cans into chests.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "GarbageDay.dll",
+  "Dependencies": [
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "IsRequired": false
+    }
+  ],
   "UpdateKeys": [
     "Nexus:8204"
   ]

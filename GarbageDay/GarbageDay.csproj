@@ -4,7 +4,7 @@
     <PropertyGroup>
         <Name>Garbage Day</Name>
         <Description>Turns the town trash cans into chests.</Description>
-        <Version>3.1.0-alpha.1</Version>
+        <Version>3.1.0-alpha.2</Version>
         <EnableHarmony>true</EnableHarmony>
         <RootNamespace>StardewMods.GarbageDay</RootNamespace>
         <UniqueId>furyx639.GarbageDay</UniqueId>
@@ -13,4 +13,7 @@
     <ItemGroup>
 	    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     </ItemGroup>
+	<ItemGroup>
+		<SMAPIDependency Include="spacechase0.GenericModConfigMenu" required="false" />
+	</ItemGroup>
 </Project>
