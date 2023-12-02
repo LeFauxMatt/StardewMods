@@ -1,9 +1,7 @@
 namespace StardewMods.HelpfulSpouses.Chores;
 
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
 using StardewValley.Extensions;
-using StardewValley.Internal;
 
 /// <inheritdoc />
 internal sealed class BirthdayGift : IChore
@@ -11,16 +9,9 @@ internal sealed class BirthdayGift : IChore
     private static readonly Lazy<List<Item>> Items = new(
         delegate
         {
-            const string query = $"ALL_ITEMS {ItemRegistry.type_object}";
-            return ItemQueryResolver.TryResolve(
-                    query,
-                    null,
-                    ItemQuerySearchMode.AllOfTypeItem,
-                    true,
-                    null,
-                    delegate(string _, string error) { Log.Error("Failed parsing that query: " + error); })
-                .Select(result => result.Item)
-                .OfType<Item>()
+            return ItemRegistry.GetObjectTypeDefinition()
+                .GetAllIds()
+                .Select(localId => ItemRegistry.Create(ItemRegistry.type_object + localId))
                 .ToList();
         });
 
@@ -29,7 +20,6 @@ internal sealed class BirthdayGift : IChore
     private Item? birthdayGift;
 
     private NPC? birthdayNpc;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BirthdayGift"/> class.
@@ -138,16 +128,16 @@ internal sealed class BirthdayGift : IChore
         /// <summary>
         /// Gets or sets the chance that a liked item will be given.
         /// </summary>
-        public double ChanceForLike { get; set; } = 0.2;
+        public double ChanceForLike { get; set; } = 0.5;
 
         /// <summary>
         /// Gets or sets the chance that a loved item will be given.
         /// </summary>
-        public double ChanceForLove { get; set; } = 0.5;
+        public double ChanceForLove { get; set; } = 0.2;
 
         /// <summary>
         /// Gets or sets the chance that a neutral item will be given.
         /// </summary>
-        public double ChanceForNeutral { get; set; } = 0;
+        public double ChanceForNeutral { get; set; } = 0.1;
     }
 }

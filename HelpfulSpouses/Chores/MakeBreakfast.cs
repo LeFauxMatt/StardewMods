@@ -1,12 +1,21 @@
 namespace StardewMods.HelpfulSpouses.Chores;
 
-using StardewMods.Common.Helpers;
 using StardewValley.Extensions;
-using StardewValley.Internal;
 
 /// <inheritdoc />
 internal sealed class MakeBreakfast : IChore
 {
+    private static readonly Lazy<List<Item>> Items = new(
+        delegate
+        {
+            return ItemRegistry.GetObjectTypeDefinition()
+                .GetAllIds()
+                .Select(localId => ItemRegistry.type_object + localId)
+                .Where(id => ItemContextTagManager.HasBaseTag(id, "food_breakfast"))
+                .Select(id => ItemRegistry.Create(id))
+                .ToList();
+        });
+
     private Item? breakfast;
 
     /// <inheritdoc/>
@@ -30,18 +39,7 @@ internal sealed class MakeBreakfast : IChore
     /// <inheritdoc/>
     public bool TryPerformChore(NPC spouse)
     {
-        const string query = $"ALL_ITEMS {ItemRegistry.type_object} @has_category -7";
-        var items = ItemQueryResolver.TryResolve(
-            query,
-            null,
-            ItemQuerySearchMode.AllOfTypeItem,
-            true,
-            null,
-            delegate(string _, string error) { Log.Error("Failed parsing that query: " + error); })
-            .Select(result => result.Item as Item)
-            .Where(item => item is not null && item.HasContextTag("food_breakfast"))
-            .ToList();
-        this.breakfast = Game1.random.ChooseFrom(items);
+        this.breakfast = Game1.random.ChooseFrom(MakeBreakfast.Items.Value);
         return true;
     }
 }

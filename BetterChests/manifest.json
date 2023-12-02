@@ -10,13 +10,14 @@
   "UniqueID": "furyx639.BetterChests",
   "Name": "Better Chests",
   "Author": "furyx639",
-  "Version": "2.9.0-alpha.1",
+  "Version": "2.9.0-alpha.2",
   "Description": "Framework that adds new features to chests.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "BetterChests.dll",
   "Dependencies": [
     {
       "UniqueID": "furyx639.ToolbarIcons",
+      "MinimumVersion": "2.6.0-alpha.2",
       "IsRequired": false
     },
     {
@@ -29,6 +30,7 @@
     },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
       "IsRequired": false
     }
   ],

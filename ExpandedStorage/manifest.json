@@ -10,13 +10,14 @@
   "UniqueID": "furyx639.ExpandedStorage",
   "Name": "Expanded Storage",
   "Author": "furyx639",
-  "Version": "2.1.0-alpha.1",
+  "Version": "2.1.0-alpha.2",
   "Description": "Framework for adding new types of chests to the game.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "ExpandedStorage.dll",
   "Dependencies": [
     {
       "UniqueID": "furyx639.BetterChests",
+      "MinimumVersion": "2.9.0-alpha.2",
       "IsRequired": false
     },
     {
@@ -25,6 +26,7 @@
     },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
       "IsRequired": false
     }
   ],

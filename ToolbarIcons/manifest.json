@@ -10,13 +10,14 @@
   "UniqueID": "furyx639.ToolbarIcons",
   "Name": "Toolbar Icons",
   "Author": "furyx639",
-  "Version": "2.6.0-alpha.1",
+  "Version": "2.6.0-alpha.2",
   "Description": "Adds icons above or below the toolbar.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "ToolbarIcons.dll",
   "Dependencies": [
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
       "IsRequired": false
     }
   ],

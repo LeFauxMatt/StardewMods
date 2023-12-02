@@ -10,13 +10,14 @@
   "UniqueID": "furyx639.TooManyAnimals",
   "Name": "Too Many Animals",
   "Author": "furyx639",
-  "Version": "2.1.0-alpha.1",
+  "Version": "2.1.0-alpha.2",
   "Description": "Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "TooManyAnimals.dll",
   "Dependencies": [
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
       "IsRequired": false
     }
   ],

@@ -1,5 +1,11 @@
 # Toolbar Icons Change Log
 
+## 2.6.0 (Unreleased)
+
+### Changed
+
+* Updated for SDV 1.6 and .NET 6
+
 ## 2.5.0 (September 17, 2022)
 
 ### Added

@@ -1,10 +1,10 @@
 # Easy Access Change Log
 
-## 2.0.2 (Unreleased)
+## 2.1.0 (Unreleased)
 
 ### Changed
 
-* Removed FuryCore alert.
+* Updated for SDV 1.6 and .NET 6
 
 ## 2.0.1 (July 9, 2022)
 

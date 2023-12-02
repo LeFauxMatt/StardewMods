@@ -10,7 +10,7 @@
   "UniqueID": "furyx639.HelpfulSpouses",
   "Name": "Helpful Spouses",
   "Author": "furyx639",
-  "Version": "1.3.0-alpha.1",
+  "Version": "2.0.0-alpha.1",
   "Description": "Helpful Spouses (and Krobus) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "HelpfulSpouses.dll",
@@ -18,6 +18,11 @@
     {
       "UniqueID": "Shockah.ProjectFluent",
       "MinimumVersion": "2.0.0-alpha.20230814"
+    },
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
+      "IsRequired": false
     }
   ],
   "UpdateKeys": [

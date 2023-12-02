@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.9.0 (Unreleased)
+
+### Changed
+
+* Updated for SDV 1.6 and .NET 6
+
 ## 2.8.0 (September 19, 2022)
 
 ### Added

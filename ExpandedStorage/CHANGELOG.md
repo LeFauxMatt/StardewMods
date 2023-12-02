@@ -1,15 +1,10 @@
 # Expanded Storage Change Log
 
-# 2.1.0 (Unreleased)
+## 2.1.0 (Unreleased)
 
-### Added
+### Changed
 
-* Added a command `xs_shop` to open a Shop Menu with all Expanded Storage chests.
-
-### Fixed
-
-* Fixed Expanded Storage chests unable to be created as Junimo Chests or Mini-Fridges.
-* Fixed Item.canStackWith logic.
+* Updated for SDV 1.6 and .NET 6
 
 # 2.0.3 (September 21, 2022)
 

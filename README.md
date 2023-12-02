@@ -45,6 +45,14 @@ Framework for adding new types of chests to the game.
 
 Converts Garbage Cans on the map into storages
 
+## [Helpful Spouses](https://www.nexusmods.com/stardewvalley/mods/5175)
+
+( [source](HelpfulSpouses)
+| [docs](HelpfulSpouses/README.md)
+| [changelog](HelpfulSpouses/CHANGELOG.md) )
+
+Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.
+
 ## [Is It Cake?](https://www.nexusmods.com/stardewvalley/mods/)
 
 ( [source](IsItCake)
