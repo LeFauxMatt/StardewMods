@@ -13,7 +13,7 @@
   "storage.Object.name": "Объект",
   "storage.Other.name": "Другое",
   // Effects
-  "effect.carry-chest-slow.description": "Перевес -{0} Скорости",
+  "effect.carry-chest-slow.description": "Перевес -{{speed}} Скорости",
   // Config Pages
   "section.general.name": "Общее",
   "section.general.description": "Общие настройки.",
@@ -34,11 +34,11 @@
   "config.carry-chest-limit.tooltip": "Ограничивает количество сундуков с вещами которые можно переносить одновременно.",
   "config.carry-chest-limit.value-unlimited": "Бесконечно",
   "config.carry-chest-limit.value-one": "1 сундук",
-  "config.carry-chest-limit.value-many": "{0} сундуков",
+  "config.carry-chest-limit.value-many": "{{chests}} сундуков",
   "config.carry-chest-slow.name": "Замедление Переноски Сундука",
   "config.carry-chest-slow.tooltip": "Перенос сундука с вещами уменьшит вашу скорость.",
   "config.carry-chest-slow.value-zero": "Обычная скорость",
-  "config.carry-chest-slow.value": "-{0}x скорость",
+  "config.carry-chest-slow.value": "-{{speed}}x скорость",
   "config.carry-chest-slow-amount.name": "Замедление Переноса Сундука",
   "config.carry-chest-slow-amount.tooltip": "Насколько вас замедляет перенос сундука.",
   "config.categorize-chest.name": "Категоризовать сундук",
@@ -94,13 +94,7 @@
   "config.resize-chest-capacity.name": "Изменить размер сундука.",
   "config.resize-chest-capacity.tooltip": "Изменить число слотов для предметов в сундуке (-1 для бесконечного места в сундуке).",
   "config.resize-chest-capacity.value-unlimited": "Бесконечно",
-  "config.resize-chest-capacity.value-many": "{0} предметов",
-  "config.resize-chest-menu.name": "Поменять размер меню сундуков",
-  "config.resize-chest-menu.tooltip": "Позволяет меню инвентаря сундука показывать больше рядов предметов.",
-  "config.resize-chest-menu-rows.name": "Изменить количество рядов в меню сундуков",
-  "config.resize-chest-menu-rows.tooltip": "Изменить количество рядов предметов в меню инвентаря сундуков.",
-  "config.resize-chest-menu-rows.value-one": "1 ряд",
-  "config.resize-chest-menu-rows.value-many": "{0} рядов",
+  "config.resize-chest-capacity.value-many": "{{items}} предметов",
   "config.search-items.name": "Поиск предметов",
   "config.search-items.tooltip": "Добавляет строку поиска в меню инвентаря сундуков.",
   "config.search-items-symbol.name": "Символ для поиска по тагам.",
@@ -128,7 +122,7 @@
   // Feature Option Formatting
   "config.range-distance.value-unlimited": "Бесконечное",
   "config.range-distance.value-one": "1 тайл",
-  "config.range-distance.value-many": "{0} тайлов",
+  "config.range-distance.value-many": "{{tiles}} тайлов",
   // Controls Config
   "config.close-chest-finder.name": "Закрыть поиск сундука",
   "config.close-chest-finder.tooltip": "Кнопка для закрытия строки поиска сундуков.",
@@ -342,5 +336,5 @@
   "tag.wine_item": "wine_item",
   "tag.wood_item": "wood_item",
   // Warnings
-  "warn.incompatibility.disabled": "{0} автоматически выключен со следующим модом/модами: {1}"
+  "warn.incompatibility.disabled": "{{feature}} автоматически выключен со следующим модом/модами: {{mods}}"
 }

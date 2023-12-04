@@ -187,7 +187,6 @@ internal sealed class ModConfig : IStorageData
     {
         var sb = new StringBuilder();
         sb.AppendLine(" Main Config".PadLeft(50, '=')[^50..]);
-        sb.AppendLine($"BetterShippingBin: {this.BetterShippingBin.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"CarryChestSlowAmount: {this.CarryChestSlowAmount.ToString(CultureInfo.InvariantCulture)}");
         sb.AppendLine($"ChestFinder: {this.ChestFinder.ToString(CultureInfo.InvariantCulture)}");

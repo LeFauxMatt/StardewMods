@@ -13,7 +13,7 @@
   "storage.Object.name": "개체",
   "storage.Other.name": "기타",
   // Effects
-  "effect.carry-chest-slow.description": "과부하 -{0} 속도",
+  "effect.carry-chest-slow.description": "과부하 -{{speed}} 속도",
   // Config Pages
   "section.general.name": "일반",
   "section.general.description": "기능에 대한 일반 사용자 정의 옵션.",
@@ -34,11 +34,11 @@
   "config.carry-chest-limit.tooltip": "한 번에 휴대할 수 있는 아이템이 있는 상자의 수를 제한합니다.",
   "config.carry-chest-limit.value-unlimited": "무제한",
   "config.carry-chest-limit.value-one": "1 상자",
-  "config.carry-chest-limit.value-many": "{0} 상자",
+  "config.carry-chest-limit.value-many": "{{chests}} 상자",
   "config.carry-chest-slow.name": "상자 이동 속도",
   "config.carry-chest-slow.tooltip": "아이템이 든 상자를 들고 다니면 감속 효과가 적용됩니다.",
   "config.carry-chest-slow.value-zero": "정상 속도",
-  "config.carry-chest-slow.value": "-{0}x 속도",
+  "config.carry-chest-slow.value": "-{{speed}}x 속도",
   "config.carry-chest-slow-amount.name": "상자 이동 속도",
   "config.carry-chest-slow-amount.tooltip": "상자를 들고 이동할 때 느려지는 정도.",
   "config.categorize-chest.name": "상자 분류",
@@ -94,13 +94,7 @@
   "config.resize-chest-capacity.name": "상자 용량 크기 조정",
   "config.resize-chest-capacity.tooltip": "상자 보관 슬롯을 늘립니다(무제한 저장의 경우 -1 사용)",
   "config.resize-chest-capacity.value-unlimited": "무제한",
-  "config.resize-chest-capacity.value-many": "{0} 칸",
-  "config.resize-chest-menu.name": "상자 행 크기 조정",
-  "config.resize-chest-menu.tooltip": "상자에 더 많은 아이템 행을 표시할 수 있습니다.",
-  "config.resize-chest-menu-rows.name": "상자 행 크기 조정",
-  "config.resize-chest-menu-rows.tooltip": "상자에 더 많은 아이템 행을 표시할 수 있습니다.",
-  "config.resize-chest-menu-rows.value-one": "1 줄",
-  "config.resize-chest-menu-rows.value-many": "{0} 줄",
+  "config.resize-chest-capacity.value-many": "{{items}} 칸",
   "config.search-items.name": "아이템 검색",
   "config.search-items.tooltip": "상자 인벤토리 메뉴 상단에 검색창을 추가합니다.",
   "config.search-items-symbol.name": "태그 기호 검색",
@@ -120,7 +114,7 @@
   "config.stash-to-chest-stacks.name": "기존 스택에 보관",
   "config.stash-to-chest-stacks.tooltip": "보관시 상자의 기존 스택에 아이템이 채워집니다.",
   "config.transfer-items.name": "아이템 전송",
-  "config.transfer-items.tooltip": "상자 안으로 또는 상자 밖으로 아이템을 전송합니다.", 
+  "config.transfer-items.tooltip": "상자 안으로 또는 상자 밖으로 아이템을 전송합니다.",
   "config.unload-chest.name": "상자 내리기",
   "config.unload-chest.tooltip": "배치된 상자에 들고 있는 상자를 올려 놓으면 아이템이 배치된 상자로 이동됩니다.",
   "config.unload-chest-combine.name": "상자 결합 내리기",
@@ -128,7 +122,7 @@
   // Feature Option Formatting
   "config.range-distance.value-unlimited": "무제한",
   "config.range-distance.value-one": "1 타일",
-  "config.range-distance.value-many": "{0} 타일",
+  "config.range-distance.value-many": "{{tiles}} 타일",
   // Controls Config
   "config.close-chest-finder.name": "가슴 찾기 닫기",
   "config.close-chest-finder.tooltip": "상자 찾기 검색 표시줄을 닫는 키.",
@@ -342,5 +336,5 @@
   "tag.wine_item": "wine_item",
   "tag.wood_item": "wood_item",
   // Warnings
-  "warn.incompatibility.disabled": "{0}은(는) 다음 모드에서 자동으로 비활성화됩니다: {1}"
+  "warn.incompatibility.disabled": "{{feature}}은(는) 다음 모드에서 자동으로 비활성화됩니다: {{mods}}"
 }
