@@ -13,7 +13,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
-using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewValley.Menus;
 
@@ -24,23 +23,7 @@ internal sealed class BetterItemGrabMenu : Feature
 {
     private const string Id = "furyx639.BetterChests/BetterItemGrabMenu";
 
-    private static readonly MethodBase InventoryMenuConstructor = AccessTools.Constructor(
-        typeof(InventoryMenu),
-        new[]
-        {
-            typeof(int),
-            typeof(int),
-            typeof(bool),
-            typeof(IList<Item>),
-            typeof(InventoryMenu.highlightThisItem),
-            typeof(int),
-            typeof(int),
-            typeof(int),
-            typeof(int),
-            typeof(bool),
-        });
-
-    private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(
+    private static readonly MethodBase InventoryMenuDraw = AccessTools.DeclaredMethod(
         typeof(InventoryMenu),
         nameof(InventoryMenu.draw),
         new[]
@@ -51,64 +34,21 @@ internal sealed class BetterItemGrabMenu : Feature
             typeof(int),
         });
 
-    private static readonly ConstructorInfo[] ItemGrabMenuConstructor =
-    {
-        AccessTools.Constructor(
-            typeof(ItemGrabMenu),
-            new[]
-            {
-                typeof(IList<Item>),
-                typeof(bool),
-                typeof(bool),
-                typeof(InventoryMenu.highlightThisItem),
-                typeof(ItemGrabMenu.behaviorOnItemSelect),
-                typeof(string),
-                typeof(ItemGrabMenu.behaviorOnItemSelect),
-                typeof(bool),
-                typeof(bool),
-                typeof(bool),
-                typeof(bool),
-                typeof(bool),
-                typeof(int),
-                typeof(Item),
-                typeof(int),
-                typeof(object),
-                typeof(ItemExitBehavior),
-                typeof(bool),
-            }),
-        AccessTools.Constructor(
-            typeof(ItemGrabMenu),
-            new[]
-            {
-                typeof(IList<Item>),
-                typeof(object),
-            }),
-    };
+    private static readonly List<ConstructorInfo> ItemGrabMenuConstructor =
+        AccessTools.GetDeclaredConstructors(typeof(ItemGrabMenu));
 
-    private static readonly MethodBase ItemGrabMenuDraw = AccessTools.Method(
+    private static readonly MethodBase ItemGrabMenuDraw = AccessTools.DeclaredMethod(
         typeof(ItemGrabMenu),
-        nameof(ItemGrabMenu.draw),
-        new[] { typeof(SpriteBatch) });
+        nameof(ItemGrabMenu.draw));
 
-    private static readonly MethodBase ItemGrabMenuOrganizeItemsInList = AccessTools.Method(
+    private static readonly MethodBase ItemGrabMenuOrganizeItemsInList = AccessTools.DeclaredMethod(
         typeof(ItemGrabMenu),
         nameof(ItemGrabMenu.organizeItemsInList));
 
-    private static readonly MethodBase MenuWithInventoryConstructor = AccessTools.Constructor(
-        typeof(MenuWithInventory),
-        new[]
-        {
-            typeof(InventoryMenu.highlightThisItem),
-            typeof(bool),
-            typeof(bool),
-            typeof(int),
-            typeof(int),
-            typeof(int),
-            typeof(ItemExitBehavior),
-            typeof(bool),
-        });
+    private static readonly ConstructorInfo MenuWithInventoryConstructor =
+        AccessTools.DeclaredConstructor(typeof(MenuWithInventory));
 
-    private static readonly MethodBase MenuWithInventoryDraw = AccessTools.Method(
+    private static readonly MethodBase MenuWithInventoryDraw = AccessTools.DeclaredMethod(
         typeof(MenuWithInventory),
         nameof(MenuWithInventory.draw),
         new[]
@@ -306,11 +246,6 @@ internal sealed class BetterItemGrabMenu : Feature
             BetterItemGrabMenu.ItemGrabMenuConstructor[1],
             new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix)));
         this.harmony.Patch(
-            BetterItemGrabMenu.ItemGrabMenuConstructor[0],
-            transpiler: new(
-                typeof(BetterItemGrabMenu),
-                nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_transpiler)));
-        this.harmony.Patch(
             BetterItemGrabMenu.ItemGrabMenuDraw,
             new(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_draw_prefix)));
         this.harmony.Patch(
@@ -364,11 +299,6 @@ internal sealed class BetterItemGrabMenu : Feature
             BetterItemGrabMenu.ItemGrabMenuConstructor[1],
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_prefix)));
         this.harmony.Unpatch(
-            BetterItemGrabMenu.ItemGrabMenuConstructor[0],
-            AccessTools.Method(
-                typeof(BetterItemGrabMenu),
-                nameof(BetterItemGrabMenu.ItemGrabMenu_constructor_transpiler)));
-        this.harmony.Unpatch(
             BetterItemGrabMenu.ItemGrabMenuDraw,
             AccessTools.Method(typeof(BetterItemGrabMenu), nameof(BetterItemGrabMenu.ItemGrabMenu_draw_prefix)));
         this.harmony.Unpatch(
@@ -398,51 +328,6 @@ internal sealed class BetterItemGrabMenu : Feature
             : ReferenceEquals(inventoryMenu, BetterItemGrabMenu.ItemsToGrabMenu?.Menu)
                 ? BetterItemGrabMenu.ItemsToGrabMenu.Items
                 : actualInventory;
-    }
-
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    private static InventoryMenu GetItemsToGrabMenu(
-        int xPosition,
-        int yPosition,
-        bool playerInventory,
-        IList<Item> actualInventory,
-        InventoryMenu.highlightThisItem highlightMethod,
-        int capacity,
-        int rows,
-        int horizontalGap,
-        int verticalGap,
-        bool drawSlots,
-        ItemGrabMenu menu)
-    {
-        if (BetterItemGrabMenu.Context is not
-            {
-                ResizeChestMenu: FeatureOption.Enabled, MenuCapacity: > 0, MenuRows: > 0,
-            })
-        {
-            return new(
-                xPosition,
-                yPosition,
-                playerInventory,
-                actualInventory,
-                highlightMethod,
-                capacity,
-                rows,
-                horizontalGap,
-                verticalGap,
-                drawSlots);
-        }
-
-        return new(
-            menu.xPositionOnScreen + (Game1.tileSize / 2),
-            menu.yPositionOnScreen,
-            playerInventory,
-            actualInventory,
-            highlightMethod,
-            BetterItemGrabMenu.Context.MenuCapacity,
-            BetterItemGrabMenu.Context.MenuRows,
-            horizontalGap,
-            verticalGap,
-            drawSlots);
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -514,48 +399,6 @@ internal sealed class BetterItemGrabMenu : Feature
         __instance.context = context;
         BetterItemGrabMenu.Context = storage;
         BetterItemGrabMenu.instance.constructing.InvokeAll(BetterItemGrabMenu.instance, __instance);
-    }
-
-    /// <summary>Replace assignments to ItemsToGrabMenu with method.</summary>
-    [SuppressMessage(
-        "ReSharper",
-        "HeapView.BoxingAllocation",
-        Justification = "Boxing allocation is required for Harmony.")]
-    private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        CodeInstruction? newObj = null;
-
-        foreach (var instruction in instructions)
-        {
-            if (newObj is not null)
-            {
-                if (instruction.StoresField(
-                    AccessTools.Field(typeof(ItemGrabMenu), nameof(ItemGrabMenu.ItemsToGrabMenu))))
-                {
-                    yield return new(OpCodes.Ldarg_0);
-                    yield return new(
-                        CodeInstruction.Call(
-                            typeof(BetterItemGrabMenu),
-                            nameof(BetterItemGrabMenu.GetItemsToGrabMenu)));
-                }
-                else
-                {
-                    yield return newObj;
-                }
-
-                yield return instruction;
-                newObj = null;
-            }
-            else if (instruction.Is(OpCodes.Newobj, BetterItemGrabMenu.InventoryMenuConstructor))
-            {
-                newObj = instruction;
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

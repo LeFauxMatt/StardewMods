@@ -81,9 +81,6 @@ internal sealed class LegacyStorageData
                     case "CraftFromChest":
                         betterChestsData.CraftFromChest = FeatureOptionRange.Default;
                         continue;
-                    case "ExpandedMenu":
-                        betterChestsData.ResizeChestMenu = FeatureOption.Enabled;
-                        continue;
                     case "InventoryTabs":
                         betterChestsData.ChestMenuTabs = FeatureOption.Enabled;
                         continue;
@@ -122,9 +119,6 @@ internal sealed class LegacyStorageData
                         continue;
                     case "CraftFromChest":
                         betterChestsData.CraftFromChest = FeatureOptionRange.Disabled;
-                        continue;
-                    case "ExpandedMenu":
-                        betterChestsData.ResizeChestMenu = FeatureOption.Disabled;
                         continue;
                     case "InventoryTabs":
                         betterChestsData.ChestMenuTabs = FeatureOption.Disabled;

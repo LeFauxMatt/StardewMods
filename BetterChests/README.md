@@ -21,7 +21,6 @@ Adds enhanced chest features to the game.
     * [Open Held Chest](#open-held-chest)
     * [Organize Chest](#organize-chest)
     * [Resize Chest](#resize-chest)
-    * [Resize Chest Menu](#resize-chest-menu)
     * [Search Items](#search-items)
     * [Slot Lock](#slot-lock)
     * [Stash To Chest](#stash-to-chest)
@@ -249,18 +248,6 @@ unlimited storage.<sup>1</sup>
 3. Use `-1` for "unlimited" items or a positive multiple of 12 for limited storage.
 4. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
-### Resize Chest Menu
-
-The default chest menu can show 3 rows of items at once. With Resize Chest Menu enabled you can display anywhere between
-3 and 6 rows of items.
-
-| Config              | Description                            | Default Value | Other Value(s)                        |
-|:--------------------|:---------------------------------------|:--------------|:--------------------------------------|
-| ResizeChestMenu     | Enables the Resize Chest Menu feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| ResizeChestMenuRows | The number of rows to show.            | `5`           | `3`, `4`, `5`, `6`                    |
-
-1. See [Option Values](#option-values).
-
 ### Search Items
 
 Adds a search bar to the top of the Chest Menu to only display items that meet a search criteria.
@@ -321,10 +308,10 @@ Adds buttons that transfer all items into or out of the currently opened chest.
 While carrying a chest and facing another chest, hit the Use Tool button to unload the carried chests contents into the
 placed chest.
 
-| Config Option      | Description                       | Default Value | Other Value(s)                        |
-|:-------------------|:----------------------------------|:---------------|:-------------------------------------|
-| UnloadChest        | Enables the Unload Chest feature. | `"Disabled"`   | `"Enabled"`, `"Default"`<sup>1</sup> |
-| UnloadChestCombine | Combine source chest with target  | `"Disabled"`   | `"Enabled"`                          |
+| Config Option      | Description                       | Default Value | Other Value(s)                       |
+|:-------------------|:----------------------------------|:--------------|:-------------------------------------|
+| UnloadChest        | Enables the Unload Chest feature. | `"Disabled"`  | `"Enabled"`, `"Default"`<sup>1</sup> |
+| UnloadChestCombine | Combine source chest with target  | `"Disabled"`  | `"Enabled"`                          |
 
 1. See [Option Values](#option-values).
 

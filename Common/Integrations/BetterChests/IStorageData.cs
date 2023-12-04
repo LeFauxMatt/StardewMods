@@ -131,16 +131,6 @@ public interface IStorageData
     public int ResizeChestCapacity { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating if the chest menu can have it's number of rows resized.
-    /// </summary>
-    public FeatureOption ResizeChestMenu { get; set; }
-
-    /// <summary>
-    ///     Gets or sets a value indicating the number of rows that the chest menu will have.
-    /// </summary>
-    public int ResizeChestMenuRows { get; set; }
-
-    /// <summary>
     ///     Gets or sets a value indicating if a search bar will be added to the chest menu.
     /// </summary>
     public FeatureOption SearchItems { get; set; }
@@ -216,8 +206,6 @@ public interface IStorageData
         other.OrganizeChestSortBy = this.OrganizeChestSortBy;
         other.ResizeChest = this.ResizeChest;
         other.ResizeChestCapacity = this.ResizeChestCapacity;
-        other.ResizeChestMenu = this.ResizeChestMenu;
-        other.ResizeChestMenuRows = this.ResizeChestMenuRows;
         other.SearchItems = this.SearchItems;
         other.StashToChest = this.StashToChest;
         other.StashToChestDisableLocations = new(this.StashToChestDisableLocations);

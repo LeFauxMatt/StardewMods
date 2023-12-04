@@ -7,7 +7,6 @@ using System.Linq;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
-using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>
@@ -17,10 +16,6 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
 {
     private readonly HashSet<string> cachedFilterList = new();
     private readonly ItemMatcher filterMatcher = new(true);
-
-    private int capacity;
-    private int menuRows;
-    private int rows;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="StorageNode" /> class.
@@ -290,40 +285,6 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
         set => this.Data.LabelChest = value;
     }
 
-    /// <summary>
-    ///     Gets the calculated capacity of the <see cref="InventoryMenu" />.
-    /// </summary>
-    public int MenuCapacity => this.MenuRows * 12;
-
-    /// <summary>
-    ///     Gets the number of rows to display on the <see cref="InventoryMenu" /> based on
-    ///     <see cref="IStorageData.ResizeChestMenuRows" />.
-    /// </summary>
-    public int MenuRows
-    {
-        get
-        {
-            if (this.menuRows > 0
-                && this.capacity == this.ResizeChestCapacity
-                && this.rows == this.ResizeChestMenuRows)
-            {
-                return this.menuRows;
-            }
-
-            this.capacity = this.ResizeChestCapacity;
-            this.rows = this.ResizeChestMenuRows;
-            return this.menuRows = (int)Math.Min(
-                this.ActualCapacity switch
-                {
-                    0 or Chest.capacity => 3,
-                    _ when this.ResizeChestMenuRows <= 0 => 3,
-                    < 0 or >= 72 => this.ResizeChestMenuRows,
-                    < 72 => this.ResizeChestMenuRows,
-                },
-                Math.Ceiling(this.ActualCapacity / 12f));
-        }
-    }
-
     /// <inheritdoc />
     public FeatureOption OpenHeldChest
     {
@@ -395,26 +356,6 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
     {
         get => this.Data.ResizeChestCapacity != 0 ? this.Data.ResizeChestCapacity : this.Parent.ResizeChestCapacity;
         set => this.Data.ResizeChestCapacity = value;
-    }
-
-    /// <inheritdoc />
-    public FeatureOption ResizeChestMenu
-    {
-        get => this.Data.ResizeChestMenu switch
-        {
-            _ when this.Parent.ResizeChestMenu is FeatureOption.Disabled => FeatureOption.Disabled,
-            FeatureOption.Default when this.Parent.ResizeChestMenu is FeatureOption.Default => FeatureOption.Disabled,
-            FeatureOption.Default => this.Parent.ResizeChestMenu,
-            _ => this.Data.ResizeChestMenu,
-        };
-        set => this.Data.ResizeChestMenu = value;
-    }
-
-    /// <inheritdoc />
-    public int ResizeChestMenuRows
-    {
-        get => this.Data.ResizeChestMenuRows != 0 ? this.Data.ResizeChestMenuRows : this.Parent.ResizeChestMenuRows;
-        set => this.Data.ResizeChestMenuRows = value;
     }
 
     /// <inheritdoc />

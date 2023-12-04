@@ -77,9 +77,6 @@ public sealed class ModEntry : Mod
             () => this.ModConfig.OrganizeChest is not FeatureOption.Disabled);
         this.AddFeature(ResizeChest.Init(), () => this.ModConfig.ResizeChest is not FeatureOption.Disabled);
         this.AddFeature(
-            ResizeChestMenu.Init(this.Helper),
-            () => this.ModConfig.ResizeChestMenu is not FeatureOption.Disabled);
-        this.AddFeature(
             SearchItems.Init(this.Helper, this.ModConfig),
             () => this.ModConfig.SearchItems is not FeatureOption.Disabled);
         this.AddFeature(SlotLock.Init(this.Helper, this.ModConfig), () => this.ModConfig.SlotLock);

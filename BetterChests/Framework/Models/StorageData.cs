@@ -83,12 +83,6 @@ internal sealed class StorageData : IStorageData
     public int ResizeChestCapacity { get; set; }
 
     /// <inheritdoc />
-    public FeatureOption ResizeChestMenu { get; set; } = FeatureOption.Default;
-
-    /// <inheritdoc />
-    public int ResizeChestMenuRows { get; set; }
-
-    /// <inheritdoc />
     public FeatureOption SearchItems { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />
@@ -223,16 +217,6 @@ internal sealed class StorageData : IStorageData
         if (this.ResizeChestCapacity != 0)
         {
             sb.AppendLine($"ResizeChestCapacity: {this.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
-        }
-
-        if (this.ResizeChestMenu is not FeatureOption.Default)
-        {
-            sb.AppendLine($"ResizeChestMenu: {this.ResizeChestMenu.ToStringFast()}");
-        }
-
-        if (this.ResizeChestMenuRows != 0)
-        {
-            sb.AppendLine($"ResizeChestMenuRows: {this.ResizeChestMenuRows.ToString(CultureInfo.InvariantCulture)}");
         }
 
         if (this.SearchItems is not FeatureOption.Default)

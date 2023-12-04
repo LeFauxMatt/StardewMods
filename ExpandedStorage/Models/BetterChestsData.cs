@@ -80,12 +80,6 @@ internal sealed class BetterChestsData : IStorageData
     public int ResizeChestCapacity { get; set; }
 
     /// <inheritdoc />
-    public FeatureOption ResizeChestMenu { get; set; } = FeatureOption.Default;
-
-    /// <inheritdoc />
-    public int ResizeChestMenuRows { get; set; }
-
-    /// <inheritdoc />
     public FeatureOption SearchItems { get; set; } = FeatureOption.Default;
 
     /// <inheritdoc />

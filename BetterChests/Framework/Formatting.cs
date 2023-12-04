@@ -67,23 +67,6 @@ internal static class Formatting
     }
 
     /// <summary>
-    ///     Formats chest menu rows using localized text when available.
-    /// </summary>
-    /// <param name="value">The value for rows to format.</param>
-    /// <returns>Localized text for the number of rows.</returns>
-    public static string ChestMenuRows(int value)
-    {
-        return value switch
-        {
-            (int)FeatureOption.Default => I18n.Option_Default_Name(),
-            (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
-            _ => string.Format(
-                I18n.Config_ResizeChestMenuRows_ValueMany(),
-                (value - (int)FeatureOption.Enabled + 3).ToString()),
-        };
-    }
-
-    /// <summary>
     ///     Formats range distance using localized text when available.
     /// </summary>
     /// <param name="value">The value for range distance to format.</param>

@@ -45,29 +45,6 @@ internal static class Extensions
     }
 
     /// <summary>
-    ///     Add a chest menu rows option at the current position in the form.
-    /// </summary>
-    /// <param name="gmcm">Integration for GMCM.</param>
-    /// <param name="manifest">The mod's manifest.</param>
-    /// <param name="data">The storage data.</param>
-    public static void AddChestMenuRowsOption(
-        this GenericModConfigMenuIntegration gmcm,
-        IManifest manifest,
-        IStorageData data)
-    {
-        gmcm.Api!.AddNumberOption(
-            manifest,
-            data.GetChestMenuRows,
-            data.SetChestMenuRows,
-            I18n.Config_ResizeChestMenuRows_Name,
-            I18n.Config_ResizeChestMenuRows_Tooltip,
-            0,
-            5,
-            1,
-            Formatting.ChestMenuRows);
-    }
-
-    /// <summary>
     ///     Add a distance option at the current position in the form.
     /// </summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -395,16 +372,6 @@ internal static class Extensions
         };
     }
 
-    private static int GetChestMenuRows(this IStorageData data)
-    {
-        return data.ResizeChestMenuRows switch
-        {
-            _ when data.ResizeChestMenu is FeatureOption.Default => (int)FeatureOption.Default,
-            _ when data.ResizeChestMenu is FeatureOption.Disabled => (int)FeatureOption.Disabled,
-            _ => (int)FeatureOption.Enabled + data.ResizeChestMenuRows - 3,
-        };
-    }
-
     private static int GetDistance(this IStorageData data, string featureName)
     {
         var feature = featureName switch
@@ -467,23 +434,6 @@ internal static class Extensions
         };
 
         data.ResizeChest = value switch
-        {
-            (int)FeatureOption.Default => FeatureOption.Default,
-            (int)FeatureOption.Disabled => FeatureOption.Disabled,
-            _ => FeatureOption.Enabled,
-        };
-    }
-
-    private static void SetChestMenuRows(this IStorageData data, int value)
-    {
-        data.ResizeChestMenuRows = value switch
-        {
-            (int)FeatureOption.Default => 0,
-            (int)FeatureOption.Disabled => 0,
-            _ => 3 + value - (int)FeatureOption.Enabled,
-        };
-
-        data.ResizeChestMenu = value switch
         {
             (int)FeatureOption.Default => FeatureOption.Default,
             (int)FeatureOption.Disabled => FeatureOption.Disabled,

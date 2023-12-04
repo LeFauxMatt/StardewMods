@@ -129,16 +129,6 @@ internal static class Extensions
             other.ResizeChestCapacity = storageData.ResizeChestCapacity;
         }
 
-        if (other.ResizeChestMenu is FeatureOption.Default)
-        {
-            other.ResizeChestMenu = storageData.ResizeChestMenu;
-        }
-
-        if (other.ResizeChestMenuRows == 0)
-        {
-            other.ResizeChestMenuRows = storageData.ResizeChestMenuRows;
-        }
-
         if (other.SearchItems is FeatureOption.Default)
         {
             other.SearchItems = storageData.SearchItems;

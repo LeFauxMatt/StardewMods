@@ -131,12 +131,6 @@ internal sealed class ModConfig : IStorageData
     public int ResizeChestCapacity { get; set; } = 60;
 
     /// <inheritdoc />
-    public FeatureOption ResizeChestMenu { get; set; } = FeatureOption.Enabled;
-
-    /// <inheritdoc />
-    public int ResizeChestMenuRows { get; set; } = 5;
-
-    /// <inheritdoc />
     public FeatureOption SearchItems { get; set; } = FeatureOption.Enabled;
 
     /// <summary>

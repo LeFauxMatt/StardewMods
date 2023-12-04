@@ -412,26 +412,6 @@ internal abstract class Storage : IStorageData
     }
 
     /// <inheritdoc />
-    public virtual FeatureOption ResizeChestMenu
-    {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestMenu", out var value)
-            && FeatureOptionExtensions.TryParse(value, out var option, true)
-                ? option
-                : FeatureOption.Default;
-        set => this.ModData["furyx639.BetterChests/ResizeChestMenu"] = value.ToStringFast();
-    }
-
-    /// <inheritdoc />
-    public virtual int ResizeChestMenuRows
-    {
-        get => this.ModData.TryGetValue("furyx639.BetterChests/ResizeChestMenuRows", out var value)
-            && int.TryParse(value, out var rows)
-                ? rows
-                : 0;
-        set => this.ModData["furyx639.BetterChests/ResizeChestMenuRows"] = value.ToString();
-    }
-
-    /// <inheritdoc />
     public virtual FeatureOption SearchItems
     {
         get => this.ModData.TryGetValue("furyx639.BetterChests/SearchItems", out var value)

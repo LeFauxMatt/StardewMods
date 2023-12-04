@@ -562,7 +562,6 @@ internal sealed class Config
                     case nameof(OpenHeldChest) when Config.ModConfig.OpenHeldChest is FeatureOption.Disabled:
                     case nameof(OrganizeChest) when Config.ModConfig.OrganizeChest is FeatureOption.Disabled:
                     case nameof(ResizeChest) when Config.ModConfig.ResizeChest is FeatureOption.Disabled:
-                    case nameof(ResizeChestMenu) when Config.ModConfig.ResizeChestMenu is FeatureOption.Disabled:
                     case nameof(SearchItems) when Config.ModConfig.SearchItems is FeatureOption.Disabled:
                     case nameof(StashToChest) when Config.ModConfig.StashToChest is FeatureOptionRange.Disabled:
                     case nameof(TransferItems) when Config.ModConfig.TransferItems is FeatureOption.Disabled:
@@ -797,30 +796,6 @@ internal sealed class Config
                     I18n.Config_ResizeChestCapacity_Tooltip);
                 return;
 
-            case nameof(ResizeChest) when storage.ConfigureMenu is InGameMenu.Full:
-                Integrations.GMCM.AddChestCapacityOption(manifest, data);
-                return;
-
-            case nameof(ResizeChestMenu) when storage.ConfigureMenu is InGameMenu.Advanced:
-                Integrations.GMCM.AddFeatureOption(
-                    manifest,
-                    () => data.ResizeChestMenu,
-                    value => data.ResizeChestMenu = value,
-                    I18n.Config_ResizeChestMenu_Name,
-                    I18n.Config_ResizeChestMenu_Tooltip);
-
-                Integrations.GMCM.Api.AddNumberOption(
-                    manifest,
-                    () => data.ResizeChestMenuRows,
-                    value => data.ResizeChestMenuRows = value,
-                    I18n.Config_ResizeChestMenuRows_Name,
-                    I18n.Config_ResizeChestMenuRows_Tooltip);
-                return;
-
-            case nameof(ResizeChestMenu) when storage.ConfigureMenu is InGameMenu.Full:
-                Integrations.GMCM.AddChestMenuRowsOption(manifest, data);
-                return;
-
             case nameof(SearchItems) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
                 Integrations.GMCM.AddFeatureOption(
                     manifest,
@@ -917,7 +892,6 @@ internal sealed class Config
         Config.SetupFeatureConfig(nameof(OpenHeldChest), manifest, storage, inGame);
         Config.SetupFeatureConfig(nameof(OrganizeChest), manifest, storage, inGame);
         Config.SetupFeatureConfig(nameof(ResizeChest), manifest, storage, inGame);
-        Config.SetupFeatureConfig(nameof(ResizeChestMenu), manifest, storage, inGame);
         Config.SetupFeatureConfig(nameof(SearchItems), manifest, storage, inGame);
         Config.SetupFeatureConfig(nameof(StashToChest), manifest, storage, inGame);
         Config.SetupFeatureConfig(nameof(TransferItems), manifest, storage, inGame);
