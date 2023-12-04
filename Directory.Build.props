@@ -30,7 +30,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="$(SolutionDir)\build\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+        <Compile Include="$(SolutionDir)\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
         <Using Include="StardewValley"/>
         <Using Include="StardewModdingAPI"/>
         <Using Include="System.Diagnostics.CodeAnalysis"/>
