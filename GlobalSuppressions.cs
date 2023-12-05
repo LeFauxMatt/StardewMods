@@ -5,34 +5,150 @@
 
 [assembly: SuppressMessage("StyleCop", "SA0001", Justification = "Preference", Scope = "module")]
 [assembly: SuppressMessage("StyleCop", "SA1633", Justification = "Preference", Scope = "module")]
-[assembly: SuppressMessage("StyleCop", "SA1005", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1201", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1204", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1316", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1402", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1501", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1502", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1512", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1600", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1649", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Helpers.AtraBase")]
-[assembly: SuppressMessage("StyleCop", "SA1027", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1101", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1124", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1201", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1313", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1314", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1414", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1512", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1514", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1515", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1507", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1600", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1611", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1614", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1615", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1616", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1623", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1625", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1629", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1649", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Integrations")]
-[assembly: SuppressMessage("StyleCop", "SA1600", Justification = "External", Scope = "namespaceanddescendants", Target = "StardewMods.Common.Models")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1027",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1101",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1124",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1201",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1313",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1314",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1414",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1512",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1514",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1515",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1507",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1600",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1611",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1614",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1615",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1616",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1623",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1625",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1629",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1649",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Integrations")]
+[assembly:
+    SuppressMessage(
+        "StyleCop",
+        "SA1600",
+        Justification = "External",
+        Scope = "namespaceanddescendants",
+        Target = "StardewMods.Common.Models")]

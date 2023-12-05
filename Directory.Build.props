@@ -1,40 +1,40 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <Author>furyx639</Author>
-        <Authors>furyx639</Authors>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <MinimumApiVersion>4.0.0-alpha.20231101</MinimumApiVersion>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
-        <ModZipPath>$(SolutionDir)\releases</ModZipPath>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <WarningsAsErrors>Nullable</WarningsAsErrors>
-        <Version_AppendConfiguration>false</Version_AppendConfiguration>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
-        <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.1.0" />
-        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08" />
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <Reference Include="Newtonsoft.Json">
-            <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Include="$(SolutionDir)\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-        <Using Include="StardewValley"/>
-        <Using Include="StardewModdingAPI"/>
-        <Using Include="System.Diagnostics.CodeAnalysis"/>
-        <Using Alias="Object" Include="System.Object"/>
-        <Using Alias="SObject" Include="StardewValley.Object"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <Author>furyx639</Author>
+    <Authors>furyx639</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <MinimumApiVersion>4.0.0-alpha.20231101</MinimumApiVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
+    <ModZipPath>$(SolutionDir)\releases</ModZipPath>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>Nullable</WarningsAsErrors>
+    <Version_AppendConfiguration>false</Version_AppendConfiguration>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1"/>
+    <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.1.0"/>
+    <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08"/>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(SolutionDir)\GlobalSuppressions.cs" Link="GlobalSuppressions.cs"/>
+    <Using Include="StardewValley"/>
+    <Using Include="StardewModdingAPI"/>
+    <Using Include="System.Diagnostics.CodeAnalysis"/>
+    <Using Alias="Object" Include="System.Object"/>
+    <Using Alias="SObject" Include="StardewValley.Object"/>
+  </ItemGroup>
 </Project>

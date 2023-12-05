@@ -73,14 +73,10 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Common\Common.projitems*{1f7a6349-0a3a-45ca-9170-588de3b5c13e}*SharedItemsImports = 5
-		Common\Common.projitems*{4a2026ed-bc33-4bd3-800a-b4c7c2eba1fa}*SharedItemsImports = 5
 		Common\Common.projitems*{5117ccba-8ef7-4a6a-8d76-8c254776bbf8}*SharedItemsImports = 5
 		Common\Common.projitems*{66f2b279-351b-499c-826b-a885c2255334}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5

@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
-    <PropertyGroup>
-        <Name>Better Chests</Name>
-        <Description>Framework that adds new features to chests.</Description>
-        <Version>2.9.0-alpha.2</Version>
-        <EnableHarmony>true</EnableHarmony>
-        <RootNamespace>StardewMods.BetterChests</RootNamespace>
-        <UniqueId>furyx639.BetterChests</UniqueId>
-        <UpdateKeys>Nexus:9791</UpdateKeys>
-    </PropertyGroup>
-    <ItemGroup>
-	    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
-        <Reference Include="HarmonyLib">
-            <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-    </ItemGroup>
-	<ItemGroup>
-		<SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false" />
-		<SMAPIDependency Include="Pathoschild.Automate" required="false" />
-		<SMAPIDependency Include="leclair.bettercrafting" required="false" />
-		<SMAPIDependency Include="furyx639.ToolbarIcons" Version="2.6.0-alpha.2" required="false" />
-	</ItemGroup>
+  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
+  <PropertyGroup>
+    <Name>Better Chests</Name>
+    <Description>Framework that adds new features to chests.</Description>
+    <Version>2.9.0-alpha.2</Version>
+    <EnableHarmony>true</EnableHarmony>
+    <RootNamespace>StardewMods.BetterChests</RootNamespace>
+    <UniqueId>furyx639.BetterChests</UniqueId>
+    <UpdateKeys>Nexus:9791</UpdateKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+    <Reference Include="HarmonyLib">
+      <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
+    <SMAPIDependency Include="Pathoschild.Automate" required="false"/>
+    <SMAPIDependency Include="leclair.bettercrafting" required="false"/>
+    <SMAPIDependency Include="furyx639.ToolbarIcons" Version="2.6.0-alpha.2" required="false"/>
+  </ItemGroup>
 </Project>
