@@ -20,10 +20,7 @@ internal sealed class ComplexIntegration : BaseIntegration
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="api">API to add icons above or below the toolbar.</param>
     /// <returns>Returns an instance of the <see cref="ComplexIntegration" /> class.</returns>
-    public static ComplexIntegration Init(IModHelper helper, IToolbarIconsApi api)
-    {
-        return ComplexIntegration.Instance ??= new(helper, api);
-    }
+    public static ComplexIntegration Init(IModHelper helper, IToolbarIconsApi api) => ComplexIntegration.Instance ??= new(helper, api);
 
     /// <summary>
     ///     Adds a complex integration for vanilla.

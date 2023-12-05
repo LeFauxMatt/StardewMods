@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
 using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -12,9 +11,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
 
-/// <summary>
-///     Adds a chest color picker that support hue, saturation, and lightness.
-/// </summary>
+/// <summary>Adds a chest color picker that support hue, saturation, and lightness.</summary>
 internal sealed class BetterColorPicker : Feature
 {
     private const string Id = "furyx6339.BetterChests/BetterColorPicker";
@@ -64,16 +61,12 @@ internal sealed class BetterColorPicker : Feature
 
     private HslColorPicker ColorPicker => this.colorPicker.Value;
 
-    /// <summary>
-    ///     Initializes <see cref="BetterColorPicker" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="BetterColorPicker" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="BetterColorPicker" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return BetterColorPicker.instance ??= new(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) =>
+        BetterColorPicker.instance ??= new(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -90,16 +83,19 @@ internal sealed class BetterColorPicker : Feature
             postfix: new(
                 typeof(BetterColorPicker),
                 nameof(BetterColorPicker.DiscreteColorPicker_getColorFromSelection_postfix)));
+
         this.harmony.Patch(
             BetterColorPicker.DiscreteColorPickerGetSelectionFromColor,
             postfix: new(
                 typeof(BetterColorPicker),
                 nameof(BetterColorPicker.DiscreteColorPicker_getSelectionFromColor_postfix)));
+
         this.harmony.Patch(
             BetterColorPicker.ItemGrabMenuGameWindowSizeChanged,
             postfix: new(
                 typeof(BetterColorPicker),
                 nameof(BetterColorPicker.ItemGrabMenu_gameWindowSizeChanged_postfix)));
+
         this.harmony.Patch(
             BetterColorPicker.ItemGrabMenuSetSourceItem,
             postfix: new(typeof(BetterColorPicker), nameof(BetterColorPicker.ItemGrabMenu_setSourceItem_postfix)));
@@ -120,16 +116,19 @@ internal sealed class BetterColorPicker : Feature
             AccessTools.Method(
                 typeof(BetterColorPicker),
                 nameof(BetterColorPicker.DiscreteColorPicker_getColorFromSelection_postfix)));
+
         this.harmony.Unpatch(
             BetterColorPicker.DiscreteColorPickerGetSelectionFromColor,
             AccessTools.Method(
                 typeof(BetterColorPicker),
                 nameof(BetterColorPicker.DiscreteColorPicker_getSelectionFromColor_postfix)));
+
         this.harmony.Unpatch(
             BetterColorPicker.ItemGrabMenuGameWindowSizeChanged,
             AccessTools.Method(
                 typeof(BetterColorPicker),
                 nameof(BetterColorPicker.ItemGrabMenu_gameWindowSizeChanged_postfix)));
+
         this.harmony.Unpatch(
             BetterColorPicker.ItemGrabMenuSetSourceItem,
             AccessTools.Method(
@@ -138,7 +137,6 @@ internal sealed class BetterColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void DiscreteColorPicker_getColorFromSelection_postfix(int selection, ref Color __result)
     {
@@ -158,7 +156,6 @@ internal sealed class BetterColorPicker : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void DiscreteColorPicker_getSelectionFromColor_postfix(Color c, ref int __result)
     {
@@ -180,7 +177,11 @@ internal sealed class BetterColorPicker : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { chestColorPicker: not null } || !BetterColorPicker.ShouldBeActive)
+        if (__instance is not
+            {
+                chestColorPicker: not null,
+            }
+            || !BetterColorPicker.ShouldBeActive)
         {
             return;
         }
@@ -192,7 +193,11 @@ internal sealed class BetterColorPicker : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance)
     {
-        if (__instance is not { chestColorPicker: not null } || !BetterColorPicker.ShouldBeActive)
+        if (__instance is not
+            {
+                chestColorPicker: not null,
+            }
+            || !BetterColorPicker.ShouldBeActive)
         {
             return;
         }
@@ -204,7 +209,10 @@ internal sealed class BetterColorPicker : Feature
     {
         if (e.Button is not (SButton.MouseLeft or SButton.ControllerA)
             || !BetterColorPicker.ShouldBeActive
-            || Game1.activeClickableMenu is not ItemGrabMenu { colorPickerToggleButton: not null } itemGrabMenu)
+            || Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                colorPickerToggleButton: not null,
+            } itemGrabMenu)
         {
             return;
         }
@@ -257,10 +265,13 @@ internal sealed class BetterColorPicker : Feature
         itemGrabMenu.discreteColorPickerCC = null;
         var x = this.config.CustomColorPickerArea switch
         {
-            ComponentArea.Left => itemGrabMenu.xPositionOnScreen - (2 * Game1.tileSize) - (IClickableMenu.borderWidth / 2),
+            ComponentArea.Left => itemGrabMenu.xPositionOnScreen
+                - (2 * Game1.tileSize)
+                - (IClickableMenu.borderWidth / 2),
             _ => itemGrabMenu.xPositionOnScreen + itemGrabMenu.width + 96 + (IClickableMenu.borderWidth / 0x2),
         };
-        var y = itemGrabMenu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2);
+
+        var y = (itemGrabMenu.yPositionOnScreen - 56) + (IClickableMenu.borderWidth / 2);
         this.ColorPicker.Init(x, y, colorable);
     }
 }

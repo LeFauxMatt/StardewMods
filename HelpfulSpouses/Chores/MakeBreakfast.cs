@@ -31,10 +31,7 @@ internal sealed class MakeBreakfast : IChore
     }
 
     /// <inheritdoc/>
-    public bool IsPossibleForSpouse(NPC spouse)
-    {
-        return true;
-    }
+    public bool IsPossibleForSpouse(NPC spouse) => true;
 
     /// <inheritdoc/>
     public bool TryPerformChore(NPC spouse)

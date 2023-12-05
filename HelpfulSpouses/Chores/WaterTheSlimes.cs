@@ -13,16 +13,10 @@ internal sealed class WaterTheSlimes : IChore
     /// Initializes a new instance of the <see cref="WaterTheSlimes"/> class.
     /// </summary>
     /// <param name="config">Config data for <see cref="WaterTheSlimes"/>.</param>
-    public WaterTheSlimes(Config config)
-    {
-        this.config = config;
-    }
+    public WaterTheSlimes(Config config) => this.config = config;
 
     /// <inheritdoc/>
-    public void AddTokens(Dictionary<string, object> tokens)
-    {
-        tokens["SlimesWatered"] = this.slimesWatered;
-    }
+    public void AddTokens(Dictionary<string, object> tokens) => tokens["SlimesWatered"] = this.slimesWatered;
 
     /// <inheritdoc/>
     public bool IsPossibleForSpouse(NPC spouse)
@@ -92,6 +86,6 @@ internal sealed class WaterTheSlimes : IChore
         /// <summary>
         /// Gets or sets the limit to the number of slimes that will be watered.
         /// </summary>
-        public int SlimeLimit { get; set; } = 0;
+        public int SlimeLimit { get; set; }
     }
 }

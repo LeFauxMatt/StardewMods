@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Indicates if a feature is enabled, disabled, or will inherit from a parent config.
-/// </summary>
+/// <summary>Indicates if a feature is enabled, disabled, or will inherit from a parent config.</summary>
 [EnumExtensions]
 public enum FeatureOption
 {

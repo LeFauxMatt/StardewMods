@@ -45,10 +45,7 @@ internal sealed class ModPatches
     /// </summary>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
-    public static ModPatches Init(IManifest manifest)
-    {
-        return ModPatches.instance ??= new(manifest);
-    }
+    public static ModPatches Init(IManifest manifest) => ModPatches.instance ??= new(manifest);
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
@@ -110,10 +107,7 @@ internal sealed class ModPatches
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_performToolAction_prefix(Chest __instance)
-    {
-        return !__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan");
-    }
+    private static bool Chest_performToolAction_prefix(Chest __instance) => !__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan");
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]

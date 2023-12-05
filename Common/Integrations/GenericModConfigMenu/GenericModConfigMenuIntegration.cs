@@ -1,16 +1,11 @@
 namespace StardewMods.Common.Integrations.GenericModConfigMenu;
 
-using System;
-using System.Collections.Generic;
-
 /// <inheritdoc />
 internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuApi>
 {
     private const string ModUniqueId = "spacechase0.GenericModConfigMenu";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="GenericModConfigMenuIntegration" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="GenericModConfigMenuIntegration" /> class.</summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public GenericModConfigMenuIntegration(IModRegistry modRegistry)
         : base(modRegistry, GenericModConfigMenuIntegration.ModUniqueId)
@@ -20,15 +15,10 @@ internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericM
 
     private HashSet<string> Registered { get; } = new();
 
-    /// <summary>
-    ///     Checks if the mod is already registered with GMCM.
-    /// </summary>
+    /// <summary>Checks if the mod is already registered with GMCM.</summary>
     /// <param name="mod">The mod to check.</param>
     /// <returns>True if the mod is registered.</returns>
-    public bool IsRegistered(IManifest mod)
-    {
-        return this.Registered.Contains(mod.UniqueID);
-    }
+    public bool IsRegistered(IManifest mod) => this.Registered.Contains(mod.UniqueID);
 
     /// <summary>
     ///     <inheritdoc cref="IGenericModConfigMenuApi.Register" />

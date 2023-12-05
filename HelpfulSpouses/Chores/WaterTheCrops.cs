@@ -14,16 +14,10 @@ internal sealed class WaterTheCrops : IChore
     /// Initializes a new instance of the <see cref="WaterTheCrops"/> class.
     /// </summary>
     /// <param name="config">Config data for <see cref="WaterTheCrops"/>.</param>
-    public WaterTheCrops(Config config)
-    {
-        this.config = config;
-    }
+    public WaterTheCrops(Config config) => this.config = config;
 
     /// <inheritdoc/>
-    public void AddTokens(Dictionary<string, object> tokens)
-    {
-        tokens["CropsWatered"] = this.cropsWatered;
-    }
+    public void AddTokens(Dictionary<string, object> tokens) => tokens["CropsWatered"] = this.cropsWatered;
 
     /// <inheritdoc/>
     public bool IsPossibleForSpouse(NPC spouse)
@@ -91,6 +85,6 @@ internal sealed class WaterTheCrops : IChore
         /// <summary>
         /// Gets or sets the limit to the number of crops that will be watered.
         /// </summary>
-        public int CropLimit { get; set; } = 0;
+        public int CropLimit { get; set; }
     }
 }

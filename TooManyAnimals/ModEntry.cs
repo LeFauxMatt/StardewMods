@@ -201,7 +201,7 @@ public sealed class ModEntry : Mod
         }
 
         // Reposition Next/Previous Page Buttons
-        this.NextPage.bounds.X = menu.xPositionOnScreen + menu.width - this.NextPage.bounds.Width;
+        this.NextPage.bounds.X = (menu.xPositionOnScreen + menu.width) - this.NextPage.bounds.Width;
         this.NextPage.bounds.Y = menu.yPositionOnScreen + menu.height;
         this.NextPage.leftNeighborID = this.PreviousPage.myID;
         this.PreviousPage.bounds.X = menu.xPositionOnScreen;
@@ -211,19 +211,19 @@ public sealed class ModEntry : Mod
         for (var index = 0; index < menu.animalsToPurchase.Count; ++index)
         {
             var i = index + (this.CurrentPage * this.Config.AnimalShopLimit);
-            if (ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors))
+            if (menu.animalsToPurchase[index].texture == Game1.mouseCursors)
             {
                 menu.animalsToPurchase[index].sourceRect.X = (i % 3) * 16 * 2;
-                menu.animalsToPurchase[index].sourceRect.Y = 448 + (i / 3 * 16);
+                menu.animalsToPurchase[index].sourceRect.Y = 448 + ((i / 3) * 16);
             }
 
-            if (!ReferenceEquals(menu.animalsToPurchase[index].texture, Game1.mouseCursors2))
+            if (menu.animalsToPurchase[index].texture != Game1.mouseCursors2)
             {
                 continue;
             }
 
             menu.animalsToPurchase[index].sourceRect.X = 128 + ((i % 3) * 16 * 2);
-            menu.animalsToPurchase[index].sourceRect.Y = i / 3 * 16;
+            menu.animalsToPurchase[index].sourceRect.Y = (i / 3) * 16;
         }
 
         // Assign neighborId for controller

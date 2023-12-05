@@ -1,10 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Framework;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
-using StardewMods.BetterChests.Framework.Features;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Extensions;
@@ -13,9 +9,7 @@ using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
-/// <summary>
-///     Provides access to all supported storages in the game.
-/// </summary>
+/// <summary>Provides access to all supported storages in the game.</summary>
 internal sealed class Storages
 {
 #nullable disable
@@ -26,23 +20,16 @@ internal sealed class Storages
 
     private EventHandler<IStorageTypeRequestedEventArgs>? storageTypeRequested;
 
-    private Storages(ModConfig config)
-    {
-        this.config = config;
-    }
+    private Storages(ModConfig config) => this.config = config;
 
-    /// <summary>
-    ///     Event for when a storage type is assigned to a storage object.
-    /// </summary>
+    /// <summary>Event for when a storage type is assigned to a storage object.</summary>
     public static event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
     {
         add => Storages.instance.storageTypeRequested += value;
         remove => Storages.instance.storageTypeRequested -= value;
     }
 
-    /// <summary>
-    ///     Gets storages from all locations and farmer inventory in the game.
-    /// </summary>
+    /// <summary>Gets storages from all locations and farmer inventory in the game.</summary>
     public static IEnumerable<StorageNode> All
     {
         get
@@ -75,7 +62,10 @@ internal sealed class Storages
             // Sub Storage
             foreach (var storage in storages)
             {
-                if (storage is not { Data: Storage storageObject })
+                if (storage is not
+                    {
+                        Data: Storage storageObject,
+                    })
                 {
                     continue;
                 }
@@ -88,29 +78,21 @@ internal sealed class Storages
         }
     }
 
-    /// <summary>
-    ///     Gets the current storage item from the farmer's inventory.
-    /// </summary>
+    /// <summary>Gets the current storage item from the farmer's inventory.</summary>
     public static StorageNode? CurrentItem =>
         Game1.player.CurrentItem is not null && Storages.TryGetOne(Game1.player.CurrentItem, out var storage)
             ? storage
             : null;
 
-    /// <summary>
-    ///     Gets all placed storages in the current location.
-    /// </summary>
+    /// <summary>Gets all placed storages in the current location.</summary>
     public static IEnumerable<StorageNode> CurrentLocation => Storages.FromLocation(Game1.currentLocation);
 
-    /// <summary>
-    ///     Gets storages in the farmer's inventory.
-    /// </summary>
+    /// <summary>Gets storages in the farmer's inventory.</summary>
     public static IEnumerable<StorageNode> Inventory => Storages.FromPlayer(Game1.player);
 
     private static ModConfig Config => Storages.instance.config;
 
-    /// <summary>
-    ///     Gets all storages placed in a particular location.
-    /// </summary>
+    /// <summary>Gets all storages placed in a particular location.</summary>
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
@@ -162,8 +144,9 @@ internal sealed class Storages
                                 junimoHut,
                                 location,
                                 new(
-                                    building.tileX.Value + (building.tilesWide.Value / 2),
-                                    building.tileY.Value + (building.tilesHigh.Value / 2))));
+                                    (int)(building.tileX.Value + (building.tilesWide.Value / 2f)),
+                                    (int)(building.tileY.Value + (building.tilesHigh.Value / 2f)))));
+
                         break;
                     case ShippingBin shippingBin when !excluded.Contains(shippingBin):
                         excluded.Add(shippingBin);
@@ -172,8 +155,9 @@ internal sealed class Storages
                                 shippingBin,
                                 location,
                                 new(
-                                    building.tileX.Value + (building.tilesWide.Value / 2),
-                                    building.tileY.Value + (building.tilesHigh.Value / 2))));
+                                    (int)(building.tileX.Value + (building.tilesWide.Value / 2f)),
+                                    (int)(building.tileY.Value + (building.tilesHigh.Value / 2f)))));
+
                         break;
                 }
             }
@@ -195,9 +179,7 @@ internal sealed class Storages
         }
     }
 
-    /// <summary>
-    ///     Gets all storages placed in a particular farmer's inventory.
-    /// </summary>
+    /// <summary>Gets all storages placed in a particular farmer's inventory.</summary>
     /// <param name="player">The farmer to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <param name="limit">Limit the number of items from the farmer's inventory.</param>
@@ -233,19 +215,12 @@ internal sealed class Storages
         }
     }
 
-    /// <summary>
-    ///     Initialized <see cref="Storages" />.
-    /// </summary>
+    /// <summary>Initialized <see cref="Storages" />.</summary>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="Storages" /> class.</returns>
-    public static Storages Init(ModConfig config)
-    {
-        return Storages.instance ??= new(config);
-    }
+    public static Storages Init(ModConfig config) => Storages.instance ??= new(config);
 
-    /// <summary>
-    ///     Attempt to gets a placed storage at a specific position.
-    /// </summary>
+    /// <summary>Attempt to gets a placed storage at a specific position.</summary>
     /// <param name="location">The location to get the storage from.</param>
     /// <param name="pos">The position to get the storage from.</param>
     /// <param name="storage">The storage object.</param>
@@ -263,9 +238,7 @@ internal sealed class Storages
         return true;
     }
 
-    /// <summary>
-    ///     Attempts to retrieve a storage based on a context object.
-    /// </summary>
+    /// <summary>Attempts to retrieve a storage based on a context object.</summary>
     /// <param name="context">The context object.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found for the context object.</returns>
@@ -283,13 +256,6 @@ internal sealed class Storages
 
         if (!Integrations.TryGetOne(context, out var storageObject)
             && !Storages.TryGetOne(context, default, default, out storageObject))
-        {
-            storage = default;
-            return false;
-        }
-
-        if (storageObject is ShippingBinStorage { Context: not Chest }
-            && Integrations.TestConflicts(nameof(BetterShippingBin), out _))
         {
             storage = default;
             return false;
@@ -335,10 +301,8 @@ internal sealed class Storages
         return new(storage, storageType is not null ? new StorageNode(storageType, Storages.Config) : Storages.Config);
     }
 
-    private static IEnumerable<StorageNode> GetStorageTypes(IEnumerable<Storage> storages)
-    {
-        return storages.Select(Storages.GetStorageType);
-    }
+    private static IEnumerable<StorageNode> GetStorageTypes(IEnumerable<Storage> storages) =>
+        storages.Select(Storages.GetStorageType);
 
     private static bool TryGetOne(
         object? context,
@@ -357,31 +321,41 @@ internal sealed class Storages
                     ? new ShippingBinStorage(
                         farm,
                         new(
-                            farmShippingBin.tileX.Value + (farmShippingBin.tilesWide.Value / 2),
-                            farmShippingBin.tileY.Value + (farmShippingBin.tilesHigh.Value / 2)))
+                            farmShippingBin.tileX.Value + (int)(farmShippingBin.tilesWide.Value / 2f),
+                            farmShippingBin.tileY.Value + (int)(farmShippingBin.tilesHigh.Value / 2f)))
                     : default;
+
                 return storage is not null;
-            case FarmHouse { fridge.Value: not null } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
+            case FarmHouse
+            {
+                fridge.Value: not null,
+            } farmHouse when !farmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(farmHouse, position);
                 return true;
-            case IslandFarmHouse { fridge.Value: not null } islandFarmHouse
-                when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
+            case IslandFarmHouse
+            {
+                fridge.Value: not null,
+            } islandFarmHouse when !islandFarmHouse.fridgePosition.Equals(Point.Zero):
                 storage = new FridgeStorage(islandFarmHouse, position);
                 return true;
-            case SObject { ParentSheetIndex: 165, heldObject.Value: Chest } heldObj:
+            case SObject
+            {
+                ParentSheetIndex: 165,
+                heldObject.Value: Chest,
+            } heldObj:
                 storage = new ObjectStorage(heldObj, parent, position);
                 return true;
-            case Chest { SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin } shippingChest:
+            case Chest
+            {
+                SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
+            } shippingChest:
                 storage = new ShippingBinStorage(shippingChest, parent, position);
                 return true;
-            case Chest { playerChest.Value: true } chest:
+            case Chest
+            {
+                playerChest.Value: true,
+            } chest:
                 storage = new ChestStorage(chest, parent, position);
-                return true;
-            case ShippingBin or IslandWest when !Storages.Config.BetterShippingBin:
-                storage = default;
-                return false;
-            case ShippingBin shippingBin:
-                storage = new ShippingBinStorage(shippingBin, parent, position);
                 return true;
             case JunimoHut junimoHut:
                 storage = new JunimoHutStorage(junimoHut, parent, position);

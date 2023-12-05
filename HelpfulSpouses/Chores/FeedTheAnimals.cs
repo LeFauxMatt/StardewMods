@@ -13,10 +13,7 @@ internal sealed class FeedTheAnimals : IChore
     /// Initializes a new instance of the <see cref="FeedTheAnimals"/> class.
     /// </summary>
     /// <param name="config">Config data for <see cref="FeedTheAnimals"/>.</param>
-    public FeedTheAnimals(Config config)
-    {
-        this.config = config;
-    }
+    public FeedTheAnimals(Config config) => this.config = config;
 
     /// <inheritdoc/>
     public void AddTokens(Dictionary<string, object> tokens)
@@ -100,7 +97,7 @@ internal sealed class FeedTheAnimals : IChore
         /// <summary>
         /// Gets or sets the limit to the number of animals that will be fed.
         /// </summary>
-        public int AnimalLimit { get; set; } = 0;
+        public int AnimalLimit { get; set; }
 
         /// <summary>
         /// Gets or sets the occupant types.

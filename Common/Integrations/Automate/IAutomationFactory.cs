@@ -2,7 +2,6 @@
 
 using Microsoft.Xna.Framework;
 using StardewValley.Buildings;
-using StardewValley.Locations;
 using StardewValley.TerrainFeatures;
 
 /// <summary>Constructs machines, containers, or connectors which can be added to a machine group.</summary>

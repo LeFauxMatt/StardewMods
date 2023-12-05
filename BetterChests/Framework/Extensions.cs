@@ -1,9 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Framework;
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Features;
 using StardewMods.BetterChests.Framework.Models;
@@ -16,22 +13,17 @@ using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-/// <summary>
-///     Extension methods for Better Chests.
-/// </summary>
+/// <summary>Extension methods for Better Chests.</summary>
 internal static class Extensions
 {
-    /// <summary>
-    ///     Add a chest capacity option at the current position in the form.
-    /// </summary>
+    /// <summary>Add a chest capacity option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="data">The storage data.</param>
     public static void AddChestCapacityOption(
         this GenericModConfigMenuIntegration gmcm,
         IManifest manifest,
-        IStorageData data)
-    {
+        IStorageData data) =>
         gmcm.Api!.AddNumberOption(
             manifest,
             data.GetChestCapacity,
@@ -42,11 +34,8 @@ internal static class Extensions
             8,
             1,
             Formatting.ChestCapacity);
-    }
 
-    /// <summary>
-    ///     Add a distance option at the current position in the form.
-    /// </summary>
+    /// <summary>Add a distance option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="data">The storage data.</param>
@@ -59,8 +48,7 @@ internal static class Extensions
         IStorageData data,
         string featureName,
         Func<string> name,
-        Func<string> tooltip)
-    {
+        Func<string> tooltip) =>
         gmcm.Api!.AddNumberOption(
             manifest,
             () => data.GetDistance(featureName),
@@ -71,11 +59,8 @@ internal static class Extensions
             (int)FeatureOptionRange.World,
             1,
             Formatting.Distance);
-    }
 
-    /// <summary>
-    ///     Add a feature option at the current position in the form.
-    /// </summary>
+    /// <summary>Add a feature option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="getValue">Get the current value from the mod config.</param>
@@ -88,8 +73,7 @@ internal static class Extensions
         Func<FeatureOption> getValue,
         Action<FeatureOption> setValue,
         Func<string> name,
-        Func<string> tooltip)
-    {
+        Func<string> tooltip) =>
         gmcm.Api!.AddTextOption(
             manifest,
             () => getValue().ToStringFast(),
@@ -98,11 +82,8 @@ internal static class Extensions
             tooltip,
             FeatureOptionExtensions.GetNames(),
             Formatting.Option);
-    }
 
-    /// <summary>
-    ///     Add a feature option range at the current position in the form.
-    /// </summary>
+    /// <summary>Add a feature option range at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
     /// <param name="manifest">The mod's manifest.</param>
     /// <param name="getValue">Get the current value from the mod config.</param>
@@ -115,8 +96,7 @@ internal static class Extensions
         Func<FeatureOptionRange> getValue,
         Action<FeatureOptionRange> setValue,
         Func<string> name,
-        Func<string> tooltip)
-    {
+        Func<string> tooltip) =>
         gmcm.Api!.AddTextOption(
             manifest,
             () => getValue().ToStringFast(),
@@ -126,11 +106,8 @@ internal static class Extensions
             tooltip,
             FeatureOptionRangeExtensions.GetNames(),
             Formatting.Range);
-    }
 
-    /// <summary>
-    ///     Gets context tags from an <see cref="Item" /> with extended tag set.
-    /// </summary>
+    /// <summary>Gets context tags from an <see cref="Item" /> with extended tag set.</summary>
     /// <param name="item">The item to get context tags from.</param>
     /// <returns>Returns the context tags.</returns>
     public static IEnumerable<string> GetContextTagsExt(this Item item)
@@ -160,15 +137,16 @@ internal static class Extensions
         return tags;
     }
 
-    /// <summary>
-    ///     Gets storage distance from a player in tiles.
-    /// </summary>
+    /// <summary>Gets storage distance from a player in tiles.</summary>
     /// <param name="storage">The storage to get the distance for.</param>
     /// <param name="player">The player to get the distance from.</param>
     /// <returns>Returns the distance in tiles.</returns>
     public static int GetDistanceToPlayer(this StorageNode storage, Farmer player)
     {
-        if (storage is not { Data: Storage storageObject })
+        if (storage is not
+            {
+                Data: Storage storageObject,
+            })
         {
             return 0;
         }
@@ -177,14 +155,15 @@ internal static class Extensions
             + Math.Abs(storageObject.Position.Y - player.Tile.Y));
     }
 
-    /// <summary>
-    ///     Organizes items in a storage.
-    /// </summary>
+    /// <summary>Organizes items in a storage.</summary>
     /// <param name="storage">The storage to organize.</param>
     /// <param name="descending">Sort in descending order.</param>
     public static void OrganizeItems(this StorageNode storage, bool descending = false)
     {
-        if (storage is not { Data: Storage storageObject })
+        if (storage is not
+            {
+                Data: Storage storageObject,
+            })
         {
             return;
         }
@@ -217,9 +196,11 @@ internal static class Extensions
 
                 var g1 = storage.OrganizeChestGroupBy switch
                 {
-                    GroupBy.Category => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
+                    GroupBy.Category => i1.GetContextTagsExt()
+                            .FirstOrDefault(tag => tag.StartsWith("category_", StringComparison.OrdinalIgnoreCase))
                         ?? string.Empty,
-                    GroupBy.Color => i1.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
+                    GroupBy.Color => i1.GetContextTagsExt()
+                            .FirstOrDefault(tag => tag.StartsWith("color_", StringComparison.OrdinalIgnoreCase))
                         ?? string.Empty,
                     GroupBy.Name => i1.DisplayName,
                     _ => string.Empty,
@@ -227,15 +208,17 @@ internal static class Extensions
 
                 var g2 = storage.OrganizeChestGroupBy switch
                 {
-                    GroupBy.Category => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("category_"))
+                    GroupBy.Category => i2.GetContextTagsExt()
+                            .FirstOrDefault(tag => tag.StartsWith("category_", StringComparison.OrdinalIgnoreCase))
                         ?? string.Empty,
-                    GroupBy.Color => i2.GetContextTagsExt().FirstOrDefault(tag => tag.StartsWith("color_"))
+                    GroupBy.Color => i2.GetContextTagsExt()
+                            .FirstOrDefault(tag => tag.StartsWith("color_", StringComparison.OrdinalIgnoreCase))
                         ?? string.Empty,
                     GroupBy.Name => i2.DisplayName,
                     _ => string.Empty,
                 };
 
-                if (!g1.Equals(g2))
+                if (!g1.Equals(g2, StringComparison.OrdinalIgnoreCase))
                 {
                     return string.Compare(g1, g2, StringComparison.OrdinalIgnoreCase);
                 }
@@ -271,20 +254,18 @@ internal static class Extensions
         }
     }
 
-    /// <summary>
-    ///     Removes an item from a storage.
-    /// </summary>
+    /// <summary>Removes an item from a storage.</summary>
     /// <param name="storage">The storage to remove an item from.</param>
     /// <param name="item">The item to stash.</param>
     /// <returns>Returns true if the item could be removed.</returns>
-    public static bool RemoveItem(this StorageNode storage, Item item)
-    {
-        return storage is { Data: Storage storageObject } && storageObject.Inventory.Remove(item);
-    }
+    public static bool RemoveItem(this StorageNode storage, Item item) =>
+        storage is
+        {
+            Data: Storage storageObject,
+        }
+        && storageObject.Inventory.Remove(item);
 
-    /// <summary>
-    ///     Stashes an item into storage based on categorization and stack settings.
-    /// </summary>
+    /// <summary>Stashes an item into storage based on categorization and stack settings.</summary>
     /// <param name="storage">The storage to stash an item into.</param>
     /// <param name="item">The item to stash.</param>
     /// <param name="existingStacks">Whether to stash into stackable items or based on categorization.</param>
@@ -292,7 +273,15 @@ internal static class Extensions
     public static Item? StashItem(this StorageNode storage, Item item, bool existingStacks = false)
     {
         // Disallow stashing of any Chest.
-        if (storage is not { Data: Storage storageObject } || item is Chest or SObject { heldObject.Value: Chest })
+        if (storage is not
+            {
+                Data: Storage storageObject,
+            }
+            || item is Chest
+                or SObject
+                {
+                    heldObject.Value: Chest,
+                })
         {
             return item;
         }
@@ -300,7 +289,7 @@ internal static class Extensions
         var stack = item.Stack;
         var tmp = (existingStacks && storageObject.Inventory.Any(otherItem => otherItem?.canStackWith(item) == true))
             || (storage.FilterItemsList.Any()
-                && !storage.FilterItemsList.All(filter => filter.StartsWith("!"))
+                && !storage.FilterItemsList.All(filter => filter.StartsWith("!", StringComparison.OrdinalIgnoreCase))
                 && storage.FilterMatches(item))
                 ? storageObject.AddItem(item)
                 : item;
@@ -314,17 +303,18 @@ internal static class Extensions
         return tmp;
     }
 
-    /// <summary>
-    ///     Tests whether the player is within range of the location.
-    /// </summary>
+    /// <summary>Tests whether the player is within range of the location.</summary>
     /// <param name="range">The range.</param>
     /// <param name="distance">The distance in tiles to the player.</param>
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="position">The coordinates.</param>
     /// <returns>Returns true if the location is within range.</returns>
-    public static bool WithinRangeOfPlayer(this FeatureOptionRange range, int distance, object parent, Vector2 position)
-    {
-        return range switch
+    public static bool WithinRangeOfPlayer(
+        this FeatureOptionRange range,
+        int distance,
+        object parent,
+        Vector2 position) =>
+        range switch
         {
             FeatureOptionRange.World => true,
             FeatureOptionRange.Inventory when parent is Farmer farmer && farmer.Equals(Game1.player) => true,
@@ -337,40 +327,29 @@ internal static class Extensions
                 <= distance => true,
             _ => false,
         };
-    }
 
-    /// <summary>
-    ///     Checks if the <see cref="Item" /> can be donated to a <see cref="CommunityCenter" /> bundle.
-    /// </summary>
+    /// <summary>Checks if the <see cref="Item" /> can be donated to a <see cref="CommunityCenter" /> bundle.</summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if the item can be donated.</returns>
-    private static bool CanDonateToBundle(this Item item)
-    {
-        return item is SObject obj
-            && (Game1.locations.OfType<CommunityCenter>().FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
-                ?? false);
-    }
+    private static bool CanDonateToBundle(this Item item) =>
+        item is SObject obj
+        && (Game1.locations.OfType<CommunityCenter>().FirstOrDefault()?.couldThisIngredienteBeUsedInABundle(obj)
+            ?? false);
 
-    /// <summary>
-    ///     Checks if the <see cref="Item" /> can be donated to the <see cref="LibraryMuseum" />.
-    /// </summary>
+    /// <summary>Checks if the <see cref="Item" /> can be donated to the <see cref="LibraryMuseum" />.</summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if the item can be donated.</returns>
-    private static bool CanDonateToMuseum(this Item item)
-    {
-        return Game1.locations.OfType<LibraryMuseum>().FirstOrDefault()?.isItemSuitableForDonation(item) ?? false;
-    }
+    private static bool CanDonateToMuseum(this Item item) =>
+        Game1.locations.OfType<LibraryMuseum>().FirstOrDefault()?.isItemSuitableForDonation(item) ?? false;
 
-    private static int GetChestCapacity(this IStorageData data)
-    {
-        return data.ResizeChestCapacity switch
+    private static int GetChestCapacity(this IStorageData data) =>
+        data.ResizeChestCapacity switch
         {
             _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
             _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
             -1 => 8,
-            _ => (int)FeatureOption.Enabled + (data.ResizeChestCapacity / 12) - 1,
+            _ => ((int)FeatureOption.Enabled + (data.ResizeChestCapacity / 12)) - 1,
         };
-    }
 
     private static int GetDistance(this IStorageData data, string featureName)
     {
@@ -378,7 +357,7 @@ internal static class Extensions
         {
             nameof(CraftFromChest) => data.CraftFromChest,
             nameof(StashToChest) => data.StashToChest,
-            _ => throw new("Invalid feature"),
+            _ => throw new ArgumentException($"Invalid feature {featureName}"),
         };
 
         var distance = featureName switch
@@ -394,33 +373,27 @@ internal static class Extensions
             _ when feature is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
             _ when feature is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
             _ when feature is FeatureOptionRange.World => (int)FeatureOptionRange.World,
-            >= 2 when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.Location
-                + (int)Math.Ceiling(Math.Log2(distance))
+            >= 2 when feature is FeatureOptionRange.Location => ((int)FeatureOptionRange.Location
+                    + (int)Math.Ceiling(Math.Log2(distance)))
                 - 1,
             _ when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
             _ => (int)FeatureOptionRange.Default,
         };
     }
 
-    /// <summary>
-    ///     Checks if the <see cref="Item" /> is an artifact.
-    /// </summary>
+    /// <summary>Checks if the <see cref="Item" /> is an artifact.</summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if the item is an artifact.</returns>
-    private static bool IsArtifact(this Item item)
-    {
-        return item is SObject { Type: "Arch" };
-    }
+    private static bool IsArtifact(this Item item) =>
+        item is SObject
+        {
+            Type: "Arch",
+        };
 
-    /// <summary>
-    ///     Checks if the <see cref="Item" /> is <see cref="Furniture" />.
-    /// </summary>
+    /// <summary>Checks if the <see cref="Item" /> is <see cref="Furniture" />.</summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if the item is furniture.</returns>
-    private static bool IsFurniture(this Item item)
-    {
-        return item is Furniture;
-    }
+    private static bool IsFurniture(this Item item) => item is Furniture;
 
     private static void SetChestCapacity(this IStorageData data, int value)
     {
@@ -429,7 +402,7 @@ internal static class Extensions
             (int)FeatureOption.Default => 0,
             (int)FeatureOption.Disabled => 0,
             8 => -1,
-            >= (int)FeatureOption.Enabled => 12 * (1 + value - (int)FeatureOption.Enabled),
+            >= (int)FeatureOption.Enabled => 12 * ((1 + value) - (int)FeatureOption.Enabled),
             _ => 0,
         };
 
@@ -450,7 +423,7 @@ internal static class Extensions
             (int)FeatureOptionRange.Inventory => 0,
             (int)FeatureOptionRange.World - 1 => -1,
             (int)FeatureOptionRange.World => 0,
-            >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location),
+            >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, (1 + value) - (int)FeatureOptionRange.Location),
             _ => 0,
         };
 
@@ -477,7 +450,7 @@ internal static class Extensions
                 return;
 
             default:
-                throw new("Invalid feature");
+                throw new ArgumentException($"Invalid feature {featureName}");
         }
     }
 }

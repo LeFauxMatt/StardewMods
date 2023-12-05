@@ -1,6 +1,5 @@
 namespace StardewMods.Common.Models;
 
-using System;
 using Microsoft.Xna.Framework;
 
 internal struct HslColor
@@ -24,9 +23,7 @@ internal struct HslColor
         this.L = l;
     }
 
-    /// <summary>
-    ///     Gets or sets hue: the 'color' of the color.
-    /// </summary>
+    /// <summary>Gets or sets hue: the 'color' of the color.</summary>
     public float H { get; set; }
 
     /// <summary>Gets or sets luminance: The brightness or lightness of the color.</summary>
@@ -35,10 +32,7 @@ internal struct HslColor
     /// <summary>Gets or sets saturation: How grey or vivid/colorful a color is.</summary>
     public float S { get; set; }
 
-    public static HslColor FromColor(Color color)
-    {
-        return HslColor.FromRgb(color.R, color.G, color.B);
-    }
+    public static HslColor FromColor(Color color) => HslColor.FromRgb(color.R, color.G, color.B);
 
     public static HslColor FromRgb(byte r, byte g, byte b)
     {
@@ -82,11 +76,11 @@ internal struct HslColor
         }
         else if (Math.Abs(fG - max) < HslColor.Tolerance)
         {
-            hsl.H = (1f / 3f) + deltaR - deltaB;
+            hsl.H = ((1f / 3f) + deltaR) - deltaB;
         }
         else if (Math.Abs(fB - max) < HslColor.Tolerance)
         {
-            hsl.H = (2f / 3f) + deltaG - deltaR;
+            hsl.H = ((2f / 3f) + deltaG) - deltaR;
         }
 
         if (hsl.H < 0)
@@ -128,7 +122,7 @@ internal struct HslColor
         }
         else
         {
-            var v2 = this.L + this.S - (this.S * this.L);
+            var v2 = (this.L + this.S) - (this.S * this.L);
             if (this.L < 0.5f)
             {
                 v2 = this.L * (1 + this.S);

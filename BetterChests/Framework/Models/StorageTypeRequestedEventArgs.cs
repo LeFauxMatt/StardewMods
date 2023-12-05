@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
-using System.Collections.Generic;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
@@ -9,9 +8,7 @@ internal sealed class StorageTypeRequestedEventArgs : IStorageTypeRequestedEvent
     private readonly List<KeyValuePair<IStorageData, int>> prioritizedTypes = new();
     private readonly IList<IStorageData> storageTypes;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="StorageTypeRequestedEventArgs" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="StorageTypeRequestedEventArgs" /> class.</summary>
     /// <param name="context">The context object for the storage.</param>
     /// <param name="storageTypes">The types loaded for the storage.</param>
     public StorageTypeRequestedEventArgs(object context, IList<IStorageData> storageTypes)

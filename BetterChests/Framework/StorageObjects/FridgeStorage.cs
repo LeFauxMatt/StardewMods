@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
-using System;
 using Microsoft.Xna.Framework;
 using StardewValley.Inventories;
 using StardewValley.Locations;
@@ -11,23 +10,17 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal sealed class FridgeStorage : Storage
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="FridgeStorage" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="FridgeStorage" /> class.</summary>
     /// <param name="location">The farmhouse or island farmhouse location.</param>
     /// <param name="position">The position of the source object.</param>
     public FridgeStorage(GameLocation location, Vector2 position)
-        : base(location, location, position)
-    {
+        : base(location, location, position) =>
         this.Location = location;
-    }
 
     /// <inheritdoc />
     public override IInventory Inventory => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
-    /// <summary>
-    ///     Gets the location of the fridge.
-    /// </summary>
+    /// <summary>Gets the location of the fridge.</summary>
     public override GameLocation Location { get; }
 
     /// <inheritdoc />

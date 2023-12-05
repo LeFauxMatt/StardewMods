@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.StorageObjects;
 
-using System;
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Enums;
 using StardewValley.Buildings;
@@ -12,9 +11,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal sealed class ShippingBinStorage : Storage
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ShippingBinStorage" /> class.</summary>
     /// <param name="location">The location of the shipping bin.</param>
     /// <param name="position">The position of the source object.</param>
     public ShippingBinStorage(GameLocation location, Vector2 position)
@@ -23,9 +20,7 @@ internal sealed class ShippingBinStorage : Storage
         // Do nothing
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ShippingBinStorage" /> class.</summary>
     /// <param name="shippingBin">The shipping bin.</param>
     /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
@@ -35,9 +30,7 @@ internal sealed class ShippingBinStorage : Storage
         // Do nothing
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ShippingBinStorage" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ShippingBinStorage" /> class.</summary>
     /// <param name="chest">The mini-shipping bin.</param>
     /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
@@ -77,9 +70,7 @@ internal sealed class ShippingBinStorage : Storage
             _ => base.UnloadChestCombine,
         };
 
-    /// <summary>
-    ///     Creates an <see cref="ItemGrabMenu" /> for this storage container.
-    /// </summary>
+    /// <summary>Creates an <see cref="ItemGrabMenu" /> for this storage container.</summary>
     public override void ShowMenu()
     {
         var menu = new ItemGrabMenu(
@@ -101,7 +92,11 @@ internal sealed class ShippingBinStorage : Storage
             this.Context);
 
         if (Game1.options.SnappyMenus
-            && Game1.activeClickableMenu is ItemGrabMenu { currentlySnappedComponent: { } currentlySnappedComponent })
+            && Game1.activeClickableMenu is ItemGrabMenu
+            {
+                currentlySnappedComponent:
+                { } currentlySnappedComponent,
+            })
         {
             menu.setCurrentlySnappedComponentTo(currentlySnappedComponent.myID);
             menu.snapCursorToCurrentSnappedComponent();

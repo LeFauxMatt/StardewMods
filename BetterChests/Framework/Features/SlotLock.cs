@@ -1,7 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -10,9 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewValley.Menus;
 
-/// <summary>
-///     Locks items in inventory so they cannot be stashed.
-/// </summary>
+/// <summary>Locks items in inventory so they cannot be stashed.</summary>
 internal sealed class SlotLock : Feature
 {
     private const string Id = "furyx639.BetterChests/SlotLock";
@@ -20,13 +16,7 @@ internal sealed class SlotLock : Feature
     private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(
         typeof(InventoryMenu),
         nameof(InventoryMenu.draw),
-        new[]
-        {
-            typeof(SpriteBatch),
-            typeof(int),
-            typeof(int),
-            typeof(int),
-        });
+        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) });
 
 #nullable disable
     private static SlotLock instance;
@@ -43,16 +33,11 @@ internal sealed class SlotLock : Feature
         this.harmony = new(SlotLock.Id);
     }
 
-    /// <summary>
-    ///     Initializes <see cref="SlotLock" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="SlotLock" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return SlotLock.instance ??= new(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) => SlotLock.instance ??= new(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -85,6 +70,7 @@ internal sealed class SlotLock : Feature
         foreach (var instruction in instructions)
         {
             yield return instruction;
+
             if (instruction.opcode != OpCodes.Ldloc_0)
             {
                 continue;
@@ -96,13 +82,10 @@ internal sealed class SlotLock : Feature
         }
     }
 
-    private static Color Tint(Color tint, InventoryMenu menu, int index)
-    {
-        return menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot")
-            == true
-                ? Utility.StringToColor(SlotLock.instance.config.SlotLockColor) ?? tint
-                : tint;
-    }
+    private static Color Tint(Color tint, InventoryMenu menu, int index) =>
+        menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true
+            ? Utility.StringToColor(SlotLock.instance.config.SlotLockColor) ?? tint
+            : tint;
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -116,11 +99,21 @@ internal sealed class SlotLock : Feature
         var (x, y) = Game1.getMousePosition(true);
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
-            ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
-                itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage } =>
-                inventoryPage,
+            ItemGrabMenu
+            {
+                inventory:
+                { } inventory,
+            } when inventory.isWithinBounds(x, y) => inventory,
+            ItemGrabMenu
+            {
+                ItemsToGrabMenu:
+                { } itemsToGrabMenu,
+            } when itemsToGrabMenu.isWithinBounds(x, y) => itemsToGrabMenu,
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage
+            {
+                inventory:
+                { } inventoryPage,
+            } => inventoryPage,
             _ => null,
         };
 
@@ -158,11 +151,21 @@ internal sealed class SlotLock : Feature
         var (x, y) = Game1.getMousePosition(true);
         var menu = Game1.activeClickableMenu switch
         {
-            ItemGrabMenu { inventory: { } inventory } when inventory.isWithinBounds(x, y) => inventory,
-            ItemGrabMenu { ItemsToGrabMenu: { } itemsToGrabMenu } when itemsToGrabMenu.isWithinBounds(x, y) =>
-                itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage { inventory: { } inventoryPage } =>
-                inventoryPage,
+            ItemGrabMenu
+            {
+                inventory:
+                { } inventory,
+            } when inventory.isWithinBounds(x, y) => inventory,
+            ItemGrabMenu
+            {
+                ItemsToGrabMenu:
+                { } itemsToGrabMenu,
+            } when itemsToGrabMenu.isWithinBounds(x, y) => itemsToGrabMenu,
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage
+            {
+                inventory:
+                { } inventoryPage,
+            } => inventoryPage,
             _ => null,
         };
 

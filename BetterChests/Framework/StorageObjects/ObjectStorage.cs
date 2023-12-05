@@ -9,17 +9,13 @@ using StardewValley.Objects;
 /// <inheritdoc />
 internal sealed class ObjectStorage : Storage
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ObjectStorage" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ObjectStorage" /> class.</summary>
     /// <param name="obj">The source object.</param>
     /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
     public ObjectStorage(SObject obj, object? source, Vector2 position)
-        : base(obj, source, position)
-    {
+        : base(obj, source, position) =>
         this.Object = obj;
-    }
 
     /// <inheritdoc />
     public override IInventory Inventory => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
@@ -30,9 +26,7 @@ internal sealed class ObjectStorage : Storage
     /// <inheritdoc />
     public override NetMutex? Mutex => this.Chest.GetMutex();
 
-    /// <summary>
-    ///     Gets the source object.
-    /// </summary>
+    /// <summary>Gets the source object.</summary>
     public SObject Object { get; }
 
     private Chest Chest => (Chest)this.Object.heldObject.Value;

@@ -1,26 +1,18 @@
 namespace StardewMods.Common.Models;
 
-using System;
-
-/// <summary>
-///     Represents a range of values.
-/// </summary>
+/// <summary>Represents a range of values.</summary>
 /// <typeparam name="T">The value type for the range.</typeparam>
 internal sealed class Range<T>
     where T : IComparable<T>
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="Range{T}" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="Range{T}" /> class.</summary>
     public Range()
     {
         this.Minimum = default!;
         this.Maximum = default!;
     }
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="Range{T}" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="Range{T}" /> class.</summary>
     /// <param name="minimum">The minimum value of the range.</param>
     /// <param name="maximum">The maximum value of the range.</param>
     public Range(T minimum, T maximum)
@@ -29,19 +21,13 @@ internal sealed class Range<T>
         this.Maximum = maximum;
     }
 
-    /// <summary>
-    ///     Gets or sets the maximum value of the range.
-    /// </summary>
+    /// <summary>Gets or sets the maximum value of the range.</summary>
     public T? Maximum { get; set; }
 
-    /// <summary>
-    ///     Gets or sets the minimum value of the range.
-    /// </summary>
+    /// <summary>Gets or sets the minimum value of the range.</summary>
     public T? Minimum { get; set; }
 
-    /// <summary>
-    ///     Clamps a value based on the range.
-    /// </summary>
+    /// <summary>Clamps a value based on the range.</summary>
     /// <param name="value">The value to clamp.</param>
     /// <returns>Returns the clamped value.</returns>
     /// <exception cref="InvalidOperationException">Range is not valid.</exception>
@@ -60,8 +46,6 @@ internal sealed class Range<T>
         return this.Maximum.CompareTo(value) <= 0 ? this.Maximum : value;
     }
 
-    private bool IsValid()
-    {
-        return this.Minimum is not null && this.Maximum is not null && this.Minimum.CompareTo(this.Maximum) <= 0;
-    }
+    private bool IsValid() =>
+        this.Minimum is not null && this.Maximum is not null && this.Minimum.CompareTo(this.Maximum) <= 0;
 }

@@ -7,9 +7,7 @@ using StardewMods.Common.Enums;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-/// <summary>
-///     Restricts what items can be added into a chest.
-/// </summary>
+/// <summary>Restricts what items can be added into a chest.</summary>
 internal sealed class FilterItems : Feature
 {
     private const string Id = "furyx639.BetterChests/FilterItems";
@@ -33,15 +31,10 @@ internal sealed class FilterItems : Feature
 
     private static IReflectionHelper Reflection => FilterItems.instance.helper.Reflection;
 
-    /// <summary>
-    ///     Initializes <see cref="FilterItems" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="FilterItems" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="FilterItems" /> class.</returns>
-    public static Feature Init(IModHelper helper)
-    {
-        return FilterItems.instance ??= new(helper);
-    }
+    public static Feature Init(IModHelper helper) => FilterItems.instance ??= new(helper);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -64,6 +57,7 @@ internal sealed class FilterItems : Feature
             ?.GetType()
             .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
             ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+
         if (this.storeMethod is not null)
         {
             this.harmony.Patch(this.storeMethod, new(typeof(FilterItems), nameof(FilterItems.Automate_Store_prefix)));
@@ -91,7 +85,6 @@ internal sealed class FilterItems : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
@@ -100,7 +93,6 @@ internal sealed class FilterItems : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
@@ -116,7 +108,11 @@ internal sealed class FilterItems : Feature
 
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu || BetterItemGrabMenu.Context is not { FilterItems: FeatureOption.Enabled })
+        if (e.NewMenu is not ItemGrabMenu
+            || BetterItemGrabMenu.Context is not
+            {
+                FilterItems: FeatureOption.Enabled,
+            })
         {
             return;
         }

@@ -7,9 +7,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Locations;
 
-/// <summary>
-///     Unload a held chest's contents into another chest.
-/// </summary>
+/// <summary>Unload a held chest's contents into another chest.</summary>
 internal sealed class UnloadChest : Feature
 {
 #nullable disable
@@ -18,34 +16,18 @@ internal sealed class UnloadChest : Feature
 
     private readonly IModHelper helper;
 
-    private UnloadChest(IModHelper helper)
-    {
-        this.helper = helper;
-    }
+    private UnloadChest(IModHelper helper) => this.helper = helper;
 
-    /// <summary>
-    ///     Initializes <see cref="UnloadChest" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="UnloadChest" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="UnloadChest" /> class.</returns>
-    public static Feature Init(IModHelper helper)
-    {
-        return UnloadChest.instance ??= new UnloadChest(helper);
-    }
+    public static Feature Init(IModHelper helper) => UnloadChest.instance ??= new UnloadChest(helper);
 
     /// <inheritdoc />
-    protected override void Activate()
-    {
-        // Events
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-    }
+    protected override void Activate() => this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
     /// <inheritdoc />
-    protected override void Deactivate()
-    {
-        // Events
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-    }
+    protected override void Deactivate() => this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
 
     [EventPriority(EventPriority.Normal + 10)]
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -53,10 +35,16 @@ internal sealed class UnloadChest : Feature
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
             || this.helper.Input.IsSuppressed(e.Button)
-            || Storages.CurrentItem is null or { UnloadChest: not FeatureOption.Enabled }
+            || Storages.CurrentItem is null
+                or
+                {
+                    UnloadChest: not FeatureOption.Enabled,
+                }
             || Storages.CurrentItem.Data is not Storage storageObject
-            || (!storageObject.Inventory.HasAny() && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
-            || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+            || (!storageObject.Inventory.HasAny()
+                && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
+            || (Game1.player.currentLocation is MineShaft mineShaft
+                && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase)))
         {
             return;
         }
@@ -64,7 +52,10 @@ internal sealed class UnloadChest : Feature
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
             || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage)
-            || toStorage is not { Data: Storage toStorageObject })
+            || toStorage is not
+            {
+                Data: Storage toStorageObject,
+            })
         {
             return;
         }
@@ -101,6 +92,7 @@ internal sealed class UnloadChest : Feature
 
             Log.Trace(
                 $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {Storages.CurrentItem}, To: {toStorage}");
+
             storageObject.Inventory[index] = null;
         }
 

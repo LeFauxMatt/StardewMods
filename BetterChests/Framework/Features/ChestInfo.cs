@@ -1,9 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -14,9 +11,7 @@ using StardewMods.Common.Enums;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-/// <summary>
-///     Show stats to the side of a chest.
-/// </summary>
+/// <summary>Show stats to the side of a chest.</summary>
 internal sealed class ChestInfo : Feature
 {
 #nullable disable
@@ -27,8 +22,8 @@ internal sealed class ChestInfo : Feature
     private readonly PerScreen<IList<Tuple<Point, Point>>> dims = new(() => new List<Tuple<Point, Point>>());
     private readonly IModHelper helper;
 
-    private readonly PerScreen<IList<KeyValuePair<string, string>>> info = new(
-        () => new List<KeyValuePair<string, string>>());
+    private readonly PerScreen<IList<KeyValuePair<string, string>>> info =
+        new(() => new List<KeyValuePair<string, string>>());
 
     private ChestInfo(IModHelper helper, ModConfig config)
     {
@@ -40,16 +35,12 @@ internal sealed class ChestInfo : Feature
 
     private IList<KeyValuePair<string, string>> Info => this.info.Value;
 
-    /// <summary>
-    ///     Initializes <see cref="ChestInfo" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="ChestInfo" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestInfo" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return ChestInfo.instance ??= new ChestInfo(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) =>
+        ChestInfo.instance ??= new ChestInfo(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -80,7 +71,10 @@ internal sealed class ChestInfo : Feature
             info.Add(new(I18n.ChestInfo_Name(), storage.ChestLabel));
         }
 
-        if (storage is not { Data: Storage storageObject })
+        if (storage is not
+            {
+                Data: Storage storageObject,
+            })
         {
             return info;
         }
@@ -88,13 +82,22 @@ internal sealed class ChestInfo : Feature
         // Type
         switch (storageObject)
         {
-            case ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest }:
+            case ChestStorage
+            {
+                Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }:
                 info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Chest")));
                 break;
-            case ChestStorage { Chest.fridge.Value: true }:
+            case ChestStorage
+            {
+                Chest.fridge.Value: true,
+            }:
                 info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Fridge")));
                 break;
-            case ChestStorage { Chest.SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin }:
+            case ChestStorage
+            {
+                Chest.SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
+            }:
                 info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Shipping Bin")));
                 break;
             case ChestStorage:
@@ -145,10 +148,12 @@ internal sealed class ChestInfo : Feature
             new(
                 I18n.ChestInfo_TotalItems(),
                 $"{storageObject.Inventory.Where(item => item is not null).Sum(item => (long)item.Stack):n0}"));
+
         info.Add(
             new(
                 I18n.ChestInfo_UniqueItems(),
                 $"{storageObject.Inventory.Where(item => item is not null).Select(item => item.ItemId).Distinct().Count():n0}"));
+
         info.Add(
             new(
                 I18n.ChestInfo_TotalValue(),
@@ -223,7 +228,10 @@ internal sealed class ChestInfo : Feature
     private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
         if (Game1.activeClickableMenu is not ItemGrabMenu
-            || BetterItemGrabMenu.Context is not { ChestInfo: FeatureOption.Enabled } context)
+            || BetterItemGrabMenu.Context is not
+            {
+                ChestInfo: FeatureOption.Enabled,
+            } context)
         {
             this.Info.Clear();
             this.Dims.Clear();
@@ -236,7 +244,10 @@ internal sealed class ChestInfo : Feature
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.NewMenu is not ItemGrabMenu
-            || BetterItemGrabMenu.Context is not { ChestInfo: FeatureOption.Enabled } context)
+            || BetterItemGrabMenu.Context is not
+            {
+                ChestInfo: FeatureOption.Enabled,
+            } context)
         {
             this.Info.Clear();
             this.Dims.Clear();

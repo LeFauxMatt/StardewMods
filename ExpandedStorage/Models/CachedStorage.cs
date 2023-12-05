@@ -65,8 +65,5 @@ internal sealed class CachedStorage
     /// <summary>
     ///     Resets the cached texture.
     /// </summary>
-    public void ResetCache()
-    {
-        this.texture = null;
-    }
+    public void ResetCache() => this.texture = null;
 }

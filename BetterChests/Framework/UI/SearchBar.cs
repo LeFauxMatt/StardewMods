@@ -1,23 +1,18 @@
 ﻿namespace StardewMods.BetterChests.Framework.UI;
 
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewValley.Menus;
 
-/// <summary>
-///     Menu for searching for chests which contain specific items.
-/// </summary>
+/// <summary>Menu for searching for chests which contain specific items.</summary>
 internal sealed class SearchBar : IClickableMenu
 {
     private readonly ClickableComponent searchArea;
     private readonly TextBox searchField;
     private readonly ClickableTextureComponent searchIcon;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SearchBar" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="SearchBar" /> class.</summary>
     public SearchBar()
     {
         var texture = Game1.content.Load<Texture2D>("LooseSprites\\textBox");
@@ -44,13 +39,11 @@ internal sealed class SearchBar : IClickableMenu
 
         this.searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
         {
-            bounds = new(this.searchField.X + this.searchField.Width - 38, this.searchField.Y + 6, 32, 32),
+            bounds = new((this.searchField.X + this.searchField.Width) - 38, this.searchField.Y + 6, 32, 32),
         };
     }
 
-    /// <summary>
-    ///     Gets the current search text.
-    /// </summary>
+    /// <summary>Gets the current search text.</summary>
     public string SearchText => this.searchField.Text;
 
     /// <inheritdoc />
@@ -105,9 +98,7 @@ internal sealed class SearchBar : IClickableMenu
         this.exitThisMenuNoSound();
     }
 
-    /// <summary>
-    ///     Assigns focus to the search field.
-    /// </summary>
+    /// <summary>Assigns focus to the search field.</summary>
     public void SetFocus()
     {
         Game1.activeClickableMenu = this;

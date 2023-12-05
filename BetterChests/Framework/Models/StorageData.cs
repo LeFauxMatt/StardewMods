@@ -1,8 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Integrations.BetterChests;
@@ -115,148 +113,165 @@ internal sealed class StorageData : IStorageData
         var sb = new StringBuilder();
         if (this.AutoOrganize is not FeatureOption.Default)
         {
-            sb.AppendLine($"AutoOrganize: {this.AutoOrganize.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"AutoOrganize: {this.AutoOrganize.ToStringFast()}");
         }
 
         if (this.CarryChest is not FeatureOption.Default)
         {
-            sb.AppendLine($"CarryChest: {this.CarryChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"CarryChest: {this.CarryChest.ToStringFast()}");
         }
 
         if (this.CarryChestSlow is not FeatureOption.Default)
         {
-            sb.AppendLine($"CarryChestSlow: {this.CarryChestSlow.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"CarryChestSlow: {this.CarryChestSlow.ToStringFast()}");
         }
 
         if (this.ChestInfo is not FeatureOption.Default)
         {
-            sb.AppendLine($"ChestInfo: {this.ChestInfo.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"ChestInfo: {this.ChestInfo.ToStringFast()}");
         }
 
         if (this.ChestMenuTabs is not FeatureOption.Default)
         {
-            sb.AppendLine($"ChestMenuTabs: {this.ChestMenuTabs.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"ChestMenuTabs: {this.ChestMenuTabs.ToStringFast()}");
         }
 
         if (this.CollectItems is not FeatureOption.Default)
         {
-            sb.AppendLine($"CollectItems: {this.CollectItems.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"CollectItems: {this.CollectItems.ToStringFast()}");
         }
 
         if (this.Configurator is not FeatureOption.Default)
         {
-            sb.AppendLine($"Configurator: {this.Configurator.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"Configurator: {this.Configurator.ToStringFast()}");
         }
 
         if (this.ConfigureMenu is not InGameMenu.Default)
         {
-            sb.AppendLine($"ConfigureMenu: {this.ConfigureMenu.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"ConfigureMenu: {this.ConfigureMenu.ToStringFast()}");
         }
 
         if (this.CraftFromChest is not FeatureOptionRange.Default)
         {
-            sb.AppendLine($"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"CraftFromChest: {this.CraftFromChest.ToStringFast()}");
         }
 
         if (this.CraftFromChestDisableLocations.Any())
         {
-            sb.AppendLine($"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"CraftFromChestDisableLocations: {string.Join(',', this.CraftFromChestDisableLocations)}");
         }
 
         if (this.CraftFromChestDistance != 0)
         {
             sb.AppendLine(
+                CultureInfo.InvariantCulture,
                 $"CraftFromChestDistance: {this.CraftFromChestDistance.ToString(CultureInfo.InvariantCulture)}");
         }
 
         if (this.CustomColorPicker is not FeatureOption.Default)
         {
-            sb.AppendLine($"CustomColorPicker: {this.CustomColorPicker.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"CustomColorPicker: {this.CustomColorPicker.ToStringFast()}");
         }
 
         if (this.FilterItems is not FeatureOption.Default)
         {
-            sb.AppendLine($"FilterItems: {this.FilterItems.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"FilterItems: {this.FilterItems.ToStringFast()}");
         }
 
         if (this.HideItems is not FeatureOption.Default)
         {
-            sb.AppendLine($"HideItems: {this.HideItems.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"HideItems: {this.HideItems.ToStringFast()}");
         }
 
         if (this.LabelChest is not FeatureOption.Default)
         {
-            sb.AppendLine($"LabelChest: {this.LabelChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"LabelChest: {this.LabelChest.ToStringFast()}");
         }
 
         if (this.OpenHeldChest is not FeatureOption.Default)
         {
-            sb.AppendLine($"OpenHeldChest: {this.OpenHeldChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"OpenHeldChest: {this.OpenHeldChest.ToStringFast()}");
         }
 
         if (this.OrganizeChest is not FeatureOption.Default)
         {
-            sb.AppendLine($"OrganizeChest: {this.OrganizeChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"OrganizeChest: {this.OrganizeChest.ToStringFast()}");
         }
 
         if (this.OrganizeChestGroupBy is not GroupBy.Default)
         {
-            sb.AppendLine($"OrganizeChestGroupBy: {this.OrganizeChestGroupBy.ToStringFast()}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"OrganizeChestGroupBy: {this.OrganizeChestGroupBy.ToStringFast()}");
         }
 
         if (this.OrganizeChestSortBy is not SortBy.Default)
         {
-            sb.AppendLine($"OrganizeChestSortBy: {this.OrganizeChestSortBy.ToStringFast()}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"OrganizeChestSortBy: {this.OrganizeChestSortBy.ToStringFast()}");
         }
 
         if (this.ResizeChest is not FeatureOption.Default)
         {
-            sb.AppendLine($"ResizeChest: {this.ResizeChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"ResizeChest: {this.ResizeChest.ToStringFast()}");
         }
 
         if (this.ResizeChestCapacity != 0)
         {
-            sb.AppendLine($"ResizeChestCapacity: {this.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"ResizeChestCapacity: {this.ResizeChestCapacity.ToString(CultureInfo.InvariantCulture)}");
         }
 
         if (this.SearchItems is not FeatureOption.Default)
         {
-            sb.AppendLine($"SearchItems: {this.SearchItems.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"SearchItems: {this.SearchItems.ToStringFast()}");
         }
 
         if (this.StashToChest is not FeatureOptionRange.Default)
         {
-            sb.AppendLine($"StashToChest: {this.StashToChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"StashToChest: {this.StashToChest.ToStringFast()}");
         }
 
         if (this.StashToChestDisableLocations.Any())
         {
-            sb.AppendLine($"StashToChestDisableLocations: {string.Join(',', this.StashToChestDisableLocations)}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"StashToChestDisableLocations: {string.Join(',', this.StashToChestDisableLocations)}");
         }
 
         if (this.StashToChestDistance != 0)
         {
-            sb.AppendLine($"StashToChestDistance: {this.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"StashToChestDistance: {this.StashToChestDistance.ToString(CultureInfo.InvariantCulture)}");
         }
 
         if (this.StashToChestStacks is not FeatureOption.Default)
         {
-            sb.AppendLine($"StashToChestStacks: {this.StashToChestStacks.ToStringFast()}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"StashToChestStacks: {this.StashToChestStacks.ToStringFast()}");
         }
 
         if (this.TransferItems is not FeatureOption.Default)
         {
-            sb.AppendLine($"TransferItems: {this.TransferItems.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"TransferItems: {this.TransferItems.ToStringFast()}");
         }
 
         if (this.UnloadChest is not FeatureOption.Default)
         {
-            sb.AppendLine($"UnloadChest: {this.UnloadChest.ToStringFast()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"UnloadChest: {this.UnloadChest.ToStringFast()}");
         }
 
         if (this.UnloadChestCombine is not FeatureOption.Default)
         {
-            sb.AppendLine($"UnloadChestCombine: {this.UnloadChestCombine.ToStringFast()}");
+            sb.AppendLine(
+                CultureInfo.InvariantCulture,
+                $"UnloadChestCombine: {this.UnloadChestCombine.ToStringFast()}");
         }
 
         return sb.ToString();

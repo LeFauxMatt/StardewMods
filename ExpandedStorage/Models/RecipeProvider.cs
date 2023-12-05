@@ -29,15 +29,12 @@ internal sealed class RecipeProvider : IRecipeProvider
     public int RecipePriority => 1000;
 
     /// <inheritdoc />
-    public IEnumerable<IRecipe>? GetAdditionalRecipes(bool cooking)
-    {
-        return null;
-    }
+    public IEnumerable<IRecipe>? GetAdditionalRecipes(bool cooking) => null;
 
     /// <inheritdoc />
     public IRecipe? GetRecipe(CraftingRecipe recipe)
     {
-        var name = recipe.name.EndsWith("Recipe") ? recipe.name[..^6].Trim() : recipe.name;
+        var name = recipe.name.EndsWith("Recipe", StringComparison.OrdinalIgnoreCase) ? recipe.name[..^6].Trim() : recipe.name;
         if (!this.storages.TryGetValue(name, out var storage))
         {
             return null;

@@ -11,9 +11,7 @@ using StardewValley.Extensions;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly Dictionary<ChoreOption, IChore> chores = new()
-    {
-    };
+    private readonly Dictionary<ChoreOption, IChore> chores = new();
 
     private readonly Dictionary<string, Dictionary<ChoreOption, double>> spouseRules = new();
 
@@ -70,7 +68,8 @@ public sealed class ModEntry : Mod
         var spouses = new HashSet<NPC>();
         foreach (var (name, friendshipData) in Game1.player.friendshipData.Pairs)
         {
-            if (!friendshipData.IsMarried() || (this.config.HeartsNeeded > 0 && friendshipData.Points / 250 < this.config.HeartsNeeded))
+            if (!(friendshipData.IsMarried() || friendshipData.IsRoommate()) ||
+                (this.config.HeartsNeeded > 0 && friendshipData.Points / 250 < this.config.HeartsNeeded))
             {
                 continue;
             }
@@ -104,12 +103,17 @@ public sealed class ModEntry : Mod
                     continue;
                 }
 
-                var tokens = new Dictionary<string, object>();
+                var tokens = new Dictionary<string, object>
+                {
+                    ["PlayerName"] = Game1.player.displayName,
+                    ["NickName"] = spouse.getTermOfSpousalEndearment(),
+                };
                 selectedChores.Add(choreOption);
                 chore.AddTokens(tokens);
 
                 // Add dialogue for chore
                 var dialogue = this.fluent.Get($"dialogue-{choreOption.ToStringFast()}", tokens);
+                dialogue = TokenParser.ParseText(dialogue);
                 spouse.setNewDialogue(dialogue, add: true);
 
                 if (--maxChores <= 0)

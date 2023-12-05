@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Grouping type for items.
-/// </summary>
+/// <summary>Grouping type for items.</summary>
 [EnumExtensions]
 public enum GroupBy
 {

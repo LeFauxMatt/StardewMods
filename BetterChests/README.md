@@ -7,7 +7,6 @@ Adds enhanced chest features to the game.
 * [Features](#features)
     * [Auto Organize](#auto-organize)
     * [Better Color Picker](#better-color-picker)
-    * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
     * [Chest Finder](#chest-finder)
     * [Chest Info](#chest-info)
@@ -55,9 +54,9 @@ other chest has a higher priority.
 
 It also applies your [Organize Chest](#organize-chest) rules at the end.
 
-| Config          | Description                         | Default Value | Other Value(s)                                                       |
-|:----------------|:------------------------------------|:--------------|:---------------------------------------------------------------------|
-| AutoOrganize    | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+| Config       | Description                         | Default Value | Other Value(s)                        |
+|:-------------|:------------------------------------|:--------------|:--------------------------------------|
+| AutoOrganize | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
 
 ### Better Color Picker
 
@@ -70,14 +69,6 @@ and lightness.
 | CustomColorPickerArea | Which side will the Color Picker be added to. | `"Right"`     | `"Left"`                              |
 
 1. See [Option Values](#option-values).
-
-### Better Shipping Bin
-
-Relaunches the Shipping Bin menu as a regular Chest inventory menu so that items can be retrieved.
-
-| Config            | Description                              | Default Value | Other Value(s)      |
-|:------------------|:-----------------------------------------|:--------------|:--------------------|
-| BetterShippingBin | Enables the Better Shipping Bin feature. | `"true"`      | `"true"`, `"false"` |
 
 ### Carry Chest
 
@@ -299,9 +290,9 @@ Hit a configurable key to instantly stash items from your inventory into nearby 
 
 Adds buttons that transfer all items into or out of the currently opened chest.
 
-| Config        | Description                         | Default Value | Other Value(s)  |
-|:--------------|:------------------------------------|:--------------|:----------------|
-| TransferItems | Enables the Transfer Items feature. | `"Enabled"`   | `"Disabled"`    |
+| Config        | Description                         | Default Value | Other Value(s) |
+|:--------------|:------------------------------------|:--------------|:---------------|
+| TransferItems | Enables the Transfer Items feature. | `"Enabled"`   | `"Disabled"`   |
 
 ### Unload Chest
 

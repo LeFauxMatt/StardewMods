@@ -35,8 +35,6 @@
 
 namespace StardewMods.Common.Helpers.ItemRepository;
 
-using System;
-using StardewValley;
 using StardewValley.ItemTypeDefinitions;
 
 /// <summary>A game item with metadata.</summary>
@@ -44,9 +42,25 @@ using StardewValley.ItemTypeDefinitions;
 internal sealed class SearchableItem
 {
     /*********
-    ** Accessors
-    *********/
-    /// <summary>The <see cref="IItemDataDefinition.Identifier"/> value for the item type.</summary>
+     ** Public methods
+     *********/
+    /// <summary>Construct an instance.</summary>
+    /// <param name="type">The item type.</param>
+    /// <param name="id">The unqualified item ID.</param>
+    /// <param name="createItem">Create an item instance.</param>
+    public SearchableItem(string type, string id, Func<SearchableItem, Item> createItem)
+    {
+        this.Type = type;
+        this.Id = id;
+        this.QualifiedItemId = this.Type + this.Id;
+        this.CreateItem = () => createItem(this);
+        this.Item = createItem(this);
+    }
+
+    /*********
+     ** Accessors
+     *********/
+    /// <summary>The <see cref="IItemDataDefinition.Identifier" /> value for the item type.</summary>
     public string Type { get; }
 
     /// <summary>A sample item instance.</summary>
@@ -67,38 +81,15 @@ internal sealed class SearchableItem
     /// <summary>The item's display name for the current language.</summary>
     public string DisplayName => this.Item.DisplayName;
 
-
-    /*********
-    ** Public methods
-    *********/
-    /// <summary>Construct an instance.</summary>
-    /// <param name="type">The item type.</param>
-    /// <param name="id">The unqualified item ID.</param>
-    /// <param name="createItem">Create an item instance.</param>
-    public SearchableItem(string type, string id, Func<SearchableItem, Item> createItem)
-    {
-        this.Type = type;
-        this.Id = id;
-        this.QualifiedItemId = this.Type + this.Id;
-        this.CreateItem = () => createItem(this);
-        this.Item = createItem(this);
-    }
-
     /// <summary>Get whether the item name contains a case-insensitive substring.</summary>
     /// <param name="substring">The substring to find.</param>
-    public bool NameContains(string substring)
-    {
-        return
-            this.Name.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1
-            || this.DisplayName.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1;
-    }
+    public bool NameContains(string substring) =>
+        this.Name.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1
+        || this.DisplayName.IndexOf(substring, StringComparison.OrdinalIgnoreCase) != -1;
 
     /// <summary>Get whether the item name is exactly equal to a case-insensitive string.</summary>
     /// <param name="name">The substring to find.</param>
-    public bool NameEquivalentTo(string name)
-    {
-        return
-            this.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-            || this.DisplayName.Equals(name, StringComparison.OrdinalIgnoreCase);
-    }
+    public bool NameEquivalentTo(string name) =>
+        this.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+        || this.DisplayName.Equals(name, StringComparison.OrdinalIgnoreCase);
 }

@@ -1,15 +1,13 @@
 ﻿namespace StardewMods.Common.Integrations.ContentPatcher;
 
-using System;
-using System.Collections.Generic;
 using StardewModdingAPI.Events;
 
 /// <summary>The Content Patcher API which other mods can access.</summary>
 public interface IContentPatcherApi
 {
     /*********
-    ** Accessors
-    *********/
+     ** Accessors
+     *********/
 
     /// <summary>Whether the conditions API is initialized and ready for use.</summary>
     /// <remarks>
@@ -18,10 +16,9 @@ public interface IContentPatcherApi
     /// </remarks>
     bool IsConditionsApiReady { get; }
 
-
     /*********
-    ** Methods
-    *********/
+     ** Methods
+     *********/
 
     /// <summary>Get a set of managed conditions which are matched against Content Patcher's internal context.</summary>
     /// <param name="manifest">

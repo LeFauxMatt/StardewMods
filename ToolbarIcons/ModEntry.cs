@@ -17,11 +17,11 @@ using StardewValley.Menus;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly PerScreen<Api?> api = new();
-    private readonly PerScreen<ComponentArea> area = new(() => ComponentArea.Custom);
-    private readonly PerScreen<ClickableComponent?> button = new();
-    private readonly PerScreen<string> hoverText = new();
-    private readonly PerScreen<Toolbar?> toolbar = new();
+    private readonly PerScreen<Api?> perScreenApi = new();
+    private readonly PerScreen<ComponentArea> perScreenArea = new(() => ComponentArea.Custom);
+    private readonly PerScreen<ClickableComponent?> perScreenButton = new();
+    private readonly PerScreen<string> perScreenHoverText = new();
+    private readonly PerScreen<Toolbar?> perScreenToolbar = new();
 
     private ModConfig? config;
 
@@ -31,12 +31,12 @@ public sealed class ModEntry : Mod
         && Game1.activeClickableMenu is null
         && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
-    private Api Api => this.api.Value ??= new(this.Helper, this.ModConfig.Icons, this.Components);
+    private Api Api => this.perScreenApi.Value ??= new(this.Helper, this.ModConfig.Icons, this.Components);
 
     private ComponentArea Area
     {
-        get => this.area.Value;
-        set => this.area.Value = value;
+        get => this.perScreenArea.Value;
+        set => this.perScreenArea.Value = value;
     }
 
     private ClickableComponent? Button
@@ -44,9 +44,9 @@ public sealed class ModEntry : Mod
         get
         {
             var toolbar = Game1.onScreenMenus.OfType<Toolbar>().FirstOrDefault();
-            if (this.Toolbar is not null && ReferenceEquals(toolbar, this.Toolbar))
+            if (toolbar == this.Toolbar)
             {
-                return this.button.Value;
+                return this.perScreenButton.Value;
             }
 
             if (toolbar is null)
@@ -56,8 +56,8 @@ public sealed class ModEntry : Mod
 
             this.Toolbar = toolbar;
             var buttons = this.Helper.Reflection.GetField<List<ClickableComponent>>(toolbar, "buttons").GetValue();
-            this.button.Value = buttons.First();
-            return this.button.Value;
+            this.perScreenButton.Value = buttons.First();
+            return this.perScreenButton.Value;
         }
     }
 
@@ -65,16 +65,16 @@ public sealed class ModEntry : Mod
 
     private string HoverText
     {
-        get => this.hoverText.Value;
-        set => this.hoverText.Value = value;
+        get => this.perScreenHoverText.Value;
+        set => this.perScreenHoverText.Value = value;
     }
 
     private ModConfig ModConfig => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
 
     private Toolbar? Toolbar
     {
-        get => this.toolbar.Value;
-        set => this.toolbar.Value = value;
+        get => this.perScreenToolbar.Value;
+        set => this.perScreenToolbar.Value = value;
     }
 
     /// <inheritdoc />
@@ -97,10 +97,7 @@ public sealed class ModEntry : Mod
     }
 
     /// <inheritdoc />
-    public override object GetApi()
-    {
-        return this.Api;
-    }
+    public override object GetApi() => this.Api;
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
@@ -129,7 +126,7 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        if (e.Button is not SButton.MouseLeft or SButton.MouseRight
+        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight)
             && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
@@ -219,10 +216,7 @@ public sealed class ModEntry : Mod
         this.ReorientComponents();
     }
 
-    private void OnToolbarIconsLoaded(object? sender, EventArgs e)
-    {
-        this.ReorientComponents();
-    }
+    private void OnToolbarIconsLoaded(object? sender, EventArgs e) => this.ReorientComponents();
 
     private void ReorientComponents()
     {

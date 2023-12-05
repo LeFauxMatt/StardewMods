@@ -35,7 +35,7 @@ public sealed class ModEntry : Mod
     private IEnumerable<GarbageCan> GarbageCans =>
         this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
 
-    private NPC? NPC
+    private NPC? Npc
     {
         get => this.perScreenNpc.Value;
         set => this.perScreenNpc.Value = value;
@@ -69,10 +69,7 @@ public sealed class ModEntry : Mod
         this.Helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
     }
 
-    private static void GarbageHat(string command, string[] args)
-    {
-        GarbageCan.GarbageHat = true;
-    }
+    private static void GarbageHat(string command, string[] args) => GarbageCan.GarbageHat = true;
 
     private void GarbageClear(string command, string[] args)
     {
@@ -267,9 +264,9 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        this.NPC = npc;
+        this.Npc = npc;
         this.multiplayer?.globalChatInfoMessage("TrashCan", Game1.player.Name, npc.Name);
-        if (npc.Name.Equals("Linus"))
+        if (npc.Name.Equals("Linus", StringComparison.OrdinalIgnoreCase))
         {
             npc.doEmote(32);
             npc.setNewDialogue(
@@ -327,10 +324,7 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
-    {
-        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
-    }
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) => this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
@@ -340,10 +334,10 @@ public sealed class ModEntry : Mod
         }
 
         // Close Can
-        if (this.NPC is not null)
+        if (this.Npc is not null)
         {
-            Game1.drawDialogue(this.NPC);
-            this.NPC = null;
+            Game1.drawDialogue(this.Npc);
+            this.Npc = null;
         }
 
         this.GarbageCan = null;

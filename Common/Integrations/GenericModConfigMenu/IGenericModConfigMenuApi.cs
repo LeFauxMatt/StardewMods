@@ -1,7 +1,6 @@
 #nullable disable
 namespace StardewMods.Common.Integrations.GenericModConfigMenu;
 
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Utilities;
@@ -31,8 +30,8 @@ public interface IGenericModConfigMenuApi
         string fieldId = null);
 
     /****
-    ** Advanced
-    ****/
+     ** Advanced
+     ****/
 
     /// <summary>Add an option at the current position in the form using custom rendering logic.</summary>
     /// <param name="mod">The mod's manifest.</param>
@@ -201,8 +200,8 @@ public interface IGenericModConfigMenuApi
         string fieldId = null);
 
     /****
-    ** Multi-page management
-    ****/
+     ** Multi-page management
+     ****/
     /// <summary>
     ///     Start a new page in the mod's config UI, or switch to that page if it already exists. All options registered
     ///     after this will be part of that page.
@@ -229,8 +228,8 @@ public interface IGenericModConfigMenuApi
     void AddParagraph(IManifest mod, Func<string> text);
 
     /****
-    ** Basic options
-    ****/
+     ** Basic options
+     ****/
 
     /// <summary>Add a section title at the current position in the form.</summary>
     /// <param name="mod">The mod's manifest.</param>
@@ -283,11 +282,11 @@ public interface IGenericModConfigMenuApi
     void OpenModMenu(IManifest mod);
 
     /*********
-    ** Methods
-    *********/
+     ** Methods
+     *********/
     /****
-    ** Must be called first
-    ****/
+     ** Must be called first
+     ****/
 
     /// <summary>Register a mod whose config can be edited through the UI.</summary>
     /// <param name="mod">The mod's manifest.</param>

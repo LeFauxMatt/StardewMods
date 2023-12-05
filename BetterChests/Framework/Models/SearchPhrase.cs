@@ -1,16 +1,9 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
-using System;
-using System.Linq;
-
-/// <summary>
-///     Parsed search text for <see cref="ItemMatcher" />.
-/// </summary>
+/// <summary>Parsed search text for <see cref="ItemMatcher" />.</summary>
 internal sealed class SearchPhrase
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SearchPhrase" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="SearchPhrase" /> class.</summary>
     /// <param name="value">The search text value.</param>
     /// <param name="tagMatch">Indicates whether to match by context tag.</param>
     /// <param name="exactMatch">Indicates whether to accept exact matches only.</param>
@@ -28,9 +21,7 @@ internal sealed class SearchPhrase
         this.Translation = translation;
     }
 
-    /// <summary>
-    ///     Gets a value indicating whether the search phrase is a negation match.
-    /// </summary>
+    /// <summary>Gets a value indicating whether the search phrase is a negation match.</summary>
     public bool NotMatch { get; }
 
     private bool ExactMatch { get; }
@@ -41,18 +32,14 @@ internal sealed class SearchPhrase
 
     private string Value { get; }
 
-    /// <summary>
-    ///     Checks if item matches this search phrase.
-    /// </summary>
+    /// <summary>Checks if item matches this search phrase.</summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if item matches the search phrase.</returns>
-    public bool Matches(Item item)
-    {
-        return (this.TagMatch
-                ? item.GetContextTagsExt().Any(this.Matches)
-                : this.Matches(item.DisplayName) || this.Matches(item.Name))
-            != this.NotMatch;
-    }
+    public bool Matches(Item item) =>
+        (this.TagMatch
+            ? item.GetContextTagsExt().Any(this.Matches)
+            : this.Matches(item.DisplayName) || this.Matches(item.Name))
+        != this.NotMatch;
 
     private bool Matches(string match)
     {

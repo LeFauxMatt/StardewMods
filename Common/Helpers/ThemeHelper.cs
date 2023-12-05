@@ -1,14 +1,10 @@
 ﻿namespace StardewMods.Common.Helpers;
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 
-/// <summary>
-///     Handles palette swaps for theme compatibility.
-/// </summary>
+/// <summary>Handles palette swaps for theme compatibility.</summary>
 internal sealed class ThemeHelper
 {
     private ThemeHelper(IModHelper helper, string[] assetNames)
@@ -43,16 +39,12 @@ internal sealed class ThemeHelper
         { new(104, 471), new(247, 186, 0) },
     };
 
-    /// <summary>
-    ///     Initializes <see cref="ThemeHelper" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="ThemeHelper" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="assetNames">The asset names to edit.</param>
     /// <returns>Returns an instance of the <see cref="ThemeHelper" /> class.</returns>
-    public static ThemeHelper Init(IModHelper helper, params string[] assetNames)
-    {
-        return ThemeHelper.Instance ??= new(helper, assetNames);
-    }
+    public static ThemeHelper Init(IModHelper helper, params string[] assetNames) =>
+        ThemeHelper.Instance ??= new(helper, assetNames);
 
     private void Edit(IAssetData asset)
     {
@@ -92,11 +84,13 @@ internal sealed class ThemeHelper
 
     private void OnAssetReady(object? sender, AssetReadyEventArgs e)
     {
-        if (this.Initialize && e.Name.IsEquivalentTo("LooseSprites/Cursors"))
+        if (!this.Initialize || !e.Name.IsEquivalentTo("LooseSprites/Cursors"))
         {
-            this.Initialize = false;
-            this.InitializePalette();
+            return;
         }
+
+        this.Initialize = false;
+        this.InitializePalette();
     }
 
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -120,10 +114,7 @@ internal sealed class ThemeHelper
         }
     }
 
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
-    {
-        this.InitializePalette();
-    }
+    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e) => this.InitializePalette();
 
     private Texture2D SwapPalette(Texture2D source)
     {

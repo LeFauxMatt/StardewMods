@@ -1,8 +1,8 @@
 namespace StardewMods.Common.Helpers;
 
-/// <summary>
-///     Provides logging across mods.
-/// </summary>
+using System.Globalization;
+
+/// <summary>Provides logging across mods.</summary>
 internal static class Log
 {
     /// <inheritdoc cref="IMonitor" />
@@ -11,42 +11,27 @@ internal static class Log
     /// <summary>Logs a message at an <see cref="LogLevel.Alert" /> level.</summary>
     /// <param name="message">The message to log.</param>
     /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Alert(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Alert);
-    }
+    public static void Alert(string message, bool once = false) => Log.LogMessage(message, once, LogLevel.Alert);
 
     /// <summary>Logs a message at an <see cref="LogLevel.Debug" /> level.</summary>
     /// <param name="message">The message to log.</param>
     /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Debug(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Debug);
-    }
+    public static void Debug(string message, bool once = false) => Log.LogMessage(message, once, LogLevel.Debug);
 
     /// <summary>Logs a message at an <see cref="LogLevel.Error" /> level.</summary>
     /// <param name="message">The message to log.</param>
     /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Error(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Error);
-    }
+    public static void Error(string message, bool once = false) => Log.LogMessage(message, once, LogLevel.Error);
 
     /// <summary>Logs a message at an <see cref="LogLevel.Info" /> level.</summary>
     /// <param name="message">The message to log.</param>
     /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Info(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Info);
-    }
+    public static void Info(string message, bool once = false) => Log.LogMessage(message, once, LogLevel.Info);
 
     /// <summary>Logs a message at an <see cref="LogLevel.Trace" /> level.</summary>
     /// <param name="message">The message to log.</param>
     /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Trace(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Trace);
-    }
+    public static void Trace(string message, bool once = false) => Log.LogMessage(message, once, LogLevel.Trace);
 
     /// <summary>Logs a message that only appears when <see cref="IMonitor.IsVerbose" /> is enabled.</summary>
     /// <param name="message">The message to log.</param>
@@ -65,17 +50,14 @@ internal static class Log
     {
         if (Log.Monitor?.IsVerbose == true)
         {
-            Log.Monitor.VerboseLog(string.Format(message, args));
+            Log.Monitor.VerboseLog(string.Format(CultureInfo.InvariantCulture, message, args));
         }
     }
 
     /// <summary>Logs a message at an <see cref="LogLevel.Warn" /> level.</summary>
     /// <param name="message">The message to log.</param>
     /// <param name="once">Log message only if it hasn't already been logged since the last game launch.</param>
-    public static void Warn(string message, bool once = false)
-    {
-        Log.LogMessage(message, once, LogLevel.Warn);
-    }
+    public static void Warn(string message, bool once = false) => Log.LogMessage(message, once, LogLevel.Warn);
 
     private static void LogMessage(string message, bool once, LogLevel logLevel)
     {

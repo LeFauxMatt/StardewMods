@@ -25,10 +25,7 @@ internal sealed class BirthdayGift : IChore
     /// Initializes a new instance of the <see cref="BirthdayGift"/> class.
     /// </summary>
     /// <param name="config">Config data for <see cref="BirthdayGift"/>.</param>
-    public BirthdayGift(Config config)
-    {
-        this.config = config;
-    }
+    public BirthdayGift(Config config) => this.config = config;
 
     /// <inheritdoc/>
     public void AddTokens(Dictionary<string, object> tokens)
@@ -39,6 +36,11 @@ internal sealed class BirthdayGift : IChore
         }
 
         tokens["Birthday"] = this.birthdayNpc.getName();
+        tokens["BirthdayGender"] = this.birthdayNpc.Gender switch
+        {
+            1 => "Female",
+            _ => "Male",
+        };
         tokens["ItemId"] = $"[{this.birthdayGift.QualifiedItemId}]";
         tokens["ItemName"] = this.birthdayGift.DisplayName;
     }
@@ -118,12 +120,12 @@ internal sealed class BirthdayGift : IChore
         /// <summary>
         /// Gets or sets the chance that a disliked item will be given.
         /// </summary>
-        public double ChanceForDislike { get; set; } = 0;
+        public double ChanceForDislike { get; set; }
 
         /// <summary>
         /// Gets or sets the chance that a hated item will be given.
         /// </summary>
-        public double ChanceForHate { get; set; } = 0;
+        public double ChanceForHate { get; set; }
 
         /// <summary>
         /// Gets or sets the chance that a liked item will be given.

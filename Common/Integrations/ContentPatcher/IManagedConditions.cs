@@ -1,7 +1,5 @@
 ﻿namespace StardewMods.Common.Integrations.ContentPatcher;
 
-using System.Collections.Generic;
-
 /// <summary>
 ///     A set of parsed conditions linked to the Content Patcher context. These conditions are
 ///     <strong>per-screen</strong>, so the result depends on the screen that's active when calling the members.
@@ -9,8 +7,8 @@ using System.Collections.Generic;
 public interface IManagedConditions
 {
     /*********
-    ** Accessors
-    *********/
+     ** Accessors
+     *********/
 
     /// <summary>Whether <see cref="IsReady" /> is true, and the conditions all match in the current context.</summary>
     bool IsMatch { get; }
@@ -40,8 +38,8 @@ public interface IManagedConditions
     string? ValidationError { get; }
 
     /*********
-    ** Methods
-    *********/
+     ** Methods
+     *********/
 
     /// <summary>
     ///     If <see cref="IsMatch" /> is false, analyze the conditions/context and get a human-readable reason phrase

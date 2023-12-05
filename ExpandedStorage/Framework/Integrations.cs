@@ -44,8 +44,5 @@ internal sealed class Integrations
     /// </summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
-    public static Integrations Init(IModRegistry modRegistry)
-    {
-        return Integrations.instance ??= new(modRegistry);
-    }
+    public static Integrations Init(IModRegistry modRegistry) => Integrations.instance ??= new(modRegistry);
 }

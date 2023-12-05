@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Determines the in-game config menu.
-/// </summary>
+/// <summary>Determines the in-game config menu.</summary>
 [EnumExtensions]
 public enum InGameMenu
 {

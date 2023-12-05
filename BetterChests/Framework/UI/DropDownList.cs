@@ -1,15 +1,10 @@
 ﻿namespace StardewMods.BetterChests.Framework.UI;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
-/// <summary>
-///     A dropdown for selecting a string from a list of values.
-/// </summary>
+/// <summary>A dropdown for selecting a string from a list of values.</summary>
 internal sealed class DropDownList : IClickableMenu
 {
     private readonly Rectangle bounds;
@@ -17,9 +12,7 @@ internal sealed class DropDownList : IClickableMenu
     private readonly Dictionary<string, string> localValues;
     private readonly List<ClickableComponent> values;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DropDownList" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="DropDownList" /> class.</summary>
     /// <param name="values">The list of values to display.</param>
     /// <param name="x">The x-coordinate of the dropdown.</param>
     /// <param name="y">The y-coordinate of the dropdown.</param>
@@ -32,8 +25,10 @@ internal sealed class DropDownList : IClickableMenu
         this.localValues = values.ToDictionary(
             value => value,
             value => translation.Get($"tag.{value}").Default(value).ToString());
+
         var textBounds = this.localValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint())
             .ToList();
+
         var textHeight = textBounds.Max(textBound => textBound.Y);
         this.width = textBounds.Max(textBound => textBound.X) + 16;
         this.height = textBounds.Sum(textBound => textBound.Y) + 16;
@@ -52,7 +47,7 @@ internal sealed class DropDownList : IClickableMenu
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        DropDownList.drawTextureBox(
+        IClickableMenu.drawTextureBox(
             b,
             Game1.mouseCursors,
             OptionsDropDown.dropDownBGSource,

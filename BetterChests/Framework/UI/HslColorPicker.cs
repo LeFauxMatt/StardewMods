@@ -1,7 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.UI;
 
-using System;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Extensions;
@@ -9,9 +7,7 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Models;
 using StardewValley.Menus;
 
-/// <summary>
-///     A component for picking a color using HSL sliders.
-/// </summary>
+/// <summary>A component for picking a color using HSL sliders.</summary>
 internal sealed class HslColorPicker
 {
     private const int BarHeight = (HslColorPicker.Height - HslColorPicker.Gap - 36) / 2;
@@ -45,40 +41,27 @@ internal sealed class HslColorPicker
     private readonly Rectangle[] saturationBar = new Rectangle[HslColorPicker.Cells];
     private readonly Color[] saturationShade = new Color[HslColorPicker.Cells];
     private readonly Range<int> saturationTrack = new();
-
-    private IColorable? itemToColor;
-    private Thumb held = Thumb.None;
     private HslColor currentHslColor;
+    private Thumb held = Thumb.None;
     private Rectangle hueBarArea = new(0, 0, HslColorPicker.BarWidth, HslColorPicker.Height - 36);
     private int hueCoord;
+
+    private IColorable? itemToColor;
     private bool lastDown;
     private int lightnessCoord;
-    private Rectangle noColorArea = new(0, 0, 36, 36);
-    private int saturationCoord;
     private int menuX;
     private int menuY;
+    private Rectangle noColorArea = new(0, 0, 36, 36);
+    private int saturationCoord;
 
-    private enum Thumb
-    {
-        None,
-        Hue,
-        Saturation,
-        Lightness,
-        NoColor,
-    }
-
-    /// <summary>
-    ///     Gets the current <see cref="Color" />.
-    /// </summary>
+    /// <summary>Gets the current <see cref="Color" />.</summary>
     public Color Color { get; private set; }
 
     private static HslColor[] Colors => HslColorPicker.ColorsLazy.Value;
 
     private static Texture2D HueBar => HslColorPicker.HueBarLazy.Value;
 
-    /// <summary>
-    ///     Draws the <see cref="HslColorPicker" /> to the screen.
-    /// </summary>
+    /// <summary>Draws the <see cref="HslColorPicker" /> to the screen.</summary>
     /// <param name="b">The <see cref="SpriteBatch" /> to draw to.</param>
     public void Draw(SpriteBatch b)
     {
@@ -170,9 +153,7 @@ internal sealed class HslColorPicker
         this.itemToColor?.Draw(b, this.menuX, this.menuY - Game1.tileSize - (IClickableMenu.borderWidth / 2));
     }
 
-    /// <summary>
-    ///     Displays the <see cref="HslColorPicker" />.
-    /// </summary>
+    /// <summary>Displays the <see cref="HslColorPicker" />.</summary>
     /// <param name="x">The x-coordinate.</param>
     /// <param name="y">The y-coordinate.</param>
     /// <param name="colorable">The object to draw.</param>
@@ -198,6 +179,7 @@ internal sealed class HslColorPicker
                 top + (cell * HslColorPicker.CellSize),
                 HslColorPicker.BarWidth,
                 HslColorPicker.CellSize);
+
             this.saturationBar[cell] = new(
                 this.lightnessBar[cell].X,
                 this.lightnessBar[cell].Y + HslColorPicker.BarHeight + HslColorPicker.Gap,
@@ -224,10 +206,12 @@ internal sealed class HslColorPicker
             var hueValues = HslColorPicker.Colors
                 .Select((hsl, i) => (Index: i, Diff: Math.Abs(hsl.H - this.currentHslColor.H)))
                 .ToList();
+
             var minDiff = hueValues.Min(item => item.Diff);
             this.hueCoord = hueValues.First(item => Math.Abs(item.Diff - minDiff) == 0)
                 .Index.Remap(HslColorPicker.HslTrack, HslColorPicker.UnitRange)
                 .Remap(HslColorPicker.UnitRange, this.hueTrack);
+
             this.lightnessCoord = this.currentHslColor.L.Remap(HslColorPicker.UnitRange, this.lightnessTrack);
             this.saturationCoord = this.currentHslColor.S.Remap(HslColorPicker.UnitRange, this.saturationTrack);
         }
@@ -241,6 +225,7 @@ internal sealed class HslColorPicker
                 S = this.Color == Color.Black ? 0 : this.currentHslColor.S,
                 L = value,
             }.ToRgbColor();
+
             this.saturationShade[i] = new HslColor
             {
                 H = this.currentHslColor.H,
@@ -252,9 +237,7 @@ internal sealed class HslColorPicker
         this.held = Thumb.None;
     }
 
-    /// <summary>
-    ///     Updates the <see cref="HslColorPicker" />.
-    /// </summary>
+    /// <summary>Updates the <see cref="HslColorPicker" />.</summary>
     /// <param name="input">SMAPI helper for input.</param>
     public void Update(IInputHelper input)
     {
@@ -341,6 +324,7 @@ internal sealed class HslColorPicker
                 this.hueCoord = this.hueTrack.Clamp(y);
                 var index = this.hueCoord.Remap(this.hueTrack, HslColorPicker.UnitRange)
                     .Remap(HslColorPicker.UnitRange, HslColorPicker.HslTrack);
+
                 var hslColor = HslColorPicker.Colors[index];
                 this.currentHslColor.H = hslColor.H;
                 if (this.Color == Color.Black)
@@ -377,6 +361,7 @@ internal sealed class HslColorPicker
                 S = this.Color == Color.Black ? 0 : this.currentHslColor.S,
                 L = value,
             }.ToRgbColor();
+
             this.saturationShade[i] = new HslColor
             {
                 H = this.currentHslColor.H,
@@ -384,5 +369,14 @@ internal sealed class HslColorPicker
                 L = this.Color == Color.Black ? value : Math.Max(0.01f, this.currentHslColor.L),
             }.ToRgbColor();
         }
+    }
+
+    private enum Thumb
+    {
+        None,
+        Hue,
+        Saturation,
+        Lightness,
+        NoColor,
     }
 }

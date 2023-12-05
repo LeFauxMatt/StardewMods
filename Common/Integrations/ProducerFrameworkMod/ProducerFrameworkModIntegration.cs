@@ -5,9 +5,7 @@ internal sealed class ProducerFrameworkModIntegration : ModIntegration<IProducer
 {
     private const string ModUniqueId = "Digus.ProducerFrameworkMod";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ProducerFrameworkModIntegration" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ProducerFrameworkModIntegration" /> class.</summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public ProducerFrameworkModIntegration(IModRegistry modRegistry)
         : base(modRegistry, ProducerFrameworkModIntegration.ModUniqueId)

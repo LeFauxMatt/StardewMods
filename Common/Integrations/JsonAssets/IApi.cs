@@ -1,13 +1,9 @@
 ﻿namespace StardewMods.Common.Integrations.JsonAssets;
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-/// <summary>
-///     API for Json Assets.
-/// </summary>
+/// <summary>API for Json Assets.</summary>
 public interface IApi
 {
     event EventHandler AddedItemsToShop;

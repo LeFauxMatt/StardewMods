@@ -1,26 +1,11 @@
 namespace StardewMods.Common.Helpers.PatternPatcher;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 /// <inheritdoc />
 internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="PatternPatcher{TItem}" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="PatternPatcher{TItem}" /> class.</summary>
     /// <param name="comparer">A function that determines if an item in the list matches a item in the pattern.</param>
-    public PatternPatcher(Func<TItem, TItem, bool> comparer)
-    {
-        this.Comparer = comparer;
-    }
-
-    /// <inheritdoc />
-    public int AppliedPatches { get; private set; }
-
-    /// <inheritdoc />
-    public int TotalPatches { get; private set; }
+    public PatternPatcher(Func<TItem, TItem, bool> comparer) => this.Comparer = comparer;
 
     private IEnumerator<TItem>? CodeEnum { get; set; }
 
@@ -35,6 +20,12 @@ internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
     private PatternPatch? LastPatch { get; set; }
 
     private Queue<PatternPatch> Patches { get; } = new();
+
+    /// <inheritdoc />
+    public int AppliedPatches { get; private set; }
+
+    /// <inheritdoc />
+    public int TotalPatches { get; private set; }
 
     /// <inheritdoc />
     public IPatternPatcher<TItem> AddPatch(Action<IList<TItem>>? patch, params TItem[] patternBlock)
@@ -55,10 +46,7 @@ internal sealed class PatternPatcher<TItem> : IPatternPatcher<TItem>
     }
 
     /// <inheritdoc />
-    public IPatternPatcher<TItem> AddSeek(params TItem[] patternBlock)
-    {
-        return this.AddPatch(null, patternBlock);
-    }
+    public IPatternPatcher<TItem> AddSeek(params TItem[] patternBlock) => this.AddPatch(null, patternBlock);
 
     /// <inheritdoc />
     public IEnumerable<TItem> FlushBuffer()

@@ -19,8 +19,6 @@ using StardewValley.Tools;
 /// <summary>
 ///     Harmony Patches for Expanded Storage.
 /// </summary>
-[SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
 [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
 internal sealed class ModPatches
 {
@@ -227,11 +225,10 @@ internal sealed class ModPatches
         IModHelper helper,
         IManifest manifest,
         IDictionary<string, ICustomStorage> storages,
-        IDictionary<string, CachedStorage> storageCache)
-    {
-        return ModPatches.modInstance ??= new(helper, manifest, storages, storageCache);
-    }
+        IDictionary<string, CachedStorage> storageCache) =>
+        ModPatches.modInstance ??= new(helper, manifest, storages, storageCache);
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Chest_chestForAction_prefix(Chest __instance, ref bool __result, bool justCheckingForActivity)
     {
         if (justCheckingForActivity
@@ -270,6 +267,7 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Chest_draw_prefix(
         Chest __instance,
         ref int ___currentLidFrame,
@@ -320,6 +318,7 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Chest_drawLocal_prefix(
         Chest __instance,
         ref int ___currentLidFrame,
@@ -337,7 +336,7 @@ internal sealed class ModPatches
         }
 
         var pos = local
-            ? new(x, y - storage.GetTileHeight() + 1)
+            ? new(x, (y - storage.GetTileHeight()) + 1)
             : Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize);
         var color = storage.PlayerColor && !__instance.playerChoiceColor.Value.Equals(Color.Black)
             ? __instance.playerChoiceColor.Value
@@ -353,6 +352,7 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
     {
         if (!__instance.playerChest.Value
@@ -362,9 +362,10 @@ internal sealed class ModPatches
             return;
         }
 
-        __result = __instance.startingLidFrame.Value + storage.GetFrames() - 1;
+        __result = (__instance.startingLidFrame.Value + storage.GetFrames()) - 1;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Chest_performToolAction_prefix(Chest __instance, Tool? t)
     {
         if (t?.getLastFarmerToUse() != Game1.player
@@ -446,6 +447,7 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Chest_UpdateFarmerNearby_prefix(
         Chest __instance,
         ref bool ____farmerNearby,
@@ -490,6 +492,7 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Chest_updateWhenCurrentLocation_prefix(
         Chest __instance,
         ref int ____shippingBinFrameCounter,
@@ -593,13 +596,14 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void CraftingPage_layoutRecipes_postfix(CraftingPage __instance)
     {
         foreach (var page in __instance.pagesOfCraftingRecipes)
         {
             foreach (var (component, recipe) in page)
             {
-                var name = recipe.name.EndsWith("Recipe") ? recipe.name[..^6].Trim() : recipe.name;
+                var name = recipe.name.EndsWith("Recipe", StringComparison.Ordinal) ? recipe.name[..^6].Trim() : recipe.name;
                 if (!ModPatches.Storages.TryGetValue(name, out var storage))
                 {
                     continue;
@@ -614,15 +618,17 @@ internal sealed class ModPatches
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void CraftingRecipe_constructor_postfix(CraftingRecipe __instance)
     {
-        var name = __instance.name.EndsWith("Recipe") ? __instance.name[..^6].Trim() : __instance.name;
+        var name = __instance.name.EndsWith("Recipe", StringComparison.Ordinal) ? __instance.name[..^6].Trim() : __instance.name;
         if (ModPatches.Storages.TryGetValue(name, out var storage))
         {
             __instance.description = storage.Description;
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void CraftingRecipe_createItem_postfix(CraftingRecipe __instance, ref Item __result)
     {
         if (__result is not SObject obj || !obj.HasTypeBigCraftable() || obj.ParentSheetIndex is not (216 or 232 or 248 or 256))
@@ -630,7 +636,7 @@ internal sealed class ModPatches
             return;
         }
 
-        var name = __instance.name.EndsWith("Recipe") ? __instance.name[..^6].Trim() : __instance.name;
+        var name = __instance.name.EndsWith("Recipe", StringComparison.Ordinal) ? __instance.name[..^6].Trim() : __instance.name;
         if (!ModPatches.Storages.TryGetValue(name, out var storage))
         {
             return;
@@ -656,6 +662,7 @@ internal sealed class ModPatches
         __result.modData["furyx639.ExpandedStorage/Storage"] = name;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
         if (!__result
@@ -690,21 +697,17 @@ internal sealed class ModPatches
         }
     }
 
-    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance, ref Item ___sourceItem)
-    {
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
-    }
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) => ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
-    private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance, ref Item ___sourceItem)
-    {
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
-    }
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) => ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
-    private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance, ref Item ___sourceItem)
-    {
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
-    }
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) => ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static void Object_checkForAction_postfix(
         SObject __instance,
         ref bool __result,
@@ -719,7 +722,7 @@ internal sealed class ModPatches
             return;
         }
 
-        var tile = new Vector2(int.Parse(x), int.Parse(y));
+        var tile = new Vector2(int.Parse(x, CultureInfo.InvariantCulture), int.Parse(y, CultureInfo.InvariantCulture));
         if (!who.currentLocation.Objects.TryGetValue(tile, out var obj) || obj is not Chest chest)
         {
             return;
@@ -728,6 +731,7 @@ internal sealed class ModPatches
         __result = chest.checkForAction(who);
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Object_draw_prefix(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
@@ -754,7 +758,7 @@ internal sealed class ModPatches
         return false;
     }
 
-    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Object_drawInMenu_prefix(
         SObject __instance,
         SpriteBatch spriteBatch,
@@ -779,7 +783,7 @@ internal sealed class ModPatches
 
         var adjustedScaleSize = storage.GetScaleMultiplier() * scaleSize < 0.2
             ? storage.GetScaleMultiplier() * scaleSize
-            : storage.GetScaleMultiplier() * scaleSize / 2f;
+            : (storage.GetScaleMultiplier() * scaleSize) / 2f;
         switch (__instance)
         {
             case Chest chest:
@@ -792,7 +796,7 @@ internal sealed class ModPatches
                     spriteBatch,
                     location + new Vector2(32f, 32f),
                     adjustedColor,
-                    new(storage.Width / 2, storage.Height / 2),
+                    new((int)(storage.Width / 2f), (int)(storage.Height / 2f)),
                     scaleSize: adjustedScaleSize,
                     layerDepth: layerDepth);
                 break;
@@ -804,7 +808,7 @@ internal sealed class ModPatches
                     spriteBatch,
                     location + new Vector2(32f, 32f),
                     color * transparency,
-                    new(storage.Width / 2, storage.Height / 2),
+                    new((int)(storage.Width / 2f), (int)(storage.Height / 2f)),
                     scaleSize: adjustedScaleSize,
                     layerDepth: layerDepth);
                 break;
@@ -818,10 +822,10 @@ internal sealed class ModPatches
                 && scaleSize > 0.3:
                 var textPosition = location
                     + new Vector2(
-                        Game1.tileSize
-                        - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)
+                        (Game1.tileSize
+                            - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize))
                         + (3f * scaleSize),
-                        Game1.tileSize - (18f * scaleSize) + 2f);
+                        (Game1.tileSize - (18f * scaleSize)) + 2f);
                 Utility.drawTinyDigits(
                     __instance.Stack,
                     spriteBatch,
@@ -847,6 +851,7 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Object_drawPlacementBounds_prefix(
         SObject __instance,
         SpriteBatch spriteBatch,
@@ -887,8 +892,8 @@ internal sealed class ModPatches
                 spriteBatch.Draw(
                     Game1.mouseCursors,
                     new(
-                        (((x / Game1.tileSize) + x_offset) * Game1.tileSize) - Game1.viewport.X,
-                        (((y / Game1.tileSize) + y_offset) * Game1.tileSize) - Game1.viewport.Y),
+                        (((int)(x / (float)Game1.tileSize) + x_offset) * Game1.tileSize) - Game1.viewport.X,
+                        (((int)(y / (float)Game1.tileSize) + y_offset) * Game1.tileSize) - Game1.viewport.Y),
                     new Rectangle(canPlaceHere ? 194 : 210, 388, 16, 16),
                     Color.White,
                     0f,
@@ -903,6 +908,8 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static bool Object_drawWhenHeld_prefix(
         SObject __instance,
         SpriteBatch spriteBatch,
@@ -917,7 +924,7 @@ internal sealed class ModPatches
 
         var posAdj = storage.GetTileHeight() == 2 && storage.GetTileWidth() == 1
             ? Vector2.Zero
-            : new Vector2(storage.GetTileWidth() - 1, storage.GetTileHeight() - 2) * Game1.tileSize / 2f;
+            : (new Vector2(storage.GetTileWidth() - 1, storage.GetTileHeight() - 2) * Game1.tileSize) / 2f;
 
         switch (__instance)
         {
@@ -947,6 +954,8 @@ internal sealed class ModPatches
         return false;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static void Object_getDescription_postfix(SObject __instance, ref string __result)
     {
         if (__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
@@ -956,6 +965,7 @@ internal sealed class ModPatches
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void Object_GetOneNew_postfix(SObject __instance, ref Item __result)
     {
         if (__result is not SObject obj
@@ -987,6 +997,8 @@ internal sealed class ModPatches
         __result = obj;
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static void Object_isPlaceable_postfix(SObject __instance, ref bool __result)
     {
         if (__result
@@ -998,6 +1010,8 @@ internal sealed class ModPatches
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static void Object_loadDisplayName_postfix(SObject __instance, ref string __result)
     {
         if (__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
@@ -1007,6 +1021,7 @@ internal sealed class ModPatches
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void Object_performRemoveAction_postfix(SObject __instance)
     {
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
@@ -1018,7 +1033,7 @@ internal sealed class ModPatches
         var environment = __instance.Location;
         var c = __instance.modData.TryGetValue("furyx639.ExpandedStorage/X", out var x)
             && __instance.modData.TryGetValue("furyx639.ExpandedStorage/Y", out var y)
-                ? new(int.Parse(x), int.Parse(y))
+                ? new(int.Parse(x, CultureInfo.InvariantCulture), int.Parse(y, CultureInfo.InvariantCulture))
                 : __instance.TileLocation;
 
         if (c is { X: 0f, Y: 0f })
@@ -1058,6 +1073,7 @@ internal sealed class ModPatches
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static bool Object_performToolAction_prefix(
         SObject __instance,
         ref bool __result,
@@ -1072,7 +1088,7 @@ internal sealed class ModPatches
         }
 
         var location = __instance.Location;
-        var tile = new Vector2(int.Parse(x), int.Parse(y));
+        var tile = new Vector2(int.Parse(x, CultureInfo.InvariantCulture), int.Parse(y, CultureInfo.InvariantCulture));
         if (!location.Objects.TryGetValue(tile, out var obj) || obj is not Chest chest)
         {
             return true;
@@ -1082,7 +1098,7 @@ internal sealed class ModPatches
         return false;
     }
 
-    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void Object_placementAction_postfix(
         SObject __instance,
         ref bool __result,
@@ -1090,7 +1106,7 @@ internal sealed class ModPatches
         int x,
         int y)
     {
-        var tile = new Vector2(x / Game1.tileSize, y / Game1.tileSize);
+        var tile = new Vector2((int)(x / (float)Game1.tileSize), (int)(y / (float)Game1.tileSize));
         if (!__instance.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var name)
             || !ModPatches.Storages.TryGetValue(name, out var storage)
             || !location.Objects.TryGetValue(tile, out var placed)
@@ -1182,7 +1198,7 @@ internal sealed class ModPatches
         itemGrabMenu.colorPickerToggleButton = new(
             new(
                 itemGrabMenu.xPositionOnScreen + itemGrabMenu.width,
-                itemGrabMenu.yPositionOnScreen + (itemGrabMenu.height / 3) - Game1.tileSize - 160,
+                (itemGrabMenu.yPositionOnScreen + (itemGrabMenu.height / 3)) - Game1.tileSize - 160,
                 Game1.tileSize,
                 Game1.tileSize),
             Game1.mouseCursors,
@@ -1206,7 +1222,7 @@ internal sealed class ModPatches
                 {
                     myID = i + 4343,
                     rightNeighborID = i < itemGrabMenu.chestColorPicker.totalColors - 1 ? i + 4343 + 1 : -1,
-                    leftNeighborID = i > 0 ? i + 4343 - 1 : -1,
+                    leftNeighborID = i > 0 ? (i + 4343) - 1 : -1,
                     downNeighborID =
                         itemGrabMenu.ItemsToGrabMenu != null && itemGrabMenu.ItemsToGrabMenu.inventory.Count > 0
                             ? 53910
@@ -1215,6 +1231,8 @@ internal sealed class ModPatches
         }
     }
 
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static void Utility_isWithinTileWithLeeway_postfix(ref bool __result, int x, int y, Item item)
     {
         if (__result
@@ -1238,7 +1256,7 @@ internal sealed class ModPatches
         }
     }
 
-    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     private static void Utility_playerCanPlaceItemHere_postfix(
         ref bool __result,
         GameLocation location,
@@ -1254,7 +1272,7 @@ internal sealed class ModPatches
         }
 
         // Furniture.canBePlacedHere
-        var tile = new Vector2(x / Game1.tileSize, y / Game1.tileSize);
+        var tile = new Vector2((int)(x / (float)Game1.tileSize), (int)(y / (float)Game1.tileSize));
         for (var xOffset = 0; xOffset < storage.GetTileWidth(); ++xOffset)
         {
             for (var yOffset = 0; yOffset < storage.GetTileDepth(); ++yOffset)

@@ -1,11 +1,8 @@
 namespace StardewMods.Common.Integrations;
 
-using System;
-
 /// <summary>Provides an integration point for using external mods' APIs.</summary>
 /// <typeparam name="T">Interface for the external mod's API.</typeparam>
-internal abstract class ModIntegration<T>
-    where T : class
+internal abstract class ModIntegration<T> where T : class
 {
     private readonly Lazy<T?> modApi;
 
@@ -26,22 +23,17 @@ internal abstract class ModIntegration<T>
 
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
     [MemberNotNullWhen(true, nameof(ModIntegration<T>.Api), nameof(ModIntegration<T>.ModInfo))]
-    protected internal bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId)
+    protected internal bool IsLoaded =>
+        this.ModRegistry.IsLoaded(this.UniqueId)
         && (this.Version is null || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version) != true);
 
-    /// <summary>
-    ///     Gets metadata for this mod.
-    /// </summary>
+    /// <summary>Gets metadata for this mod.</summary>
     protected internal IModInfo? ModInfo => this.ModRegistry.Get(this.UniqueId);
 
-    /// <summary>
-    ///     Gets the Unique Id for this mod.
-    /// </summary>
+    /// <summary>Gets the Unique Id for this mod.</summary>
     protected internal string UniqueId { get; }
 
-    /// <summary>
-    ///     Gets the minimum supported version for this mod.
-    /// </summary>
+    /// <summary>Gets the minimum supported version for this mod.</summary>
     protected internal string? Version { get; }
 
     private IModRegistry ModRegistry { get; }

@@ -60,10 +60,8 @@ internal sealed class Config
         IModHelper helper,
         IManifest manifest,
         ModConfig config,
-        Dictionary<string, ClickableTextureComponent> components)
-    {
-        return Config.instance ??= new(helper, manifest, config, components);
-    }
+        Dictionary<string, ClickableTextureComponent> components) =>
+        Config.instance ??= new(helper, manifest, config, components);
 
     private void DrawButton(SpriteBatch b, Vector2 pos)
     {

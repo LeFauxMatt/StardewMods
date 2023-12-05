@@ -1,15 +1,12 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Enums;
 using StardewValley.Menus;
 
-/// <summary>
-///     Sort items in a chest using a customized criteria.
-/// </summary>
+/// <summary>Sort items in a chest using a customized criteria.</summary>
 internal sealed class OrganizeChest : Feature
 {
     private const string Id = "furyx639.BetterChests/OrganizeChest";
@@ -31,15 +28,10 @@ internal sealed class OrganizeChest : Feature
         this.harmony = new(OrganizeChest.Id);
     }
 
-    /// <summary>
-    ///     Initializes <see cref="OrganizeChest" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="OrganizeChest" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="OrganizeChest" /> class.</returns>
-    public static Feature Init(IModHelper helper)
-    {
-        return OrganizeChest.instance ??= new OrganizeChest(helper);
-    }
+    public static Feature Init(IModHelper helper) => OrganizeChest.instance ??= new OrganizeChest(helper);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -97,8 +89,11 @@ internal sealed class OrganizeChest : Feature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseRight
-         || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
-         || BetterItemGrabMenu.Context is not { OrganizeChest: FeatureOption.Enabled })
+            || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+            || BetterItemGrabMenu.Context is not
+            {
+                OrganizeChest: FeatureOption.Enabled,
+            })
         {
             return;
         }

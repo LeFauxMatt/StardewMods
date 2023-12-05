@@ -1,15 +1,12 @@
 ﻿namespace StardewMods.BetterChests.Framework.Features;
 
-using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewValley.Menus;
 
-/// <summary>
-///     Transfer all items into or out from a chest.
-/// </summary>
+/// <summary>Transfer all items into or out from a chest.</summary>
 internal sealed class TransferItems : Feature
 {
 #nullable disable
@@ -33,6 +30,7 @@ internal sealed class TransferItems : Feature
                 hoverText = I18n.Button_TransferDown_Name(),
                 myID = 5318010,
             });
+
         this.upArrow = new(
             () => new(
                 new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
@@ -49,15 +47,10 @@ internal sealed class TransferItems : Feature
 
     private ClickableTextureComponent UpArrow => this.upArrow.Value;
 
-    /// <summary>
-    ///     Initializes <see cref="TransferItems" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="TransferItems" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="TransferItems" /> class.</returns>
-    public static Feature Init(IModHelper helper)
-    {
-        return TransferItems.instance ??= new TransferItems(helper);
-    }
+    public static Feature Init(IModHelper helper) => TransferItems.instance ??= new TransferItems(helper);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -94,9 +87,17 @@ internal sealed class TransferItems : Feature
 
     private static void TransferDown()
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                context:
+                { } context,
+                shippingBin: false,
+            }
             || !Storages.TryGetOne(context, out var storage)
-            || storage is not { Data: Storage storageObject })
+            || storage is not
+            {
+                Data: Storage storageObject,
+            })
         {
             return;
         }
@@ -120,9 +121,17 @@ internal sealed class TransferItems : Feature
 
     private static void TransferUp()
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu { context: { } context, shippingBin: false }
+        if (Game1.activeClickableMenu is not ItemGrabMenu
+            {
+                context:
+                { } context,
+                shippingBin: false,
+            }
             || !Storages.TryGetOne(context, out var storage)
-            || storage is not { Data: Storage storageObject })
+            || storage is not
+            {
+                Data: Storage storageObject,
+            })
         {
             return;
         }
@@ -168,7 +177,14 @@ internal sealed class TransferItems : Feature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is not ItemGrabMenu { context: { } context, ItemsToGrabMenu: { } itemsToGrabMenu, shippingBin: false }
+        if (e.NewMenu is not ItemGrabMenu
+            {
+                context:
+                { } context,
+                ItemsToGrabMenu:
+                { } itemsToGrabMenu,
+                shippingBin: false,
+            }
             || !Storages.TryGetOne(context, out _))
         {
             this.DownArrow.visible = false;
@@ -177,10 +193,10 @@ internal sealed class TransferItems : Feature
         }
 
         this.DownArrow.visible = true;
-        this.DownArrow.bounds.X = itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 60;
+        this.DownArrow.bounds.X = (itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width) - 60;
         this.DownArrow.bounds.Y = itemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
         this.UpArrow.visible = true;
-        this.UpArrow.bounds.X = itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width - 24;
+        this.UpArrow.bounds.X = (itemsToGrabMenu.xPositionOnScreen + itemsToGrabMenu.width) - 24;
         this.UpArrow.bounds.Y = itemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
     }
 

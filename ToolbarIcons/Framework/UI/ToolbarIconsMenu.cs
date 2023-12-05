@@ -23,11 +23,11 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
     public ToolbarIconsMenu(List<ToolbarIcon> icons, Dictionary<string, ClickableTextureComponent> components)
         : base(
 #pragma warning disable SA1407
-            (Game1.uiViewport.Width - 800) / 2 - ToolbarIconsMenu.borderWidth,
+            ((Game1.uiViewport.Width - 800) / 2) - IClickableMenu.borderWidth,
 #pragma warning restore SA1407
-            ((Game1.uiViewport.Height - 600) / 2) - ToolbarIconsMenu.borderWidth,
-            800 + (ToolbarIconsMenu.borderWidth * 2),
-            600 + (ToolbarIconsMenu.borderWidth * 2),
+            ((Game1.uiViewport.Height - 600) / 2) - IClickableMenu.borderWidth,
+            800 + (IClickableMenu.borderWidth * 2),
+            600 + (IClickableMenu.borderWidth * 2),
             true)
     {
         this.Icons = icons;
@@ -61,8 +61,8 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         this.OkButton = new(
             "OK",
             new(
-                this.xPositionOnScreen + this.width + Game1.tileSize - 8,
-                this.yPositionOnScreen + this.height - Game1.tileSize,
+                (this.xPositionOnScreen + this.width + Game1.tileSize) - 8,
+                (this.yPositionOnScreen + this.height) - Game1.tileSize,
                 Game1.tileSize,
                 Game1.tileSize),
             null,
@@ -82,7 +82,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             leftNeighborID = 3546,
         };
         this.DownArrow = new(
-            new(this.UpArrow.bounds.X, this.yPositionOnScreen + this.height - (Game1.tileSize * 2), 44, 48),
+            new(this.UpArrow.bounds.X, (this.yPositionOnScreen + this.height) - (Game1.tileSize * 2), 44, 48),
             Game1.mouseCursors,
             new(421, 472, 11, 12),
             Game1.pixelZoom)
@@ -159,17 +159,17 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             Color.Black * 0.5f);
 
         Game1.drawDialogueBox(
-            this.xPositionOnScreen - ToolbarIconsMenu.borderWidth - ToolbarIconsMenu.spaceToClearSideBorder,
-            this.yPositionOnScreen - ToolbarIconsMenu.borderWidth - ToolbarIconsMenu.spaceToClearTopBorder,
-            this.width + (ToolbarIconsMenu.borderWidth * 2) + (ToolbarIconsMenu.spaceToClearSideBorder * 2),
-            this.height + ToolbarIconsMenu.spaceToClearTopBorder + (ToolbarIconsMenu.borderWidth * 2),
+            this.xPositionOnScreen - IClickableMenu.borderWidth - IClickableMenu.spaceToClearSideBorder,
+            this.yPositionOnScreen - IClickableMenu.borderWidth - IClickableMenu.spaceToClearTopBorder,
+            this.width + (IClickableMenu.borderWidth * 2) + (IClickableMenu.spaceToClearSideBorder * 2),
+            this.height + IClickableMenu.spaceToClearTopBorder + (IClickableMenu.borderWidth * 2),
             false,
             true);
 
         this.OkButton.draw(b);
         this.DownArrow.draw(b);
         this.UpArrow.draw(b);
-        ToolbarIconsMenu.drawTextureBox(
+        IClickableMenu.drawTextureBox(
             b,
             Game1.mouseCursors,
             new(403, 383, 6, 6),
@@ -210,7 +210,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
 
             b.Draw(
                 this.Arrows,
-                new(this.xPositionOnScreen + (Game1.tileSize / 2) + 4, this.Components[i].bounds.Center.Y - 16),
+                new(this.xPositionOnScreen + (int)(Game1.tileSize / 2f) + 4, this.Components[i].bounds.Center.Y - 16),
                 new(8, 0, 8, 8),
                 Color.White * (i < this.Components.Count - 1 ? 1f : 0.5f),
                 0f,
@@ -247,7 +247,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
 
         if (!string.IsNullOrWhiteSpace(this.HoverText))
         {
-            ToolbarIconsMenu.drawHoverText(b, this.HoverText, Game1.smallFont);
+            IClickableMenu.drawHoverText(b, this.HoverText, Game1.smallFont);
         }
 
         this.drawMouse(b);

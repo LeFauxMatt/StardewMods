@@ -1,7 +1,8 @@
 namespace StardewMods.GarbageDay;
 
+using System.ComponentModel;
+using System.Globalization;
 using System.Text;
-using StardewMods.Common.Enums;
 
 /// <summary>
 ///     Mod config data for Garbage Day.
@@ -17,7 +18,18 @@ internal sealed class ModConfig
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"GarbageDay: {this.GarbageDay.ToStringFast()}");
+        var dow = this.GarbageDay switch
+        {
+            DayOfWeek.Sunday => "Sunday",
+            DayOfWeek.Monday => "Monday",
+            DayOfWeek.Tuesday => "Tuesday",
+            DayOfWeek.Wednesday => "Wednesday",
+            DayOfWeek.Thursday => "Thursday",
+            DayOfWeek.Friday => "Friday",
+            DayOfWeek.Saturday => "Saturday",
+            _ => throw new InvalidEnumArgumentException(),
+        };
+        sb.AppendLine(CultureInfo.InvariantCulture, $"GarbageDay: {dow}");
         return sb.ToString();
     }
 }

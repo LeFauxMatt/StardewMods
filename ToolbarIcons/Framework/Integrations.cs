@@ -72,10 +72,7 @@ internal sealed class Integrations
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="api">The Toolbar Icons Api.</param>
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
-    public static Integrations Init(IModHelper helper, IToolbarIconsApi api)
-    {
-        return Integrations.instance ??= new(helper, api);
-    }
+    public static Integrations Init(IModHelper helper, IToolbarIconsApi api) => Integrations.instance ??= new(helper, api);
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {

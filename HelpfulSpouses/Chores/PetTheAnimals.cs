@@ -13,10 +13,7 @@ internal sealed class PetTheAnimals : IChore
     /// Initializes a new instance of the <see cref="PetTheAnimals"/> class.
     /// </summary>
     /// <param name="config">Config data for <see cref="PetTheAnimals"/>.</param>
-    public PetTheAnimals(Config config)
-    {
-        this.config = config;
-    }
+    public PetTheAnimals(Config config) => this.config = config;
 
     /// <inheritdoc/>
     public void AddTokens(Dictionary<string, object> tokens)

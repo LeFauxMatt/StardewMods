@@ -1,8 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
@@ -16,9 +13,7 @@ using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-/// <summary>
-///     Enhances the <see cref="StardewValley.Menus.CraftingPage" />.
-/// </summary>
+/// <summary>Enhances the <see cref="StardewValley.Menus.CraftingPage" />.</summary>
 internal sealed class BetterCrafting : Feature
 {
     private const string Id = "furyx639.BetterChests/BetterCrafting";
@@ -28,22 +23,14 @@ internal sealed class BetterCrafting : Feature
 
     private static readonly MethodBase CraftingPageConstructor = AccessTools.Constructor(
         typeof(CraftingPage),
-        new[]
-        {
-            typeof(int),
-            typeof(int),
-            typeof(int),
-            typeof(int),
-            typeof(bool),
-            typeof(bool),
-            typeof(List<Chest>),
-        });
+        new[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(bool), typeof(bool), typeof(List<Chest>) });
 
     private static readonly MethodBase CraftingPageGetContainerContents =
         AccessTools.Method(typeof(CraftingPage), "getContainerContents");
 
-    private static readonly MethodBase WorkbenchCheckForAction =
-        AccessTools.Method(typeof(Workbench), nameof(Workbench.checkForAction));
+    private static readonly MethodBase WorkbenchCheckForAction = AccessTools.Method(
+        typeof(Workbench),
+        nameof(Workbench.checkForAction));
 
 #nullable disable
     private static BetterCrafting instance;
@@ -68,9 +55,7 @@ internal sealed class BetterCrafting : Feature
         this.harmony = new(BetterCrafting.Id);
     }
 
-    /// <summary>
-    ///     Raised before storages are added to a Crafting Page.
-    /// </summary>
+    /// <summary>Raised before storages are added to a Crafting Page.</summary>
     public static event EventHandler<CraftingStoragesLoadingEventArgs> CraftingStoragesLoading
     {
         add => BetterCrafting.instance.craftingStoragesLoading += value;
@@ -101,20 +86,14 @@ internal sealed class BetterCrafting : Feature
 
     private static IList<StorageNode> MaterialStorages => BetterCrafting.instance.materialStorages.Value;
 
-    /// <summary>
-    ///     Initializes <see cref="BetterCrafting" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="BetterCrafting" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="BetterCrafting" /> class.</returns>
-    public static BetterCrafting Init(IModHelper helper, ModConfig config)
-    {
-        return BetterCrafting.instance ??= new(helper, config);
-    }
+    public static BetterCrafting Init(IModHelper helper, ModConfig config) =>
+        BetterCrafting.instance ??= new(helper, config);
 
-    /// <summary>
-    ///     Opens the crafting menu.
-    /// </summary>
+    /// <summary>Opens the crafting menu.</summary>
     /// <returns>Returns true if crafting page could be displayed.</returns>
     public static bool ShowCraftingPage()
     {
@@ -146,12 +125,15 @@ internal sealed class BetterCrafting : Feature
         this.harmony.Patch(
             BetterCrafting.CraftingPageConstructor,
             postfix: new(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_constructor_postfix)));
+
         this.harmony.Patch(
             BetterCrafting.CraftingPageClickCraftingRecipe,
             new(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_clickCraftingRecipe_prefix)));
+
         this.harmony.Patch(
             BetterCrafting.CraftingPageGetContainerContents,
             postfix: new(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_getContainerContents_postfix)));
+
         this.harmony.Patch(
             BetterCrafting.WorkbenchCheckForAction,
             new(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
@@ -178,14 +160,17 @@ internal sealed class BetterCrafting : Feature
         this.harmony.Unpatch(
             BetterCrafting.CraftingPageConstructor,
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_constructor_postfix)));
+
         this.harmony.Unpatch(
             BetterCrafting.CraftingPageClickCraftingRecipe,
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.CraftingPage_clickCraftingRecipe_prefix)));
+
         this.harmony.Unpatch(
             BetterCrafting.CraftingPageGetContainerContents,
             AccessTools.Method(
                 typeof(BetterCrafting),
                 nameof(BetterCrafting.CraftingPage_getContainerContents_postfix)));
+
         this.harmony.Unpatch(
             BetterCrafting.WorkbenchCheckForAction,
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
@@ -234,7 +219,6 @@ internal sealed class BetterCrafting : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void CraftingPage_getContainerContents_postfix(ref IList<Item> __result)
     {
@@ -246,7 +230,10 @@ internal sealed class BetterCrafting : Feature
         __result = new List<Item>();
         foreach (var storage in BetterCrafting.EligibleStorages)
         {
-            if (storage is not { Data: Storage storageObject })
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                })
             {
                 continue;
             }
@@ -277,8 +264,14 @@ internal sealed class BetterCrafting : Feature
                 || storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
                 || (storage.CraftFromChestDisableLocations.Contains("UndergroundMine")
                     && Game1.player.currentLocation is MineShaft mineShaft
-                    && mineShaft.Name.StartsWith("UndergroundMine"))
-                || storage is not { Data: Storage { Source: { } } storageObject }
+                    && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
+                || storage is not
+                {
+                    Data: Storage
+                    {
+                        Source: not null,
+                    } storageObject,
+                }
                 || !BetterCrafting.Config.CraftFromWorkbench.WithinRangeOfPlayer(
                     BetterCrafting.Config.CraftFromWorkbenchDistance,
                     storageObject.Location,
@@ -304,7 +297,10 @@ internal sealed class BetterCrafting : Feature
 
         foreach (var storage in BetterCrafting.EligibleStorages)
         {
-            if (storage is not { Data: Storage storageObject }
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                }
                 || storageObject.Mutex is null
                 || !storageObject.Mutex.IsLockHeld())
             {
@@ -325,6 +321,7 @@ internal sealed class BetterCrafting : Feature
         BetterCrafting.instance.craftingStoragesLoading.InvokeAll(
             BetterCrafting.instance,
             new(BetterCrafting.EligibleStorages));
+
         if (!BetterCrafting.EligibleStorages.Any())
         {
             return;
@@ -332,7 +329,10 @@ internal sealed class BetterCrafting : Feature
 
         foreach (var storage in BetterCrafting.EligibleStorages)
         {
-            if (storage is not { Data: Storage storageObject })
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                })
             {
                 continue;
             }
@@ -350,7 +350,10 @@ internal sealed class BetterCrafting : Feature
 
         foreach (var storage in BetterCrafting.MaterialStorages)
         {
-            if (storage is not { Data: Storage storageObject }
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                }
                 || storageObject.Mutex is null
                 || !storageObject.Mutex.IsLockHeld())
             {
@@ -362,6 +365,40 @@ internal sealed class BetterCrafting : Feature
         var crafted = recipe.createItem();
         var heldItem = BetterCrafting.HeldItem.GetValue();
         BetterCrafting.Craft = null;
+
+        if (heldItem is null)
+        {
+            BetterCrafting.HeldItem.SetValue(crafted);
+        }
+        else
+        {
+            if (!heldItem.Name.Equals(crafted.Name, StringComparison.OrdinalIgnoreCase)
+                || !heldItem.getOne().canStackWith(crafted.getOne())
+                || (heldItem.Stack + recipe.numberProducedPerCraft) - 1 >= heldItem.maximumStackSize())
+            {
+                return;
+            }
+
+            heldItem.Stack += recipe.numberProducedPerCraft;
+        }
+
+        ConsumeIngredients();
+
+        Game1.player.checkForQuestComplete(null, -1, -1, crafted, null, 2);
+        if (Game1.player.craftingRecipes.ContainsKey(recipe.name))
+        {
+            Game1.player.craftingRecipes[recipe.name] += recipe.numberProducedPerCraft;
+        }
+
+        Game1.stats.checkForCraftingAchievements();
+        if (!Game1.options.gamepadControls || heldItem is null || !Game1.player.couldInventoryAcceptThisItem(heldItem))
+        {
+            return;
+        }
+
+        Game1.player.addItemToInventoryBool(heldItem);
+        BetterCrafting.HeldItem.SetValue(null);
+        return;
 
         void ConsumeIngredients()
         {
@@ -400,7 +437,10 @@ internal sealed class BetterCrafting : Feature
 
                 foreach (var storage in BetterCrafting.MaterialStorages)
                 {
-                    if (storage is not { Data: Storage storageObject })
+                    if (storage is not
+                        {
+                            Data: Storage storageObject,
+                        })
                     {
                         continue;
                     }
@@ -440,7 +480,11 @@ internal sealed class BetterCrafting : Feature
 
             foreach (var storage in BetterCrafting.MaterialStorages)
             {
-                if (storage is not { Data: Storage storageObject } || storageObject.Mutex is null)
+                if (storage is not
+                    {
+                        Data: Storage storageObject,
+                    }
+                    || storageObject.Mutex is null)
                 {
                     continue;
                 }
@@ -448,39 +492,6 @@ internal sealed class BetterCrafting : Feature
                 storageObject.Mutex.ReleaseLock();
             }
         }
-
-        if (heldItem is null)
-        {
-            BetterCrafting.HeldItem.SetValue(crafted);
-        }
-        else
-        {
-            if (!heldItem.Name.Equals(crafted.Name)
-                || !heldItem.getOne().canStackWith(crafted.getOne())
-                || heldItem.Stack + recipe.numberProducedPerCraft - 1 >= heldItem.maximumStackSize())
-            {
-                return;
-            }
-
-            heldItem.Stack += recipe.numberProducedPerCraft;
-        }
-
-        ConsumeIngredients();
-
-        Game1.player.checkForQuestComplete(null, -1, -1, crafted, null, 2);
-        if (Game1.player.craftingRecipes.ContainsKey(recipe.name))
-        {
-            Game1.player.craftingRecipes[recipe.name] += recipe.numberProducedPerCraft;
-        }
-
-        Game1.stats.checkForCraftingAchievements();
-        if (!Game1.options.gamepadControls || heldItem is null || !Game1.player.couldInventoryAcceptThisItem(heldItem))
-        {
-            return;
-        }
-
-        Game1.player.addItemToInventoryBool(heldItem);
-        BetterCrafting.HeldItem.SetValue(null);
     }
 
     private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
@@ -492,7 +503,11 @@ internal sealed class BetterCrafting : Feature
 
         foreach (var storage in BetterCrafting.MaterialStorages)
         {
-            if (storage is not { Data: Storage storageObject } || storageObject.Mutex is null)
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                }
+                || storageObject.Mutex is null)
             {
                 continue;
             }
@@ -513,9 +528,10 @@ internal sealed class BetterCrafting : Feature
             || BetterCrafting.instance.helper.Input.IsDown(SButton.RightShift)
                 ? 5
                 : 1;
+
         var crafted = recipe.createItem();
         if (heldItem is not null
-            && (!heldItem.Name.Equals(crafted.Name)
+            && (!heldItem.Name.Equals(crafted.Name, StringComparison.OrdinalIgnoreCase)
                 || !heldItem.getOne().canStackWith(crafted.getOne())
                 || heldItem.Stack + (recipe.numberProducedPerCraft * amount) > heldItem.maximumStackSize()))
         {
@@ -541,12 +557,17 @@ internal sealed class BetterCrafting : Feature
 
             foreach (var storage in BetterCrafting.EligibleStorages)
             {
-                if (storage is not { Data: Storage storageObject } || storageObject.Mutex is null)
+                if (storage is not
+                    {
+                        Data: Storage storageObject,
+                    }
+                    || storageObject.Mutex is null)
                 {
                     continue;
                 }
 
-                foreach (var item in storageObject.Inventory.Where(item => CraftingRecipe.ItemMatchesForCrafting(item, id)))
+                foreach (var item in storageObject.Inventory.Where(
+                    item => CraftingRecipe.ItemMatchesForCrafting(item, id)))
                 {
                     BetterCrafting.MaterialStorages.Add(storage);
                     required -= item!.Stack;
@@ -573,7 +594,11 @@ internal sealed class BetterCrafting : Feature
 
         foreach (var storage in BetterCrafting.MaterialStorages)
         {
-            if (storage is not { Data: Storage storageObject } || storageObject.Mutex is null)
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                }
+                || storageObject.Mutex is null)
             {
                 continue;
             }

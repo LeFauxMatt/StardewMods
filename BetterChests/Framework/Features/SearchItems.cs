@@ -1,8 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -14,9 +11,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
-/// <summary>
-///     Adds a search bar to the top of the <see cref="ItemGrabMenu" />.
-/// </summary>
+/// <summary>Adds a search bar to the top of the <see cref="ItemGrabMenu" />.</summary>
 internal sealed class SearchItems : Feature
 {
     private const int ExtraSpace = 24;
@@ -49,6 +44,7 @@ internal sealed class SearchItems : Feature
                 null,
                 Game1.smallFont,
                 Game1.textColor));
+
         this.searchIcon = new(() => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
     }
 
@@ -84,16 +80,12 @@ internal sealed class SearchItems : Feature
         set => this.timeOut.Value = value;
     }
 
-    /// <summary>
-    ///     Initializes <see cref="SearchItems" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="SearchItems" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="SearchItems" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return SearchItems.instance ??= new SearchItems(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) =>
+        SearchItems.instance ??= new SearchItems(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -226,14 +218,24 @@ internal sealed class SearchItems : Feature
         }
 
         this.CurrentMenu = menu;
-        if (BetterItemGrabMenu.Context is not { Data: Storage storageObject }
-            || this.CurrentMenu is null or { shippingBin: true })
+        if (BetterItemGrabMenu.Context is not
+            {
+                Data: Storage storageObject,
+            }
+            || this.CurrentMenu is null
+                or
+                {
+                    shippingBin: true,
+                })
         {
             this.SearchArea.visible = false;
             return;
         }
 
-        if (this.LastContext is { Data: Storage lastStorage }
+        if (this.LastContext is
+            {
+                Data: Storage lastStorage,
+            }
             && !ReferenceEquals(lastStorage.Context, storageObject.Context))
         {
             this.ItemMatcher.Clear();
@@ -247,6 +249,7 @@ internal sealed class SearchItems : Feature
             this.config.TransferItems is FeatureOption.Enabled && this.CurrentMenu is not ItemSelectionMenu
                 ? this.CurrentMenu.ItemsToGrabMenu.width - Game1.tileSize - 4
                 : this.CurrentMenu.ItemsToGrabMenu.width;
+
         this.SearchField.Selected = false;
         this.SearchArea.visible = true;
         this.SearchArea.bounds = new(
@@ -254,7 +257,12 @@ internal sealed class SearchItems : Feature
             this.SearchField.Y,
             this.SearchField.Width,
             this.SearchField.Height);
-        this.SearchIcon.bounds = new(this.SearchField.X + this.SearchField.Width - 38, this.SearchField.Y + 6, 32, 32);
+
+        this.SearchIcon.bounds = new(
+            (this.SearchField.X + this.SearchField.Width) - 38,
+            this.SearchField.Y + 6,
+            32,
+            32);
 
         BetterItemGrabMenu.ItemsToGrabMenu?.AddTransformer(this.FilterBySearch);
         BetterItemGrabMenu.ItemsToGrabMenu?.AddHighlighter(this.ItemMatcher);

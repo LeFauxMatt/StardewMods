@@ -1,8 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -16,16 +14,15 @@ using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-/// <summary>
-///     Allows a placed chest full of items to be picked up by the farmer.
-/// </summary>
+/// <summary>Allows a placed chest full of items to be picked up by the farmer.</summary>
 internal sealed class CarryChest : Feature
 {
     private const string Id = "furyx639.BetterChests/CarryChest";
     private const string BuffId = "furyx639.BetterChests/Overburdened";
 
-    private static readonly MethodBase InventoryMenuRightClick =
-        AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.rightClick));
+    private static readonly MethodBase InventoryMenuRightClick = AccessTools.Method(
+        typeof(InventoryMenu),
+        nameof(InventoryMenu.rightClick));
 
     private static readonly MethodBase ItemCanBeDropped = AccessTools.Method(typeof(Item), nameof(Item.canBeDropped));
 
@@ -56,8 +53,9 @@ internal sealed class CarryChest : Feature
         typeof(SObject),
         nameof(SObject.placementAction));
 
-    private static readonly MethodBase UtilityIterateChestsAndStorage =
-        AccessTools.Method(typeof(Utility), nameof(Utility.iterateChestsAndStorage));
+    private static readonly MethodBase UtilityIterateChestsAndStorage = AccessTools.Method(
+        typeof(Utility),
+        nameof(Utility.iterateChestsAndStorage));
 
 #nullable disable
     private static CarryChest instance;
@@ -76,9 +74,7 @@ internal sealed class CarryChest : Feature
 
     private static ModConfig Config => CarryChest.instance.config;
 
-    /// <summary>
-    ///     Checks if the player should be overburdened while carrying a chest.
-    /// </summary>
+    /// <summary>Checks if the player should be overburdened while carrying a chest.</summary>
     /// <param name="excludeCurrent">Whether to exclude the current item.</param>
     public static void CheckForOverburdened(bool excludeCurrent = false)
     {
@@ -90,7 +86,10 @@ internal sealed class CarryChest : Feature
 
         foreach (var storage in Storages.Inventory)
         {
-            if (storage is not { Data: Storage storageObject }
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                }
                 || (excludeCurrent && storageObject.Context == Game1.player.CurrentItem)
                 || !storageObject.Inventory.HasAny())
             {
@@ -104,16 +103,11 @@ internal sealed class CarryChest : Feature
         Game1.player.buffs.Remove(CarryChest.BuffId);
     }
 
-    /// <summary>
-    ///     Initializes <see cref="CarryChest" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="CarryChest" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="CarryChest" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return CarryChest.instance ??= new(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) => CarryChest.instance ??= new(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -127,27 +121,35 @@ internal sealed class CarryChest : Feature
         this.harmony.Patch(
             CarryChest.InventoryMenuRightClick,
             new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
+
         this.harmony.Patch(
             CarryChest.InventoryMenuRightClick,
             postfix: new(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_postfix)));
+
         this.harmony.Patch(
             CarryChest.ItemCanBeDropped,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canBeDropped_postfix)));
+
         this.harmony.Patch(
             CarryChest.ItemCanBeTrashed,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canBeTrashed_postfix)));
+
         this.harmony.Patch(
             CarryChest.ItemCanStackWith,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
+
         this.harmony.Patch(
             CarryChest.ObjectDrawInMenu,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Object_drawInMenu_postfix)));
+
         this.harmony.Patch(
             CarryChest.ObjectDrawWhenHeld,
             new(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
+
         this.harmony.Patch(
             CarryChest.ObjectPlacementAction,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+
         this.harmony.Patch(
             CarryChest.UtilityIterateChestsAndStorage,
             postfix: new(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
@@ -165,45 +167,48 @@ internal sealed class CarryChest : Feature
         this.harmony.Unpatch(
             CarryChest.ObjectDrawInMenu,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_drawInMenu_postfix)));
+
         this.harmony.Unpatch(
             CarryChest.InventoryMenuRightClick,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_prefix)));
+
         this.harmony.Unpatch(
             CarryChest.InventoryMenuRightClick,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.InventoryMenu_rightClick_postfix)));
+
         this.harmony.Unpatch(
             CarryChest.ItemCanBeDropped,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canBeDropped_postfix)));
+
         this.harmony.Unpatch(
             CarryChest.ItemCanBeTrashed,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canBeTrashed_postfix)));
+
         this.harmony.Unpatch(
             CarryChest.ItemCanStackWith,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Item_canStackWith_postfix)));
+
         this.harmony.Unpatch(
             CarryChest.ObjectDrawWhenHeld,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_drawWhenHeld_prefix)));
+
         this.harmony.Unpatch(
             CarryChest.ObjectPlacementAction,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+
         this.harmony.Unpatch(
             CarryChest.UtilityIterateChestsAndStorage,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
     }
 
-    private static Buff GetOverburdened(int speed)
-    {
-        return new(
-            id: CarryChest.BuffId,
-            displayName: string.Format(I18n.Effect_CarryChestSlow_Description(), speed.ToString()),
+    private static Buff GetOverburdened(int speed) =>
+        new(
+            CarryChest.BuffId,
+            displayName: I18n.Effect_CarryChestSlow_Description(speed.ToString(CultureInfo.InvariantCulture)),
             duration: int.MaxValue / 700,
             iconTexture: Game1.buffsIcons,
             iconSheetIndex: 13,
-            effects: new()
-            {
-                Speed = { -speed },
-            });
-    }
+            effects: new() { Speed = { -speed } });
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
@@ -234,7 +239,10 @@ internal sealed class CarryChest : Feature
             case null:
                 __result = item;
                 return;
-            case Chest { SpecialChestType: not Chest.SpecialChestTypes.JunimoChest } chest:
+            case Chest
+            {
+                SpecialChestType: not Chest.SpecialChestTypes.JunimoChest,
+            } chest:
                 __result = new Chest(true, chest.ItemId)
                 {
                     Name = chest.Name,
@@ -263,7 +271,7 @@ internal sealed class CarryChest : Feature
             return;
         }
 
-        var slotNumber = int.Parse(slot.name);
+        var slotNumber = int.Parse(slot.name, CultureInfo.InvariantCulture);
         var item = __instance.actualInventory.ElementAtOrDefault(slotNumber);
         if (item is not null)
         {
@@ -280,7 +288,10 @@ internal sealed class CarryChest : Feature
             return;
         }
 
-        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+        if (chest is not
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }
             && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
@@ -296,7 +307,10 @@ internal sealed class CarryChest : Feature
             return;
         }
 
-        if (chest is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+        if (chest is not
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }
             && chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             __result = false;
@@ -315,7 +329,6 @@ internal sealed class CarryChest : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_drawInMenu_postfix(
         SObject __instance,
@@ -340,13 +353,8 @@ internal sealed class CarryChest : Feature
             + new Vector2(
                 Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize),
                 2f * scaleSize);
-        Utility.drawTinyDigits(
-            items,
-            spriteBatch,
-            position,
-            3f * scaleSize,
-            1f,
-            color);
+
+        Utility.drawTinyDigits(items, spriteBatch, position, 3f * scaleSize, 1f, color);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -365,7 +373,6 @@ internal sealed class CarryChest : Feature
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "PossibleLossOfFraction", Justification = "Harmony")]
     private static void Object_placementAction_postfix(
         SObject __instance,
         GameLocation location,
@@ -382,7 +389,10 @@ internal sealed class CarryChest : Feature
         }
 
         // Only copy items from regular chest types
-        if (held is not { SpecialChestType: Chest.SpecialChestTypes.JunimoChest }
+        if (held is not
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            }
             && !placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Any())
         {
             placed.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)
@@ -400,15 +410,10 @@ internal sealed class CarryChest : Feature
         CarryChest.CheckForOverburdened(true);
     }
 
-    private static void OnDayStarted(object? sender, DayStartedEventArgs e)
-    {
-        CarryChest.CheckForOverburdened();
-    }
+    private static void OnDayStarted(object? sender, DayStartedEventArgs e) => CarryChest.CheckForOverburdened();
 
-    private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
-    {
+    private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) =>
         CarryChest.CheckForOverburdened();
-    }
 
     private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ISet<Chest> exclude)
     {
@@ -451,7 +456,8 @@ internal sealed class CarryChest : Feature
             || Game1.player.CurrentItem is Tool
             || !e.Button.IsUseToolButton()
             || this.helper.Input.IsSuppressed(e.Button)
-            || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine")))
+            || (Game1.player.currentLocation is MineShaft mineShaft
+                && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase)))
         {
             return;
         }

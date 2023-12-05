@@ -1,16 +1,11 @@
 ﻿namespace StardewMods.Common.Helpers;
 
-using System;
 using Microsoft.Xna.Framework;
 
-/// <summary>
-///     Commonly used helpers for utility methods.
-/// </summary>
+/// <summary>Commonly used helpers for utility methods.</summary>
 internal static class CommonHelpers
 {
-    /// <summary>
-    ///     Gets or initializes ModConfig.
-    /// </summary>
+    /// <summary>Gets or initializes ModConfig.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <typeparam name="T">The ModConfig type.</typeparam>
     /// <returns>Returns an existing or new instance of ModConfig.</returns>
@@ -32,9 +27,7 @@ internal static class CommonHelpers
         return config;
     }
 
-    /// <summary>
-    ///     Gets the map tile the cursor is over.
-    /// </summary>
+    /// <summary>Gets the map tile the cursor is over.</summary>
     /// <param name="radius">The tile distance from the player.</param>
     /// <param name="fallback">Fallback to grab tile if cursor tile is out of range.</param>
     /// <returns>Returns the tile position.</returns>

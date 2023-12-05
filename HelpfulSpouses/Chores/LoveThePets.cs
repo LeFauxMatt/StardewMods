@@ -17,10 +17,7 @@ internal sealed class LoveThePets : IChore
     /// Initializes a new instance of the <see cref="LoveThePets"/> class.
     /// </summary>
     /// <param name="config">Config data for <see cref="LoveThePets"/>.</param>
-    public LoveThePets(Config config)
-    {
-        this.config = config;
-    }
+    public LoveThePets(Config config) => this.config = config;
 
     /// <inheritdoc/>
     public void AddTokens(Dictionary<string, object> tokens)
@@ -32,11 +29,9 @@ internal sealed class LoveThePets : IChore
     }
 
     /// <inheritdoc/>
-    public bool IsPossibleForSpouse(NPC spouse)
-    {
-        return (this.config.FillWaterBowl || this.config.EnablePetting)
-            && Game1.getFarm().characters.OfType<Pet>().Any();
-    }
+    public bool IsPossibleForSpouse(NPC spouse) =>
+        (this.config.FillWaterBowl || this.config.EnablePetting)
+        && Game1.getFarm().characters.OfType<Pet>().Any();
 
     /// <inheritdoc/>
     public bool TryPerformChore(NPC spouse)

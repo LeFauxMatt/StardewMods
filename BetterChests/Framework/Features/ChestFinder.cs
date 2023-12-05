@@ -1,8 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -13,9 +10,7 @@ using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
-/// <summary>
-///     Search for which chests have the item you're looking for.
-/// </summary>
+/// <summary>Search for which chests have the item you're looking for.</summary>
 internal sealed class ChestFinder : Feature
 {
     private const int MaxTimeOut = 20;
@@ -49,8 +44,7 @@ internal sealed class ChestFinder : Feature
 
     private IList<StorageNode> FoundStorages => this.foundStorages.Value;
 
-    private ItemMatcher ItemMatcher =>
-        this.itemMatcher.Value ??= new(false, this.config.SearchTagSymbol.ToString());
+    private ItemMatcher ItemMatcher => this.itemMatcher.Value ??= new(false, this.config.SearchTagSymbol.ToString());
 
     private SearchBar SearchBar => this.searchBar.Value;
 
@@ -74,16 +68,12 @@ internal sealed class ChestFinder : Feature
         set => this.timeOut.Value = value;
     }
 
-    /// <summary>
-    ///     Initializes <see cref="ChestFinder" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="ChestFinder" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestFinder" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return ChestFinder.instance ??= new ChestFinder(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) =>
+        ChestFinder.instance ??= new ChestFinder(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -107,6 +97,7 @@ internal sealed class ChestFinder : Feature
             "furyx639.BetterChests/Icons",
             new(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
+
         Integrations.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
@@ -251,7 +242,10 @@ internal sealed class ChestFinder : Feature
         var srcRect = new Rectangle(412, 495, 5, 4);
         foreach (var storage in this.FoundStorages)
         {
-            if (storage is not { Data: Storage storageObject })
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                })
             {
                 continue;
             }
@@ -272,6 +266,7 @@ internal sealed class ChestFinder : Feature
                     Game1.pixelZoom,
                     SpriteEffects.None,
                     1f);
+
                 continue;
             }
 
@@ -325,6 +320,7 @@ internal sealed class ChestFinder : Feature
             onScreenPos = Utility.makeSafe(
                 onScreenPos,
                 new((float)srcRect.Width * Game1.pixelZoom, (float)srcRect.Height * Game1.pixelZoom));
+
             e.SpriteBatch.Draw(
                 Game1.mouseCursors,
                 onScreenPos,
@@ -396,7 +392,10 @@ internal sealed class ChestFinder : Feature
         var storages = new List<StorageNode>();
         foreach (var storage in Storages.CurrentLocation)
         {
-            if (storage is not { Data: Storage storageObject }
+            if (storage is not
+                {
+                    Data: Storage storageObject,
+                }
                 || this.StorageContexts.Contains(storageObject.Context)
                 || !storageObject.Inventory.Any(this.ItemMatcher.Matches))
             {

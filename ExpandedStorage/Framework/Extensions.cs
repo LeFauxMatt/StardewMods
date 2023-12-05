@@ -198,7 +198,7 @@ internal static class Extensions
         var colored = storage.PlayerColor && (obj as Chest)?.playerChoiceColor.Value.Equals(Color.Black) == false;
         var tint = (obj as Chest)?.Tint ?? Color.White;
         var frame = new Rectangle(
-            Math.Min(startingLidFrame + lastLidFrame - 1, Math.Max(0, currentLidFrame - startingLidFrame))
+            Math.Min((startingLidFrame + lastLidFrame) - 1, Math.Max(0, currentLidFrame - startingLidFrame))
             * storage.Width,
             colored ? storage.Height : 0,
             storage.Width,
@@ -258,57 +258,39 @@ internal static class Extensions
     /// </summary>
     /// <param name="storage">The custom storage.</param>
     /// <returns>Returns the frame count.</returns>
-    public static int GetFrames(this ICustomStorage storage)
-    {
-        return Extensions.storageCache.Get(storage).Frames;
-    }
+    public static int GetFrames(this ICustomStorage storage) => Extensions.storageCache.Get(storage).Frames;
 
     /// <summary>
     ///     Gets the scale multiplier of a custom storage.
     /// </summary>
     /// <param name="storage">The custom storage.</param>
     /// <returns>Returns the scale multiplier.</returns>
-    public static float GetScaleMultiplier(this ICustomStorage storage)
-    {
-        return Extensions.storageCache.Get(storage).ScaleMultiplier;
-    }
+    public static float GetScaleMultiplier(this ICustomStorage storage) => Extensions.storageCache.Get(storage).ScaleMultiplier;
 
     /// <summary>
     ///     Gets the tile depth of a custom storage.
     /// </summary>
     /// <param name="storage">The custom storage.</param>
     /// <returns>Returns the tile depth.</returns>
-    public static int GetTileDepth(this ICustomStorage storage)
-    {
-        return Extensions.storageCache.Get(storage).TileDepth;
-    }
+    public static int GetTileDepth(this ICustomStorage storage) => Extensions.storageCache.Get(storage).TileDepth;
 
     /// <summary>
     ///     Gets the tile height of a custom storage.
     /// </summary>
     /// <param name="storage">The custom storage.</param>
     /// <returns>Returns the tile height.</returns>
-    public static int GetTileHeight(this ICustomStorage storage)
-    {
-        return Extensions.storageCache.Get(storage).TileHeight;
-    }
+    public static int GetTileHeight(this ICustomStorage storage) => Extensions.storageCache.Get(storage).TileHeight;
 
     /// <summary>
     ///     Gets the tile width of a custom storage.
     /// </summary>
     /// <param name="storage">The custom storage.</param>
     /// <returns>Returns the tile width.</returns>
-    public static int GetTileWidth(this ICustomStorage storage)
-    {
-        return Extensions.storageCache.Get(storage).TileWidth;
-    }
+    public static int GetTileWidth(this ICustomStorage storage) => Extensions.storageCache.Get(storage).TileWidth;
 
     /// <summary>
     ///     Initialized <see cref="Extensions" />.
     /// </summary>
     /// <param name="cachedStorages">Cached storage textures and attributes.</param>
-    public static void Init(IDictionary<string, CachedStorage> cachedStorages)
-    {
-        Extensions.storageCache = cachedStorages;
-    }
+    public static void Init(IDictionary<string, CachedStorage> cachedStorages) => Extensions.storageCache = cachedStorages;
 }

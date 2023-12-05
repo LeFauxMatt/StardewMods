@@ -28,10 +28,7 @@ internal sealed class SimpleIntegration : BaseIntegration
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="api">API to add icons above or below the toolbar.</param>
     /// <returns>Returns an instance of the <see cref="SimpleIntegration" /> class.</returns>
-    public static SimpleIntegration Init(IModHelper helper, IToolbarIconsApi api)
-    {
-        return SimpleIntegration.Instance ??= new(helper, api);
-    }
+    public static SimpleIntegration Init(IModHelper helper, IToolbarIconsApi api) => SimpleIntegration.Instance ??= new(helper, api);
 
     /// <summary>
     ///     Adds a simple mod integration for a keybind.
@@ -135,8 +132,7 @@ internal sealed class SimpleIntegration : BaseIntegration
         return true;
     }
 
-    private void OverrideButton(SButton button, bool inputState)
-    {
+    private void OverrideButton(SButton button, bool inputState) =>
         this.OverrideButtonReflected.Invoke(
             Game1.input,
             new object[]
@@ -144,5 +140,4 @@ internal sealed class SimpleIntegration : BaseIntegration
                 button,
                 inputState,
             });
-    }
 }

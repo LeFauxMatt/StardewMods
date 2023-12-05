@@ -12,14 +12,7 @@ internal sealed class CustomStorageData : ICustomStorage
     ///     Initializes a new instance of the <see cref="CustomStorageData" /> class.
     /// </summary>
     /// <param name="betterChestsData">Storage data for Better Chests integration.</param>
-    [SuppressMessage(
-        "ReSharper",
-        "SuggestBaseTypeForParameterInConstructor",
-        Justification = "Required to deserialize")]
-    public CustomStorageData(BetterChestsData? betterChestsData)
-    {
-        this.BetterChestsData = betterChestsData;
-    }
+    public CustomStorageData(BetterChestsData? betterChestsData) => this.BetterChestsData = betterChestsData;
 
     /// <inheritdoc />
     public IStorageData? BetterChestsData { get; set; }

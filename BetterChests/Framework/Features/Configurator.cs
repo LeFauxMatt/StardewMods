@@ -1,8 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -16,9 +13,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewValley.Menus;
 
-/// <summary>
-///     Configure storages individually.
-/// </summary>
+/// <summary>Configure storages individually.</summary>
 internal sealed class Configurator : Feature
 {
     private const string Id = "furyx639.BetterChests/Configurator";
@@ -58,12 +53,11 @@ internal sealed class Configurator : Feature
                 hoverText = I18n.Button_Configure_Name(),
                 myID = 42069,
             });
+
         this.modManifest = manifest;
     }
 
-    /// <summary>
-    ///     Raised after an <see cref="StorageNode" /> has been edited.
-    /// </summary>
+    /// <summary>Raised after an <see cref="StorageNode" /> has been edited.</summary>
     public static event EventHandler<StorageNode> StorageEdited
     {
         add => Configurator.instance.storageEdited += value;
@@ -84,17 +78,13 @@ internal sealed class Configurator : Feature
         set => this.currentStorage.Value = value;
     }
 
-    /// <summary>
-    ///     Initializes <see cref="Configurator" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="Configurator" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <returns>Returns an instance of the <see cref="Configurator" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config, IManifest manifest)
-    {
-        return Configurator.instance ??= new(helper, config, manifest);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config, IManifest manifest) =>
+        Configurator.instance ??= new(helper, config, manifest);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -127,7 +117,6 @@ internal sealed class Configurator : Feature
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void ItemGrabMenu_RepositionSideButtons_postfix(ItemGrabMenu __instance)
     {
@@ -192,7 +181,10 @@ internal sealed class Configurator : Feature
             return;
         }
 
-        if (BetterItemGrabMenu.Context is { ConfigureMenu: InGameMenu.Categorize })
+        if (BetterItemGrabMenu.Context is
+            {
+                ConfigureMenu: InGameMenu.Categorize,
+            })
         {
             Game1.activeClickableMenu = new ItemSelectionMenu(
                 BetterItemGrabMenu.Context,
@@ -212,9 +204,7 @@ internal sealed class Configurator : Feature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree
-            || !this.config.ControlScheme.Configure.JustPressed()
-            || Storages.CurrentItem is null)
+        if (!Context.IsPlayerFree || !this.config.ControlScheme.Configure.JustPressed() || Storages.CurrentItem is null)
         {
             return;
         }
@@ -227,7 +217,11 @@ internal sealed class Configurator : Feature
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.NewMenu is ItemGrabMenu { shippingBin: false } itemGrabMenu and not ItemSelectionMenu
+        if (e.NewMenu is ItemGrabMenu
+                {
+                    shippingBin: false,
+                } itemGrabMenu
+                and not ItemSelectionMenu
             && BetterItemGrabMenu.Context is not null)
         {
             this.CurrentMenu = itemGrabMenu;
@@ -250,7 +244,10 @@ internal sealed class Configurator : Feature
             return;
         }
 
-        if (this.CurrentStorage is { Data: Storage storageObject })
+        if (this.CurrentStorage is
+            {
+                Data: Storage storageObject,
+            })
         {
             this.storageEdited.InvokeAll(this, this.CurrentStorage);
             storageObject.ShowMenu();
@@ -282,6 +279,7 @@ internal sealed class Configurator : Feature
             Configurator.ConfigButton.scale,
             SpriteEffects.None,
             0.86f);
+
         Configurator.ConfigButton.draw(e.SpriteBatch);
         if (Configurator.ConfigButton.containsPoint(x, y))
         {

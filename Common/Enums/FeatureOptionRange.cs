@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Indicates at what range a feature will be enabled.
-/// </summary>
+/// <summary>Indicates at what range a feature will be enabled.</summary>
 [EnumExtensions]
 public enum FeatureOptionRange
 {

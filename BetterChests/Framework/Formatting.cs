@@ -1,12 +1,9 @@
 namespace StardewMods.BetterChests.Framework;
 
-using System;
 using System.Globalization;
 using StardewMods.Common.Enums;
 
-/// <summary>
-///     Helper methods to convert between different text formats.
-/// </summary>
+/// <summary>Helper methods to convert between different text formats.</summary>
 internal static class Formatting
 {
 #nullable disable
@@ -16,9 +13,7 @@ internal static class Formatting
 
 #nullable enable
 
-    /// <summary>
-    ///     Formats an area value using localized text when available.
-    /// </summary>
+    /// <summary>Formats an area value using localized text when available.</summary>
     /// <param name="value">The area value to format.</param>
     /// <returns>Localized text for the area value.</returns>
     public static string Area(string value) =>
@@ -32,21 +27,17 @@ internal static class Formatting
             _ => value,
         };
 
-    /// <summary>
-    ///     Formats carry chest slow using localized text when available.
-    /// </summary>
+    /// <summary>Formats carry chest slow using localized text when available.</summary>
     /// <param name="value">The value for carry chest slow to format.</param>
     /// <returns>Localized text for the carry chest slow value.</returns>
     public static string CarryChestSlow(int value) =>
         value switch
         {
             0 => I18n.Config_CarryChestSlow_ValueZero(),
-            _ => I18n.Config_CarryChestSlow_Value(speed: value.ToString(CultureInfo.InvariantCulture)),
+            _ => I18n.Config_CarryChestSlow_Value(value.ToString(CultureInfo.InvariantCulture)),
         };
 
-    /// <summary>
-    ///     Formats chest capacity using localized text when available.
-    /// </summary>
+    /// <summary>Formats chest capacity using localized text when available.</summary>
     /// <param name="value">The value for capacity to format.</param>
     /// <returns>Localized text for the capacity value.</returns>
     public static string ChestCapacity(int value) =>
@@ -56,12 +47,10 @@ internal static class Formatting
             (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
             8 => I18n.Config_ResizeChestCapacity_ValueUnlimited(),
             _ => I18n.Config_ResizeChestCapacity_ValueMany(
-                items: (12 * ((value - (int)FeatureOption.Enabled) + 1)).ToString(CultureInfo.InvariantCulture)),
+                (12 * ((value - (int)FeatureOption.Enabled) + 1)).ToString(CultureInfo.InvariantCulture)),
         };
 
-    /// <summary>
-    ///     Formats range distance using localized text when available.
-    /// </summary>
+    /// <summary>Formats range distance using localized text when available.</summary>
     /// <param name="value">The value for range distance to format.</param>
     /// <returns>Localized text for the range distance.</returns>
     public static string Distance(int value) =>
@@ -73,14 +62,11 @@ internal static class Formatting
             (int)FeatureOptionRange.World - 1 => I18n.Config_RangeDistance_ValueUnlimited(),
             (int)FeatureOptionRange.World => I18n.Option_World_Name(),
             >= (int)FeatureOptionRange.Location => I18n.Config_RangeDistance_ValueMany(
-                tiles: Math.Pow(2, (1 + value) - (int)FeatureOptionRange.Location)
-                    .ToString(CultureInfo.InvariantCulture)),
+                Math.Pow(2, (1 + value) - (int)FeatureOptionRange.Location).ToString(CultureInfo.InvariantCulture)),
             _ => I18n.Option_Default_Name(),
         };
 
-    /// <summary>
-    ///     Formats a menu value using localized text when available.
-    /// </summary>
+    /// <summary>Formats a menu value using localized text when available.</summary>
     /// <param name="value">The menu value to format.</param>
     /// <returns>Localized text for the menu value.</returns>
     public static string Menu(string value) =>
@@ -94,9 +80,7 @@ internal static class Formatting
             _ => value,
         };
 
-    /// <summary>
-    ///     Formats an option value using localized text when available.
-    /// </summary>
+    /// <summary>Formats an option value using localized text when available.</summary>
     /// <param name="value">The option value to format.</param>
     /// <returns>Localized text for the option value.</returns>
     public static string Option(string value) =>
@@ -108,9 +92,7 @@ internal static class Formatting
             _ => value,
         };
 
-    /// <summary>
-    ///     Formats a group by value using localized text when available.
-    /// </summary>
+    /// <summary>Formats a group by value using localized text when available.</summary>
     /// <param name="value">The group by value to format.</param>
     /// <returns>Localized text for the group by value.</returns>
     public static string OrganizeGroupBy(string value) =>
@@ -123,9 +105,7 @@ internal static class Formatting
             _ => value,
         };
 
-    /// <summary>
-    ///     Formats a sort by value using localized text when available.
-    /// </summary>
+    /// <summary>Formats a sort by value using localized text when available.</summary>
     /// <param name="value">The sort by value to format.</param>
     /// <returns>Localized text for the sort by value.</returns>
     public static string OrganizeSortBy(string value) =>
@@ -138,9 +118,7 @@ internal static class Formatting
             _ => value,
         };
 
-    /// <summary>
-    ///     Formats a range value using localized text when available.
-    /// </summary>
+    /// <summary>Formats a range value using localized text when available.</summary>
     /// <param name="value">The range value to format.</param>
     /// <returns>Localized text for the range value.</returns>
     public static string Range(string value) =>
@@ -154,9 +132,7 @@ internal static class Formatting
             _ => value,
         };
 
-    /// <summary>
-    ///     Formats a storage name using localized text when available.
-    /// </summary>
+    /// <summary>Formats a storage name using localized text when available.</summary>
     /// <param name="value">The storage to format.</param>
     /// <returns>Localized text for the storage name.</returns>
     public static string StorageName(string value) =>
@@ -167,15 +143,15 @@ internal static class Formatting
             "Stone Chest" => ItemRegistry.GetData("(BC)232").DisplayName,
             "Mini-Shipping Bin" => ItemRegistry.GetData("(BC)248").DisplayName,
             "Junimo Chest" => ItemRegistry.GetData("(BC)256").DisplayName,
-            "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) => TokenParser.ParseText(buildingData.Name),
-            "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => TokenParser.ParseText(buildingData.Name),
+            "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) => TokenParser
+                .ParseText(buildingData.Name),
+            "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => TokenParser
+                .ParseText(buildingData.Name),
             "Fridge" => I18n.Storage_Fridge_Name(),
-            _ => Translations.Get($"storage.{value}.name").Default(value),
+            _ => Formatting.Translations.Get($"storage.{value}.name").Default(value),
         };
 
-    /// <summary>
-    ///     Formats a storage tooltip using localized text when available.
-    /// </summary>
+    /// <summary>Formats a storage tooltip using localized text when available.</summary>
     /// <param name="value">The storage to format.</param>
     /// <returns>Localized text for the storage tooltip.</returns>
     public static string StorageTooltip(string value) =>
@@ -186,9 +162,11 @@ internal static class Formatting
             "Stone Chest" => ItemRegistry.GetData("(BC)232").Description,
             "Mini-Shipping Bin" => ItemRegistry.GetData("(BC)248").Description,
             "Junimo Chest" => ItemRegistry.GetData("(BC)256").Description,
-            "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) => TokenParser.ParseText(buildingData.Description),
-            "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => TokenParser.ParseText(buildingData.Description),
+            "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) => TokenParser
+                .ParseText(buildingData.Description),
+            "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) =>
+                TokenParser.ParseText(buildingData.Description),
             "Fridge" => I18n.Storage_Fridge_Tooltip(),
-            _ => Translations.Get($"storage.{value}.tooltip").Default(value),
+            _ => Formatting.Translations.Get($"storage.{value}.tooltip").Default(value),
         };
 }

@@ -1,8 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,9 +15,7 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
-/// <summary>
-///     Handles config options.
-/// </summary>
+/// <summary>Handles config options.</summary>
 internal sealed class Config
 {
 #nullable disable
@@ -54,9 +49,7 @@ internal sealed class Config
 
     private static ITranslationHelper Translation => Config.instance.helper.Translation;
 
-    /// <summary>
-    ///     Initializes <see cref="Config" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="Config" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="config">Mod config data.</param>
@@ -66,14 +59,10 @@ internal sealed class Config
         IModHelper helper,
         IManifest manifest,
         ModConfig config,
-        IList<Tuple<Feature, Func<bool>>> features)
-    {
-        return Config.instance ??= new(helper, manifest, config, features);
-    }
+        IList<Tuple<Feature, Func<bool>>> features) =>
+        Config.instance ??= new(helper, manifest, config, features);
 
-    /// <summary>
-    ///     Sets up the main config menu.
-    /// </summary>
+    /// <summary>Sets up the main config menu.</summary>
     public static void SetupMainConfig()
     {
         if (!Integrations.GMCM.IsLoaded)
@@ -91,13 +80,6 @@ internal sealed class Config
         // General
         Config.GMCM.AddSectionTitle(Config.Manifest, I18n.Section_General_Name);
         Config.GMCM.AddParagraph(Config.Manifest, I18n.Section_General_Description);
-
-        Config.GMCM.AddBoolOption(
-            Config.Manifest,
-            () => Config.ModConfig.BetterShippingBin,
-            value => Config.ModConfig.BetterShippingBin = value,
-            I18n.Config_BetterShippingBin_Name,
-            I18n.Config_BetterShippingBin_Tooltip);
 
         Config.GMCM.AddNumberOption(
             Config.Manifest,
@@ -158,9 +140,9 @@ internal sealed class Config
                         (int)FeatureOptionRange.Inventory,
                     _ when Config.ModConfig.CraftFromWorkbench is FeatureOptionRange.World => (int)FeatureOptionRange
                         .World,
-                    >= 2 when Config.ModConfig.CraftFromWorkbench is FeatureOptionRange.Location =>
-                        (int)FeatureOptionRange.Location
-                        + (int)Math.Ceiling(Math.Log2(Config.ModConfig.CraftFromWorkbenchDistance))
+                    >= 2 when Config.ModConfig.CraftFromWorkbench is FeatureOptionRange.Location => (
+                            (int)FeatureOptionRange.Location
+                            + (int)Math.Ceiling(Math.Log2(Config.ModConfig.CraftFromWorkbenchDistance)))
                         - 1,
                     _ when Config.ModConfig.CraftFromWorkbench is FeatureOptionRange.Location => (int)FeatureOptionRange
                             .World
@@ -178,9 +160,10 @@ internal sealed class Config
                         (int)FeatureOptionRange.World - 1 => -1,
                         >= (int)FeatureOptionRange.Location => (int)Math.Pow(
                             2,
-                            1 + value - (int)FeatureOptionRange.Location),
+                            (1 + value) - (int)FeatureOptionRange.Location),
                         _ => 0,
                     };
+
                     Config.ModConfig.CraftFromWorkbench = value switch
                     {
                         (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
@@ -206,11 +189,7 @@ internal sealed class Config
                 ComponentAreaExtensions.TryParse(value, out var area) ? area : ComponentArea.Right,
             I18n.Config_CustomColorPickerArea_Name,
             I18n.Config_CustomColorPickerArea_Tooltip,
-            new[]
-            {
-                ComponentArea.Left.ToStringFast(),
-                ComponentArea.Right.ToStringFast(),
-            },
+            new[] { ComponentArea.Left.ToStringFast(), ComponentArea.Right.ToStringFast() },
             Formatting.Area);
 
         Config.GMCM.AddTextOption(
@@ -225,7 +204,7 @@ internal sealed class Config
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             Config.GMCM.AddParagraph(
                 Config.Manifest,
-                () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{nameof(SlotLock)}", modList));
+                () => I18n.Warn_Incompatibility_Disabled($"BetterChests.{nameof(SlotLock)}", modList));
         }
         else
         {
@@ -387,9 +366,7 @@ internal sealed class Config
         }
     }
 
-    /// <summary>
-    ///     Sets up a config menu for a specific storage.
-    /// </summary>
+    /// <summary>Sets up a config menu for a specific storage.</summary>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <param name="storage">The storage to configure for.</param>
     /// <param name="register">Indicates whether to register with GMCM.</param>
@@ -441,6 +418,7 @@ internal sealed class Config
                 {
                     Game1.activeClickableMenu.SetChildMenu(
                         new ItemSelectionMenu(storage, storage.FilterMatcher, Config.Input, Config.Translation));
+
                     return;
                 }
             }
@@ -457,11 +435,12 @@ internal sealed class Config
                 Game1.pixelZoom,
                 false,
                 1f);
+
             Utility.drawTextWithShadow(
                 b,
                 label,
                 Game1.dialogueFont,
-                new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f,
+                new Vector2((bounds.Left + bounds.Right) - dims.X, (bounds.Top + bounds.Bottom) - dims.Y) / 2f,
                 Game1.textColor,
                 1f,
                 1f,
@@ -484,7 +463,6 @@ internal sealed class Config
         var defaultConfig = new ModConfig();
 
         // Copy properties
-        Config.ModConfig.BetterShippingBin = defaultConfig.BetterShippingBin;
         Config.ModConfig.CarryChestLimit = defaultConfig.CarryChestLimit;
         Config.ModConfig.CarryChestSlowAmount = defaultConfig.CarryChestSlowAmount;
         Config.ModConfig.ChestFinder = defaultConfig.ChestFinder;
@@ -577,7 +555,8 @@ internal sealed class Config
                 var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
                 Config.GMCM.AddParagraph(
                     manifest,
-                    () => string.Format(I18n.Warn_Incompatibility_Disabled(), $"BetterChests.{featureName}", modList));
+                    () => I18n.Warn_Incompatibility_Disabled($"BetterChests.{featureName}", modList));
+
                 return;
             }
         }
@@ -598,6 +577,7 @@ internal sealed class Config
                     Config.DrawButton(storageNode, I18n.Button_Configure_Name()),
                     I18n.Config_FilterItemsList_Tooltip,
                     height: () => Game1.tileSize);
+
                 return;
 
             case nameof(IStorageData.ChestLabel) when data is Storage:
@@ -607,6 +587,7 @@ internal sealed class Config
                     value => data.ChestLabel = value,
                     I18n.Config_ChestLabel_Name,
                     I18n.Config_ChestLabel_Tooltip);
+
                 return;
 
             case nameof(AutoOrganize) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -616,6 +597,7 @@ internal sealed class Config
                     value => data.AutoOrganize = value,
                     I18n.Config_AutoOrganize_Name,
                     I18n.Config_AutoOrganize_Tooltip);
+
                 return;
 
             case nameof(CarryChest) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -632,6 +614,7 @@ internal sealed class Config
                     value => data.CarryChestSlow = value,
                     I18n.Config_CarryChestSlow_Name,
                     I18n.Config_CarryChestSlow_Tooltip);
+
                 return;
 
             case nameof(ChestInfo) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -641,6 +624,7 @@ internal sealed class Config
                     value => data.ChestInfo = value,
                     I18n.Config_ChestInfo_Name,
                     I18n.Config_ChestInfo_Tooltip);
+
                 return;
 
             case nameof(ChestMenuTabs) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -650,6 +634,7 @@ internal sealed class Config
                     value => data.ChestMenuTabs = value,
                     I18n.Config_ChestMenuTabs_Name,
                     I18n.Config_ChestMenuTabs_Tooltip);
+
                 return;
 
             case nameof(CollectItems) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -659,6 +644,7 @@ internal sealed class Config
                     value => data.CollectItems = value,
                     I18n.Config_CollectItems_Name,
                     I18n.Config_CollectItems_Tooltip);
+
                 return;
 
             case nameof(Configurator):
@@ -679,6 +665,7 @@ internal sealed class Config
                     I18n.Config_ConfigureMenu_Tooltip,
                     InGameMenuExtensions.GetNames(),
                     Formatting.Menu);
+
                 return;
 
             case nameof(CraftFromChest) when storage.ConfigureMenu is InGameMenu.Advanced:
@@ -695,6 +682,7 @@ internal sealed class Config
                     value => data.StashToChestDistance = value,
                     I18n.Config_CraftFromChestDistance_Name,
                     I18n.Config_CraftFromChestDistance_Tooltip);
+
                 return;
 
             case nameof(CraftFromChest) when storage.ConfigureMenu is InGameMenu.Full:
@@ -704,6 +692,7 @@ internal sealed class Config
                     featureName,
                     I18n.Config_CraftFromChestDistance_Name,
                     I18n.Config_CraftFromChestDistance_Tooltip);
+
                 return;
 
             case nameof(BetterColorPicker) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -713,6 +702,7 @@ internal sealed class Config
                     value => data.CustomColorPicker = value,
                     I18n.Config_CustomColorPicker_Name,
                     I18n.Config_CustomColorPicker_Tooltip);
+
                 return;
 
             case nameof(FilterItems) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -722,6 +712,7 @@ internal sealed class Config
                     value => data.FilterItems = value,
                     I18n.Config_FilterItems_Name,
                     I18n.Config_FilterItems_Tooltip);
+
                 return;
 
             case nameof(IStorageData.HideItems) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -731,6 +722,7 @@ internal sealed class Config
                     value => data.HideItems = value,
                     I18n.Config_HideItems_Name,
                     I18n.Config_HideItems_Tooltip);
+
                 return;
 
             case nameof(LabelChest) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -740,6 +732,7 @@ internal sealed class Config
                     value => data.LabelChest = value,
                     I18n.Config_LabelChest_Name,
                     I18n.Config_LabelChest_Tooltip);
+
                 return;
 
             case nameof(OpenHeldChest) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -749,6 +742,7 @@ internal sealed class Config
                     value => data.OpenHeldChest = value,
                     I18n.Config_OpenHeldChest_Name,
                     I18n.Config_OpenHeldChest_Tooltip);
+
                 return;
 
             case nameof(OrganizeChest) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -778,6 +772,7 @@ internal sealed class Config
                     I18n.Config_OrganizeChestSortBy_Tooltip,
                     SortByExtensions.GetNames(),
                     Formatting.OrganizeSortBy);
+
                 return;
 
             case nameof(ResizeChest) when storage.ConfigureMenu is InGameMenu.Advanced:
@@ -794,6 +789,7 @@ internal sealed class Config
                     value => data.ResizeChestCapacity = value,
                     I18n.Config_ResizeChestCapacity_Name,
                     I18n.Config_ResizeChestCapacity_Tooltip);
+
                 return;
 
             case nameof(SearchItems) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -803,6 +799,7 @@ internal sealed class Config
                     value => data.SearchItems = value,
                     I18n.Config_SearchItems_Name,
                     I18n.Config_SearchItems_Tooltip);
+
                 return;
 
             case nameof(StashToChest):
@@ -845,6 +842,7 @@ internal sealed class Config
                     value => data.StashToChestStacks = value,
                     I18n.Config_StashToChestStacks_Name,
                     I18n.Config_StashToChestStacks_Tooltip);
+
                 return;
 
             case nameof(TransferItems) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -854,6 +852,7 @@ internal sealed class Config
                     value => data.TransferItems = value,
                     I18n.Config_TransferItems_Name,
                     I18n.Config_TransferItems_Tooltip);
+
                 return;
 
             case nameof(UnloadChest) when storage.ConfigureMenu is InGameMenu.Full or InGameMenu.Advanced:
@@ -870,6 +869,7 @@ internal sealed class Config
                     value => data.UnloadChestCombine = value,
                     I18n.Config_UnloadChestCombine_Name,
                     I18n.Config_UnloadChestCombine_Tooltip);
+
                 return;
         }
     }

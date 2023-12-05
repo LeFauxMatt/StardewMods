@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Helpers;
 using StardewValley.Mods;
 using StardewValley.Objects;
 
@@ -155,10 +154,7 @@ internal sealed class GarbageCan
     /// <summary>
     ///     Empties the trash of all items.
     /// </summary>
-    public void EmptyTrash()
-    {
-        this.Items.Clear();
-    }
+    public void EmptyTrash() => this.Items.Clear();
 
     private void AddItem(Item item)
     {

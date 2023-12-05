@@ -6,9 +6,7 @@ internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcher
     private const string ModUniqueId = "Pathoschild.ContentPatcher";
     private const string ModVersion = "1.28.0";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ContentPatcherIntegration" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ContentPatcherIntegration" /> class.</summary>
     /// <param name="modRegistry">SMAPI's mod registry.</param>
     public ContentPatcherIntegration(IModRegistry modRegistry)
         : base(modRegistry, ContentPatcherIntegration.ModUniqueId, ContentPatcherIntegration.ModVersion)

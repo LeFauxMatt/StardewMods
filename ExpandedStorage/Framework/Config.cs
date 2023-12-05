@@ -37,10 +37,7 @@ internal sealed class Config
     /// </summary>
     /// <param name="id">The id of the config to get.</param>
     /// <returns>Returns storage config data.</returns>
-    public static StorageConfig? GetConfig(string id)
-    {
-        return Config.ModConfig.Config.TryGetValue(id, out var config) ? config : null;
-    }
+    public static StorageConfig? GetConfig(string id) => Config.ModConfig.Config.TryGetValue(id, out var config) ? config : null;
 
     /// <summary>
     ///     Initializes <see cref="Config" />.
@@ -48,10 +45,7 @@ internal sealed class Config
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="manifest">A manifest to describe the mod.</param>
     /// <returns>Returns an instance of the <see cref="Config" /> class.</returns>
-    public static Config Init(IModHelper helper, IManifest manifest)
-    {
-        return Config.instance ??= new(helper, manifest);
-    }
+    public static Config Init(IModHelper helper, IManifest manifest) => Config.instance ??= new(helper, manifest);
 
     /// <summary>
     ///     Setup Generic Mod Config Options menu.
@@ -121,8 +115,5 @@ internal sealed class Config
         config.CopyTo(Config.ModConfig);
     }
 
-    private static void Save()
-    {
-        Config.instance.helper.WriteConfig(Config.ModConfig);
-    }
+    private static void Save() => Config.instance.helper.WriteConfig(Config.ModConfig);
 }

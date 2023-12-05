@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Sorting type for items.
-/// </summary>
+/// <summary>Sorting type for items.</summary>
 [EnumExtensions]
 public enum SortBy
 {

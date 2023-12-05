@@ -15,9 +15,7 @@ internal sealed class ChestStorage : Storage, IColorable
 {
     private readonly Chest chest;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ChestStorage" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ChestStorage" /> class.</summary>
     /// <param name="chest">The source chest.</param>
     /// <param name="source">The context where the source object is contained.</param>
     /// <param name="position">The position of the source object.</param>
@@ -39,31 +37,22 @@ internal sealed class ChestStorage : Storage, IColorable
     public override FeatureOption AutoOrganize =>
         this.Chest switch
         {
-            { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } => FeatureOption.Disabled,
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            } => FeatureOption.Disabled,
             _ => base.AutoOrganize,
         };
 
-    /// <summary>
-    ///     Gets the source chest object.
-    /// </summary>
+    /// <summary>Gets the source chest object.</summary>
     public Chest Chest { get; }
-
-    /// <inheritdoc />
-    public Color Color
-    {
-        get => this.Chest.playerChoiceColor.Value;
-        set
-        {
-            this.chest.playerChoiceColor.Value = value;
-            this.Chest.playerChoiceColor.Value = value;
-        }
-    }
 
     /// <inheritdoc />
     public override FeatureOptionRange CraftFromChest =>
         this.Chest switch
         {
-            { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } => FeatureOptionRange.Disabled,
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            } => FeatureOptionRange.Disabled,
             _ => base.CraftFromChest,
         };
 
@@ -80,13 +69,23 @@ internal sealed class ChestStorage : Storage, IColorable
     public override FeatureOption UnloadChest =>
         this.Chest switch
         {
-            { SpecialChestType: Chest.SpecialChestTypes.JunimoChest } => FeatureOption.Disabled,
+            {
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            } => FeatureOption.Disabled,
             _ => base.UnloadChest,
         };
 
     /// <inheritdoc />
-    public void Draw(SpriteBatch spriteBatch, int x, int y)
+    public Color Color
     {
-        this.chest.draw(spriteBatch, x, y, 1f, true);
+        get => this.Chest.playerChoiceColor.Value;
+        set
+        {
+            this.chest.playerChoiceColor.Value = value;
+            this.Chest.playerChoiceColor.Value = value;
+        }
     }
+
+    /// <inheritdoc />
+    public void Draw(SpriteBatch spriteBatch, int x, int y) => this.chest.draw(spriteBatch, x, y, 1f, true);
 }

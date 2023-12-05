@@ -1,7 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework;
 
-using System.Collections.Generic;
-using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
@@ -15,9 +13,7 @@ using StardewValley.Extensions;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
-/// <summary>
-///     Handles integrations with other mods.
-/// </summary>
+/// <summary>Handles integrations with other mods.</summary>
 internal sealed class Integrations
 {
     private const string ExpandedFridgeId = "Uwazouri.ExpandedFridge";
@@ -46,37 +42,27 @@ internal sealed class Integrations
         this.toolbarIcons = new(helper.ModRegistry);
         this.incompatibilities =
             this.helper.ModContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
+
         this.helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
-    /// <summary>
-    ///     Gets Automate integration.
-    /// </summary>
+    /// <summary>Gets Automate integration.</summary>
     public static AutomateIntegration Automate => Integrations.instance.automate;
 
-    /// <summary>
-    ///     Gets Better Craft integration.
-    /// </summary>
+    /// <summary>Gets Better Craft integration.</summary>
     public static BetterCraftingIntegration BetterCrafting => Integrations.instance.betterCrafting;
 
-    /// <summary>
-    ///     Gets Generic Mod Config Menu integration.
-    /// </summary>
+    /// <summary>Gets Generic Mod Config Menu integration.</summary>
     public static GenericModConfigMenuIntegration GMCM => Integrations.instance.gmcm;
 
-    /// <summary>
-    ///     Gets Toolbar Icons integration.
-    /// </summary>
+    /// <summary>Gets Toolbar Icons integration.</summary>
     public static ToolbarIconsIntegration ToolbarIcons => Integrations.instance.toolbarIcons;
 
-    private static Dictionary<string, HashSet<string>> Incompatibilities =>
-        Integrations.instance.incompatibilities;
+    private static Dictionary<string, HashSet<string>> Incompatibilities => Integrations.instance.incompatibilities;
 
     private static IModRegistry ModRegistry => Integrations.instance.helper.ModRegistry;
 
-    /// <summary>
-    ///     Gets all storages placed in a particular location.
-    /// </summary>
+    /// <summary>Gets all storages placed in a particular location.</summary>
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all placed storages at the location.</returns>
@@ -102,9 +88,7 @@ internal sealed class Integrations
         }
     }
 
-    /// <summary>
-    ///     Gets all storages placed in a particular farmer's inventory.
-    /// </summary>
+    /// <summary>Gets all storages placed in a particular farmer's inventory.</summary>
     /// <param name="player">The farmer to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
     /// <returns>An enumerable of all held storages in the farmer's inventory.</returns>
@@ -118,20 +102,14 @@ internal sealed class Integrations
         }
     }
 
-    /// <summary>
-    ///     Initializes <see cref="Integrations" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="Integrations" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="Integrations" /> class.</returns>
-    public static Integrations Init(IModHelper helper, ModConfig config)
-    {
-        return Integrations.instance ??= new(helper, config);
-    }
+    public static Integrations Init(IModHelper helper, ModConfig config) =>
+        Integrations.instance ??= new(helper, config);
 
-    /// <summary>
-    ///     Checks if any known incompatibilities.
-    /// </summary>
+    /// <summary>Checks if any known incompatibilities.</summary>
     /// <param name="featureName">The feature to check.</param>
     /// <param name="mods">The list of incompatible mods.</param>
     /// <returns>Returns true if there is an incompatibility.</returns>
@@ -147,9 +125,7 @@ internal sealed class Integrations
         return mods.Any();
     }
 
-    /// <summary>
-    ///     Attempts to retrieve a storage based on a context object.
-    /// </summary>
+    /// <summary>Attempts to retrieve a storage based on a context object.</summary>
     /// <param name="context">The context object.</param>
     /// <param name="storage">The storage object.</param>
     /// <returns>Returns true if a storage could be found for the context object.</returns>
@@ -167,7 +143,10 @@ internal sealed class Integrations
     private static IEnumerable<Storage> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
     {
         if (!Integrations.ModRegistry.IsLoaded(Integrations.ExpandedFridgeId)
-            || location is not FarmHouse { upgradeLevel: > 0 })
+            || location is not FarmHouse
+            {
+                upgradeLevel: > 0,
+            })
         {
             yield break;
         }
@@ -294,10 +273,7 @@ internal sealed class Integrations
 
         if (Integrations.ModRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
-            this.config.VanillaStorages.TryAdd("SaddleBag", new()
-            {
-                CustomColorPicker = FeatureOption.Disabled,
-            });
+            this.config.VanillaStorages.TryAdd("SaddleBag", new() { CustomColorPicker = FeatureOption.Disabled });
         }
     }
 

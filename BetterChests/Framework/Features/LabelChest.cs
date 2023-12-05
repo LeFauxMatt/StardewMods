@@ -5,9 +5,7 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
-/// <summary>
-///     Draw chest label to the screen.
-/// </summary>
+/// <summary>Draw chest label to the screen.</summary>
 internal sealed class LabelChest : Feature
 {
 #nullable disable
@@ -16,20 +14,12 @@ internal sealed class LabelChest : Feature
 
     private readonly IModHelper helper;
 
-    private LabelChest(IModHelper helper)
-    {
-        this.helper = helper;
-    }
+    private LabelChest(IModHelper helper) => this.helper = helper;
 
-    /// <summary>
-    ///     Initializes <see cref="LabelChest" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="LabelChest" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <returns>Returns an instance of the <see cref="LabelChest" /> class.</returns>
-    public static Feature Init(IModHelper helper)
-    {
-        return LabelChest.instance ??= new LabelChest(helper);
-    }
+    public static Feature Init(IModHelper helper) => LabelChest.instance ??= new LabelChest(helper);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -60,6 +50,7 @@ internal sealed class LabelChest : Feature
             - IClickableMenu.borderWidth
             - BetterItemGrabMenu.TopPadding
             - Game1.tileSize;
+
         IClickableMenu.drawHoverText(
             e.SpriteBatch,
             BetterItemGrabMenu.Context.ChestLabel,

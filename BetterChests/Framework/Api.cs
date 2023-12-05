@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework;
 
-using System;
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
@@ -14,8 +13,6 @@ public sealed class Api : IBetterChestsApi
     }
 
     /// <inheritdoc />
-    public void AddConfigOptions(IManifest manifest, IStorageData storage)
-    {
+    public void AddConfigOptions(IManifest manifest, IStorageData storage) =>
         Config.SetupSpecificConfig(manifest, storage);
-    }
 }

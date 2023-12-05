@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Quality levels for an item.
-/// </summary>
+/// <summary>Quality levels for an item.</summary>
 [EnumExtensions]
 public enum Quality
 {

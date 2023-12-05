@@ -1,21 +1,15 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Text;
 
-/// <summary>
-///     Matches item name/tags against a set of search phrases.
-/// </summary>
+/// <summary>Matches item name/tags against a set of search phrases.</summary>
 internal sealed class ItemMatcher : ObservableCollection<string>
 {
     private readonly IDictionary<string, SearchPhrase> clean = new Dictionary<string, SearchPhrase>();
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ItemMatcher" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ItemMatcher" /> class.</summary>
     /// <param name="exactMatch">Set to true to disallow partial matches.</param>
     /// <param name="searchTagSymbol">Prefix to denote search is based on an item's context tags.</param>
     /// <param name="translation">Translations from the i18n folder.</param>
@@ -26,9 +20,7 @@ internal sealed class ItemMatcher : ObservableCollection<string>
         this.SearchTagSymbol = searchTagSymbol ?? string.Empty;
     }
 
-    /// <summary>
-    ///     Gets or sets a string representation of all registered search texts.
-    /// </summary>
+    /// <summary>Gets or sets a string representation of all registered search texts.</summary>
     public string StringValue
     {
         get => string.Join(" ", this);
@@ -57,9 +49,7 @@ internal sealed class ItemMatcher : ObservableCollection<string>
 
     private ITranslationHelper? Translation { get; }
 
-    /// <summary>
-    ///     Checks if an item matches the search phrases.
-    /// </summary>
+    /// <summary>Checks if an item matches the search phrases.</summary>
     /// <param name="item">The item to check.</param>
     /// <returns>Returns true if item matches any search phrase unless a NotMatch search phrase was matched.</returns>
     public bool Matches(Item? item)
@@ -115,10 +105,9 @@ internal sealed class ItemMatcher : ObservableCollection<string>
 
         foreach (var item in added)
         {
-            var clean = this.ParseString(item);
-            if (clean is not null)
+            if (this.TryParse(item, out var searchPhrase))
             {
-                this.clean.Add(item, clean);
+                this.clean.Add(item, searchPhrase);
             }
         }
 
@@ -134,7 +123,7 @@ internal sealed class ItemMatcher : ObservableCollection<string>
         }
     }
 
-    private SearchPhrase? ParseString(string value)
+    private bool TryParse(string value, [NotNullWhen(true)] out SearchPhrase? searchPhrase)
     {
         var stringBuilder = new StringBuilder(value.Trim());
         var tagMatch = string.IsNullOrWhiteSpace(this.SearchTagSymbol) || value[..1] == this.SearchTagSymbol;
@@ -144,6 +133,13 @@ internal sealed class ItemMatcher : ObservableCollection<string>
         }
 
         var newValue = stringBuilder.ToString();
-        return string.IsNullOrWhiteSpace(newValue) ? null : new(newValue, tagMatch, this.ExactMatch, this.Translation);
+        if (string.IsNullOrWhiteSpace(newValue))
+        {
+            searchPhrase = null;
+            return false;
+        }
+
+        searchPhrase = new(newValue, tagMatch, this.ExactMatch, this.Translation);
+        return true;
     }
 }

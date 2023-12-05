@@ -1,8 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -12,9 +10,7 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
-/// <summary>
-///     Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.
-/// </summary>
+/// <summary>Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.</summary>
 internal sealed class ChestMenuTabs : Feature
 {
 #nullable disable
@@ -44,6 +40,7 @@ internal sealed class ChestMenuTabs : Feature
                     var hoverText = !string.IsNullOrWhiteSpace(data[0])
                         ? data[0]
                         : helper.Translation.Get($"tabs.{name}.name").Default(name);
+
                     allTabData.Add(
                         name,
                         new(
@@ -52,7 +49,7 @@ internal sealed class ChestMenuTabs : Feature
                             string.Empty,
                             hoverText,
                             Game1.content.Load<Texture2D>(data[1]),
-                            new(16 * int.Parse(data[2]), 4, 16, 12),
+                            new(16 * int.Parse(data[2], CultureInfo.InvariantCulture), 4, 16, 12),
                             Game1.pixelZoom));
                 }
 
@@ -146,16 +143,11 @@ internal sealed class ChestMenuTabs : Feature
         }
     }
 
-    /// <summary>
-    ///     Initializes <see cref="ChestMenuTabs" /> class.
-    /// </summary>
+    /// <summary>Initializes <see cref="ChestMenuTabs" /> class.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="ChestMenuTabs" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return ChestMenuTabs.instance ??= new(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) => ChestMenuTabs.instance ??= new(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -269,6 +261,7 @@ internal sealed class ChestMenuTabs : Feature
                     Game1.pixelZoom,
                     SpriteEffects.None,
                     0.86f);
+
                 tab.draw(b, Color.White, 0.86f + (tab.bounds.Y / 20000f));
 
                 // draw texture
@@ -277,7 +270,7 @@ internal sealed class ChestMenuTabs : Feature
                     b,
                     Game1.menuTexture,
                     new(0, 256, 60, 60),
-                    this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize - 8,
+                    (this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width) - bounds.X - Game1.tileSize - 8,
                     tab.bounds.Y - 12,
                     bounds.X + 32,
                     bounds.Y + (Game1.tileSize / 3),
@@ -289,9 +282,10 @@ internal sealed class ChestMenuTabs : Feature
                     tab.hoverText,
                     Game1.smallFont,
                     new(
-                        this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width - bounds.X - Game1.tileSize + 8,
+                        ((this.CurrentMenu.xPositionOnScreen + this.CurrentMenu.width) - bounds.X - Game1.tileSize) + 8,
                         tab.bounds.Y),
                     Game1.textColor);
+
                 continue;
             }
 
@@ -305,6 +299,7 @@ internal sealed class ChestMenuTabs : Feature
                 Game1.pixelZoom,
                 SpriteEffects.None,
                 0.86f);
+
             tab.draw(b, Color.Gray, 0.86f + (tab.bounds.Y / 20000f));
         }
 
@@ -358,7 +353,11 @@ internal sealed class ChestMenuTabs : Feature
 
         this.CurrentMenu = menu;
         this.Components.Clear();
-        if (this.CurrentMenu is null or { shippingBin: true }
+        if (this.CurrentMenu is null
+                or
+                {
+                    shippingBin: true,
+                }
             || BetterItemGrabMenu.Context?.ChestMenuTabs is not FeatureOption.Enabled)
         {
             return;
@@ -410,6 +409,7 @@ internal sealed class ChestMenuTabs : Feature
             this.Components[i].bounds.X = i > 0
                 ? this.Components[i - 1].bounds.Right
                 : this.CurrentMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
+
             this.Components[i].bounds.Y = this.CurrentMenu.ItemsToGrabMenu.yPositionOnScreen
                 + (Game1.tileSize * this.CurrentMenu.ItemsToGrabMenu.rows)
                 + IClickableMenu.borderWidth;

@@ -1,7 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Features;
 
-using System;
-using System.Linq;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
@@ -9,9 +7,7 @@ using StardewMods.Common.Enums;
 using StardewValley.Locations;
 using StardewValley.Menus;
 
-/// <summary>
-///     Stash items into placed chests and chests in the farmer's inventory.
-/// </summary>
+/// <summary>Stash items into placed chests and chests in the farmer's inventory.</summary>
 internal sealed class StashToChest : Feature
 {
 #nullable disable
@@ -27,16 +23,12 @@ internal sealed class StashToChest : Feature
         this.config = config;
     }
 
-    /// <summary>
-    ///     Initializes <see cref="StashToChest" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="StashToChest" />.</summary>
     /// <param name="helper">SMAPI helper for events, input, and content.</param>
     /// <param name="config">Mod config data.</param>
     /// <returns>Returns an instance of the <see cref="StashToChest" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config)
-    {
-        return StashToChest.instance ??= new StashToChest(helper, config);
-    }
+    public static Feature Init(IModHelper helper, ModConfig config) =>
+        StashToChest.instance ??= new StashToChest(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -56,6 +48,7 @@ internal sealed class StashToChest : Feature
             "furyx639.BetterChests/Icons",
             new(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
+
         Integrations.ToolbarIcons.Api.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
     }
 
@@ -96,8 +89,11 @@ internal sealed class StashToChest : Feature
                 || storage.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
                 || (storage.StashToChestDisableLocations.Contains("UndergroundMine")
                     && Game1.player.currentLocation is MineShaft mineShaft
-                    && mineShaft.Name.StartsWith("UndergroundMine"))
-                || storage is not { Data: Storage storageObject }
+                    && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
+                || storage is not
+                {
+                    Data: Storage storageObject,
+                }
                 || !storage.StashToChest.WithinRangeOfPlayer(
                     storage.StashToChestDistance,
                     storageObject.Location,
@@ -150,9 +146,7 @@ internal sealed class StashToChest : Feature
             || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
             || BetterItemGrabMenu.Context is not
             {
-                StashToChest: FeatureOptionRange.Inventory
-                or FeatureOptionRange.Location
-                or FeatureOptionRange.World,
+                StashToChest: FeatureOptionRange.Inventory or FeatureOptionRange.Location or FeatureOptionRange.World,
             })
         {
             return;
@@ -187,9 +181,7 @@ internal sealed class StashToChest : Feature
         if (Game1.activeClickableMenu is not ItemGrabMenu
             || BetterItemGrabMenu.Context is not
             {
-                StashToChest: FeatureOptionRange.Inventory
-                or FeatureOptionRange.Location
-                or FeatureOptionRange.World,
+                StashToChest: FeatureOptionRange.Inventory or FeatureOptionRange.Location or FeatureOptionRange.World,
             })
         {
             return;
