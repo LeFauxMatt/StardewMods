@@ -6,6 +6,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
@@ -15,22 +16,24 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Allows a placed chest full of items to be picked up by the farmer.</summary>
-internal sealed class CarryChest : Feature
+internal sealed class CarryChest : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/CarryChest";
     private const string BuffId = "furyx639.BetterChests/Overburdened";
 
-    private static readonly MethodBase InventoryMenuRightClick = AccessTools.Method(
+    private static readonly MethodBase InventoryMenuRightClick = AccessTools.DeclaredMethod(
         typeof(InventoryMenu),
         nameof(InventoryMenu.rightClick));
 
-    private static readonly MethodBase ItemCanBeDropped = AccessTools.Method(typeof(Item), nameof(Item.canBeDropped));
+    private static readonly MethodBase ItemCanBeDropped =
+        AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeDropped));
 
-    private static readonly MethodBase ItemCanBeTrashed = AccessTools.Method(typeof(Item), nameof(Item.canBeTrashed));
+    private static readonly MethodBase ItemCanBeTrashed =
+        AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeTrashed));
 
-    private static readonly MethodBase ItemCanStackWith = AccessTools.Method(typeof(Item), nameof(Item.canStackWith));
+    private static readonly MethodBase ItemCanStackWith =
+        AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canStackWith));
 
-    private static readonly MethodBase ObjectDrawInMenu = AccessTools.Method(
+    private static readonly MethodBase ObjectDrawInMenu = AccessTools.DeclaredMethod(
         typeof(SObject),
         nameof(SObject.drawInMenu),
         new[]
@@ -45,15 +48,15 @@ internal sealed class CarryChest : Feature
             typeof(bool),
         });
 
-    private static readonly MethodBase ObjectDrawWhenHeld = AccessTools.Method(
+    private static readonly MethodBase ObjectDrawWhenHeld = AccessTools.DeclaredMethod(
         typeof(SObject),
         nameof(SObject.drawWhenHeld));
 
-    private static readonly MethodBase ObjectPlacementAction = AccessTools.Method(
+    private static readonly MethodBase ObjectPlacementAction = AccessTools.DeclaredMethod(
         typeof(SObject),
         nameof(SObject.placementAction));
 
-    private static readonly MethodBase UtilityIterateChestsAndStorage = AccessTools.Method(
+    private static readonly MethodBase UtilityIterateChestsAndStorage = AccessTools.DeclaredMethod(
         typeof(Utility),
         nameof(Utility.iterateChestsAndStorage));
 
@@ -62,14 +65,24 @@ internal sealed class CarryChest : Feature
 #nullable enable
 
     private readonly ModConfig config;
+    private readonly IModEvents events;
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
+    private readonly IInputHelper input;
 
-    private CarryChest(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="CarryChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public CarryChest(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+        : base(monitor, nameof(CarryChest), () => config.CarryChest is not FeatureOption.Disabled)
     {
-        this.helper = helper;
+        CarryChest.instance = this;
         this.config = config;
-        this.harmony = new(CarryChest.Id);
+        this.events = events;
+        this.harmony = harmony;
+        this.input = input;
     }
 
     private static ModConfig Config => CarryChest.instance.config;
@@ -84,7 +97,7 @@ internal sealed class CarryChest : Feature
             return;
         }
 
-        foreach (var storage in Storages.Inventory)
+        foreach (var storage in StorageService.Inventory)
         {
             if (storage is not
                 {
@@ -103,19 +116,13 @@ internal sealed class CarryChest : Feature
         Game1.player.buffs.Remove(CarryChest.BuffId);
     }
 
-    /// <summary>Initializes <see cref="CarryChest" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="CarryChest" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) => CarryChest.instance ??= new(helper, config);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.helper.Events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-        this.helper.Events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.GameLoop.DayStarted += CarryChest.OnDayStarted;
+        this.events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
 
         // Patches
         this.harmony.Patch(
@@ -159,9 +166,9 @@ internal sealed class CarryChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.helper.Events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
-        this.helper.Events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
+        this.events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
 
         // Patches
         this.harmony.Unpatch(
@@ -382,7 +389,9 @@ internal sealed class CarryChest : Feature
     {
         if (!__result
             || __instance is not Chest held
-            || !location.Objects.TryGetValue(new(x / Game1.tileSize, y / Game1.tileSize), out var obj)
+            || !location.Objects.TryGetValue(
+                new((int)(x / (float)Game1.tileSize), (int)(y / (float)Game1.tileSize)),
+                out var obj)
             || obj is not Chest placed)
         {
             return;
@@ -440,7 +449,7 @@ internal sealed class CarryChest : Feature
 
     private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
     {
-        Log.Verbose("Recursively iterating chests in farmer inventory.");
+        CarryChest.instance.Monitor.VerboseLog("Recursively iterating chests in farmer inventory.");
         foreach (var farmer in Game1.getAllFarmers())
         {
             foreach (var chest in farmer.Items.OfType<Chest>())
@@ -455,7 +464,7 @@ internal sealed class CarryChest : Feature
         if (!Context.IsPlayerFree
             || Game1.player.CurrentItem is Tool
             || !e.Button.IsUseToolButton()
-            || this.helper.Input.IsSuppressed(e.Button)
+            || this.input.IsSuppressed(e.Button)
             || (Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase)))
         {
@@ -465,7 +474,7 @@ internal sealed class CarryChest : Feature
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-            || !Storages.TryGetOne(obj, out var storage)
+            || !StorageService.TryGetOne(obj, out var storage)
             || storage.CarryChest is not FeatureOption.Enabled)
         {
             return;
@@ -488,7 +497,7 @@ internal sealed class CarryChest : Feature
                 }
 
                 Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
-                this.helper.Input.Suppress(e.Button);
+                this.input.Suppress(e.Button);
                 return;
             }
         }
@@ -501,7 +510,7 @@ internal sealed class CarryChest : Feature
 
         Game1.playSound("pickUpItem");
         Game1.currentLocation.Objects.Remove(pos);
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
         CarryChest.CheckForOverburdened();
     }
 }

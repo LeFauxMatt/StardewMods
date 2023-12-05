@@ -2,71 +2,74 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Locations;
 using StardewValley.Menus;
 
 /// <summary>Stash items into placed chests and chests in the farmer's inventory.</summary>
-internal sealed class StashToChest : Feature
+internal sealed class StashToChest : BaseFeature
 {
 #nullable disable
-    private static Feature instance;
+    private static StashToChest instance;
 #nullable enable
 
     private readonly ModConfig config;
-    private readonly IModHelper helper;
+    private readonly IModEvents events;
+    private readonly IInputHelper input;
 
-    private StashToChest(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="StashToChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public StashToChest(IMonitor monitor, ModConfig config, IModEvents events, IInputHelper input)
+        : base(monitor, nameof(StashToChest), () => config.StashToChest is not FeatureOptionRange.Disabled)
     {
-        this.helper = helper;
+        StashToChest.instance = this;
         this.config = config;
+        this.events = events;
+        this.input = input;
     }
-
-    /// <summary>Initializes <see cref="StashToChest" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="StashToChest" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) =>
-        StashToChest.instance ??= new StashToChest(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Integrations
-        if (!Integrations.ToolbarIcons.IsLoaded)
+        if (!IntegrationService.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        Integrations.ToolbarIcons.Api.AddToolbarIcon(
+        IntegrationService.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.StashToChest",
             "furyx639.BetterChests/Icons",
             new(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
 
-        Integrations.ToolbarIcons.Api.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
+        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Integrations
-        if (!Integrations.ToolbarIcons.IsLoaded)
+        if (!IntegrationService.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.StashToChest");
-        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
+        IntegrationService.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.StashToChest");
+        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
     }
 
     private static void OnToolbarIconPressed(object? sender, string id)
@@ -80,7 +83,7 @@ internal sealed class StashToChest : Feature
     private static void StashIntoAll()
     {
         var stashedAny = false;
-        var storages = Storages.All.ToArray();
+        var storages = StorageService.All.ToArray();
         Array.Sort(storages);
 
         foreach (var storage in storages)
@@ -128,7 +131,11 @@ internal sealed class StashToChest : Feature
             }
 
             var stack = Game1.player.Items[index].Stack;
-            var tmp = storage.StashItem(Game1.player.Items[index], storage.StashToChestStacks is FeatureOption.Enabled);
+            var tmp = storage.StashItem(
+                StashToChest.instance.Monitor,
+                Game1.player.Items[index],
+                storage.StashToChestStacks is FeatureOption.Enabled);
+
             if (tmp is null)
             {
                 Game1.player.Items[index] = null;
@@ -158,7 +165,7 @@ internal sealed class StashToChest : Feature
             return;
         }
 
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
         StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
         Game1.playSound("Ship");
     }
@@ -174,7 +181,7 @@ internal sealed class StashToChest : Feature
         if (Context.IsPlayerFree)
         {
             StashToChest.StashIntoAll();
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.StashItems);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.StashItems);
             return;
         }
 
@@ -188,7 +195,7 @@ internal sealed class StashToChest : Feature
         }
 
         // Stash to Current
-        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.StashItems);
+        this.input.SuppressActiveKeybinds(this.config.ControlScheme.StashItems);
         StashToChest.StashIntoStorage(BetterItemGrabMenu.Context);
         Game1.playSound("Ship");
     }

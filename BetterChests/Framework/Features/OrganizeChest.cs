@@ -7,37 +7,36 @@ using StardewMods.Common.Enums;
 using StardewValley.Menus;
 
 /// <summary>Sort items in a chest using a customized criteria.</summary>
-internal sealed class OrganizeChest : Feature
+internal sealed class OrganizeChest : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/OrganizeChest";
-
-    private static readonly MethodBase ItemGrabMenuOrganizeItemsInList = AccessTools.Method(
+    private static readonly MethodBase ItemGrabMenuOrganizeItemsInList = AccessTools.DeclaredMethod(
         typeof(ItemGrabMenu),
         nameof(ItemGrabMenu.organizeItemsInList));
 
-#nullable disable
-    private static Feature instance;
-#nullable enable
+    private readonly IModEvents events;
 
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
+    private readonly IInputHelper input;
 
-    private OrganizeChest(IModHelper helper)
+    /// <summary>Initializes a new instance of the <see cref="OrganizeChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public OrganizeChest(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+        : base(monitor, nameof(OrganizeChest), () => config.OrganizeChest is not FeatureOption.Disabled)
     {
-        this.helper = helper;
-        this.harmony = new(OrganizeChest.Id);
+        this.events = events;
+        this.harmony = harmony;
+        this.input = input;
     }
-
-    /// <summary>Initializes <see cref="OrganizeChest" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="OrganizeChest" /> class.</returns>
-    public static Feature Init(IModHelper helper) => OrganizeChest.instance ??= new OrganizeChest(helper);
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Patches
         this.harmony.Patch(
@@ -49,7 +48,7 @@ internal sealed class OrganizeChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Patches
         this.harmony.Unpatch(
@@ -68,7 +67,7 @@ internal sealed class OrganizeChest : Feature
 
         __instance ??= Game1.activeClickableMenu as ItemGrabMenu;
 
-        if (!Equals(__instance?.ItemsToGrabMenu.actualInventory, items))
+        if (!object.Equals(__instance?.ItemsToGrabMenu.actualInventory, items))
         {
             return true;
         }
@@ -105,7 +104,7 @@ internal sealed class OrganizeChest : Feature
         }
 
         BetterItemGrabMenu.Context.OrganizeItems(true);
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
         BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         Game1.playSound("Ship");
     }

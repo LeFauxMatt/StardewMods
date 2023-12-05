@@ -5,12 +5,14 @@
     <Description>Framework that adds new features to chests.</Description>
     <Version>2.9.0-alpha.2</Version>
     <EnableHarmony>true</EnableHarmony>
+    <BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
     <RootNamespace>StardewMods.BetterChests</RootNamespace>
     <UniqueId>furyx639.BetterChests</UniqueId>
     <UpdateKeys>Nexus:9791</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+    <PackageReference Include="SimpleInjector" Version="5.4.2"/>
     <Reference Include="HarmonyLib">
       <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
       <Private>false</Private>

@@ -5,15 +5,14 @@ using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Objects;
 
 /// <summary>Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.</summary>
-internal sealed class CollectItems : Feature
+internal sealed class CollectItems : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/CollectItems";
-
     private static readonly MethodBase DebrisCollect = AccessTools.Method(typeof(Debris), nameof(Debris.collect));
 
 #nullable disable
@@ -21,29 +20,31 @@ internal sealed class CollectItems : Feature
 #nullable enable
 
     private readonly PerScreen<List<StorageNode>> eligible = new(() => new());
+    private readonly IModEvents events;
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
 
-    private CollectItems(IModHelper helper)
+    /// <summary>Initializes a new instance of the <see cref="CollectItems" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    public CollectItems(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony)
+        : base(monitor, nameof(CollectItems), () => config.CollectItems is not FeatureOption.Disabled)
     {
-        this.helper = helper;
-        this.harmony = new(CollectItems.Id);
+        CollectItems.instance = this;
+        this.events = events;
+        this.harmony = harmony;
     }
 
     private static List<StorageNode> Eligible => CollectItems.instance.eligible.Value;
-
-    /// <summary>Initializes <see cref="CollectItems" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="CollectItems" /> class.</returns>
-    public static Feature Init(IModHelper helper) => CollectItems.instance ??= new(helper);
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         Configurator.StorageEdited += CollectItems.OnStorageEdited;
-        this.helper.Events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
-        this.helper.Events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
+        this.events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
+        this.events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
 
         // Patches
         this.harmony.Patch(
@@ -56,8 +57,8 @@ internal sealed class CollectItems : Feature
     {
         // Events
         Configurator.StorageEdited -= CollectItems.OnStorageEdited;
-        this.helper.Events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
-        this.helper.Events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
+        this.events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
+        this.events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
 
         // Patches
         this.harmony.Unpatch(
@@ -89,7 +90,10 @@ internal sealed class CollectItems : Feature
 
             item.resetState();
             storageObject.ClearNulls();
-            item = storage.StashItem(item, storage.StashToChestStacks is FeatureOption.Enabled);
+            item = storage.StashItem(
+                CollectItems.instance.Monitor,
+                item,
+                storage.StashToChestStacks is FeatureOption.Enabled);
 
             if (item is null)
             {
@@ -120,7 +124,7 @@ internal sealed class CollectItems : Feature
     private static void RefreshEligible()
     {
         CollectItems.Eligible.Clear();
-        foreach (var storage in Storages.FromPlayer(Game1.player, limit: 12))
+        foreach (var storage in StorageService.FromPlayer(Game1.player, limit: 12))
         {
             if (storage is not
                 {

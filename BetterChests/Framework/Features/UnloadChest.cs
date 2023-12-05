@@ -2,47 +2,50 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Globalization;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Helpers;
 using StardewValley.Locations;
 
 /// <summary>Unload a held chest's contents into another chest.</summary>
-internal sealed class UnloadChest : Feature
+internal sealed class UnloadChest : BaseFeature
 {
-#nullable disable
-    private static Feature instance;
-#nullable enable
+    private readonly IModEvents events;
+    private readonly IInputHelper input;
 
-    private readonly IModHelper helper;
-
-    private UnloadChest(IModHelper helper) => this.helper = helper;
-
-    /// <summary>Initializes <see cref="UnloadChest" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="UnloadChest" /> class.</returns>
-    public static Feature Init(IModHelper helper) => UnloadChest.instance ??= new UnloadChest(helper);
+    /// <summary>Initializes a new instance of the <see cref="UnloadChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public UnloadChest(IMonitor monitor, ModConfig config, IModEvents events, IInputHelper input)
+        : base(monitor, nameof(UnloadChest), () => config.UnloadChest is not FeatureOption.Disabled)
+    {
+        this.events = events;
+        this.input = input;
+    }
 
     /// <inheritdoc />
-    protected override void Activate() => this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+    protected override void Activate() => this.events.Input.ButtonPressed += this.OnButtonPressed;
 
     /// <inheritdoc />
-    protected override void Deactivate() => this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+    protected override void Deactivate() => this.events.Input.ButtonPressed -= this.OnButtonPressed;
 
     [EventPriority(EventPriority.Normal + 10)]
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
-            || this.helper.Input.IsSuppressed(e.Button)
-            || Storages.CurrentItem is null
+            || this.input.IsSuppressed(e.Button)
+            || StorageService.CurrentItem is null
                 or
                 {
                     UnloadChest: not FeatureOption.Enabled,
                 }
-            || Storages.CurrentItem.Data is not Storage storageObject
+            || StorageService.CurrentItem.Data is not Storage storageObject
             || (!storageObject.Inventory.HasAny()
-                && Storages.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
+                && StorageService.CurrentItem.UnloadChestCombine is not FeatureOption.Enabled)
             || (Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase)))
         {
@@ -51,7 +54,7 @@ internal sealed class UnloadChest : Feature
 
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-            || !Storages.TryGetOne(Game1.currentLocation, pos, out var toStorage)
+            || !StorageService.TryGetOne(Game1.currentLocation, pos, out var toStorage)
             || toStorage is not
             {
                 Data: Storage toStorageObject,
@@ -63,7 +66,7 @@ internal sealed class UnloadChest : Feature
         // Add source capacity to target
         var combined = false;
         if (toStorage.UnloadChestCombine is FeatureOption.Enabled
-            && Storages.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
+            && StorageService.CurrentItem.UnloadChestCombine is FeatureOption.Enabled)
         {
             var currentCapacity = toStorageObject.ActualCapacity;
             var addedCapacity = storageObject.ActualCapacity;
@@ -90,8 +93,8 @@ internal sealed class UnloadChest : Feature
                 continue;
             }
 
-            Log.Trace(
-                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {Storages.CurrentItem}, To: {toStorage}");
+            this.Monitor.Log(
+                $"UnloadChest: {{ Item: {item.Name}, Quantity: {stack.ToString(CultureInfo.InvariantCulture)}, From: {StorageService.CurrentItem}, To: {toStorage}");
 
             storageObject.Inventory[index] = null;
         }
@@ -107,6 +110,6 @@ internal sealed class UnloadChest : Feature
         }
 
         CarryChest.CheckForOverburdened();
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
     }
 }

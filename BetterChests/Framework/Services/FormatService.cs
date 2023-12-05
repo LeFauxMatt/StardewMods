@@ -1,17 +1,24 @@
-namespace StardewMods.BetterChests.Framework;
+namespace StardewMods.BetterChests.Framework.Services;
 
 using System.Globalization;
 using StardewMods.Common.Enums;
 
 /// <summary>Helper methods to convert between different text formats.</summary>
-internal static class Formatting
+internal sealed class FormatService
 {
 #nullable disable
-
-    /// <summary>Gets or sets SMAPI helper for providing translations.</summary>
-    public static ITranslationHelper Translations { get; set; }
-
+    private static FormatService instance;
 #nullable enable
+
+    private readonly ITranslationHelper translationHelper;
+
+    /// <summary>Initializes a new instance of the <see cref="FormatService" /> class.</summary>
+    /// <param name="translationHelper">SMAPI helper for providing translations.</param>
+    public FormatService(ITranslationHelper translationHelper)
+    {
+        FormatService.instance = this;
+        this.translationHelper = translationHelper;
+    }
 
     /// <summary>Formats an area value using localized text when available.</summary>
     /// <param name="value">The area value to format.</param>
@@ -148,7 +155,7 @@ internal static class Formatting
             "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => TokenParser
                 .ParseText(buildingData.Name),
             "Fridge" => I18n.Storage_Fridge_Name(),
-            _ => Formatting.Translations.Get($"storage.{value}.name").Default(value),
+            _ => FormatService.instance.translationHelper.Get($"storage.{value}.name").Default(value),
         };
 
     /// <summary>Formats a storage tooltip using localized text when available.</summary>
@@ -167,6 +174,6 @@ internal static class Formatting
             "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) =>
                 TokenParser.ParseText(buildingData.Description),
             "Fridge" => I18n.Storage_Fridge_Tooltip(),
-            _ => Formatting.Translations.Get($"storage.{value}.tooltip").Default(value),
+            _ => FormatService.instance.translationHelper.Get($"storage.{value}.tooltip").Default(value),
         };
 }

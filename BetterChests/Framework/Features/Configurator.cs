@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Enums;
@@ -14,11 +15,9 @@ using StardewMods.Common.Extensions;
 using StardewValley.Menus;
 
 /// <summary>Configure storages individually.</summary>
-internal sealed class Configurator : Feature
+internal sealed class Configurator : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/Configurator";
-
-    private static readonly MethodBase ItemGrabMenuRepositionSideButtons = AccessTools.Method(
+    private static readonly MethodBase ItemGrabMenuRepositionSideButtons = AccessTools.DeclaredMethod(
         typeof(ItemGrabMenu),
         nameof(ItemGrabMenu.RepositionSideButtons));
 
@@ -30,22 +29,49 @@ internal sealed class Configurator : Feature
     private readonly PerScreen<ClickableTextureComponent> configButton;
     private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
     private readonly PerScreen<StorageNode?> currentStorage = new();
+    private readonly IModEvents events;
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
-    private readonly IManifest modManifest;
+    private readonly IInputHelper input;
+    private readonly IManifest manifest;
+    private readonly ITranslationHelper translation;
 
     private bool isActive;
     private EventHandler<StorageNode>? storageEdited;
 
-    private Configurator(IModHelper helper, ModConfig config, IManifest manifest)
+    /// <summary>Initializes a new instance of the <see cref="Configurator" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    /// <param name="translation">Dependency used for accessing translations.</param>
+    public Configurator(
+        IMonitor monitor,
+        ModConfig config,
+        IManifest manifest,
+        IModEvents events,
+        IGameContentHelper gameContent,
+        Harmony harmony,
+        IInputHelper input,
+        ITranslationHelper translation)
+        : base(
+            monitor,
+            nameof(Configurator),
+            () => config.Configurator is not FeatureOption.Disabled && IntegrationService.GMCM.IsLoaded)
     {
-        this.helper = helper;
+        Configurator.instance = this;
         this.config = config;
-        this.harmony = new(Configurator.Id);
+        this.manifest = manifest;
+        this.events = events;
+        this.harmony = harmony;
+        this.input = input;
+        this.translation = translation;
         this.configButton = new(
             () => new(
                 new(0, 0, Game1.tileSize, Game1.tileSize),
-                helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+                gameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
                 new(0, 0, 16, 16),
                 Game1.pixelZoom)
             {
@@ -53,15 +79,6 @@ internal sealed class Configurator : Feature
                 hoverText = I18n.Button_Configure_Name(),
                 myID = 42069,
             });
-
-        this.modManifest = manifest;
-    }
-
-    /// <summary>Raised after an <see cref="StorageNode" /> has been edited.</summary>
-    public static event EventHandler<StorageNode> StorageEdited
-    {
-        add => Configurator.instance.storageEdited += value;
-        remove => Configurator.instance.storageEdited -= value;
     }
 
     private static ClickableTextureComponent ConfigButton => Configurator.instance.configButton.Value;
@@ -78,22 +95,21 @@ internal sealed class Configurator : Feature
         set => this.currentStorage.Value = value;
     }
 
-    /// <summary>Initializes <see cref="Configurator" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <param name="manifest">A manifest to describe the mod.</param>
-    /// <returns>Returns an instance of the <see cref="Configurator" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config, IManifest manifest) =>
-        Configurator.instance ??= new(helper, config, manifest);
+    /// <summary>Raised after an <see cref="StorageNode" /> has been edited.</summary>
+    public static event EventHandler<StorageNode> StorageEdited
+    {
+        add => Configurator.instance.storageEdited += value;
+        remove => Configurator.instance.storageEdited -= value;
+    }
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.Display.MenuChanged += this.OnMenuChanged;
+        this.events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Patches
         this.harmony.Patch(
@@ -105,10 +121,10 @@ internal sealed class Configurator : Feature
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Display.MenuChanged -= this.OnMenuChanged;
-        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.Display.MenuChanged -= this.OnMenuChanged;
+        this.events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Patches
         this.harmony.Unpatch(
@@ -189,29 +205,31 @@ internal sealed class Configurator : Feature
             Game1.activeClickableMenu = new ItemSelectionMenu(
                 BetterItemGrabMenu.Context,
                 BetterItemGrabMenu.Context.FilterMatcher,
-                this.helper.Input,
-                this.helper.Translation);
+                this.input,
+                this.translation);
         }
         else
         {
-            Config.SetupSpecificConfig(this.modManifest, BetterItemGrabMenu.Context, true);
-            Integrations.GMCM.Api!.OpenModMenu(this.modManifest);
+            ConfigService.SetupSpecificConfig(this.manifest, BetterItemGrabMenu.Context, true);
+            IntegrationService.GMCM.Api!.OpenModMenu(this.manifest);
             this.isActive = true;
         }
 
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.config.ControlScheme.Configure.JustPressed() || Storages.CurrentItem is null)
+        if (!Context.IsPlayerFree
+            || !this.config.ControlScheme.Configure.JustPressed()
+            || StorageService.CurrentItem is null)
         {
             return;
         }
 
-        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.Configure);
-        Config.SetupSpecificConfig(this.modManifest, Storages.CurrentItem, true);
-        Integrations.GMCM.Api!.OpenModMenu(this.modManifest);
+        this.input.SuppressActiveKeybinds(this.config.ControlScheme.Configure);
+        ConfigService.SetupSpecificConfig(this.manifest, StorageService.CurrentItem, true);
+        IntegrationService.GMCM.Api!.OpenModMenu(this.manifest);
         this.isActive = true;
     }
 
@@ -237,7 +255,7 @@ internal sealed class Configurator : Feature
         }
 
         this.isActive = false;
-        Config.SetupMainConfig();
+        ConfigService.SetupMainConfig();
 
         if (e.NewMenu?.GetType().Name != "ModConfigMenu")
         {

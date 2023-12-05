@@ -3,44 +3,57 @@ namespace StardewMods.BetterChests.Framework.Features;
 using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.Common.Enums;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Restricts what items can be added into a chest.</summary>
-internal sealed class FilterItems : Feature
+internal sealed class FilterItems : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/FilterItems";
-
-    private static readonly MethodBase ChestAddItem = AccessTools.Method(typeof(Chest), nameof(Chest.addItem));
+    private static readonly MethodBase ChestAddItem = AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.addItem));
 
 #nullable disable
     private static FilterItems instance;
 #nullable enable
+    private readonly IModEvents events;
 
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
+    private readonly IReflectionHelper reflection;
+    private readonly IModRegistry registry;
 
     private MethodBase? storeMethod;
 
-    private FilterItems(IModHelper helper)
+    /// <summary>Initializes a new instance of the <see cref="FilterItems" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="registry">Dependency used for fetching metadata about loaded mods.</param>
+    /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
+    public FilterItems(
+        IMonitor monitor,
+        ModConfig config,
+        IModEvents events,
+        Harmony harmony,
+        IModRegistry registry,
+        IReflectionHelper reflection)
+        : base(monitor, nameof(FilterItems), () => config.FilterItems is not FeatureOption.Disabled)
     {
-        this.helper = helper;
-        this.harmony = new(FilterItems.Id);
+        FilterItems.instance = this;
+        this.events = events;
+        this.harmony = harmony;
+        this.registry = registry;
+        this.reflection = reflection;
     }
 
-    private static IReflectionHelper Reflection => FilterItems.instance.helper.Reflection;
-
-    /// <summary>Initializes <see cref="FilterItems" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="FilterItems" /> class.</returns>
-    public static Feature Init(IModHelper helper) => FilterItems.instance ??= new(helper);
+    private static IReflectionHelper Reflection => FilterItems.instance.reflection;
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Display.MenuChanged += FilterItems.OnMenuChanged;
+        this.events.Display.MenuChanged += FilterItems.OnMenuChanged;
 
         // Patches
         this.harmony.Patch(
@@ -48,12 +61,12 @@ internal sealed class FilterItems : Feature
             new(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
 
         // Integrations
-        if (!Integrations.Automate.IsLoaded)
+        if (!IntegrationService.Automate.IsLoaded)
         {
             return;
         }
 
-        this.storeMethod = this.helper.ModRegistry.Get(Integrations.Automate.UniqueId)
+        this.storeMethod = this.registry.Get(IntegrationService.Automate.UniqueId)
             ?.GetType()
             .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
             ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
@@ -68,7 +81,7 @@ internal sealed class FilterItems : Feature
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Display.MenuChanged -= FilterItems.OnMenuChanged;
+        this.events.Display.MenuChanged -= FilterItems.OnMenuChanged;
 
         // Patches
         this.harmony.Unpatch(
@@ -89,7 +102,7 @@ internal sealed class FilterItems : Feature
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
         var item = FilterItems.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !Storages.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
+        return !StorageService.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -97,7 +110,7 @@ internal sealed class FilterItems : Feature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!Storages.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
+        if (!StorageService.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
         {
             return true;
         }

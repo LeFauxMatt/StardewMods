@@ -6,50 +6,49 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Show stats to the side of a chest.</summary>
-internal sealed class ChestInfo : Feature
+internal sealed class ChestInfo : BaseFeature
 {
-#nullable disable
-    private static Feature instance;
-#nullable enable
-
     private readonly ModConfig config;
     private readonly PerScreen<IList<Tuple<Point, Point>>> dims = new(() => new List<Tuple<Point, Point>>());
-    private readonly IModHelper helper;
+    private readonly IModEvents events;
 
     private readonly PerScreen<IList<KeyValuePair<string, string>>> info =
         new(() => new List<KeyValuePair<string, string>>());
 
-    private ChestInfo(IModHelper helper, ModConfig config)
+    private readonly IInputHelper input;
+
+    /// <summary>Initializes a new instance of the <see cref="ChestInfo" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public ChestInfo(IMonitor monitor, ModConfig config, IModEvents events, IInputHelper input)
+        : base(monitor, nameof(ChestInfo), () => config.ChestInfo is not FeatureOption.Disabled)
     {
-        this.helper = helper;
         this.config = config;
+        this.events = events;
+        this.input = input;
     }
 
     private IList<Tuple<Point, Point>> Dims => this.dims.Value;
 
     private IList<KeyValuePair<string, string>> Info => this.info.Value;
 
-    /// <summary>Initializes <see cref="ChestInfo" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="ChestInfo" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) =>
-        ChestInfo.instance ??= new ChestInfo(helper, config);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+        this.events.Display.MenuChanged += this.OnMenuChanged;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.Player.InventoryChanged += this.OnInventoryChanged;
     }
 
     /// <inheritdoc />
@@ -57,9 +56,9 @@ internal sealed class ChestInfo : Feature
     {
         // Events
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
-        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+        this.events.Display.MenuChanged += this.OnMenuChanged;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.Player.InventoryChanged -= this.OnInventoryChanged;
     }
 
     private static IEnumerable<KeyValuePair<string, string>> GetChestInfo(StorageNode storage)
@@ -86,28 +85,28 @@ internal sealed class ChestInfo : Feature
             {
                 Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
             }:
-                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Chest")));
+                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Junimo Chest")));
                 break;
             case ChestStorage
             {
                 Chest.fridge.Value: true,
             }:
-                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Fridge")));
+                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Mini-Fridge")));
                 break;
             case ChestStorage
             {
                 Chest.SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
             }:
-                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Shipping Bin")));
+                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Mini-Shipping Bin")));
                 break;
             case ChestStorage:
-                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Chest")));
+                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Chest")));
                 break;
             case JunimoHutStorage:
-                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Hut")));
+                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Junimo Hut")));
                 break;
             case ShippingBinStorage:
-                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Shipping Bin")));
+                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Shipping Bin")));
                 break;
             case FridgeStorage:
                 info.Add(new(I18n.ChestInfo_Type(), I18n.Storage_Fridge_Name()));
@@ -180,7 +179,7 @@ internal sealed class ChestInfo : Feature
             ? FeatureOption.Enabled
             : FeatureOption.Disabled;
 
-        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.ToggleInfo);
+        this.input.SuppressActiveKeybinds(this.config.ControlScheme.ToggleInfo);
     }
 
     private void OnDrawingMenu(object? sender, SpriteBatch b)

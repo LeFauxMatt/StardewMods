@@ -7,11 +7,10 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
 /// <summary>Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.</summary>
-internal sealed class ChestMenuTabs : Feature
+internal sealed class ChestMenuTabs : BaseFeature
 {
 #nullable disable
     private static ChestMenuTabs instance;
@@ -20,36 +19,61 @@ internal sealed class ChestMenuTabs : Feature
     private readonly Lazy<Dictionary<string, ClickableTextureComponent>> allTabs;
     private readonly ModConfig config;
     private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
-    private readonly IModHelper helper;
+    private readonly IDataHelper data;
+    private readonly IModEvents events;
+    private readonly IInputHelper input;
     private readonly PerScreen<ItemMatcher> itemMatcher = new(() => new(true));
+    private readonly IMonitor monitor;
     private readonly PerScreen<int> tabIndex = new(() => -1);
     private readonly PerScreen<List<ClickableTextureComponent>> tabs = new(() => new());
+    private readonly ITranslationHelper translation;
 
-    private ChestMenuTabs(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="ChestMenuTabs" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="data">Dependency used for managing access to local mod data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    /// <param name="translation">Dependency used for accessing translations.</param>
+    public ChestMenuTabs(
+        IMonitor monitor,
+        ModConfig config,
+        IDataHelper data,
+        IModEvents events,
+        IGameContentHelper gameContent,
+        IInputHelper input,
+        ITranslationHelper translation)
+        : base(monitor, nameof(ChestMenuTabs), () => config.ChestMenuTabs is not FeatureOption.Disabled)
     {
-        this.helper = helper;
+        ChestMenuTabs.instance = this;
+        this.monitor = monitor;
         this.config = config;
+        this.data = data;
+        this.events = events;
+        this.input = input;
+        this.translation = translation;
         this.allTabs = new(
             () =>
             {
                 var allTabData = new Dictionary<string, ClickableTextureComponent>();
-                var tabData = this.helper.GameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
+                var tabData = gameContent.Load<Dictionary<string, string>>("furyx639.BetterChests/Tabs");
                 foreach (var (name, info) in tabData)
                 {
-                    var data = info.Split('/');
-                    var hoverText = !string.IsNullOrWhiteSpace(data[0])
-                        ? data[0]
-                        : helper.Translation.Get($"tabs.{name}.name").Default(name);
+                    var parts = info.Split('/');
+                    var hoverText = !string.IsNullOrWhiteSpace(parts[0])
+                        ? parts[0]
+                        : this.translation.Get($"tabs.{name}.name").Default(name);
 
                     allTabData.Add(
                         name,
                         new(
-                            data[3],
+                            parts[3],
                             new(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
                             string.Empty,
                             hoverText,
-                            Game1.content.Load<Texture2D>(data[1]),
-                            new(16 * int.Parse(data[2], CultureInfo.InvariantCulture), 4, 16, 12),
+                            Game1.content.Load<Texture2D>(parts[1]),
+                            new(16 * int.Parse(parts[2], CultureInfo.InvariantCulture), 4, 16, 12),
                             Game1.pixelZoom));
                 }
 
@@ -76,7 +100,7 @@ internal sealed class ChestMenuTabs : Feature
             this.ItemMatcher.Clear();
             if (value == -1 || !this.Components.Any())
             {
-                Log.Trace("Switching tab to None");
+                this.monitor.Log("Switching tab to None");
                 BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
                 return;
             }
@@ -88,7 +112,7 @@ internal sealed class ChestMenuTabs : Feature
                 this.ItemMatcher.Add(tag);
             }
 
-            Log.Trace($"Switching tab to {tab.hoverText}");
+            this.monitor.Log($"Switching tab to {tab.hoverText}");
             BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
         }
     }
@@ -99,7 +123,7 @@ internal sealed class ChestMenuTabs : Feature
     {
         get
         {
-            var tabData = this.helper.Data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
+            var tabData = this.data.ReadJsonFile<Dictionary<string, string>>("assets/tabs.json");
             if (tabData is not null && tabData.Any())
             {
                 return tabData;
@@ -137,28 +161,22 @@ internal sealed class ChestMenuTabs : Feature
                 { "Seeds", @"/furyx639.BetterChests\\Tabs\\Texture/7/category_seeds category_fertilizer" },
             };
 
-            this.helper.Data.WriteJsonFile("assets/tabs.json", tabData);
+            this.data.WriteJsonFile("assets/tabs.json", tabData);
 
             return tabData;
         }
     }
-
-    /// <summary>Initializes <see cref="ChestMenuTabs" /> class.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="ChestMenuTabs" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) => ChestMenuTabs.instance ??= new(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         BetterItemGrabMenu.DrawingMenu += this.OnDrawingMenu;
-        this.helper.Events.Content.AssetRequested += this.OnAssetRequested;
-        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        this.events.Content.AssetRequested += this.OnAssetRequested;
+        this.events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
     }
 
     /// <inheritdoc />
@@ -166,11 +184,11 @@ internal sealed class ChestMenuTabs : Feature
     {
         // Events
         BetterItemGrabMenu.DrawingMenu -= this.OnDrawingMenu;
-        this.helper.Events.Content.AssetRequested -= this.OnAssetRequested;
-        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.helper.Events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
+        this.events.Content.AssetRequested -= this.OnAssetRequested;
+        this.events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
     }
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
@@ -210,7 +228,7 @@ internal sealed class ChestMenuTabs : Feature
                 return;
         }
 
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -223,13 +241,13 @@ internal sealed class ChestMenuTabs : Feature
         if (this.config.ControlScheme.PreviousTab.JustPressed())
         {
             this.Index = this.Index == -1 ? this.Components.Count - 1 : this.Index - 1;
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.PreviousTab);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.PreviousTab);
         }
 
         if (this.config.ControlScheme.NextTab.JustPressed())
         {
             this.Index = this.Index == this.Components.Count - 1 ? -1 : this.Index + 1;
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.NextTab);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.NextTab);
         }
     }
 
@@ -346,7 +364,7 @@ internal sealed class ChestMenuTabs : Feature
             _ => null,
         };
 
-        if (menu is not null && ReferenceEquals(menu, this.CurrentMenu))
+        if (menu is not null && object.ReferenceEquals(menu, this.CurrentMenu))
         {
             return;
         }
@@ -373,7 +391,7 @@ internal sealed class ChestMenuTabs : Feature
 
             if (string.IsNullOrWhiteSpace(tab.hoverText))
             {
-                tab.hoverText = this.helper.Translation.Get($"tab.{name}.Name").Default(name);
+                tab.hoverText = this.translation.Get($"tab.{name}.Name").Default(name);
             }
 
             this.Components.Add(tab);

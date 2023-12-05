@@ -95,7 +95,7 @@ internal abstract class Storage : IStorageData
         get
         {
             var source = this.Source;
-            while (source is Storage parent && !ReferenceEquals(this, parent))
+            while (source is Storage parent && !object.ReferenceEquals(this, parent))
             {
                 source = parent.Source;
             }

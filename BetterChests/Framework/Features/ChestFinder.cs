@@ -5,24 +5,21 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
-using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
 /// <summary>Search for which chests have the item you're looking for.</summary>
-internal sealed class ChestFinder : Feature
+internal sealed class ChestFinder : BaseFeature
 {
     private const int MaxTimeOut = 20;
 
-#nullable disable
-    private static Feature instance;
-#nullable enable
-
     private readonly ModConfig config;
     private readonly PerScreen<int> currentIndex = new();
+    private readonly IModEvents events;
     private readonly PerScreen<IList<StorageNode>> foundStorages = new(() => new List<StorageNode>());
-    private readonly IModHelper helper;
+    private readonly IInputHelper input;
     private readonly PerScreen<ItemMatcher?> itemMatcher = new();
     private readonly PerScreen<SearchBar> searchBar = new(() => new());
     private readonly PerScreen<string> searchText = new(() => string.Empty);
@@ -30,10 +27,17 @@ internal sealed class ChestFinder : Feature
     private readonly PerScreen<IList<object>> storageContexts = new(() => new List<object>());
     private readonly PerScreen<int> timeOut = new();
 
-    private ChestFinder(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="ChestFinder" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public ChestFinder(IMonitor monitor, ModConfig config, IModEvents events, IInputHelper input)
+        : base(monitor, nameof(ChestFinder), () => config.ChestFinder)
     {
-        this.helper = helper;
         this.config = config;
+        this.events = events;
+        this.input = input;
     }
 
     private int CurrentIndex
@@ -68,58 +72,51 @@ internal sealed class ChestFinder : Feature
         set => this.timeOut.Value = value;
     }
 
-    /// <summary>Initializes <see cref="ChestFinder" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="ChestFinder" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) =>
-        ChestFinder.instance ??= new ChestFinder(helper, config);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Display.RenderedHud += this.OnRenderedHud;
-        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.helper.Events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
-        this.helper.Events.Player.Warped += this.OnWarped;
+        this.events.Display.RenderedHud += this.OnRenderedHud;
+        this.events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.World.ChestInventoryChanged += this.OnChestInventoryChanged;
+        this.events.Player.Warped += this.OnWarped;
 
         // Integrations
-        if (!Integrations.ToolbarIcons.IsLoaded)
+        if (!IntegrationService.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        Integrations.ToolbarIcons.Api.AddToolbarIcon(
+        IntegrationService.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.FindChest",
             "furyx639.BetterChests/Icons",
             new(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
 
-        Integrations.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
+        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Display.RenderedHud -= this.OnRenderedHud;
-        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.helper.Events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
-        this.helper.Events.Player.Warped -= this.OnWarped;
+        this.events.Display.RenderedHud -= this.OnRenderedHud;
+        this.events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
+        this.events.Player.Warped -= this.OnWarped;
 
         // Integrations
-        if (!Integrations.ToolbarIcons.IsLoaded)
+        if (!IntegrationService.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
-        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        IntegrationService.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
+        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -144,7 +141,7 @@ internal sealed class ChestFinder : Feature
 
         if (Game1.activeClickableMenu is SearchBar)
         {
-            this.helper.Input.Suppress(e.Button);
+            this.input.Suppress(e.Button);
         }
     }
 
@@ -158,7 +155,7 @@ internal sealed class ChestFinder : Feature
                 this.SearchBar.SetFocus();
             }
 
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.FindChest);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.FindChest);
             return;
         }
 
@@ -176,7 +173,7 @@ internal sealed class ChestFinder : Feature
                 storageObject.ShowMenu();
             }
 
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
         }
 
         if (!this.ShowSearch && Game1.activeClickableMenu != this.SearchBar)
@@ -191,7 +188,7 @@ internal sealed class ChestFinder : Feature
             this.SearchText = string.Empty;
             this.ItemMatcher.Clear();
             this.FoundStorages.Clear();
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
         }
 
         if (this.config.ControlScheme.OpenFoundChest.JustPressed())
@@ -207,7 +204,7 @@ internal sealed class ChestFinder : Feature
                 storageObject.ShowMenu();
             }
 
-            this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
+            this.input.SuppressActiveKeybinds(this.config.ControlScheme.CloseChestFinder);
         }
     }
 
@@ -356,7 +353,7 @@ internal sealed class ChestFinder : Feature
 
         if (this.TimeOut > 0 && --this.TimeOut == 0)
         {
-            Log.Trace($"ChestFinder: {this.SearchText}");
+            this.Monitor.Log($"ChestFinder: {this.SearchText}");
             this.ItemMatcher.StringValue = this.SearchText;
             this.RefreshStorages();
         }
@@ -390,7 +387,7 @@ internal sealed class ChestFinder : Feature
         }
 
         var storages = new List<StorageNode>();
-        foreach (var storage in Storages.CurrentLocation)
+        foreach (var storage in StorageService.CurrentLocation)
         {
             if (storage is not
                 {

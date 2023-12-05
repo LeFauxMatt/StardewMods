@@ -3,27 +3,39 @@
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
+using StardewMods.Common.Enums;
 using StardewValley.Menus;
 
 /// <summary>Transfer all items into or out from a chest.</summary>
-internal sealed class TransferItems : Feature
+internal sealed class TransferItems : BaseFeature
 {
-#nullable disable
-    private static Feature instance;
-#nullable enable
-
     private readonly PerScreen<ClickableTextureComponent> downArrow;
-    private readonly IModHelper helper;
+    private readonly IModEvents events;
+    private readonly IInputHelper input;
     private readonly PerScreen<ClickableTextureComponent> upArrow;
 
-    private TransferItems(IModHelper helper)
+    /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public TransferItems(
+        IMonitor monitor,
+        ModConfig config,
+        IModEvents events,
+        IGameContentHelper gameContent,
+        IInputHelper input)
+        : base(monitor, nameof(TransferItems), () => config.TransferItems is not FeatureOption.Disabled)
     {
-        this.helper = helper;
+        this.events = events;
+        this.input = input;
         this.downArrow = new(
             () => new(
                 new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-                helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+                gameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
                 new(84, 0, 7, 16),
                 Game1.pixelZoom)
             {
@@ -34,7 +46,7 @@ internal sealed class TransferItems : Feature
         this.upArrow = new(
             () => new(
                 new(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-                helper.GameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
+                gameContent.Load<Texture2D>("furyx639.BetterChests/Icons"),
                 new(100, 0, 7, 16),
                 Game1.pixelZoom)
             {
@@ -47,19 +59,14 @@ internal sealed class TransferItems : Feature
 
     private ClickableTextureComponent UpArrow => this.upArrow.Value;
 
-    /// <summary>Initializes <see cref="TransferItems" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="TransferItems" /> class.</returns>
-    public static Feature Init(IModHelper helper) => TransferItems.instance ??= new TransferItems(helper);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         BetterItemGrabMenu.Constructing += TransferItems.OnConstructing;
-        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Display.MenuChanged += this.OnMenuChanged;
+        this.events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
@@ -67,9 +74,9 @@ internal sealed class TransferItems : Feature
     {
         // Events
         BetterItemGrabMenu.Constructing -= TransferItems.OnConstructing;
-        this.helper.Events.Display.MenuChanged += this.OnMenuChanged;
-        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Display.MenuChanged += this.OnMenuChanged;
+        this.events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
@@ -77,7 +84,7 @@ internal sealed class TransferItems : Feature
         if (BetterItemGrabMenu.TopPadding > 0
             || itemGrabMenu.context is null
             || itemGrabMenu.shippingBin
-            || !Storages.TryGetOne(itemGrabMenu.context, out _))
+            || !StorageService.TryGetOne(itemGrabMenu.context, out _))
         {
             return;
         }
@@ -93,7 +100,7 @@ internal sealed class TransferItems : Feature
                 { } context,
                 shippingBin: false,
             }
-            || !Storages.TryGetOne(context, out var storage)
+            || !StorageService.TryGetOne(context, out var storage)
             || storage is not
             {
                 Data: Storage storageObject,
@@ -127,7 +134,7 @@ internal sealed class TransferItems : Feature
                 { } context,
                 shippingBin: false,
             }
-            || !Storages.TryGetOne(context, out var storage)
+            || !StorageService.TryGetOne(context, out var storage)
             || storage is not
             {
                 Data: Storage storageObject,
@@ -164,14 +171,14 @@ internal sealed class TransferItems : Feature
         if (this.DownArrow.containsPoint(x, y))
         {
             TransferItems.TransferDown();
-            this.helper.Input.Suppress(e.Button);
+            this.input.Suppress(e.Button);
             return;
         }
 
         if (this.UpArrow.containsPoint(x, y))
         {
             TransferItems.TransferUp();
-            this.helper.Input.Suppress(e.Button);
+            this.input.Suppress(e.Button);
         }
     }
 
@@ -185,7 +192,7 @@ internal sealed class TransferItems : Feature
                 { } itemsToGrabMenu,
                 shippingBin: false,
             }
-            || !Storages.TryGetOne(context, out _))
+            || !StorageService.TryGetOne(context, out _))
         {
             this.DownArrow.visible = false;
             this.UpArrow.visible = false;

@@ -9,10 +9,8 @@ using StardewModdingAPI.Events;
 using StardewValley.Menus;
 
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
-internal sealed class SlotLock : Feature
+internal sealed class SlotLock : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/SlotLock";
-
     private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(
         typeof(InventoryMenu),
         nameof(InventoryMenu.draw),
@@ -23,28 +21,32 @@ internal sealed class SlotLock : Feature
 #nullable enable
 
     private readonly ModConfig config;
+    private readonly IModEvents events;
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
+    private readonly IInputHelper input;
 
-    private SlotLock(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="SlotLock" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public SlotLock(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+        : base(monitor, nameof(SlotLock), () => config.SlotLock)
     {
-        this.helper = helper;
+        SlotLock.instance = this;
         this.config = config;
-        this.harmony = new(SlotLock.Id);
+        this.events = events;
+        this.harmony = harmony;
+        this.input = input;
     }
-
-    /// <summary>Initializes <see cref="SlotLock" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="SlotLock" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) => SlotLock.instance ??= new(helper, config);
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Harmony
         this.harmony.Patch(
@@ -56,8 +58,8 @@ internal sealed class SlotLock : Feature
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Harmony
         this.harmony.Unpatch(
@@ -138,7 +140,7 @@ internal sealed class SlotLock : Feature
             item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
         }
 
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -190,6 +192,6 @@ internal sealed class SlotLock : Feature
             item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
         }
 
-        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.LockSlot);
+        this.input.SuppressActiveKeybinds(this.config.ControlScheme.LockSlot);
     }
 }

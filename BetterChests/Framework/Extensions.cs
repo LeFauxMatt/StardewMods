@@ -4,9 +4,9 @@ using System.Globalization;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Features;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewValley.Locations;
@@ -33,7 +33,7 @@ internal static class Extensions
             0,
             8,
             1,
-            Formatting.ChestCapacity);
+            FormatService.ChestCapacity);
 
     /// <summary>Add a distance option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -58,7 +58,7 @@ internal static class Extensions
             (int)FeatureOptionRange.Default,
             (int)FeatureOptionRange.World,
             1,
-            Formatting.Distance);
+            FormatService.Distance);
 
     /// <summary>Add a feature option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -81,7 +81,7 @@ internal static class Extensions
             name,
             tooltip,
             FeatureOptionExtensions.GetNames(),
-            Formatting.Option);
+            FormatService.Option);
 
     /// <summary>Add a feature option range at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -105,7 +105,7 @@ internal static class Extensions
             name,
             tooltip,
             FeatureOptionRangeExtensions.GetNames(),
-            Formatting.Range);
+            FormatService.Range);
 
     /// <summary>Gets context tags from an <see cref="Item" /> with extended tag set.</summary>
     /// <param name="item">The item to get context tags from.</param>
@@ -179,17 +179,17 @@ internal static class Extensions
             items,
             (i1, i2) =>
             {
-                if (ReferenceEquals(i2, null))
+                if (object.ReferenceEquals(i2, null))
                 {
                     return -1;
                 }
 
-                if (ReferenceEquals(i1, null))
+                if (object.ReferenceEquals(i1, null))
                 {
                     return 1;
                 }
 
-                if (ReferenceEquals(i1, i2))
+                if (object.ReferenceEquals(i1, i2))
                 {
                     return 0;
                 }
@@ -267,10 +267,11 @@ internal static class Extensions
 
     /// <summary>Stashes an item into storage based on categorization and stack settings.</summary>
     /// <param name="storage">The storage to stash an item into.</param>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="item">The item to stash.</param>
     /// <param name="existingStacks">Whether to stash into stackable items or based on categorization.</param>
     /// <returns>Returns the <see cref="Item" /> if not all could be stashed or null if successful.</returns>
-    public static Item? StashItem(this StorageNode storage, Item item, bool existingStacks = false)
+    public static Item? StashItem(this StorageNode storage, IMonitor monitor, Item item, bool existingStacks = false)
     {
         // Disallow stashing of any Chest.
         if (storage is not
@@ -296,7 +297,7 @@ internal static class Extensions
 
         if (tmp is null || stack != item.Stack)
         {
-            Log.Trace(
+            monitor.Log(
                 $"StashItem: {{ Item: {item.Name}, Quantity: {Math.Max(1, stack - item.Stack).ToString(CultureInfo.InvariantCulture)}, To: {storage}");
         }
 

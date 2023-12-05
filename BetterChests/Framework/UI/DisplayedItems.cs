@@ -66,13 +66,6 @@ internal sealed class DisplayedItems
         this.RefreshItems();
     }
 
-    /// <summary>Raised after the displayed items is refreshed.</summary>
-    public event EventHandler<List<Item>> ItemsRefreshed
-    {
-        add => this.itemsRefreshed += value;
-        remove => this.itemsRefreshed -= value;
-    }
-
     /// <summary>Gets the items displayed in the inventory menu.</summary>
     public IList<Item> Items => this.ActualInventory.Any() ? this.items : Array.Empty<Item>();
 
@@ -109,6 +102,13 @@ internal sealed class DisplayedItems
     private ClickableTextureComponent DownArrow => this.downArrow.Value;
 
     private ClickableTextureComponent UpArrow => this.upArrow.Value;
+
+    /// <summary>Raised after the displayed items is refreshed.</summary>
+    public event EventHandler<List<Item>> ItemsRefreshed
+    {
+        add => this.itemsRefreshed += value;
+        remove => this.itemsRefreshed -= value;
+    }
 
     /// <summary>Adds a <see cref="ItemMatcher" /> to highlight inventory.</summary>
     /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>

@@ -68,6 +68,23 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
     public IStorageData Parent { get; set; }
 
     /// <inheritdoc />
+    public int CompareTo(StorageNode? other)
+    {
+        // Sort this before null values
+        if (other is null)
+        {
+            return -1;
+        }
+
+        if (other == this || this.StashToChestPriority == other.StashToChestPriority)
+        {
+            return 0;
+        }
+
+        return -this.StashToChestPriority.CompareTo(other.StashToChestPriority);
+    }
+
+    /// <inheritdoc />
     public FeatureOption AutoOrganize
     {
         get =>
@@ -474,23 +491,6 @@ internal sealed class StorageNode : IStorageData, IComparable<StorageNode>
                 _ => this.Data.UnloadChestCombine,
             };
         set => this.Data.UnloadChestCombine = value;
-    }
-
-    /// <inheritdoc />
-    public int CompareTo(StorageNode? other)
-    {
-        // Sort this before null values
-        if (other is null)
-        {
-            return -1;
-        }
-
-        if (other == this || this.StashToChestPriority == other.StashToChestPriority)
-        {
-            return 0;
-        }
-
-        return -this.StashToChestPriority.CompareTo(other.StashToChestPriority);
     }
 
     /// <summary>Tests if a <see cref="Item" /> matches the <see cref="IStorageData.FilterItemsList" /> condition.</summary>

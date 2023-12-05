@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
@@ -12,44 +13,43 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Allows a chest to be opened while in the farmer's inventory.</summary>
-internal sealed class OpenHeldChest : Feature
+internal sealed class OpenHeldChest : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/OpenHeldChest";
+    private static readonly MethodBase ChestAddItem = AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.addItem));
 
-    private static readonly MethodBase ChestAddItem = AccessTools.Method(typeof(Chest), nameof(Chest.addItem));
-
-    private static readonly MethodBase ChestPerformToolAction = AccessTools.Method(
+    private static readonly MethodBase ChestPerformToolAction = AccessTools.DeclaredMethod(
         typeof(Chest),
         nameof(Chest.performToolAction));
 
-    private static readonly MethodBase InventoryMenuHighlightAllItems = AccessTools.Method(
+    private static readonly MethodBase InventoryMenuHighlightAllItems = AccessTools.DeclaredMethod(
         typeof(InventoryMenu),
         nameof(InventoryMenu.highlightAllItems));
 
-#nullable disable
-    private static Feature instance;
-#nullable enable
+    private readonly IModEvents events;
 
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
+    private readonly IInputHelper input;
 
-    private OpenHeldChest(IModHelper helper)
+    /// <summary>Initializes a new instance of the <see cref="OpenHeldChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public OpenHeldChest(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+        : base(monitor, nameof(OpenHeldChest), () => config.OpenHeldChest is not FeatureOption.Disabled)
     {
-        this.helper = helper;
-        this.harmony = new(OpenHeldChest.Id);
+        this.events = events;
+        this.harmony = harmony;
+        this.input = input;
     }
-
-    /// <summary>Initializes <see cref="OpenHeldChest" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <returns>Returns an instance of the <see cref="OpenHeldChest" /> class.</returns>
-    public static Feature Init(IModHelper helper) => OpenHeldChest.instance ??= new OpenHeldChest(helper);
 
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
-        this.helper.Events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.GameLoop.UpdateTicking += OpenHeldChest.OnUpdateTicking;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Patches
         this.harmony.Patch(
@@ -69,8 +69,8 @@ internal sealed class OpenHeldChest : Feature
     protected override void Deactivate()
     {
         // Events
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.helper.Events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.GameLoop.UpdateTicking -= OpenHeldChest.OnUpdateTicking;
 
         // Patches
         this.harmony.Unpatch(
@@ -92,7 +92,7 @@ internal sealed class OpenHeldChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!ReferenceEquals(__instance, item))
+        if (!object.ReferenceEquals(__instance, item))
         {
             return true;
         }
@@ -157,7 +157,7 @@ internal sealed class OpenHeldChest : Feature
             return;
         }
 
-        __result = !ReferenceEquals(itemGrabMenu.context, i);
+        __result = !object.ReferenceEquals(itemGrabMenu.context, i);
     }
 
     private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)
@@ -173,7 +173,7 @@ internal sealed class OpenHeldChest : Feature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
-            || Storages.CurrentItem is null
+            || StorageService.CurrentItem is null
                 or
                 {
                     OpenHeldChest: not FeatureOption.Enabled,
@@ -187,12 +187,12 @@ internal sealed class OpenHeldChest : Feature
         {
             chest.checkForAction(Game1.player);
         }
-        else if (Storages.CurrentItem.Data is Storage storageObject)
+        else if (StorageService.CurrentItem.Data is Storage storageObject)
         {
             Game1.player.currentLocation.localSound("openChest");
             storageObject.ShowMenu();
         }
 
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
     }
 }

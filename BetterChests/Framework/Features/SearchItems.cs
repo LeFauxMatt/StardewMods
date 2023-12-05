@@ -8,22 +8,18 @@ using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Helpers;
 using StardewValley.Menus;
 
 /// <summary>Adds a search bar to the top of the <see cref="ItemGrabMenu" />.</summary>
-internal sealed class SearchItems : Feature
+internal sealed class SearchItems : BaseFeature
 {
     private const int ExtraSpace = 24;
     private const int MaxTimeOut = 20;
 
-#nullable disable
-    private static Feature instance;
-#nullable enable
-
     private readonly ModConfig config;
     private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
-    private readonly IModHelper helper;
+    private readonly IModEvents events;
+    private readonly IInputHelper input;
     private readonly PerScreen<ItemMatcher> itemMatcher;
     private readonly PerScreen<StorageNode?> lastContext = new();
     private readonly PerScreen<ClickableComponent> searchArea;
@@ -32,18 +28,29 @@ internal sealed class SearchItems : Feature
     private readonly PerScreen<string> searchText = new(() => string.Empty);
     private readonly PerScreen<int> timeOut = new();
 
-    private SearchItems(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="SearchItems" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    /// <param name="translation">Dependency used for accessing translations.</param>
+    public SearchItems(
+        IMonitor monitor,
+        ModConfig config,
+        IModEvents events,
+        IGameContentHelper gameContent,
+        IInputHelper input,
+        ITranslationHelper translation)
+        : base(monitor, nameof(SearchItems), () => config.SearchItems is not FeatureOption.Disabled)
     {
-        this.helper = helper;
         this.config = config;
-        this.itemMatcher = new(() => new(false, config.SearchTagSymbol.ToString(), helper.Translation));
+        this.events = events;
+        this.input = input;
+        this.itemMatcher = new(() => new(false, config.SearchTagSymbol.ToString(), translation));
         this.searchArea = new(() => new(Rectangle.Empty, string.Empty));
         this.searchField = new(
-            () => new(
-                helper.GameContent.Load<Texture2D>("LooseSprites\\textBox"),
-                null,
-                Game1.smallFont,
-                Game1.textColor));
+            () => new(gameContent.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor));
 
         this.searchIcon = new(() => new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f));
     }
@@ -80,21 +87,14 @@ internal sealed class SearchItems : Feature
         set => this.timeOut.Value = value;
     }
 
-    /// <summary>Initializes <see cref="SearchItems" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="SearchItems" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) =>
-        SearchItems.instance ??= new SearchItems(helper, config);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         BetterItemGrabMenu.Constructing += SearchItems.OnConstructing;
-        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
@@ -102,9 +102,9 @@ internal sealed class SearchItems : Feature
     {
         // Events
         BetterItemGrabMenu.Constructing -= SearchItems.OnConstructing;
-        this.helper.Events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
     }
 
     private static void OnConstructing(object? sender, ItemGrabMenu itemGrabMenu)
@@ -161,7 +161,7 @@ internal sealed class SearchItems : Feature
             case SButton.Escape when this.CurrentMenu.readyToClose():
                 Game1.playSound("bigDeSelect");
                 this.CurrentMenu.exitThisMenu();
-                this.helper.Input.Suppress(e.Button);
+                this.input.Suppress(e.Button);
                 return;
             case SButton.Escape:
                 return;
@@ -169,7 +169,7 @@ internal sealed class SearchItems : Feature
 
         if (this.SearchField.Selected)
         {
-            this.helper.Input.Suppress(e.Button);
+            this.input.Suppress(e.Button);
         }
     }
 
@@ -193,7 +193,7 @@ internal sealed class SearchItems : Feature
             _ => null,
         };
 
-        if (menu is not null && ReferenceEquals(menu, this.CurrentMenu))
+        if (menu is not null && object.ReferenceEquals(menu, this.CurrentMenu))
         {
             if (!this.SearchArea.visible)
             {
@@ -202,7 +202,7 @@ internal sealed class SearchItems : Feature
 
             if (this.TimeOut > 0 && --this.TimeOut == 0)
             {
-                Log.Trace($"SearchItems: {this.SearchText}");
+                this.Monitor.Log($"SearchItems: {this.SearchText}");
                 this.ItemMatcher.StringValue = this.SearchText;
                 BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
             }
@@ -236,7 +236,7 @@ internal sealed class SearchItems : Feature
             {
                 Data: Storage lastStorage,
             }
-            && !ReferenceEquals(lastStorage.Context, storageObject.Context))
+            && !object.ReferenceEquals(lastStorage.Context, storageObject.Context))
         {
             this.ItemMatcher.Clear();
             this.SearchField.Text = string.Empty;

@@ -2,31 +2,36 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Locations;
 
 /// <summary>Craft using items from placed chests and chests in the farmer's inventory.</summary>
-internal sealed class CraftFromChest : Feature
+internal sealed class CraftFromChest : BaseFeature
 {
-#nullable disable
-    private static Feature instance;
-#nullable enable
-
     private readonly ModConfig config;
-    private readonly IModHelper helper;
+    private readonly IModEvents events;
+    private readonly IInputHelper input;
 
-    private CraftFromChest(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="CraftFromChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public CraftFromChest(IMonitor monitor, ModConfig config, IModEvents events, IInputHelper input)
+        : base(monitor, nameof(CraftFromChest), () => config.CraftFromChest is not FeatureOptionRange.Disabled)
     {
-        this.helper = helper;
         this.config = config;
+        this.events = events;
+        this.input = input;
     }
 
     private static IEnumerable<StorageNode> Eligible
     {
         get
         {
-            foreach (var storage in Storages.All)
+            foreach (var storage in StorageService.All)
             {
                 if (storage.CraftFromChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default
                     || storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
@@ -50,38 +55,31 @@ internal sealed class CraftFromChest : Feature
         }
     }
 
-    /// <summary>Initializes <see cref="CraftFromChest" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="CraftFromChest" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) =>
-        CraftFromChest.instance ??= new CraftFromChest(helper, config);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         BetterCrafting.CraftingStoragesLoading += CraftFromChest.OnCraftingStoragesLoading;
-        this.helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Integrations
-        if (Integrations.ToolbarIcons.IsLoaded)
+        if (IntegrationService.ToolbarIcons.IsLoaded)
         {
-            Integrations.ToolbarIcons.Api.AddToolbarIcon(
+            IntegrationService.ToolbarIcons.Api.AddToolbarIcon(
                 "BetterChests.CraftFromChest",
                 "furyx639.BetterChests/Icons",
                 new(32, 0, 16, 16),
                 I18n.Button_CraftFromChest_Name());
 
-            Integrations.ToolbarIcons.Api.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
+            IntegrationService.ToolbarIcons.Api.ToolbarIconPressed += CraftFromChest.OnToolbarIconPressed;
         }
 
-        if (!Integrations.BetterCrafting.IsLoaded)
+        if (!IntegrationService.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        Integrations.BetterCrafting.Api.RegisterInventoryProvider(typeof(StorageNode), new StorageProvider());
+        IntegrationService.BetterCrafting.Api.RegisterInventoryProvider(typeof(StorageNode), new StorageProvider());
     }
 
     /// <inheritdoc />
@@ -89,25 +87,25 @@ internal sealed class CraftFromChest : Feature
     {
         // Events
         BetterCrafting.CraftingStoragesLoading -= CraftFromChest.OnCraftingStoragesLoading;
-        this.helper.Events.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Integrations
-        if (Integrations.ToolbarIcons.IsLoaded)
+        if (IntegrationService.ToolbarIcons.IsLoaded)
         {
-            Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.CraftFromChest");
-            Integrations.ToolbarIcons.Api.ToolbarIconPressed -= CraftFromChest.OnToolbarIconPressed;
+            IntegrationService.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.CraftFromChest");
+            IntegrationService.ToolbarIcons.Api.ToolbarIconPressed -= CraftFromChest.OnToolbarIconPressed;
         }
 
-        if (!Integrations.BetterCrafting.IsLoaded)
+        if (!IntegrationService.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ChestStorage));
-        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(FridgeStorage));
-        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(JunimoHutStorage));
-        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ObjectStorage));
-        Integrations.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ShippingBinStorage));
+        IntegrationService.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ChestStorage));
+        IntegrationService.BetterCrafting.Api.UnregisterInventoryProvider(typeof(FridgeStorage));
+        IntegrationService.BetterCrafting.Api.UnregisterInventoryProvider(typeof(JunimoHutStorage));
+        IntegrationService.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ObjectStorage));
+        IntegrationService.BetterCrafting.Api.UnregisterInventoryProvider(typeof(ShippingBinStorage));
     }
 
     private static void OnCraftingStoragesLoading(object? sender, CraftingStoragesLoadingEventArgs e) =>
@@ -136,7 +134,7 @@ internal sealed class CraftFromChest : Feature
             return;
         }
 
-        this.helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.OpenCrafting);
+        this.input.SuppressActiveKeybinds(this.config.ControlScheme.OpenCrafting);
         if (!CraftFromChest.Eligible.Any())
         {
             Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());

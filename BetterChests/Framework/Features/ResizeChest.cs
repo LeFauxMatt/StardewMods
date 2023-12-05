@@ -2,30 +2,27 @@ namespace StardewMods.BetterChests.Framework.Features;
 
 using System.Reflection;
 using HarmonyLib;
+using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewValley.Objects;
 
 /// <summary>Expand the capacity of chests and add scrolling to access extra items.</summary>
-internal sealed class ResizeChest : Feature
+internal sealed class ResizeChest : BaseFeature
 {
-    private const string Id = "furyx639.BetterChests/ResizeChest";
-
     private static readonly MethodBase ChestGetActualCapacity = AccessTools.Method(
         typeof(Chest),
         nameof(Chest.GetActualCapacity));
 
-#nullable disable
-    private static Feature instance;
-#nullable enable
-
     private readonly Harmony harmony;
 
-    private ResizeChest() => this.harmony = new(ResizeChest.Id);
-
-    /// <summary>Initializes <see cref="ResizeChest" />.</summary>
-    /// <returns>Returns an instance of the <see cref="ResizeChest" /> class.</returns>
-    public static Feature Init() => ResizeChest.instance ??= new ResizeChest();
+    /// <summary>Initializes a new instance of the <see cref="ResizeChest" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    public ResizeChest(IMonitor monitor, ModConfig config, Harmony harmony)
+        : base(monitor, nameof(ResizeChest), () => config.ResizeChest is not FeatureOption.Disabled) =>
+        this.harmony = harmony;
 
     /// <inheritdoc />
     protected override void Activate() =>
@@ -43,7 +40,7 @@ internal sealed class ResizeChest : Feature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (!Storages.TryGetOne(__instance, out var storage)
+        if (!StorageService.TryGetOne(__instance, out var storage)
             || storage is not
             {
                 Data: Storage storageObject,

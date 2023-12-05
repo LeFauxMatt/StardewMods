@@ -12,23 +12,21 @@ using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Menus;
 
 /// <summary>Adds a chest color picker that support hue, saturation, and lightness.</summary>
-internal sealed class BetterColorPicker : Feature
+internal sealed class BetterColorPicker : BaseFeature
 {
-    private const string Id = "furyx6339.BetterChests/BetterColorPicker";
-
-    private static readonly MethodBase DiscreteColorPickerGetColorFromSelection = AccessTools.Method(
+    private static readonly MethodBase DiscreteColorPickerGetColorFromSelection = AccessTools.DeclaredMethod(
         typeof(DiscreteColorPicker),
         nameof(DiscreteColorPicker.getColorFromSelection));
 
-    private static readonly MethodBase DiscreteColorPickerGetSelectionFromColor = AccessTools.Method(
+    private static readonly MethodBase DiscreteColorPickerGetSelectionFromColor = AccessTools.DeclaredMethod(
         typeof(DiscreteColorPicker),
         nameof(DiscreteColorPicker.getSelectionFromColor));
 
-    private static readonly MethodBase ItemGrabMenuGameWindowSizeChanged = AccessTools.Method(
+    private static readonly MethodBase ItemGrabMenuGameWindowSizeChanged = AccessTools.DeclaredMethod(
         typeof(ItemGrabMenu),
         nameof(ItemGrabMenu.gameWindowSizeChanged));
 
-    private static readonly MethodBase ItemGrabMenuSetSourceItem = AccessTools.Method(
+    private static readonly MethodBase ItemGrabMenuSetSourceItem = AccessTools.DeclaredMethod(
         typeof(ItemGrabMenu),
         nameof(ItemGrabMenu.setSourceItem));
 
@@ -38,14 +36,24 @@ internal sealed class BetterColorPicker : Feature
 
     private readonly PerScreen<HslColorPicker> colorPicker = new(() => new());
     private readonly ModConfig config;
+    private readonly IModEvents events;
     private readonly Harmony harmony;
-    private readonly IModHelper helper;
+    private readonly IInputHelper input;
 
-    private BetterColorPicker(IModHelper helper, ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="BetterColorPicker" /> class.</summary>
+    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="input">Dependency used for checking and changing input state.</param>
+    public BetterColorPicker(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+        : base(monitor, nameof(BetterColorPicker), () => config.CustomColorPicker is not FeatureOption.Disabled)
     {
-        this.helper = helper;
+        BetterColorPicker.instance = this;
         this.config = config;
-        this.harmony = new(BetterColorPicker.Id);
+        this.events = events;
+        this.harmony = harmony;
+        this.input = input;
     }
 
     private static IColorable? Colorable => BetterItemGrabMenu.Context?.Data as IColorable;
@@ -61,21 +69,14 @@ internal sealed class BetterColorPicker : Feature
 
     private HslColorPicker ColorPicker => this.colorPicker.Value;
 
-    /// <summary>Initializes <see cref="BetterColorPicker" />.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <returns>Returns an instance of the <see cref="BetterColorPicker" /> class.</returns>
-    public static Feature Init(IModHelper helper, ModConfig config) =>
-        BetterColorPicker.instance ??= new(helper, config);
-
     /// <inheritdoc />
     protected override void Activate()
     {
         // Events
         BetterItemGrabMenu.Constructed += this.OnConstructed;
-        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        this.events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Patches
         this.harmony.Patch(
@@ -106,9 +107,9 @@ internal sealed class BetterColorPicker : Feature
     {
         // Events
         BetterItemGrabMenu.Constructed -= this.OnConstructed;
-        this.helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        this.helper.Events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.events.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Patches
         this.harmony.Unpatch(
@@ -225,7 +226,7 @@ internal sealed class BetterColorPicker : Feature
 
         Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
         Game1.playSound("drumkit6");
-        this.helper.Input.Suppress(e.Button);
+        this.input.Suppress(e.Button);
     }
 
     private void OnConstructed(object? sender, ItemGrabMenu itemGrabMenu)
@@ -255,7 +256,7 @@ internal sealed class BetterColorPicker : Feature
             return;
         }
 
-        this.ColorPicker.Update(this.helper.Input);
+        this.ColorPicker.Update(this.input);
         BetterColorPicker.Colorable.Color = this.ColorPicker.Color;
     }
 
