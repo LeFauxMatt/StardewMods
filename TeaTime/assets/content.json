@@ -1,0 +1,61 @@
+{
+  "Format": "1.29.0",
+  "Changes": [
+    {
+      "LogName": "Load Sapling and Leaves",
+      "Action": "EditData",
+      "Target": "Data/Objects",
+      "Entries": {
+        // https://stardewvalleywiki.com/Modding:Migrate_to_Stardew_Valley_1.6#Custom_objects
+        "YourMod.Id/Sapling": {
+          "Name": "Custom Sapling",
+          "DisplayName": "",
+          "Description": "",
+          "Type": "Basic",
+          "Category": -74,
+          "Price": 500,
+          "Texture": "YourMod.Id/Texture",
+          "SpriteIndex": 32
+        },
+        "YourMod.Id/Leaves": {
+          // Basic Info
+          "Name": "Custom Leaves",
+          "DisplayName": "",
+          "Description": "",
+          "Type": "Basic",
+          "Category": -75,
+          "Price": 50,
+          "Texture": "YourMod.Id/Texture",
+          "SpriteIndex": 33,
+          "ContextTags": ["color_green"]
+        }
+      }
+    },
+    {
+      "LogName": "Add to TeaTime Framework",
+      "Action": "EditData",
+      "Target": "furyx639.TeaTime/Data",
+      "Entries": {
+        "YourMod.Id/Sapling": {
+          // Minimum days from planting before leaves are produced
+          "AgeToProduce": 20,
+
+          // Will only bloom after this day of month
+          "DayToBeginProducing": 22,
+
+          // The item to drop when in bloom
+          "ItemProduced": "YourMod.Id/Leaves",
+
+          "Texture": "YourMod.Id/Texture"
+        }
+      }
+    },
+    {
+      "LogName": "Load Texture",
+      "Action": "Load",
+      "Target": "YourMod.Id/Texture",
+      "FromFile": "assets/texture.png"
+    }
+  ],
+  "$schema": "https://smapi.io/schemas/content-patcher.json"
+}
