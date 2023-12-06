@@ -4,6 +4,7 @@
 // a specific target and scoped to a namespace, type, member, etc.
 
 [assembly: SuppressMessage("StyleCop", "SA0001", Justification = "Preference", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1513", Justification = "Preference", Scope = "module")]
 [assembly: SuppressMessage("StyleCop", "SA1633", Justification = "Preference", Scope = "module")]
 [assembly:
     SuppressMessage(
