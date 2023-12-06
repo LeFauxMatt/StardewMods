@@ -33,7 +33,7 @@ internal static class Extensions
             0,
             8,
             1,
-            FormatService.ChestCapacity);
+            Formatting.ChestCapacity);
 
     /// <summary>Add a distance option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -58,7 +58,7 @@ internal static class Extensions
             (int)FeatureOptionRange.Default,
             (int)FeatureOptionRange.World,
             1,
-            FormatService.Distance);
+            Formatting.Distance);
 
     /// <summary>Add a feature option at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -81,7 +81,7 @@ internal static class Extensions
             name,
             tooltip,
             FeatureOptionExtensions.GetNames(),
-            FormatService.Option);
+            Formatting.Option);
 
     /// <summary>Add a feature option range at the current position in the form.</summary>
     /// <param name="gmcm">Integration for GMCM.</param>
@@ -105,7 +105,7 @@ internal static class Extensions
             name,
             tooltip,
             FeatureOptionRangeExtensions.GetNames(),
-            FormatService.Range);
+            Formatting.Range);
 
     /// <summary>Gets context tags from an <see cref="Item" /> with extended tag set.</summary>
     /// <param name="item">The item to get context tags from.</param>

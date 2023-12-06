@@ -30,7 +30,7 @@ internal sealed class AutoOrganize : BaseFeature
 
     private void OrganizeAll()
     {
-        var storages = StorageService.All.ToArray();
+        var storages = StorageHandler.All.ToArray();
         Array.Sort(storages);
 
         foreach (var fromStorage in storages)

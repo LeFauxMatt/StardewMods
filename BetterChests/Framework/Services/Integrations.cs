@@ -14,71 +14,75 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>Handles integrations with other mods.</summary>
-internal sealed class IntegrationService
+internal sealed class Integrations
 {
     private const string ExpandedFridgeId = "Uwazouri.ExpandedFridge";
     private const string HorseOverhaulId = "Goldenrevolver.HorseOverhaul";
     private const string WearMoreRingsId = "bcmpinc.WearMoreRings";
 
 #nullable disable
-    private static IntegrationService instance;
+    private static Integrations instance;
 #nullable enable
 
     private readonly AutomateIntegration automate;
     private readonly BetterCraftingIntegration betterCrafting;
     private readonly ModConfig config;
+    private readonly IModRegistry modRegistry;
+    private readonly StorageHandler storages;
     private readonly GenericModConfigMenuIntegration gmcm;
-    private readonly IModHelper helper;
     private readonly Dictionary<string, HashSet<string>> incompatibilities;
     private readonly ToolbarIconsIntegration toolbarIcons;
 
-    /// <summary>Initializes a new instance of the <see cref="IntegrationService" /> class.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <param name="modContentHelper">API for loading assets.</param>
-    /// <param name="automate">Integration with Automate.</param>
-    /// <param name="betterCrafting">Integration with Better Crafting.</param>
-    /// <param name="gmcm">Integration with Generic Mod Config Menu.</param>
-    /// <param name="toolbarIcons">Integration with Toolbar Icons.</param>
-    public IntegrationService(
-        IModHelper helper,
+    /// <summary>Initializes a new instance of the <see cref="Integrations" /> class.</summary>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="modContent">Dependency for loading mod assets.</param>
+    /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
+    /// <param name="storages">Dependency for handling storages.</param>
+    /// <param name="automate">Dependency for Automate integration.</param>
+    /// <param name="betterCrafting">Dependency for Better Crafting integration.</param>
+    /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="toolbarIcons">Dependency for Toolbar Icons integration.</param>
+    public Integrations(
         ModConfig config,
-        IModContentHelper modContentHelper,
+        IModEvents events,
+        IModContentHelper modContent,
+        IModRegistry modRegistry,
+        StorageHandler storages,
         AutomateIntegration automate,
         BetterCraftingIntegration betterCrafting,
         GenericModConfigMenuIntegration gmcm,
         ToolbarIconsIntegration toolbarIcons)
     {
-        IntegrationService.instance = this;
-        this.helper = helper;
+        Integrations.instance = this;
         this.config = config;
+        this.modRegistry = modRegistry;
+        this.storages = storages;
         this.automate = automate;
         this.betterCrafting = betterCrafting;
         this.gmcm = gmcm;
         this.toolbarIcons = toolbarIcons;
         this.incompatibilities =
-            modContentHelper.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
+            modContent.Load<Dictionary<string, HashSet<string>>>("assets/incompatibilities.json");
 
         // Events
-        this.helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
     /// <summary>Gets Automate integration.</summary>
-    public static AutomateIntegration Automate => IntegrationService.instance.automate;
+    public static AutomateIntegration Automate => Integrations.instance.automate;
 
     /// <summary>Gets Better Craft integration.</summary>
-    public static BetterCraftingIntegration BetterCrafting => IntegrationService.instance.betterCrafting;
+    public static BetterCraftingIntegration BetterCrafting => Integrations.instance.betterCrafting;
 
     /// <summary>Gets Generic Mod Config Menu integration.</summary>
-    public static GenericModConfigMenuIntegration GMCM => IntegrationService.instance.gmcm;
+    public static GenericModConfigMenuIntegration GMCM => Integrations.instance.gmcm;
 
     /// <summary>Gets Toolbar Icons integration.</summary>
-    public static ToolbarIconsIntegration ToolbarIcons => IntegrationService.instance.toolbarIcons;
+    public static ToolbarIconsIntegration ToolbarIcons => Integrations.instance.toolbarIcons;
 
     private static Dictionary<string, HashSet<string>> Incompatibilities =>
-        IntegrationService.instance.incompatibilities;
-
-    private static IModRegistry ModRegistry => IntegrationService.instance.helper.ModRegistry;
+        Integrations.instance.incompatibilities;
 
     /// <summary>Gets all storages placed in a particular location.</summary>
     /// <param name="location">The location to get storages from.</param>
@@ -88,17 +92,17 @@ internal sealed class IntegrationService
     {
         excluded ??= new HashSet<object>();
 
-        foreach (var storage in IntegrationService.ExpandedFridge_FromLocation(location, excluded))
+        foreach (var storage in Integrations.ExpandedFridge_FromLocation(location, excluded))
         {
             yield return storage;
         }
 
-        foreach (var storage in IntegrationService.HorseOverhaul_FromLocation(location, excluded))
+        foreach (var storage in Integrations.HorseOverhaul_FromLocation(location, excluded))
         {
             yield return storage;
         }
 
-        if (IntegrationService.ModRegistry.IsLoaded(IntegrationService.WearMoreRingsId)
+        if (Integrations.instance.modRegistry.IsLoaded(Integrations.WearMoreRingsId)
             && location is Farm
             && location.Objects.TryGetValue(new(0, -50), out var obj))
         {
@@ -114,7 +118,7 @@ internal sealed class IntegrationService
     {
         excluded ??= new HashSet<object>();
 
-        foreach (var storage in IntegrationService.HorseOverhaul_FromPlayer(player, excluded))
+        foreach (var storage in Integrations.HorseOverhaul_FromPlayer(player, excluded))
         {
             yield return storage;
         }
@@ -126,14 +130,14 @@ internal sealed class IntegrationService
     /// <returns>Returns true if there is an incompatibility.</returns>
     public static bool TestConflicts(string featureName, [NotNullWhen(true)] out List<IModInfo?>? mods)
     {
-        if (!IntegrationService.Incompatibilities.TryGetValue(featureName, out var modIds))
+        if (!Integrations.Incompatibilities.TryGetValue(featureName, out var modIds))
         {
             mods = null;
             return false;
         }
 
-        mods = modIds.Where(IntegrationService.ModRegistry.IsLoaded)
-            .Select(IntegrationService.ModRegistry.Get)
+        mods = modIds.Where(Integrations.instance.modRegistry.IsLoaded)
+            .Select(Integrations.instance.modRegistry.Get)
             .ToList();
 
         return mods.Any();
@@ -145,7 +149,7 @@ internal sealed class IntegrationService
     /// <returns>Returns true if a storage could be found for the context object.</returns>
     public static bool TryGetOne(object? context, [NotNullWhen(true)] out Storage? storage)
     {
-        if (IntegrationService.HorseOverhaul_TryGetOne(context, out storage))
+        if (Integrations.HorseOverhaul_TryGetOne(context, out storage))
         {
             return true;
         }
@@ -156,7 +160,7 @@ internal sealed class IntegrationService
 
     private static IEnumerable<Storage> ExpandedFridge_FromLocation(GameLocation location, ISet<object> excluded)
     {
-        if (!IntegrationService.ModRegistry.IsLoaded(IntegrationService.ExpandedFridgeId)
+        if (!Integrations.instance.modRegistry.IsLoaded(Integrations.ExpandedFridgeId)
             || location is not FarmHouse
             {
                 upgradeLevel: > 0,
@@ -176,7 +180,7 @@ internal sealed class IntegrationService
 
     private static IEnumerable<Storage> HorseOverhaul_FromLocation(GameLocation location, ISet<object> excluded)
     {
-        if (!IntegrationService.ModRegistry.IsLoaded(IntegrationService.HorseOverhaulId))
+        if (!Integrations.instance.modRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
             yield break;
         }
@@ -184,11 +188,11 @@ internal sealed class IntegrationService
         var farm = Game1.getFarm();
         foreach (var stable in farm.buildings.OfType<Stable>())
         {
-            if (!stable.modData.TryGetValue($"{IntegrationService.HorseOverhaulId}/stableID", out var stableId)
+            if (!stable.modData.TryGetValue($"{Integrations.HorseOverhaulId}/stableID", out var stableId)
                 || !int.TryParse(stableId, out var x)
                 || !farm.Objects.TryGetValue(new(x, 0), out var obj)
                 || obj is not Chest chest
-                || !chest.modData.ContainsKey($"{IntegrationService.HorseOverhaulId}/isSaddleBag"))
+                || !chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"))
             {
                 continue;
             }
@@ -213,7 +217,7 @@ internal sealed class IntegrationService
 
     private static IEnumerable<Storage> HorseOverhaul_FromPlayer(Farmer player, ISet<object> excluded)
     {
-        if (!IntegrationService.ModRegistry.IsLoaded(IntegrationService.HorseOverhaulId))
+        if (!Integrations.instance.modRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
             yield break;
         }
@@ -226,11 +230,11 @@ internal sealed class IntegrationService
         var farm = Game1.getFarm();
         var stable = farm.buildings.OfType<Stable>().FirstOrDefault(stable => stable.HorseId == player.mount.HorseId);
         if (stable is null
-            || !stable.modData.TryGetValue($"{IntegrationService.HorseOverhaulId}/stableID", out var stableId)
+            || !stable.modData.TryGetValue($"{Integrations.HorseOverhaulId}/stableID", out var stableId)
             || !int.TryParse(stableId, out var x)
             || !farm.Objects.TryGetValue(new(x, 0), out var obj)
             || obj is not Chest chest
-            || !chest.modData.ContainsKey($"{IntegrationService.HorseOverhaulId}/isSaddleBag"))
+            || !chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"))
         {
             yield break;
         }
@@ -241,9 +245,9 @@ internal sealed class IntegrationService
 
     private static bool HorseOverhaul_TryGetOne(object? context, [NotNullWhen(true)] out Storage? storage)
     {
-        if (!IntegrationService.ModRegistry.IsLoaded(IntegrationService.HorseOverhaulId)
+        if (!Integrations.instance.modRegistry.IsLoaded(Integrations.HorseOverhaulId)
             || context is not Chest chest
-            || !chest.modData.ContainsKey($"{IntegrationService.HorseOverhaulId}/isSaddleBag"))
+            || !chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag"))
         {
             storage = default;
             return false;
@@ -252,7 +256,7 @@ internal sealed class IntegrationService
         var farm = Game1.getFarm();
         foreach (var stable in farm.buildings.OfType<Stable>())
         {
-            if (!stable.modData.TryGetValue($"{IntegrationService.HorseOverhaulId}/stableID", out var stableId)
+            if (!stable.modData.TryGetValue($"{Integrations.HorseOverhaulId}/stableID", out var stableId)
                 || !int.TryParse(stableId, out var x)
                 || !farm.Objects.TryGetValue(new(x, 0), out var obj)
                 || chest != obj)
@@ -283,9 +287,9 @@ internal sealed class IntegrationService
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        StorageService.StorageTypeRequested += this.OnStorageTypeRequested;
+        this.storages.StorageTypeRequested += this.OnStorageTypeRequested;
 
-        if (IntegrationService.ModRegistry.IsLoaded(IntegrationService.HorseOverhaulId))
+        if (this.modRegistry.IsLoaded(Integrations.HorseOverhaulId))
         {
             this.config.VanillaStorages.TryAdd("SaddleBag", new() { CustomColorPicker = FeatureOption.Disabled });
         }
@@ -295,8 +299,8 @@ internal sealed class IntegrationService
     {
         switch (e.Context)
         {
-            case Chest chest when IntegrationService.ModRegistry.IsLoaded(IntegrationService.HorseOverhaulId)
-                && chest.modData.ContainsKey($"{IntegrationService.HorseOverhaulId}/isSaddleBag")
+            case Chest chest when this.modRegistry.IsLoaded(Integrations.HorseOverhaulId)
+                && chest.modData.ContainsKey($"{Integrations.HorseOverhaulId}/isSaddleBag")
                 && this.config.VanillaStorages.TryGetValue("SaddleBag", out var saddleBagData):
                 e.Load(saddleBagData, -1);
                 return;

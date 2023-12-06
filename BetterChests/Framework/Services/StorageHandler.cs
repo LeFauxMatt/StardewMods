@@ -1,8 +1,10 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services;
 
 using Microsoft.Xna.Framework;
+using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Integrations.BetterChests;
 using StardewValley.Buildings;
@@ -10,22 +12,45 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>Provides access to all supported storages in the game.</summary>
-internal sealed class StorageService
+internal sealed class StorageHandler
 {
 #nullable disable
-    private static StorageService instance;
+    private static StorageHandler instance;
 #nullable enable
 
     private readonly ModConfig config;
+    private readonly IEnumerable<IFeature> features;
+
+    private EventHandler<StorageNode>? storageEdited;
 
     private EventHandler<IStorageTypeRequestedEventArgs>? storageTypeRequested;
 
-    /// <summary>Initializes a new instance of the <see cref="StorageService" /> class.</summary>
-    /// <param name="config">Mod config data.</param>
-    public StorageService(ModConfig config)
+    /// <summary>Initializes a new instance of the <see cref="StorageHandler" /> class.</summary>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="features">Dependency for managing features.</param>
+    public StorageHandler(ModConfig config, IModEvents events, IEnumerable<IFeature> features)
     {
-        StorageService.instance = this;
+        StorageHandler.instance = this;
         this.config = config;
+        this.features = features;
+
+        // Events
+        events.GameLoop.GameLaunched += this.OnGameLaunched;
+    }
+
+    /// <summary>Raised after a <see cref="StorageNode" /> has been edited.</summary>
+    public event EventHandler<StorageNode> StorageEdited
+    {
+        add => this.storageEdited += value;
+        remove => this.storageEdited -= value;
+    }
+
+    /// <summary>Event for when a storage type is assigned to a storage object.</summary>
+    public event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
+    {
+        add => this.storageTypeRequested += value;
+        remove => this.storageTypeRequested -= value;
     }
 
     /// <summary>Gets storages from all locations and farmer inventory in the game.</summary>
@@ -37,7 +62,7 @@ internal sealed class StorageService
             var storages = new List<StorageNode>();
 
             // Iterate Inventory
-            foreach (var storage in StorageService.FromPlayer(Game1.player, excluded))
+            foreach (var storage in StorageHandler.FromPlayer(Game1.player, excluded))
             {
                 storages.Add(storage);
                 yield return storage;
@@ -52,7 +77,7 @@ internal sealed class StorageService
                     return true;
                 });
 
-            foreach (var storage in locations.SelectMany(location => StorageService.FromLocation(location, excluded)))
+            foreach (var storage in locations.SelectMany(location => StorageHandler.FromLocation(location, excluded)))
             {
                 storages.Add(storage);
                 yield return storage;
@@ -69,7 +94,7 @@ internal sealed class StorageService
                     continue;
                 }
 
-                foreach (var subStorage in StorageService.FromStorage(storageObject, excluded))
+                foreach (var subStorage in StorageHandler.FromStorage(storageObject, excluded))
                 {
                     yield return subStorage;
                 }
@@ -79,24 +104,17 @@ internal sealed class StorageService
 
     /// <summary>Gets the current storage item from the farmer's inventory.</summary>
     public static StorageNode? CurrentItem =>
-        Game1.player.CurrentItem is not null && StorageService.TryGetOne(Game1.player.CurrentItem, out var storage)
+        Game1.player.CurrentItem is not null && StorageHandler.TryGetOne(Game1.player.CurrentItem, out var storage)
             ? storage
             : null;
 
     /// <summary>Gets all placed storages in the current location.</summary>
-    public static IEnumerable<StorageNode> CurrentLocation => StorageService.FromLocation(Game1.currentLocation);
+    public static IEnumerable<StorageNode> CurrentLocation => StorageHandler.FromLocation(Game1.currentLocation);
 
     /// <summary>Gets storages in the farmer's inventory.</summary>
-    public static IEnumerable<StorageNode> Inventory => StorageService.FromPlayer(Game1.player);
+    public static IEnumerable<StorageNode> Inventory => StorageHandler.FromPlayer(Game1.player);
 
-    private static ModConfig Config => StorageService.instance.config;
-
-    /// <summary>Event for when a storage type is assigned to a storage object.</summary>
-    public static event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
-    {
-        add => StorageService.instance.storageTypeRequested += value;
-        remove => StorageService.instance.storageTypeRequested -= value;
-    }
+    private static ModConfig Config => StorageHandler.instance.config;
 
     /// <summary>Gets all storages placed in a particular location.</summary>
     /// <param name="location">The location to get storages from.</param>
@@ -113,9 +131,9 @@ internal sealed class StorageService
         excluded.Add(location);
 
         // Mod Integrations
-        foreach (var storage in IntegrationService.FromLocation(location, excluded))
+        foreach (var storage in Integrations.FromLocation(location, excluded))
         {
-            yield return StorageService.GetStorageType(storage);
+            yield return StorageHandler.GetStorageType(storage);
         }
 
         // Get Fridge
@@ -124,14 +142,14 @@ internal sealed class StorageService
         {
             excluded.Add(fridge);
             var fridgePosition = location.GetFridgePosition() ?? Point.Zero;
-            yield return StorageService.GetStorageType(new FridgeStorage(location, fridgePosition.ToVector2()));
+            yield return StorageHandler.GetStorageType(new FridgeStorage(location, fridgePosition.ToVector2()));
         }
 
         // Get Shipping Bin
         if (location is IslandWest islandWest)
         {
             excluded.Add(islandWest);
-            yield return StorageService.GetStorageType(
+            yield return StorageHandler.GetStorageType(
                 new ShippingBinStorage(islandWest, islandWest.shippingBinPosition.ToVector2()));
         }
 
@@ -145,7 +163,7 @@ internal sealed class StorageService
                 {
                     case JunimoHut junimoHut when !excluded.Contains(junimoHut):
                         excluded.Add(junimoHut);
-                        yield return StorageService.GetStorageType(
+                        yield return StorageHandler.GetStorageType(
                             new JunimoHutStorage(
                                 junimoHut,
                                 location,
@@ -156,7 +174,7 @@ internal sealed class StorageService
                         break;
                     case ShippingBin shippingBin when !excluded.Contains(shippingBin):
                         excluded.Add(shippingBin);
-                        yield return StorageService.GetStorageType(
+                        yield return StorageHandler.GetStorageType(
                             new ShippingBinStorage(
                                 shippingBin,
                                 location,
@@ -174,14 +192,14 @@ internal sealed class StorageService
         {
             if (position.X < 0
                 || position.Y < 0
-                || !StorageService.TryGetOne(obj, location, position, out var subStorage)
+                || !StorageHandler.TryGetOne(obj, location, position, out var subStorage)
                 || excluded.Contains(subStorage.Context))
             {
                 continue;
             }
 
             excluded.Add(subStorage.Context);
-            yield return StorageService.GetStorageType(subStorage);
+            yield return StorageHandler.GetStorageType(subStorage);
         }
     }
 
@@ -201,9 +219,9 @@ internal sealed class StorageService
         excluded.Add(player);
 
         // Mod Integrations
-        foreach (var storage in IntegrationService.FromPlayer(player, excluded))
+        foreach (var storage in Integrations.FromPlayer(player, excluded))
         {
-            yield return StorageService.GetStorageType(storage);
+            yield return StorageHandler.GetStorageType(storage);
         }
 
         limit ??= player.MaxItems;
@@ -211,14 +229,14 @@ internal sealed class StorageService
         for (var index = 0; index < limit; ++index)
         {
             var item = player.Items[index];
-            if (!StorageService.TryGetOne(item, player, position, out var storage)
+            if (!StorageHandler.TryGetOne(item, player, position, out var storage)
                 || excluded.Contains(storage.Context))
             {
                 continue;
             }
 
             excluded.Add(storage.Context);
-            yield return StorageService.GetStorageType(storage);
+            yield return StorageHandler.GetStorageType(storage);
         }
     }
 
@@ -230,13 +248,13 @@ internal sealed class StorageService
     public static bool TryGetOne(GameLocation location, Vector2 pos, [NotNullWhen(true)] out StorageNode? storage)
     {
         if (!location.Objects.TryGetValue(pos, out var obj)
-            || !StorageService.TryGetOne(obj, location, pos, out var storageObject))
+            || !StorageHandler.TryGetOne(obj, location, pos, out var storageObject))
         {
             storage = default;
             return false;
         }
 
-        storage = StorageService.GetStorageType(storageObject);
+        storage = StorageHandler.GetStorageType(storageObject);
         return true;
     }
 
@@ -252,20 +270,24 @@ internal sealed class StorageService
                 storage = storageNode;
                 return true;
             case Storage baseStorage:
-                storage = StorageService.GetStorageType(baseStorage);
+                storage = StorageHandler.GetStorageType(baseStorage);
                 return true;
         }
 
-        if (!IntegrationService.TryGetOne(context, out var storageObject)
-            && !StorageService.TryGetOne(context, default, default, out storageObject))
+        if (!Integrations.TryGetOne(context, out var storageObject)
+            && !StorageHandler.TryGetOne(context, default, default, out storageObject))
         {
             storage = default;
             return false;
         }
 
-        storage = StorageService.GetStorageType(storageObject);
+        storage = StorageHandler.GetStorageType(storageObject);
         return true;
     }
+
+    /// <summary>Trigger the StorageEdited event.</summary>
+    /// <param name="storage">The storage to trigger the event for.</param>
+    public void InvokeStorageEdited(StorageNode storage) => this.storageEdited.InvokeAll(this, storage);
 
     private static IEnumerable<StorageNode> FromStorage(Storage storage, ISet<object>? excluded = null)
     {
@@ -280,7 +302,7 @@ internal sealed class StorageService
         var storages = new List<Storage>();
         foreach (var item in storage.Inventory.Where(item => item is not null && !excluded.Contains(item)))
         {
-            if (!StorageService.TryGetOne(item, storage.Source, storage.Position, out var storageObject)
+            if (!StorageHandler.TryGetOne(item, storage.Source, storage.Position, out var storageObject)
                 || excluded.Contains(storageObject.Context))
             {
                 continue;
@@ -290,23 +312,23 @@ internal sealed class StorageService
             storages.Add(storageObject);
         }
 
-        return StorageService.GetStorageTypes(storages)
-            .Concat(storages.SelectMany(subStorage => StorageService.FromStorage(subStorage, excluded)));
+        return StorageHandler.GetStorageTypes(storages)
+            .Concat(storages.SelectMany(subStorage => StorageHandler.FromStorage(subStorage, excluded)));
     }
 
     private static StorageNode GetStorageType(Storage storage)
     {
         var storageTypes = new List<IStorageData>();
         var storageTypeRequestedEventArgs = new StorageTypeRequestedEventArgs(storage.Context, storageTypes);
-        StorageService.instance.storageTypeRequested.InvokeAll(StorageService.instance, storageTypeRequestedEventArgs);
+        StorageHandler.instance.storageTypeRequested.InvokeAll(StorageHandler.instance, storageTypeRequestedEventArgs);
         var storageType = storageTypes.FirstOrDefault();
         return new(
             storage,
-            storageType is not null ? new StorageNode(storageType, StorageService.Config) : StorageService.Config);
+            storageType is not null ? new StorageNode(storageType, StorageHandler.Config) : StorageHandler.Config);
     }
 
     private static IEnumerable<StorageNode> GetStorageTypes(IEnumerable<Storage> storages) =>
-        storages.Select(StorageService.GetStorageType);
+        storages.Select(StorageHandler.GetStorageType);
 
     private static bool TryGetOne(
         object? context,
@@ -370,6 +392,103 @@ internal sealed class StorageService
             default:
                 storage = default;
                 return false;
+        }
+    }
+
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+    {
+        foreach (var feature in this.features)
+        {
+            feature.SetActivated(true);
+        }
+
+        this.StorageTypeRequested += this.OnStorageTypeRequested;
+
+        this.config.VanillaStorages.TryAdd("Auto-Grabber", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Chest", new());
+        this.config.VanillaStorages.TryAdd("Fridge", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Junimo Chest", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Junimo Hut", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Mini-Fridge", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Mini-Shipping Bin", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Shipping Bin", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Stone Chest", new());
+    }
+
+    private void OnStorageTypeRequested(object? sender, IStorageTypeRequestedEventArgs e)
+    {
+        switch (e.Context)
+        {
+            // Auto-Grabber
+            case SObject
+            {
+                ParentSheetIndex: 165,
+            } when this.config.VanillaStorages.TryGetValue("Auto-Grabber", out var autoGrabberData):
+                e.Load(autoGrabberData, -1);
+                return;
+
+            // Chest
+            case Chest
+            {
+                playerChest.Value: true,
+                SpecialChestType: Chest.SpecialChestTypes.None,
+                ParentSheetIndex: 130,
+            } when this.config.VanillaStorages.TryGetValue("Chest", out var chestData):
+                e.Load(chestData, -1);
+                return;
+
+            // Fridge
+            case FarmHouse or IslandFarmHouse when this.config.VanillaStorages.TryGetValue("Fridge", out var fridgeData):
+                e.Load(fridgeData, -1);
+                return;
+
+            // Junimo Chest
+            case Chest
+            {
+                playerChest.Value: true,
+                SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
+            } when this.config.VanillaStorages.TryGetValue("Junimo Chest", out var junimoChestData):
+                e.Load(junimoChestData, -1);
+                return;
+
+            // Junimo Hut
+            case JunimoHut when this.config.VanillaStorages.TryGetValue("Junimo Hut", out var junimoHutData):
+                e.Load(junimoHutData, -1);
+                return;
+
+            // Mini-Fridge
+            case Chest
+            {
+                fridge.Value: true,
+                playerChest.Value: true,
+            } when this.config.VanillaStorages.TryGetValue("Mini-Fridge", out var miniFridgeData):
+                e.Load(miniFridgeData, -1);
+                return;
+
+            // Mini-Shipping Bin
+            case Chest
+            {
+                playerChest.Value: true,
+                SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
+            } when this.config.VanillaStorages.TryGetValue("Mini-Shipping Bin", out var miniShippingBinData):
+                e.Load(miniShippingBinData, -1);
+                return;
+
+            // Shipping Bin
+            case ShippingBin or Farm or IslandWest
+                when this.config.VanillaStorages.TryGetValue("Shipping Bin", out var shippingBinData):
+                e.Load(shippingBinData, -1);
+                return;
+
+            // Stone Chest
+            case Chest
+            {
+                playerChest.Value: true,
+                SpecialChestType: Chest.SpecialChestTypes.None,
+                ParentSheetIndex: 232,
+            } when this.config.VanillaStorages.TryGetValue("Stone Chest", out var stoneChestData):
+                e.Load(stoneChestData, -1);
+                return;
         }
     }
 }

@@ -20,7 +20,7 @@ internal sealed class TransferItems : BaseFeature
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
     public TransferItems(
         IMonitor monitor,
@@ -84,7 +84,7 @@ internal sealed class TransferItems : BaseFeature
         if (BetterItemGrabMenu.TopPadding > 0
             || itemGrabMenu.context is null
             || itemGrabMenu.shippingBin
-            || !StorageService.TryGetOne(itemGrabMenu.context, out _))
+            || !StorageHandler.TryGetOne(itemGrabMenu.context, out _))
         {
             return;
         }
@@ -100,7 +100,7 @@ internal sealed class TransferItems : BaseFeature
                 { } context,
                 shippingBin: false,
             }
-            || !StorageService.TryGetOne(context, out var storage)
+            || !StorageHandler.TryGetOne(context, out var storage)
             || storage is not
             {
                 Data: Storage storageObject,
@@ -134,7 +134,7 @@ internal sealed class TransferItems : BaseFeature
                 { } context,
                 shippingBin: false,
             }
-            || !StorageService.TryGetOne(context, out var storage)
+            || !StorageHandler.TryGetOne(context, out var storage)
             || storage is not
             {
                 Data: Storage storageObject,
@@ -192,7 +192,7 @@ internal sealed class TransferItems : BaseFeature
                 { } itemsToGrabMenu,
                 shippingBin: false,
             }
-            || !StorageService.TryGetOne(context, out _))
+            || !StorageHandler.TryGetOne(context, out _))
         {
             this.DownArrow.visible = false;
             this.UpArrow.visible = false;

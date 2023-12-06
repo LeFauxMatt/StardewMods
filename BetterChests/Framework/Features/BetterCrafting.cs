@@ -108,9 +108,9 @@ internal sealed class BetterCrafting : BaseFeature
     {
         BetterCrafting.EligibleStorages.Clear();
         BetterCrafting.MaterialStorages.Clear();
-        if (IntegrationService.BetterCrafting.IsLoaded)
+        if (Integrations.BetterCrafting.IsLoaded)
         {
-            IntegrationService.BetterCrafting.Api.OpenCraftingMenu(false, false, null, null, null, false);
+            Integrations.BetterCrafting.Api.OpenCraftingMenu(false, false, null, null, null, false);
             return true;
         }
 
@@ -148,12 +148,12 @@ internal sealed class BetterCrafting : BaseFeature
             new(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
 
         // Integrations
-        if (!IntegrationService.BetterCrafting.IsLoaded)
+        if (!Integrations.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        IntegrationService.BetterCrafting.Api.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
+        Integrations.BetterCrafting.Api.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
     }
 
     /// <inheritdoc />
@@ -185,12 +185,12 @@ internal sealed class BetterCrafting : BaseFeature
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
 
         // Integrations
-        if (!IntegrationService.BetterCrafting.IsLoaded)
+        if (!Integrations.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        IntegrationService.BetterCrafting.Api.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
+        Integrations.BetterCrafting.Api.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -267,7 +267,7 @@ internal sealed class BetterCrafting : BaseFeature
 
         BetterCrafting.InWorkbench = false;
         IList<StorageNode> storages = new List<StorageNode>();
-        foreach (var storage in StorageService.All)
+        foreach (var storage in StorageHandler.All)
         {
             if (storage.CraftFromChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default
                 || storage.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
@@ -298,8 +298,8 @@ internal sealed class BetterCrafting : BaseFeature
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.OldMenu is not (CraftingPage or GameMenu)
-            && (!IntegrationService.BetterCrafting.IsLoaded
-                || e.OldMenu?.GetType() != IntegrationService.BetterCrafting.Api.GetMenuType()))
+            && (!Integrations.BetterCrafting.IsLoaded
+                || e.OldMenu?.GetType() != Integrations.BetterCrafting.Api.GetMenuType()))
         {
             return;
         }

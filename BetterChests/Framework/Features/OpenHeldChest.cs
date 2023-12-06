@@ -173,7 +173,7 @@ internal sealed class OpenHeldChest : BaseFeature
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
-            || StorageService.CurrentItem is null
+            || StorageHandler.CurrentItem is null
                 or
                 {
                     OpenHeldChest: not FeatureOption.Enabled,
@@ -187,7 +187,7 @@ internal sealed class OpenHeldChest : BaseFeature
         {
             chest.checkForAction(Game1.player);
         }
-        else if (StorageService.CurrentItem.Data is Storage storageObject)
+        else if (StorageHandler.CurrentItem.Data is Storage storageObject)
         {
             Game1.player.currentLocation.localSound("openChest");
             storageObject.ShowMenu();

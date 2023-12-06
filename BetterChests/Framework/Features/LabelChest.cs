@@ -68,7 +68,7 @@ internal sealed class LabelChest : BaseFeature
         var pos = CommonHelpers.GetCursorTile();
         if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
                 && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
-            || !StorageService.TryGetOne(obj, out var storage)
+            || !StorageHandler.TryGetOne(obj, out var storage)
             || string.IsNullOrWhiteSpace(storage.ChestLabel))
         {
             return;

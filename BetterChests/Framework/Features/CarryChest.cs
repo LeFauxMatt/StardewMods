@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Services;
-using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Helpers;
@@ -18,8 +17,6 @@ using StardewValley.Objects;
 /// <summary>Allows a placed chest full of items to be picked up by the farmer.</summary>
 internal sealed class CarryChest : BaseFeature
 {
-    private const string BuffId = "furyx639.BetterChests/Overburdened";
-
     private static readonly MethodBase InventoryMenuRightClick = AccessTools.DeclaredMethod(
         typeof(InventoryMenu),
         nameof(InventoryMenu.rightClick));
@@ -65,6 +62,7 @@ internal sealed class CarryChest : BaseFeature
 #nullable enable
 
     private readonly ModConfig config;
+    private readonly BuffHandler buffs;
     private readonly IModEvents events;
     private readonly Harmony harmony;
     private readonly IInputHelper input;
@@ -72,48 +70,19 @@ internal sealed class CarryChest : BaseFeature
     /// <summary>Initializes a new instance of the <see cref="CarryChest" /> class.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="buffs">Dependency used for adding and removing custom buffs.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch the base game.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
-    public CarryChest(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+    public CarryChest(IMonitor monitor, ModConfig config, BuffHandler buffs, IModEvents events, Harmony harmony, IInputHelper input)
         : base(monitor, nameof(CarryChest), () => config.CarryChest is not FeatureOption.Disabled)
     {
         CarryChest.instance = this;
         this.config = config;
+        this.buffs = buffs;
         this.events = events;
         this.harmony = harmony;
         this.input = input;
-    }
-
-    private static ModConfig Config => CarryChest.instance.config;
-
-    /// <summary>Checks if the player should be overburdened while carrying a chest.</summary>
-    /// <param name="excludeCurrent">Whether to exclude the current item.</param>
-    public static void CheckForOverburdened(bool excludeCurrent = false)
-    {
-        if (CarryChest.Config.CarryChestSlowAmount == 0)
-        {
-            Game1.player.buffs.Remove(CarryChest.BuffId);
-            return;
-        }
-
-        foreach (var storage in StorageService.Inventory)
-        {
-            if (storage is not
-                {
-                    Data: Storage storageObject,
-                }
-                || (excludeCurrent && storageObject.Context == Game1.player.CurrentItem)
-                || !storageObject.Inventory.HasAny())
-            {
-                continue;
-            }
-
-            Game1.player.buffs.Apply(CarryChest.GetOverburdened(CarryChest.Config.CarryChestSlowAmount));
-            return;
-        }
-
-        Game1.player.buffs.Remove(CarryChest.BuffId);
     }
 
     /// <inheritdoc />
@@ -121,8 +90,8 @@ internal sealed class CarryChest : BaseFeature
     {
         // Events
         this.events.Input.ButtonPressed += this.OnButtonPressed;
-        this.events.GameLoop.DayStarted += CarryChest.OnDayStarted;
-        this.events.Player.InventoryChanged += CarryChest.OnInventoryChanged;
+        this.events.GameLoop.DayStarted += this.OnDayStarted;
+        this.events.Player.InventoryChanged += this.OnInventoryChanged;
 
         // Patches
         this.harmony.Patch(
@@ -167,8 +136,8 @@ internal sealed class CarryChest : BaseFeature
     {
         // Events
         this.events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.events.GameLoop.DayStarted -= CarryChest.OnDayStarted;
-        this.events.Player.InventoryChanged -= CarryChest.OnInventoryChanged;
+        this.events.GameLoop.DayStarted -= this.OnDayStarted;
+        this.events.Player.InventoryChanged -= this.OnInventoryChanged;
 
         // Patches
         this.harmony.Unpatch(
@@ -207,15 +176,6 @@ internal sealed class CarryChest : BaseFeature
             CarryChest.UtilityIterateChestsAndStorage,
             AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Utility_iterateChestsAndStorage_postfix)));
     }
-
-    private static Buff GetOverburdened(int speed) =>
-        new(
-            CarryChest.BuffId,
-            displayName: I18n.Effect_CarryChestSlow_Description(speed.ToString(CultureInfo.InvariantCulture)),
-            duration: int.MaxValue / 700,
-            iconTexture: Game1.buffsIcons,
-            iconSheetIndex: 13,
-            effects: new() { Speed = { -speed } });
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
@@ -416,48 +376,56 @@ internal sealed class CarryChest : BaseFeature
         placed.lidFrameCount.Value = held.lidFrameCount.Value;
         placed.playerChoiceColor.Value = held.playerChoiceColor.Value;
 
-        CarryChest.CheckForOverburdened(true);
-    }
-
-    private static void OnDayStarted(object? sender, DayStartedEventArgs e) => CarryChest.CheckForOverburdened();
-
-    private static void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) =>
-        CarryChest.CheckForOverburdened();
-
-    private static void RecursiveIterate(Farmer player, Chest chest, Action<Item> action, ISet<Chest> exclude)
-    {
-        var items = chest.GetItemsForPlayer(player.UniqueMultiplayerID);
-        if (exclude.Contains(chest) || chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest)
-        {
-            return;
-        }
-
-        exclude.Add(chest);
-        foreach (var item in items)
-        {
-            if (item is Chest otherChest)
-            {
-                CarryChest.RecursiveIterate(player, otherChest, action, exclude);
-            }
-
-            if (item is not null)
-            {
-                action(item);
-            }
-        }
+        CarryChest.instance.buffs.CheckForOverburdened(true);
     }
 
     private static void Utility_iterateChestsAndStorage_postfix(Action<Item> action)
     {
         CarryChest.instance.Monitor.VerboseLog("Recursively iterating chests in farmer inventory.");
+        var exclude = new HashSet<Chest>();
         foreach (var farmer in Game1.getAllFarmers())
         {
+            var stack = new Stack<Chest>();
             foreach (var chest in farmer.Items.OfType<Chest>())
             {
-                CarryChest.RecursiveIterate(farmer, chest, action, new HashSet<Chest>());
+                stack.Push(chest);
+            }
+
+            while (stack.TryPop(out var chest))
+            {
+                if (exclude.Contains(chest))
+                {
+                    continue;
+                }
+
+                exclude.Add(chest);
+                if (chest.SpecialChestType is Chest.SpecialChestTypes.JunimoChest)
+                {
+                    continue;
+                }
+
+                var items = chest.GetItemsForPlayer(farmer.UniqueMultiplayerID);
+                foreach (var item in items)
+                {
+                    if (item is Chest other)
+                    {
+                        stack.Push(other);
+                    }
+
+                    if (item is not null)
+                    {
+                        action.Invoke(item);
+                    }
+                }
             }
         }
     }
+
+    private void OnDayStarted(object? sender, DayStartedEventArgs e) =>
+        this.buffs.CheckForOverburdened();
+
+    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) =>
+        this.buffs.CheckForOverburdened();
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -474,7 +442,7 @@ internal sealed class CarryChest : BaseFeature
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-            || !StorageService.TryGetOne(obj, out var storage)
+            || !StorageHandler.TryGetOne(obj, out var storage)
             || storage.CarryChest is not FeatureOption.Enabled)
         {
             return;
@@ -511,6 +479,6 @@ internal sealed class CarryChest : BaseFeature
         Game1.playSound("pickUpItem");
         Game1.currentLocation.Objects.Remove(pos);
         this.input.Suppress(e.Button);
-        CarryChest.CheckForOverburdened();
+        this.buffs.CheckForOverburdened();
     }
 }

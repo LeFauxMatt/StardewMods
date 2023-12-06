@@ -32,7 +32,7 @@ internal sealed class SearchItems : BaseFeature
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
     /// <param name="translation">Dependency used for accessing translations.</param>
     public SearchItems(

@@ -11,7 +11,6 @@ using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Extensions;
 using StardewValley.Menus;
 
 /// <summary>Configure storages individually.</summary>
@@ -26,47 +25,54 @@ internal sealed class Configurator : BaseFeature
 #nullable enable
 
     private readonly ModConfig config;
+    private readonly ConfigMenu configMenu;
     private readonly PerScreen<ClickableTextureComponent> configButton;
     private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
     private readonly PerScreen<StorageNode?> currentStorage = new();
     private readonly IModEvents events;
     private readonly Harmony harmony;
     private readonly IInputHelper input;
+    private readonly StorageHandler storages;
     private readonly IManifest manifest;
     private readonly ITranslationHelper translation;
 
     private bool isActive;
-    private EventHandler<StorageNode>? storageEdited;
 
     /// <summary>Initializes a new instance of the <see cref="Configurator" /> class.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="configMenu">Dependency for handling the config menu.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading assets from the game.</param>
+    /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="harmony">Dependency used to patch the base game.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
+    /// <param name="storages">Dependency for the managing storages.</param>
     /// <param name="translation">Dependency used for accessing translations.</param>
     public Configurator(
         IMonitor monitor,
         ModConfig config,
+        ConfigMenu configMenu,
         IManifest manifest,
         IModEvents events,
         IGameContentHelper gameContent,
         Harmony harmony,
         IInputHelper input,
+        StorageHandler storages,
         ITranslationHelper translation)
         : base(
             monitor,
             nameof(Configurator),
-            () => config.Configurator is not FeatureOption.Disabled && IntegrationService.GMCM.IsLoaded)
+            () => config.Configurator is not FeatureOption.Disabled && Integrations.GMCM.IsLoaded)
     {
         Configurator.instance = this;
         this.config = config;
+        this.configMenu = configMenu;
         this.manifest = manifest;
         this.events = events;
         this.harmony = harmony;
         this.input = input;
+        this.storages = storages;
         this.translation = translation;
         this.configButton = new(
             () => new(
@@ -93,13 +99,6 @@ internal sealed class Configurator : BaseFeature
     {
         get => this.currentStorage.Value;
         set => this.currentStorage.Value = value;
-    }
-
-    /// <summary>Raised after an <see cref="StorageNode" /> has been edited.</summary>
-    public static event EventHandler<StorageNode> StorageEdited
-    {
-        add => Configurator.instance.storageEdited += value;
-        remove => Configurator.instance.storageEdited -= value;
     }
 
     /// <inheritdoc />
@@ -210,8 +209,8 @@ internal sealed class Configurator : BaseFeature
         }
         else
         {
-            ConfigService.SetupSpecificConfig(this.manifest, BetterItemGrabMenu.Context, true);
-            IntegrationService.GMCM.Api!.OpenModMenu(this.manifest);
+            this.configMenu.SetupSpecificConfig(this.manifest, BetterItemGrabMenu.Context, true);
+            this.configMenu.ShowMenu(this.manifest);
             this.isActive = true;
         }
 
@@ -222,14 +221,14 @@ internal sealed class Configurator : BaseFeature
     {
         if (!Context.IsPlayerFree
             || !this.config.ControlScheme.Configure.JustPressed()
-            || StorageService.CurrentItem is null)
+            || StorageHandler.CurrentItem is null)
         {
             return;
         }
 
         this.input.SuppressActiveKeybinds(this.config.ControlScheme.Configure);
-        ConfigService.SetupSpecificConfig(this.manifest, StorageService.CurrentItem, true);
-        IntegrationService.GMCM.Api!.OpenModMenu(this.manifest);
+        this.configMenu.SetupSpecificConfig(this.manifest, StorageHandler.CurrentItem, true);
+        Integrations.GMCM.Api!.OpenModMenu(this.manifest);
         this.isActive = true;
     }
 
@@ -255,7 +254,7 @@ internal sealed class Configurator : BaseFeature
         }
 
         this.isActive = false;
-        ConfigService.SetupMainConfig();
+        this.configMenu.SetupMainConfig();
 
         if (e.NewMenu?.GetType().Name != "ModConfigMenu")
         {
@@ -267,7 +266,7 @@ internal sealed class Configurator : BaseFeature
                 Data: Storage storageObject,
             })
         {
-            this.storageEdited.InvokeAll(this, this.CurrentStorage);
+            this.storages.InvokeStorageEdited(this.CurrentStorage);
             storageObject.ShowMenu();
             this.CurrentStorage = null;
             return;

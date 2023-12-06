@@ -3,12 +3,15 @@
   <PropertyGroup>
     <Name>Better Chests</Name>
     <Description>Framework that adds new features to chests.</Description>
-    <Version>2.9.0-alpha.2</Version>
+    <Version>2.9.0-alpha.3</Version>
     <EnableHarmony>true</EnableHarmony>
-    <BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
     <RootNamespace>StardewMods.BetterChests</RootNamespace>
     <UniqueId>furyx639.BetterChests</UniqueId>
     <UpdateKeys>Nexus:9791</UpdateKeys>
+    <BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
+    <IgnoreModFilePatterns>
+      ^NetEscapades
+    </IgnoreModFilePatterns>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>

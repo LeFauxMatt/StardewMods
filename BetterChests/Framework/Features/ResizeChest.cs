@@ -40,7 +40,7 @@ internal sealed class ResizeChest : BaseFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (!StorageService.TryGetOne(__instance, out var storage)
+        if (!StorageHandler.TryGetOne(__instance, out var storage)
             || storage is not
             {
                 Data: Storage storageObject,

@@ -4,19 +4,19 @@ using System.Globalization;
 using StardewMods.Common.Enums;
 
 /// <summary>Helper methods to convert between different text formats.</summary>
-internal sealed class FormatService
+internal sealed class Formatting
 {
 #nullable disable
-    private static FormatService instance;
+    private static Formatting instance;
 #nullable enable
 
     private readonly ITranslationHelper translationHelper;
 
-    /// <summary>Initializes a new instance of the <see cref="FormatService" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Formatting" /> class.</summary>
     /// <param name="translationHelper">SMAPI helper for providing translations.</param>
-    public FormatService(ITranslationHelper translationHelper)
+    public Formatting(ITranslationHelper translationHelper)
     {
-        FormatService.instance = this;
+        Formatting.instance = this;
         this.translationHelper = translationHelper;
     }
 
@@ -155,7 +155,7 @@ internal sealed class FormatService
             "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) => TokenParser
                 .ParseText(buildingData.Name),
             "Fridge" => I18n.Storage_Fridge_Name(),
-            _ => FormatService.instance.translationHelper.Get($"storage.{value}.name").Default(value),
+            _ => Formatting.instance.translationHelper.Get($"storage.{value}.name").Default(value),
         };
 
     /// <summary>Formats a storage tooltip using localized text when available.</summary>
@@ -174,6 +174,6 @@ internal sealed class FormatService
             "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) =>
                 TokenParser.ParseText(buildingData.Description),
             "Fridge" => I18n.Storage_Fridge_Tooltip(),
-            _ => FormatService.instance.translationHelper.Get($"storage.{value}.tooltip").Default(value),
+            _ => Formatting.instance.translationHelper.Get($"storage.{value}.tooltip").Default(value),
         };
 }

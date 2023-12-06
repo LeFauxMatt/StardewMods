@@ -85,28 +85,28 @@ internal sealed class ChestInfo : BaseFeature
             {
                 Chest.SpecialChestType: Chest.SpecialChestTypes.JunimoChest,
             }:
-                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Junimo Chest")));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Chest")));
                 break;
             case ChestStorage
             {
                 Chest.fridge.Value: true,
             }:
-                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Mini-Fridge")));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Fridge")));
                 break;
             case ChestStorage
             {
                 Chest.SpecialChestType: Chest.SpecialChestTypes.MiniShippingBin,
             }:
-                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Mini-Shipping Bin")));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Mini-Shipping Bin")));
                 break;
             case ChestStorage:
-                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Chest")));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Chest")));
                 break;
             case JunimoHutStorage:
-                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Junimo Hut")));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Junimo Hut")));
                 break;
             case ShippingBinStorage:
-                info.Add(new(I18n.ChestInfo_Type(), FormatService.StorageName("Shipping Bin")));
+                info.Add(new(I18n.ChestInfo_Type(), Formatting.StorageName("Shipping Bin")));
                 break;
             case FridgeStorage:
                 info.Add(new(I18n.ChestInfo_Type(), I18n.Storage_Fridge_Name()));

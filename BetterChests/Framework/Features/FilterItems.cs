@@ -61,12 +61,12 @@ internal sealed class FilterItems : BaseFeature
             new(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
 
         // Integrations
-        if (!IntegrationService.Automate.IsLoaded)
+        if (!Integrations.Automate.IsLoaded)
         {
             return;
         }
 
-        this.storeMethod = this.registry.Get(IntegrationService.Automate.UniqueId)
+        this.storeMethod = this.registry.Get(Integrations.Automate.UniqueId)
             ?.GetType()
             .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
             ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
@@ -102,7 +102,7 @@ internal sealed class FilterItems : BaseFeature
     private static bool Automate_Store_prefix(object stack, Chest ___Chest)
     {
         var item = FilterItems.Reflection.GetProperty<Item>(stack, "Sample").GetValue();
-        return !StorageService.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
+        return !StorageHandler.TryGetOne(___Chest, out var storage) || storage.FilterMatches(item);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -110,7 +110,7 @@ internal sealed class FilterItems : BaseFeature
     [HarmonyPriority(Priority.High)]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!StorageService.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
+        if (!StorageHandler.TryGetOne(__instance, out var storage) || storage.FilterMatches(item))
         {
             return true;
         }

@@ -41,18 +41,18 @@ internal sealed class StashToChest : BaseFeature
         this.events.Input.ButtonPressed += this.OnButtonPressed;
 
         // Integrations
-        if (!IntegrationService.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationService.ToolbarIcons.Api.AddToolbarIcon(
+        Integrations.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.StashToChest",
             "furyx639.BetterChests/Icons",
             new(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
 
-        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed += StashToChest.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -63,13 +63,13 @@ internal sealed class StashToChest : BaseFeature
         this.events.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Integrations
-        if (!IntegrationService.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationService.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.StashToChest");
-        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.StashToChest");
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= StashToChest.OnToolbarIconPressed;
     }
 
     private static void OnToolbarIconPressed(object? sender, string id)
@@ -83,7 +83,7 @@ internal sealed class StashToChest : BaseFeature
     private static void StashIntoAll()
     {
         var stashedAny = false;
-        var storages = StorageService.All.ToArray();
+        var storages = StorageHandler.All.ToArray();
         Array.Sort(storages);
 
         foreach (var storage in storages)

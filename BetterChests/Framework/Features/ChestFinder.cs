@@ -84,18 +84,18 @@ internal sealed class ChestFinder : BaseFeature
         this.events.Player.Warped += this.OnWarped;
 
         // Integrations
-        if (!IntegrationService.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationService.ToolbarIcons.Api.AddToolbarIcon(
+        Integrations.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.FindChest",
             "furyx639.BetterChests/Icons",
             new(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
 
-        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -110,13 +110,13 @@ internal sealed class ChestFinder : BaseFeature
         this.events.Player.Warped -= this.OnWarped;
 
         // Integrations
-        if (!IntegrationService.ToolbarIcons.IsLoaded)
+        if (!Integrations.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        IntegrationService.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
-        IntegrationService.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
+        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -387,7 +387,7 @@ internal sealed class ChestFinder : BaseFeature
         }
 
         var storages = new List<StorageNode>();
-        foreach (var storage in StorageService.CurrentLocation)
+        foreach (var storage in StorageHandler.CurrentLocation)
         {
             if (storage is not
                 {

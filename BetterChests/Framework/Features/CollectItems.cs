@@ -20,6 +20,7 @@ internal sealed class CollectItems : BaseFeature
 #nullable enable
 
     private readonly PerScreen<List<StorageNode>> eligible = new(() => new());
+    private readonly StorageHandler storages;
     private readonly IModEvents events;
     private readonly Harmony harmony;
 
@@ -28,12 +29,14 @@ internal sealed class CollectItems : BaseFeature
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch the base game.</param>
-    public CollectItems(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony)
+    /// <param name="storages">Dependency for the managing storages.</param>
+    public CollectItems(IMonitor monitor, ModConfig config, IModEvents events, Harmony harmony, StorageHandler storages)
         : base(monitor, nameof(CollectItems), () => config.CollectItems is not FeatureOption.Disabled)
     {
         CollectItems.instance = this;
         this.events = events;
         this.harmony = harmony;
+        this.storages = storages;
     }
 
     private static List<StorageNode> Eligible => CollectItems.instance.eligible.Value;
@@ -42,7 +45,7 @@ internal sealed class CollectItems : BaseFeature
     protected override void Activate()
     {
         // Events
-        Configurator.StorageEdited += CollectItems.OnStorageEdited;
+        this.storages.StorageEdited += CollectItems.OnStorageEdited;
         this.events.GameLoop.SaveLoaded += CollectItems.OnSaveLoaded;
         this.events.Player.InventoryChanged += CollectItems.OnInventoryChanged;
 
@@ -56,7 +59,7 @@ internal sealed class CollectItems : BaseFeature
     protected override void Deactivate()
     {
         // Events
-        Configurator.StorageEdited -= CollectItems.OnStorageEdited;
+        this.storages.StorageEdited -= CollectItems.OnStorageEdited;
         this.events.GameLoop.SaveLoaded -= CollectItems.OnSaveLoaded;
         this.events.Player.InventoryChanged -= CollectItems.OnInventoryChanged;
 
@@ -124,7 +127,7 @@ internal sealed class CollectItems : BaseFeature
     private static void RefreshEligible()
     {
         CollectItems.Eligible.Clear();
-        foreach (var storage in StorageService.FromPlayer(Game1.player, limit: 12))
+        foreach (var storage in StorageHandler.FromPlayer(Game1.player, limit: 12))
         {
             if (storage is not
                 {
