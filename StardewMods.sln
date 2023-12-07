@@ -32,7 +32,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandedStorage", "Expanded
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelpfulSpouses", "HelpfulSpouses\HelpfulSpouses.csproj", "{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeaTime", "TeaTime\TeaTime.csproj", "{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomBush", "CustomBush\CustomBush.csproj", "{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryCore", "FuryCore\FuryCore.csproj", "{86D15779-C8A5-49C9-8ECD-530298893A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +78,10 @@ Global
 		{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86D15779-C8A5-49C9-8ECD-530298893A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86D15779-C8A5-49C9-8ECD-530298893A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86D15779-C8A5-49C9-8ECD-530298893A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86D15779-C8A5-49C9-8ECD-530298893A52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

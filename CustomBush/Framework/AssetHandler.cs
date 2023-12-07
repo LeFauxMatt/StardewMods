@@ -1,4 +1,4 @@
-namespace StardewMods.TeaTime.Framework;
+namespace StardewMods.CustomBush.Framework;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -6,8 +6,8 @@ using StardewModdingAPI.Events;
 /// <summary>Responsible for handling assets provided by this mod.</summary>
 internal sealed class AssetHandler
 {
-    /// <summary>Game path to data assets used by TeaTime.</summary>
-    private const string DataPath = "furyx639.TeaTime/Data";
+    /// <summary>Game path to data assets used by CustomBush.</summary>
+    private const string DataPath = "furyx639.CustomBush/Data";
 
     private readonly IGameContentHelper gameContent;
 
@@ -22,9 +22,9 @@ internal sealed class AssetHandler
         events.Content.AssetRequested += AssetHandler.OnAssetRequested;
     }
 
-    /// <summary>Gets TeaTime data.</summary>
-    public Dictionary<string, TeaModel> TeaData =>
-        this.gameContent.Load<Dictionary<string, TeaModel>>(AssetHandler.DataPath);
+    /// <summary>Gets CustomBush data.</summary>
+    public Dictionary<string, BushModel> TeaData =>
+        this.gameContent.Load<Dictionary<string, BushModel>>(AssetHandler.DataPath);
 
     /// <summary>Loads a game texture.</summary>
     /// <param name="path">The path to the game texture.</param>
@@ -35,7 +35,7 @@ internal sealed class AssetHandler
     {
         if (e.Name.IsEquivalentTo(AssetHandler.DataPath))
         {
-            e.LoadFrom(() => new Dictionary<string, TeaModel>(), AssetLoadPriority.Exclusive);
+            e.LoadFrom(() => new Dictionary<string, BushModel>(), AssetLoadPriority.Exclusive);
         }
     }
 }

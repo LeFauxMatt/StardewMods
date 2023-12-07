@@ -1,15 +1,15 @@
-﻿namespace StardewMods.TeaTime;
+﻿namespace StardewMods.CustomBush;
 
 using HarmonyLib;
 using StardewModdingAPI.Events;
-using StardewMods.TeaTime.Framework;
+using StardewMods.CustomBush.Framework;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
 #nullable disable
     private AssetHandler assetHandler;
-    private TeaHandler teaHandler;
+    private BushManager bushManager;
 #nullable enable
 
     private bool wait;
@@ -38,6 +38,6 @@ public sealed class ModEntry : Mod
         this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
 
         var harmony = new Harmony(this.ModManifest.UniqueID);
-        this.teaHandler = new(this.assetHandler, harmony);
+        this.bushManager = new(this.Monitor, this.assetHandler, harmony);
     }
 }

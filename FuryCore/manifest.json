@@ -2,16 +2,19 @@
   /*
    | This file is automatically updated by ModManifestBuilder
    | when the project is compiled.
-   | 
+   |
    | Changes made to this file may be overwritten.
-   | 
+   |
    */
   "$schema": "https://smapi.io/schemas/manifest.json",
-  "UniqueID": "furyx639.TeaTime",
-  "Name": "Tea Time",
+  "UniqueID": "furyx639.FuryCore",
+  "Name": "Fury Core",
   "Author": "furyx639",
-  "Version": "1.0.0-alpha.1",
-  "Description": "Tea Time allows custom crops to be added to the game which work like the Tea Sapling.",
+  "Version": "2.0.0-alpha.1",
+  "Description": "Framework that provides shared functionality for all of my mods.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
-  "EntryDll": "TeaTime.dll"
+  "EntryDll": "FuryCore.dll",
+  "UpdateKeys": [
+    "Nexus:10696"
+  ]
 }
