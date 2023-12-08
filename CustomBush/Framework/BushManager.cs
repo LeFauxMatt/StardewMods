@@ -1,15 +1,11 @@
 namespace StardewMods.CustomBush.Framework;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
-using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Internal;
 using StardewValley.Objects;
@@ -21,20 +17,20 @@ internal sealed class BushManager
     private const string ModDataId = "furyx639.CustomBush/Id";
     private const string ModDataItem = "furyx639.CustomBush/ShakeOff";
 
-    private static readonly ConstructorInfo BushConstructor = AccessTools.Constructor(typeof(Bush), new[] { typeof(Vector2), typeof(int), typeof(GameLocation), typeof(int) });
+    private static readonly ConstructorInfo BushConstructor = AccessTools.Constructor(
+        typeof(Bush),
+        new[] { typeof(Vector2), typeof(int), typeof(GameLocation), typeof(int) });
 
 #nullable disable
     private static BushManager instance;
 #nullable enable
-
-    private readonly IMonitor monitor;
     private readonly AssetHandler assets;
     private readonly MethodInfo checkItemPlantRules;
     private readonly Dictionary<string, BushModel> data;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BushManager"/> class.
-    /// </summary>
+    private readonly IMonitor monitor;
+
+    /// <summary>Initializes a new instance of the <see cref="BushManager" /> class.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="assets">Dependency used for managing assets.</param>
     /// <param name="harmony">Dependency used to patch the base game.</param>
@@ -91,6 +87,7 @@ internal sealed class BushManager
         }
 
         bush.modData[BushManager.ModDataId] = obj.QualifiedItemId;
+        bush.setUpSourceRect();
         return bush;
     }
 
@@ -144,7 +141,8 @@ internal sealed class BushManager
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Bush_inBloom_postfix(Bush __instance, ref bool __result)
     {
-        if (__instance.modData.TryGetValue(BushManager.ModDataItem, out var itemId) && !string.IsNullOrWhiteSpace(itemId))
+        if (__instance.modData.TryGetValue(BushManager.ModDataItem, out var itemId)
+            && !string.IsNullOrWhiteSpace(itemId))
         {
             __result = true;
             return;
@@ -182,11 +180,14 @@ internal sealed class BushManager
         }
 
         // Try to produce item
-        if (BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out itemId))
+        if (!BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out itemId))
         {
-            __instance.modData[BushManager.ModDataItem] = itemId;
-            __result = true;
+            __result = false;
+            return;
         }
+
+        __result = true;
+        __instance.modData[BushManager.ModDataItem] = itemId;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -194,7 +195,7 @@ internal sealed class BushManager
     private static void Bush_setUpSourceRect_postfix(Bush __instance, NetRectangle ___sourceRect)
     {
         if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
-            || !BushManager.instance.data.TryGetValue(id, out _))
+            || !BushManager.instance.data.TryGetValue(id, out var bushModel))
         {
             return;
         }
@@ -204,11 +205,14 @@ internal sealed class BushManager
         var offset = Math.Min(2, age / 10) * 16;
         var (x, y) = season switch
         {
-            Season.Summer => (64 + offset + (__instance.tileSheetOffset.Value * 16), 0),
-            Season.Fall => (offset + (__instance.tileSheetOffset.Value * 16), 32),
-            Season.Winter => (64 + offset + (__instance.tileSheetOffset.Value * 16), 32),
-            _ => ((Math.Min(2, age / 10) * 16) + (__instance.tileSheetOffset.Value * 16), 0),
+            Season.Summer => (64 + offset + (__instance.tileSheetOffset.Value * 16), bushModel.TextureSpriteRow * 16),
+            Season.Fall => (offset + (__instance.tileSheetOffset.Value * 16), (bushModel.TextureSpriteRow * 16) + 32),
+            Season.Winter => (64 + offset + (__instance.tileSheetOffset.Value * 16),
+                (bushModel.TextureSpriteRow * 16) + 32),
+            _ => ((Math.Min(2, age / 10) * 16) + (__instance.tileSheetOffset.Value * 16),
+                bushModel.TextureSpriteRow * 16),
         };
+
         ___sourceRect.Value = new(x, y, 16, 32);
     }
 
@@ -230,7 +234,13 @@ internal sealed class BushManager
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void GameLocation_CheckItemPlantRules_postfix(GameLocation __instance, ref bool __result, string itemId, bool isGardenPot, bool defaultAllowed, ref string deniedMessage)
+    private static void GameLocation_CheckItemPlantRules_postfix(
+        GameLocation __instance,
+        ref bool __result,
+        string itemId,
+        bool isGardenPot,
+        bool defaultAllowed,
+        ref string deniedMessage)
     {
         var metadata = ItemRegistry.GetMetadata(itemId);
         if (metadata is null
@@ -269,7 +279,11 @@ internal sealed class BushManager
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void IndoorPot_performObjectDropInAction_postfix(IndoorPot __instance, Item dropInItem, bool probe, ref bool __result)
+    private static void IndoorPot_performObjectDropInAction_postfix(
+        IndoorPot __instance,
+        Item dropInItem,
+        bool probe,
+        ref bool __result)
     {
         if (!BushManager.instance.data.ContainsKey(dropInItem.QualifiedItemId) || __instance.hoeDirt.Value.crop != null)
         {
@@ -326,7 +340,7 @@ internal sealed class BushManager
         }
     }
 
-    private bool TryToProduceRandomItem(Bush bush, BushModel bushModel, [NotNullWhen(true)]out string? itemId)
+    private bool TryToProduceRandomItem(Bush bush, BushModel bushModel, [NotNullWhen(true)] out string? itemId)
     {
         foreach (var drop in bushModel.ItemsProduced)
         {
@@ -375,7 +389,7 @@ internal sealed class BushManager
         var item = ItemQueryResolver.TryResolveRandomItem(
             drop,
             new(bush.Location, null, null),
-            avoidRepeat: false,
+            false,
             null,
             null,
             null,

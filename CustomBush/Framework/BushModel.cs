@@ -22,9 +22,7 @@ internal sealed class BushModel
         Season.Fall,
     };
 
-    /// <summary>
-    /// Gets or sets the rules which override the locations that custom bushes can be planted in.
-    /// </summary>
+    /// <summary>Gets or sets the rules which override the locations that custom bushes can be planted in.</summary>
     public List<PlantableRule> PlantableLocationRules { get; set; } = new();
 
     /// <summary>Gets or sets the texture of the tea bush.</summary>

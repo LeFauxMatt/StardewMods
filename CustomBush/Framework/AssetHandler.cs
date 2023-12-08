@@ -11,9 +11,7 @@ internal sealed class AssetHandler
 
     private readonly IGameContentHelper gameContent;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AssetHandler"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="events">Dependency used for monitoring and logging.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
     public AssetHandler(IModEvents events, IGameContentHelper gameContent)

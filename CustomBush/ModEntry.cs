@@ -7,14 +7,9 @@ using StardewMods.CustomBush.Framework;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-#nullable disable
-    private AssetHandler assetHandler;
-    private BushManager bushManager;
-#nullable enable
-
     private bool wait;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         this.assetHandler = new(this.Helper.Events, this.Helper.GameContent);
@@ -40,4 +35,7 @@ public sealed class ModEntry : Mod
         var harmony = new Harmony(this.ModManifest.UniqueID);
         this.bushManager = new(this.Monitor, this.assetHandler, harmony);
     }
+#nullable disable
+    private AssetHandler assetHandler;
+    private BushManager bushManager;
 }
