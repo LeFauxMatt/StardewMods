@@ -2,8 +2,7 @@ namespace StardewMods.Common.Models;
 
 /// <summary>Represents a range of values.</summary>
 /// <typeparam name="T">The value type for the range.</typeparam>
-internal sealed class Range<T>
-    where T : IComparable<T>
+internal sealed class Range<T> where T : IComparable<T>
 {
     /// <summary>Initializes a new instance of the <see cref="Range{T}" /> class.</summary>
     public Range()

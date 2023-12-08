@@ -10,5 +10,6 @@ internal static class ReflectionHelper
     /// <returns>The first assembly that matches the name.</returns>
     public static Assembly? GetAssemblyByName(string name) =>
         AppDomain.CurrentDomain.GetAssemblies()
-            .FirstOrDefault(assembly => assembly.FullName?.StartsWith($"{name},", StringComparison.OrdinalIgnoreCase) == true);
+            .FirstOrDefault(
+                assembly => assembly.FullName?.StartsWith($"{name},", StringComparison.OrdinalIgnoreCase) == true);
 }

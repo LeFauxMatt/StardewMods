@@ -6,11 +6,10 @@ using Microsoft.Xna.Framework;
 internal static class CommonHelpers
 {
     /// <summary>Gets or initializes ModConfig.</summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
+    /// <param name="helper">Dependency for events, input, and content.</param>
     /// <typeparam name="T">The ModConfig type.</typeparam>
     /// <returns>Returns an existing or new instance of ModConfig.</returns>
-    public static T GetConfig<T>(IModHelper helper)
-        where T : class, new()
+    public static T GetConfig<T>(IModHelper helper) where T : class, new()
     {
         T? config = default;
         try
@@ -19,11 +18,11 @@ internal static class CommonHelpers
         }
         catch (Exception)
         {
-            Log.Warn($"Error loading config: {typeof(T).Name}");
+            //Logger.Warn($"Error loading config: {typeof(T).Name}");
         }
 
         config ??= new();
-        Log.Trace(config.ToString()!);
+        //Logger.Trace(config.ToString()!);
         return config;
     }
 
