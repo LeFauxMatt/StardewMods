@@ -20,12 +20,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\IPatternPatcher.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\PatternPatcher.cs"/>
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Log.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemRepository.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\ItemType.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\SearchableItem.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs"/>
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ThemeHelper.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\AutomateIntegration.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomatable.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomateApi.cs"/>
@@ -44,6 +42,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\ExpandedStorageIntegration.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\ICustomStorage.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\IExpandedStorageApi.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\FuryCoreIntegration.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\IFuryCoreApi.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\JsonAssets\IApi.cs"/>
@@ -68,5 +68,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IColorable.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseThemeHelper.cs"/>
   </ItemGroup>
 </Project>

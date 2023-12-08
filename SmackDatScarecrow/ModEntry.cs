@@ -22,7 +22,6 @@ public sealed class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         ModEntry.instance = this;
-        Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
 
         // Events
@@ -135,7 +134,7 @@ public sealed class ModEntry : Mod
                 damageAmount = -2;
             }
 
-            if (who.CurrentTool?.Name.Equals("Galaxy Sword") == true)
+            if (who.CurrentTool is not null && who.CurrentTool.Name.Equals("Galaxy Sword", StringComparison.OrdinalIgnoreCase))
             {
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
@@ -188,7 +187,7 @@ public sealed class ModEntry : Mod
                         Game1.random.Next(15, 50),
                         6,
                         1,
-                        standPos - new Vector2(32 + Game1.random.Next(-21, 21) - 32, 32 + Game1.random.Next(-21, 21)),
+                        standPos - new Vector2((32 + Game1.random.Next(-21, 21)) - 32, 32 + Game1.random.Next(-21, 21)),
                         false,
                         Game1.random.NextDouble() < 0.5)
                     {
@@ -218,7 +217,7 @@ public sealed class ModEntry : Mod
                         Game1.random.Next(15, 50),
                         6,
                         1,
-                        standPos - new Vector2(32 + Game1.random.Next(-21, 21) - 32, 32 + Game1.random.Next(-21, 21)),
+                        standPos - new Vector2((32 + Game1.random.Next(-21, 21)) - 32, 32 + Game1.random.Next(-21, 21)),
                         false,
                         Game1.random.NextDouble() < 0.5)
                     {

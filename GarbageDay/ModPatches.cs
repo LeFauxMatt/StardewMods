@@ -43,7 +43,7 @@ internal sealed class ModPatches
     /// <summary>
     ///     Initializes <see cref="ModPatches" />.
     /// </summary>
-    /// <param name="manifest">A manifest to describe the mod.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
     public static ModPatches Init(IManifest manifest) => ModPatches.instance ??= new(manifest);
 

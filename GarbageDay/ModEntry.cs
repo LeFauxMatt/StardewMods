@@ -45,7 +45,6 @@ public sealed class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         // Init
-        Log.Monitor = this.Monitor;
         I18n.Init(this.Helper.Translation);
         ModPatches.Init(this.ModManifest);
 

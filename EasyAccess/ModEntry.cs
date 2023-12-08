@@ -19,7 +19,6 @@ public sealed class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         I18n.Init(this.Helper.Translation);
-        Log.Monitor = this.Monitor;
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
@@ -107,7 +106,7 @@ public sealed class ModEntry : Mod
                             direction,
                             Game1.currentLocation);
                         Game1.currentLocation.Objects.Remove(pos);
-                        Log.Info($"Dropped {obj.DisplayName} from forage.");
+                        this.Monitor.Log($"Dropped {obj.DisplayName} from forage.", LogLevel.Info);
                         continue;
                     }
 
@@ -116,7 +115,7 @@ public sealed class ModEntry : Mod
                         var item = obj.heldObject.Value;
                         if (item is not null && obj.checkForAction(Game1.player))
                         {
-                            Log.Info($"Collected {item.DisplayName} from producer {obj.DisplayName}.");
+                            this.Monitor.Log($"Collected {item.DisplayName} from producer {obj.DisplayName}.", LogLevel.Info);
                         }
                     }
                 }
@@ -164,14 +163,15 @@ public sealed class ModEntry : Mod
 
                 // Big Craftables
                 if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-                    || (obj.Type?.Equals("Crafting") != true && obj.Type?.Equals("interactive") != true)
+                    || (obj.Type?.Equals("Crafting", StringComparison.OrdinalIgnoreCase) != true
+                        && obj.Type?.Equals("interactive", StringComparison.OrdinalIgnoreCase) != true)
                     || !obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
                 {
                     continue;
                 }
 
                 Game1.player.reduceActiveItemByOne();
-                Log.Trace($"Dispensed {Game1.player.CurrentItem.DisplayName} into producer {obj.DisplayName}.");
+                this.Monitor.Log($"Dispensed {Game1.player.CurrentItem.DisplayName} into producer {obj.DisplayName}.");
             }
         }
     }

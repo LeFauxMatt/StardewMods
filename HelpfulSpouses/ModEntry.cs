@@ -25,7 +25,6 @@ public sealed class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         // Init
-        Log.Monitor = this.Monitor;
         ModPatches.Init(this.ModManifest);
         this.config = CommonHelpers.GetConfig<ModConfig>(this.Helper);
         this.chores[ChoreOption.BirthdayGift] = new BirthdayGift(this.config.BirthdayGiftOptions);

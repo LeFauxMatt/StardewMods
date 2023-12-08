@@ -49,11 +49,11 @@ public sealed class Api : IExpandedStorageApi
     /// <inheritdoc />
     public bool LoadContentPack(IContentPack contentPack)
     {
-        Log.Info($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+        Logger.Info($"Loading {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
         var storages = contentPack.ReadJsonFile<IDictionary<string, LegacyStorageData>>("expanded-storage.json");
         if (storages is null)
         {
-            Log.Warn($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
+            Logger.Warn($"Nothing to load from {contentPack.Manifest.Name} {contentPack.Manifest.Version}");
             return false;
         }
 
@@ -62,7 +62,7 @@ public sealed class Api : IExpandedStorageApi
         {
             if (this.storages.ContainsKey(id))
             {
-                Log.Warn($"A storage has already been loaded with the id {id}");
+                Logger.Warn($"A storage has already been loaded with the id {id}");
                 return false;
             }
 
@@ -101,7 +101,7 @@ public sealed class Api : IExpandedStorageApi
     {
         if (this.storages.ContainsKey(id))
         {
-            Log.Warn($"A storage has already been loaded with the id {id}");
+            Logger.Warn($"A storage has already been loaded with the id {id}");
             return false;
         }
 
