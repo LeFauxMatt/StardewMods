@@ -5,9 +5,7 @@ using StardewMods.Common.Integrations.ToolbarIcons;
 /// <inheritdoc />
 public sealed class ToolbarIcon : IToolbarIcon
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ToolbarIcon" /> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="ToolbarIcon" /> class.</summary>
     /// <param name="id">The id of the toolbar icon.</param>
     /// <param name="enabled">Whether the toolbar icon is enabled.</param>
     public ToolbarIcon(string id, bool enabled = true)

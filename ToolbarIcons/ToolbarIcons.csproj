@@ -1,17 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
-    <PropertyGroup>
-        <Name>Toolbar Icons</Name>
-        <Description>Adds icons above or below the toolbar.</Description>
-        <Version>2.6.0-alpha.2</Version>
-        <RootNamespace>StardewMods.ToolbarIcons</RootNamespace>
-        <UniqueId>furyx639.ToolbarIcons</UniqueId>
-        <UpdateKeys>Nexus:11026@SMAPI</UpdateKeys>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
-    </ItemGroup>
-	<ItemGroup>
-        <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false" />
-	</ItemGroup>
+  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
+  <PropertyGroup>
+    <Name>Toolbar Icons</Name>
+    <Description>Adds icons above or below the toolbar.</Description>
+    <Version>2.6.0-alpha.2</Version>
+    <RootNamespace>StardewMods.ToolbarIcons</RootNamespace>
+    <UniqueId>furyx639.ToolbarIcons</UniqueId>
+    <UpdateKeys>Nexus:11026@SMAPI</UpdateKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuryCore\FuryCore.csproj" Private="false"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.1" required="true"/>
+  </ItemGroup>
 </Project>

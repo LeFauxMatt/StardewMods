@@ -76,13 +76,13 @@ Sample `content.json`:
 
 The data entry is as follows:
 
-| Entry                  | Description                                                     |
-|:-----------------------|:----------------------------------------------------------------|
-| Hover Text             | The text to display when hovering over an icon.<sup>1</sup>     |
-| Texture Path           | Path to the icon texture.<sup>2</sup>                           |
-| Texture Index          | The position of the texture for this icon.<sup>3</sup>          |
-| Integration Type       | The type of action for this icon.<sup>4</sup>                   |
-| Integration Params     | Additional parameters depending on the action type.<sup>5</sup> |                                                                           |
+| Entry              | Description                                                     |
+|:-------------------|:----------------------------------------------------------------|
+| Hover Text         | The text to display when hovering over an icon.<sup>1</sup>     |
+| Texture Path       | Path to the icon texture.<sup>2</sup>                           |
+| Texture Index      | The position of the texture for this icon.<sup>3</sup>          |
+| Integration Type   | The type of action for this icon.<sup>4</sup>                   |
+| Integration Params | Additional parameters depending on the action type.<sup>5</sup> |                                                                           |
 
 1. Preferably localized text describing the icon's action.
 2. Path must be to a loaded texture asset.

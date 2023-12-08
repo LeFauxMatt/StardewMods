@@ -16,6 +16,10 @@
   "EntryDll": "ToolbarIcons.dll",
   "Dependencies": [
     {
+      "UniqueID": "furyx639.FuryCore",
+      "MinimumVersion": "2.0.0-alpha.1"
+    },
+    {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "MinimumVersion": "1.8.2",
       "IsRequired": false

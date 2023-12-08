@@ -1,38 +1,31 @@
-﻿namespace StardewMods.ToolbarIcons.Framework.IntegrationTypes;
+﻿namespace StardewMods.ToolbarIcons.Framework.Integrations;
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.ToolbarIcons.Framework.Services;
 using StardewValley.Menus;
 
 /// <inheritdoc />
 internal sealed class SimpleIntegration : BaseIntegration
 {
-    private MethodInfo? overrideButtonReflected;
+    private readonly MethodInfo overrideButtonReflected;
 
-    private SimpleIntegration(IModHelper helper, IToolbarIconsApi api)
-        : base(helper, api)
-    {
-        // Nothing
-    }
+    /// <summary>Initializes a new instance of the <see cref="SimpleIntegration" /> class.</summary>
+    /// <param name="customEvents">Dependency used for custom events.</param>
+    /// <param name="gameContent">Dependency used for loading game assets.</param>
+    /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
+    /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
+    /// <param name="toolbar">API to add icons above or below the toolbar.</param>
+    public SimpleIntegration(
+        EventsManager customEvents,
+        IGameContentHelper gameContent,
+        IModRegistry modRegistry,
+        IReflectionHelper reflection,
+        ToolbarHandler toolbar)
+        : base(customEvents, gameContent, modRegistry, reflection, toolbar) =>
+        this.overrideButtonReflected = Game1.input.GetType().GetMethod("OverrideButton")
+            ?? throw new MethodAccessException("Unable to access OverrideButton");
 
-    private static SimpleIntegration? Instance { get; set; }
-
-    private MethodInfo OverrideButtonReflected =>
-        this.overrideButtonReflected ??= Game1.input.GetType().GetMethod("OverrideButton")!;
-
-    /// <summary>
-    ///     Initializes <see cref="SimpleIntegration" />.
-    /// </summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="api">API to add icons above or below the toolbar.</param>
-    /// <returns>Returns an instance of the <see cref="SimpleIntegration" /> class.</returns>
-    public static SimpleIntegration Init(IModHelper helper, IToolbarIconsApi api) => SimpleIntegration.Instance ??= new(helper, api);
-
-    /// <summary>
-    ///     Adds a simple mod integration for a keybind.
-    /// </summary>
+    /// <summary>Adds a simple mod integration for a keybind.</summary>
     /// <param name="modId">The id of the mod.</param>
     /// <param name="index">The index of the mod icon.</param>
     /// <param name="hoverText">The text to display.</param>
@@ -41,7 +34,7 @@ internal sealed class SimpleIntegration : BaseIntegration
     /// <returns>Returns true if the icon was added.</returns>
     public bool AddKeybind(string modId, int index, string hoverText, string keybinds, string? texturePath = null)
     {
-        if (!this.Helper.ModRegistry.IsLoaded(modId))
+        if (!this.ModRegistry.IsLoaded(modId))
         {
             return false;
         }
@@ -68,12 +61,11 @@ internal sealed class SimpleIntegration : BaseIntegration
                 }
             },
             texturePath);
+
         return true;
     }
 
-    /// <summary>
-    ///     Adds a simple mod integration for a parameterless menu.
-    /// </summary>
+    /// <summary>Adds a simple mod integration for a parameterless menu.</summary>
     /// <param name="modId">The id of the mod.</param>
     /// <param name="index">The index of the mod icon.</param>
     /// <param name="hoverText">The text to display.</param>
@@ -103,12 +95,11 @@ internal sealed class SimpleIntegration : BaseIntegration
                 Game1.activeClickableMenu = (IClickableMenu)menu;
             },
             texturePath);
+
         return true;
     }
 
-    /// <summary>
-    ///     Adds a simple mod integration for a parameterless method.
-    /// </summary>
+    /// <summary>Adds a simple mod integration for a parameterless method.</summary>
     /// <param name="modId">The id of the mod.</param>
     /// <param name="index">The index of the mod icon.</param>
     /// <param name="hoverText">The text to display.</param>
@@ -122,7 +113,7 @@ internal sealed class SimpleIntegration : BaseIntegration
             return false;
         }
 
-        var action = this.Helper.Reflection.GetMethod(mod, method, false);
+        var action = this.Reflection.GetMethod(mod, method, false);
         if (action is null)
         {
             return false;
@@ -133,11 +124,5 @@ internal sealed class SimpleIntegration : BaseIntegration
     }
 
     private void OverrideButton(SButton button, bool inputState) =>
-        this.OverrideButtonReflected.Invoke(
-            Game1.input,
-            new object[]
-            {
-                button,
-                inputState,
-            });
+        this.overrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
 }

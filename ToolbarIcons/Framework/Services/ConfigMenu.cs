@@ -1,67 +1,46 @@
-﻿namespace StardewMods.ToolbarIcons.Framework;
+﻿namespace StardewMods.ToolbarIcons.Framework.Services;
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework.UI;
 using StardewValley.Menus;
 
-/// <summary>
-///     Handles config options.
-/// </summary>
-internal sealed class Config
+/// <summary>Handles generic mod config menu.</summary>
+internal sealed class ConfigMenu
 {
-#nullable disable
-    private static Config instance;
-#nullable enable
-
     private readonly Dictionary<string, ClickableTextureComponent> components;
     private readonly ModConfig config;
+    private readonly EventsManager customEvents;
+    private readonly GenericModConfigMenuIntegration gmcm;
     private readonly IModHelper helper;
     private readonly IManifest manifest;
 
-    private EventHandler? toolbarIconsChanged;
-
-    private Config(
+    /// <summary>Initializes a new instance of the <see cref="ConfigMenu" /> class.</summary>
+    /// <param name="helper">Dependency for events, input, and content.</param>
+    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="components">Dependency used for the toolbar icon components.</param>
+    /// <param name="customEvents">Dependency used for custom events.</param>
+    /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public ConfigMenu(
         IModHelper helper,
-        IManifest manifest,
         ModConfig config,
-        Dictionary<string, ClickableTextureComponent> components)
+        Dictionary<string, ClickableTextureComponent> components,
+        EventsManager customEvents,
+        GenericModConfigMenuIntegration gmcm,
+        IManifest manifest)
     {
         this.helper = helper;
         this.manifest = manifest;
         this.config = config;
         this.components = components;
+        this.customEvents = customEvents;
+        this.gmcm = gmcm;
 
-        Integrations.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
+        customEvents.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
     }
-
-    /// <summary>
-    ///     Raised after Toolbar Icons have changed.
-    /// </summary>
-    public static event EventHandler ToolbarIconsChanged
-    {
-        add => Config.instance.toolbarIconsChanged += value;
-        remove => Config.instance.toolbarIconsChanged -= value;
-    }
-
-    /// <summary>
-    ///     Initializes <see cref="Config" />.
-    /// </summary>
-    /// <param name="helper">SMAPI helper for events, input, and content.</param>
-    /// <param name="manifest">A manifest to describe the mod.</param>
-    /// <param name="config">Mod config data.</param>
-    /// <param name="components">Dictionary containing the textures.</param>
-    /// <returns>Returns an instance of the <see cref="Config" /> class.</returns>
-    public static Config Init(
-        IModHelper helper,
-        IManifest manifest,
-        ModConfig config,
-        Dictionary<string, ClickableTextureComponent> components) =>
-        Config.instance ??= new(helper, manifest, config, components);
 
     private void DrawButton(SpriteBatch b, Vector2 pos)
     {
@@ -92,11 +71,12 @@ internal sealed class Config
             Game1.pixelZoom,
             false,
             1f);
+
         Utility.drawTextWithShadow(
             b,
             label,
             Game1.dialogueFont,
-            new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f,
+            new Vector2((bounds.Left + bounds.Right) - dims.X, (bounds.Top + bounds.Bottom) - dims.Y) / 2f,
             Game1.textColor,
             1f,
             1f,
@@ -107,20 +87,20 @@ internal sealed class Config
 
     private void OnToolbarIconsLoaded(object? sender, EventArgs e)
     {
-        if (!Integrations.GMCM.IsLoaded)
+        if (!this.gmcm.IsLoaded)
         {
             return;
         }
 
         // Register mod configuration
-        Integrations.GMCM.Register(this.manifest, this.ResetConfig, this.SaveConfig);
+        this.gmcm.Register(this.manifest, this.ResetConfig, this.SaveConfig);
 
-        Integrations.GMCM.Api.AddComplexOption(
+        this.gmcm.Api.AddComplexOption(
             this.manifest,
             I18n.Config_CustomizeToolbar_Name,
             this.DrawButton,
             I18n.Config_CustomizeToolbar_Tooltip,
-            height: () => Game1.tileSize);
+            height: () => 64);
     }
 
     private void ResetConfig()
@@ -132,12 +112,12 @@ internal sealed class Config
         }
 
         this.config.Icons.Sort((i1, i2) => string.Compare(i1.Id, i2.Id, StringComparison.OrdinalIgnoreCase));
-        this.toolbarIconsChanged.InvokeAll(this);
+        this.customEvents.InvokeToolbarIconsChanged();
     }
 
     private void SaveConfig()
     {
         this.helper.WriteConfig(this.config);
-        this.toolbarIconsChanged.InvokeAll(this);
+        this.customEvents.InvokeToolbarIconsChanged();
     }
 }
