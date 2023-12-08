@@ -2,9 +2,9 @@
   /*
    | This file is automatically updated by ModManifestBuilder
    | when the project is compiled.
-   |
+   | 
    | Changes made to this file may be overwritten.
-   |
+   | 
    */
   "$schema": "https://smapi.io/schemas/manifest.json",
   "UniqueID": "furyx639.FuryCore",
