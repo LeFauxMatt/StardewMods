@@ -108,9 +108,9 @@ internal sealed class BetterCrafting : BaseFeature
     {
         BetterCrafting.EligibleStorages.Clear();
         BetterCrafting.MaterialStorages.Clear();
-        if (Integrations.BetterCrafting.IsLoaded)
+        if (IntegrationsManager.BetterCrafting.IsLoaded)
         {
-            Integrations.BetterCrafting.Api.OpenCraftingMenu(false, false, null, null, null, false);
+            IntegrationsManager.BetterCrafting.Api.OpenCraftingMenu(false, false, null, null, null, false);
             return true;
         }
 
@@ -148,12 +148,12 @@ internal sealed class BetterCrafting : BaseFeature
             new(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
 
         // Integrations
-        if (!Integrations.BetterCrafting.IsLoaded)
+        if (!IntegrationsManager.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        Integrations.BetterCrafting.Api.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
+        IntegrationsManager.BetterCrafting.Api.MenuPopulateContainers += BetterCrafting.OnMenuPopulateContainers;
     }
 
     /// <inheritdoc />
@@ -185,12 +185,12 @@ internal sealed class BetterCrafting : BaseFeature
             AccessTools.Method(typeof(BetterCrafting), nameof(BetterCrafting.Workbench_checkForAction_prefix)));
 
         // Integrations
-        if (!Integrations.BetterCrafting.IsLoaded)
+        if (!IntegrationsManager.BetterCrafting.IsLoaded)
         {
             return;
         }
 
-        Integrations.BetterCrafting.Api.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
+        IntegrationsManager.BetterCrafting.Api.MenuPopulateContainers -= BetterCrafting.OnMenuPopulateContainers;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -298,8 +298,8 @@ internal sealed class BetterCrafting : BaseFeature
     private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
         if (e.OldMenu is not (CraftingPage or GameMenu)
-            && (!Integrations.BetterCrafting.IsLoaded
-                || e.OldMenu?.GetType() != Integrations.BetterCrafting.Api.GetMenuType()))
+            && (!IntegrationsManager.BetterCrafting.IsLoaded
+                || e.OldMenu?.GetType() != IntegrationsManager.BetterCrafting.Api.GetMenuType()))
         {
             return;
         }

@@ -60,9 +60,9 @@ internal sealed class CarryChest : BaseFeature
 #nullable disable
     private static CarryChest instance;
 #nullable enable
+    private readonly BuffHandler buffs;
 
     private readonly ModConfig config;
-    private readonly BuffHandler buffs;
     private readonly IModEvents events;
     private readonly Harmony harmony;
     private readonly IInputHelper input;
@@ -74,7 +74,13 @@ internal sealed class CarryChest : BaseFeature
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch the base game.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
-    public CarryChest(IMonitor monitor, ModConfig config, BuffHandler buffs, IModEvents events, Harmony harmony, IInputHelper input)
+    public CarryChest(
+        IMonitor monitor,
+        ModConfig config,
+        BuffHandler buffs,
+        IModEvents events,
+        Harmony harmony,
+        IInputHelper input)
         : base(monitor, nameof(CarryChest), () => config.CarryChest is not FeatureOption.Disabled)
     {
         CarryChest.instance = this;
@@ -421,11 +427,9 @@ internal sealed class CarryChest : BaseFeature
         }
     }
 
-    private void OnDayStarted(object? sender, DayStartedEventArgs e) =>
-        this.buffs.CheckForOverburdened();
+    private void OnDayStarted(object? sender, DayStartedEventArgs e) => this.buffs.CheckForOverburdened();
 
-    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) =>
-        this.buffs.CheckForOverburdened();
+    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) => this.buffs.CheckForOverburdened();
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {

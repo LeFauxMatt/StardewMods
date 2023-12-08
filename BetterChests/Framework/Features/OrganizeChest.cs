@@ -67,7 +67,7 @@ internal sealed class OrganizeChest : BaseFeature
 
         __instance ??= Game1.activeClickableMenu as ItemGrabMenu;
 
-        if (!object.Equals(__instance?.ItemsToGrabMenu.actualInventory, items))
+        if (!Equals(__instance?.ItemsToGrabMenu.actualInventory, items))
         {
             return true;
         }

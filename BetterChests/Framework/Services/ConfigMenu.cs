@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Features;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
@@ -23,8 +22,8 @@ internal sealed class ConfigMenu
     private readonly IModHelper helper;
     private readonly IInputHelper input;
     private readonly IManifest manifest;
-    private readonly ITranslationHelper translation;
     private readonly IMonitor monitor;
+    private readonly ITranslationHelper translation;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigMenu" /> class.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
@@ -53,7 +52,11 @@ internal sealed class ConfigMenu
         this.config = config;
         this.gmcm = gmcm;
         this.features = features;
-        this.helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+
+        if (this.gmcm.IsLoaded)
+        {
+            this.SetupMainConfig();
+        }
     }
 
     /// <summary>Sets up the main config menu.</summary>
@@ -106,8 +109,9 @@ internal sealed class ConfigMenu
             this.gmcm.Api.AddTextOption(
                 this.manifest,
                 () => this.config.CraftFromWorkbench.ToStringFast(),
-                value => this.config.CraftFromWorkbench =
-                    FeatureOptionRangeExtensions.TryParse(value, out var range) ? range : FeatureOptionRange.Default,
+                value => this.config.CraftFromWorkbench = FeatureOptionRangeExtensions.TryParse(value, out var range)
+                    ? range
+                    : FeatureOptionRange.Default,
                 I18n.Config_CraftFromWorkbench_Name,
                 I18n.Config_CraftFromWorkbench_Tooltip,
                 FeatureOptionRangeExtensions.GetNames(),
@@ -126,20 +130,20 @@ internal sealed class ConfigMenu
                 this.manifest,
                 () => this.config.CraftFromWorkbenchDistance switch
                 {
-                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Default =>
-                        (int)FeatureOptionRange.Default,
-                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Disabled =>
-                        (int)FeatureOptionRange.Disabled,
-                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Inventory =>
-                        (int)FeatureOptionRange.Inventory,
-                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.World =>
-                        (int)FeatureOptionRange.World,
+                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Default => (int)FeatureOptionRange
+                        .Default,
+                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Disabled => (int)FeatureOptionRange
+                        .Disabled,
+                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Inventory => (int)FeatureOptionRange
+                        .Inventory,
+                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.World => (int)FeatureOptionRange.World,
                     >= 2 when this.config.CraftFromWorkbench is FeatureOptionRange.Location => (
                             (int)FeatureOptionRange.Location
                             + (int)Math.Ceiling(Math.Log2(this.config.CraftFromWorkbenchDistance)))
                         - 1,
-                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Location =>
-                        (int)FeatureOptionRange.World - 1,
+                    _ when this.config.CraftFromWorkbench is FeatureOptionRange.Location => (int)FeatureOptionRange
+                            .World
+                        - 1,
                     _ => (int)FeatureOptionRange.Default,
                 },
                 value =>
@@ -188,12 +192,11 @@ internal sealed class ConfigMenu
         this.gmcm.Api.AddTextOption(
             this.manifest,
             () => this.config.SearchTagSymbol.ToString(),
-            value => this.config.SearchTagSymbol =
-                string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
+            value => this.config.SearchTagSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
             I18n.Config_SearchItemsSymbol_Name,
             I18n.Config_SearchItemsSymbol_Tooltip);
 
-        if (Integrations.TestConflicts(nameof(SlotLock), out var mods))
+        if (IntegrationsManager.TestConflicts(nameof(SlotLock), out var mods))
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             this.gmcm.Api.AddParagraph(
@@ -343,8 +346,7 @@ internal sealed class ConfigMenu
         this.gmcm.Api.AddSectionTitle(this.manifest, I18n.Section_Chests_Name);
         this.gmcm.Api.AddParagraph(this.manifest, I18n.Section_Chests_Description);
 
-        foreach (var (key, _) in this.config.VanillaStorages.OrderBy(
-            kvp => Formatting.StorageName(kvp.Key)))
+        foreach (var (key, _) in this.config.VanillaStorages.OrderBy(kvp => Formatting.StorageName(kvp.Key)))
         {
             this.gmcm.Api.AddPageLink(
                 this.manifest,
@@ -425,11 +427,7 @@ internal sealed class ConfigMenu
                     && bounds.Contains(point))
                 {
                     Game1.activeClickableMenu.SetChildMenu(
-                        new ItemSelectionMenu(
-                            storage,
-                            storage.FilterMatcher,
-                            this.input,
-                            this.translation));
+                        new ItemSelectionMenu(storage, storage.FilterMatcher, this.input, this.translation));
 
                     return;
                 }
@@ -460,14 +458,6 @@ internal sealed class ConfigMenu
                 -1,
                 0f);
         };
-    }
-
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
-    {
-        if (this.gmcm.IsLoaded)
-        {
-            this.SetupMainConfig();
-        }
     }
 
     private void ResetConfig()
@@ -538,18 +528,15 @@ internal sealed class ConfigMenu
             case true:
                 switch (featureName)
                 {
-                    case nameof(IStorageData.ChestLabel)
-                        when this.config.LabelChest is FeatureOption.Disabled:
+                    case nameof(IStorageData.ChestLabel) when this.config.LabelChest is FeatureOption.Disabled:
                     case nameof(AutoOrganize) when this.config.AutoOrganize is FeatureOption.Disabled:
                     case nameof(CarryChest) when this.config.CarryChest is FeatureOption.Disabled:
                     case nameof(ChestInfo) when this.config.ChestInfo is FeatureOption.Disabled:
                     case nameof(ChestMenuTabs) when this.config.ChestMenuTabs is FeatureOption.Disabled:
                     case nameof(CollectItems) when this.config.CollectItems is FeatureOption.Disabled:
                     case nameof(Configurator):
-                    case nameof(CraftFromChest)
-                        when this.config.CraftFromChest is FeatureOptionRange.Disabled:
-                    case nameof(BetterColorPicker)
-                        when this.config.CustomColorPicker is FeatureOption.Disabled:
+                    case nameof(CraftFromChest) when this.config.CraftFromChest is FeatureOptionRange.Disabled:
+                    case nameof(BetterColorPicker) when this.config.CustomColorPicker is FeatureOption.Disabled:
                     case nameof(FilterItems) when this.config.FilterItems is FeatureOption.Disabled:
                     case nameof(LabelChest) when this.config.LabelChest is FeatureOption.Disabled:
                     case nameof(OpenHeldChest) when this.config.OpenHeldChest is FeatureOption.Disabled:
@@ -565,7 +552,7 @@ internal sealed class ConfigMenu
                 break;
 
             // Do not add config options when mod conflicts are detected
-            case false when Integrations.TestConflicts(featureName, out var mods):
+            case false when IntegrationsManager.TestConflicts(featureName, out var mods):
             {
                 var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
                 this.gmcm.Api.AddParagraph(

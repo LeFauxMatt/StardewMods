@@ -25,15 +25,15 @@ internal sealed class Configurator : BaseFeature
 #nullable enable
 
     private readonly ModConfig config;
-    private readonly ConfigMenu configMenu;
     private readonly PerScreen<ClickableTextureComponent> configButton;
+    private readonly ConfigMenu configMenu;
     private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
     private readonly PerScreen<StorageNode?> currentStorage = new();
     private readonly IModEvents events;
     private readonly Harmony harmony;
     private readonly IInputHelper input;
-    private readonly StorageHandler storages;
     private readonly IManifest manifest;
+    private readonly StorageHandler storages;
     private readonly ITranslationHelper translation;
 
     private bool isActive;
@@ -63,7 +63,7 @@ internal sealed class Configurator : BaseFeature
         : base(
             monitor,
             nameof(Configurator),
-            () => config.Configurator is not FeatureOption.Disabled && Integrations.GMCM.IsLoaded)
+            () => config.Configurator is not FeatureOption.Disabled && IntegrationsManager.GMCM.IsLoaded)
     {
         Configurator.instance = this;
         this.config = config;
@@ -228,7 +228,7 @@ internal sealed class Configurator : BaseFeature
 
         this.input.SuppressActiveKeybinds(this.config.ControlScheme.Configure);
         this.configMenu.SetupSpecificConfig(this.manifest, StorageHandler.CurrentItem, true);
-        Integrations.GMCM.Api!.OpenModMenu(this.manifest);
+        IntegrationsManager.GMCM.Api!.OpenModMenu(this.manifest);
         this.isActive = true;
     }
 

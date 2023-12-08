@@ -30,7 +30,7 @@ internal abstract class BaseFeature : IFeature
     public void SetActivated(bool warn = false)
     {
         var shouldBeActive = this.activeCondition();
-        if (shouldBeActive && Integrations.TestConflicts(this.Id, out var mods))
+        if (shouldBeActive && IntegrationsManager.TestConflicts(this.Id, out var mods))
         {
             var modList = string.Join(", ", mods.OfType<IModInfo>().Select(mod => mod.Manifest.Name));
             this.Monitor.LogOnce(I18n.Warn_Incompatibility_Disabled(this.Id, modList), LogLevel.Warn);

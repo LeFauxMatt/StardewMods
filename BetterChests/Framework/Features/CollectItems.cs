@@ -20,9 +20,9 @@ internal sealed class CollectItems : BaseFeature
 #nullable enable
 
     private readonly PerScreen<List<StorageNode>> eligible = new(() => new());
-    private readonly StorageHandler storages;
     private readonly IModEvents events;
     private readonly Harmony harmony;
+    private readonly StorageHandler storages;
 
     /// <summary>Initializes a new instance of the <see cref="CollectItems" /> class.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>

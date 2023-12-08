@@ -16,6 +16,10 @@
   "EntryDll": "BetterChests.dll",
   "Dependencies": [
     {
+      "UniqueID": "furyx639.FuryCore",
+      "MinimumVersion": "2.0.0-alpha.1"
+    },
+    {
       "UniqueID": "furyx639.ToolbarIcons",
       "MinimumVersion": "2.6.0-alpha.2",
       "IsRequired": false

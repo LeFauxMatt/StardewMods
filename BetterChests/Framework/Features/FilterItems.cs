@@ -61,12 +61,12 @@ internal sealed class FilterItems : BaseFeature
             new(typeof(FilterItems), nameof(FilterItems.Chest_addItem_prefix)));
 
         // Integrations
-        if (!Integrations.Automate.IsLoaded)
+        if (!IntegrationsManager.Automate.IsLoaded)
         {
             return;
         }
 
-        this.storeMethod = this.registry.Get(Integrations.Automate.UniqueId)
+        this.storeMethod = this.registry.Get(IntegrationsManager.Automate.UniqueId)
             ?.GetType()
             .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
             ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);

@@ -17,8 +17,8 @@ using StardewValley.Objects;
 internal static class Extensions
 {
     /// <summary>Add a chest capacity option at the current position in the form.</summary>
-    /// <param name="gmcm">Integration for GMCM.</param>
-    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="data">The storage data.</param>
     public static void AddChestCapacityOption(
         this GenericModConfigMenuIntegration gmcm,
@@ -36,8 +36,8 @@ internal static class Extensions
             Formatting.ChestCapacity);
 
     /// <summary>Add a distance option at the current position in the form.</summary>
-    /// <param name="gmcm">Integration for GMCM.</param>
-    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="data">The storage data.</param>
     /// <param name="featureName">The feature which the distance is associated with.</param>
     /// <param name="name">The label text to show in the form.</param>
@@ -61,8 +61,8 @@ internal static class Extensions
             Formatting.Distance);
 
     /// <summary>Add a feature option at the current position in the form.</summary>
-    /// <param name="gmcm">Integration for GMCM.</param>
-    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="getValue">Get the current value from the mod config.</param>
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
@@ -84,8 +84,8 @@ internal static class Extensions
             Formatting.Option);
 
     /// <summary>Add a feature option range at the current position in the form.</summary>
-    /// <param name="gmcm">Integration for GMCM.</param>
-    /// <param name="manifest">The mod's manifest.</param>
+    /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="getValue">Get the current value from the mod config.</param>
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
@@ -179,17 +179,17 @@ internal static class Extensions
             items,
             (i1, i2) =>
             {
-                if (object.ReferenceEquals(i2, null))
+                if (ReferenceEquals(i2, null))
                 {
                     return -1;
                 }
 
-                if (object.ReferenceEquals(i1, null))
+                if (ReferenceEquals(i1, null))
                 {
                     return 1;
                 }
 
-                if (object.ReferenceEquals(i1, i2))
+                if (ReferenceEquals(i1, i2))
                 {
                     return 0;
                 }

@@ -193,7 +193,7 @@ internal sealed class SearchItems : BaseFeature
             _ => null,
         };
 
-        if (menu is not null && object.ReferenceEquals(menu, this.CurrentMenu))
+        if (menu is not null && ReferenceEquals(menu, this.CurrentMenu))
         {
             if (!this.SearchArea.visible)
             {
@@ -236,7 +236,7 @@ internal sealed class SearchItems : BaseFeature
             {
                 Data: Storage lastStorage,
             }
-            && !object.ReferenceEquals(lastStorage.Context, storageObject.Context))
+            && !ReferenceEquals(lastStorage.Context, storageObject.Context))
         {
             this.ItemMatcher.Clear();
             this.SearchField.Text = string.Empty;

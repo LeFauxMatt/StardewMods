@@ -7,13 +7,11 @@ using StardewMods.BetterChests.Framework.StorageObjects;
 internal sealed class BuffHandler
 {
     private const string Overburdened = "furyx639.BetterChests/Overburdened";
-
-    private readonly IMonitor monitor;
     private readonly ModConfig config;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BuffHandler"/> class.
-    /// </summary>
+    private readonly IMonitor monitor;
+
+    /// <summary>Initializes a new instance of the <see cref="BuffHandler" /> class.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
     public BuffHandler(IMonitor monitor, ModConfig config)

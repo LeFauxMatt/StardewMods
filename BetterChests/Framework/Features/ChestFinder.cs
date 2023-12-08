@@ -84,18 +84,18 @@ internal sealed class ChestFinder : BaseFeature
         this.events.Player.Warped += this.OnWarped;
 
         // Integrations
-        if (!Integrations.ToolbarIcons.IsLoaded)
+        if (!IntegrationsManager.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        Integrations.ToolbarIcons.Api.AddToolbarIcon(
+        IntegrationsManager.ToolbarIcons.Api.AddToolbarIcon(
             "BetterChests.FindChest",
             "furyx639.BetterChests/Icons",
             new(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
 
-        Integrations.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
+        IntegrationsManager.ToolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <inheritdoc />
@@ -110,13 +110,13 @@ internal sealed class ChestFinder : BaseFeature
         this.events.Player.Warped -= this.OnWarped;
 
         // Integrations
-        if (!Integrations.ToolbarIcons.IsLoaded)
+        if (!IntegrationsManager.ToolbarIcons.IsLoaded)
         {
             return;
         }
 
-        Integrations.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
-        Integrations.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        IntegrationsManager.ToolbarIcons.Api.RemoveToolbarIcon("BetterChests.FindChest");
+        IntegrationsManager.ToolbarIcons.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

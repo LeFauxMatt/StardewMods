@@ -284,9 +284,9 @@ internal sealed class BetterItemGrabMenu : BaseFeature
     }
 
     private static IList<Item> ActualInventory(IList<Item> actualInventory, InventoryMenu inventoryMenu) =>
-        object.ReferenceEquals(inventoryMenu, BetterItemGrabMenu.Inventory?.Menu)
+        ReferenceEquals(inventoryMenu, BetterItemGrabMenu.Inventory?.Menu)
             ? BetterItemGrabMenu.Inventory.Items
-            : object.ReferenceEquals(inventoryMenu, BetterItemGrabMenu.ItemsToGrabMenu?.Menu)
+            : ReferenceEquals(inventoryMenu, BetterItemGrabMenu.ItemsToGrabMenu?.Menu)
                 ? BetterItemGrabMenu.ItemsToGrabMenu.Items
                 : actualInventory;
 
@@ -334,7 +334,7 @@ internal sealed class BetterItemGrabMenu : BaseFeature
         var itemsToGrabMenu = new DisplayedItems(__instance.ItemsToGrabMenu, true);
 
         if (BetterItemGrabMenu.instance.CurrentMenu is not null
-            && object.ReferenceEquals(__instance.context, BetterItemGrabMenu.instance.CurrentMenu.context))
+            && ReferenceEquals(__instance.context, BetterItemGrabMenu.instance.CurrentMenu.context))
         {
             inventory.Offset = BetterItemGrabMenu.Inventory?.Offset ?? 0;
             itemsToGrabMenu.Offset = BetterItemGrabMenu.ItemsToGrabMenu?.Offset ?? 0;
@@ -385,11 +385,11 @@ internal sealed class BetterItemGrabMenu : BaseFeature
             return;
         }
 
-        BetterItemGrabMenu.RefreshInventory |= object.ReferenceEquals(
+        BetterItemGrabMenu.RefreshInventory |= ReferenceEquals(
             BetterItemGrabMenu.instance.CurrentMenu.inventory.actualInventory,
             items);
 
-        BetterItemGrabMenu.RefreshItemsToGrabMenu |= object.ReferenceEquals(
+        BetterItemGrabMenu.RefreshItemsToGrabMenu |= ReferenceEquals(
             BetterItemGrabMenu.instance.CurrentMenu.ItemsToGrabMenu.actualInventory,
             items);
     }
@@ -630,7 +630,7 @@ internal sealed class BetterItemGrabMenu : BaseFeature
             _ => null,
         };
 
-        if (!object.ReferenceEquals(menu, this.CurrentMenu))
+        if (!ReferenceEquals(menu, this.CurrentMenu))
         {
             if (menu is null
                 or

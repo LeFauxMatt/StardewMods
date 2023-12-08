@@ -92,7 +92,7 @@ internal sealed class OpenHeldChest : BaseFeature
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
-        if (!object.ReferenceEquals(__instance, item))
+        if (!ReferenceEquals(__instance, item))
         {
             return true;
         }
@@ -157,7 +157,7 @@ internal sealed class OpenHeldChest : BaseFeature
             return;
         }
 
-        __result = !object.ReferenceEquals(itemGrabMenu.context, i);
+        __result = !ReferenceEquals(itemGrabMenu.context, i);
     }
 
     private static void OnUpdateTicking(object? sender, UpdateTickingEventArgs e)

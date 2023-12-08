@@ -1,7 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services;
 
 using Microsoft.Xna.Framework;
-using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.StorageObjects;
 using StardewMods.Common.Enums;
@@ -19,7 +18,6 @@ internal sealed class StorageHandler
 #nullable enable
 
     private readonly ModConfig config;
-    private readonly IEnumerable<IFeature> features;
 
     private EventHandler<StorageNode>? storageEdited;
 
@@ -27,30 +25,25 @@ internal sealed class StorageHandler
 
     /// <summary>Initializes a new instance of the <see cref="StorageHandler" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="features">Dependency for managing features.</param>
-    public StorageHandler(ModConfig config, IModEvents events, IEnumerable<IFeature> features)
+    public StorageHandler(ModConfig config)
     {
+        // Init
         StorageHandler.instance = this;
         this.config = config;
-        this.features = features;
+
+        // Defaults
+        this.config.VanillaStorages.TryAdd("Auto-Grabber", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Chest", new());
+        this.config.VanillaStorages.TryAdd("Fridge", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Junimo Chest", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Junimo Hut", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Mini-Fridge", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Mini-Shipping Bin", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Shipping Bin", new() { CustomColorPicker = FeatureOption.Disabled });
+        this.config.VanillaStorages.TryAdd("Stone Chest", new());
 
         // Events
-        events.GameLoop.GameLaunched += this.OnGameLaunched;
-    }
-
-    /// <summary>Raised after a <see cref="StorageNode" /> has been edited.</summary>
-    public event EventHandler<StorageNode> StorageEdited
-    {
-        add => this.storageEdited += value;
-        remove => this.storageEdited -= value;
-    }
-
-    /// <summary>Event for when a storage type is assigned to a storage object.</summary>
-    public event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
-    {
-        add => this.storageTypeRequested += value;
-        remove => this.storageTypeRequested -= value;
+        this.StorageTypeRequested += this.OnStorageTypeRequested;
     }
 
     /// <summary>Gets storages from all locations and farmer inventory in the game.</summary>
@@ -116,6 +109,20 @@ internal sealed class StorageHandler
 
     private static ModConfig Config => StorageHandler.instance.config;
 
+    /// <summary>Raised after a <see cref="StorageNode" /> has been edited.</summary>
+    public event EventHandler<StorageNode> StorageEdited
+    {
+        add => this.storageEdited += value;
+        remove => this.storageEdited -= value;
+    }
+
+    /// <summary>Event for when a storage type is assigned to a storage object.</summary>
+    public event EventHandler<IStorageTypeRequestedEventArgs>? StorageTypeRequested
+    {
+        add => this.storageTypeRequested += value;
+        remove => this.storageTypeRequested -= value;
+    }
+
     /// <summary>Gets all storages placed in a particular location.</summary>
     /// <param name="location">The location to get storages from.</param>
     /// <param name="excluded">A list of storage contexts to exclude to prevent iterating over the same object.</param>
@@ -131,7 +138,7 @@ internal sealed class StorageHandler
         excluded.Add(location);
 
         // Mod Integrations
-        foreach (var storage in Integrations.FromLocation(location, excluded))
+        foreach (var storage in IntegrationsManager.FromLocation(location, excluded))
         {
             yield return StorageHandler.GetStorageType(storage);
         }
@@ -219,7 +226,7 @@ internal sealed class StorageHandler
         excluded.Add(player);
 
         // Mod Integrations
-        foreach (var storage in Integrations.FromPlayer(player, excluded))
+        foreach (var storage in IntegrationsManager.FromPlayer(player, excluded))
         {
             yield return StorageHandler.GetStorageType(storage);
         }
@@ -274,7 +281,7 @@ internal sealed class StorageHandler
                 return true;
         }
 
-        if (!Integrations.TryGetOne(context, out var storageObject)
+        if (!IntegrationsManager.TryGetOne(context, out var storageObject)
             && !StorageHandler.TryGetOne(context, default, default, out storageObject))
         {
             storage = default;
@@ -395,26 +402,6 @@ internal sealed class StorageHandler
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
-    {
-        foreach (var feature in this.features)
-        {
-            feature.SetActivated(true);
-        }
-
-        this.StorageTypeRequested += this.OnStorageTypeRequested;
-
-        this.config.VanillaStorages.TryAdd("Auto-Grabber", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Chest", new());
-        this.config.VanillaStorages.TryAdd("Fridge", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Junimo Chest", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Junimo Hut", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Mini-Fridge", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Mini-Shipping Bin", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Shipping Bin", new() { CustomColorPicker = FeatureOption.Disabled });
-        this.config.VanillaStorages.TryAdd("Stone Chest", new());
-    }
-
     private void OnStorageTypeRequested(object? sender, IStorageTypeRequestedEventArgs e)
     {
         switch (e.Context)
@@ -438,7 +425,8 @@ internal sealed class StorageHandler
                 return;
 
             // Fridge
-            case FarmHouse or IslandFarmHouse when this.config.VanillaStorages.TryGetValue("Fridge", out var fridgeData):
+            case FarmHouse or IslandFarmHouse
+                when this.config.VanillaStorages.TryGetValue("Fridge", out var fridgeData):
                 e.Load(fridgeData, -1);
                 return;
 

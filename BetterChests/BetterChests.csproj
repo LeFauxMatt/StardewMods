@@ -8,14 +8,12 @@
     <RootNamespace>StardewMods.BetterChests</RootNamespace>
     <UniqueId>furyx639.BetterChests</UniqueId>
     <UpdateKeys>Nexus:9791</UpdateKeys>
-    <BundleExtraAssemblies>ThirdParty</BundleExtraAssemblies>
-    <IgnoreModFilePatterns>
-      ^NetEscapades
-    </IgnoreModFilePatterns>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FuryCore\FuryCore.csproj" Private="false"/>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
-    <PackageReference Include="SimpleInjector" Version="5.4.2"/>
     <Reference Include="HarmonyLib">
       <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
       <Private>false</Private>
@@ -25,6 +23,7 @@
     <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
     <SMAPIDependency Include="Pathoschild.Automate" required="false"/>
     <SMAPIDependency Include="leclair.bettercrafting" required="false"/>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.1" required="true"/>
     <SMAPIDependency Include="furyx639.ToolbarIcons" Version="2.6.0-alpha.2" required="false"/>
   </ItemGroup>
 </Project>

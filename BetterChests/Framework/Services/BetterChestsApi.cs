@@ -3,17 +3,15 @@
 using StardewMods.Common.Integrations.BetterChests;
 
 /// <inheritdoc />
-internal sealed class Api : IBetterChestsApi
+public sealed class BetterChestsApi : IBetterChestsApi
 {
     private readonly ConfigMenu configMenu;
     private readonly StorageHandler storages;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Api"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="BetterChestsApi" /> class.</summary>
     /// <param name="configMenu">Dependency used for handling configs.</param>
     /// <param name="storages">Dependency for handling storages.</param>
-    public Api(ConfigMenu configMenu, StorageHandler storages)
+    internal BetterChestsApi(ConfigMenu configMenu, StorageHandler storages)
     {
         this.configMenu = configMenu;
         this.storages = storages;

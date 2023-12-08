@@ -15,9 +15,7 @@ internal sealed class AssetHandler
     /// <summary>Game path to Hue Bar asset.</summary>
     private const string HueBarPath = "furyx639.BetterChests/HueBar";
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AssetHandler"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="events">Dependency used for managing access to events.</param>
     public AssetHandler(IModEvents events) => events.Content.AssetRequested += AssetHandler.OnAssetRequested;
 

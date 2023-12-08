@@ -364,7 +364,7 @@ internal sealed class ChestMenuTabs : BaseFeature
             _ => null,
         };
 
-        if (menu is not null && object.ReferenceEquals(menu, this.CurrentMenu))
+        if (menu is not null && ReferenceEquals(menu, this.CurrentMenu))
         {
             return;
         }
