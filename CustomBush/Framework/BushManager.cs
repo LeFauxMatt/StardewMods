@@ -24,10 +24,10 @@ internal sealed class BushManager
 #nullable disable
     private static BushManager instance;
 #nullable enable
+
     private readonly AssetHandler assets;
     private readonly MethodInfo checkItemPlantRules;
     private readonly Dictionary<string, BushModel> data;
-
     private readonly IMonitor monitor;
 
     /// <summary>Initializes a new instance of the <see cref="BushManager" /> class.</summary>
@@ -161,6 +161,9 @@ internal sealed class BushManager
         // Fails basic conditions
         if (age < bushModel.AgeToProduce || dayOfMonth < bushModel.DayToBeginProducing)
         {
+            BushManager.instance.monitor.Log(
+                $"{id} will not produce. Age: {age} < {bushModel.AgeToProduce} , Day: {dayOfMonth} < {bushModel.DayToBeginProducing}");
+
             __result = false;
             return;
         }
@@ -168,6 +171,7 @@ internal sealed class BushManager
         // Fails default season conditions
         if (!bushModel.Seasons.Any() && season == Season.Winter && !__instance.IsSheltered())
         {
+            BushManager.instance.monitor.Log($"{id} will not produce. Season: {season} and plant is outdoors.");
             __result = false;
             return;
         }
@@ -175,6 +179,7 @@ internal sealed class BushManager
         // Fails custom season conditions
         if (bushModel.Seasons.Any() && !bushModel.Seasons.Contains(season) && !__instance.IsSheltered())
         {
+            BushManager.instance.monitor.Log($"{id} will not produce. Season: {season} and plant is outdoors.");
             __result = false;
             return;
         }
@@ -182,6 +187,7 @@ internal sealed class BushManager
         // Try to produce item
         if (!BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out itemId))
         {
+            BushManager.instance.monitor.Log($"{id} will not produce. No item was produced.");
             __result = false;
             return;
         }
@@ -202,7 +208,8 @@ internal sealed class BushManager
 
         var season = !__instance.IsSheltered() ? __instance.Location.GetSeason() : Season.Spring;
         var age = __instance.getAge();
-        var offset = Math.Min(2, age / 10) * 16;
+        var growthPercent = (float)age / bushModel.AgeToProduce;
+        var offset = Math.Min(2, (int)(2 * growthPercent)) * 16;
         var (x, y) = season switch
         {
             Season.Summer => (64 + offset + (__instance.tileSheetOffset.Value * 16), bushModel.TextureSpriteRow * 16),
@@ -243,9 +250,7 @@ internal sealed class BushManager
         ref string deniedMessage)
     {
         var metadata = ItemRegistry.GetMetadata(itemId);
-        if (metadata is null
-            || metadata.TypeIdentifier != "(O)"
-            || !BushManager.instance.data.TryGetValue(metadata.QualifiedItemId, out var bushModel))
+        if (metadata is null || !BushManager.instance.data.TryGetValue(metadata.QualifiedItemId, out var bushModel))
         {
             return;
         }
@@ -266,14 +271,15 @@ internal sealed class BushManager
             return itemId;
         }
 
-        if (bush.modData.TryGetValue(BushManager.ModDataId, out var id)
-            && BushManager.instance.data.TryGetValue(id, out var bushModel)
-            && BushManager.instance.TryToProduceRandomItem(bush, bushModel, out itemId))
+        if (!bush.modData.TryGetValue(BushManager.ModDataId, out var id)
+            || !BushManager.instance.data.TryGetValue(id, out var bushModel)
+            || !BushManager.instance.TryToProduceRandomItem(bush, bushModel, out itemId))
         {
-            return itemId;
+            return "(O)815";
         }
 
-        return "(O)815";
+        BushManager.instance.monitor.Log($"{id} selected {itemId} to grow.");
+        return itemId;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -376,6 +382,7 @@ internal sealed class BushManager
                 null,
                 bush.Location.SeedsIgnoreSeasonsHere() ? GameStateQuery.SeasonQueryKeys : null))
         {
+            BushManager.instance.monitor.Log($"{drop.Id} not selected. Failed: {drop.Condition}");
             return null;
         }
 
@@ -383,6 +390,7 @@ internal sealed class BushManager
             && bush.Location.SeedsIgnoreSeasonsHere()
             && drop.Season != Game1.GetSeasonForLocation(bush.Location))
         {
+            BushManager.instance.monitor.Log($"{drop.Id} not selected. Failed: {drop.Season}");
             return null;
         }
 
