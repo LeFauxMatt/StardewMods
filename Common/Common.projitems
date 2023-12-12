@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOption.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\FeatureOptionRange.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\GroupBy.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Enums\LogLevels.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\Quality.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SortBy.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs"/>
@@ -39,9 +40,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\IManagedConditions.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\EvenBetterRngIntegration.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\IEvenBetterRngApi.cs"/>
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\ExpandedStorageIntegration.cs"/>
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\ICustomStorage.cs"/>
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\ExpandedStorage\IExpandedStorageApi.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\FuryCoreIntegration.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\IFuryCoreApi.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs"/>
@@ -66,8 +64,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\IToolbarIconsApi.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ToolbarIcons\ToolbarIconsIntegration.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IColorable.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IConfigWithLogLevel.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseThemeHelper.cs"/>
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Logging.cs"/>
   </ItemGroup>
 </Project>
