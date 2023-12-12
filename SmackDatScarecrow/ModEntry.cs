@@ -1,10 +1,8 @@
 ﻿namespace StardewMods.SmackDatScarecrow;
 
-using System;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
 using StardewValley.Extensions;
 
 /// <inheritdoc />
@@ -118,12 +116,12 @@ public sealed class ModEntry : Mod
                     damageAmount *= 2;
                 }
 
-                var debris = new Debris(-1, 1, new(monsterBox.Right, monsterBox.Bottom), Game1.player.Position)
-                {
-                    chunkType = { Value = damageAmount },
-                    debrisType = { Value = Debris.DebrisType.NUMBERS },
-                    nonSpriteChunkColor = { Value = crit ? Color.Yellow : new(255, 130, 0) },
-                };
+                var debris = new Debris(
+                    damageAmount,
+                    new(monsterBox.Center.X + 16, monsterBox.Center.Y),
+                    crit ? Color.Yellow : new(255, 130, 0),
+                    crit ? 1f + (damageAmount / 300f) : 1f,
+                    Game1.player);
 
                 debris.Chunks[0].scale = Math.Min(2f, Math.Max(1f, crit ? 1f + (damageAmount / 300f) : 1f));
                 debris.Chunks[0].xVelocity.Value = Game1.random.Next(-1, 2);
@@ -134,7 +132,8 @@ public sealed class ModEntry : Mod
                 damageAmount = -2;
             }
 
-            if (who.CurrentTool is not null && who.CurrentTool.Name.Equals("Galaxy Sword", StringComparison.OrdinalIgnoreCase))
+            if (who.CurrentTool is not null
+                && who.CurrentTool.Name.Equals("Galaxy Sword", StringComparison.OrdinalIgnoreCase))
             {
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
@@ -165,6 +164,7 @@ public sealed class ModEntry : Mod
                         scale = 0.75f,
                         alpha = crit ? 0.75f : 0.5f,
                     });
+
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
                     new TemporaryAnimatedSprite(
@@ -180,6 +180,7 @@ public sealed class ModEntry : Mod
                         delayBeforeAnimationStart = 50,
                         alpha = crit ? 0.75f : 0.5f,
                     });
+
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
                     new TemporaryAnimatedSprite(
@@ -195,6 +196,7 @@ public sealed class ModEntry : Mod
                         delayBeforeAnimationStart = 100,
                         alpha = crit ? 0.75f : 0.5f,
                     });
+
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
                     new TemporaryAnimatedSprite(
@@ -210,6 +212,7 @@ public sealed class ModEntry : Mod
                         delayBeforeAnimationStart = 150,
                         alpha = crit ? 0.75f : 0.5f,
                     });
+
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
                     new TemporaryAnimatedSprite(
@@ -231,5 +234,6 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) => this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer");
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) =>
+        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer");
 }
