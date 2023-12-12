@@ -1,20 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
-    <PropertyGroup>
-        <Name>Expanded Storage</Name>
-        <Description>Framework for adding new types of chests to the game.</Description>
-        <Version>2.1.0-alpha.2</Version>
-        <EnableHarmony>true</EnableHarmony>
-        <RootNamespace>StardewMods.ExpandedStorage</RootNamespace>
-        <UniqueId>furyx639.ExpandedStorage</UniqueId>
-        <UpdateKeys>Nexus:7431</UpdateKeys>
-    </PropertyGroup>
-    <ItemGroup>
-	    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
-    </ItemGroup>
-	<ItemGroup>
-		<SMAPIDependency Include="furyx639.BetterChests" Version="2.9.0-alpha.2" required="false" />
-        <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false" />
-		<SMAPIDependency Include="leclair.bettercrafting" required="false" />
-	</ItemGroup>
+  <PropertyGroup>
+    <Name>Expanded Storage</Name>
+    <Description>Framework for adding new types of chests to the game.</Description>
+    <Version>3.0.0-alpha.20231211</Version>
+    <EnableHarmony>true</EnableHarmony>
+    <RootNamespace>StardewMods.ExpandedStorage</RootNamespace>
+    <UniqueId>furyx639.ExpandedStorage</UniqueId>
+    <UpdateKeys>Nexus:7431</UpdateKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuryCore\FuryCore.csproj" Private="false"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+    <PackageReference Include="SimpleInjector">
+      <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
+      <Version>5.4.2</Version>
+      <Private>false</Private>
+    </PackageReference>
+    <Reference Include="HarmonyLib">
+      <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231211" required="true"/>
+  </ItemGroup>
 </Project>

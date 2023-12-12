@@ -1,178 +1,64 @@
 ﻿namespace StardewMods.ExpandedStorage;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using HarmonyLib;
+using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Integrations.BetterChests;
-using StardewMods.Common.Integrations.ExpandedStorage;
-using StardewMods.ExpandedStorage.Framework;
-using StardewMods.ExpandedStorage.Models;
-using StardewValley.Objects;
+using StardewMods.Common.Integrations.ContentPatcher;
+using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Interfaces;
+using StardewMods.ExpandedStorage.Framework.Services;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private static readonly IDictionary<string, LegacyAsset> LegacyAssets = new Dictionary<string, LegacyAsset>();
-    private static readonly IDictionary<string, CachedStorage> StorageCache = new Dictionary<string, CachedStorage>();
-    private static readonly IDictionary<string, ICustomStorage> Storages = new Dictionary<string, ICustomStorage>();
-
-    private bool wait;
+#nullable disable
+    private Container container;
+#nullable enable
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         // Init
         I18n.Init(this.Helper.Translation);
-        Extensions.Init(ModEntry.StorageCache);
-        Integrations.Init(this.Helper.ModRegistry);
-        Config.Init(this.Helper, this.ModManifest);
-        ModPatches.Init(this.Helper, this.ModManifest, ModEntry.Storages, ModEntry.StorageCache);
 
         // Events
-        this.Helper.Events.Content.AssetRequested += ModEntry.OnAssetRequested;
-        this.Helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-    }
-
-    /// <inheritdoc />
-    public override object GetApi() => new Api(this.Helper, ModEntry.Storages, ModEntry.StorageCache, ModEntry.LegacyAssets);
-
-    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
-    {
-        if (e.Name.IsEquivalentTo("furyx639.ExpandedStorage/Storages"))
-        {
-            e.LoadFrom(() => new Dictionary<string, CustomStorageData>(), AssetLoadPriority.Exclusive);
-            return;
-        }
-
-        if (e.Name.IsEquivalentTo("furyx639.ExpandedStorage/Unlock"))
-        {
-            e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
-            return;
-        }
-
-        if (e.Name.IsEquivalentTo("Data/CraftingRecipes"))
-        {
-            var craftingRecipes = new Dictionary<string, string>();
-            foreach (var (_, legacyAsset) in ModEntry.LegacyAssets)
-            {
-                var (id, recipe) = legacyAsset.CraftingRecipe;
-                if (!string.IsNullOrWhiteSpace(recipe))
-                {
-                    craftingRecipes.Add(id, recipe);
-                }
-            }
-
-            if (craftingRecipes.Any())
-            {
-                e.Edit(
-                    asset =>
-                    {
-                        var data = asset.AsDictionary<string, string>().Data;
-                        foreach (var (key, craftingRecipe) in craftingRecipes)
-                        {
-                            data.Add(key, craftingRecipe);
-                        }
-                    });
-            }
-
-            return;
-        }
-
-        if (!e.Name.IsDirectlyUnderPath("ExpandedStorage/SpriteSheets"))
-        {
-            return;
-        }
-
-        foreach (var (key, legacyAsset) in ModEntry.LegacyAssets)
-        {
-            if (!e.Name.IsEquivalentTo($"ExpandedStorage/SpriteSheets/{key}"))
-            {
-                continue;
-            }
-
-            e.LoadFrom(() => legacyAsset.Texture, AssetLoadPriority.Exclusive);
-            return;
-        }
-    }
-
-    private static void OnStorageTypeRequested(object? sender, IStorageTypeRequestedEventArgs e)
-    {
-        foreach (var (name, storage) in ModEntry.Storages)
-        {
-            if (storage.BetterChestsData is null
-                || e.Context is not Chest chest
-                || !chest.modData.TryGetValue("furyx639.ExpandedStorage/Storage", out var storageName)
-                || !storageName.Equals(name, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            var config = Config.GetConfig(name);
-            e.Load(config?.BetterChestsData ?? storage.BetterChestsData, 1000);
-        }
-    }
-
-    private void OnDayStarted(object? sender, DayStartedEventArgs e)
-    {
-        // Unlock crafting recipes
-        var recipes = this.Helper.GameContent.Load<Dictionary<string, string>>("Data/CraftingRecipes");
-        var unlock = this.Helper.GameContent.Load<Dictionary<string, string?>>("furyx639.ExpandedStorage/Unlock");
-        foreach (var (name, _) in unlock)
-        {
-            if (recipes.ContainsKey(name)
-                && !Game1.player.craftingRecipes.ContainsKey(name)
-                && ModEntry.Storages.ContainsKey(name))
-            {
-                Game1.player.craftingRecipes.Add(name, 0);
-            }
-        }
-
-        // Reset cached textures
-        foreach (var (_, cachedStorage) in ModEntry.StorageCache)
-        {
-            cachedStorage.ResetCache();
-        }
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this.wait = true;
-        this.Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        var config = this.Helper.ReadConfig<ModConfig>();
 
-        if (Integrations.BetterChests.IsLoaded)
-        {
-            Integrations.BetterChests.Api.StorageTypeRequested += ModEntry.OnStorageTypeRequested;
-        }
+        // Init
+        this.container = new();
+        this.container.RegisterInstance(config);
+        this.container.RegisterInstance<IConfigWithLogLevel>(config);
+        this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
 
-        if (Integrations.BetterCrafting.IsLoaded)
-        {
-            Integrations.BetterCrafting.Api.AddRecipeProvider(
-                new RecipeProvider(ModEntry.Storages, ModEntry.StorageCache));
-        }
-    }
+        // SMAPI
+        this.container.RegisterInstance(this.Helper);
+        this.container.RegisterInstance(this.ModManifest);
+        this.container.RegisterInstance(this.Monitor);
+        this.container.RegisterInstance(this.Helper.Data);
+        this.container.RegisterInstance(this.Helper.Events);
+        this.container.RegisterInstance(this.Helper.GameContent);
+        this.container.RegisterInstance(this.Helper.Input);
+        this.container.RegisterInstance(this.Helper.ModContent);
+        this.container.RegisterInstance(this.Helper.ModRegistry);
+        this.container.RegisterInstance(this.Helper.Reflection);
+        this.container.RegisterInstance(this.Helper.Translation);
 
-    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
-    {
-        if (this.wait)
-        {
-            this.wait = false;
-            return;
-        }
+        // Integrations
+        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
+        this.container.RegisterSingleton<ContentPatcherIntegration>();
 
-        this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        // Services
+        this.container.RegisterSingleton<Logging>();
+        this.container.RegisterSingleton<ConfigMenu>();
+        this.container.RegisterSingleton<ManagedStorages>();
+        this.container.RegisterSingleton<ModPatches>();
 
-        var api = (IExpandedStorageApi)this.GetApi();
-        var storages =
-            this.Helper.GameContent.Load<Dictionary<string, CustomStorageData>>("furyx639.ExpandedStorage/Storages");
-
-        foreach (var (name, storage) in storages)
-        {
-            api.RegisterStorage(name, storage);
-        }
-
-        Config.SetupConfig(ModEntry.Storages);
+        this.container.Verify();
     }
 }
