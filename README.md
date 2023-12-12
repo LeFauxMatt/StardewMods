@@ -20,6 +20,14 @@ Adds enhanced chest features to the game.
 
 Quickly cycle between tools from the active item slot.
 
+## [Custom Bush](https://www.nexusmods.com/stardewvalley/mods/TBD)
+
+( [source](CustomBush)
+| [docs](CustomBush/README.md)
+| [changelog](CustomBush/CHANGELOG.md) )
+
+Framework for adding new types of bushes to the game.
+
 ## [Easy Access](https://www.nexusmods.com/stardewvalley/mods/11002)
 
 ( [source](EasyAccess)
@@ -43,7 +51,7 @@ Framework for adding new types of chests to the game.
 | [docs](GarbageDay/README.md)
 | changelog )
 
-Converts Garbage Cans on the map into storages
+Converts Garbage Cans on the map into chests.
 
 ## [Helpful Spouses](https://www.nexusmods.com/stardewvalley/mods/5175)
 
@@ -51,7 +59,8 @@ Converts Garbage Cans on the map into storages
 | [docs](HelpfulSpouses/README.md)
 | [changelog](HelpfulSpouses/CHANGELOG.md) )
 
-Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.
+Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens
+in a balanced/lore-friendly way.
 
 ## [Is It Cake?](https://www.nexusmods.com/stardewvalley/mods/)
 
@@ -74,8 +83,6 @@ Nothing strange about this capsule.
 ( [source](PocketSlimes)
 | [docs](PocketSlimes/README.md)
 | [changelog](PocketSlimes/CHANGELOG.md) )
-
-
 
 ## [Portable Holes](https://www.nexusmods.com/stardewvalley/mods/13471)
 
