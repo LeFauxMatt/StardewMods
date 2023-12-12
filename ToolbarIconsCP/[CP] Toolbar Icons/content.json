@@ -1,5 +1,5 @@
 {
-  "Format": "1.24.0",
+  "Format": "1.29.0",
   "ConfigSchema": {
     "EventLookupHotkey": {
       "AllowBlank": true,
@@ -154,5 +154,6 @@
         "HasMod": "Pathoschild.TractorMod"
       }
     }
-  ]
+  ],
+  "$schema": "https://smapi.io/schemas/content-patcher.json"
 }
