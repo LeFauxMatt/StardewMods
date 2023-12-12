@@ -1,19 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
-    <PropertyGroup>
-        <Name>Easy Access</Name>
-        <Description>Provides easier access to producers in the game.</Description>
-        <Version>2.1.0-alpha.2</Version>
-        <RootNamespace>StardewMods.EasyAccess</RootNamespace>
-        <UniqueId>furyx639.EasyAccess</UniqueId>
-        <UpdateKeys>Nexus:11002</UpdateKeys>
-        <Author>furyx639</Author>
-        <Authors>furyx639</Authors>
-    </PropertyGroup>
-    <ItemGroup>
-	    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
-    </ItemGroup>
-	<ItemGroup>
-        <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false" />
-	</ItemGroup>
+  <PropertyGroup>
+    <Name>Easy Access</Name>
+    <Description>Provides easier access to producers in the game.</Description>
+    <Version>2.1.0-alpha.20231211</Version>
+    <RootNamespace>StardewMods.EasyAccess</RootNamespace>
+    <UniqueId>furyx639.EasyAccess</UniqueId>
+    <UpdateKeys>Nexus:11002</UpdateKeys>
+    <Author>furyx639</Author>
+    <Authors>furyx639</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
+  </ItemGroup>
 </Project>

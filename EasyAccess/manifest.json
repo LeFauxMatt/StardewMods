@@ -10,7 +10,7 @@
   "UniqueID": "furyx639.EasyAccess",
   "Name": "Easy Access",
   "Author": "furyx639",
-  "Version": "2.1.0-alpha.2",
+  "Version": "2.1.0-alpha.20231211",
   "Description": "Provides easier access to producers in the game.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "EasyAccess.dll",
