@@ -17,7 +17,7 @@
   "Dependencies": [
     {
       "UniqueID": "furyx639.FuryCore",
-      "MinimumVersion": "2.0.0-alpha.1"
+      "MinimumVersion": "2.0.0-alpha.20231211"
     },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",

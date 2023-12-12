@@ -17,11 +17,11 @@
   "Dependencies": [
     {
       "UniqueID": "furyx639.FuryCore",
-      "MinimumVersion": "2.0.0"
+      "MinimumVersion": "2.0.0-alpha.20231211"
     },
     {
       "UniqueID": "furyx639.ToolbarIcons",
-      "MinimumVersion": "2.6.0-alpha.2",
+      "MinimumVersion": "2.6.0-alpha.20231211",
       "IsRequired": false
     },
     {
