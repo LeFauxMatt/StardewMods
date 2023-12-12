@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
-    <PropertyGroup>
-        <Name>Helpful Spouses</Name>
-        <Description>Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.</Description>
-        <Version>2.0.0-alpha.1</Version>
-        <EnableHarmony>true</EnableHarmony>
-        <RootNamespace>StardewMods.HelpfulSpouses</RootNamespace>
-        <UniqueId>furyx639.HelpfulSpouses</UniqueId>
-        <UpdateKeys>Nexus:5175</UpdateKeys>
-    </PropertyGroup>
-	<ItemGroup>
-		<SMAPIDependency Include="Shockah.ProjectFluent" Version="2.0.0-alpha.20230814" required="true" />
-        <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false" />
-	</ItemGroup>
+  <PropertyGroup>
+    <Name>Helpful Spouses</Name>
+    <Description>Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.</Description>
+    <Version>2.0.0-alpha.20231211</Version>
+    <EnableHarmony>true</EnableHarmony>
+    <RootNamespace>StardewMods.HelpfulSpouses</RootNamespace>
+    <UniqueId>furyx639.HelpfulSpouses</UniqueId>
+    <UpdateKeys>Nexus:5175</UpdateKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="Shockah.ProjectFluent" Version="2.0.0-alpha.20230814" required="true"/>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
+  </ItemGroup>
 </Project>
