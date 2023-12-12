@@ -8,7 +8,6 @@ public interface IContentPatcherApi
     /*********
      ** Accessors
      *********/
-
     /// <summary>Whether the conditions API is initialized and ready for use.</summary>
     /// <remarks>
     ///     Due to the Content Patcher lifecycle, the conditions API becomes available roughly two ticks after the
@@ -19,7 +18,6 @@ public interface IContentPatcherApi
     /*********
      ** Methods
      *********/
-
     /// <summary>Get a set of managed conditions which are matched against Content Patcher's internal context.</summary>
     /// <param name="manifest">
     ///     The manifest of the mod parsing the conditions (see <see cref="Mod.ModManifest" /> in your enter

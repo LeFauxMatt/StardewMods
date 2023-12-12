@@ -9,23 +9,6 @@ public interface IManagedConditions
     /*********
      ** Accessors
      *********/
-
-    /// <summary>Whether <see cref="IsReady" /> is true, and the conditions all match in the current context.</summary>
-    bool IsMatch { get; }
-
-    /// <summary>
-    ///     Whether <see cref="IsMatch" /> may change depending on the context. For example, <c>Season</c> is mutable
-    ///     since it depends on the in-game season. <c>HasMod</c> is not mutable, since it can't change after the game is
-    ///     launched.
-    /// </summary>
-    bool IsMutable { get; }
-
-    /// <summary>
-    ///     Whether the conditions' tokens are all valid in the current context. For example, this would be false if the
-    ///     conditions use <c>Season</c> and a save isn't loaded yet.
-    /// </summary>
-    bool IsReady { get; }
-
     /// <summary>Whether the conditions were parsed successfully (regardless of whether they're in scope currently).</summary>
     [MemberNotNullWhen(false, nameof(IManagedConditions.ValidationError))]
     bool IsValid { get; }
@@ -37,17 +20,25 @@ public interface IManagedConditions
     /// </summary>
     string? ValidationError { get; }
 
+    /// <summary>
+    ///     Whether the conditions' tokens are all valid in the current context. For example, this would be false if the
+    ///     conditions use <c>Season</c> and a save isn't loaded yet.
+    /// </summary>
+    bool IsReady { get; }
+
+    /// <summary>Whether <see cref="IsReady" /> is true, and the conditions all match in the current context.</summary>
+    bool IsMatch { get; }
+
+    /// <summary>
+    ///     Whether <see cref="IsMatch" /> may change depending on the context. For example, <c>Season</c> is mutable
+    ///     since it depends on the in-game season. <c>HasMod</c> is not mutable, since it can't change after the game is
+    ///     launched.
+    /// </summary>
+    bool IsMutable { get; }
+
     /*********
      ** Methods
      *********/
-
-    /// <summary>
-    ///     If <see cref="IsMatch" /> is false, analyze the conditions/context and get a human-readable reason phrase
-    ///     explaining why the conditions don't match the context. For example: <c>conditions don't match: season</c>. If the
-    ///     conditions do match, this returns <c>null</c>.
-    /// </summary>
-    string? GetReasonNotMatched();
-
     /// <summary>
     ///     Update the conditions based on Content Patcher's current context for every active screen. It's safe to call
     ///     this as often as you want, but it has no effect if the Content Patcher context hasn't changed since you last called
@@ -58,4 +49,11 @@ public interface IManagedConditions
     ///     you can check <c>UpdateContext()</c>
     /// </returns>
     IEnumerable<int> UpdateContext();
+
+    /// <summary>
+    ///     If <see cref="IsMatch" /> is false, analyze the conditions/context and get a human-readable reason phrase
+    ///     explaining why the conditions don't match the context. For example: <c>conditions don't match: season</c>. If the
+    ///     conditions do match, this returns <c>null</c>.
+    /// </summary>
+    string? GetReasonNotMatched();
 }
