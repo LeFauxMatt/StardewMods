@@ -1,4 +1,4 @@
-namespace StardewMods.CustomBush.Framework;
+namespace StardewMods.CustomBush.Framework.Models;
 
 using StardewValley.GameData;
 
@@ -10,6 +10,15 @@ internal sealed class BushModel
 
     /// <summary>Gets or sets the day of month to begin producing.</summary>
     public int DayToBeginProducing { get; set; } = 22;
+
+    /// <summary>Gets or sets the description of the bush.</summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the display name of the bush.</summary>
+    public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the default texture used when planted indoors.</summary>
+    public string IndoorTexture { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the items produced by this custom bush.</summary>
     public List<DropsModel> ItemsProduced { get; set; } = new();

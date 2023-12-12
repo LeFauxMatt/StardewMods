@@ -10,8 +10,15 @@
   "UniqueID": "furyx639.CustomBush",
   "Name": "Custom Bush",
   "Author": "furyx639",
-  "Version": "1.0.0-alpha.5",
+  "Version": "1.0.0-alpha.20231211",
   "Description": "Custom Bush is a framework which allows custom bushes to be added to the game which work like the tea sapling.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
-  "EntryDll": "CustomBush.dll"
+  "EntryDll": "CustomBush.dll",
+  "Dependencies": [
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
+      "IsRequired": false
+    }
+  ]
 }

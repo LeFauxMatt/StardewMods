@@ -1,4 +1,4 @@
-namespace StardewMods.CustomBush.Framework;
+namespace StardewMods.CustomBush.Framework.Models;
 
 using StardewValley.GameData;
 
