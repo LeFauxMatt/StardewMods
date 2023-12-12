@@ -10,7 +10,7 @@
   "UniqueID": "furyx639.FuryCore",
   "Name": "Fury Core",
   "Author": "furyx639",
-  "Version": "2.0.0-alpha.1",
+  "Version": "2.0.0-alpha.20231211",
   "Description": "Framework that provides shared functionality for all of my mods.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "FuryCore.dll",
