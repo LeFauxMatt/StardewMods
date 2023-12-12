@@ -14,6 +14,13 @@
   "Description": "Framework that provides shared functionality for all of my mods.",
   "MinimumApiVersion": "4.0.0-alpha.20231101",
   "EntryDll": "FuryCore.dll",
+  "Dependencies": [
+    {
+      "UniqueID": "spacechase0.GenericModConfigMenu",
+      "MinimumVersion": "1.8.2",
+      "IsRequired": false
+    }
+  ],
   "UpdateKeys": [
     "Nexus:10696"
   ]
