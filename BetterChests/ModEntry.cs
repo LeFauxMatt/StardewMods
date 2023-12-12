@@ -38,9 +38,8 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this.container = new();
-
         // Init
+        this.container = new();
         this.container.RegisterSingleton(() => this.Helper.ReadConfig<ModConfig>());
         this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
 
