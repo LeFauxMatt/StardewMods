@@ -20,11 +20,11 @@ internal abstract class BaseFeature : IFeature
         this.activeCondition = activeCondition ?? BaseFeature.AlwaysActive;
     }
 
-    /// <summary>Gets the dependency used for monitoring and logging.</summary>
-    protected IMonitor Monitor { get; }
-
     /// <inheritdoc />
     public string Id { get; }
+
+    /// <summary>Gets the dependency used for monitoring and logging.</summary>
+    protected IMonitor Monitor { get; }
 
     /// <inheritdoc />
     public void SetActivated(bool warn = false)
