@@ -32,14 +32,14 @@ public sealed class ModEntry : Mod
     public override object GetApi(IModInfo mod)
     {
         var configMenu = this.container.GetInstance<ConfigMenu>();
-        var storages = this.container.GetInstance<StorageHandler>();
+        var storages = this.container.GetInstance<StorageManager>();
         return new BetterChestsApi(configMenu, storages);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         // Init
-        this.container = new();
+        this.container = new Container();
         this.container.RegisterSingleton(() => this.Helper.ReadConfig<ModConfig>());
         this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
 
@@ -93,11 +93,13 @@ public sealed class ModEntry : Mod
                 Lifestyle.Singleton.CreateRegistration<SlotLock>(this.container),
                 Lifestyle.Singleton.CreateRegistration<StashToChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<TransferItems>(this.container),
-                Lifestyle.Singleton.CreateRegistration<UnloadChest>(this.container),
+                Lifestyle.Singleton.CreateRegistration<UnloadChest>(this.container)
             });
 
         this.container.RegisterSingleton<ConfigMenu>();
-        this.container.RegisterSingleton<StorageHandler>();
+        this.container.RegisterSingleton<StorageManager>();
+        this.container.RegisterSingleton<StorageFactory>();
+        this.container.RegisterSingleton<StorageRegistry>();
         this.container.Verify();
 
         var features = this.container.GetAllInstances<IFeature>();
