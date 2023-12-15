@@ -1,0 +1,11 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <editorconfig>
+      <option name="ENABLED" value="false" />
+    </editorconfig>
+    <stylecop>
+      <option name="ENABLED" value="true" />
+      <option name="SC_EDITORCONFIG_ENABLED" value="true" />
+    </stylecop>
+  </code_scheme>
+</component>
