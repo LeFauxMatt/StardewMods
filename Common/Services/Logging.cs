@@ -41,7 +41,7 @@ internal sealed class Logging
         }
     }
 
-    /// <summary>Logs a message to the console regardless of if is enabled.</summary>
+    /// <summary>Logs a message to the console unless it is disabled.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
     public void Error(string message, params object?[]? args)
@@ -49,6 +49,17 @@ internal sealed class Logging
         if (this.config.LogLevel != LogLevels.None)
         {
             this.Log(message, LogLevel.Error, args);
+        }
+    }
+
+    /// <summary>Logs a message to the console unless it is disabled.</summary>
+    /// <param name="message">The message to send.</param>
+    /// <param name="args">The arguments to parse in a formatted string.</param>
+    public void Warn(string message, params object?[]? args)
+    {
+        if (this.config.LogLevel != LogLevels.None)
+        {
+            this.Log(message, LogLevel.Warn, args);
         }
     }
 

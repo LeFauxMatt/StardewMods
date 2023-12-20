@@ -2,7 +2,8 @@ namespace StardewMods.Common.Integrations;
 
 /// <summary>Provides an integration point for using external mods' APIs.</summary>
 /// <typeparam name="T">Interface for the external mod's API.</typeparam>
-internal abstract class ModIntegration<T> where T : class
+internal abstract class ModIntegration<T>
+    where T : class
 {
     private readonly Lazy<T?> modApi;
 
@@ -15,7 +16,7 @@ internal abstract class ModIntegration<T> where T : class
         this.ModRegistry = modRegistry;
         this.UniqueId = modUniqueId;
         this.Version = string.IsNullOrWhiteSpace(modVersion) ? null : modVersion;
-        this.modApi = new(() => this.ModRegistry.GetApi<T>(this.UniqueId));
+        this.modApi = new Lazy<T?>(() => this.ModRegistry.GetApi<T>(this.UniqueId));
     }
 
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
