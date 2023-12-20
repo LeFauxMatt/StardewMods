@@ -8,6 +8,11 @@ using StardewMods.TooManyAnimals.Framework.Services;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
+#nullable disable
+    private ModConfig config;
+    private Logging logging;
+#nullable enable
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
@@ -26,7 +31,4 @@ public sealed class ModEntry : Mod
         _ = new ConfigMenu(this.config, this.Helper, this.ModManifest);
         _ = new AnimalsMenuHandler(this.config, this.Helper.Events, harmony, this.Helper.Input);
     }
-#nullable disable
-    private ModConfig config;
-    private Logging logging;
 }

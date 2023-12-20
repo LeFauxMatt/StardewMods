@@ -40,7 +40,7 @@ internal sealed class ConfigMenu
         }
 
         // Register mod configuration
-        this.gmcm.Register(this.manifest, this.Reset, this.Save);
+        this.gmcm.Api.Register(this.manifest, this.Reset, this.Save);
 
         this.gmcm.Api.AddSectionTitle(this.manifest, I18n.Section_General_Name, I18n.Section_General_Description);
 

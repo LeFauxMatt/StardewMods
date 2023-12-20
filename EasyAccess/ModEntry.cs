@@ -4,21 +4,21 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private ModConfig? config;
-
-    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+#nullable disable
+    private ModConfig config;
+#nullable enable
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         I18n.Init(this.Helper.Translation);
+        this.config = this.Helper.ReadConfig<ModConfig>();
 
         // Events
         this.Helper.Events.Content.AssetRequested += this.OnAssetRequested;
@@ -29,15 +29,15 @@ public sealed class ModEntry : Mod
     private void CollectItems()
     {
         var (pX, pY) = Game1.player.Tile;
-        for (var tY = (int)(pY - this.Config.CollectOutputDistance);
-            tY <= (int)(pY + this.Config.CollectOutputDistance);
+        for (var tY = (int)(pY - this.config.CollectOutputDistance);
+            tY <= (int)(pY + this.config.CollectOutputDistance);
             ++tY)
         {
-            for (var tX = (int)(pX - this.Config.CollectOutputDistance);
-                tX <= (int)(pX + this.Config.CollectOutputDistance);
+            for (var tX = (int)(pX - this.config.CollectOutputDistance);
+                tX <= (int)(pX + this.config.CollectOutputDistance);
                 ++tX)
             {
-                if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.Config.CollectOutputDistance)
+                if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.config.CollectOutputDistance)
                 {
                     continue;
                 }
@@ -47,7 +47,7 @@ public sealed class ModEntry : Mod
                 if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
                 {
                     // Dig Spot
-                    if (this.Config.DoDigSpots && obj.ParentSheetIndex == 590)
+                    if (this.config.DoDigSpots && obj.ParentSheetIndex == 590)
                     {
                         Game1.currentLocation.digUpArtifactSpot(tX, tY, Game1.player);
                         if (!Game1.currentLocation.terrainFeatures.ContainsKey(pos))
@@ -60,7 +60,7 @@ public sealed class ModEntry : Mod
                     }
 
                     // Big Craftables
-                    if (this.Config.DoForage && obj.IsSpawnedObject && obj.isForage())
+                    if (this.config.DoForage && obj.IsSpawnedObject && obj.isForage())
                     {
                         // Vanilla Logic
                         var r = new Random(
@@ -110,7 +110,7 @@ public sealed class ModEntry : Mod
                         continue;
                     }
 
-                    if (this.Config.DoMachines)
+                    if (this.config.DoMachines)
                     {
                         var item = obj.heldObject.Value;
                         if (item is not null && obj.checkForAction(Game1.player))
@@ -120,7 +120,7 @@ public sealed class ModEntry : Mod
                     }
                 }
 
-                if (!this.Config.DoTerrain)
+                if (!this.config.DoTerrain)
                 {
                     continue;
                 }
@@ -146,15 +146,15 @@ public sealed class ModEntry : Mod
         }
 
         var (pX, pY) = Game1.player.Tile;
-        for (var tY = (int)(pY - this.Config.DispenseInputDistance);
-            tY <= (int)(pY + this.Config.DispenseInputDistance);
+        for (var tY = (int)(pY - this.config.DispenseInputDistance);
+            tY <= (int)(pY + this.config.DispenseInputDistance);
             ++tY)
         {
-            for (var tX = (int)(pX - this.Config.DispenseInputDistance);
-                tX <= (int)(pX + this.Config.DispenseInputDistance);
+            for (var tX = (int)(pX - this.config.DispenseInputDistance);
+                tX <= (int)(pX + this.config.DispenseInputDistance);
                 ++tX)
             {
-                if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.Config.CollectOutputDistance)
+                if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.config.CollectOutputDistance)
                 {
                     continue;
                 }
@@ -191,20 +191,20 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        if (this.Config.ControlScheme.CollectItems.JustPressed())
+        if (this.config.ControlScheme.CollectItems.JustPressed())
         {
             this.CollectItems();
-            this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.CollectItems);
+            this.Helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.CollectItems);
             return;
         }
 
-        if (!this.Config.ControlScheme.DispenseItems.JustPressed())
+        if (!this.config.ControlScheme.DispenseItems.JustPressed())
         {
             return;
         }
 
         this.DispenseInputs();
-        this.Helper.Input.SuppressActiveKeybinds(this.Config.ControlScheme.DispenseItems);
+        this.Helper.Input.SuppressActiveKeybinds(this.config.ControlScheme.DispenseItems);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -215,13 +215,13 @@ public sealed class ModEntry : Mod
         if (gmcm.IsLoaded)
         {
             // Register mod configuration
-            gmcm.Register(this.ModManifest, () => this.config = new(), () => this.Helper.WriteConfig(this.Config));
+            gmcm.Api.Register(this.ModManifest, () => this.config = new(), () => this.Helper.WriteConfig(this.config));
 
             // Collect Items
             gmcm.Api.AddKeybindList(
                 this.ModManifest,
-                () => this.Config.ControlScheme.CollectItems,
-                value => this.Config.ControlScheme.CollectItems = value,
+                () => this.config.ControlScheme.CollectItems,
+                value => this.config.ControlScheme.CollectItems = value,
                 I18n.Config_CollectItems_Name,
                 I18n.Config_CollectItems_Tooltip,
                 nameof(Controls.CollectItems));
@@ -229,8 +229,8 @@ public sealed class ModEntry : Mod
             // Dispense Items
             gmcm.Api.AddKeybindList(
                 this.ModManifest,
-                () => this.Config.ControlScheme.DispenseItems,
-                value => this.Config.ControlScheme.DispenseItems = value,
+                () => this.config.ControlScheme.DispenseItems,
+                value => this.config.ControlScheme.DispenseItems = value,
                 I18n.Config_DispenseItems_Name,
                 I18n.Config_DispenseItems_Tooltip,
                 nameof(Controls.DispenseItems));
@@ -238,8 +238,8 @@ public sealed class ModEntry : Mod
             // Collect Output Distance
             gmcm.Api.AddNumberOption(
                 this.ModManifest,
-                () => this.Config.CollectOutputDistance,
-                value => this.Config.CollectOutputDistance = value,
+                () => this.config.CollectOutputDistance,
+                value => this.config.CollectOutputDistance = value,
                 I18n.Config_CollectOutputsDistance_Name,
                 I18n.Config_CollectOutputsDistance_Tooltip,
                 1,
@@ -250,8 +250,8 @@ public sealed class ModEntry : Mod
             // Dispense Input Distance
             gmcm.Api.AddNumberOption(
                 this.ModManifest,
-                () => this.Config.DispenseInputDistance,
-                value => this.Config.DispenseInputDistance = value,
+                () => this.config.DispenseInputDistance,
+                value => this.config.DispenseInputDistance = value,
                 I18n.Config_DispenseInputsDistance_Name,
                 I18n.Config_DispenseInputsDistance_Tooltip,
                 1,
@@ -262,8 +262,8 @@ public sealed class ModEntry : Mod
             // Do Dig Spots
             gmcm.Api.AddBoolOption(
                 this.ModManifest,
-                () => this.Config.DoDigSpots,
-                value => this.Config.DoDigSpots = value,
+                () => this.config.DoDigSpots,
+                value => this.config.DoDigSpots = value,
                 I18n.Config_DoDigSpots_Name,
                 I18n.Config_DoDigSpots_Tooltip,
                 nameof(ModConfig.DoDigSpots));
@@ -271,8 +271,8 @@ public sealed class ModEntry : Mod
             // Do Forage
             gmcm.Api.AddBoolOption(
                 this.ModManifest,
-                () => this.Config.DoForage,
-                value => this.Config.DoForage = value,
+                () => this.config.DoForage,
+                value => this.config.DoForage = value,
                 I18n.Config_DoForage_Name,
                 I18n.Config_DoForage_Tooltip,
                 nameof(ModConfig.DoForage));
@@ -280,8 +280,8 @@ public sealed class ModEntry : Mod
             // Do Machines
             gmcm.Api.AddBoolOption(
                 this.ModManifest,
-                () => this.Config.DoMachines,
-                value => this.Config.DoMachines = value,
+                () => this.config.DoMachines,
+                value => this.config.DoMachines = value,
                 I18n.Config_DoMachines_Name,
                 I18n.Config_DoMachines_Tooltip,
                 nameof(ModConfig.DoMachines));
@@ -289,8 +289,8 @@ public sealed class ModEntry : Mod
             // Do Terrain
             gmcm.Api.AddBoolOption(
                 this.ModManifest,
-                () => this.Config.DoTerrain,
-                value => this.Config.DoTerrain = value,
+                () => this.config.DoTerrain,
+                value => this.config.DoTerrain = value,
                 I18n.Config_DoTerrain_Name,
                 I18n.Config_DoTerrain_Tooltip,
                 nameof(ModConfig.DoTerrain));

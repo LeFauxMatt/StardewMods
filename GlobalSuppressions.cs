@@ -3,9 +3,10 @@
 // Project-level suppression either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
-[assembly: SuppressMessage("StyleCop", "SA0001", Justification = "Preference", Scope = "module")]
-[assembly: SuppressMessage("StyleCop", "SA1513", Justification = "Preference", Scope = "module")]
-[assembly: SuppressMessage("StyleCop", "SA1633", Justification = "Preference", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA0001", Justification = "Reviewed.", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1010", Justification = "Reviewed.", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1513", Justification = "Reviewed.", Scope = "module")]
+[assembly: SuppressMessage("StyleCop", "SA1633", Justification = "Reviewed.", Scope = "module")]
 [assembly:
     SuppressMessage(
         "StyleCop",

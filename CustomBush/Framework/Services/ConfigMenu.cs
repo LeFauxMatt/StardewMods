@@ -24,7 +24,7 @@ internal sealed class ConfigMenu
             return;
         }
 
-        gmcm.Register(manifest, this.Reset, this.Save);
+        gmcm.Api.Register(manifest, this.Reset, this.Save);
 
         // general options
         gmcm.Api.AddSectionTitle(manifest, I18n.Config_Section_General_Title, I18n.Config_Section_General_Description);

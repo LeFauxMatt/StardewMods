@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
+		GlobalSuppressions.cs = GlobalSuppressions.cs
 		LICENSE = LICENSE
 		README.md = README.md
-		GlobalSuppressions.cs = GlobalSuppressions.cs
 	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = ".Common", "Common\.Common.shproj", "{EECB6271-93FD-4172-BFDD-33E3F169F8E7}"
@@ -32,9 +32,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandedStorage", "Expanded
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelpfulSpouses", "HelpfulSpouses\HelpfulSpouses.csproj", "{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomBush", "CustomBush\CustomBush.csproj", "{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomBush", "CustomBush\CustomBush.csproj", "{FDE06CE1-FFE3-496A-A482-7E9CD1C7808D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryCore", "FuryCore\FuryCore.csproj", "{86D15779-C8A5-49C9-8ECD-530298893A52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuryCore", "FuryCore\FuryCore.csproj", "{86D15779-C8A5-49C9-8ECD-530298893A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,6 +98,5 @@ Global
 		Common\Common.projitems*{aa4cef05-e3da-45b8-80ad-e54ba33ce950}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
-		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

@@ -21,10 +21,10 @@ public sealed class ModEntry : Mod
     private readonly Dictionary<string, Lazy<GarbageCan?>> garbageCans = new();
     private readonly PerScreen<NPC?> perScreenNpc = new();
 
-    private ModConfig? config;
-    private Multiplayer? multiplayer;
-
-    private ModConfig Config => this.config ??= CommonHelpers.GetConfig<ModConfig>(this.Helper);
+#nullable disable
+    private ModConfig config;
+    private Multiplayer multiplayer;
+#nullable enable
 
     private GarbageCan? GarbageCan
     {
@@ -47,6 +47,7 @@ public sealed class ModEntry : Mod
         // Init
         I18n.Init(this.Helper.Translation);
         ModPatches.Init(this.ModManifest);
+        this.config = this.Helper.ReadConfig<ModConfig>();
 
         // Console Commands
         this.Helper.ConsoleCommands.Add("garbage_fill", I18n.Command_GarbageFill_Description(), this.GarbageFill);
@@ -314,7 +315,7 @@ public sealed class ModEntry : Mod
         foreach (var garbageCan in this.GarbageCans)
         {
             // Empty chest on garbage day
-            if (Game1.dayOfMonth % 7 == (int)this.Config.GarbageDay % 7)
+            if (Game1.dayOfMonth % 7 == (int)this.config.GarbageDay % 7)
             {
                 garbageCan.EmptyTrash();
             }
@@ -323,7 +324,8 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) => this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) =>
+        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {

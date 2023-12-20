@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.ProjectFluent;
 using StardewMods.HelpfulSpouses.Chores;
 using StardewValley.Extensions;
@@ -17,7 +16,6 @@ public sealed class ModEntry : Mod
 
 #nullable disable
     private ModConfig config;
-
     private IFluent<string> fluent;
 #nullable enable
 
@@ -26,7 +24,7 @@ public sealed class ModEntry : Mod
     {
         // Init
         ModPatches.Init(this.ModManifest);
-        this.config = CommonHelpers.GetConfig<ModConfig>(this.Helper);
+        this.config = this.Helper.ReadConfig<ModConfig>();
         this.chores[ChoreOption.BirthdayGift] = new BirthdayGift(this.config.BirthdayGiftOptions);
         this.chores[ChoreOption.FeedTheAnimals] = new FeedTheAnimals(this.config.FeedTheAnimalsOptions);
         this.chores[ChoreOption.LoveThePets] = new LoveThePets(this.config.LoveThePetsOptions);

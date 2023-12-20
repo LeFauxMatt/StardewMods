@@ -93,7 +93,7 @@ internal sealed class ConfigMenu
         }
 
         // Register mod configuration
-        this.gmcm.Register(this.manifest, this.ResetConfig, this.SaveConfig);
+        this.gmcm.Api.Register(this.manifest, this.ResetConfig, this.SaveConfig);
 
         this.gmcm.Api.AddComplexOption(
             this.manifest,
