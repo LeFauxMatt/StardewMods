@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Name>Toolbar Icons</Name>
     <Description>Adds icons above or below the toolbar.</Description>

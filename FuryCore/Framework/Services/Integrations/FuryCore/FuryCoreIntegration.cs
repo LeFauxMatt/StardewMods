@@ -1,7 +1,7 @@
-namespace StardewMods.Common.Integrations.FuryCore;
+namespace StardewMods.FuryCore.Framework.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
-internal sealed class FuryCoreIntegration : ModIntegration<IFuryCoreApi>
+public sealed class FuryCoreIntegration : BaseIntegration<IFuryCoreApi>
 {
     private const string ModUniqueId = "furyx639.FuryCore";
 

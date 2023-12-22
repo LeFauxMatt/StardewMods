@@ -2,10 +2,10 @@ namespace StardewMods.FuryCore;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.Common.Interfaces;
-using StardewMods.FuryCore.Framework;
+using StardewMods.FuryCore.Framework.Interfaces;
+using StardewMods.FuryCore.Framework.Services;
+using StardewMods.FuryCore.Framework.Services.Integrations.FuryCore;
+using StardewMods.FuryCore.Framework.Services.Integrations.GenericModConfigMenu;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
@@ -25,14 +25,18 @@ public sealed class ModEntry : Mod
     }
 
     /// <inheritdoc />
-    public override object GetApi(IModInfo mod) => new FuryCoreApi();
+    public override object GetApi(IModInfo mod)
+    {
+        var apiFactory = this.container.GetInstance<ApiFactory>();
+        return apiFactory.CreateApi(mod);
+    }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         var config = this.Helper.ReadConfig<ModConfig>();
 
         // Init
-        this.container = new();
+        this.container = new Container();
         this.container.RegisterInstance(config);
         this.container.RegisterInstance<IConfigWithLogLevel>(config);
 
@@ -50,10 +54,13 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
 
         // Integrations
-        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
+        this.container.Register<FuryCoreIntegration>(Lifestyle.Transient);
+        this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Transient);
 
         // Services
-        this.container.RegisterSingleton<Logging>();
+        this.container.Register<ILogger, Logger>(Lifestyle.Singleton);
+        this.container.Register<IThemeHelper, ThemeHelper>(Lifestyle.Singleton);
+        this.container.Register<ApiFactory>(Lifestyle.Singleton);
 
         this.container.Verify();
     }

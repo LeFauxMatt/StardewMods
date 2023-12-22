@@ -1,13 +1,14 @@
-﻿namespace StardewMods.Common.Services;
+namespace StardewMods.FuryCore.Framework.Services;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.FuryCore.Framework.Interfaces;
 
-/// <summary>Handles palette swaps for theme compatibility.</summary>
-internal abstract class BaseThemeHelper
+/// <inheritdoc />
+internal sealed class ThemeHelper : IThemeHelper
 {
-    private readonly HashSet<string> assetNames;
+    private readonly HashSet<string> trackedAssets = [];
     private readonly Dictionary<IAssetName, Texture2D> cachedTextures = new();
     private readonly IGameContentHelper gameContent;
     private readonly Dictionary<Color, Color> paletteSwap = new();
@@ -24,19 +25,20 @@ internal abstract class BaseThemeHelper
 
     private bool initialize;
 
-    /// <summary>Initializes a new instance of the <see cref="BaseThemeHelper" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ThemeHelper" /> class.</summary>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="assetNames">The asset names to edit.</param>
-    protected BaseThemeHelper(IModEvents events, IGameContentHelper gameContent, params string[] assetNames)
+    public ThemeHelper(IModEvents events, IGameContentHelper gameContent)
     {
         this.gameContent = gameContent;
-        this.assetNames = new(assetNames);
         events.Content.AssetReady += this.OnAssetReady;
         events.Content.AssetRequested += this.OnAssetRequested;
         events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
         events.GameLoop.SaveLoaded += this.OnSaveLoaded;
     }
+
+    /// <inheritdoc/>
+    public void AddAssets(params string[] assetNames) => this.trackedAssets.UnionWith(assetNames);
 
     private void Edit(IAssetData asset)
     {
@@ -68,7 +70,7 @@ internal abstract class BaseThemeHelper
             }
         }
 
-        foreach (var assetName in this.assetNames)
+        foreach (var assetName in this.trackedAssets)
         {
             this.gameContent.InvalidateCache(assetName);
         }
@@ -92,7 +94,7 @@ internal abstract class BaseThemeHelper
             return;
         }
 
-        if (this.assetNames.Any(assetName => e.Name.IsEquivalentTo(assetName)))
+        if (this.trackedAssets.Any(assetName => e.Name.IsEquivalentTo(assetName)))
         {
             e.Edit(this.Edit);
         }

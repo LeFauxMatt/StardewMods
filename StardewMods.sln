@@ -98,5 +98,7 @@ Global
 		Common\Common.projitems*{aa4cef05-e3da-45b8-80ad-e54ba33ce950}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
+		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13
+		Common\Common.projitems*{fde06ce1-ffe3-496a-a482-7e9cd1c7808d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

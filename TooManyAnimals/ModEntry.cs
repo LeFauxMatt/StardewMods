@@ -2,7 +2,7 @@ namespace StardewMods.TooManyAnimals;
 
 using HarmonyLib;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Services;
 using StardewMods.TooManyAnimals.Framework.Services;
 
 /// <inheritdoc />

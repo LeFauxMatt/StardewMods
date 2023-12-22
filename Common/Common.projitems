@@ -14,8 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\Quality.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs" />
-    <Folder Include="$(MSBuildThisFileDirectory)Helpers\PatternPatcher\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Helpers\ItemRepository\" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\AutomateIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\Automate\IAutomatable.cs" />
@@ -27,8 +25,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\IContentPatcherApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\ContentPatcher\IManagedConditions.cs" />
     <Folder Include="$(MSBuildThisFileDirectory)Integrations\EvenBetterRng\" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\FuryCoreIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Integrations\FuryCore\IFuryCoreApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Folder Include="$(MSBuildThisFileDirectory)Integrations\JsonAssets\" />

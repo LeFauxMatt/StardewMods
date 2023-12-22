@@ -1,5 +1,4 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Author>furyx639</Author>
     <Authors>furyx639</Authors>

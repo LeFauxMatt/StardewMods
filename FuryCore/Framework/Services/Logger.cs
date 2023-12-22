@@ -1,27 +1,25 @@
-namespace StardewMods.Common.Services;
+namespace StardewMods.FuryCore.Framework.Services;
 
 using System.Globalization;
-using StardewMods.Common.Enums;
-using StardewMods.Common.Interfaces;
+using StardewMods.FuryCore.Framework.Enums;
+using StardewMods.FuryCore.Framework.Interfaces;
 
-/// <summary>Handles logging debug information to the console.</summary>
-internal sealed class Logging
+/// <inheritdoc />
+internal sealed class Logger : ILogger
 {
     private readonly IConfigWithLogLevel config;
     private readonly IMonitor monitor;
 
-    /// <summary>Initializes a new instance of the <see cref="Logging" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Logger" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
-    public Logging(IConfigWithLogLevel config, IMonitor monitor)
+    public Logger(IConfigWithLogLevel config, IMonitor monitor)
     {
         this.config = config;
         this.monitor = monitor;
     }
 
-    /// <summary>Logs a message to the console when any logging is enabled.</summary>
-    /// <param name="message">The message to send.</param>
-    /// <param name="args">The arguments to parse in a formatted string.</param>
+    /// <inheritdoc/>
     public void Info(string message, params object?[]? args)
     {
         if (this.config.LogLevel != LogLevels.None)
@@ -30,9 +28,7 @@ internal sealed class Logging
         }
     }
 
-    /// <summary>Logs a message to the console when more logging is enabled.</summary>
-    /// <param name="message">The message to send.</param>
-    /// <param name="args">The arguments to parse in a formatted string.</param>
+    /// <inheritdoc/>
     public void Trace(string message, params object?[]? args)
     {
         if (this.config.LogLevel == LogLevels.More)
@@ -41,9 +37,7 @@ internal sealed class Logging
         }
     }
 
-    /// <summary>Logs a message to the console unless it is disabled.</summary>
-    /// <param name="message">The message to send.</param>
-    /// <param name="args">The arguments to parse in a formatted string.</param>
+    /// <inheritdoc/>
     public void Error(string message, params object?[]? args)
     {
         if (this.config.LogLevel != LogLevels.None)
@@ -52,9 +46,7 @@ internal sealed class Logging
         }
     }
 
-    /// <summary>Logs a message to the console unless it is disabled.</summary>
-    /// <param name="message">The message to send.</param>
-    /// <param name="args">The arguments to parse in a formatted string.</param>
+    /// <inheritdoc/>
     public void Warn(string message, params object?[]? args)
     {
         if (this.config.LogLevel != LogLevels.None)

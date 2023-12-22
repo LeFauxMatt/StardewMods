@@ -2,8 +2,8 @@ namespace StardewMods.ExpandedStorage.Framework.Services;
 
 using System.ComponentModel;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Integrations.ContentPatcher;
+using StardewMods.Common.Services;
 using StardewMods.ExpandedStorage.Framework.Enums;
 using StardewMods.ExpandedStorage.Framework.Models;
 using StardewValley.GameData.BigCraftables;

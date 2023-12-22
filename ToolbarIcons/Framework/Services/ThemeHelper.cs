@@ -1,7 +1,7 @@
 namespace StardewMods.ToolbarIcons.Framework.Services;
 
 using StardewModdingAPI.Events;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Services;
 
 /// <inheritdoc />
 internal sealed class ThemeHelper : BaseThemeHelper

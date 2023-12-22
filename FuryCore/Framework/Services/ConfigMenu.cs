@@ -1,7 +1,7 @@
 namespace StardewMods.FuryCore.Framework.Services;
 
-using StardewMods.Common.Enums;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.FuryCore.Framework.Enums;
+using StardewMods.FuryCore.Framework.Services.Integrations.GenericModConfigMenu;
 
 /// <summary>Handles the config menu.</summary>
 internal sealed class ConfigMenu

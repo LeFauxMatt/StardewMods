@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Name>Smack Dat Scarecrow</Name>
     <Description>Go ahead and do it, they can take it.</Description>

@@ -1,6 +1,6 @@
 namespace StardewMods.FuryCore.Framework.Services;
 
-using StardewMods.Common.Enums;
+using StardewMods.FuryCore.Framework.Enums;
 
 /// <summary>Formats the given <see cref="LogLevels" /> into a string.</summary>
 internal static class Formatting

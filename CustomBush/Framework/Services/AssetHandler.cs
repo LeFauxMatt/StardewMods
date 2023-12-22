@@ -2,6 +2,7 @@ namespace StardewMods.CustomBush.Framework.Services;
 
 using StardewModdingAPI.Events;
 using StardewMods.Common.Helpers;
+using StardewMods.Common.Services;
 using StardewMods.CustomBush.Framework.Models;
 
 /// <summary>Responsible for handling assets provided by this mod.</summary>

@@ -40,7 +40,7 @@ internal sealed class AnimalsMenuHandler
     /// <summary>Initializes a new instance of the <see cref="AnimalsMenuHandler" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
     public AnimalsMenuHandler(ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
     {

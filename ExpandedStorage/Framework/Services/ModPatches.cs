@@ -22,7 +22,7 @@ internal sealed class ModPatches
     private readonly ManagedStorages storages;
 
     /// <summary>Initializes a new instance of the <see cref="ModPatches" /> class.</summary>
-    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="storages">Dependency used to handle the objects which should be managed by Expanded Storages.</param>
     public ModPatches(Harmony harmony, ManagedStorages storages)
     {

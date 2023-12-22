@@ -7,7 +7,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
-using StardewMods.Common.Helpers;
+using StardewMods.Common.Services;
 using StardewMods.CustomBush.Framework.Models;
 using StardewValley.Extensions;
 using StardewValley.Internal;
@@ -36,7 +36,7 @@ internal sealed class BushManager
     /// <summary>Initializes a new instance of the <see cref="BushManager" /> class.</summary>
     /// <param name="assets">Dependency used for managing assets.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="harmony">Dependency used to patch the base game.</param>
+    /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="logging">Dependency used for logging debug information to the console.</param>
     public BushManager(AssetHandler assets, IGameContentHelper gameContent, Harmony harmony, Logging logging)
     {
