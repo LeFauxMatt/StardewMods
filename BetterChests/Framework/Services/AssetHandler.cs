@@ -2,40 +2,112 @@ namespace StardewMods.BetterChests.Framework.Services;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Models;
+using StardewMods.Common.Interfaces;
 
 /// <summary>Responsible for handling assets provided by this mod.</summary>
-internal sealed class AssetHandler
+internal sealed class AssetHandler : BaseService
 {
-    /// <summary>Game path to Icons asset.</summary>
-    internal const string IconPath = "furyx639.BetterChests/Icons";
+    /// <summary>The game path to the hsl texture.</summary>
+    public const string HslTexturePath = BaseService.ModPrefix + "/HueBar";
 
-    /// <summary>Game path to Tab Texture asset.</summary>
-    internal const string TabsPath = "furyx639.BetterChests/Tabs/Texture";
+    /// <summary>The game path to the icon texture.</summary>
+    public const string IconTexturePath = BaseService.ModPrefix + "/Icons";
 
-    /// <summary>Game path to Hue Bar asset.</summary>
-    private const string HueBarPath = "furyx639.BetterChests/HueBar";
+    /// <summary>The game path to the tab texture.</summary>
+    public const string TabTexturePath = BaseService.ModPrefix + "/Tabs/Texture";
+
+    /// <summary>The game path to tab data.</summary>
+    public const string TabDataPath = BaseService.ModPrefix + "/Tabs";
+
+    private readonly IDataHelper data;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
+    /// <param name="logging">Dependency used for logging debug information to the console.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
-    public AssetHandler(IModEvents events) => events.Content.AssetRequested += AssetHandler.OnAssetRequested;
-
-    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    /// <param name="data">Dependency used for storing and retrieving data.</param>
+    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
+    public AssetHandler(ILogging logging, IModEvents events, IDataHelper data, IThemeHelper themeHelper)
+        : base(logging)
     {
-        if (e.Name.IsEquivalentTo(AssetHandler.HueBarPath))
+        // Init
+        this.data = data;
+        themeHelper.AddAssets(AssetHandler.IconTexturePath, AssetHandler.TabTexturePath);
+
+        // Events
+        events.Content.AssetRequested += this.OnAssetRequested;
+    }
+
+    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    {
+        if (e.Name.IsEquivalentTo(AssetHandler.HslTexturePath))
         {
             e.LoadFromModFile<Texture2D>("assets/hue.png", AssetLoadPriority.Exclusive);
             return;
         }
 
-        if (e.Name.IsEquivalentTo(AssetHandler.IconPath))
+        if (e.Name.IsEquivalentTo(AssetHandler.IconTexturePath))
         {
             e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
             return;
         }
 
-        if (e.Name.IsEquivalentTo(AssetHandler.TabsPath))
+        if (e.Name.IsEquivalentTo(AssetHandler.TabTexturePath))
         {
             e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
         }
+
+        if (e.Name.IsEquivalentTo(AssetHandler.TabDataPath))
+        {
+            e.LoadFrom(this.GetTabData, AssetLoadPriority.Exclusive);
+        }
+    }
+
+    private Dictionary<string, InventoryTabData> GetTabData()
+    {
+        var tabData = this.data.ReadJsonFile<Dictionary<string, InventoryTabData>>("assets/tabs.json");
+        if (tabData is not null && tabData.Any())
+        {
+            return tabData;
+        }
+
+        tabData = new Dictionary<string, InventoryTabData>
+        {
+            { "Clothing", new InventoryTabData("Clothing", AssetHandler.TabTexturePath, 0, ["category_clothing", "category_boots", "category_hat"]) },
+            {
+                "Cooking",
+                new InventoryTabData(
+                    "Cooking",
+                    AssetHandler.TabTexturePath,
+                    1,
+                    [
+                        "category_syrup",
+                        "category_artisan_goods",
+                        "category_ingredients",
+                        "category_sell_at_pierres_and_marnies",
+                        "category_sell_at_pierres",
+                        "category_meat",
+                        "category_cooking",
+                        "category_milk",
+                        "category_egg",
+                    ])
+            },
+            { "Crops", new InventoryTabData("Crops", AssetHandler.TabTexturePath, 2, ["category_greens", "category_flowers", "category_fruits", "category_vegetable"]) },
+            { "Equipment", new InventoryTabData("Equipment", AssetHandler.TabTexturePath, 3, ["category_equipment", "category_ring", "category_tool", "category_weapon"]) },
+            { "Fishing", new InventoryTabData("Fishing", AssetHandler.TabTexturePath, 4, ["category_bait", "category_fish", "category_tackle", "category_sell_at_fish_shop"]) },
+            {
+                "Materials",
+                new InventoryTabData(
+                    "Materials",
+                    AssetHandler.TabTexturePath,
+                    5,
+                    ["category_monster_loot", "category_metal_resources", "category_building_resources", "category_minerals", "category_crafting", "category_gem"])
+            },
+            { "Misc", new InventoryTabData("Misc", AssetHandler.TabTexturePath, 6, ["category_big_craftable", "category_furniture", "category_junk"]) },
+            { "Seeds", new InventoryTabData("Seeds", AssetHandler.TabTexturePath, 7, ["category_seeds", "category_fertilizer"]) },
+        };
+
+        this.data.WriteJsonFile("assets/tabs.json", tabData);
+        return tabData;
     }
 }

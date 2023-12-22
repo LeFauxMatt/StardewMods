@@ -1,9 +1,9 @@
 ﻿namespace StardewMods.BetterChests.Framework.UI;
 
 using System.Globalization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.BetterChests.Framework.Features;
-using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.Common.Extensions;
 using StardewValley.Menus;
 
@@ -13,11 +13,7 @@ internal sealed class DisplayedItems
     private readonly int columns;
 
     private readonly Lazy<ClickableTextureComponent> downArrow = new(
-        () => new(
-            new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
-            Game1.mouseCursors,
-            new(421, 472, 11, 12),
-            Game1.pixelZoom) { myID = 5318008 });
+        () => new ClickableTextureComponent(new Rectangle(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new Rectangle(421, 472, 11, 12), Game1.pixelZoom) { myID = 5318008 });
 
     private readonly List<ItemMatcher> highlighters = new();
     private readonly InventoryMenu.highlightThisItem highlightMethod;
@@ -26,11 +22,7 @@ internal sealed class DisplayedItems
     private readonly List<Func<IEnumerable<Item>, IEnumerable<Item>>> transformers = new();
 
     private readonly Lazy<ClickableTextureComponent> upArrow = new(
-        () => new(
-            new(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),
-            Game1.mouseCursors,
-            new(421, 459, 11, 12),
-            Game1.pixelZoom) { myID = 5318009 });
+        () => new ClickableTextureComponent(new Rectangle(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom), Game1.mouseCursors, new Rectangle(421, 459, 11, 12), Game1.pixelZoom) { myID = 5318009 });
 
     private EventHandler<List<Item>>? itemsRefreshed;
     private int offset;
@@ -64,13 +56,6 @@ internal sealed class DisplayedItems
         this.DownArrow.upNeighborID = this.UpArrow.myID;
 
         this.RefreshItems();
-    }
-
-    /// <summary>Raised after the displayed items is refreshed.</summary>
-    public event EventHandler<List<Item>> ItemsRefreshed
-    {
-        add => this.itemsRefreshed += value;
-        remove => this.itemsRefreshed -= value;
     }
 
     /// <summary>Gets the items displayed in the inventory menu.</summary>
@@ -110,25 +95,16 @@ internal sealed class DisplayedItems
 
     private ClickableTextureComponent UpArrow => this.upArrow.Value;
 
+    /// <summary>Raised after the displayed items is refreshed.</summary>
+    public event EventHandler<List<Item>> ItemsRefreshed
+    {
+        add => this.itemsRefreshed += value;
+        remove => this.itemsRefreshed -= value;
+    }
+
     /// <summary>Adds a <see cref="ItemMatcher" /> to highlight inventory.</summary>
     /// <param name="matcher">The <see cref="ItemMatcher" /> to add.</param>
     public void AddHighlighter(ItemMatcher matcher) => this.highlighters.Add(matcher);
-
-    /// <summary>Adds a function to transform the list of displayed items.</summary>
-    /// <param name="transformer">The function to add.</param>
-    public void AddTransformer(Func<IEnumerable<Item>, IEnumerable<Item>> transformer)
-    {
-        this.transformers.Add(transformer);
-
-        if (this.topMenu)
-        {
-            BetterItemGrabMenu.RefreshItemsToGrabMenu = true;
-        }
-        else
-        {
-            BetterItemGrabMenu.RefreshInventory = true;
-        }
-    }
 
     /// <summary>Draws UI elements to the screen.</summary>
     /// <param name="spriteBatch">The <see cref="SpriteBatch" /> to draw to.</param>
@@ -150,13 +126,9 @@ internal sealed class DisplayedItems
     /// <param name="y">The y-coord of the mouse.</param>
     public void Hover(int x, int y)
     {
-        this.UpArrow.scale = this.UpArrow.containsPoint(x, y)
-            ? Math.Min(Game1.pixelZoom * 1.1f, this.UpArrow.scale + 0.05f)
-            : Math.Max(Game1.pixelZoom, this.UpArrow.scale - 0.05f);
+        this.UpArrow.scale = this.UpArrow.containsPoint(x, y) ? Math.Min(Game1.pixelZoom * 1.1f, this.UpArrow.scale + 0.05f) : Math.Max(Game1.pixelZoom, this.UpArrow.scale - 0.05f);
 
-        this.DownArrow.scale = this.DownArrow.containsPoint(x, y)
-            ? Math.Min(Game1.pixelZoom * 1.1f, this.DownArrow.scale + 0.05f)
-            : Math.Max(Game1.pixelZoom, this.DownArrow.scale - 0.05f);
+        this.DownArrow.scale = this.DownArrow.containsPoint(x, y) ? Math.Min(Game1.pixelZoom * 1.1f, this.DownArrow.scale + 0.05f) : Math.Max(Game1.pixelZoom, this.DownArrow.scale - 0.05f);
     }
 
     /// <summary>Attempt to left click.</summary>
@@ -184,8 +156,7 @@ internal sealed class DisplayedItems
     public void RefreshItems()
     {
         var actualInventory = this.ActualInventory.AsEnumerable();
-        actualInventory = this.transformers.Aggregate(actualInventory, (current, transformer) => transformer(current))
-            .ToList();
+        actualInventory = this.transformers.Aggregate(actualInventory, (current, transformer) => transformer(current)).ToList();
 
         if (!actualInventory.Any())
         {
@@ -198,21 +169,16 @@ internal sealed class DisplayedItems
             {
                 this.items.Clear();
                 this.items.AddRange(actualInventory.Skip(this.Offset * this.columns).Take(this.Menu.capacity));
-            }
-            while (!this.items.Any() && --this.Offset > 0);
+            } while (!this.items.Any() && --this.Offset > 0);
         }
 
         for (var index = 0; index < this.Menu.inventory.Count; ++index)
         {
-            this.Menu.inventory[index].name = (index < this.items.Count
-                ? this.Menu.actualInventory.IndexOf(this.items[index])
-                : int.MaxValue).ToString(CultureInfo.InvariantCulture);
+            this.Menu.inventory[index].name = (index < this.items.Count ? this.Menu.actualInventory.IndexOf(this.items[index]) : int.MaxValue).ToString(CultureInfo.InvariantCulture);
         }
 
         this.itemsRefreshed.InvokeAll(this, this.items);
     }
 
-    private bool Highlight(Item item) =>
-        this.highlightMethod(item)
-        && (!this.highlighters.Any() || this.highlighters.All(matcher => matcher.Matches(item)));
+    private bool Highlight(Item item) => this.highlightMethod(item) && (!this.highlighters.Any() || this.highlighters.All(matcher => matcher.MatchesFilter(item)));
 }

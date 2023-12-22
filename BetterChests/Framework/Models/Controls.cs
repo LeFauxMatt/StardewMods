@@ -1,7 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
-using System.Globalization;
-using System.Text;
 using StardewModdingAPI.Utilities;
 
 /// <summary>Controls config data.</summary>
@@ -14,9 +12,7 @@ internal sealed class Controls
     public KeybindList Configure { get; set; } = new(SButton.End);
 
     /// <summary>Gets or sets controls to find a chest.</summary>
-    public KeybindList FindChest { get; set; } = new(
-        new Keybind(SButton.LeftControl, SButton.F),
-        new Keybind(SButton.RightControl, SButton.F));
+    public KeybindList FindChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.F), new Keybind(SButton.RightControl, SButton.F));
 
     /// <summary>Gets or sets controls to lock an item slot.</summary>
     public KeybindList LockSlot { get; set; } = new(SButton.LeftAlt);
@@ -28,10 +24,13 @@ internal sealed class Controls
     public KeybindList OpenCrafting { get; set; } = new(SButton.K);
 
     /// <summary>Gets or sets controls to open the first found chest.</summary>
-    public KeybindList OpenFoundChest { get; set; } = new(SButton.Enter);
+    public KeybindList OpenFoundChest { get; set; } = new(new Keybind(SButton.LeftShift, SButton.Enter), new Keybind(SButton.RightShift, SButton.Enter));
 
     /// <summary>Gets or sets controls to open the next found chest.</summary>
-    public KeybindList OpenNextChest { get; set; } = new(SButton.Tab);
+    public KeybindList OpenNextChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.Tab));
+
+    /// <summary>Gets or sets controls to open the previous found chest.</summary>
+    public KeybindList OpenPreviousChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.LeftShift, SButton.Tab));
 
     /// <summary>Gets or sets controls to switch to previous tab.</summary>
     public KeybindList PreviousTab { get; set; } = new(SButton.DPadLeft);
@@ -48,27 +47,12 @@ internal sealed class Controls
     /// <summary>Gets or sets controls to stash player items into storages.</summary>
     public KeybindList StashItems { get; set; } = new(SButton.Z);
 
-    /// <summary>Gets or sets controls to toggle chest info.</summary>
+    /// <summary>Gets or sets controls to toggle item collection on or off.</summary>
+    public KeybindList ToggleCollectItems { get; set; } = new(new Keybind(SButton.LeftControl, SButton.Space), new Keybind(SButton.RightControl, SButton.Space));
+
+    /// <summary>Gets or sets controls to toggle chest info on or off.</summary>
     public KeybindList ToggleInfo { get; set; } = new(SButton.F1);
 
-    /// <inheritdoc />
-    public override string ToString()
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine(CultureInfo.InvariantCulture, $"CloseChestFinder: {this.CloseChestFinder}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"Configure: {this.Configure}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"FindChest: {this.FindChest}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"LockSlot: {this.LockSlot}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"NextTab: {this.NextTab}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"OpenCrafting: {this.OpenCrafting}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"OpenFoundChest: {this.OpenFoundChest}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"OpenNextChest: {this.OpenNextChest}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"PreviousTab: {this.PreviousTab}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"ScrollDown: {this.ScrollDown}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"ScrollPage: {this.ScrollPage}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"ScrollUp: {this.ScrollUp}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"StashItems: {this.StashItems}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"ToggleInfo: {this.ToggleInfo}");
-        return sb.ToString();
-    }
+    /// <summary>Gets or sets controls to toggle search bar on or off.</summary>
+    public KeybindList ToggleSearch { get; set; } = new(new Keybind(SButton.LeftControl, SButton.F), new Keybind(SButton.RightControl, SButton.F));
 }

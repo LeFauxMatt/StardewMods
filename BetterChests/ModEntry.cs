@@ -3,13 +3,16 @@ namespace StardewMods.BetterChests;
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework;
-using StardewMods.BetterChests.Framework.Features;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services;
-using StardewMods.Common.Integrations.Automate;
-using StardewMods.Common.Integrations.BetterCrafting;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.BetterChests.Framework.Services.Features;
+using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.Automate;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
@@ -28,20 +31,15 @@ public sealed class ModEntry : Mod
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
-    /// <inheritdoc />
-    public override object GetApi(IModInfo mod)
-    {
-        var configMenu = this.container.GetInstance<ConfigMenu>();
-        var storages = this.container.GetInstance<StorageManager>();
-        return new BetterChestsApi(configMenu, storages);
-    }
-
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
+        var config = this.Helper.ReadConfig<ModConfig>();
+
         // Init
         this.container = new Container();
-        this.container.RegisterSingleton(() => this.Helper.ReadConfig<ModConfig>());
-        this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
+        this.container.RegisterInstance(config);
+        this.container.RegisterInstance<IConfigWithLogLevel>(config);
+        this.container.Register(() => new Harmony(this.ModManifest.UniqueID), Lifestyle.Singleton);
 
         // SMAPI
         this.container.RegisterInstance(this.Helper);
@@ -57,34 +55,60 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
 
         // Integrations
-        this.container.RegisterSingleton<AutomateIntegration>();
-        this.container.RegisterSingleton<BetterCraftingIntegration>();
-        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
-        this.container.RegisterSingleton<ToolbarIconsIntegration>();
-        this.container.RegisterSingleton<IntegrationsManager>();
+        this.container.Register<FuryCoreIntegration>(Lifestyle.Singleton);
+        this.container.Register<AutomateIntegration>(Lifestyle.Singleton);
+        this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Singleton);
+        this.container.Register<ToolbarIconsIntegration>(Lifestyle.Singleton);
 
         // Services
-        this.container.RegisterSingleton<AssetHandler>();
-        this.container.RegisterSingleton<BuffHandler>();
-        this.container.RegisterSingleton<ThemeHelper>();
-        this.container.RegisterSingleton<Formatting>();
+        this.container.Register(
+            () =>
+            {
+                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
+                var monitor = this.container.GetInstance<IMonitor>();
+                return furyCore.Api!.GetLogger(monitor);
+            },
+            Lifestyle.Singleton);
+
+        this.container.Register(
+            () =>
+            {
+                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
+                return furyCore.Api!.GetThemeHelper();
+            },
+            Lifestyle.Singleton);
+
+        this.container.Register<ItemMatcher>(Lifestyle.Transient);
+        this.container.Register(
+            () =>
+            {
+                var logging = this.container.GetInstance<ILogging>();
+                return new ItemMatcherFactory(logging, this.container.GetInstance<ItemMatcher>);
+            },
+            Lifestyle.Singleton);
+
+        this.container.Register<AssetHandler>(Lifestyle.Singleton);
+        this.container.Register<ContainerFactory>(Lifestyle.Singleton);
+        this.container.Register<Formatting>(Lifestyle.Singleton);
+        this.container.Register<InventoryTabFactory>(Lifestyle.Singleton);
+        this.container.Register<ItemGrabMenuManager>(Lifestyle.Singleton);
+        this.container.Register<StatusEffectManager>(Lifestyle.Singleton);
+        this.container.Register<VirtualizedChestFactory>(Lifestyle.Singleton);
 
         // Features
         this.container.Collection.Register<IFeature>(
             new[]
             {
                 Lifestyle.Singleton.CreateRegistration<AutoOrganize>(this.container),
-                Lifestyle.Singleton.CreateRegistration<BetterColorPicker>(this.container),
-                Lifestyle.Singleton.CreateRegistration<BetterCrafting>(this.container),
-                Lifestyle.Singleton.CreateRegistration<BetterItemGrabMenu>(this.container),
                 Lifestyle.Singleton.CreateRegistration<CarryChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<ChestFinder>(this.container),
                 Lifestyle.Singleton.CreateRegistration<ChestInfo>(this.container),
-                Lifestyle.Singleton.CreateRegistration<ChestMenuTabs>(this.container),
                 Lifestyle.Singleton.CreateRegistration<CollectItems>(this.container),
-                Lifestyle.Singleton.CreateRegistration<Configurator>(this.container),
+                Lifestyle.Singleton.CreateRegistration<ConfigureChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<CraftFromChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<FilterItems>(this.container),
+                Lifestyle.Singleton.CreateRegistration<HslColorPicker>(this.container),
+                Lifestyle.Singleton.CreateRegistration<InventoryTabs>(this.container),
                 Lifestyle.Singleton.CreateRegistration<LabelChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<OpenHeldChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<OrganizeChest>(this.container),
@@ -93,13 +117,9 @@ public sealed class ModEntry : Mod
                 Lifestyle.Singleton.CreateRegistration<SlotLock>(this.container),
                 Lifestyle.Singleton.CreateRegistration<StashToChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<TransferItems>(this.container),
-                Lifestyle.Singleton.CreateRegistration<UnloadChest>(this.container)
+                Lifestyle.Singleton.CreateRegistration<UnloadChest>(this.container),
             });
 
-        this.container.RegisterSingleton<ConfigMenu>();
-        this.container.RegisterSingleton<StorageManager>();
-        this.container.RegisterSingleton<StorageFactory>();
-        this.container.RegisterSingleton<StorageRegistry>();
         this.container.Verify();
 
         var features = this.container.GetAllInstances<IFeature>();
