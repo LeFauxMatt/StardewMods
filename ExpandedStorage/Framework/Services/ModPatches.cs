@@ -30,40 +30,24 @@ internal sealed class ModPatches
         ModPatches.instance = this;
         this.storages = storages;
 
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
-            transpiler: new(typeof(ModPatches), nameof(ModPatches.Chest_checkForAction_transpiler)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)), transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_checkForAction_transpiler)));
 
         harmony.Patch(
-            AccessTools.Method(
-                typeof(Chest),
-                nameof(Chest.draw),
-                new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
+            AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
 
         harmony.Patch(
-            AccessTools.Method(
-                typeof(Chest),
-                nameof(Chest.draw),
-                new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool) }),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_drawLocal_prefix)));
+            AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool) }),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_drawLocal_prefix)));
 
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.getLastLidFrame)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Chest_getLastLidFrame_postfix)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.getLastLidFrame)), postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_getLastLidFrame_postfix)));
 
         // World
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_chestForAction_prefix)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_chestForAction_prefix)));
 
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-            transpiler: new(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_transpiler)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)), transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_transpiler)));
 
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_postfix)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)), postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_postfix)));
 
         harmony.Patch(
             AccessTools.Constructor(
@@ -89,28 +73,20 @@ internal sealed class ModPatches
                     typeof(ItemExitBehavior),
                     typeof(bool),
                 }),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)));
+            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)));
 
-        harmony.Patch(
-            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)));
+        harmony.Patch(AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)), postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)));
 
-        harmony.Patch(
-            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)));
+        harmony.Patch(AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)), postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)));
 
-        harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
-            postfix: new(typeof(ModPatches), nameof(ModPatches.Object_placementAction_postfix)));
+        harmony.Patch(AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)), postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Object_placementAction_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Chest_chestForAction_prefix(Chest __instance, ref bool __result, bool justCheckingForActivity)
     {
-        if (justCheckingForActivity
-            || !__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+        if (justCheckingForActivity || !__instance.playerChest.Value || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return true;
         }
@@ -121,7 +97,8 @@ internal sealed class ModPatches
             return false;
         }
 
-        __instance.GetMutex()
+        __instance
+            .GetMutex()
             .RequestLock(
                 () =>
                 {
@@ -143,20 +120,19 @@ internal sealed class ModPatches
         return false;
     }
 
-    private static IEnumerable<CodeInstruction> Chest_checkForAction_transpiler(
-        IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Chest_checkForAction_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         foreach (var instruction in instructions)
         {
             if (instruction.LoadsConstant(ModPatches.ChestOpenSound))
             {
-                yield return new(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return instruction;
                 yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
             }
             else if (instruction.LoadsConstant(ModPatches.LidOpenSound))
             {
-                yield return new(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return instruction;
                 yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
             }
@@ -169,16 +145,9 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_draw_prefix(
-        Chest __instance,
-        ref int ___currentLidFrame,
-        SpriteBatch spriteBatch,
-        int x,
-        int y,
-        float alpha)
+    private static bool Chest_draw_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
     {
-        if (!__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+        if (!__instance.playerChest.Value || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return true;
         }
@@ -200,7 +169,7 @@ internal sealed class ModPatches
                 Game1.shadowTexture.Bounds,
                 Color.Black * 0.5f,
                 0f,
-                new(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y),
+                new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y),
                 4f,
                 SpriteEffects.None,
                 0.0001f);
@@ -216,23 +185,10 @@ internal sealed class ModPatches
         var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(drawX, drawY - 1f) * Game1.tileSize);
         var startingLidFrame = __instance.startingLidFrame.Value;
         var lastLidFrame = __instance.getLastLidFrame();
-        var frame = new Rectangle(
-            Math.Min((lastLidFrame - startingLidFrame) + 1, Math.Max(0, ___currentLidFrame - startingLidFrame)) * 16,
-            colored ? 32 : 0,
-            16,
-            32);
+        var frame = new Rectangle(Math.Min(lastLidFrame - startingLidFrame + 1, Math.Max(0, ___currentLidFrame - startingLidFrame)) * 16, colored ? 32 : 0, 16, 32);
 
         // Draw Base Layer
-        spriteBatch.Draw(
-            texture,
-            pos + (__instance.shakeTimer > 0 ? new(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
-            frame,
-            color * alpha,
-            0f,
-            Vector2.Zero,
-            4f,
-            SpriteEffects.None,
-            baseSortOrder);
+        spriteBatch.Draw(texture, pos + (__instance.shakeTimer > 0 ? new Vector2(Game1.random.Next(-1, 2), 0) : Vector2.Zero), frame, color * alpha, 0f, Vector2.Zero, 4f, SpriteEffects.None, baseSortOrder);
 
         if (frame.Y == 0)
         {
@@ -243,7 +199,7 @@ internal sealed class ModPatches
         frame.Y = 64;
         spriteBatch.Draw(
             texture,
-            pos + (__instance.shakeTimer > 0 ? new(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
+            pos + (__instance.shakeTimer > 0 ? new Vector2(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
             frame,
             __instance.Tint * alpha,
             0f,
@@ -257,16 +213,9 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_drawLocal_prefix(
-        Chest __instance,
-        SpriteBatch spriteBatch,
-        int x,
-        int y,
-        float alpha,
-        bool local)
+    private static bool Chest_drawLocal_prefix(Chest __instance, SpriteBatch spriteBatch, int x, int y, float alpha, bool local)
     {
-        if (!__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+        if (!__instance.playerChest.Value || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return true;
         }
@@ -276,21 +225,12 @@ internal sealed class ModPatches
 
         var data = ItemRegistry.GetDataOrErrorItem(__instance.QualifiedItemId);
         var texture = data.GetTexture();
-        var pos = local ? new(x, y - 64) : Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize);
+        var pos = local ? new Vector2(x, y - 64) : Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y - 1) * Game1.tileSize);
         var frame = new Rectangle(0, colored ? 32 : 0, 16, 32);
         var baseSortOrder = local ? 0.89f : ((y * 64) + 4) / 10000f;
 
         // Draw Base Layer
-        spriteBatch.Draw(
-            texture,
-            pos + (__instance.shakeTimer > 0 ? new(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
-            frame,
-            color * alpha,
-            0f,
-            Vector2.Zero,
-            4f,
-            SpriteEffects.None,
-            baseSortOrder);
+        spriteBatch.Draw(texture, pos + (__instance.shakeTimer > 0 ? new Vector2(Game1.random.Next(-1, 2), 0) : Vector2.Zero), frame, color * alpha, 0f, Vector2.Zero, 4f, SpriteEffects.None, baseSortOrder);
 
         if (frame.Y == 0)
         {
@@ -301,7 +241,7 @@ internal sealed class ModPatches
         frame.Y = 64;
         spriteBatch.Draw(
             texture,
-            pos + (__instance.shakeTimer > 0 ? new(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
+            pos + (__instance.shakeTimer > 0 ? new Vector2(Game1.random.Next(-1, 2), 0) : Vector2.Zero),
             frame,
             __instance.Tint * alpha,
             0f,
@@ -317,31 +257,29 @@ internal sealed class ModPatches
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
     {
-        if (!__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+        if (!__instance.playerChest.Value || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return;
         }
 
-        __result = (__instance.startingLidFrame.Value + storage.Frames) - 1;
+        __result = __instance.startingLidFrame.Value + storage.Frames - 1;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static IEnumerable<CodeInstruction> Chest_UpdateFarmerNearby_transpiler(
-        IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Chest_UpdateFarmerNearby_transpiler(IEnumerable<CodeInstruction> instructions)
     {
         foreach (var instruction in instructions)
         {
             if (instruction.LoadsConstant(ModPatches.LidOpenSound))
             {
-                yield return new(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return instruction;
                 yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
             }
             else if (instruction.LoadsConstant(ModPatches.LidCloseSound))
             {
-                yield return new(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return instruction;
                 yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
             }
@@ -360,27 +298,14 @@ internal sealed class ModPatches
             return sound;
         }
 
-        return sound switch
-        {
-            ModPatches.ChestOpenSound => storage.OpenSound,
-            ModPatches.LidOpenSound => storage.OpenNearbySound,
-            ModPatches.LidCloseSound => storage.CloseNearbySound,
-            _ => sound,
-        };
+        return sound switch { ModPatches.ChestOpenSound => storage.OpenSound, ModPatches.LidOpenSound => storage.OpenNearbySound, ModPatches.LidCloseSound => storage.CloseNearbySound, _ => sound };
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Chest_updateWhenCurrentLocation_postfix(
-        Chest __instance,
-        ref int ____shippingBinFrameCounter,
-        ref bool ____farmerNearby,
-        ref int ___currentLidFrame)
+    private static void Chest_updateWhenCurrentLocation_postfix(Chest __instance, ref int ____shippingBinFrameCounter, ref bool ____farmerNearby, ref int ___currentLidFrame)
     {
-        if (!__instance.playerChest.Value
-            || __instance.Location is null
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage)
-            || !storage.OpenNearby)
+        if (!__instance.playerChest.Value || __instance.Location is null || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage) || !storage.OpenNearby)
         {
             return;
         }
@@ -415,28 +340,21 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) =>
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
+    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) => ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) =>
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
+    private static void ItemGrabMenu_gameWindowSizeChanged_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) => ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) =>
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
+    private static void ItemGrabMenu_setSourceItem_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) => ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_placementAction_postfix(
-        SObject __instance,
-        ref bool __result,
-        GameLocation location,
-        int x,
-        int y)
+    [HarmonyBefore("furyx639.BetterChests")]
+    private static void Object_placementAction_postfix(SObject __instance, ref bool __result, GameLocation location, int x, int y)
     {
         if (!__result || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
         {
@@ -463,8 +381,7 @@ internal sealed class ModPatches
 
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)
     {
-        if (sourceItem is not Chest chest
-            || !ModPatches.instance.storages.Data.TryGetValue(chest.ItemId, out var storage))
+        if (sourceItem is not Chest chest || !ModPatches.instance.storages.Data.TryGetValue(chest.ItemId, out var storage))
         {
             return;
         }

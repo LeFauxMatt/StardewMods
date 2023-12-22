@@ -5,46 +5,6 @@ using StardewMods.Common.Models;
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions
 {
-    /// <summary>Performs the equivalent of item.GetOneCopyFrom and Object.GetOneCopyFrom.</summary>
-    /// <param name="item">The item to copy attributes into.</param>
-    /// <param name="source">The chest to copy attributes from.</param>
-    public static void CopyFrom(this Item item, SObject source)
-    {
-        // item.GetOneCopyFrom
-        item.ItemId = source.ItemId;
-        item.IsRecipe = source.IsRecipe;
-        item.Quality = source.Quality;
-        item.Stack = 1;
-        item.modData.Clear();
-        foreach (var (key, value) in source.modData.Pairs)
-        {
-            item.modData[key] = value;
-        }
-
-        if (item is not SObject obj)
-        {
-            return;
-        }
-
-        // Object.GetOneCopyFrom
-        obj.scale = source.scale;
-        obj.IsSpawnedObject = source.IsSpawnedObject;
-        obj.SpecialVariable = source.SpecialVariable;
-        obj.Price = source.Price;
-        obj.name = source.name;
-        obj.displayNameFormat = source.displayNameFormat;
-        obj.HasBeenInInventory = source.HasBeenInInventory;
-        obj.HasBeenPickedUpByFarmer = source.HasBeenPickedUpByFarmer;
-        obj.TileLocation = source.TileLocation;
-        obj.uses.Value = source.uses.Value;
-        obj.questItem.Value = source.questItem.Value;
-        obj.questId.Value = source.questId.Value;
-        obj.preserve.Value = source.preserve.Value;
-        obj.preservedParentSheetIndex.Value = source.preservedParentSheetIndex.Value;
-        obj.orderData.Value = source.orderData.Value;
-        obj.owner.Value = source.owner.Value;
-    }
-
     /// <summary>Invokes all event handlers for an event.</summary>
     /// <param name="eventHandler">The event.</param>
     /// <param name="source">The source.</param>
@@ -99,10 +59,7 @@ internal static class CommonExtensions
     /// <param name="targetRange">The target range to map to.</param>
     /// <returns>The integer value.</returns>
     public static int Remap(this float value, Range<float> sourceRange, Range<int> targetRange) =>
-        targetRange.Clamp(
-            (int)(targetRange.Minimum
-                + ((targetRange.Maximum - targetRange.Minimum)
-                    * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)))));
+        targetRange.Clamp((int)(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum)))));
 
     /// <summary>Maps an integer value from one range to the same proportional value in another float range.</summary>
     /// <param name="value">The integer value to map.</param>
@@ -110,10 +67,7 @@ internal static class CommonExtensions
     /// <param name="targetRange">The target range to map to.</param>
     /// <returns>The float value.</returns>
     public static float Remap(this int value, Range<int> sourceRange, Range<float> targetRange) =>
-        targetRange.Clamp(
-            targetRange.Minimum
-            + ((targetRange.Maximum - targetRange.Minimum)
-                * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
+        targetRange.Clamp(targetRange.Minimum + ((targetRange.Maximum - targetRange.Minimum) * ((float)(value - sourceRange.Minimum) / (sourceRange.Maximum - sourceRange.Minimum))));
 
     /// <summary>Rounds an int up to the next int by an interval.</summary>
     /// <param name="i">The integer to round up from.</param>
@@ -125,7 +79,7 @@ internal static class CommonExtensions
     /// <param name="source">The list to shuffle.</param>
     /// <typeparam name="T">The list type.</typeparam>
     /// <returns>Returns a shuffled list.</returns>
-    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) => source.Shuffle(new());
+    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) => source.Shuffle(new Random());
 
     private static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
     {
