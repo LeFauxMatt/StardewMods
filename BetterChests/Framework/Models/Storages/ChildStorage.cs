@@ -256,6 +256,12 @@ internal class ChildStorage : IStorage
         set => this.child.UnloadChestCombine = value;
     }
 
+    /// <inheritdoc />
+    public virtual string GetDescription() => this.parent.GetDescription();
+
+    /// <inheritdoc />
+    public virtual string GetDisplayName() => this.parent.GetDisplayName();
+
     private FeatureOption GetFeatureOption(Func<IStorage, FeatureOption> selector)
     {
         var childValue = selector(this.child);

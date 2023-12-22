@@ -110,4 +110,10 @@ internal sealed class DefaultStorage : IStorage
 
     /// <inheritdoc />
     public FeatureOption UnloadChestCombine { get; set; } = FeatureOption.Disabled;
+
+    /// <inheritdoc />
+    public string GetDescription() => I18n.Storage_Other_Tooltip();
+
+    /// <inheritdoc />
+    public string GetDisplayName() => I18n.Storage_Other_Name();
 }

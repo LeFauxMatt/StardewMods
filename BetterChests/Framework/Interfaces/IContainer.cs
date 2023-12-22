@@ -11,8 +11,11 @@ internal interface IContainer : IItemFilter
     /// <summary>The key used to store the locked slot information.</summary>
     private const string LockedSlotKey = "furyx639.BetterChests/LockedSlot";
 
-    /// <summary>Gets options for the type of storage.</summary>
-    IStorage StorageType { get; }
+    /// <summary>Gets the name of the storage.</summary>
+    string DisplayName { get; }
+
+    /// <summary>Gets the description of the storage.</summary>
+    string Description { get; }
 
     /// <summary>Gets options for the storage instance.</summary>
     IStorage Options { get; }

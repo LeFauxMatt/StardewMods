@@ -115,4 +115,12 @@ internal interface IStorage
 
     /// <summary>Gets or sets a value indicating whether unloaded chests will combine with target chest.</summary>
     public FeatureOption UnloadChestCombine { get; set; }
+
+    /// <summary>Gets the name of the storage.</summary>
+    /// <returns>Returns the name.</returns>
+    public string GetDisplayName();
+
+    /// <summary>Gets a description of the storage.</summary>
+    /// <returns>Returns the description.</returns>
+    public string GetDescription();
 }

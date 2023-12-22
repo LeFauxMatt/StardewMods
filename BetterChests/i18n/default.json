@@ -12,6 +12,7 @@
   "storage.SaddleBag.tooltip": "Storage from the Horse Overhaul mod.",
   "storage.Object.name": "Object",
   "storage.Other.name": "Other",
+  "storage.Other.tooltip": "An unknown storage type.",
   // Effects
   "effect.carry-chest-slow.description": "Overburdened -{{speed}} Speed",
   // Config Pages

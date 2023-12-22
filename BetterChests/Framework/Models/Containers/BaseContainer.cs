@@ -14,6 +14,7 @@ internal abstract class BaseContainer<TSource> : IContainer<TSource>
 {
     private readonly ItemMatcher itemMatcher;
     private readonly Lazy<IStorage> options;
+    private readonly IStorage storageType;
 
     /// <summary>Initializes a new instance of the <see cref="BaseContainer{TSource}" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
@@ -21,17 +22,15 @@ internal abstract class BaseContainer<TSource> : IContainer<TSource>
     protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType)
     {
         this.itemMatcher = itemMatcher;
-        this.StorageType = storageType;
-        this.options = new Lazy<IStorage>(
-            () =>
-            {
-                var modDataOptions = new ModDataStorage(this.ModData);
-                return new ChildStorage(this.StorageType, modDataOptions);
-            });
+        this.storageType = storageType;
+        this.options = new Lazy<IStorage>(() => new ChildStorage(storageType, new ModDataStorage(this.ModData)));
     }
 
     /// <inheritdoc />
-    public IStorage StorageType { get; }
+    public string DisplayName => this.storageType.GetDisplayName();
+
+    /// <inheritdoc />
+    public string Description => this.storageType.GetDescription();
 
     /// <inheritdoc />
     public IStorage Options => this.options.Value;

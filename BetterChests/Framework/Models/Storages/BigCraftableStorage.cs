@@ -15,4 +15,10 @@ internal sealed class BigCraftableStorage : ChildStorage
 
     /// <summary>Gets the big craftable data.</summary>
     public BigCraftableData Data { get; }
+
+    /// <inheritdoc />
+    public override string GetDescription() => TokenParser.ParseText(this.Data.Description);
+
+    /// <inheritdoc />
+    public override string GetDisplayName() => TokenParser.ParseText(this.Data.DisplayName);
 }

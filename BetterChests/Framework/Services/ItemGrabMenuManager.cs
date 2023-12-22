@@ -24,7 +24,7 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IContainer?> currentContainer = new();
-    private readonly PerScreen<ItemGrabMenu?> currentMenu = new();
+    private readonly PerScreen<IClickableMenu?> currentMenu = new();
     private readonly PerScreen<InventoryMenuManager> topMenu;
 
     private EventHandler<ItemGrabMenuChangedEventArgs>? itemGrabMenuChanged;
@@ -44,9 +44,10 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.bottomMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(logging));
 
         // Events
-        modEvents.Display.MenuChanged += this.OnMenuChanged;
         modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        modEvents.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        modEvents.GameLoop.UpdateTicking += this.OnUpdateTicking;
 
         // Patches
         harmony.Patch(
@@ -59,7 +60,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     public IContainer? CurrentContainer => Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true ? this.currentContainer.Value : null;
 
     /// <summary>Gets the current item grab menu.</summary>
-    public ItemGrabMenu? CurrentMenu => Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true ? this.currentMenu.Value : null;
+    public ItemGrabMenu? CurrentMenu => Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true ? this.currentMenu.Value as ItemGrabMenu : null;
 
     /// <summary>Gets the inventory menu manager for the top inventory menu.</summary>
     public IInventoryMenuManager TopMenu => this.topMenu.Value;
@@ -124,50 +125,68 @@ internal sealed class ItemGrabMenuManager : BaseService
         __instance.actualInventory = __state.Context.Items;
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private void OnUpdateTicking(object? sender, UpdateTickingEventArgs e) => this.UpdateMenu();
+
+    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e) => this.UpdateMenu();
+
+    private void UpdateHighlightMethods()
     {
-        if (e.NewMenu is not ItemGrabMenu
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        if (this.CurrentMenu.ItemsToGrabMenu.highlightMethod != this.topMenu.Value.HighlightMethod)
+        {
+            this.topMenu.Value.OriginalHighlightMethod = this.CurrentMenu.ItemsToGrabMenu.highlightMethod;
+            this.CurrentMenu.ItemsToGrabMenu.highlightMethod = this.topMenu.Value.HighlightMethod;
+        }
+
+        if (this.CurrentMenu.inventory.highlightMethod != this.bottomMenu.Value.HighlightMethod)
+        {
+            this.bottomMenu.Value.OriginalHighlightMethod = this.CurrentMenu.inventory.highlightMethod;
+            this.CurrentMenu.inventory.highlightMethod = this.bottomMenu.Value.HighlightMethod;
+        }
+    }
+
+    private void UpdateMenu()
+    {
+        if (Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true)
+        {
+            this.UpdateHighlightMethods();
+            return;
+        }
+
+        this.currentMenu.Value = Game1.activeClickableMenu;
+        if (Game1.activeClickableMenu is not ItemGrabMenu
             {
                 context: Chest chest,
             } itemGrabMenu
             || !this.containerFactory.TryGetOne(chest, out var container))
         {
             this.currentContainer.Value = null;
-            this.currentMenu.Value = null;
             this.itemGrabMenuChanged.InvokeAll(this, new ItemGrabMenuChangedEventArgs());
             return;
         }
 
         this.currentContainer.Value = container;
-        this.currentMenu.Value = itemGrabMenu;
         var eventArgs = new ItemGrabMenuChangedEventArgs(container, itemGrabMenu);
 
         // Update top menu
         this.topMenu.Value.Reset();
         this.topMenu.Value.Source = itemGrabMenu.ItemsToGrabMenu;
         this.topMenu.Value.Context = container;
-        if (itemGrabMenu.ItemsToGrabMenu.highlightMethod != this.topMenu.Value.HighlightMethod)
-        {
-            this.topMenu.Value.OriginalHighlightMethod = itemGrabMenu.ItemsToGrabMenu.highlightMethod;
-            itemGrabMenu.ItemsToGrabMenu.highlightMethod = this.topMenu.Value.HighlightMethod;
-        }
 
         // Update bottom menu
         this.bottomMenu.Value.Reset();
         this.bottomMenu.Value.Source = itemGrabMenu.inventory;
-
         if (itemGrabMenu.inventory.actualInventory.Equals(Game1.player.Items) && this.containerFactory.TryGetOne(Game1.player, out container))
         {
             this.bottomMenu.Value.Context = container;
         }
 
-        if (itemGrabMenu.inventory.highlightMethod != this.bottomMenu.Value.HighlightMethod)
-        {
-            this.bottomMenu.Value.OriginalHighlightMethod = itemGrabMenu.inventory.highlightMethod;
-            itemGrabMenu.inventory.highlightMethod = this.bottomMenu.Value.HighlightMethod;
-        }
-
         // Reset filters
+        this.UpdateHighlightMethods();
         this.itemGrabMenuChanged.InvokeAll(this, eventArgs);
 
         // Disable background fade
@@ -178,7 +197,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
     {
         // Redraw background
-        if (this.currentMenu.Value is not null)
+        if (this.CurrentMenu is not null)
         {
             e.SpriteBatch.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
         }
@@ -188,42 +207,34 @@ internal sealed class ItemGrabMenuManager : BaseService
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         // Redraw foreground
-        if (this.currentMenu.Value is not null)
+        if (this.CurrentMenu is null)
         {
-            if (this.currentMenu.Value.hoverText != null && (this.currentMenu.Value.hoveredItem == null || this.currentMenu.Value.hoveredItem == null || this.currentMenu.Value.ItemsToGrabMenu == null))
-            {
-                if (this.currentMenu.Value.hoverAmount > 0)
-                {
-                    IClickableMenu.drawToolTip(e.SpriteBatch, this.currentMenu.Value.hoverText, string.Empty, null, true, -1, 0, null, -1, null, this.currentMenu.Value.hoverAmount);
-                }
-                else
-                {
-                    IClickableMenu.drawHoverText(e.SpriteBatch, this.currentMenu.Value.hoverText, Game1.smallFont);
-                }
-            }
-
-            if (this.currentMenu.Value.hoveredItem != null)
-            {
-                IClickableMenu.drawToolTip(
-                    e.SpriteBatch,
-                    this.currentMenu.Value.hoveredItem.getDescription(),
-                    this.currentMenu.Value.hoveredItem.DisplayName,
-                    this.currentMenu.Value.hoveredItem,
-                    this.currentMenu.Value.heldItem != null);
-            }
-            else if (this.currentMenu.Value.hoveredItem != null && this.currentMenu.Value.ItemsToGrabMenu != null)
-            {
-                IClickableMenu.drawToolTip(
-                    e.SpriteBatch,
-                    this.currentMenu.Value.ItemsToGrabMenu.descriptionText,
-                    this.currentMenu.Value.ItemsToGrabMenu.descriptionTitle,
-                    this.currentMenu.Value.hoveredItem,
-                    this.currentMenu.Value.heldItem != null);
-            }
-
-            this.currentMenu.Value.heldItem?.drawInMenu(e.SpriteBatch, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
-            Game1.mouseCursorTransparency = 1f;
-            this.currentMenu.Value.drawMouse(e.SpriteBatch);
+            return;
         }
+
+        if (this.CurrentMenu.hoverText != null && (this.CurrentMenu.hoveredItem == null || this.CurrentMenu.ItemsToGrabMenu == null))
+        {
+            if (this.CurrentMenu.hoverAmount > 0)
+            {
+                IClickableMenu.drawToolTip(e.SpriteBatch, this.CurrentMenu.hoverText, string.Empty, null, true, -1, 0, null, -1, null, this.CurrentMenu.hoverAmount);
+            }
+            else
+            {
+                IClickableMenu.drawHoverText(e.SpriteBatch, this.CurrentMenu.hoverText, Game1.smallFont);
+            }
+        }
+
+        if (this.CurrentMenu.hoveredItem != null)
+        {
+            IClickableMenu.drawToolTip(e.SpriteBatch, this.CurrentMenu.hoveredItem.getDescription(), this.CurrentMenu.hoveredItem.DisplayName, this.CurrentMenu.hoveredItem, this.CurrentMenu.heldItem != null);
+        }
+        else if (this.CurrentMenu.hoveredItem != null && this.CurrentMenu.ItemsToGrabMenu != null)
+        {
+            IClickableMenu.drawToolTip(e.SpriteBatch, this.CurrentMenu.ItemsToGrabMenu.descriptionText, this.CurrentMenu.ItemsToGrabMenu.descriptionTitle, this.CurrentMenu.hoveredItem, this.CurrentMenu.heldItem != null);
+        }
+
+        this.CurrentMenu.heldItem?.drawInMenu(e.SpriteBatch, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
+        Game1.mouseCursorTransparency = 1f;
+        this.CurrentMenu.drawMouse(e.SpriteBatch);
     }
 }

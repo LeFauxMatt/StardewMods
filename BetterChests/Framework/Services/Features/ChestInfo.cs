@@ -5,7 +5,6 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Containers;
-using StardewMods.BetterChests.Framework.Models.Storages;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Interfaces;
 using StardewValley.Menus;
@@ -48,7 +47,7 @@ internal sealed class ChestInfo : BaseFeature
     {
         // Events
         this.modEvents.Display.MenuChanged += this.OnMenuChanged;
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
         this.modEvents.Player.InventoryChanged += this.OnInventoryChanged;
     }
@@ -57,8 +56,8 @@ internal sealed class ChestInfo : BaseFeature
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.MenuChanged += this.OnMenuChanged;
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.modEvents.Display.MenuChanged -= this.OnMenuChanged;
+        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
     }
@@ -140,35 +139,19 @@ internal sealed class ChestInfo : BaseFeature
             return;
         }
 
-        // Add label or name
+        // Add label
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Name(), container.Options.ChestLabel));
 
         // Add type
-        var type = container.StorageType switch
-        {
-            BuildingStorage
-            {
-                Data:
-                { } buildingData,
-            } => TokenParser.ParseText(buildingData.Name),
-            LocationStorage => I18n.Storage_Fridge_Name(),
-            BigCraftableStorage
-            {
-                Data:
-                { } objectData,
-            } => objectData.DisplayName,
-            _ => I18n.Storage_Other_Name(),
-        };
+        this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Type(), container.DisplayName));
 
-        this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Type(), type));
-
-        // Add Location
+        // Add location
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Location(), container.Location.Name));
 
-        // Add Position
+        // Add position
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Position(), $"{(int)container.TileLocation.X}, {(int)container.TileLocation.Y}"));
 
-        // Add Inventory
+        // Add inventory
         if (container is ChildContainer
             {
                 Parent: FarmerContainer farmerStorage,
@@ -179,15 +162,15 @@ internal sealed class ChestInfo : BaseFeature
 
         var items = container.Items.Where(item => item is not null).ToList();
 
-        // Total Items
+        // Total items
         var totalItems = items.Sum(item => item.Stack);
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_TotalItems(), $"{totalItems:n0}"));
 
-        // Unique Items
+        // Unique items
         var uniqueItems = items.Select(item => item.QualifiedItemId).Distinct().Count();
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_UniqueItems(), $"{uniqueItems:n0}"));
 
-        // Total Value
+        // Total value
         var totalValue = items.Select(item => (long)item.sellToStorePrice(Game1.player.UniqueMultiplayerID) * item.Stack).Sum();
 
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_TotalValue(), $"{totalValue:n0}"));

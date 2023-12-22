@@ -27,7 +27,10 @@ internal class ChildContainer : IContainer
     public IContainer Child => this.child switch { ChildContainer childStorage => childStorage.Child, _ => this.child };
 
     /// <inheritdoc />
-    public IStorage StorageType => this.child.StorageType;
+    public string DisplayName => this.child.DisplayName;
+
+    /// <inheritdoc />
+    public string Description => this.child.Description;
 
     /// <inheritdoc />
     public IStorage Options => this.child.Options;

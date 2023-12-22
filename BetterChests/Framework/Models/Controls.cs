@@ -51,7 +51,7 @@ internal sealed class Controls
     public KeybindList ToggleCollectItems { get; set; } = new(new Keybind(SButton.LeftControl, SButton.Space), new Keybind(SButton.RightControl, SButton.Space));
 
     /// <summary>Gets or sets controls to toggle chest info on or off.</summary>
-    public KeybindList ToggleInfo { get; set; } = new(SButton.F1);
+    public KeybindList ToggleInfo { get; set; } = new(new Keybind(SButton.LeftShift, SButton.OemQuestion), new Keybind(SButton.RightShift, SButton.OemQuestion));
 
     /// <summary>Gets or sets controls to toggle search bar on or off.</summary>
     public KeybindList ToggleSearch { get; set; } = new(new Keybind(SButton.LeftControl, SButton.F), new Keybind(SButton.RightControl, SButton.F));

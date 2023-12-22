@@ -247,6 +247,12 @@ internal abstract class DictionaryStorage : IStorage
         set => this.SetFeatureOption(FeatureOptionKey.UnloadChestCombine, value);
     }
 
+    /// <inheritdoc />
+    public string GetDescription() => I18n.Storage_Other_Tooltip();
+
+    /// <inheritdoc />
+    public string GetDisplayName() => I18n.Storage_Other_Name();
+
     /// <summary>Tries to get the data associated with the specified key.</summary>
     /// <param name="key">The key to search for.</param>
     /// <param name="value">

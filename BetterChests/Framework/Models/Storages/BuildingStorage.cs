@@ -15,4 +15,10 @@ internal sealed class BuildingStorage : ChildStorage
 
     /// <summary>Gets the building data.</summary>
     public BuildingData Data { get; }
+
+    /// <inheritdoc />
+    public override string GetDescription() => TokenParser.ParseText(this.Data.Description);
+
+    /// <inheritdoc />
+    public override string GetDisplayName() => TokenParser.ParseText(this.Data.Name);
 }
