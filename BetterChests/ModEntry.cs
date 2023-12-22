@@ -55,8 +55,8 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
 
         // Integrations
-        this.container.Register<FuryCoreIntegration>(Lifestyle.Singleton);
         this.container.Register<AutomateIntegration>(Lifestyle.Singleton);
+        this.container.Register<FuryCoreIntegration>(Lifestyle.Singleton);
         this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Singleton);
         this.container.Register<ToolbarIconsIntegration>(Lifestyle.Singleton);
 
@@ -93,7 +93,7 @@ public sealed class ModEntry : Mod
         this.container.Register<InventoryTabFactory>(Lifestyle.Singleton);
         this.container.Register<ItemGrabMenuManager>(Lifestyle.Singleton);
         this.container.Register<StatusEffectManager>(Lifestyle.Singleton);
-        this.container.Register<VirtualizedChestFactory>(Lifestyle.Singleton);
+        this.container.Register<ProxyChestManager>(Lifestyle.Singleton);
 
         // Features
         this.container.Collection.Register<IFeature>(

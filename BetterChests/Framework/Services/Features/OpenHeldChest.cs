@@ -108,6 +108,7 @@ internal sealed class OpenHeldChest : BaseFeature
         }
 
         Game1.player.currentLocation.localSound("openChest");
+        var items = chestStorage.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
         chestStorage.Chest.ShowMenu();
         this.input.Suppress(e.Button);
     }

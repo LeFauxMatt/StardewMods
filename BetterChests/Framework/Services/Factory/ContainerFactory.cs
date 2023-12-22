@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Framework.Services.Factory;
 
 using System.Runtime.CompilerServices;
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Storages;
 using StardewMods.Common.Interfaces;
@@ -16,20 +15,20 @@ internal sealed class ContainerFactory : BaseService
     private readonly ConditionalWeakTable<object, IContainer> cachedContainers = new();
     private readonly ModConfig config;
     private readonly ItemMatcherFactory itemMatchers;
+    private readonly ProxyChestManager proxyChestManager;
     private readonly Dictionary<string, IStorage> storageTypes = new();
-    private readonly VirtualizedChestFactory vChests;
 
     /// <summary>Initializes a new instance of the <see cref="ContainerFactory" /> class.</summary>
     /// <param name="logging">Dependency used for logging debug information to the console.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="itemMatchers">Dependency used for getting an ItemMatcher.</param>
-    /// <param name="vChests">Dependency used for creating virtualized chests.</param>
-    public ContainerFactory(ILogging logging, ModConfig config, ItemMatcherFactory itemMatchers, VirtualizedChestFactory vChests)
+    /// <param name="proxyChestManager">Dependency used for creating virtualized chests.</param>
+    public ContainerFactory(ILogging logging, ModConfig config, ItemMatcherFactory itemMatchers, ProxyChestManager proxyChestManager)
         : base(logging)
     {
         this.config = config;
         this.itemMatchers = itemMatchers;
-        this.vChests = vChests;
+        this.proxyChestManager = proxyChestManager;
     }
 
     /// <summary>
@@ -198,11 +197,8 @@ internal sealed class ContainerFactory : BaseService
             return true;
         }
 
-        var chest = item as Chest;
-        chest ??= (item as SObject)?.heldObject.Value as Chest;
-        chest ??= VirtualizedChest.TryGetId(item, out var id) && this.vChests.TryGetOne(id, out var vChest) ? vChest.Chest : null;
-
-        if (chest is null)
+        var chest = item as Chest ?? (item as SObject)?.heldObject.Value as Chest;
+        if (chest is null && !this.proxyChestManager.TryGetProxy(item, out chest))
         {
             container = null;
             return false;

@@ -18,23 +18,23 @@ internal sealed class HslColorPicker
     private const int Width = 58;
 
     private static readonly Lazy<HslColor[]> ColorsLazy = new(HslColorPicker.GetColorsHsl);
-    private static readonly Range<int> HslTrack;
+    private static readonly Range<int> HslTrack = new();
 
     private static readonly Lazy<Texture2D> HueBarLazy = new(() => Game1.content.Load<Texture2D>("furyx639.BetterChests/HueBar"));
 
     private static readonly Rectangle SelectRect = new(412, 495, 5, 4);
     private static readonly Range<float> UnitRange = new(0, 1);
 
-    private readonly Range<int> hueTrack;
+    private readonly Range<int> hueTrack = new();
     private readonly Rectangle[] lightnessBar = new Rectangle[HslColorPicker.Cells];
     private readonly Color[] lightnessShade = new Color[HslColorPicker.Cells];
-    private readonly Range<int> lightnessTrack;
+    private readonly Range<int> lightnessTrack = new();
 
     private readonly ClickableTextureComponent noColor = new(new Rectangle(0, 0, 7, 7), Game1.mouseCursors, new Rectangle(295, 503, 7, 7), Game1.pixelZoom);
 
     private readonly Rectangle[] saturationBar = new Rectangle[HslColorPicker.Cells];
     private readonly Color[] saturationShade = new Color[HslColorPicker.Cells];
-    private readonly Range<int> saturationTrack;
+    private readonly Range<int> saturationTrack = new();
     private HslColor currentHslColor;
     private Thumb held = Thumb.None;
     private Rectangle hueBarArea = new(0, 0, HslColorPicker.BarWidth, HslColorPicker.Height - 36);

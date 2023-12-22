@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewValley.Inventories;
 using StardewValley.Mods;
 
 /// <inheritdoc />
@@ -13,11 +14,14 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
     /// <param name="storageType">The type of storage object.</param>
     /// <param name="farmer">The farmer whose inventory is holding the container.</param>
     public FarmerContainer(ItemMatcher itemMatcher, IStorage storageType, Farmer farmer)
-        : base(itemMatcher, storageType, farmer.Items) =>
+        : base(itemMatcher, storageType) =>
         this.Source = new WeakReference<Farmer>(farmer);
 
     /// <summary>Gets the farmer container of the storage.</summary>
     public Farmer Farmer => this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(FarmerContainer));
+
+    /// <inheritdoc />
+    public override IInventory Items => this.Farmer.Items;
 
     /// <inheritdoc />
     public override GameLocation Location => this.Farmer.currentLocation;

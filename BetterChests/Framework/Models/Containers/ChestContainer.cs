@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Objects;
 
@@ -14,11 +15,14 @@ internal class ChestContainer : BaseContainer<Chest>
     /// <param name="storageType">The type of storage object.</param>
     /// <param name="chest">The chest storage of the container.</param>
     public ChestContainer(ItemMatcher itemMatcher, IStorage storageType, Chest chest)
-        : base(itemMatcher, storageType, chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID)) =>
+        : base(itemMatcher, storageType) =>
         this.Source = new WeakReference<Chest>(chest);
 
     /// <summary>Gets the chest container of the storage.</summary>
     public Chest Chest => this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
+
+    /// <inheritdoc />
+    public override IInventory Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     /// <inheritdoc />
     public override GameLocation Location => this.Chest.Location;

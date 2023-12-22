@@ -18,12 +18,10 @@ internal abstract class BaseContainer<TSource> : IContainer<TSource>
     /// <summary>Initializes a new instance of the <see cref="BaseContainer{TSource}" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
     /// <param name="storageType">The type of storage object.</param>
-    /// <param name="inventory">The storage inventory.</param>
-    protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType, IInventory inventory)
+    protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType)
     {
         this.itemMatcher = itemMatcher;
         this.StorageType = storageType;
-        this.Items = inventory;
         this.options = new Lazy<IStorage>(
             () =>
             {
@@ -39,7 +37,7 @@ internal abstract class BaseContainer<TSource> : IContainer<TSource>
     public IStorage Options => this.options.Value;
 
     /// <inheritdoc />
-    public virtual IInventory Items { get; }
+    public abstract IInventory Items { get; }
 
     /// <inheritdoc />
     public abstract GameLocation Location { get; }
