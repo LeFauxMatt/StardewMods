@@ -21,9 +21,7 @@ internal sealed class ModConfig
         sb.AppendLine("Icons:");
         foreach (var icon in this.Icons)
         {
-            sb.AppendLine(
-                CultureInfo.InvariantCulture,
-                $"{icon.Id}: {icon.Enabled.ToString(CultureInfo.InvariantCulture)}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"{icon.Id}: {icon.Enabled.ToString(CultureInfo.InvariantCulture)}");
         }
 
         return sb.ToString();

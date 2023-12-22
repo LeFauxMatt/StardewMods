@@ -24,13 +24,7 @@ internal sealed class ConfigMenu
     /// <param name="customEvents">Dependency used for custom events.</param>
     /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public ConfigMenu(
-        IModHelper helper,
-        ModConfig config,
-        Dictionary<string, ClickableTextureComponent> components,
-        EventsManager customEvents,
-        GenericModConfigMenuIntegration gmcm,
-        IManifest manifest)
+    public ConfigMenu(IModHelper helper, ModConfig config, Dictionary<string, ClickableTextureComponent> components, EventsManager customEvents, GenericModConfigMenuIntegration gmcm, IManifest manifest)
     {
         this.helper = helper;
         this.manifest = manifest;
@@ -50,39 +44,16 @@ internal sealed class ConfigMenu
         if (Game1.activeClickableMenu.GetChildMenu() is null)
         {
             var point = Game1.getMousePosition();
-            if (Game1.oldMouseState.LeftButton == ButtonState.Released
-                && Mouse.GetState().LeftButton == ButtonState.Pressed
-                && bounds.Contains(point))
+            if (Game1.oldMouseState.LeftButton == ButtonState.Released && Mouse.GetState().LeftButton == ButtonState.Pressed && bounds.Contains(point))
             {
                 Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this.config.Icons, this.components));
                 return;
             }
         }
 
-        IClickableMenu.drawTextureBox(
-            b,
-            Game1.mouseCursors,
-            new(432, 439, 9, 9),
-            bounds.X,
-            bounds.Y,
-            bounds.Width,
-            bounds.Height,
-            Color.White,
-            Game1.pixelZoom,
-            false,
-            1f);
+        IClickableMenu.drawTextureBox(b, Game1.mouseCursors, new Rectangle(432, 439, 9, 9), bounds.X, bounds.Y, bounds.Width, bounds.Height, Color.White, Game1.pixelZoom, false, 1f);
 
-        Utility.drawTextWithShadow(
-            b,
-            label,
-            Game1.dialogueFont,
-            new Vector2((bounds.Left + bounds.Right) - dims.X, (bounds.Top + bounds.Bottom) - dims.Y) / 2f,
-            Game1.textColor,
-            1f,
-            1f,
-            -1,
-            -1,
-            0f);
+        Utility.drawTextWithShadow(b, label, Game1.dialogueFont, new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f, Game1.textColor, 1f, 1f, -1, -1, 0f);
     }
 
     private void OnToolbarIconsLoaded(object? sender, EventArgs e)
@@ -95,12 +66,7 @@ internal sealed class ConfigMenu
         // Register mod configuration
         this.gmcm.Api.Register(this.manifest, this.ResetConfig, this.SaveConfig);
 
-        this.gmcm.Api.AddComplexOption(
-            this.manifest,
-            I18n.Config_CustomizeToolbar_Name,
-            this.DrawButton,
-            I18n.Config_CustomizeToolbar_Tooltip,
-            height: () => 64);
+        this.gmcm.Api.AddComplexOption(this.manifest, I18n.Config_CustomizeToolbar_Name, this.DrawButton, I18n.Config_CustomizeToolbar_Tooltip, height: () => 64);
     }
 
     private void ResetConfig()

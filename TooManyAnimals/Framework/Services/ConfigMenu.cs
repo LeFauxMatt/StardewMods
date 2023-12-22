@@ -20,14 +20,14 @@ internal sealed class ConfigMenu
         this.helper = helper;
         this.manifest = manifest;
 
-        this.gmcm = new(this.helper.ModRegistry);
+        this.gmcm = new GenericModConfigMenuIntegration(this.helper.ModRegistry);
         this.Setup();
     }
 
     private void Reset()
     {
         this.config.AnimalShopLimit = 30;
-        this.config.ControlScheme = new();
+        this.config.ControlScheme = new Controls();
     }
 
     private void Save() => this.helper.WriteConfig(this.config);

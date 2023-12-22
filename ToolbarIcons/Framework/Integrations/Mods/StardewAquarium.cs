@@ -14,12 +14,5 @@ internal sealed class StardewAquarium : ICustomIntegration
     public StardewAquarium(ComplexIntegration complex) => this.complex = complex;
 
     /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complex.AddMethodWithParams(
-            StardewAquarium.ModId,
-            1,
-            I18n.Button_StardewAquarium(),
-            StardewAquarium.Method,
-            StardewAquarium.Argument,
-            Array.Empty<string>());
+    public void AddIntegration() => this.complex.AddMethodWithParams(StardewAquarium.ModId, 1, I18n.Button_StardewAquarium(), StardewAquarium.Method, StardewAquarium.Argument, Array.Empty<string>());
 }

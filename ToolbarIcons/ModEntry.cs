@@ -37,7 +37,7 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        this.container = new();
+        this.container = new Container();
 
         // Init
         this.container.RegisterSingleton(() => this.Helper.ReadConfig<ModConfig>());

@@ -3,10 +3,10 @@
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Services.Integrations.ContentPatcher;
-using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.ContentPatcher;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ExpandedStorage.Framework.Services;
 
 /// <inheritdoc />
@@ -31,7 +31,7 @@ public sealed class ModEntry : Mod
         var config = this.Helper.ReadConfig<ModConfig>();
 
         // Init
-        this.container = new();
+        this.container = new Container();
         this.container.RegisterInstance(config);
         this.container.RegisterInstance<IConfigWithLogLevel>(config);
         this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));

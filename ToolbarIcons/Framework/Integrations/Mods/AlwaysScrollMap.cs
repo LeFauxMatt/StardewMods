@@ -18,8 +18,7 @@ internal sealed class AlwaysScrollMap : ICustomIntegration
     }
 
     /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complex.AddCustomAction(AlwaysScrollMap.ModId, 6, I18n.Button_AlwaysScrollMap(), this.GetAction);
+    public void AddIntegration() => this.complex.AddCustomAction(AlwaysScrollMap.ModId, 6, I18n.Button_AlwaysScrollMap(), this.GetAction);
 
     private Action? GetAction(IMod mod)
     {

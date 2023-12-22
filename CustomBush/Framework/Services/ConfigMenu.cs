@@ -32,8 +32,7 @@ internal sealed class ConfigMenu
         gmcm.Api.AddTextOption(
             manifest,
             () => this.config.LogLevel.ToStringFast(),
-            value => this.config.LogLevel =
-                SimpleLogLevelExtensions.TryParse(value, out var logLevel) ? logLevel : SimpleLogLevel.Less,
+            value => this.config.LogLevel = SimpleLogLevelExtensions.TryParse(value, out var logLevel) ? logLevel : SimpleLogLevel.Less,
             I18n.Config_LogLevel_Title,
             I18n.Config_LogLevel_Description,
             SimpleLogLevelExtensions.GetNames(),

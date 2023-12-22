@@ -10,16 +10,14 @@ internal sealed class WaterTheCrops : IChore
 
     private int cropsWatered;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WaterTheCrops"/> class.
-    /// </summary>
-    /// <param name="config">Config data for <see cref="WaterTheCrops"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="WaterTheCrops" /> class.</summary>
+    /// <param name="config">Config data for <see cref="WaterTheCrops" />.</param>
     public WaterTheCrops(Config config) => this.config = config;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens) => tokens["CropsWatered"] = this.cropsWatered;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool IsPossibleForSpouse(NPC spouse)
     {
         var farm = Game1.getFarm();
@@ -28,9 +26,7 @@ internal sealed class WaterTheCrops : IChore
             return false;
         }
 
-        var spots = new HashSet<Vector2>(farm.terrainFeatures.Pairs
-            .Where(spot => spot.Value is HoeDirt hoeDirt && hoeDirt.needsWatering())
-            .Select(spot => spot.Key));
+        var spots = new HashSet<Vector2>(farm.terrainFeatures.Pairs.Where(spot => spot.Value is HoeDirt hoeDirt && hoeDirt.needsWatering()).Select(spot => spot.Key));
         if (!spots.Any())
         {
             return false;
@@ -43,8 +39,7 @@ internal sealed class WaterTheCrops : IChore
 
         foreach (var sprinkler in farm.Objects.Values.Where(@object => @object.IsSprinkler()))
         {
-            var sprinklerTiles = sprinkler.GetSprinklerTiles()
-                .Where(tile => farm.doesTileHavePropertyNoNull((int)tile.X, (int)tile.Y, "NoSprinklers", "Back") != "T");
+            var sprinklerTiles = sprinkler.GetSprinklerTiles().Where(tile => farm.doesTileHavePropertyNoNull((int)tile.X, (int)tile.Y, "NoSprinklers", "Back") != "T");
             foreach (var tile in sprinklerTiles)
             {
                 spots.Remove(tile);
@@ -54,15 +49,13 @@ internal sealed class WaterTheCrops : IChore
         return spots.Any();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
     {
         this.cropsWatered = 0;
         var farm = Game1.getFarm();
 
-        var spots = farm.terrainFeatures.Values
-            .OfType<HoeDirt>()
-            .Where(hoeDirt => hoeDirt.needsWatering());
+        var spots = farm.terrainFeatures.Values.OfType<HoeDirt>().Where(hoeDirt => hoeDirt.needsWatering());
 
         foreach (var spot in spots)
         {
@@ -77,14 +70,10 @@ internal sealed class WaterTheCrops : IChore
         return this.cropsWatered > 0;
     }
 
-    /// <summary>
-    /// Config data for <see cref="WaterTheCrops" />.
-    /// </summary>
+    /// <summary>Config data for <see cref="WaterTheCrops" />.</summary>
     public sealed class Config
     {
-        /// <summary>
-        /// Gets or sets the limit to the number of crops that will be watered.
-        /// </summary>
+        /// <summary>Gets or sets the limit to the number of crops that will be watered.</summary>
         public int CropLimit { get; set; }
     }
 }

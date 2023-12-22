@@ -1,8 +1,5 @@
 namespace StardewMods.GarbageDay;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -17,8 +14,8 @@ using xTile.Dimensions;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-    private readonly PerScreen<GarbageCan?> perScreenGarbageCan = new();
     private readonly Dictionary<string, Lazy<GarbageCan?>> garbageCans = new();
+    private readonly PerScreen<GarbageCan?> perScreenGarbageCan = new();
     private readonly PerScreen<NPC?> perScreenNpc = new();
 
 #nullable disable
@@ -32,8 +29,7 @@ public sealed class ModEntry : Mod
         set => this.perScreenGarbageCan.Value = value;
     }
 
-    private IEnumerable<GarbageCan> GarbageCans =>
-        this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
+    private IEnumerable<GarbageCan> GarbageCans => this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
 
     private NPC? Npc
     {
@@ -165,70 +161,61 @@ public sealed class ModEntry : Mod
                             var pos = new Vector2(x, y);
                             this.garbageCans.Add(
                                 whichCan,
-                                new(
+                                new Lazy<GarbageCan?>(
                                     () =>
                                     {
-                                        var garbageCan = default(GarbageCan);
-                                        Utility.ForEachLocation(
-                                            location =>
+                                        foreach (var location in Game1.locations)
+                                        {
+                                            if (!asset.Name.IsEquivalentTo(location.mapPath.Value))
                                             {
-                                                if (!asset.Name.IsEquivalentTo(location.mapPath.Value))
-                                                {
-                                                    return true;
-                                                }
+                                                continue;
+                                            }
 
-                                                if (!location.Objects.TryGetValue(pos, out var obj))
+                                            if (!location.Objects.TryGetValue(pos, out var obj))
+                                            {
+                                                obj = new Chest(true, pos)
                                                 {
-                                                    obj = new Chest(true, pos)
+                                                    Name = "Garbage Can",
+                                                    playerChoiceColor = { Value = Color.DarkGray },
+                                                    modData =
                                                     {
-                                                        Name = "Garbage Can",
-                                                        playerChoiceColor = { Value = Color.DarkGray },
-                                                        modData =
-                                                        {
-                                                            ["furyx639.GarbageDay/WhichCan"] = whichCan,
-                                                            ["Pathoschild.ChestsAnywhere/IsIgnored"] = "true",
-                                                        },
-                                                    };
+                                                        ["furyx639.GarbageDay/WhichCan"] = whichCan,
+                                                        ["Pathoschild.ChestsAnywhere/IsIgnored"] = "true",
+                                                    },
+                                                };
 
-                                                    location.Objects.Add(pos, obj);
-                                                }
+                                                location.Objects.Add(pos, obj);
+                                            }
 
-                                                if (obj is not Chest chest)
-                                                {
-                                                    return false;
-                                                }
+                                            if (obj is not Chest chest)
+                                            {
+                                                return null;
+                                            }
 
-                                                chest.startingLidFrame.Value = 0;
-                                                chest.lidFrameCount.Value = 3;
-                                                garbageCan = new(location, chest);
-                                                return false;
-                                            });
+                                            chest.startingLidFrame.Value = 0;
+                                            chest.lidFrameCount.Value = 3;
+                                            return new GarbageCan(location, chest);
+                                        }
 
-                                        return garbageCan;
+                                        return null;
                                     }));
                         }
 
                         // Remove base tile
-                        if (layer.Tiles[x, y] is not null
-                            && layer.Tiles[x, y].TileSheet.Id == "Town"
-                            && layer.Tiles[x, y].TileIndex == 78)
+                        if (layer.Tiles[x, y] is not null && layer.Tiles[x, y].TileSheet.Id == "Town" && layer.Tiles[x, y].TileIndex == 78)
                         {
                             layer.Tiles[x, y] = null;
                         }
 
                         // Remove Lid tile
                         layer = map.GetLayer("Front");
-                        if (layer.Tiles[x, y - 1] is not null
-                            && layer.Tiles[x, y - 1].TileSheet.Id == "Town"
-                            && layer.Tiles[x, y - 1].TileIndex == 46)
+                        if (layer.Tiles[x, y - 1] is not null && layer.Tiles[x, y - 1].TileSheet.Id == "Town" && layer.Tiles[x, y - 1].TileIndex == 46)
                         {
                             layer.Tiles[x, y - 1] = null;
                         }
 
                         // Add NoPath to tile
-                        map.GetLayer("Back")
-                            .PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size)
-                            ?.Properties.Add("NoPath", string.Empty);
+                        map.GetLayer("Back").PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size)?.Properties.Add("NoPath", string.Empty);
                     }
                 }
             },
@@ -253,10 +240,7 @@ public sealed class ModEntry : Mod
         }
 
         this.GarbageCan = garbageCan.Value;
-        var character = Utility.isThereAFarmerOrCharacterWithinDistance(
-            this.GarbageCan.Tile,
-            7,
-            this.GarbageCan.Location);
+        var character = Utility.isThereAFarmerOrCharacterWithinDistance(this.GarbageCan.Tile, 7, this.GarbageCan.Location);
         if (character is not NPC npc || character is Horse)
         {
             this.GarbageCan.CheckAction();
@@ -269,10 +253,7 @@ public sealed class ModEntry : Mod
         if (npc.Name.Equals("Linus", StringComparison.OrdinalIgnoreCase))
         {
             npc.doEmote(32);
-            npc.setNewDialogue(
-                Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Linus"),
-                true,
-                true);
+            npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Linus"), true, true);
             Game1.player.changeFriendship(5, npc);
             this.multiplayer?.globalChatInfoMessage("LinusTrashCan");
         }
@@ -282,24 +263,15 @@ public sealed class ModEntry : Mod
             {
                 case 2:
                     npc.doEmote(28);
-                    npc.setNewDialogue(
-                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Child"),
-                        true,
-                        true);
+                    npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Child"), true, true);
                     break;
                 case 1:
                     npc.doEmote(8);
-                    npc.setNewDialogue(
-                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Teen"),
-                        true,
-                        true);
+                    npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Teen"), true, true);
                     break;
                 default:
                     npc.doEmote(12);
-                    npc.setNewDialogue(
-                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Adult"),
-                        true,
-                        true);
+                    npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Adult"), true, true);
                     break;
             }
 
@@ -324,8 +296,7 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) =>
-        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) => this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
@@ -352,9 +323,7 @@ public sealed class ModEntry : Mod
             {
                 foreach (var (tile, obj) in location.Objects.Pairs)
                 {
-                    if (obj is not Chest chest
-                        || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
-                        || this.garbageCans.ContainsKey(whichCan))
+                    if (obj is not Chest chest || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan) || this.garbageCans.ContainsKey(whichCan))
                     {
                         continue;
                     }

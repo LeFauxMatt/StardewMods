@@ -1,15 +1,11 @@
 ﻿namespace StardewMods.GarbageDay;
 
-using System;
-using System.Linq;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Objects;
 
-/// <summary>
-///     Harmony Patches for GarbageDay.
-/// </summary>
+/// <summary>Harmony Patches for GarbageDay.</summary>
 internal sealed class ModPatches
 {
     private static ModPatches? instance;
@@ -18,44 +14,22 @@ internal sealed class ModPatches
     {
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
-            AccessTools.Method(
-                typeof(Chest),
-                nameof(Chest.draw),
-                new[]
-                {
-                    typeof(SpriteBatch),
-                    typeof(int),
-                    typeof(int),
-                    typeof(float),
-                }),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_performToolAction_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_prefix)));
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-            new(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_prefix)));
+            AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
+
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_performToolAction_prefix)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_prefix)));
+        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_prefix)));
     }
 
-    /// <summary>
-    ///     Initializes <see cref="ModPatches" />.
-    /// </summary>
+    /// <summary>Initializes <see cref="ModPatches" />.</summary>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <returns>Returns an instance of the <see cref="ModPatches" /> class.</returns>
-    public static ModPatches Init(IManifest manifest) => ModPatches.instance ??= new(manifest);
+    public static ModPatches Init(IManifest manifest) => ModPatches.instance ??= new ModPatches(manifest);
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_draw_prefix(
-        Chest __instance,
-        ref int ___currentLidFrame,
-        SpriteBatch spriteBatch,
-        int x,
-        int y,
-        float alpha)
+    private static bool Chest_draw_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {
@@ -77,6 +51,7 @@ internal sealed class ModPatches
                 Game1.pixelZoom,
                 SpriteEffects.None,
                 layerDepth + ((1 + layerDepth) * 1E-05f));
+
             return false;
         }
 
@@ -101,6 +76,7 @@ internal sealed class ModPatches
             Game1.pixelZoom,
             SpriteEffects.None,
             layerDepth * 1E-05f);
+
         return false;
     }
 
@@ -111,12 +87,7 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_UpdateFarmerNearby_prefix(
-        Chest __instance,
-        ref bool ____farmerNearby,
-        ref int ____shippingBinFrameCounter,
-        ref int ___currentLidFrame,
-        bool animate)
+    private static bool Chest_UpdateFarmerNearby_prefix(Chest __instance, ref bool ____farmerNearby, ref int ____shippingBinFrameCounter, ref int ___currentLidFrame, bool animate)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {
@@ -124,9 +95,7 @@ internal sealed class ModPatches
         }
 
         var location = __instance.Location;
-        var shouldOpen = location.farmers.Any(
-            farmer => Math.Abs(farmer.Tile.X - __instance.TileLocation.X) <= 1f
-                && Math.Abs(farmer.Tile.Y - __instance.TileLocation.Y) <= 1f);
+        var shouldOpen = location.farmers.Any(farmer => Math.Abs(farmer.Tile.X - __instance.TileLocation.X) <= 1f && Math.Abs(farmer.Tile.Y - __instance.TileLocation.Y) <= 1f);
         if (shouldOpen == ____farmerNearby)
         {
             return false;
@@ -150,11 +119,7 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_updateWhenCurrentLocation_prefix(
-        Chest __instance,
-        ref int ____shippingBinFrameCounter,
-        ref bool ____farmerNearby,
-        ref int ___currentLidFrame)
+    private static bool Chest_updateWhenCurrentLocation_prefix(Chest __instance, ref int ____shippingBinFrameCounter, ref bool ____farmerNearby, ref int ___currentLidFrame)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {

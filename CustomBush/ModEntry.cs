@@ -20,8 +20,8 @@ public sealed class ModEntry : Mod
         // Init
         I18n.Init(this.Helper.Translation);
         this.config = this.Helper.ReadConfig<ModConfig>();
-        this.logging = new(this.config, this.Monitor);
-        this.assetHandler = new(this.Helper.Events, this.Helper.GameContent, this.logging);
+        this.logging = new Logging(this.config, this.Monitor);
+        this.assetHandler = new AssetHandler(this.Helper.Events, this.Helper.GameContent, this.logging);
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;

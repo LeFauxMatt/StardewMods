@@ -24,8 +24,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             true)
     {
         this.Icons = icons;
-        var textBounds = components.Values.Select(component => Game1.dialogueFont.MeasureString(component.hoverText))
-            .ToList();
+        var textBounds = components.Values.Select(component => Game1.dialogueFont.MeasureString(component.hoverText)).ToList();
 
         this.TextHeight = textBounds.Max(textBound => textBound.Y);
         this.MaxItems = (int)(this.height / this.TextHeight);
@@ -34,12 +33,8 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             if (components.TryGetValue(icon.Id, out var component))
             {
                 this.Components.Add(
-                    new(
-                        new(
-                            this.xPositionOnScreen + (Game1.tileSize * 2),
-                            (int)(this.yPositionOnScreen + (this.Components.Count * this.TextHeight)),
-                            32,
-                            32),
+                    new ClickableTextureComponent(
+                        new Rectangle(this.xPositionOnScreen + (Game1.tileSize * 2), (int)(this.yPositionOnScreen + (this.Components.Count * this.TextHeight)), 32, 32),
                         component.texture,
                         component.sourceRect,
                         component.scale)
@@ -52,23 +47,19 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
 
         this.Arrows = Game1.content.Load<Texture2D>("furyx639.ToolbarIcons/Arrows");
 
-        this.OkButton = new(
+        this.OkButton = new ClickableTextureComponent(
             "OK",
-            new(
-                (this.xPositionOnScreen + this.width + Game1.tileSize) - 8,
-                (this.yPositionOnScreen + this.height) - Game1.tileSize,
-                Game1.tileSize,
-                Game1.tileSize),
+            new Rectangle(this.xPositionOnScreen + this.width + Game1.tileSize - 8, this.yPositionOnScreen + this.height - Game1.tileSize, Game1.tileSize, Game1.tileSize),
             null,
             null,
             Game1.mouseCursors,
             Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 46),
             1f);
 
-        this.UpArrow = new(
-            new(this.xPositionOnScreen + this.width + Game1.tileSize, this.yPositionOnScreen + 16, 44, 48),
+        this.UpArrow = new ClickableTextureComponent(
+            new Rectangle(this.xPositionOnScreen + this.width + Game1.tileSize, this.yPositionOnScreen + 16, 44, 48),
             Game1.mouseCursors,
-            new(421, 459, 11, 12),
+            new Rectangle(421, 459, 11, 12),
             Game1.pixelZoom)
         {
             myID = 97865,
@@ -76,10 +67,10 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             leftNeighborID = 3546,
         };
 
-        this.DownArrow = new(
-            new(this.UpArrow.bounds.X, (this.yPositionOnScreen + this.height) - (Game1.tileSize * 2), 44, 48),
+        this.DownArrow = new ClickableTextureComponent(
+            new Rectangle(this.UpArrow.bounds.X, this.yPositionOnScreen + this.height - (Game1.tileSize * 2), 44, 48),
             Game1.mouseCursors,
-            new(421, 472, 11, 12),
+            new Rectangle(421, 472, 11, 12),
             Game1.pixelZoom)
         {
             myID = 106,
@@ -87,13 +78,13 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             leftNeighborID = 3546,
         };
 
-        this.ScrollBar = new(
-            new(this.UpArrow.bounds.X + 12, this.UpArrow.bounds.Y + this.UpArrow.bounds.Height + 4, 24, 40),
+        this.ScrollBar = new ClickableTextureComponent(
+            new Rectangle(this.UpArrow.bounds.X + 12, this.UpArrow.bounds.Y + this.UpArrow.bounds.Height + 4, 24, 40),
             Game1.mouseCursors,
-            new(435, 463, 6, 10),
+            new Rectangle(435, 463, 6, 10),
             Game1.pixelZoom);
 
-        this.ScrollBarRunner = new(
+        this.ScrollBarRunner = new Rectangle(
             this.ScrollBar.bounds.X,
             this.UpArrow.bounds.Y + this.UpArrow.bounds.Height + 4,
             this.ScrollBar.bounds.Width,
@@ -122,9 +113,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             }
 
             this.index = value;
-            this.ScrollBar.bounds.Y = this.ScrollBarRunner.Top
-                + (int)((this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height)
-                    * ((float)this.index / (this.Components.Count - this.MaxItems)));
+            this.ScrollBar.bounds.Y = this.ScrollBarRunner.Top + (int)((this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height) * ((float)this.index / (this.Components.Count - this.MaxItems)));
 
             for (var i = 0; i < this.Components.Count; ++i)
             {
@@ -150,10 +139,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        b.Draw(
-            Game1.fadeToBlackRect,
-            new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
-            Color.Black * 0.5f);
+        b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
 
         Game1.drawDialogueBox(
             this.xPositionOnScreen - IClickableMenu.borderWidth - IClickableMenu.spaceToClearSideBorder,
@@ -166,16 +152,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         this.OkButton.draw(b);
         this.DownArrow.draw(b);
         this.UpArrow.draw(b);
-        IClickableMenu.drawTextureBox(
-            b,
-            Game1.mouseCursors,
-            new(403, 383, 6, 6),
-            this.ScrollBarRunner.X,
-            this.ScrollBarRunner.Y,
-            this.ScrollBarRunner.Width,
-            this.ScrollBarRunner.Height,
-            Color.White,
-            4f);
+        IClickableMenu.drawTextureBox(b, Game1.mouseCursors, new Rectangle(403, 383, 6, 6), this.ScrollBarRunner.X, this.ScrollBarRunner.Y, this.ScrollBarRunner.Width, this.ScrollBarRunner.Height, Color.White, 4f);
 
         this.ScrollBar.draw(b);
 
@@ -191,14 +168,13 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
                 break;
             }
 
-            var icon = this.Icons.First(
-                icon => icon.Id.Equals(this.Components[i].name, StringComparison.OrdinalIgnoreCase));
+            var icon = this.Icons.First(icon => icon.Id.Equals(this.Components[i].name, StringComparison.OrdinalIgnoreCase));
 
             // Arrows
             b.Draw(
                 this.Arrows,
-                new(this.xPositionOnScreen, this.Components[i].bounds.Center.Y - 16),
-                new(0, 0, 8, 8),
+                new Vector2(this.xPositionOnScreen, this.Components[i].bounds.Center.Y - 16),
+                new Rectangle(0, 0, 8, 8),
                 Color.White * (i > 0 ? 1f : 0.5f),
                 0f,
                 Vector2.Zero,
@@ -208,8 +184,8 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
 
             b.Draw(
                 this.Arrows,
-                new(this.xPositionOnScreen + (int)(Game1.tileSize / 2f) + 4, this.Components[i].bounds.Center.Y - 16),
-                new(8, 0, 8, 8),
+                new Vector2(this.xPositionOnScreen + (int)(Game1.tileSize / 2f) + 4, this.Components[i].bounds.Center.Y - 16),
+                new Rectangle(8, 0, 8, 8),
                 Color.White * (i < this.Components.Count - 1 ? 1f : 0.5f),
                 0f,
                 Vector2.Zero,
@@ -220,7 +196,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             // Checkbox
             b.Draw(
                 Game1.mouseCursors,
-                new(this.xPositionOnScreen + Game1.tileSize + 16, this.Components[i].bounds.Y),
+                new Vector2(this.xPositionOnScreen + Game1.tileSize + 16, this.Components[i].bounds.Y),
                 icon.Enabled ? OptionsCheckbox.sourceRectChecked : OptionsCheckbox.sourceRectUnchecked,
                 Color.White,
                 0f,
@@ -233,14 +209,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             this.Components[i].draw(b);
 
             // Label
-            Utility.drawTextWithShadow(
-                b,
-                this.Components[i].hoverText,
-                Game1.dialogueFont,
-                new(this.Components[i].bounds.Right + 8, this.Components[i].bounds.Y - 4),
-                Game1.textColor,
-                1f,
-                0.1f);
+            Utility.drawTextWithShadow(b, this.Components[i].hoverText, Game1.dialogueFont, new Vector2(this.Components[i].bounds.Right + 8, this.Components[i].bounds.Y - 4), Game1.textColor, 1f, 0.1f);
         }
 
         if (!string.IsNullOrWhiteSpace(this.HoverText))
@@ -260,8 +229,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         }
 
         var oldY = this.ScrollBar.bounds.Y;
-        var percentage = (y - this.ScrollBarRunner.Y)
-            / (float)(this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height);
+        var percentage = (y - this.ScrollBarRunner.Y) / (float)(this.ScrollBarRunner.Height - this.ScrollBar.bounds.Height);
 
         this.Index = (int)((this.Components.Count - this.MaxItems) * percentage);
         if (oldY != this.ScrollBar.bounds.Y)
@@ -275,9 +243,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
     {
         base.performHoverAction(x, y);
 
-        this.OkButton.scale = this.OkButton.containsPoint(x, y)
-            ? Math.Min(1.1f, this.OkButton.scale + 0.05f)
-            : Math.Max(1f, this.OkButton.scale - 0.05f);
+        this.OkButton.scale = this.OkButton.containsPoint(x, y) ? Math.Min(1.1f, this.OkButton.scale + 0.05f) : Math.Max(1f, this.OkButton.scale - 0.05f);
 
         this.DownArrow.tryHover(x, y);
         this.UpArrow.tryHover(x, y);
@@ -290,8 +256,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             return;
         }
 
-        var currentComponent =
-            this.Components.FirstOrDefault(component => component.containsPoint(component.bounds.X, y));
+        var currentComponent = this.Components.FirstOrDefault(component => component.containsPoint(component.bounds.X, y));
 
         if (currentComponent is null)
         {
@@ -311,9 +276,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         {
             this.HoverText = I18n.Config_MoveUp_Tooltip();
         }
-        else if (x >= this.xPositionOnScreen + (Game1.tileSize / 2) + 4
-            && x <= this.xPositionOnScreen + (Game1.tileSize / 2) + 36
-            && i < this.Components.Count - 1)
+        else if (x >= this.xPositionOnScreen + (Game1.tileSize / 2) + 4 && x <= this.xPositionOnScreen + (Game1.tileSize / 2) + 36 && i < this.Components.Count - 1)
         {
             this.HoverText = I18n.Config_MoveDown_Tooltip();
         }
@@ -364,16 +327,14 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             return;
         }
 
-        var currentComponent =
-            this.Components.FirstOrDefault(component => component.containsPoint(component.bounds.X, y));
+        var currentComponent = this.Components.FirstOrDefault(component => component.containsPoint(component.bounds.X, y));
 
         if (currentComponent is null)
         {
             return;
         }
 
-        var currentIcon = this.Icons.First(
-            icon => icon.Id.Equals(currentComponent.name, StringComparison.OrdinalIgnoreCase));
+        var currentIcon = this.Icons.First(icon => icon.Id.Equals(currentComponent.name, StringComparison.OrdinalIgnoreCase));
 
         // Checkbox
         if (x >= this.xPositionOnScreen + Game1.tileSize + 16)
@@ -388,8 +349,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         if (x <= this.xPositionOnScreen + 32 && i > 0)
         {
             // Move Up
-            var previousIcon = this.Icons.First(
-                icon => icon.Id.Equals(this.Components[i - 1].name, StringComparison.OrdinalIgnoreCase));
+            var previousIcon = this.Icons.First(icon => icon.Id.Equals(this.Components[i - 1].name, StringComparison.OrdinalIgnoreCase));
 
             var previousIndex = this.Icons.IndexOf(previousIcon);
             this.Icons[previousIndex] = currentIcon;
@@ -397,13 +357,10 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
             this.Components[i] = this.Components[i - 1];
             this.Components[i - 1] = currentComponent;
         }
-        else if (x >= this.xPositionOnScreen + (Game1.tileSize / 2) + 4
-            && x <= this.xPositionOnScreen + (Game1.tileSize / 2) + 36
-            && i < this.Components.Count - 1)
+        else if (x >= this.xPositionOnScreen + (Game1.tileSize / 2) + 4 && x <= this.xPositionOnScreen + (Game1.tileSize / 2) + 36 && i < this.Components.Count - 1)
         {
             // Move Down
-            var nextIcon = this.Icons.First(
-                icon => icon.Id.Equals(this.Components[i + 1].name, StringComparison.OrdinalIgnoreCase));
+            var nextIcon = this.Icons.First(icon => icon.Id.Equals(this.Components[i + 1].name, StringComparison.OrdinalIgnoreCase));
 
             var nextIndex = this.Icons.IndexOf(nextIcon);
             this.Icons[nextIndex] = currentIcon;

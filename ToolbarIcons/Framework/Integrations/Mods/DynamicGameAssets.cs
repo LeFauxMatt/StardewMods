@@ -14,12 +14,5 @@ internal sealed class DynamicGameAssets : ICustomIntegration
     public DynamicGameAssets(ComplexIntegration complex) => this.complex = complex;
 
     /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complex.AddMethodWithParams(
-            DynamicGameAssets.ModId,
-            3,
-            I18n.Button_DynamicGameAssets(),
-            DynamicGameAssets.Method,
-            DynamicGameAssets.Argument,
-            Array.Empty<string>());
+    public void AddIntegration() => this.complex.AddMethodWithParams(DynamicGameAssets.ModId, 3, I18n.Button_DynamicGameAssets(), DynamicGameAssets.Method, DynamicGameAssets.Argument, Array.Empty<string>());
 }

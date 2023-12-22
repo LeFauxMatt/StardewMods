@@ -15,15 +15,9 @@ internal sealed class SimpleIntegration : BaseIntegration
     /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
     /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
     /// <param name="toolbar">API to add icons above or below the toolbar.</param>
-    public SimpleIntegration(
-        EventsManager customEvents,
-        IGameContentHelper gameContent,
-        IModRegistry modRegistry,
-        IReflectionHelper reflection,
-        ToolbarHandler toolbar)
+    public SimpleIntegration(EventsManager customEvents, IGameContentHelper gameContent, IModRegistry modRegistry, IReflectionHelper reflection, ToolbarHandler toolbar)
         : base(customEvents, gameContent, modRegistry, reflection, toolbar) =>
-        this.overrideButtonReflected = Game1.input.GetType().GetMethod("OverrideButton")
-            ?? throw new MethodAccessException("Unable to access OverrideButton");
+        this.overrideButtonReflected = Game1.input.GetType().GetMethod("OverrideButton") ?? throw new MethodAccessException("Unable to access OverrideButton");
 
     /// <summary>Adds a simple mod integration for a keybind.</summary>
     /// <param name="modId">The id of the mod.</param>
@@ -123,6 +117,5 @@ internal sealed class SimpleIntegration : BaseIntegration
         return true;
     }
 
-    private void OverrideButton(SButton button, bool inputState) =>
-        this.overrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
+    private void OverrideButton(SButton button, bool inputState) => this.overrideButtonReflected.Invoke(Game1.input, new object[] { button, inputState });
 }

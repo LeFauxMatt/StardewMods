@@ -10,16 +10,13 @@ internal sealed class LoveThePets : IChore
     private readonly Config config;
 
     private int petsFed;
-
     private int petsPetted;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LoveThePets"/> class.
-    /// </summary>
-    /// <param name="config">Config data for <see cref="LoveThePets"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="LoveThePets" /> class.</summary>
+    /// <param name="config">Config data for <see cref="LoveThePets" />.</param>
     public LoveThePets(Config config) => this.config = config;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens)
     {
         var pet = Game1.random.ChooseFrom(Game1.getFarm().characters.OfType<Pet>().ToList());
@@ -28,12 +25,10 @@ internal sealed class LoveThePets : IChore
         tokens["PetsPetted"] = this.petsPetted;
     }
 
-    /// <inheritdoc/>
-    public bool IsPossibleForSpouse(NPC spouse) =>
-        (this.config.FillWaterBowl || this.config.EnablePetting)
-        && Game1.getFarm().characters.OfType<Pet>().Any();
+    /// <inheritdoc />
+    public bool IsPossibleForSpouse(NPC spouse) => (this.config.FillWaterBowl || this.config.EnablePetting) && Game1.getFarm().characters.OfType<Pet>().Any();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
     {
         this.petsFed = 0;
@@ -56,23 +51,23 @@ internal sealed class LoveThePets : IChore
 
         foreach (var pet in farm.characters.OfType<Pet>())
         {
-            if (pet.lastPetDay.TryGetValue(Game1.player.UniqueMultiplayerID, out var curLastPetDay)
-                && curLastPetDay == Game1.Date.TotalDays)
+            if (pet.lastPetDay.TryGetValue(Game1.player.UniqueMultiplayerID, out var curLastPetDay) && curLastPetDay == Game1.Date.TotalDays)
             {
                 continue;
             }
 
             pet.lastPetDay[Game1.player.UniqueMultiplayerID] = Game1.Date.TotalDays;
-            pet.mutex.RequestLock(() =>
-            {
-                if (!pet.grantedFriendshipForPet.Value)
+            pet.mutex.RequestLock(
+                () =>
                 {
-                    pet.grantedFriendshipForPet.Set(newValue: true);
-                    pet.friendshipTowardFarmer.Set(Math.Min(1000, pet.friendshipTowardFarmer.Value + 12));
-                }
+                    if (!pet.grantedFriendshipForPet.Value)
+                    {
+                        pet.grantedFriendshipForPet.Set(newValue: true);
+                        pet.friendshipTowardFarmer.Set(Math.Min(1000, pet.friendshipTowardFarmer.Value + 12));
+                    }
 
-                pet.mutex.ReleaseLock();
-            });
+                    pet.mutex.ReleaseLock();
+                });
 
             this.petsPetted++;
         }
@@ -80,19 +75,13 @@ internal sealed class LoveThePets : IChore
         return this.petsFed > 0 || this.petsPetted > 0;
     }
 
-    /// <summary>
-    /// Config data for <see cref="LoveThePets" />.
-    /// </summary>
+    /// <summary>Config data for <see cref="LoveThePets" />.</summary>
     public sealed class Config
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether petting will be enabled.
-        /// </summary>
+        /// <summary>Gets or sets a value indicating whether petting will be enabled.</summary>
         public bool EnablePetting { get; set; } = true;
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the water bowl will be filled.
-        /// </summary>
+        /// <summary>Gets or sets a value indicating whether the water bowl will be filled.</summary>
         public bool FillWaterBowl { get; set; } = true;
     }
 }

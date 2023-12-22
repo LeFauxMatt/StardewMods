@@ -1,6 +1,5 @@
 namespace StardewMods.EasyAccess;
 
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -29,13 +28,9 @@ public sealed class ModEntry : Mod
     private void CollectItems()
     {
         var (pX, pY) = Game1.player.Tile;
-        for (var tY = (int)(pY - this.config.CollectOutputDistance);
-            tY <= (int)(pY + this.config.CollectOutputDistance);
-            ++tY)
+        for (var tY = (int)(pY - this.config.CollectOutputDistance); tY <= (int)(pY + this.config.CollectOutputDistance); ++tY)
         {
-            for (var tX = (int)(pX - this.config.CollectOutputDistance);
-                tX <= (int)(pX + this.config.CollectOutputDistance);
-                ++tX)
+            for (var tX = (int)(pX - this.config.CollectOutputDistance); tX <= (int)(pX + this.config.CollectOutputDistance); ++tX)
             {
                 if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.config.CollectOutputDistance)
                 {
@@ -63,11 +58,7 @@ public sealed class ModEntry : Mod
                     if (this.config.DoForage && obj.IsSpawnedObject && obj.isForage())
                     {
                         // Vanilla Logic
-                        var r = new Random(
-                            ((int)Game1.uniqueIDForThisGame / 2)
-                            + (int)Game1.stats.DaysPlayed
-                            + (int)pos.X
-                            + ((int)pos.Y * 777));
+                        var r = new Random(((int)Game1.uniqueIDForThisGame / 2) + (int)Game1.stats.DaysPlayed + (int)pos.X + ((int)pos.Y * 777));
                         if (Game1.player.professions.Contains(16))
                         {
                             obj.Quality = 4;
@@ -100,11 +91,8 @@ public sealed class ModEntry : Mod
                                     : tX < pX
                                         ? 3
                                         : -1;
-                        Game1.createItemDebris(
-                            obj,
-                            Game1.tileSize * pos,
-                            direction,
-                            Game1.currentLocation);
+
+                        Game1.createItemDebris(obj, Game1.tileSize * pos, direction, Game1.currentLocation);
                         Game1.currentLocation.Objects.Remove(pos);
                         this.Monitor.Log($"Dropped {obj.DisplayName} from forage.", LogLevel.Info);
                         continue;
@@ -146,13 +134,9 @@ public sealed class ModEntry : Mod
         }
 
         var (pX, pY) = Game1.player.Tile;
-        for (var tY = (int)(pY - this.config.DispenseInputDistance);
-            tY <= (int)(pY + this.config.DispenseInputDistance);
-            ++tY)
+        for (var tY = (int)(pY - this.config.DispenseInputDistance); tY <= (int)(pY + this.config.DispenseInputDistance); ++tY)
         {
-            for (var tX = (int)(pX - this.config.DispenseInputDistance);
-                tX <= (int)(pX + this.config.DispenseInputDistance);
-                ++tX)
+            for (var tX = (int)(pX - this.config.DispenseInputDistance); tX <= (int)(pX + this.config.DispenseInputDistance); ++tX)
             {
                 if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.config.CollectOutputDistance)
                 {
@@ -163,8 +147,7 @@ public sealed class ModEntry : Mod
 
                 // Big Craftables
                 if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-                    || (obj.Type?.Equals("Crafting", StringComparison.OrdinalIgnoreCase) != true
-                        && obj.Type?.Equals("interactive", StringComparison.OrdinalIgnoreCase) != true)
+                    || (obj.Type?.Equals("Crafting", StringComparison.OrdinalIgnoreCase) != true && obj.Type?.Equals("interactive", StringComparison.OrdinalIgnoreCase) != true)
                     || !obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
                 {
                     continue;
@@ -215,7 +198,7 @@ public sealed class ModEntry : Mod
         if (gmcm.IsLoaded)
         {
             // Register mod configuration
-            gmcm.Api.Register(this.ModManifest, () => this.config = new(), () => this.Helper.WriteConfig(this.config));
+            gmcm.Api.Register(this.ModManifest, () => this.config = new ModConfig(), () => this.Helper.WriteConfig(this.config));
 
             // Collect Items
             gmcm.Api.AddKeybindList(
@@ -260,40 +243,16 @@ public sealed class ModEntry : Mod
                 fieldId: nameof(ModConfig.DispenseInputDistance));
 
             // Do Dig Spots
-            gmcm.Api.AddBoolOption(
-                this.ModManifest,
-                () => this.config.DoDigSpots,
-                value => this.config.DoDigSpots = value,
-                I18n.Config_DoDigSpots_Name,
-                I18n.Config_DoDigSpots_Tooltip,
-                nameof(ModConfig.DoDigSpots));
+            gmcm.Api.AddBoolOption(this.ModManifest, () => this.config.DoDigSpots, value => this.config.DoDigSpots = value, I18n.Config_DoDigSpots_Name, I18n.Config_DoDigSpots_Tooltip, nameof(ModConfig.DoDigSpots));
 
             // Do Forage
-            gmcm.Api.AddBoolOption(
-                this.ModManifest,
-                () => this.config.DoForage,
-                value => this.config.DoForage = value,
-                I18n.Config_DoForage_Name,
-                I18n.Config_DoForage_Tooltip,
-                nameof(ModConfig.DoForage));
+            gmcm.Api.AddBoolOption(this.ModManifest, () => this.config.DoForage, value => this.config.DoForage = value, I18n.Config_DoForage_Name, I18n.Config_DoForage_Tooltip, nameof(ModConfig.DoForage));
 
             // Do Machines
-            gmcm.Api.AddBoolOption(
-                this.ModManifest,
-                () => this.config.DoMachines,
-                value => this.config.DoMachines = value,
-                I18n.Config_DoMachines_Name,
-                I18n.Config_DoMachines_Tooltip,
-                nameof(ModConfig.DoMachines));
+            gmcm.Api.AddBoolOption(this.ModManifest, () => this.config.DoMachines, value => this.config.DoMachines = value, I18n.Config_DoMachines_Name, I18n.Config_DoMachines_Tooltip, nameof(ModConfig.DoMachines));
 
             // Do Terrain
-            gmcm.Api.AddBoolOption(
-                this.ModManifest,
-                () => this.config.DoTerrain,
-                value => this.config.DoTerrain = value,
-                I18n.Config_DoTerrain_Name,
-                I18n.Config_DoTerrain_Tooltip,
-                nameof(ModConfig.DoTerrain));
+            gmcm.Api.AddBoolOption(this.ModManifest, () => this.config.DoTerrain, value => this.config.DoTerrain = value, I18n.Config_DoTerrain_Name, I18n.Config_DoTerrain_Tooltip, nameof(ModConfig.DoTerrain));
         }
 
         if (!toolbarIcons.IsLoaded)
@@ -301,17 +260,9 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        toolbarIcons.Api.AddToolbarIcon(
-            "EasyAccess.CollectItems",
-            $"{this.ModManifest.UniqueID}/Icons",
-            new Rectangle(0, 0, 16, 16),
-            I18n.Button_CollectOutputs_Name());
+        toolbarIcons.Api.AddToolbarIcon("EasyAccess.CollectItems", $"{this.ModManifest.UniqueID}/Icons", new Rectangle(0, 0, 16, 16), I18n.Button_CollectOutputs_Name());
 
-        toolbarIcons.Api.AddToolbarIcon(
-            "EasyAccess.DispenseInputs",
-            $"{this.ModManifest.UniqueID}/Icons",
-            new Rectangle(16, 0, 16, 16),
-            I18n.Button_DispenseInputs_Name());
+        toolbarIcons.Api.AddToolbarIcon("EasyAccess.DispenseInputs", $"{this.ModManifest.UniqueID}/Icons", new Rectangle(16, 0, 16, 16), I18n.Button_DispenseInputs_Name());
 
         toolbarIcons.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }

@@ -9,24 +9,20 @@ internal sealed class WaterTheSlimes : IChore
 
     private int slimesWatered;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WaterTheSlimes"/> class.
-    /// </summary>
-    /// <param name="config">Config data for <see cref="WaterTheSlimes"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="WaterTheSlimes" /> class.</summary>
+    /// <param name="config">Config data for <see cref="WaterTheSlimes" />.</param>
     public WaterTheSlimes(Config config) => this.config = config;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens) => tokens["SlimesWatered"] = this.slimesWatered;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool IsPossibleForSpouse(NPC spouse)
     {
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction()
-                || building.GetIndoors() is not SlimeHutch slimeHutch
-                || slimeHutch.characters.Count == 0)
+            if (building.isUnderConstruction() || building.GetIndoors() is not SlimeHutch slimeHutch || slimeHutch.characters.Count == 0)
             {
                 continue;
             }
@@ -51,7 +47,7 @@ internal sealed class WaterTheSlimes : IChore
         return false;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
     {
         this.slimesWatered = 0;
@@ -78,14 +74,10 @@ internal sealed class WaterTheSlimes : IChore
         return this.slimesWatered > 0;
     }
 
-    /// <summary>
-    /// Config data for <see cref="WaterTheSlimes" />.
-    /// </summary>
+    /// <summary>Config data for <see cref="WaterTheSlimes" />.</summary>
     public sealed class Config
     {
-        /// <summary>
-        /// Gets or sets the limit to the number of slimes that will be watered.
-        /// </summary>
+        /// <summary>Gets or sets the limit to the number of slimes that will be watered.</summary>
         public int SlimeLimit { get; set; }
     }
 }

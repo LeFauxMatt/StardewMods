@@ -1,15 +1,10 @@
 namespace StardewMods.GarbageDay;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewValley.Mods;
 using StardewValley.Objects;
 
-/// <summary>
-///     Encapsulates logic for each Garbage Can managed by this mod.
-/// </summary>
+/// <summary>Encapsulates logic for each Garbage Can managed by this mod.</summary>
 internal sealed class GarbageCan
 {
     private readonly Chest chest;
@@ -28,31 +23,23 @@ internal sealed class GarbageCan
     {
         this.Location = location;
         this.chest = chest;
-        this.random = new();
+        this.random = new Random();
     }
 
-    /// <summary>
-    ///     Gets or sets a value indicating whether the next can will drop a hat.
-    /// </summary>
+    /// <summary>Gets or sets a value indicating whether the next can will drop a hat.</summary>
     public static bool GarbageHat { get; set; }
 
-    /// <summary>
-    ///     Gets the Location where the garbage can is placed.
-    /// </summary>
+    /// <summary>Gets the Location where the garbage can is placed.</summary>
     public GameLocation Location { get; }
 
-    /// <summary>
-    ///     Gets the tile of the Garbage Can.
-    /// </summary>
+    /// <summary>Gets the tile of the Garbage Can.</summary>
     public Vector2 Tile => this.chest.TileLocation;
 
     private IList<Item> Items => this.chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     private ModDataDictionary ModData => this.chest.modData;
 
-    /// <summary>
-    ///     Adds an item to the garbage can determined by luck and mirroring vanilla chances.
-    /// </summary>
+    /// <summary>Adds an item to the garbage can determined by luck and mirroring vanilla chances.</summary>
     public void AddLoot()
     {
         // Reset daily state
@@ -65,12 +52,7 @@ internal sealed class GarbageCan
             return;
         }
 
-        this.Location.TryGetGarbageItem(
-            whichCan,
-            Game1.player.DailyLuck,
-            out var item,
-            out var selected,
-            out var garbageRandom);
+        this.Location.TryGetGarbageItem(whichCan, Game1.player.DailyLuck, out var item, out var selected, out var garbageRandom);
 
         this.random = garbageRandom;
         if (selected is null)
@@ -96,9 +78,7 @@ internal sealed class GarbageCan
         this.AddItem(item);
     }
 
-    /// <summary>
-    ///     Called when a player attempts to open the garbage can.
-    /// </summary>
+    /// <summary>Called when a player attempts to open the garbage can.</summary>
     public void CheckAction()
     {
         if (!this.checkedToday)
@@ -142,7 +122,8 @@ internal sealed class GarbageCan
             return;
         }
 
-        this.chest.GetMutex()
+        this
+            .chest.GetMutex()
             .RequestLock(
                 () =>
                 {
@@ -151,9 +132,7 @@ internal sealed class GarbageCan
                 });
     }
 
-    /// <summary>
-    ///     Empties the trash of all items.
-    /// </summary>
+    /// <summary>Empties the trash of all items.</summary>
     public void EmptyTrash() => this.Items.Clear();
 
     private void AddItem(Item item)
@@ -162,9 +141,7 @@ internal sealed class GarbageCan
         this.UpdateColor();
     }
 
-    /// <summary>
-    ///     Updates the Garbage Can to match a color from one of the trashed items.
-    /// </summary>
+    /// <summary>Updates the Garbage Can to match a color from one of the trashed items.</summary>
     private void UpdateColor()
     {
         var colors = this.Items.Select(ItemContextTagManager.GetColorFromTags).OfType<Color>().ToList();

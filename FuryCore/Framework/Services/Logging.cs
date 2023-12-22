@@ -19,7 +19,7 @@ internal sealed class Logging : ILogging
         this.monitor = monitor;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Info(string message, params object?[]? args)
     {
         if (this.config.LogLevel != SimpleLogLevel.None)
@@ -28,7 +28,7 @@ internal sealed class Logging : ILogging
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Trace(string message, params object?[]? args)
     {
         if (this.config.LogLevel == SimpleLogLevel.More)
@@ -37,7 +37,7 @@ internal sealed class Logging : ILogging
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Error(string message, params object?[]? args)
     {
         if (this.config.LogLevel != SimpleLogLevel.None)
@@ -46,7 +46,7 @@ internal sealed class Logging : ILogging
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Warn(string message, params object?[]? args)
     {
         if (this.config.LogLevel != SimpleLogLevel.None)

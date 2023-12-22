@@ -13,11 +13,5 @@ internal sealed class GenericCustomConfigMenu : ICustomIntegration
     public GenericCustomConfigMenu(ComplexIntegration complex) => this.complex = complex;
 
     /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complex.AddMethodWithParams(
-            GenericCustomConfigMenu.ModId,
-            4,
-            I18n.Button_GenericModConfigMenu(),
-            GenericCustomConfigMenu.Method,
-            0);
+    public void AddIntegration() => this.complex.AddMethodWithParams(GenericCustomConfigMenu.ModId, 4, I18n.Button_GenericModConfigMenu(), GenericCustomConfigMenu.Method, 0);
 }

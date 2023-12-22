@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.ToolbarIcons.Framework.Integrations;
 
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.ToolbarIcons.Framework.Services;
 
@@ -17,12 +18,7 @@ internal abstract class BaseIntegration
     /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
     /// <param name="toolbar">API to add icons above or below the toolbar.</param>
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor", Justification = "Dependency Injection")]
-    protected BaseIntegration(
-        EventsManager customEvents,
-        IGameContentHelper gameContent,
-        IModRegistry modRegistry,
-        IReflectionHelper reflection,
-        ToolbarHandler toolbar)
+    protected BaseIntegration(EventsManager customEvents, IGameContentHelper gameContent, IModRegistry modRegistry, IReflectionHelper reflection, ToolbarHandler toolbar)
     {
         // Init
         this.gameContent = gameContent;
@@ -51,11 +47,7 @@ internal abstract class BaseIntegration
     {
         var texture = this.gameContent.Load<Texture2D>(texturePath ?? AssetHandler.IconPath);
         var cols = texture.Width / 16;
-        this.toolbar.AddToolbarIcon(
-            $"{modId}.{hoverText}",
-            texturePath ?? AssetHandler.IconPath,
-            new(16 * (index % cols), 16 * (index / cols), 16, 16),
-            hoverText);
+        this.toolbar.AddToolbarIcon($"{modId}.{hoverText}", texturePath ?? AssetHandler.IconPath, new Rectangle(16 * (index % cols), 16 * (index / cols), 16, 16), hoverText);
 
         this.icons.Add($"{modId}.{hoverText}", action);
         return true;

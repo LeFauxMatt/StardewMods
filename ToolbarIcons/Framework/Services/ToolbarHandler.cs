@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Enums;
+using StardewMods.ToolbarIcons.Framework.Models;
 using StardewValley.Menus;
 
 // TODO: Center Toolbar Icons
@@ -59,11 +60,7 @@ internal sealed class ToolbarHandler
         customEvents.ToolbarIconsChanged += this.OnToolbarIconsChanged;
     }
 
-    private static bool ShowToolbar =>
-        Game1.displayHUD
-        && Context.IsPlayerFree
-        && Game1.activeClickableMenu is null
-        && Game1.onScreenMenus.OfType<Toolbar>().Any();
+    private static bool ShowToolbar => Game1.displayHUD && Context.IsPlayerFree && Game1.activeClickableMenu is null && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
     /// <summary>Adds an icon next to the <see cref="Toolbar" />.</summary>
     /// <param name="id">A unique identifier for the icon.</param>
@@ -75,7 +72,7 @@ internal sealed class ToolbarHandler
         var icon = this.config.Icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (icon is null)
         {
-            icon = new(id);
+            icon = new ToolbarIcon(id);
             this.config.Icons.Add(icon);
         }
 
@@ -87,7 +84,7 @@ internal sealed class ToolbarHandler
         this.monitor.Log($"Adding icon: {id}");
         this.components.Add(
             id,
-            new(new(0, 0, 32, 32), this.gameContent.Load<Texture2D>(texturePath), sourceRect ?? new(0, 0, 16, 16), 2f)
+            new ClickableTextureComponent(new Rectangle(0, 0, 32, 32), this.gameContent.Load<Texture2D>(texturePath), sourceRect ?? new Rectangle(0, 0, 16, 16), 2f)
             {
                 hoverText = hoverText,
                 name = id,
@@ -99,8 +96,7 @@ internal sealed class ToolbarHandler
     /// <param name="id">A unique identifier for the icon.</param>
     public void RemoveToolbarIcon(string id)
     {
-        var toolbarIcon = this.config.Icons.FirstOrDefault(
-            toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        var toolbarIcon = this.config.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
 
         if (toolbarIcon is null)
         {
@@ -140,15 +136,13 @@ internal sealed class ToolbarHandler
             return;
         }
 
-        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight)
-            && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
+        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight) && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var component =
-            this.components.Values.FirstOrDefault(component => component.visible && component.containsPoint(x, y));
+        var component = this.components.Values.FirstOrDefault(component => component.visible && component.containsPoint(x, y));
 
         if (component is null)
         {
@@ -205,8 +199,8 @@ internal sealed class ToolbarHandler
         {
             e.SpriteBatch.Draw(
                 this.gameContent.Load<Texture2D>(AssetHandler.IconPath),
-                new(component.bounds.X, component.bounds.Y),
-                new(0, 0, 16, 16),
+                new Vector2(component.bounds.X, component.bounds.Y),
+                new Rectangle(0, 0, 16, 16),
                 Color.White,
                 0f,
                 Vector2.Zero,
@@ -285,10 +279,7 @@ internal sealed class ToolbarHandler
         }
 
         var firstComponent = this.components.Values.First(component => component.visible);
-        if (!this.lastArea.IsActiveForScreen()
-            || area != this.lastArea.Value
-            || firstComponent.bounds.X != x
-            || firstComponent.bounds.Y != y)
+        if (!this.lastArea.IsActiveForScreen() || area != this.lastArea.Value || firstComponent.bounds.X != x || firstComponent.bounds.Y != y)
         {
             this.ReorientComponents(area, x, y);
         }

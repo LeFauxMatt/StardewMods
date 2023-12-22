@@ -13,12 +13,5 @@ internal sealed class CjbCheatsMenu : ICustomIntegration
     public CjbCheatsMenu(ComplexIntegration complex) => this.complex = complex;
 
     /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complex.AddMethodWithParams(
-            CjbCheatsMenu.ModId,
-            2,
-            I18n.Button_CheatsMenu(),
-            CjbCheatsMenu.Method,
-            0,
-            true);
+    public void AddIntegration() => this.complex.AddMethodWithParams(CjbCheatsMenu.ModId, 2, I18n.Button_CheatsMenu(), CjbCheatsMenu.Method, 0, true);
 }

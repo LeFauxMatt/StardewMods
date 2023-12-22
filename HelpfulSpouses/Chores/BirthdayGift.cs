@@ -9,25 +9,19 @@ internal sealed class BirthdayGift : IChore
     private static readonly Lazy<List<Item>> Items = new(
         delegate
         {
-            return ItemRegistry.GetObjectTypeDefinition()
-                .GetAllIds()
-                .Select(localId => ItemRegistry.Create(ItemRegistry.type_object + localId))
-                .ToList();
+            return ItemRegistry.GetObjectTypeDefinition().GetAllIds().Select(localId => ItemRegistry.Create(ItemRegistry.type_object + localId)).ToList();
         });
 
     private readonly Config config;
 
     private Item? birthdayGift;
-
     private NPC? birthdayNpc;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BirthdayGift"/> class.
-    /// </summary>
-    /// <param name="config">Config data for <see cref="BirthdayGift"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="BirthdayGift" /> class.</summary>
+    /// <param name="config">Config data for <see cref="BirthdayGift" />.</param>
     public BirthdayGift(Config config) => this.config = config;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens)
     {
         if (this.birthdayNpc is null || this.birthdayGift is null)
@@ -36,16 +30,12 @@ internal sealed class BirthdayGift : IChore
         }
 
         tokens["Birthday"] = this.birthdayNpc.getName();
-        tokens["BirthdayGender"] = this.birthdayNpc.Gender switch
-        {
-            1 => "Female",
-            _ => "Male",
-        };
+        tokens["BirthdayGender"] = this.birthdayNpc.Gender switch { 1 => "Female", _ => "Male" };
         tokens["ItemId"] = $"[{this.birthdayGift.QualifiedItemId}]";
         tokens["ItemName"] = this.birthdayGift.DisplayName;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool IsPossibleForSpouse(NPC spouse)
     {
         this.birthdayNpc = null;
@@ -64,7 +54,7 @@ internal sealed class BirthdayGift : IChore
         return this.birthdayNpc is not null;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
     {
         if (this.birthdayNpc is null)
@@ -72,10 +62,7 @@ internal sealed class BirthdayGift : IChore
             return false;
         }
 
-        var rnd = Utility.CreateRandom(
-            Game1.stats.DaysPlayed,
-            Game1.uniqueIDForThisGame,
-            Game1.player.UniqueMultiplayerID);
+        var rnd = Utility.CreateRandom(Game1.stats.DaysPlayed, Game1.uniqueIDForThisGame, Game1.player.UniqueMultiplayerID);
 
         foreach (var item in BirthdayGift.Items.Value.Shuffle())
         {
@@ -112,34 +99,22 @@ internal sealed class BirthdayGift : IChore
         return false;
     }
 
-    /// <summary>
-    /// Config data for <see cref="BirthdayGift" />.
-    /// </summary>
+    /// <summary>Config data for <see cref="BirthdayGift" />.</summary>
     public sealed class Config
     {
-        /// <summary>
-        /// Gets or sets the chance that a disliked item will be given.
-        /// </summary>
+        /// <summary>Gets or sets the chance that a disliked item will be given.</summary>
         public double ChanceForDislike { get; set; }
 
-        /// <summary>
-        /// Gets or sets the chance that a hated item will be given.
-        /// </summary>
+        /// <summary>Gets or sets the chance that a hated item will be given.</summary>
         public double ChanceForHate { get; set; }
 
-        /// <summary>
-        /// Gets or sets the chance that a liked item will be given.
-        /// </summary>
+        /// <summary>Gets or sets the chance that a liked item will be given.</summary>
         public double ChanceForLike { get; set; } = 0.5;
 
-        /// <summary>
-        /// Gets or sets the chance that a loved item will be given.
-        /// </summary>
+        /// <summary>Gets or sets the chance that a loved item will be given.</summary>
         public double ChanceForLove { get; set; } = 0.2;
 
-        /// <summary>
-        /// Gets or sets the chance that a neutral item will be given.
-        /// </summary>
+        /// <summary>Gets or sets the chance that a neutral item will be given.</summary>
         public double ChanceForNeutral { get; set; } = 0.1;
     }
 }

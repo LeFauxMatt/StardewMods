@@ -18,11 +18,7 @@ internal sealed class IntegrationsManager
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="simple">Dependency used for adding a simple mod integration.</param>
-    public IntegrationsManager(
-        EventsManager customEvents,
-        IModEvents events,
-        IGameContentHelper gameContent,
-        SimpleIntegration simple)
+    public IntegrationsManager(EventsManager customEvents, IModEvents events, IGameContentHelper gameContent, SimpleIntegration simple)
     {
         // Init
         this.customEvents = customEvents;

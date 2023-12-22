@@ -13,8 +13,8 @@ internal sealed class StorageData
     public bool IsFridge { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating whether the storage will play it's lid opening animation when the player is
-    ///     nearby.
+    /// Gets or sets a value indicating whether the storage will play it's lid opening animation when the player is
+    /// nearby.
     /// </summary>
     public bool OpenNearby { get; set; }
 

@@ -8,7 +8,8 @@ internal sealed class MakeBreakfast : IChore
     private static readonly Lazy<List<Item>> Items = new(
         delegate
         {
-            return ItemRegistry.GetObjectTypeDefinition()
+            return ItemRegistry
+                .GetObjectTypeDefinition()
                 .GetAllIds()
                 .Select(localId => ItemRegistry.type_object + localId)
                 .Where(id => ItemContextTagManager.HasBaseTag(id, "food_breakfast"))
@@ -18,7 +19,7 @@ internal sealed class MakeBreakfast : IChore
 
     private Item? breakfast;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens)
     {
         if (this.breakfast is null)
@@ -30,10 +31,10 @@ internal sealed class MakeBreakfast : IChore
         tokens["ItemId"] = $"[{this.breakfast.QualifiedItemId}]";
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool IsPossibleForSpouse(NPC spouse) => true;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
     {
         this.breakfast = Game1.random.ChooseFrom(MakeBreakfast.Items.Value);

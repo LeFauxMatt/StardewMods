@@ -20,8 +20,7 @@ internal sealed class CjbItemSpawner : ICustomIntegration
     }
 
     /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complex.AddCustomAction(CjbItemSpawner.ModId, 5, I18n.Button_ItemSpawner(), this.GetAction);
+    public void AddIntegration() => this.complex.AddCustomAction(CjbItemSpawner.ModId, 5, I18n.Button_ItemSpawner(), this.GetAction);
 
     private Action? GetAction(IMod mod)
     {

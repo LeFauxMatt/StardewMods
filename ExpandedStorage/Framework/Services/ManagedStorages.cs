@@ -2,8 +2,8 @@ namespace StardewMods.ExpandedStorage.Framework.Services;
 
 using System.ComponentModel;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.ExpandedStorage.Framework.Enums;
 using StardewMods.ExpandedStorage.Framework.Models;
 using StardewValley.GameData.BigCraftables;
@@ -27,11 +27,7 @@ internal sealed class ManagedStorages
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="logging">Dependency used for logging debug information to the console.</param>
-    public ManagedStorages(
-        ContentPatcherIntegration contentPatcher,
-        IModEvents events,
-        IGameContentHelper gameContent,
-        Logging logging)
+    public ManagedStorages(ContentPatcherIntegration contentPatcher, IModEvents events, IGameContentHelper gameContent, Logging logging)
     {
         // Init
         this.contentPatcher = contentPatcher;
@@ -58,11 +54,7 @@ internal sealed class ManagedStorages
         this.data.Clear();
         foreach (var (itemId, bigCraftableData) in Game1.bigCraftableData)
         {
-            if (!bigCraftableData.CustomFields.TryGetValue(
-                    $"{ManagedStorages.CustomFieldPrefix}/Enabled",
-                    out var enabled)
-                || !bool.TryParse(enabled, out var isEnabled)
-                || !isEnabled)
+            if (!bigCraftableData.CustomFields.TryGetValue($"{ManagedStorages.CustomFieldPrefix}/Enabled", out var enabled) || !bool.TryParse(enabled, out var isEnabled) || !isEnabled)
             {
                 continue;
             }
@@ -70,16 +62,14 @@ internal sealed class ManagedStorages
             this.logging.Trace("Found managed storage: {0}", itemId);
             if (!this.data.TryGetValue(itemId, out var storage))
             {
-                storage = new();
+                storage = new StorageData();
                 this.data.Add(itemId, storage);
             }
 
             foreach (var (customFieldKey, customFieldValue) in bigCraftableData.CustomFields)
             {
                 var keyParts = customFieldKey.Split('/');
-                if (keyParts.Length != 2
-                    || !keyParts[0].Equals(ManagedStorages.CustomFieldPrefix, StringComparison.OrdinalIgnoreCase)
-                    || !CustomFieldKeysExtensions.TryParse(keyParts[1], out var storageAttribute))
+                if (keyParts.Length != 2 || !keyParts[0].Equals(ManagedStorages.CustomFieldPrefix, StringComparison.OrdinalIgnoreCase) || !CustomFieldKeysExtensions.TryParse(keyParts[1], out var storageAttribute))
                 {
                     continue;
                 }

@@ -9,7 +9,7 @@ internal sealed class ApiFactory
     private readonly IConfigWithLogLevel config;
     private readonly IThemeHelper themeHelper;
 
-    /// <summary>Initializes a new instance of the <see cref="ApiFactory"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ApiFactory" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="themeHelper">Dependency used for swapping palettes.</param>
     public ApiFactory(IConfigWithLogLevel config, IThemeHelper themeHelper)

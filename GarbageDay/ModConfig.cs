@@ -4,14 +4,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 
-/// <summary>
-///     Mod config data for Garbage Day.
-/// </summary>
+/// <summary>Mod config data for Garbage Day.</summary>
 internal sealed class ModConfig
 {
-    /// <summary>
-    ///     Gets or sets the day of the week that garbage is collected.
-    /// </summary>
+    /// <summary>Gets or sets the day of the week that garbage is collected.</summary>
     public DayOfWeek GarbageDay { get; set; } = DayOfWeek.Monday;
 
     /// <inheritdoc />
@@ -29,6 +25,7 @@ internal sealed class ModConfig
             DayOfWeek.Saturday => "Saturday",
             _ => throw new InvalidEnumArgumentException(),
         };
+
         sb.AppendLine(CultureInfo.InvariantCulture, $"GarbageDay: {dow}");
         return sb.ToString();
     }

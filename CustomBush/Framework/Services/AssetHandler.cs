@@ -21,7 +21,7 @@ internal sealed class AssetHandler
     {
         this.gameContent = gameContent;
         this.logging = logging;
-        this.data = new(this.GetData);
+        this.data = new Lazy<Dictionary<string, BushModel>>(this.GetData);
         events.Content.AssetRequested += AssetHandler.OnAssetRequested;
     }
 
@@ -32,9 +32,7 @@ internal sealed class AssetHandler
     {
         if (e.Name.IsEquivalentTo(AssetHandler.DataPath))
         {
-            e.LoadFrom(
-                () => new Dictionary<string, BushModel>(StringComparer.OrdinalIgnoreCase),
-                AssetLoadPriority.Exclusive);
+            e.LoadFrom(() => new Dictionary<string, BushModel>(StringComparer.OrdinalIgnoreCase), AssetLoadPriority.Exclusive);
         }
     }
 

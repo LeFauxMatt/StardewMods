@@ -9,19 +9,14 @@ internal sealed class FeedTheAnimals : IChore
 
     private int animalsFed;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FeedTheAnimals"/> class.
-    /// </summary>
-    /// <param name="config">Config data for <see cref="FeedTheAnimals"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="FeedTheAnimals" /> class.</summary>
+    /// <param name="config">Config data for <see cref="FeedTheAnimals" />.</param>
     public FeedTheAnimals(Config config) => this.config = config;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens)
     {
-        var animals = Game1.getFarm()
-            .getAllFarmAnimals()
-            .Where(animal => !animal.currentLocation.HasMapPropertyWithValue("AutoFeed"))
-            .ToList();
+        var animals = Game1.getFarm().getAllFarmAnimals().Where(animal => !animal.currentLocation.HasMapPropertyWithValue("AutoFeed")).ToList();
         var animal = Game1.random.ChooseFrom(animals);
         if (animal is not null)
         {
@@ -29,23 +24,19 @@ internal sealed class FeedTheAnimals : IChore
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool IsPossibleForSpouse(NPC spouse)
     {
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction()
-                || building.GetIndoors() is not AnimalHouse animalHouse
-                || animalHouse.characters.Count == 0
-                || animalHouse.HasMapPropertyWithValue("AutoFeed"))
+            if (building.isUnderConstruction() || building.GetIndoors() is not AnimalHouse animalHouse || animalHouse.characters.Count == 0 || animalHouse.HasMapPropertyWithValue("AutoFeed"))
             {
                 continue;
             }
 
             var data = building.GetData();
-            if (data.ValidOccupantTypes is null
-                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+            if (data.ValidOccupantTypes is null || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
             {
                 continue;
             }
@@ -56,24 +47,20 @@ internal sealed class FeedTheAnimals : IChore
         return false;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
     {
         this.animalsFed = 0;
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction()
-                || building.GetIndoors() is not AnimalHouse animalHouse
-                || animalHouse.characters.Count == 0
-                || animalHouse.HasMapPropertyWithValue("AutoFeed"))
+            if (building.isUnderConstruction() || building.GetIndoors() is not AnimalHouse animalHouse || animalHouse.characters.Count == 0 || animalHouse.HasMapPropertyWithValue("AutoFeed"))
             {
                 continue;
             }
 
             var data = building.GetData();
-            if (data.ValidOccupantTypes is null
-                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+            if (data.ValidOccupantTypes is null || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
             {
                 continue;
             }
@@ -89,19 +76,13 @@ internal sealed class FeedTheAnimals : IChore
         return this.animalsFed > 0;
     }
 
-    /// <summary>
-    /// Config data for <see cref="FeedTheAnimals" />.
-    /// </summary>
+    /// <summary>Config data for <see cref="FeedTheAnimals" />.</summary>
     public sealed class Config
     {
-        /// <summary>
-        /// Gets or sets the limit to the number of animals that will be fed.
-        /// </summary>
+        /// <summary>Gets or sets the limit to the number of animals that will be fed.</summary>
         public int AnimalLimit { get; set; }
 
-        /// <summary>
-        /// Gets or sets the occupant types.
-        /// </summary>
+        /// <summary>Gets or sets the occupant types.</summary>
         public List<string> ValidOccupantTypes { get; set; } = new()
         {
             "Barn",
