@@ -2,20 +2,36 @@ namespace StardewMods.BetterChests.Framework.Services;
 
 using System.Globalization;
 using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.Common.Enums;
 using StardewMods.Common.Interfaces;
 
 /// <summary>Helper methods to convert between different text formats.</summary>
-internal sealed class Formatting : BaseService
+internal sealed class LocalizedTextManager : BaseService
 {
     private readonly ITranslationHelper translations;
 
-    /// <summary>Initializes a new instance of the <see cref="Formatting" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="LocalizedTextManager" /> class.</summary>
     /// <param name="translations">Dependency used for accessing translations.</param>
     /// <param name="logging">Dependency used for logging debug information to the console.</param>
-    public Formatting(ILogging logging, ITranslationHelper translations)
+    public LocalizedTextManager(ILogging logging, ITranslationHelper translations)
         : base(logging) =>
         this.translations = translations;
+
+    /// <summary>Formats carry chest slow using localized text when available.</summary>
+    /// <param name="value">The value for carry chest slow to format.</param>
+    /// <returns>Localized text for the carry chest slow value.</returns>
+    public string Slow(int value) => value switch { 0 => I18n.Config_CarryChestSlow_ValueZero(), _ => I18n.Config_CarryChestSlow_Value(value.ToString(CultureInfo.InvariantCulture)) };
+
+    /// <summary>Formats chest capacity using localized text when available.</summary>
+    /// <param name="value">The value for capacity to format.</param>
+    /// <returns>Localized text for the capacity value.</returns>
+    public string Capacity(int value) =>
+        value switch
+        {
+            (int)FeatureOption.Default => I18n.Option_Default_Name(),
+            (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
+            8 => I18n.Config_ResizeChestCapacity_ValueUnlimited(),
+            _ => I18n.Config_ResizeChestCapacity_ValueMany((12 * (value - (int)FeatureOption.Enabled + 1)).ToString(CultureInfo.InvariantCulture)),
+        };
 
     /// <summary>Formats an area value using localized text when available.</summary>
     /// <param name="value">The area value to format.</param>
@@ -23,29 +39,11 @@ internal sealed class Formatting : BaseService
     public string Area(string value) =>
         value switch
         {
-            nameof(ComponentArea.Top) => I18n.Area_Top_Name(),
-            nameof(ComponentArea.Right) => I18n.Area_Right_Name(),
-            nameof(ComponentArea.Bottom) => I18n.Area_Bottom_Name(),
-            nameof(ComponentArea.Left) => I18n.Area_Left_Name(),
-            nameof(ComponentArea.Custom) => I18n.Area_Custom_Name(),
+            nameof(ColorPickerArea.Right) => I18n.Area_Right_Name(),
+            nameof(ColorPickerArea.Left) => I18n.Area_Left_Name(),
+            nameof(InventoryTabArea.Top) => I18n.Area_Top_Name(),
+            nameof(InventoryTabArea.Bottom) => I18n.Area_Bottom_Name(),
             _ => value,
-        };
-
-    /// <summary>Formats carry chest slow using localized text when available.</summary>
-    /// <param name="value">The value for carry chest slow to format.</param>
-    /// <returns>Localized text for the carry chest slow value.</returns>
-    public string CarryChestSlow(int value) => value switch { 0 => I18n.Config_CarryChestSlow_ValueZero(), _ => I18n.Config_CarryChestSlow_Value(value.ToString(CultureInfo.InvariantCulture)) };
-
-    /// <summary>Formats chest capacity using localized text when available.</summary>
-    /// <param name="value">The value for capacity to format.</param>
-    /// <returns>Localized text for the capacity value.</returns>
-    public string ChestCapacity(int value) =>
-        value switch
-        {
-            (int)FeatureOption.Default => I18n.Option_Default_Name(),
-            (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
-            8 => I18n.Config_ResizeChestCapacity_ValueUnlimited(),
-            _ => I18n.Config_ResizeChestCapacity_ValueMany((12 * (value - (int)FeatureOption.Enabled + 1)).ToString(CultureInfo.InvariantCulture)),
         };
 
     /// <summary>Formats range distance using localized text when available.</summary>

@@ -8,7 +8,7 @@ internal sealed class BigCraftableStorage : ChildStorage
 {
     /// <summary>Initializes a new instance of the <see cref="BigCraftableStorage" /> class.</summary>
     /// <param name="default">The default storage options.</param>
-    /// <param name="data">The big craftable data</param>
+    /// <param name="data">The big craftable data.</param>
     public BigCraftableStorage(IStorage @default, BigCraftableData data)
         : base(@default, new CustomFieldsStorage(data.CustomFields)) =>
         this.Data = data;

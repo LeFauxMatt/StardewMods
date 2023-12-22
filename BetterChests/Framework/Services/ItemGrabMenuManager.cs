@@ -1,6 +1,8 @@
 namespace StardewMods.BetterChests.Framework.Services;
 
+using System.Globalization;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -43,6 +45,8 @@ internal sealed class ItemGrabMenuManager : BaseService
 
         // Events
         modEvents.Display.MenuChanged += this.OnMenuChanged;
+        modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
+        modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
 
         // Patches
         harmony.Patch(
@@ -52,10 +56,10 @@ internal sealed class ItemGrabMenuManager : BaseService
     }
 
     /// <summary>Gets the current container for the item grab menu.</summary>
-    public IContainer? CurrentContainer => this.currentContainer.Value;
+    public IContainer? CurrentContainer => Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true ? this.currentContainer.Value : null;
 
     /// <summary>Gets the current item grab menu.</summary>
-    public ItemGrabMenu? CurrentMenu => this.currentMenu.Value;
+    public ItemGrabMenu? CurrentMenu => Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true ? this.currentMenu.Value : null;
 
     /// <summary>Gets the inventory menu manager for the top inventory menu.</summary>
     public IInventoryMenuManager TopMenu => this.topMenu.Value;
@@ -86,36 +90,38 @@ internal sealed class ItemGrabMenuManager : BaseService
             return;
         }
 
-        // Save original inventory
-        __state.Inventory = __instance.inventory;
-
         // Apply operations
-        __instance.actualInventory = __state.ApplyOperation(__instance.actualInventory).ToList();
-        __instance.inventory = [];
-        foreach (var item in __instance.actualInventory)
+        __instance.actualInventory = __state.ApplyOperation(__state.Context.Items).ToList();
+        for (var index = 0; index < __instance.inventory.Count; ++index)
         {
-            var index = __state.Context.Items.IndexOf(item);
-            __instance.inventory.Add(__state.Inventory[index]);
-        }
+            if (index >= __instance.actualInventory.Count)
+            {
+                __instance.inventory[index].name = __instance.actualInventory.Count.ToString(CultureInfo.InvariantCulture);
+                continue;
+            }
 
-        if (__instance.inventory.Count < __state.Capacity)
-        {
-            __instance.inventory.AddRange(__state.Inventory.TakeLast(__state.Capacity - __instance.inventory.Count));
+            __instance.inventory[index].name = __state.Context.Items.IndexOf(__instance.actualInventory[index]).ToString(CultureInfo.InvariantCulture);
         }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void InventoryMenu_draw_postfix(InventoryMenu __instance, ref InventoryMenuManager? __state)
     {
+        __state = __instance.Equals(ItemGrabMenuManager.instance.topMenu.Value.Source)
+            ? ItemGrabMenuManager.instance.topMenu.Value
+            : __instance.Equals(ItemGrabMenuManager.instance.bottomMenu.Value.Source)
+                ? ItemGrabMenuManager.instance.bottomMenu.Value
+                : null;
+
         if (__state?.Context is null)
         {
             return;
         }
 
-        // Restore original inventory
+        // Restore original
         __instance.actualInventory = __state.Context.Items;
-        __instance.inventory = __state.Inventory;
     }
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
@@ -143,7 +149,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         if (itemGrabMenu.ItemsToGrabMenu.highlightMethod != this.topMenu.Value.HighlightMethod)
         {
             this.topMenu.Value.OriginalHighlightMethod = itemGrabMenu.ItemsToGrabMenu.highlightMethod;
-            itemGrabMenu.ItemsToGrabMenu.highlightMethod = this.topMenu.Value.OriginalHighlightMethod;
+            itemGrabMenu.ItemsToGrabMenu.highlightMethod = this.topMenu.Value.HighlightMethod;
         }
 
         // Update bottom menu
@@ -158,10 +164,66 @@ internal sealed class ItemGrabMenuManager : BaseService
         if (itemGrabMenu.inventory.highlightMethod != this.bottomMenu.Value.HighlightMethod)
         {
             this.bottomMenu.Value.OriginalHighlightMethod = itemGrabMenu.inventory.highlightMethod;
-            itemGrabMenu.inventory.highlightMethod = this.bottomMenu.Value.OriginalHighlightMethod;
+            itemGrabMenu.inventory.highlightMethod = this.bottomMenu.Value.HighlightMethod;
         }
 
         // Reset filters
         this.itemGrabMenuChanged.InvokeAll(this, eventArgs);
+
+        // Disable background fade
+        itemGrabMenu.drawBG = false;
+    }
+
+    [EventPriority((EventPriority)int.MaxValue)]
+    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    {
+        // Redraw background
+        if (this.currentMenu.Value is not null)
+        {
+            e.SpriteBatch.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height), Color.Black * 0.5f);
+        }
+    }
+
+    [EventPriority((EventPriority)int.MinValue)]
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        // Redraw foreground
+        if (this.currentMenu.Value is not null)
+        {
+            if (this.currentMenu.Value.hoverText != null && (this.currentMenu.Value.hoveredItem == null || this.currentMenu.Value.hoveredItem == null || this.currentMenu.Value.ItemsToGrabMenu == null))
+            {
+                if (this.currentMenu.Value.hoverAmount > 0)
+                {
+                    IClickableMenu.drawToolTip(e.SpriteBatch, this.currentMenu.Value.hoverText, string.Empty, null, true, -1, 0, null, -1, null, this.currentMenu.Value.hoverAmount);
+                }
+                else
+                {
+                    IClickableMenu.drawHoverText(e.SpriteBatch, this.currentMenu.Value.hoverText, Game1.smallFont);
+                }
+            }
+
+            if (this.currentMenu.Value.hoveredItem != null)
+            {
+                IClickableMenu.drawToolTip(
+                    e.SpriteBatch,
+                    this.currentMenu.Value.hoveredItem.getDescription(),
+                    this.currentMenu.Value.hoveredItem.DisplayName,
+                    this.currentMenu.Value.hoveredItem,
+                    this.currentMenu.Value.heldItem != null);
+            }
+            else if (this.currentMenu.Value.hoveredItem != null && this.currentMenu.Value.ItemsToGrabMenu != null)
+            {
+                IClickableMenu.drawToolTip(
+                    e.SpriteBatch,
+                    this.currentMenu.Value.ItemsToGrabMenu.descriptionText,
+                    this.currentMenu.Value.ItemsToGrabMenu.descriptionTitle,
+                    this.currentMenu.Value.hoveredItem,
+                    this.currentMenu.Value.heldItem != null);
+            }
+
+            this.currentMenu.Value.heldItem?.drawInMenu(e.SpriteBatch, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
+            Game1.mouseCursorTransparency = 1f;
+            this.currentMenu.Value.drawMouse(e.SpriteBatch);
+        }
     }
 }

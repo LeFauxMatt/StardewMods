@@ -28,7 +28,7 @@ internal sealed class LabelChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.LabelChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LabelChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

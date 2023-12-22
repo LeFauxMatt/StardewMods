@@ -40,7 +40,7 @@ internal sealed class OrganizeChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.OrganizeChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OrganizeChest != FeatureOption.Disabled;
 
     /// <summary>Organizes the items in the collection.</summary>
     /// <param name="reverse">Determines whether to sort the items in reverse order. The default value is false.</param>

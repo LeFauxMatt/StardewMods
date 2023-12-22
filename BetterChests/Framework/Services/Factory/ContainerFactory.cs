@@ -33,8 +33,8 @@ internal sealed class ContainerFactory : BaseService
     }
 
     /// <summary>
-    ///     Retrieves all container items that satisfy the specified predicate, if provided. If no predicate is provided,
-    ///     returns all container items.
+    /// Retrieves all container items that satisfy the specified predicate, if provided. If no predicate is provided,
+    /// returns all container items.
     /// </summary>
     /// <param name="predicate">Optional. A function that defines the conditions of the container items to search for.</param>
     /// <returns>An enumerable collection of IContainer items that satisfy the predicate, if provided.</returns>
@@ -110,7 +110,7 @@ internal sealed class ContainerFactory : BaseService
 
             if (!this.storageTypes.TryGetValue($"(B){building.buildingType.Value}", out var storageType))
             {
-                storageType = new BuildingStorage(this.config.Default, building.GetData());
+                storageType = new BuildingStorage(this.config.DefaultOptions, building.GetData());
                 this.storageTypes.Add($"(B){building.buildingType.Value}", storageType);
             }
 
@@ -136,7 +136,7 @@ internal sealed class ContainerFactory : BaseService
         {
             if (!this.storageTypes.TryGetValue($"(L){location.Name}", out var storageType))
             {
-                storageType = new LocationStorage(this.config.Default, location.GetData());
+                storageType = new LocationStorage(this.config.DefaultOptions, location.GetData());
                 this.storageTypes.Add($"(L){location.Name}", storageType);
             }
 
@@ -211,7 +211,7 @@ internal sealed class ContainerFactory : BaseService
         if (!this.storageTypes.TryGetValue(item.QualifiedItemId, out var storageType))
         {
             var data = ItemRegistry.GetData(item.QualifiedItemId).RawData as BigCraftableData ?? new BigCraftableData();
-            storageType = new BigCraftableStorage(this.config.Default, data);
+            storageType = new BigCraftableStorage(this.config.DefaultOptions, data);
             this.storageTypes.Add(item.QualifiedItemId, storageType);
         }
 
@@ -236,7 +236,7 @@ internal sealed class ContainerFactory : BaseService
             return true;
         }
 
-        container = new FarmerContainer(this.itemMatchers.GetDefault(), this.config.Default, farmer);
+        container = new FarmerContainer(this.itemMatchers.GetDefault(), this.config.DefaultOptions, farmer);
         this.cachedContainers.AddOrUpdate(farmer, container);
         return true;
     }

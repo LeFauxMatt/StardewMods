@@ -4,7 +4,7 @@ using NetEscapades.EnumGenerators;
 
 /// <summary>The side of the menu to align the color picker to.</summary>
 [EnumExtensions]
-internal enum MenuSide
+internal enum ColorPickerArea
 {
     /// <summary>To the right of the menu.</summary>
     Right,

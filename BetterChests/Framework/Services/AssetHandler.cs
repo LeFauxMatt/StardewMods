@@ -73,13 +73,13 @@ internal sealed class AssetHandler : BaseService
 
         tabData = new Dictionary<string, InventoryTabData>
         {
-            { "Clothing", new InventoryTabData("Clothing", AssetHandler.TabTexturePath, 0, ["category_clothing", "category_boots", "category_hat"]) },
+            { "Clothing", new InventoryTabData("Clothing", AssetHandler.TabTexturePath, 2, ["category_clothing", "category_boots", "category_hat"]) },
             {
                 "Cooking",
                 new InventoryTabData(
                     "Cooking",
                     AssetHandler.TabTexturePath,
-                    1,
+                    3,
                     [
                         "category_syrup",
                         "category_artisan_goods",
@@ -92,19 +92,19 @@ internal sealed class AssetHandler : BaseService
                         "category_egg",
                     ])
             },
-            { "Crops", new InventoryTabData("Crops", AssetHandler.TabTexturePath, 2, ["category_greens", "category_flowers", "category_fruits", "category_vegetable"]) },
-            { "Equipment", new InventoryTabData("Equipment", AssetHandler.TabTexturePath, 3, ["category_equipment", "category_ring", "category_tool", "category_weapon"]) },
-            { "Fishing", new InventoryTabData("Fishing", AssetHandler.TabTexturePath, 4, ["category_bait", "category_fish", "category_tackle", "category_sell_at_fish_shop"]) },
+            { "Crops", new InventoryTabData("Crops", AssetHandler.TabTexturePath, 4, ["category_greens", "category_flowers", "category_fruits", "category_vegetable"]) },
+            { "Equipment", new InventoryTabData("Equipment", AssetHandler.TabTexturePath, 5, ["category_equipment", "category_ring", "category_tool", "category_weapon"]) },
+            { "Fishing", new InventoryTabData("Fishing", AssetHandler.TabTexturePath, 6, ["category_bait", "category_fish", "category_tackle", "category_sell_at_fish_shop"]) },
             {
                 "Materials",
                 new InventoryTabData(
                     "Materials",
                     AssetHandler.TabTexturePath,
-                    5,
+                    7,
                     ["category_monster_loot", "category_metal_resources", "category_building_resources", "category_minerals", "category_crafting", "category_gem"])
             },
-            { "Misc", new InventoryTabData("Misc", AssetHandler.TabTexturePath, 6, ["category_big_craftable", "category_furniture", "category_junk"]) },
-            { "Seeds", new InventoryTabData("Seeds", AssetHandler.TabTexturePath, 7, ["category_seeds", "category_fertilizer"]) },
+            { "Misc", new InventoryTabData("Misc", AssetHandler.TabTexturePath, 8, ["category_big_craftable", "category_furniture", "category_junk"]) },
+            { "Seeds", new InventoryTabData("Seeds", AssetHandler.TabTexturePath, 9, ["category_seeds", "category_fertilizer"]) },
         };
 
         this.data.WriteJsonFile("assets/tabs.json", tabData);

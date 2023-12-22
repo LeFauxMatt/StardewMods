@@ -33,8 +33,8 @@ internal interface IStorage
     public FeatureOptionRange CraftFromChest { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
-    ///     listed locations.
+    /// Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
+    /// listed locations.
     /// </summary>
     public HashSet<string> CraftFromChestDisableLocations { get; set; }
 
@@ -42,8 +42,8 @@ internal interface IStorage
     public int CraftFromChestDistance { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating if items outside of the filter item list will be greyed out and blocked from
-    ///     being added to the chest.
+    /// Gets or sets a value indicating if items outside of the filter item list will be greyed out and blocked from
+    /// being added to the chest.
     /// </summary>
     public FeatureOption FilterItems { get; set; }
 
@@ -93,8 +93,8 @@ internal interface IStorage
     public FeatureOptionRange StashToChest { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
-    ///     listed locations.
+    /// Gets or sets a value indicating if the chest cannot be remotely crafted from while the player is in one of the
+    /// listed locations.
     /// </summary>
     public HashSet<string> StashToChestDisableLocations { get; set; }
 

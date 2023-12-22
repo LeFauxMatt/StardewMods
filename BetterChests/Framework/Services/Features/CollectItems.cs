@@ -43,7 +43,7 @@ internal sealed class CollectItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.CollectItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CollectItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

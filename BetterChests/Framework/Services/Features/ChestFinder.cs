@@ -59,7 +59,7 @@ internal sealed class ChestFinder : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.ChestFinder != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestFinder != FeatureOption.Disabled;
 
     private bool IsSearchActive => Context.IsPlayerFree && Game1.displayHUD && Game1.activeClickableMenu is null or SearchBar && this.activeSearch.Value;
 
@@ -208,8 +208,6 @@ internal sealed class ChestFinder : BaseFeature
             return;
         }
 
-        this.searchBar.Value.draw(e.SpriteBatch);
-
         // Check if storages needs to be reset
         if (this.resetCache.Value)
         {
@@ -220,6 +218,7 @@ internal sealed class ChestFinder : BaseFeature
         // Check if there are any storages found
         if (!this.cachedStorages.Value.Any())
         {
+            this.searchBar.Value.draw(e.SpriteBatch);
             return;
         }
 
@@ -289,6 +288,8 @@ internal sealed class ChestFinder : BaseFeature
 
             e.SpriteBatch.Draw(Game1.mouseCursors, onScreenPos, srcRect, Color.White, rotation, new Vector2(2f, 2f), Game1.pixelZoom, SpriteEffects.None, 1f);
         }
+
+        this.searchBar.Value.draw(e.SpriteBatch);
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)

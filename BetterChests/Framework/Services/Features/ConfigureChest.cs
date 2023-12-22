@@ -9,7 +9,7 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Interfaces;
-using StardewMods.FuryCore.Framework.Services.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
 /// <summary>Configure storages individually.</summary>
@@ -68,7 +68,7 @@ internal sealed class ConfigureChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.ConfigureChest != FeatureOption.Disabled && this.genericModConfigMenuIntegration.IsLoaded;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ConfigureChest != FeatureOption.Disabled && this.genericModConfigMenuIntegration.IsLoaded;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -109,20 +109,26 @@ internal sealed class ConfigureChest : BaseFeature
             return;
         }
 
-        if (__instance.allClickableComponents?.Contains(ConfigureChest.instance.configButton.Value) == false)
+        var configButton = ConfigureChest.instance.configButton.Value;
+        if (__instance.allClickableComponents?.Contains(configButton) == false)
         {
-            __instance.allClickableComponents.Add(ConfigureChest.instance.configButton.Value);
+            __instance.allClickableComponents.Add(configButton);
         }
 
-        var configButton = ConfigureChest.instance.configButton.Value;
         configButton.bounds.Y = 0;
-        var buttons = new[] { __instance.organizeButton, __instance.fillStacksButton, __instance.colorPickerToggleButton, __instance.specialButton, configButton, __instance.junimoNoteIcon }
+        var buttons = new[] { __instance.organizeButton, __instance.fillStacksButton, __instance.colorPickerToggleButton, __instance.specialButton, __instance.junimoNoteIcon }
             .Where(component => component is not null)
             .ToList();
 
-        var yOffset = buttons.Count switch { <= 3 => __instance.yPositionOnScreen + (__instance.height / 3), _ => __instance.ItemsToGrabMenu.yPositionOnScreen + __instance.ItemsToGrabMenu.height };
-
+        buttons.Add(configButton);
         var stepSize = Game1.tileSize + buttons.Count switch { >= 4 => 8, _ => 16 };
+        var yOffset = buttons[0].bounds.Y;
+        if (yOffset - (stepSize * (buttons.Count - 1)) < __instance.ItemsToGrabMenu.yPositionOnScreen)
+        {
+            yOffset += ((stepSize * (buttons.Count - 1)) + __instance.ItemsToGrabMenu.yPositionOnScreen - yOffset) / 2;
+        }
+
+        var xPosition = buttons[0].bounds.X;
 
         for (var index = 0; index < buttons.Count; ++index)
         {
@@ -137,8 +143,8 @@ internal sealed class ConfigureChest : BaseFeature
                 button.upNeighborID = buttons[index + 1].myID;
             }
 
-            button.bounds.X = __instance.xPositionOnScreen + __instance.width;
-            button.bounds.Y = yOffset - Game1.tileSize - (stepSize * index);
+            button.bounds.X = xPosition;
+            button.bounds.Y = yOffset - (stepSize * index);
         }
     }
 

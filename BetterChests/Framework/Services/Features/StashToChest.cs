@@ -37,7 +37,7 @@ internal sealed class StashToChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.StashToChest != FeatureOptionRange.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.StashToChest != FeatureOptionRange.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

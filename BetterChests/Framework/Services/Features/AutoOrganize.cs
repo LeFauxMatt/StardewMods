@@ -26,7 +26,7 @@ internal sealed class AutoOrganize : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.AutoOrganize != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.AutoOrganize != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.GameLoop.DayEnding += this.OnDayEnding;

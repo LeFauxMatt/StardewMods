@@ -9,7 +9,7 @@ internal enum IntegerKey
     /// <summary>The tiles from a player that craft from chest will be enabled.</summary>
     CraftFromChestDistance,
 
-    /// <summary></summary>
+    /// <summary>The quantity of item stacks that a chest can hold.</summary>
     ResizeChestCapacity,
 
     /// <summary>The tiles from a player that stash to chest will be enabled.</summary>

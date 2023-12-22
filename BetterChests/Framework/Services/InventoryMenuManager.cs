@@ -26,9 +26,6 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
         set => this.source.SetTarget(value);
     }
 
-    /// <summary>Gets or sets the clickable components of the inventory menu.</summary>
-    public List<ClickableComponent>? Inventory { get; set; }
-
     /// <inheritdoc />
     public int Capacity => this.Source?.capacity switch { null => 36, > 70 => 70, _ => this.Source.capacity };
 
@@ -51,8 +48,8 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
     public void AddOperation(Func<IEnumerable<Item>, IEnumerable<Item>> operation) => this.operations.Add(operation);
 
     /// <summary>
-    ///     Applies a series of operations to a collection of items and returns a modified subset of items based on
-    ///     specified criteria.
+    /// Applies a series of operations to a collection of items and returns a modified subset of items based on
+    /// specified criteria.
     /// </summary>
     /// <param name="items">The collection of items to apply the operations to.</param>
     /// <returns>The modified subset of items based on the applied operations and specified criteria.</returns>

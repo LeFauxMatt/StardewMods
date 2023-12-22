@@ -86,8 +86,8 @@ internal sealed class VirtualizedChest
     }
 
     /// <summary>
-    ///     Transfers all items from the global inventory associated with this object to the chest object owned by this
-    ///     object.
+    /// Transfers all items from the global inventory associated with this object to the chest object owned by this
+    /// object.
     /// </summary>
     public void TransferItemsToChest()
     {

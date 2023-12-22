@@ -23,7 +23,7 @@ internal sealed class SearchBar : IClickableMenu
         this.xPositionOnScreen = (int)origin.X;
         this.yPositionOnScreen = Game1.tileSize;
 
-        this.searchField = new(texture, null, Game1.smallFont, Game1.textColor)
+        this.searchField = new TextBox(texture, null, Game1.smallFont, Game1.textColor)
         {
             X = this.xPositionOnScreen,
             Y = this.yPositionOnScreen,
@@ -31,15 +31,15 @@ internal sealed class SearchBar : IClickableMenu
             Selected = true,
         };
 
-        this.searchArea = new(Rectangle.Empty, string.Empty)
+        this.searchArea = new ClickableComponent(Rectangle.Empty, string.Empty)
         {
             visible = true,
-            bounds = new(this.searchField.X, this.searchField.Y, this.searchField.Width, this.searchField.Height),
+            bounds = new Rectangle(this.searchField.X, this.searchField.Y, this.searchField.Width, this.searchField.Height),
         };
 
-        this.searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
+        this.searchIcon = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(80, 0, 13, 13), 2.5f)
         {
-            bounds = new((this.searchField.X + this.searchField.Width) - 38, this.searchField.Y + 6, 32, 32),
+            bounds = new Rectangle(this.searchField.X + this.searchField.Width - 38, this.searchField.Y + 6, 32, 32),
         };
     }
 

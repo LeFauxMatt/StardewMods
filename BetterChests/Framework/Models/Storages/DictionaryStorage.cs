@@ -250,8 +250,8 @@ internal abstract class DictionaryStorage : IStorage
     /// <summary>Tries to get the data associated with the specified key.</summary>
     /// <param name="key">The key to search for.</param>
     /// <param name="value">
-    ///     When this method returns, contains the value associated with the specified key, if the key is
-    ///     found; otherwise, null.
+    /// When this method returns, contains the value associated with the specified key, if the key is
+    /// found; otherwise, null.
     /// </param>
     /// <returns>true if the key was found and the data associated with it was retrieved successfully; otherwise, false.</returns>
     protected abstract bool TryGetValue(string key, [NotNullWhen(true)] out string? value);

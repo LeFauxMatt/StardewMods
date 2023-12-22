@@ -22,8 +22,6 @@ internal sealed class CarryChest : BaseFeature
         nameof(SObject.drawInMenu),
         new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) });
 
-    private static readonly MethodBase ObjectPlacementAction = AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction));
-
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
@@ -60,7 +58,7 @@ internal sealed class CarryChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.CarryChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CarryChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -70,7 +68,7 @@ internal sealed class CarryChest : BaseFeature
         this.modEvents.GameLoop.OneSecondUpdateTicked += this.OnOneSecondUpdateTicked;
 
         // Patches
-        this.harmony.Patch(CarryChest.ObjectPlacementAction, postfix: new HarmonyMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+        this.harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)), postfix: new HarmonyMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
     }
 
     /// <inheritdoc />
@@ -81,7 +79,7 @@ internal sealed class CarryChest : BaseFeature
         this.modEvents.GameLoop.OneSecondUpdateTicked -= this.OnOneSecondUpdateTicked;
 
         // Patches
-        this.harmony.Unpatch(CarryChest.ObjectPlacementAction, AccessTools.Method(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+        this.harmony.Unpatch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)), AccessTools.DeclaredMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

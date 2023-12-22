@@ -52,7 +52,7 @@ internal sealed class TransferItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.TransferItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.TransferItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

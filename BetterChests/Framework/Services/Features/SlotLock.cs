@@ -39,7 +39,7 @@ internal sealed class SlotLock : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.SlotLock != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.SlotLock != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

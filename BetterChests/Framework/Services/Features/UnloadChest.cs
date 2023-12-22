@@ -29,7 +29,7 @@ internal sealed class UnloadChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.UnloadChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.UnloadChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.Input.ButtonPressed += this.OnButtonPressed;

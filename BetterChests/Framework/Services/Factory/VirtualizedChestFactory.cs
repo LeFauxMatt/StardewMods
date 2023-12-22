@@ -82,8 +82,8 @@ internal sealed class VirtualizedChestFactory : BaseService
     /// <summary>Tries to get the virtualized chest with the specified ID from the dictionary.</summary>
     /// <param name="id">The ID of the virtualized chest.</param>
     /// <param name="vChest">
-    ///     When this method returns, the virtualized chest with the specified ID, if it exists; otherwise,
-    ///     null.
+    /// When this method returns, the virtualized chest with the specified ID, if it exists; otherwise,
+    /// null.
     /// </param>
     /// <returns>True if the virtualized chest with the specified ID exists in the dictionary; otherwise, false.</returns>
     public bool TryGetOne(string id, [NotNullWhen(true)] out VirtualizedChest? vChest)

@@ -41,7 +41,7 @@ internal sealed class OpenHeldChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.OpenHeldChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OpenHeldChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

@@ -89,7 +89,7 @@ public sealed class ModEntry : Mod
 
         this.container.Register<AssetHandler>(Lifestyle.Singleton);
         this.container.Register<ContainerFactory>(Lifestyle.Singleton);
-        this.container.Register<Formatting>(Lifestyle.Singleton);
+        this.container.Register<LocalizedTextManager>(Lifestyle.Singleton);
         this.container.Register<InventoryTabFactory>(Lifestyle.Singleton);
         this.container.Register<ItemGrabMenuManager>(Lifestyle.Singleton);
         this.container.Register<StatusEffectManager>(Lifestyle.Singleton);

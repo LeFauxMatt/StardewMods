@@ -61,7 +61,7 @@ internal sealed class SearchItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.SearchItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.SearchItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -87,7 +87,7 @@ internal sealed class SearchItems : BaseFeature
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
     {
-        if (this.ModConfig.Default.HideUnselectedItems is FeatureOption.Enabled)
+        if (this.ModConfig.DefaultOptions.HideUnselectedItems is FeatureOption.Enabled)
         {
             return items.Where(this.itemMatcher.Value.MatchesFilter);
         }

@@ -41,7 +41,7 @@ internal sealed class ChestInfo : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.ChestInfo != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestInfo != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

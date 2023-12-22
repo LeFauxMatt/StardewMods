@@ -57,7 +57,7 @@ internal sealed class FilterItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.FilterItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.FilterItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

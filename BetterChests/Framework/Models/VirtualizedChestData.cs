@@ -40,8 +40,8 @@ internal sealed class VirtualizedChestData
 
     /// <summary>Tries to create a virtualized chest using the provided virtualized chest data.</summary>
     /// <param name="vChest">
-    ///     When this method returns, contains the created virtualized chest if successful, or null if the
-    ///     creation fails.
+    /// When this method returns, contains the created virtualized chest if successful, or null if the
+    /// creation fails.
     /// </param>
     /// <returns>True if the virtualized chest is successfully created; otherwise, false.</returns>
     public bool TryCreate([NotNullWhen(true)] out VirtualizedChest? vChest)

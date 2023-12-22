@@ -132,7 +132,7 @@ internal sealed class ItemMatcher : IItemFilter
             false when term.Value == item.DisplayName || term.Value == item.Name => true,
 
             // Exactly matches context tag
-            false when item.HasContextTag(term.Value) => true,
+            true when item.HasContextTag(term.Value) => true,
             _ => false,
         };
 

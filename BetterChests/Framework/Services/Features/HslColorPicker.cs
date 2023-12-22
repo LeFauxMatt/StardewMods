@@ -56,7 +56,7 @@ internal sealed class HslColorPicker : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.Default.HslColorPicker != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.HslColorPicker != FeatureOption.Disabled;
 
     private HslColor CurrentColor
     {
@@ -206,9 +206,9 @@ internal sealed class HslColorPicker : BaseFeature
         }
 
         this.itemGrabMenuManager.CurrentMenu.discreteColorPickerCC = null;
-        this.x.Value = this.ModConfig.CustomColorPickerArea switch
+        this.x.Value = this.ModConfig.ColorPickerArea switch
         {
-            MenuSide.Left => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen - (2 * Game1.tileSize) - (IClickableMenu.borderWidth / 2),
+            ColorPickerArea.Left => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen - (2 * Game1.tileSize) - (IClickableMenu.borderWidth / 2),
             _ => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen + this.itemGrabMenuManager.CurrentMenu.width + 96 + (IClickableMenu.borderWidth / 0x2),
         };
 
@@ -235,7 +235,7 @@ internal sealed class HslColorPicker : BaseFeature
             this.x.Value - (IClickableMenu.borderWidth / 2),
             this.y.Value - (IClickableMenu.borderWidth / 2),
             58 + IClickableMenu.borderWidth,
-            58 + IClickableMenu.borderWidth,
+            558 + IClickableMenu.borderWidth,
             Color.LightGray);
 
         // No color button
