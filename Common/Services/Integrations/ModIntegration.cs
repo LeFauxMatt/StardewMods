@@ -20,13 +20,11 @@ internal abstract class ModIntegration<T>
     }
 
     /// <summary>Gets the Mod's API through SMAPI's standard interface.</summary>
-    protected internal T? Api => this.IsLoaded ? this.modApi.Value : default;
+    protected internal T? Api => this.IsLoaded ? this.modApi.Value : default(T?);
 
     /// <summary>Gets a value indicating whether the mod is loaded.</summary>
     [MemberNotNullWhen(true, nameof(ModIntegration<T>.Api), nameof(ModIntegration<T>.ModInfo))]
-    protected internal bool IsLoaded =>
-        this.ModRegistry.IsLoaded(this.UniqueId)
-        && (this.Version is null || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version) != true);
+    protected internal bool IsLoaded => this.ModRegistry.IsLoaded(this.UniqueId) && (this.Version is null || this.ModInfo?.Manifest.Version.IsOlderThan(this.Version) != true);
 
     /// <summary>Gets metadata for this mod.</summary>
     protected internal IModInfo? ModInfo => this.ModRegistry.Get(this.UniqueId);

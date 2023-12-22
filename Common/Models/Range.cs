@@ -2,13 +2,14 @@ namespace StardewMods.Common.Models;
 
 /// <summary>Represents a range of values.</summary>
 /// <typeparam name="T">The value type for the range.</typeparam>
-internal sealed class Range<T> where T : IComparable<T>
+internal sealed class Range<T>
+    where T : IComparable<T>
 {
     /// <summary>Initializes a new instance of the <see cref="Range{T}" /> class.</summary>
     public Range()
     {
-        this.Minimum = default!;
-        this.Maximum = default!;
+        this.Minimum = default(T?)!;
+        this.Maximum = default(T)!;
     }
 
     /// <summary>Initializes a new instance of the <see cref="Range{T}" /> class.</summary>
@@ -45,6 +46,5 @@ internal sealed class Range<T> where T : IComparable<T>
         return this.Maximum.CompareTo(value) <= 0 ? this.Maximum : value;
     }
 
-    private bool IsValid() =>
-        this.Minimum is not null && this.Maximum is not null && this.Minimum.CompareTo(this.Maximum) <= 0;
+    private bool IsValid() => this.Minimum is not null && this.Maximum is not null && this.Minimum.CompareTo(this.Maximum) <= 0;
 }

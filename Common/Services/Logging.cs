@@ -3,7 +3,6 @@ namespace StardewMods.Common.Services;
 using System.Globalization;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Interfaces;
-using LogLevel = StardewModdingAPI.LogLevel;
 
 /// <summary>Handles logging debug information to the console.</summary>
 internal sealed class Logging

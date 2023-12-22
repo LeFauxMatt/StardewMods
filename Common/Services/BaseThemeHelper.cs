@@ -14,12 +14,12 @@ internal abstract class BaseThemeHelper
 
     private readonly Dictionary<Point, Color> vanillaPalette = new()
     {
-        { new(17, 369), new(91, 43, 42) },
-        { new(18, 370), new(220, 123, 5) },
-        { new(19, 371), new(177, 78, 5) },
-        { new(20, 372), new(228, 174, 110) },
-        { new(21, 373), new(255, 210, 132) },
-        { new(104, 471), new(247, 186, 0) },
+        { new Point(17, 369), new Color(91, 43, 42) },
+        { new Point(18, 370), new Color(220, 123, 5) },
+        { new Point(19, 371), new Color(177, 78, 5) },
+        { new Point(20, 372), new Color(228, 174, 110) },
+        { new Point(21, 373), new Color(255, 210, 132) },
+        { new Point(104, 471), new Color(247, 186, 0) },
     };
 
     private bool initialize;
@@ -31,7 +31,7 @@ internal abstract class BaseThemeHelper
     protected BaseThemeHelper(IModEvents events, IGameContentHelper gameContent, params string[] assetNames)
     {
         this.gameContent = gameContent;
-        this.assetNames = new(assetNames);
+        this.assetNames = new HashSet<string>(assetNames);
         events.Content.AssetReady += this.OnAssetReady;
         events.Content.AssetRequested += this.OnAssetRequested;
         events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
