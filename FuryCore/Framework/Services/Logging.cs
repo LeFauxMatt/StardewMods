@@ -1,8 +1,8 @@
 namespace StardewMods.FuryCore.Framework.Services;
 
 using System.Globalization;
-using StardewMods.FuryCore.Framework.Enums;
-using StardewMods.FuryCore.Framework.Interfaces;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Interfaces;
 
 /// <inheritdoc />
 internal sealed class Logging : ILogging
@@ -22,7 +22,7 @@ internal sealed class Logging : ILogging
     /// <inheritdoc/>
     public void Info(string message, params object?[]? args)
     {
-        if (this.config.LogLevel != LogLevels.None)
+        if (this.config.LogLevel != SimpleLogLevel.None)
         {
             this.Log(message, LogLevel.Info, args);
         }
@@ -31,7 +31,7 @@ internal sealed class Logging : ILogging
     /// <inheritdoc/>
     public void Trace(string message, params object?[]? args)
     {
-        if (this.config.LogLevel == LogLevels.More)
+        if (this.config.LogLevel == SimpleLogLevel.More)
         {
             this.Log(message, LogLevel.Trace, args);
         }
@@ -40,7 +40,7 @@ internal sealed class Logging : ILogging
     /// <inheritdoc/>
     public void Error(string message, params object?[]? args)
     {
-        if (this.config.LogLevel != LogLevels.None)
+        if (this.config.LogLevel != SimpleLogLevel.None)
         {
             this.Log(message, LogLevel.Error, args);
         }
@@ -49,7 +49,7 @@ internal sealed class Logging : ILogging
     /// <inheritdoc/>
     public void Warn(string message, params object?[]? args)
     {
-        if (this.config.LogLevel != LogLevels.None)
+        if (this.config.LogLevel != SimpleLogLevel.None)
         {
             this.Log(message, LogLevel.Warn, args);
         }

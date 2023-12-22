@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Name>Expanded Storage</Name>
     <Description>Framework for adding new types of chests to the game.</Description>

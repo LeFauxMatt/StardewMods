@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Name>Custom Bush</Name>
     <Description>Custom Bush is a framework which allows custom bushes to be added to the game which work like the tea sapling.</Description>

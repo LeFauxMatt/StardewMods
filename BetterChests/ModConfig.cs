@@ -58,7 +58,7 @@ internal sealed class ModConfig : IConfigWithLogLevel
     public bool SlotLockHold { get; set; } = true;
 
     /// <inheritdoc />
-    public LogLevels LogLevel { get; set; } = LogLevels.Less;
+    public SimpleLogLevel LogLevel { get; set; } = SimpleLogLevel.Less;
 
     /// <inheritdoc />
     public override string ToString()

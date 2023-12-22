@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Name>Helpful Spouses</Name>
     <Description>Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.</Description>

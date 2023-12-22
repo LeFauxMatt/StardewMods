@@ -33,14 +33,14 @@ internal sealed class ConfigMenu
             manifest,
             () => this.config.LogLevel.ToStringFast(),
             value => this.config.LogLevel =
-                LogLevelsExtensions.TryParse(value, out var logLevel) ? logLevel : LogLevels.Less,
+                SimpleLogLevelExtensions.TryParse(value, out var logLevel) ? logLevel : SimpleLogLevel.Less,
             I18n.Config_LogLevel_Title,
             I18n.Config_LogLevel_Description,
-            LogLevelsExtensions.GetNames(),
+            SimpleLogLevelExtensions.GetNames(),
             Formatting.TryFormat);
     }
 
-    private void Reset() => this.config.LogLevel = LogLevels.Less;
+    private void Reset() => this.config.LogLevel = SimpleLogLevel.Less;
 
     private void Save() => this.helper.WriteConfig(this.config);
 }

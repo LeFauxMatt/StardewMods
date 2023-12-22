@@ -1,10 +1,10 @@
-namespace StardewMods.FuryCore.Framework.Enums;
+namespace StardewMods.Common.Enums;
 
 using NetEscapades.EnumGenerators;
 
 /// <summary>The amount of debugging information that will be logged to the console.</summary>
 [EnumExtensions]
-public enum LogLevels
+public enum SimpleLogLevel
 {
     /// <summary>No debugging information will be logged to the console.</summary>
     None = 0,

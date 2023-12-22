@@ -1,8 +1,8 @@
 namespace StardewMods.FuryCore.Framework;
 
-using StardewMods.FuryCore.Framework.Interfaces;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.FuryCore.Framework.Services;
-using StardewMods.FuryCore.Framework.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
 public sealed class FuryCoreApi : IFuryCoreApi

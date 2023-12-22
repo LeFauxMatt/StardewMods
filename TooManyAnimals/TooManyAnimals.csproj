@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
     <Name>Too Many Animals</Name>
     <Description>Makes Marnie's Animal Shop menu paginated so that you're able to view all of your modded animals.</Description>

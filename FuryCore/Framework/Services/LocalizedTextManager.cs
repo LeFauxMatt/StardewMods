@@ -1,9 +1,9 @@
-namespace StardewMods.ExpandedStorage.Framework.Services;
+namespace StardewMods.FuryCore.Framework.Services;
 
 using StardewMods.Common.Enums;
 
 /// <summary>Formats the given <see cref="LogLevel" /> into a string.</summary>
-internal static class Formatting
+internal static class LocalizedTextManager
 {
     /// <summary>Formats the given <paramref name="value" /> into a string.</summary>
     /// <param name="value">The level of logging.</param>

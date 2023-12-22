@@ -1,7 +1,7 @@
 namespace StardewMods.FuryCore.Framework.Services;
 
-using StardewMods.FuryCore.Framework.Enums;
-using StardewMods.FuryCore.Framework.Services.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Enums;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
 /// <summary>Handles the config menu.</summary>
 internal sealed class ConfigMenu
@@ -33,14 +33,14 @@ internal sealed class ConfigMenu
             manifest,
             () => this.config.LogLevel.ToStringFast(),
             value => this.config.LogLevel =
-                LogLevelsExtensions.TryParse(value, out var logLevel) ? logLevel : LogLevels.Less,
+                SimpleLogLevelExtensions.TryParse(value, out var logLevel) ? logLevel : SimpleLogLevel.Less,
             I18n.Config_LogLevel_Title,
             I18n.Config_LogLevel_Description,
-            LogLevelsExtensions.GetNames(),
-            Formatting.TryFormat);
+            SimpleLogLevelExtensions.GetNames(),
+            LocalizedTextManager.TryFormat);
     }
 
-    private void Reset() => this.config.LogLevel = LogLevels.Less;
+    private void Reset() => this.config.LogLevel = SimpleLogLevel.Less;
 
     private void Save() => this.helper.WriteConfig(this.config);
 }

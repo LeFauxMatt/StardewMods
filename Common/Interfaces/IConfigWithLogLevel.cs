@@ -6,5 +6,5 @@ using StardewMods.Common.Enums;
 public interface IConfigWithLogLevel
 {
     /// <summary>Gets or sets the amount of debugging information that will be logged to the console.</summary>
-    public LogLevels LogLevel { get; set; }
+    public SimpleLogLevel LogLevel { get; set; }
 }

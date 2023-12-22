@@ -1,5 +1,6 @@
 ﻿namespace StardewMods.Common.Services.Integrations.Automate;
 
+using System.ComponentModel;
 using Microsoft.Xna.Framework;
 
 /// <summary>

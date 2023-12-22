@@ -7,5 +7,5 @@ using StardewMods.Common.Interfaces;
 internal sealed class ModConfig : IConfigWithLogLevel
 {
     /// <inheritdoc />
-    public LogLevels LogLevel { get; set; } = LogLevels.Less;
+    public SimpleLogLevel LogLevel { get; set; } = SimpleLogLevel.Less;
 }

@@ -2,7 +2,7 @@ namespace StardewMods.CustomBush.Framework.Services;
 
 using StardewMods.Common.Enums;
 
-/// <summary>Formats the given <see cref="LogLevels" /> into a string.</summary>
+/// <summary>Formats the given <see cref="LogLevel" /> into a string.</summary>
 internal static class Formatting
 {
     /// <summary>Formats the given <paramref name="value" /> into a string.</summary>
@@ -10,16 +10,16 @@ internal static class Formatting
     /// <returns>Returns the formatted log level.</returns>
     public static string TryFormat(string value)
     {
-        if (!LogLevelsExtensions.TryParse(value, out var logLevel))
+        if (!SimpleLogLevelExtensions.TryParse(value, out var logLevel))
         {
-            logLevel = LogLevels.Less;
+            logLevel = SimpleLogLevel.Less;
         }
 
         return logLevel switch
         {
-            LogLevels.None => I18n.Config_LogLevel_Options_None(),
-            LogLevels.Less => I18n.Config_LogLevel_Options_Less(),
-            LogLevels.More => I18n.Config_LogLevel_Options_More(),
+            SimpleLogLevel.None => I18n.Config_LogLevel_Options_None(),
+            SimpleLogLevel.Less => I18n.Config_LogLevel_Options_Less(),
+            SimpleLogLevel.More => I18n.Config_LogLevel_Options_More(),
             _ => I18n.Config_LogLevel_Options_Less(),
         };
     }

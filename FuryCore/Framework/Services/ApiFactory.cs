@@ -1,7 +1,7 @@
 namespace StardewMods.FuryCore.Framework.Services;
 
-using StardewMods.FuryCore.Framework.Interfaces;
-using StardewMods.FuryCore.Framework.Services.Integrations.FuryCore;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>This is a factory class that is used to create instances of the FuryCoreApi.</summary>
 internal sealed class ApiFactory

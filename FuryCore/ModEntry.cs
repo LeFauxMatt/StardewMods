@@ -2,10 +2,9 @@ namespace StardewMods.FuryCore;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.FuryCore.Framework.Interfaces;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.FuryCore.Framework.Services;
-using StardewMods.FuryCore.Framework.Services.Integrations.FuryCore;
-using StardewMods.FuryCore.Framework.Services.Integrations.GenericModConfigMenu;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod

@@ -3,6 +3,7 @@ namespace StardewMods.Common.Services;
 using System.Globalization;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Interfaces;
+using LogLevel = StardewModdingAPI.LogLevel;
 
 /// <summary>Handles logging debug information to the console.</summary>
 internal sealed class Logging
@@ -24,7 +25,7 @@ internal sealed class Logging
     /// <param name="args">The arguments to parse in a formatted string.</param>
     public void Info(string message, params object?[]? args)
     {
-        if (this.config.LogLevel != LogLevels.None)
+        if (this.config.LogLevel != SimpleLogLevel.None)
         {
             this.Log(message, LogLevel.Info, args);
         }
@@ -35,7 +36,7 @@ internal sealed class Logging
     /// <param name="args">The arguments to parse in a formatted string.</param>
     public void Trace(string message, params object?[]? args)
     {
-        if (this.config.LogLevel == LogLevels.More)
+        if (this.config.LogLevel == SimpleLogLevel.More)
         {
             this.Log(message, LogLevel.Trace, args);
         }
@@ -46,7 +47,7 @@ internal sealed class Logging
     /// <param name="args">The arguments to parse in a formatted string.</param>
     public void Error(string message, params object?[]? args)
     {
-        if (this.config.LogLevel != LogLevels.None)
+        if (this.config.LogLevel != SimpleLogLevel.None)
         {
             this.Log(message, LogLevel.Error, args);
         }
@@ -57,7 +58,7 @@ internal sealed class Logging
     /// <param name="args">The arguments to parse in a formatted string.</param>
     public void Warn(string message, params object?[]? args)
     {
-        if (this.config.LogLevel != LogLevels.None)
+        if (this.config.LogLevel != SimpleLogLevel.None)
         {
             this.Log(message, LogLevel.Warn, args);
         }

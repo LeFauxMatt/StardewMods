@@ -13,5 +13,5 @@ internal sealed class ModConfig : IConfigWithLogLevel
     public Controls ControlScheme { get; set; } = new();
 
     /// <inheritdoc />
-    public LogLevels LogLevel { get; set; } = LogLevels.Less;
+    public SimpleLogLevel LogLevel { get; set; } = SimpleLogLevel.Less;
 }
