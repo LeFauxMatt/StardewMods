@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ToolbarIcons;
+﻿namespace StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 using Microsoft.Xna.Framework;
 using StardewValley.Menus;

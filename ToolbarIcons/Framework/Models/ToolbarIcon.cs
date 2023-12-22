@@ -1,6 +1,6 @@
 ﻿namespace StardewMods.ToolbarIcons.Framework.Models;
 
-using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
 public sealed class ToolbarIcon : IToolbarIcon

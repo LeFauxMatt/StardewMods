@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ToolbarIcons;
+﻿namespace StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
 internal sealed class ToolbarIconsIntegration : ModIntegration<IToolbarIconsApi>

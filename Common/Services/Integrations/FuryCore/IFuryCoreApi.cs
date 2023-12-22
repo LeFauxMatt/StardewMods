@@ -1,11 +1,10 @@
-namespace StardewMods.FuryCore.Framework.Services.Integrations.FuryCore;
+namespace StardewMods.Common.Services.Integrations.FuryCore;
 
-using StardewMods.FuryCore.Framework.Interfaces;
+using StardewMods.Common.Interfaces;
 
 /// <summary>Api for shared functionality between mods.</summary>
 public interface IFuryCoreApi
 {
-
     /// <summary>Retrieves an instance of an ILogger for the given IMonitor.</summary>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <returns>An instance of ILogger that is associated with the provided IMonitor.</returns>

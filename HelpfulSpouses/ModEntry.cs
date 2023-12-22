@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Integrations.ProjectFluent;
+using StardewMods.Common.Services.Integrations.ProjectFluent;
 using StardewMods.HelpfulSpouses.Chores;
 using StardewValley.Extensions;
 

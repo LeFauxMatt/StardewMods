@@ -1,10 +1,10 @@
-#nullable disable
-namespace StardewMods.Common.Integrations.GenericModConfigMenu;
+namespace StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Utilities;
 
+#nullable disable
 /// <summary>The API which lets other mods add a config UI through Generic Mod Config Menu.</summary>
 public interface IGenericModConfigMenuApi
 {

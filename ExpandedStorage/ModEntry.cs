@@ -3,8 +3,8 @@
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Integrations.ContentPatcher;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.ContentPatcher;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.ExpandedStorage.Framework.Services;

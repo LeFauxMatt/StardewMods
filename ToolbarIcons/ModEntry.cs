@@ -2,7 +2,7 @@
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework;
 using StardewMods.ToolbarIcons.Framework.Integrations;
 using StardewMods.ToolbarIcons.Framework.Integrations.Mods;

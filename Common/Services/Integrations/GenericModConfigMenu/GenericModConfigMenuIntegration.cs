@@ -1,4 +1,4 @@
-namespace StardewMods.Common.Integrations.GenericModConfigMenu;
+namespace StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
 /// <inheritdoc />
 internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericModConfigMenuApi>

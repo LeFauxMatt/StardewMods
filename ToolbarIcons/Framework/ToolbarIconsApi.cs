@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.ToolbarIcons.Framework;
 
 using Microsoft.Xna.Framework;
-using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.ToolbarIcons.Framework.Services;
 
 /// <inheritdoc />

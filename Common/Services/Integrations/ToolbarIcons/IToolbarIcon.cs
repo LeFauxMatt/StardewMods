@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ToolbarIcons;
+﻿namespace StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 /// <summary>A single Toolbar Icon.</summary>
 public interface IToolbarIcon

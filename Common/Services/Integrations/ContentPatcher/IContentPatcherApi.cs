@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ContentPatcher;
+﻿namespace StardewMods.Common.Services.Integrations.ContentPatcher;
 
 using StardewModdingAPI.Events;
 

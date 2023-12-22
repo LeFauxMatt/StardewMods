@@ -1,6 +1,6 @@
 namespace StardewMods.TooManyAnimals.Framework.Services;
 
-using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
 /// <summary>Handles the config menu.</summary>
 internal sealed class ConfigMenu

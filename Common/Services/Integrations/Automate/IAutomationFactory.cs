@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.Automate;
+﻿namespace StardewMods.Common.Services.Integrations.Automate;
 
 using Microsoft.Xna.Framework;
 using StardewValley.Buildings;

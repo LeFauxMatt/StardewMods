@@ -1,7 +1,7 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
 using StardewMods.Common.Enums;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
 /// <summary>Handles the config menu.</summary>
 internal sealed class ConfigMenu

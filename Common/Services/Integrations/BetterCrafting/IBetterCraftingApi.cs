@@ -1,4 +1,4 @@
-namespace StardewMods.Common.Integrations.BetterCrafting;
+namespace StardewMods.Common.Services.Integrations.BetterCrafting;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

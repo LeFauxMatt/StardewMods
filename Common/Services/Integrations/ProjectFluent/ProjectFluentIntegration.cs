@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ProjectFluent;
+﻿namespace StardewMods.Common.Services.Integrations.ProjectFluent;
 
 /// <inheritdoc />
 internal sealed class ProjectFluentIntegration : ModIntegration<IProjectFluentApi>

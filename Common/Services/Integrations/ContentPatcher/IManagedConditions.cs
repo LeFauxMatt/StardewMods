@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ContentPatcher;
+﻿namespace StardewMods.Common.Services.Integrations.ContentPatcher;
 
 /// <summary>
 ///     A set of parsed conditions linked to the Content Patcher context. These conditions are

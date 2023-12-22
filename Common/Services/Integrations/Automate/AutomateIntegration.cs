@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.Automate;
+﻿namespace StardewMods.Common.Services.Integrations.Automate;
 
 /// <inheritdoc />
 internal sealed class AutomateIntegration : ModIntegration<IAutomateApi>

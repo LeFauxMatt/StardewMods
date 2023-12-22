@@ -1,4 +1,4 @@
-namespace StardewMods.Common.Integrations;
+namespace StardewMods.Common.Services.Integrations;
 
 /// <summary>Provides an integration point for using external mods' APIs.</summary>
 /// <typeparam name="T">Interface for the external mod's API.</typeparam>

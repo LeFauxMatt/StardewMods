@@ -1,7 +1,7 @@
 namespace StardewMods.FuryCore.Framework.Interfaces;
 
 /// <summary>Handles logging debug information to the console.</summary>
-public interface ILogger
+public interface ILogging
 {
     /// <summary>Logs a message to the console when any logging is enabled.</summary>
     /// <param name="message">The message to send.</param>

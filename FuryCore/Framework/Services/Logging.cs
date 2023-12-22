@@ -5,15 +5,15 @@ using StardewMods.FuryCore.Framework.Enums;
 using StardewMods.FuryCore.Framework.Interfaces;
 
 /// <inheritdoc />
-internal sealed class Logger : ILogger
+internal sealed class Logging : ILogging
 {
     private readonly IConfigWithLogLevel config;
     private readonly IMonitor monitor;
 
-    /// <summary>Initializes a new instance of the <see cref="Logger" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Logging" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
-    public Logger(IConfigWithLogLevel config, IMonitor monitor)
+    public Logging(IConfigWithLogLevel config, IMonitor monitor)
     {
         this.config = config;
         this.monitor = monitor;

@@ -4,8 +4,8 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Integrations.GenericModConfigMenu;
-using StardewMods.Common.Integrations.ToolbarIcons;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod

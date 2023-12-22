@@ -23,7 +23,7 @@ public sealed class FuryCoreApi : IFuryCoreApi
     }
 
     /// <inheritdoc/>
-    public ILogger GetLogger(IMonitor monitor) => new Logger(this.config, monitor);
+    public ILogging GetLogger(IMonitor monitor) => new Logging(this.config, monitor);
 
     /// <inheritdoc/>
     public IThemeHelper GetThemeHelper() => this.themeHelper;

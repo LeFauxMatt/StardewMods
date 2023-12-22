@@ -1,4 +1,4 @@
-﻿namespace StardewMods.Common.Integrations.ProjectFluent;
+﻿namespace StardewMods.Common.Services.Integrations.ProjectFluent;
 
 /// <summary>The Project Fluent API which other mods can access.</summary>
 public interface IProjectFluentApi

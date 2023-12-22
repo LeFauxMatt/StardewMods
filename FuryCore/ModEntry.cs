@@ -54,11 +54,10 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
 
         // Integrations
-        this.container.Register<FuryCoreIntegration>(Lifestyle.Transient);
         this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Transient);
 
         // Services
-        this.container.Register<ILogger, Logger>(Lifestyle.Singleton);
+        this.container.Register<ILogging, Logging>(Lifestyle.Singleton);
         this.container.Register<IThemeHelper, ThemeHelper>(Lifestyle.Singleton);
         this.container.Register<ApiFactory>(Lifestyle.Singleton);
 
