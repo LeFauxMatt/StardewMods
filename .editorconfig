@@ -1,4 +1,4 @@
-﻿root = true
+root = true
 # Version: 4.1.1 (Using https://semver.org/)
 # Updated: 2022-05-23
 # See https://github.com/RehanSaeed/EditorConfig/releases for release notes.
@@ -16,8 +16,8 @@
 charset = utf-8
 indent_style = space
 indent_size = 4 # A property with the same name was updated with a value 2 in a section [{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config}]
-insert_final_newline = truefalse
-trim_trailing_whitespace = truefalse
+insert_final_newline = false
+trim_trailing_whitespace = false
 
 # Microsoft .NET properties
 csharp_preferred_modifier_order = private, public, protected, internal, override, extern, new, virtual, sealed, abstract, static, readonly, unsafe, volatile, async, file, required:suggestion
@@ -45,6 +45,12 @@ dotnet_naming_rule.unity_serialized_field_rule.resharper_guid = 5f0fdb63-c892-4d
 dotnet_naming_rule.unity_serialized_field_rule.severity = warning
 dotnet_naming_rule.unity_serialized_field_rule.style = lower_camel_case_style
 dotnet_naming_rule.unity_serialized_field_rule.symbols = unity_serialized_field_symbols
+dotnet_naming_rule.unity_serialized_field_rule_1.import_to_resharper = True
+dotnet_naming_rule.unity_serialized_field_rule_1.resharper_description = Unity serialized field
+dotnet_naming_rule.unity_serialized_field_rule_1.resharper_guid = 5f0fdb63-c892-4d2c-9324-15c80b22a7ef
+dotnet_naming_rule.unity_serialized_field_rule_1.severity = warning
+dotnet_naming_rule.unity_serialized_field_rule_1.style = lower_camel_case_style
+dotnet_naming_rule.unity_serialized_field_rule_1.symbols = unity_serialized_field_symbols_1
 dotnet_naming_style.lower_camel_case_style.capitalization = camel_case
 dotnet_naming_style.upper_camel_case_style.capitalization = pascal_case
 dotnet_naming_symbols.private_constants_symbols.applicable_accessibilities = private
@@ -60,6 +66,10 @@ dotnet_naming_symbols.unity_serialized_field_symbols.applicable_accessibilities 
 dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds =
 dotnet_naming_symbols.unity_serialized_field_symbols.resharper_applicable_kinds = unity_serialised_field
 dotnet_naming_symbols.unity_serialized_field_symbols.resharper_required_modifiers = instance
+dotnet_naming_symbols.unity_serialized_field_symbols_1.applicable_accessibilities = *
+dotnet_naming_symbols.unity_serialized_field_symbols_1.applicable_kinds =
+dotnet_naming_symbols.unity_serialized_field_symbols_1.resharper_applicable_kinds = unity_serialised_field
+dotnet_naming_symbols.unity_serialized_field_symbols_1.resharper_required_modifiers = instance
 dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:none
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
 dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:none
@@ -90,6 +100,9 @@ resharper_csharp_blank_lines_around_single_line_invocable = 1
 resharper_csharp_empty_block_style = together_same_line
 resharper_csharp_keep_blank_lines_in_code = 1
 resharper_csharp_keep_blank_lines_in_declarations = 1
+resharper_csharp_naming_rule.private_constants = AaBb
+resharper_csharp_naming_rule.private_static_readonly = AaBb
+resharper_csharp_place_type_constraints_on_same_line = false
 resharper_csharp_stick_comment = false
 resharper_csharp_wrap_after_declaration_lpar = true
 resharper_csharp_wrap_after_invocation_lpar = true
@@ -100,6 +113,7 @@ resharper_csharp_wrap_extends_list_style = chop_if_long
 resharper_csharp_wrap_multiple_declaration_style = chop_always
 resharper_csharp_wrap_parameters_style = chop_if_long
 resharper_default_value_when_type_not_evident = default_expression
+resharper_enforce_line_ending_style = true
 resharper_formatter_off_tag = @formatter:off
 resharper_formatter_on_tag = @formatter:on
 resharper_formatter_tags_enabled = true
@@ -115,7 +129,9 @@ resharper_method_or_operator_body = expression_body
 resharper_nested_ternary_style = expanded
 resharper_parentheses_same_type_operations = true
 resharper_place_accessorholder_attribute_on_same_line = false
+resharper_place_constructor_initializer_on_same_line = false
 resharper_place_linq_into_on_new_line = false
+resharper_place_simple_case_statement_on_same_line = if_owner_is_single_line
 resharper_place_simple_embedded_statement_on_same_line = false
 resharper_place_simple_enum_on_single_line = true
 resharper_place_simple_method_on_single_line = true
@@ -126,7 +142,7 @@ resharper_shaderlab_max_line_length = 80
 resharper_show_autodetect_configure_formatting_tip = false
 resharper_space_within_slice_pattern = false
 resharper_static_members_qualify_members = none, field, property, event, method
-resharper_T4_max_line_length = 80
+resharper_t4_max_line_length = 80
 resharper_trailing_comma_in_multiline_lists = true
 resharper_use_indent_from_vs = false
 resharper_use_roslyn_logic_for_evident_types = true
@@ -139,6 +155,7 @@ resharper_wrap_chained_binary_expressions = chop_if_long
 resharper_wrap_chained_binary_patterns = chop_if_long
 resharper_wrap_chained_method_calls = chop_if_long
 resharper_wrap_enum_declaration = chop_if_long
+resharper_wrap_lines = true
 resharper_wrap_list_pattern = chop_if_long
 resharper_wrap_property_pattern = chop_always
 resharper_wrap_switch_expression = chop_if_long

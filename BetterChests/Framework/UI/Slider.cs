@@ -12,8 +12,8 @@ internal sealed class Slider
     private static readonly Range<float> Unit = new(0, 1);
     private readonly Rectangle area;
     private readonly ClickableComponent[] bars;
-    private readonly int selected;
     private readonly Func<float> getMethod;
+    private readonly int selected;
     private readonly Action<float> setMethod;
     private readonly Func<float, Color>? shadeFunction;
     private readonly Color[]? shades;

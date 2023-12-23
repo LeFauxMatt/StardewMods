@@ -134,8 +134,7 @@ internal sealed class SearchItems : BaseFeature
                 this.itemGrabMenuManager.CurrentMenu.exitThisMenu();
                 this.inputHelper.Suppress(e.Button);
                 return;
-            case SButton.Escape:
-                return;
+            case SButton.Escape: return;
         }
 
         if (this.searchField.Value.Selected)

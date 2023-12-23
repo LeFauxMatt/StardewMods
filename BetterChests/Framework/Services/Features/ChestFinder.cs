@@ -135,8 +135,7 @@ internal sealed class ChestFinder : BaseFeature
             case SButton.MouseRight:
                 this.searchBar.Value.receiveRightClick(mouseX, mouseY);
                 break;
-            default:
-                return;
+            default: return;
         }
 
         if (Game1.activeClickableMenu is SearchBar)

@@ -1,5 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Framework.UI;
 
+
+#nullable disable
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Extensions;
@@ -341,8 +343,7 @@ internal sealed class HslColorPicker
                 this.saturationCoord = this.saturationTrack.Clamp(y);
                 this.currentHslColor.S = this.saturationCoord.Remap(this.saturationTrack, HslColorPicker.UnitRange);
                 break;
-            case Thumb.NoColor:
-                break;
+            case Thumb.NoColor: break;
             case Thumb.None:
             default:
                 return;

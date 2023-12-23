@@ -75,8 +75,7 @@ internal sealed class SearchBar : IClickableMenu
                 this.searchField.Text = string.Empty;
                 this.exitThisMenuNoSound();
                 return;
-            default:
-                return;
+            default: return;
         }
     }
 

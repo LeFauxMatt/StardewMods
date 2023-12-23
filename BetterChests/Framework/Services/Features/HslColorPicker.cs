@@ -32,8 +32,8 @@ internal sealed class HslColorPicker : BaseFeature
     private readonly PerScreen<Slider?> lightness = new();
     private readonly IModEvents modEvents;
     private readonly PerScreen<Slider?> saturation = new();
-    private readonly PerScreen<int> x = new();
-    private readonly PerScreen<int> y = new();
+    private readonly PerScreen<int> xPosition = new();
+    private readonly PerScreen<int> yPosition = new();
 
     /// <summary>Initializes a new instance of the <see cref="HslColorPicker" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
@@ -215,21 +215,17 @@ internal sealed class HslColorPicker : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.CurrentMenu is null
+        if (this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not
+                { } colorPicker
             || this.itemGrabMenuManager.Top.Container?.Options.HslColorPicker != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
         }
 
-        this.isActive.Value = this.itemGrabMenuManager.CurrentMenu.chestColorPicker != null;
-        if (!this.isActive.Value)
-        {
-            return;
-        }
-
+        this.isActive.Value = true;
         this.itemGrabMenuManager.CurrentMenu.discreteColorPickerCC = null;
-        this.x.Value = this.ModConfig.ColorPickerArea switch
+        this.xPosition.Value = this.ModConfig.ColorPickerArea switch
         {
             ColorPickerArea.Left => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen
                 - (2 * Game1.tileSize)
@@ -240,28 +236,34 @@ internal sealed class HslColorPicker : BaseFeature
                 + (IClickableMenu.borderWidth / 0x2),
         };
 
-        this.y.Value = this.itemGrabMenuManager.CurrentMenu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2);
+        this.yPosition.Value = this.itemGrabMenuManager.CurrentMenu.yPositionOnScreen
+            - 56
+            + (IClickableMenu.borderWidth / 2);
+
         var hsl = this.CurrentColor;
 
         this.hue.Value = new Slider(
             this.gameContentHelper.Load<Texture2D>(AssetHandler.HslTexturePath),
             () => hsl.H,
             value => hsl.H = value,
-            new Rectangle(this.x.Value, this.y.Value + 36, 23, 522),
+            new Rectangle(this.xPosition.Value, this.yPosition.Value + 36, 23, 522),
             29);
 
         this.lightness.Value = new Slider(
-            value => new HslColor(hsl.H, hsl.S, value).ToRgbColor(),
+            value => new HslColor(hsl.H, colorPicker.colorSelection == 0 ? 0 : hsl.S, Math.Max(0.01f, value)).ToRgbColor(),
             () => hsl.L,
             value => hsl.L = value,
-            new Rectangle(this.x.Value + 32, this.y.Value + 36, 23, 256),
+            new Rectangle(this.xPosition.Value + 32, this.yPosition.Value + 36, 23, 256),
             16);
 
         this.saturation.Value = new Slider(
-            value => new HslColor(hsl.H, value, Math.Max(0.1f, hsl.L)).ToRgbColor(),
+            value => new HslColor(
+                hsl.H,
+                colorPicker.colorSelection == 0 ? 0 : value,
+                Math.Max(0.01f, colorPicker.colorSelection == 0 ? value : hsl.L)).ToRgbColor(),
             () => hsl.S,
             value => hsl.S = value,
-            new Rectangle(this.x.Value + 32, this.y.Value + 300, 23, 256),
+            new Rectangle(this.xPosition.Value + 32, this.yPosition.Value + 300, 23, 256),
             16);
     }
 
@@ -275,8 +277,8 @@ internal sealed class HslColorPicker : BaseFeature
         // Background
         IClickableMenu.drawTextureBox(
             e.SpriteBatch,
-            this.x.Value - (IClickableMenu.borderWidth / 2),
-            this.y.Value - (IClickableMenu.borderWidth / 2),
+            this.xPosition.Value - (IClickableMenu.borderWidth / 2),
+            this.yPosition.Value - (IClickableMenu.borderWidth / 2),
             58 + IClickableMenu.borderWidth,
             558 + IClickableMenu.borderWidth,
             Color.LightGray);

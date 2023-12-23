@@ -156,8 +156,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
             case < 0:
                 this.newIndex.Value++;
                 return;
-            default:
-                return;
+            default: return;
         }
     }
 
